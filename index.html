@@ -81,6 +81,14 @@
     color: #7a5a2e;
     font-variant-numeric: tabular-nums;
   }
+  #study .formula {
+    font-size: clamp(24px, 5.5vw, 32px);
+    font-weight: 900;
+    color: #8a5a9e;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.06em;
+  }
+  #study .formula:empty { display: none; }
   #study .items {
     font-size: clamp(26px, 6vw, 36px);
     line-height: 1.5;
@@ -234,6 +242,7 @@
     <div class="eyebrow" id="studyEyebrow">오늘의 나눗셈 공부</div>
     <div class="daily" id="daily"></div>
     <div class="progress" id="stars"></div>
+    <div class="formula" id="formula"></div>
     <div class="items" id="items"></div>
     <div class="question" id="question"></div>
     <div class="choices" id="choices"></div>
@@ -254,8 +263,8 @@
       <span class="padlock">🔒</span>
       <span class="badge">🐉</span>
       <span class="meta">
-        <span class="name">삼국지 별빛 연대기</span>
-        <span class="desc">청룡과 함께 달리는 횡스크롤 전장</span>
+        <span class="name">삼국지 · 서유기 · 수호지</span>
+        <span class="desc">세 고전을 넘나드는 별빛 연대기 횡스크롤 전장</span>
         <span class="go">모험 떠나기 ▶</span>
       </span>
     </a>
@@ -281,7 +290,7 @@
       <span class="padlock">🔒</span>
       <span class="badge">💎</span>
       <span class="meta">
-        <span class="name">보리의 리본 보석 미스터리</span>
+        <span class="name">헬로키티의 리본방</span>
         <span class="desc">사라진 보석을 찾는 아기자기 추리 놀이</span>
         <span class="go">모험 떠나기 ▶</span>
       </span>
@@ -405,12 +414,24 @@
     dailyEl.textContent = '오늘 푼 문제 ' + Math.min(state.solved, DAILY) + ' / ' + DAILY;
   }
 
+  /* 세트가 진행될수록 어려워지는 4단계. "답 1개"짜리 시시한 문제는 없앤다(each ≥ 2). */
+  var LEVELS = [
+    { pmin: 2, pmax: 3, maxTotal: 8,  maxEach: 4, formula: false }, // 워밍업
+    { pmin: 2, pmax: 4, maxTotal: 12, maxEach: 4, formula: false }, // 기본
+    { pmin: 2, pmax: 5, maxTotal: 15, maxEach: 4, formula: false }, // 확장
+    { pmin: 2, pmax: 5, maxTotal: 20, maxEach: 5, formula: true }   // 도전 + 나눗셈 식
+  ];
+  function currentLevel() {
+    return LEVELS[Math.min(LEVELS.length - 1, Math.floor(state.solved / SET))];
+  }
+
   function makeProblem() {
-    var people = 2 + Math.floor(Math.random() * 3);
-    var each = 1 + Math.floor(Math.random() * Math.min(4, Math.floor(12 / people)));
-    var total = people * each;
+    var lv = currentLevel();
+    var people = lv.pmin + Math.floor(Math.random() * (lv.pmax - lv.pmin + 1));
+    var eachMax = Math.min(lv.maxEach, Math.floor(lv.maxTotal / people));
+    var each = 2 + Math.floor(Math.random() * Math.max(1, eachMax - 1));
     var item = ITEMS[Math.floor(Math.random() * ITEMS.length)];
-    return { people: people, each: each, total: total, item: item };
+    return { people: people, each: each, total: people * each, item: item, formula: lv.formula };
   }
 
   function renderProblem() {
@@ -418,9 +439,11 @@
     var row = '';
     for (var i = 0; i < current.total; i++) {
       row += current.item.emoji;
-      if ((i + 1) % 6 === 0 && i + 1 < current.total) row += '\n';
+      if ((i + 1) % 5 === 0 && i + 1 < current.total) row += '\n'; // 5개씩 끊어야 세기 쉽다
     }
     itemsEl.textContent = row;
+    document.getElementById('formula').textContent =
+      current.formula ? current.total + ' ÷ ' + current.people + ' = ?' : '';
     questionEl.textContent = current.item.name + ' ' + current.total + '개를 친구 ' +
       current.people + '명이 똑같이 나누면, 한 명이 몇 개씩 가질까요?';
 
@@ -472,6 +495,7 @@
   function applyState() {
     drawDaily();
     cheerEl.textContent = '';
+    document.getElementById('formula').textContent = '';
     if (isFree()) {
       document.body.classList.remove('locked');
       studyEl.classList.add('done');
@@ -493,7 +517,9 @@
     } else {
       document.body.classList.add('locked');
       studyEl.classList.remove('done');
-      eyebrowEl.textContent = '오늘의 나눗셈 공부';
+      var levelNames = ['1단계 · 워밍업', '2단계 · 기본', '3단계 · 확장', '4단계 · 도전'];
+      eyebrowEl.textContent = '오늘의 나눗셈 공부 · ' +
+        levelNames[Math.min(3, Math.floor(state.solved / SET))];
       subEl.textContent = '문제 10개를 풀면 게임 티켓 한 장!';
       drawSetStars();
       renderProblem();
