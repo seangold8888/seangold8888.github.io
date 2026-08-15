@@ -75,6 +75,12 @@
     letter-spacing: 0.12em;
     color: #b0762e;
   }
+  #study .daily {
+    font-size: clamp(14px, 3.2vw, 17px);
+    font-weight: 900;
+    color: #7a5a2e;
+    font-variant-numeric: tabular-nums;
+  }
   #study .items {
     font-size: clamp(26px, 6vw, 36px);
     line-height: 1.5;
@@ -120,6 +126,7 @@
   #study .cheer.oops { color: #c2452e; }
   #study.done { background: rgba(107, 203, 119, 0.16); color: var(--paper); border-color: rgba(107, 203, 119, 0.6); }
   #study.done .eyebrow { color: var(--mint); }
+  #study.done .daily { color: var(--cloud); }
   .games {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
@@ -161,6 +168,7 @@
   .gem    { background: linear-gradient(135deg, #ffd3e2, #f79ac0); }
   .picnic { background: linear-gradient(135deg, #d8f3b8, #8fd98a); }
   .stage  { background: linear-gradient(135deg, #b8e8f3, #f3b8e4); }
+  .war    { background: linear-gradient(135deg, #f5c78a, #e08a7a); }
   .badge {
     flex: 0 0 auto;
     width: clamp(64px, 12vw, 84px);
@@ -191,7 +199,6 @@
     padding: 5px 12px;
     border-radius: 999px;
   }
-  .go.away { background: rgba(20, 12, 40, 0.5); color: var(--cloud); }
   footer {
     text-align: center;
     display: flex;
@@ -220,12 +227,13 @@
   <header>
     <div class="moon" id="moon">🌙</div>
     <h1>모험 상자</h1>
-    <p class="sub" id="subline">공부 별 다섯 개를 모으면 상자가 열려요!</p>
+    <p class="sub" id="subline">문제 5개를 풀면 게임 티켓 한 장!</p>
   </header>
 
   <section id="study" aria-live="polite">
     <div class="eyebrow" id="studyEyebrow">오늘의 나눗셈 공부</div>
-    <div class="progress" id="stars">☆ ☆ ☆ ☆ ☆</div>
+    <div class="daily" id="daily"></div>
+    <div class="progress" id="stars"></div>
     <div class="items" id="items"></div>
     <div class="question" id="question"></div>
     <div class="choices" id="choices"></div>
@@ -242,12 +250,39 @@
         <span class="go">모험 떠나기 ▶</span>
       </span>
     </a>
+    <a class="card war" href="sanguo/">
+      <span class="padlock">🔒</span>
+      <span class="badge">🐉</span>
+      <span class="meta">
+        <span class="name">삼국지 별빛 연대기</span>
+        <span class="desc">청룡과 함께 달리는 횡스크롤 전장</span>
+        <span class="go">모험 떠나기 ▶</span>
+      </span>
+    </a>
     <a class="card castle" href="hogwarts/">
       <span class="padlock">🔒</span>
       <span class="badge">🏰</span>
       <span class="meta">
         <span class="name">호그와트 연대기</span>
         <span class="desc">7년의 마법 학교 어드벤처</span>
+        <span class="go">모험 떠나기 ▶</span>
+      </span>
+    </a>
+    <a class="card stage" href="kedehun/">
+      <span class="padlock">🔒</span>
+      <span class="badge">🎤</span>
+      <span class="meta">
+        <span class="name">케데헌</span>
+        <span class="desc">무대를 달리는 데몬 헌터스</span>
+        <span class="go">모험 떠나기 ▶</span>
+      </span>
+    </a>
+    <a class="card gem" href="bori/">
+      <span class="padlock">🔒</span>
+      <span class="badge">💎</span>
+      <span class="meta">
+        <span class="name">보리의 리본 보석 미스터리</span>
+        <span class="desc">사라진 보석을 찾는 아기자기 추리 놀이</span>
         <span class="go">모험 떠나기 ▶</span>
       </span>
     </a>
@@ -258,24 +293,6 @@
         <span class="name">재이네 숫자 소풍</span>
         <span class="desc">간식을 사이좋게 나눠 주는 숫자 놀이</span>
         <span class="go">모험 떠나기 ▶</span>
-      </span>
-    </a>
-    <a class="card stage" href="https://claude.ai/code/artifact/a82dfcec-2560-4745-a001-36decb49f4a3">
-      <span class="padlock">🔒</span>
-      <span class="badge">🎤</span>
-      <span class="meta">
-        <span class="name">케데헌</span>
-        <span class="desc">따끈따끈한 최신 모험</span>
-        <span class="go away">클로드 앱에서 열려요 ▶</span>
-      </span>
-    </a>
-    <a class="card gem" href="https://claude.ai/code/artifact/f593fe0f-cef0-4a09-978c-6bcb3f9e2564">
-      <span class="padlock">🔒</span>
-      <span class="badge">💎</span>
-      <span class="meta">
-        <span class="name">보리의 리본 보석 미스터리</span>
-        <span class="desc">사라진 보석을 찾는 아기자기 추리 놀이</span>
-        <span class="go away">클로드 앱에서 열려요 ▶</span>
       </span>
     </a>
   </nav>
@@ -325,7 +342,10 @@
     })(0);
   }
 
-  var NEED = 5;
+  /* ---- 공부 시스템 v2 ----
+     세트 = 5문제 → 게임 티켓 1장. 게임 한 판 쓰면 다시 5문제.
+     하루 20문제를 다 채우면 그날은 자유 이용. */
+  var SET = 5, DAILY = 20;
   var ITEMS = [
     { emoji: '🍪', name: '쿠키' },
     { emoji: '🍓', name: '딸기' },
@@ -345,25 +365,44 @@
   var cheerEl = document.getElementById('cheer');
   var subEl = document.getElementById('subline');
   var eyebrowEl = document.getElementById('studyEyebrow');
+  var dailyEl = document.getElementById('daily');
 
-  function today() {
+  function todayKey() {
     var d = new Date();
     return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
   }
-  function isUnlocked() {
-    try { return localStorage.getItem('hub_unlock_date') === today(); } catch (_) { return false; }
+  function loadState() {
+    var s = { solved: 0, credit: 0 };
+    try {
+      if (localStorage.getItem('hub2_date') === todayKey()) {
+        s.solved = Math.max(0, parseInt(localStorage.getItem('hub2_solved') || '0', 10) || 0);
+        s.credit = Math.max(0, parseInt(localStorage.getItem('hub2_credit') || '0', 10) || 0);
+      }
+    } catch (_) {}
+    return s;
   }
-  function saveUnlock() {
-    try { localStorage.setItem('hub_unlock_date', today()); } catch (_) {}
+  function saveState() {
+    try {
+      localStorage.setItem('hub2_date', todayKey());
+      localStorage.setItem('hub2_solved', String(state.solved));
+      localStorage.setItem('hub2_credit', String(state.credit));
+    } catch (_) {}
   }
 
-  var correct = 0;
+  var state = loadState();
+  var setCorrect = 0;
   var current = null;
 
-  function drawStars() {
+  function isFree() { return state.solved >= DAILY; }
+  function hasTicket() { return state.credit > 0; }
+
+  function drawSetStars() {
     var s = '';
-    for (var i = 0; i < NEED; i++) s += (i < correct ? '⭐' : '☆') + ' ';
+    for (var i = 0; i < SET; i++) s += (i < setCorrect ? '⭐' : '☆') + ' ';
     starsEl.textContent = s.trim();
+  }
+  function drawDaily() {
+    dailyEl.textContent = '오늘 푼 문제 ' + Math.min(state.solved, DAILY) + ' / ' + DAILY;
   }
 
   function makeProblem() {
@@ -404,12 +443,24 @@
 
   function pick(n, btn) {
     if (n === current.each) {
-      correct++;
+      state.solved++;
+      setCorrect++;
       cheerEl.className = 'cheer';
       cheerEl.textContent = CHEERS[Math.floor(Math.random() * CHEERS.length)];
-      drawStars();
-      if (correct >= NEED) { setTimeout(unlock, 650); }
-      else { setTimeout(renderProblem, 750); }
+      drawSetStars();
+      drawDaily();
+      if (state.solved >= DAILY) {
+        saveState();
+        setTimeout(applyState, 650);
+      } else if (setCorrect >= SET) {
+        state.credit = 1;
+        setCorrect = 0;
+        saveState();
+        setTimeout(applyState, 650);
+      } else {
+        saveState();
+        setTimeout(renderProblem, 750);
+      }
     } else {
       cheerEl.className = 'cheer oops';
       cheerEl.textContent = OOPS[Math.floor(Math.random() * OOPS.length)];
@@ -418,33 +469,72 @@
     }
   }
 
-  function unlock(silent) {
-    saveUnlock();
-    document.body.classList.remove('locked');
-    studyEl.classList.add('done');
-    eyebrowEl.textContent = '오늘 공부 완료';
-    starsEl.textContent = '⭐ ⭐ ⭐ ⭐ ⭐';
-    itemsEl.textContent = '🎉';
-    questionEl.textContent = silent ? '오늘은 이미 공부를 끝냈어요!' : '나눗셈 박사님, 참 잘했어요!';
-    choicesEl.innerHTML = '';
+  function applyState() {
+    drawDaily();
     cheerEl.textContent = '';
-    subEl.textContent = '오늘은 어떤 모험을 떠날까?';
+    if (isFree()) {
+      document.body.classList.remove('locked');
+      studyEl.classList.add('done');
+      eyebrowEl.textContent = '오늘 공부 완료';
+      starsEl.textContent = '🏆';
+      itemsEl.textContent = '🎉';
+      questionEl.textContent = '20문제를 다 풀었어요! 오늘은 마음껏 놀아요!';
+      choicesEl.innerHTML = '';
+      subEl.textContent = '오늘은 어떤 모험을 떠날까?';
+    } else if (hasTicket()) {
+      document.body.classList.remove('locked');
+      studyEl.classList.add('done');
+      eyebrowEl.textContent = '게임 티켓';
+      starsEl.textContent = '🎫';
+      itemsEl.textContent = '';
+      questionEl.textContent = '티켓 한 장이 있어요! 게임 한 판 하고 오면 문제 5개가 기다려요.';
+      choicesEl.innerHTML = '';
+      subEl.textContent = '오늘은 어떤 모험을 떠날까?';
+    } else {
+      document.body.classList.add('locked');
+      studyEl.classList.remove('done');
+      eyebrowEl.textContent = '오늘의 나눗셈 공부';
+      subEl.textContent = '문제 5개를 풀면 게임 티켓 한 장!';
+      drawSetStars();
+      renderProblem();
+    }
   }
 
-  if (isUnlocked()) {
-    unlock(true);
-  } else {
-    document.body.classList.add('locked');
-    drawStars();
-    renderProblem();
-  }
+  /* 게임 카드: 티켓을 쓰고 입장 (하루 20문제 채우면 무료 입장) */
+  document.querySelectorAll('.card').forEach(function (card) {
+    card.addEventListener('click', function () {
+      if (isFree()) return;
+      if (hasTicket()) {
+        state.credit = 0;
+        saveState();
+        return; // 이동은 그대로 진행
+      }
+    });
+  });
 
+  /* 뒤로가기(bfcache)로 돌아와도 상태를 새로 평가 */
+  window.addEventListener('pageshow', function (e) {
+    if (e.persisted) {
+      state = loadState();
+      setCorrect = 0;
+      applyState();
+    }
+  });
+
+  applyState();
+
+  /* 아빠 전용: 달 5연타 = 오늘 자유 이용 */
   var moonTaps = 0, moonTimer = null;
   document.getElementById('moon').addEventListener('click', function () {
     moonTaps++;
     clearTimeout(moonTimer);
     moonTimer = setTimeout(function () { moonTaps = 0; }, 1500);
-    if (moonTaps >= 5) { moonTaps = 0; unlock(true); }
+    if (moonTaps >= 5) {
+      moonTaps = 0;
+      state.solved = DAILY;
+      saveState();
+      applyState();
+    }
   });
 })();
 </script>

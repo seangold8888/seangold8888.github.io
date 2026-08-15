@@ -1,0 +1,2360 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>케데헌</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<style>
+:root{--ink:#07051c;--ink-2:#11102a;--panel:#120e2fd6;--panel-solid:#17132f;--paper:#fff8ef;--text:#fffaff;--muted:#c9c3dc;--pink:#ff3cac;--cyan:#3ce8ff;--violet:#9b6cff;--gold:#ffd166;--danger:#ff5578;--success:#55efb0;--line:#ffffff26;--font-ui:ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;--font-display:"Arial Black", "Apple SD Gothic Neo", "Malgun Gothic", var(--font-ui)}*{box-sizing:border-box}html,body{overscroll-behavior:none;background:var(--ink);width:100%;min-height:100%;color:var(--text);font-family:var(--font-ui);margin:0;overflow:hidden}button{color:inherit;font:inherit}button:focus-visible{outline:3px solid var(--cyan);outline-offset:3px;box-shadow:0 0 0 5px #09071e}.game-root{isolation:isolate;touch-action:none;-webkit-user-select:none;user-select:none;background:radial-gradient(circle at 50% 10%,#66339938,#0000 45%),#07051c;width:100vw;height:100dvh;min-height:320px;position:relative;overflow:hidden}.game-root:after{z-index:2;pointer-events:none;content:"";opacity:.18;mix-blend-mode:soft-light;background-image:repeating-linear-gradient(91deg,#ffffff0d 0 1px,#0000 1px 4px),repeating-linear-gradient(0deg,#0000000d 0 1px,#0000 1px 5px);position:absolute;inset:0}.game-canvas{z-index:1;width:100%;height:100%;display:block;position:absolute;inset:0}.hud{z-index:5;width:100%;padding:calc(14px + env(safe-area-inset-top)) calc(18px + env(safe-area-inset-right)) 12px calc(18px + env(safe-area-inset-left));pointer-events:none;grid-template-columns:minmax(220px,1fr) minmax(250px,1.25fr) minmax(170px,1fr);align-items:start;gap:18px;display:grid;position:absolute;top:0;left:0}.hud-panel{background:linear-gradient(135deg, #ffffff14, transparent 55%), var(--panel);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid #ffffff2b;min-width:0;position:relative;box-shadow:0 12px 35px #02000e61,inset 0 1px #ffffff1f}.player-panel{clip-path:polygon(0 0,96% 0,100% 22%,100% 100%,4% 100%,0 78%);grid-template-columns:46px minmax(0,1fr);gap:10px;padding:10px 14px 11px 10px;display:grid}.guardian-mark{color:#0c0921;background:radial-gradient(circle at 35% 30%, white 0 7%, transparent 8%), linear-gradient(135deg, var(--guardian-color), var(--guardian-accent));width:46px;height:46px;box-shadow:0 0 22px color-mix(in srgb, var(--guardian-color) 60%, transparent);font-family:var(--font-display);border:1px solid #ffffff40;border-radius:16px 5px;place-items:center;font-size:20px;font-weight:900;display:grid;transform:rotate(-3deg)}.player-data{min-width:0}.player-heading,.score-heading{justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:6px;display:flex}.player-name,.score-label{color:var(--text);letter-spacing:.14em;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap;font-size:11px;font-weight:900;overflow:hidden}.health-number{color:var(--paper);font-variant-numeric:tabular-nums;font-size:11px;font-weight:800}.bar{background:repeating-linear-gradient(90deg,#ffffff09 0 calc(10% - 2px),#03020f80 calc(10% - 2px) 10%),#0000005c;border:1px solid #ffffff29;height:10px;position:relative;overflow:hidden;transform:skew(-8deg)}.bar-fill{width:100%;transform:scaleX(var(--bar-value));transform-origin:0;transition:transform .16s ease-out;position:absolute;inset:0}.health-fill{background:linear-gradient(90deg,#ff416c,#ff8b72 60%,#ffd166);box-shadow:0 0 18px #ff52738c}.energy-row{grid-template-columns:39px 1fr 28px;align-items:center;gap:6px;margin-top:7px;display:grid}.energy-label,.energy-number{color:var(--muted);letter-spacing:.08em;font-size:9px;font-weight:900}.energy-number{text-align:right;font-variant-numeric:tabular-nums}.energy-bar{height:5px}.energy-fill{background:linear-gradient(90deg, var(--violet), var(--cyan));box-shadow:0 0 14px #3ce8ff9e}.energy-fill.ready{background:linear-gradient(90deg, var(--gold), #fff3a8, var(--gold));animation:.78s ease-in-out infinite alternate ready-pulse}.mission-panel{text-align:center;clip-path:polygon(5% 0,95% 0,100% 50%,95% 100%,5% 100%,0 50%);justify-self:center;width:min(100%,470px);padding:10px 44px 12px}.zone-kicker{color:var(--cyan);letter-spacing:.24em;text-transform:uppercase;font-size:9px;font-weight:900}.zone-title{font-family:var(--font-display);letter-spacing:-.03em;text-overflow:ellipsis;white-space:nowrap;margin-top:2px;font-size:clamp(13px,1.55vw,21px);font-weight:900;overflow:hidden}.objective{color:var(--muted);text-overflow:ellipsis;white-space:nowrap;margin-top:2px;font-size:10px;font-weight:700;overflow:hidden}.boss-bar-wrap{margin-top:8px}.boss-bar-label{color:#f2d8ff;letter-spacing:.1em;justify-content:space-between;margin-bottom:4px;font-size:9px;font-weight:900;display:flex}.boss-bar{height:7px}.boss-fill{background:linear-gradient(90deg, #7136cb, var(--pink), #ff7b6b);box-shadow:0 0 16px #ff3cacb3}.score-panel{text-align:right;clip-path:polygon(8% 0,100% 0,100% 78%,94% 100%,0 100%,0 24%);justify-self:end;min-width:185px;padding:10px 14px 10px 22px}.score-value{color:var(--paper);font-family:var(--font-display);font-variant-numeric:tabular-nums;letter-spacing:.04em;font-size:clamp(19px,2vw,28px);font-weight:900;line-height:1}.combo{justify-content:flex-end;align-items:baseline;gap:6px;min-height:21px;margin-top:5px;display:flex}.combo strong{color:var(--gold);font-family:var(--font-display);text-shadow:0 0 16px #ffd16680;font-size:19px;font-style:italic;line-height:1}.combo span{color:var(--muted);letter-spacing:.12em;font-size:9px;font-weight:900}.utility-tray{z-index:7;right:calc(18px + env(safe-area-inset-right));bottom:calc(16px + env(safe-area-inset-bottom));gap:8px;display:flex;position:absolute}.icon-button{width:42px;height:42px;color:var(--paper);cursor:pointer;pointer-events:auto;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);background:#0b0820c2;border:1px solid #fff3;border-radius:13px;place-items:center;display:grid;box-shadow:0 8px 22px #00000042}.icon-button:hover{background:#211846e6;border-color:#3ce8ff99}.icon-button:active{transform:translateY(1px)scale(.96)}.key-guide{z-index:5;bottom:calc(17px + env(safe-area-inset-bottom));color:#ffffffa6;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);pointer-events:none;background:#08051c8f;border:1px solid #ffffff1a;border-radius:999px;align-items:center;gap:14px;padding:7px 12px;font-size:10px;font-weight:750;display:flex;position:absolute;left:50%;transform:translate(-50%)}.key-guide span{white-space:nowrap}.key-guide kbd{min-width:24px;height:22px;color:var(--text);background:#ffffff17;border:1px solid #fff3;border-bottom-color:#ffffff59;border-radius:6px;place-items:center;margin-right:4px;padding:0 6px;font-size:9px;font-weight:900;display:inline-grid;box-shadow:inset 0 -2px #0003}.announcement{z-index:8;text-align:center;pointer-events:none;width:min(90vw,620px);animation:.26s cubic-bezier(.2,.9,.3,1) announcement-in;position:absolute;top:26%;left:50%;transform:translate(-50%)}.announcement-kicker{color:var(--cyan);letter-spacing:.24em;background:#07051cc2;border:1px solid #3ce8ff73;border-radius:999px;margin-bottom:7px;padding:4px 11px;font-size:9px;font-weight:900;display:inline-block}.announcement-title{color:#fff;font-family:var(--font-display);letter-spacing:-.055em;text-shadow:0 3px #541c74,0 0 28px #9b6cffa3;font-size:clamp(26px,5vw,64px);font-weight:900;line-height:.96}.sr-live{clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;width:1px;height:1px;position:absolute;overflow:hidden}.menu-layer{z-index:20;padding:calc(20px + env(safe-area-inset-top)) calc(20px + env(safe-area-inset-right)) calc(20px + env(safe-area-inset-bottom)) calc(20px + env(safe-area-inset-left));touch-action:pan-y;place-items:center;display:grid;position:absolute;inset:0;overflow-y:auto}.menu-scrim{-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);background:radial-gradient(circle at 50% 30%,#572b9647,#0000 42%),#050315b3;position:fixed;inset:0}.start-card{background:linear-gradient(145deg,#ffffff14,#0000 40%),linear-gradient(160deg,#110d2ff5,#08061ef7);border:1px solid #ffffff2e;border-radius:32px 10px;width:min(1080px,100%);max-height:100%;padding:clamp(22px,3vw,40px);position:relative;overflow-y:auto;box-shadow:0 35px 90px #0000008c,inset 0 1px #ffffff29}.start-card:before,.start-card:after{content:"";pointer-events:none;position:absolute}.start-card:before{background:linear-gradient(90deg, var(--pink), var(--gold));width:76px;height:4px;top:20px;right:20px;box-shadow:0 0 18px #ff3cacb3}.start-card:after{border-bottom:2px solid #3ce8ff8c;border-left:2px solid #3ce8ff8c;width:54px;height:54px;bottom:20px;left:20px}.start-header{text-align:center;max-width:760px;margin:0 auto 24px}.eyebrow{color:var(--cyan);letter-spacing:.3em;text-transform:uppercase;margin:0 0 8px;font-size:10px;font-weight:900}.game-title{color:var(--paper);font-family:var(--font-display);letter-spacing:-.065em;text-wrap:balance;text-shadow:0 4px #4c236a,0 9px 32px #9b6cff5c;margin:0;font-size:clamp(42px,7vw,84px);font-weight:900;line-height:.88}.game-title span{color:#0000;background:linear-gradient(90deg, var(--pink), var(--gold), var(--cyan));letter-spacing:.18em;text-transform:uppercase;text-shadow:none;-webkit-background-clip:text;background-clip:text;margin-top:12px;font-size:.35em;line-height:1;display:block}.start-copy{max-width:660px;color:var(--muted);text-wrap:balance;margin:16px auto 0;font-size:clamp(12px,1.3vw,15px);font-weight:650;line-height:1.7}.guardian-grid{grid-template-columns:repeat(3,1fr);gap:13px;display:grid}.guardian-card{min-width:0;color:var(--text);text-align:left;cursor:pointer;background:#ffffff09;border:1px solid #ffffff1f;border-radius:19px 7px;padding:15px;transition:transform .16s,border-color .16s,background .16s;position:relative;overflow:hidden}.guardian-card:before{content:"";opacity:0;background:radial-gradient(circle at 20% 20%, var(--guardian-color), transparent 45%), linear-gradient(135deg, transparent 40%, color-mix(in srgb, var(--guardian-accent) 22%, transparent));transition:opacity .16s;position:absolute;inset:0}.guardian-card:hover{border-color:color-mix(in srgb, var(--guardian-color) 65%, white);transform:translateY(-2px)}.guardian-card.selected{border-color:var(--guardian-color);box-shadow:0 0 0 1px color-mix(in srgb, var(--guardian-color) 40%, transparent), 0 14px 35px #00000052;background:#ffffff16;transform:translateY(-4px)}.guardian-card.selected:before{opacity:.2}.guardian-card-content{z-index:1;grid-template-columns:78px minmax(0,1fr);align-items:center;gap:12px;display:grid;position:relative}.guardian-portrait{color:#09061d;background:radial-gradient(circle at 36% 25%, #ffffffe6 0 3%, transparent 4%), linear-gradient(150deg, var(--guardian-color), var(--guardian-accent));width:76px;height:88px;box-shadow:inset 0 -18px 22px #0003, 0 0 26px color-mix(in srgb, var(--guardian-color) 32%, transparent);font-family:var(--font-display);border:1px solid #ffffff2e;border-radius:28px 8px;place-items:center;font-size:36px;font-weight:900;display:grid;position:relative;transform:rotate(-2deg)}.guardian-portrait:after{border:2px solid var(--ink-2);content:"✦";width:28px;height:28px;color:var(--ink);background:var(--gold);border-radius:50%;place-items:center;font-size:13px;display:grid;position:absolute;bottom:-4px;right:-5px}.guardian-role{color:var(--guardian-color);letter-spacing:.14em;font-size:9px;font-weight:900}.guardian-name{font-family:var(--font-display);margin:2px 0 4px;font-size:clamp(17px,2vw,25px);font-weight:900;line-height:1}.guardian-skill{color:var(--muted);font-size:10px;font-weight:700}.stat-list{gap:5px;margin-top:12px;display:grid}.stat-row{color:#ffffff94;grid-template-columns:27px 1fr;align-items:center;gap:6px;font-size:8px;font-weight:900;display:grid}.stat-track{background:#ffffff1a;border-radius:99px;height:4px;overflow:hidden}.stat-fill{width:var(--stat-value);border-radius:inherit;background:linear-gradient(90deg, var(--guardian-color), var(--guardian-accent));height:100%}.start-actions{grid-template-columns:minmax(230px,320px) 1fr;align-items:center;gap:22px;margin-top:20px;display:grid}.primary-button{color:#13091e;background:linear-gradient(105deg, var(--gold), #fff1a4 46%, var(--pink) 140%);min-height:58px;font-family:var(--font-display);letter-spacing:-.02em;cursor:pointer;border:0;border-radius:18px 5px;padding:0 28px;font-size:18px;font-weight:900;transition:transform .14s,box-shadow .14s;position:relative;overflow:hidden;box-shadow:0 11px #8b456b,0 18px 32px #00000057,0 0 32px #ffd1663d}.primary-button:after{content:"";background:#ffffff80;width:24%;height:160%;animation:2.8s ease-in-out infinite button-shine;position:absolute;top:-30%;left:-35%;transform:rotate(20deg)}.primary-button:hover{transform:translateY(-2px);box-shadow:0 13px #8b456b,0 22px 36px #0000005c,0 0 38px #ffd16657}.primary-button:active{transform:translateY(7px);box-shadow:0 4px #8b456b,0 10px 18px #00000047}.control-summary{color:var(--muted);flex-wrap:wrap;justify-content:flex-end;gap:8px 14px;font-size:10px;font-weight:750;display:flex}.control-summary span{align-items:center;gap:6px;display:inline-flex}.control-dot{min-width:23px;height:23px;color:var(--paper);background:#ffffff12;border:1px solid #ffffff2b;border-radius:7px;place-items:center;padding:0 6px;font-size:8px;font-weight:900;display:grid}.dialog-card{text-align:center;background:linear-gradient(145deg,#ffffff13,#0000 45%),#0f0b2af7;border:1px solid #ffffff2e;border-radius:28px 8px;width:min(480px,100%);padding:clamp(25px,5vw,42px);position:relative;box-shadow:0 32px 85px #0009}.dialog-kicker{color:var(--cyan);letter-spacing:.24em;text-transform:uppercase;margin:0 0 7px;font-size:10px;font-weight:900}.dialog-title{font-family:var(--font-display);letter-spacing:-.055em;margin:0;font-size:clamp(37px,8vw,62px);font-weight:900;line-height:.95}.dialog-copy{color:var(--muted);margin:12px auto 0;font-size:13px;font-weight:650;line-height:1.65}.result-grade{width:78px;height:78px;color:var(--ink);background:linear-gradient(145deg, var(--gold), #fff4b8);font-family:var(--font-display);border:2px solid #ffffff80;border-radius:25px 8px;place-items:center;margin:20px auto 4px;font-size:45px;font-weight:900;display:inline-grid;transform:rotate(-4deg);box-shadow:0 0 32px #ffd1665c}.result-stats{grid-template-columns:repeat(3,1fr);gap:8px;margin:22px 0;display:grid}.result-stat{background:#ffffff0b;border:1px solid #ffffff1a;border-radius:12px;padding:12px 7px}.result-stat strong{color:var(--paper);font-family:var(--font-display);font-variant-numeric:tabular-nums;font-size:18px;display:block}.result-stat span{color:var(--muted);letter-spacing:.1em;font-size:8px;font-weight:900}.dialog-actions{gap:10px;display:grid}.secondary-button{min-height:46px;color:var(--paper);cursor:pointer;background:#ffffff0f;border:1px solid #ffffff29;border-radius:13px 5px;font-size:12px;font-weight:850}.secondary-button:hover{background:#3ce8ff14;border-color:#3ce8ff7a}.touch-controls{z-index:11;padding:0 calc(16px + env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));pointer-events:none;justify-content:space-between;align-items:flex-end;display:none;position:absolute;inset:auto 0 0}.touch-move,.touch-actions{align-items:flex-end;gap:9px;display:flex}.touch-move{grid-template-columns:repeat(3,1fr);align-items:end;width:150px;display:grid}.touch-button{min-width:52px;min-height:52px;color:var(--paper);pointer-events:auto;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);-webkit-tap-highlight-color:transparent;background:linear-gradient(145deg,#ffffff21,#0000 60%),#0c0824ad;border:1px solid #ffffff3b;border-radius:18px 7px;place-items:center;font-size:10px;font-weight:900;display:grid;box-shadow:0 9px 23px #00000040,inset 0 1px #ffffff26}.touch-button:active,.touch-button.pressed{border-color:var(--cyan);background:#3ce8ff38;transform:scale(.93)}.touch-button.jump{color:var(--gold);border-color:#ffd16673}.touch-button.attack{color:#fff;background:radial-gradient(circle at 35% 25%,#ffffff3b,#0000 23%),#7b1865bd;border-color:#ff3caca6;border-radius:50%;width:76px;height:76px;font-size:12px;box-shadow:0 0 24px #ff3cac47,inset 0 1px #ffffff38}.touch-button.ultimate{width:62px;height:62px;color:var(--gold);border-color:#ffd1668c}.touch-button:disabled{opacity:.38;filter:grayscale(.6)}.portrait-tip{z-index:9;right:50%;bottom:calc(108px + env(safe-area-inset-bottom));color:#ffffffad;pointer-events:none;background:#07051cad;border:1px solid #ffffff24;border-radius:999px;padding:6px 10px;font-size:9px;font-weight:800;display:none;position:absolute;transform:translate(50%)}@keyframes ready-pulse{0%{filter:brightness(.95);box-shadow:0 0 8px #ffd16666}to{filter:brightness(1.25);box-shadow:0 0 20px #ffd166d9}}@keyframes button-shine{0%,58%{left:-35%}82%,to{left:120%}}@keyframes announcement-in{0%{opacity:0;transform:translate(-50%,12px)scale(.92)}to{opacity:1;transform:translate(-50%)scale(1)}}@media (pointer:coarse){.touch-controls{display:flex}.key-guide{display:none}.utility-tray{right:calc(12px + env(safe-area-inset-right));bottom:auto;top:calc(104px + env(safe-area-inset-top))}}@media (orientation:portrait) and (max-width:800px){.hud{padding:calc(9px + env(safe-area-inset-top)) calc(9px + env(safe-area-inset-right)) 8px calc(9px + env(safe-area-inset-left));grid-template-columns:minmax(150px,1fr) auto;gap:7px}.mission-panel{top:calc(80px + env(safe-area-inset-top));width:min(82vw,390px);padding:7px 22px 8px;position:absolute;left:50%;transform:translate(-50%)}.score-panel{min-width:112px;padding:9px 10px 8px 17px}.score-label,.combo span{font-size:7px}.score-value{font-size:17px}.combo strong{font-size:15px}.player-panel{grid-template-columns:36px minmax(0,1fr);gap:7px;padding:7px 10px 8px 7px}.guardian-mark{border-radius:12px 4px;width:36px;height:36px;font-size:16px}.player-name,.health-number{font-size:9px}.bar{height:8px}.energy-row{margin-top:5px}.utility-tray{top:calc(133px + env(safe-area-inset-top))}.touch-controls{padding-bottom:calc(13px + env(safe-area-inset-bottom))}.portrait-tip{display:block}.start-card{border-radius:24px 7px;padding:24px 16px 28px}.guardian-grid{grid-template-columns:1fr}.guardian-card{padding:10px 12px}.guardian-card-content{grid-template-columns:58px minmax(0,1fr)}.guardian-portrait{border-radius:21px 6px;width:56px;height:63px;font-size:25px}.stat-list{grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}.stat-row{grid-template-columns:23px 1fr}.start-actions{grid-template-columns:1fr;gap:18px}.control-summary{justify-content:center}}@media (max-height:570px){.hud{padding-top:calc(8px + env(safe-area-inset-top))}.player-panel,.score-panel{padding-top:7px;padding-bottom:7px}.mission-panel{padding-top:7px;padding-bottom:8px}.objective{display:none}.guardian-mark{width:38px;height:38px}.player-panel{grid-template-columns:38px minmax(0,1fr)}.utility-tray{bottom:calc(9px + env(safe-area-inset-bottom))}.touch-button{min-width:48px;min-height:48px}.touch-button.attack{width:64px;height:64px}.touch-button.ultimate{width:54px;height:54px}.start-card{padding:18px 22px}.start-header{margin-bottom:12px}.game-title{font-size:clamp(34px,7vw,58px)}.start-copy{display:none}.guardian-card{padding:10px}.guardian-card-content{grid-template-columns:56px minmax(0,1fr)}.guardian-portrait{width:54px;height:60px;font-size:25px}.stat-list{margin-top:7px}.start-actions{margin-top:12px}.primary-button{min-height:48px}}@media (max-width:720px) and (orientation:landscape){.hud{padding-right:calc(9px + env(safe-area-inset-right));padding-left:calc(9px + env(safe-area-inset-left));grid-template-columns:minmax(170px,1fr) minmax(190px,1fr) minmax(125px,.7fr);gap:7px}.mission-panel{padding-left:24px;padding-right:24px}.zone-title{font-size:13px}.touch-move{width:135px}.touch-controls{padding-right:calc(10px + env(safe-area-inset-right));padding-left:calc(10px + env(safe-area-inset-left))}}@media (prefers-reduced-motion:reduce){*,:before,:after{scroll-behavior:auto!important;transition-duration:80ms!important;animation-duration:.001ms!important;animation-iteration-count:1!important}}.game-root{touch-action:manipulation}.play-layer{touch-action:none;position:absolute;inset:0;overflow:hidden}.menu-layer,.start-card{touch-action:pan-y pinch-zoom;overscroll-behavior:contain}.guardian-switches{pointer-events:auto;gap:5px;margin-top:7px;display:flex}@media (any-pointer:coarse){.touch-controls{display:flex}.key-guide{display:none}.guardian-switches .control-dot{min-width:40px;min-height:40px}}@media (max-width:430px) and (orientation:portrait){.touch-controls{padding-right:max(8px, env(safe-area-inset-right));padding-left:max(8px, env(safe-area-inset-left));gap:4px}.touch-move{gap:4px;width:132px}.touch-actions{gap:4px}.touch-button{min-width:44px;min-height:48px;padding:0 8px}.touch-button.attack{width:58px;height:58px}.touch-button.ultimate{width:50px;height:50px}.score-label{font-size:8px}.player-name,.health-number{font-size:10px}}@media (prefers-reduced-motion:reduce){.game-root *,.game-root :before,.game-root :after{scroll-behavior:auto!important}}.boot-screen{color:#fff8ef;text-align:center;background:radial-gradient(circle at 50% 35%,#ff3cac47,#0000 34%),linear-gradient(150deg,#07051c,#211646 55%,#0a2945);place-content:center;justify-items:center;gap:12px;min-height:100dvh;padding:32px;display:grid}.boot-screen h1{margin:0;font-size:clamp(24px,5vw,48px)}.boot-kicker{color:#43e6d0;letter-spacing:.18em;margin:0;font-size:12px;font-weight:900}.boot-star{color:#ffd166;filter:drop-shadow(0 0 20px #ffd166b3);font-size:48px;animation:.9s ease-in-out infinite alternate boot-pulse}@keyframes boot-pulse{to{transform:scale(1.18)rotate(12deg)}}@media (prefers-reduced-motion:reduce){.boot-star{animation:none}}
+
+/* DX additions */
+[hidden] { display: none !important; }
+.inert-layer { pointer-events: none; }
+.best-line {
+  margin: 14px auto 0;
+  padding: 8px 18px;
+  display: inline-block;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 209, 102, 0.08);
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.new-record {
+  margin: 10px 0 0;
+  color: var(--gold);
+  font-family: var(--font-display);
+  font-size: 18px;
+  letter-spacing: 0.14em;
+  text-shadow: 0 0 18px rgba(255, 209, 102, 0.65);
+  animation: dx-record-pulse 1.1s ease-in-out infinite;
+}
+.victory-best {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+@keyframes dx-record-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.07); opacity: 0.82; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .new-record { animation: none; }
+}
+</style>
+<main class="game-root" id="gameRoot">
+  <div class="play-layer" id="playLayer">
+    <canvas id="gameCanvas" class="game-canvas" aria-label="케데헌 횡스크롤 액션 게임 화면"></canvas>
+
+    <section class="hud" id="hud" aria-label="게임 진행 상황" hidden>
+      <div class="hud-panel player-panel">
+        <div class="guardian-mark" id="guardianMark" aria-hidden="true">L</div>
+        <div class="player-data">
+          <div class="player-heading">
+            <span class="player-name" id="playerName"></span>
+            <span class="health-number" id="healthNumber"></span>
+          </div>
+          <div class="bar" id="healthBar" role="progressbar" aria-label="가디언 체력" aria-valuemin="0" aria-valuemax="120" aria-valuenow="120">
+            <span class="bar-fill health-fill" id="healthFill"></span>
+          </div>
+          <div class="energy-row">
+            <span class="energy-label">STAR</span>
+            <div class="bar energy-bar" id="energyBar" role="progressbar" aria-label="피니시 에너지" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <span class="bar-fill energy-fill" id="energyFill"></span>
+            </div>
+            <span class="energy-number" id="energyNumber">0%</span>
+          </div>
+          <div class="guardian-switches" id="switchGroup" role="group" aria-label="가디언 즉시 교체"></div>
+        </div>
+      </div>
+      <div class="hud-panel mission-panel">
+        <div class="zone-kicker" id="zoneKicker"></div>
+        <div class="zone-title" id="zoneTitle"></div>
+        <div class="objective" id="objective"></div>
+        <div class="boss-bar-wrap" id="bossWrap" hidden>
+          <div class="boss-bar-label">
+            <span>먹구름 대장</span>
+            <span id="bossNumber"></span>
+          </div>
+          <div class="bar boss-bar" id="bossBar" role="progressbar" aria-label="보스 체력" aria-valuemin="0" aria-valuemax="1" aria-valuenow="1">
+            <span class="bar-fill boss-fill" id="bossFill"></span>
+          </div>
+        </div>
+      </div>
+      <div class="hud-panel score-panel">
+        <div class="score-heading">
+          <span class="score-label">CHEERS</span>
+          <span class="score-label" id="stageLabel">STAGE 1/2</span>
+        </div>
+        <div class="score-value" id="scoreValue">000000</div>
+        <div class="combo" id="combo"></div>
+      </div>
+    </section>
+
+    <div class="utility-tray play-extra" hidden>
+      <button type="button" class="icon-button" id="muteBtn" aria-label="소리 효과" aria-pressed="false">SFX</button>
+      <button type="button" class="icon-button" id="pauseBtn" aria-label="게임 일시정지">Ⅱ</button>
+    </div>
+
+    <div class="key-guide play-extra" aria-hidden="true" hidden>
+      <span><kbd>A D</kbd>이동</span>
+      <span><kbd>W</kbd>더블점프</span>
+      <span><kbd>X</kbd>3연타</span>
+      <span><kbd>Z</kbd>대시</span>
+      <span><kbd>C</kbd>피니시</span>
+      <span><kbd>1–3</kbd>교체</span>
+    </div>
+
+    <div class="portrait-tip play-extra" hidden>가로 화면에서 더 넓은 무대를 볼 수 있어요</div>
+
+    <div class="touch-controls play-extra" role="group" aria-label="터치 조작" hidden>
+      <div class="touch-move">
+        <button type="button" class="touch-button" id="touchLeft" aria-label="왼쪽 이동">◀</button>
+        <button type="button" class="touch-button jump" id="touchJump" aria-label="더블 점프">점프</button>
+        <button type="button" class="touch-button" id="touchRight" aria-label="오른쪽 이동">▶</button>
+      </div>
+      <div class="touch-actions">
+        <button type="button" class="touch-button" id="touchDash" aria-label="대시">대시</button>
+        <button type="button" class="touch-button ultimate" id="touchUlt" aria-label="별빛 피니시" disabled>피니시</button>
+        <button type="button" class="touch-button attack" id="touchAttack" aria-label="공격">공격</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="announcement" id="announcement" aria-hidden="true" hidden>
+    <div class="announcement-kicker" id="announcementKicker"></div>
+    <div class="announcement-title" id="announcementTitle"></div>
+  </div>
+  <div class="sr-live" id="srLive" aria-live="polite" aria-atomic="true"></div>
+
+  <section class="menu-layer" id="menuSelect" aria-labelledby="game-title">
+    <div class="menu-scrim"></div>
+    <div class="start-card">
+      <header class="start-header">
+        <p class="eyebrow">NEON PAPER ACTION · 2 STAGE CAMPAIGN</p>
+        <h1 class="game-title" id="game-title">케데헌<span>별빛 레스큐 · Neon Stage DX</span></h1>
+        <p class="start-copy">그림자가 콘서트의 빛을 훔쳐 갔어요. 세 가디언을 자유롭게 교체하고, 3연타 리본 블레이드와 별빛 피니시로 두 개의 무대를 되찾으세요.</p>
+        <p class="best-line" id="bestLine" hidden></p>
+      </header>
+      <div class="guardian-grid" id="guardianGrid" role="radiogroup" aria-label="가디언 선택"></div>
+      <div class="start-actions">
+        <button type="button" class="primary-button" id="startBtn">루미와 무대 출격</button>
+        <div class="control-summary" aria-label="주요 조작법">
+          <span><i class="control-dot">A D</i>달리기</span>
+          <span><i class="control-dot">W</i>더블점프</span>
+          <span><i class="control-dot">X</i>3연타</span>
+          <span><i class="control-dot">Z</i>대시</span>
+          <span><i class="control-dot">C</i>피니시</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="menu-layer" id="menuPause" role="dialog" aria-modal="true" aria-labelledby="pause-title" aria-describedby="pause-copy" hidden>
+    <div class="menu-scrim"></div>
+    <div class="dialog-card">
+      <p class="dialog-kicker">STAGE ON HOLD</p>
+      <h2 class="dialog-title" id="pause-title">잠깐 쉬어가기</h2>
+      <p class="dialog-copy" id="pause-copy">무대와 콤보가 그대로 멈춰 있어요. 준비되면 다시 별빛을 이어가세요.</p>
+      <div class="dialog-actions" style="margin-top: 24px">
+        <button type="button" class="primary-button" id="resumeBtn">계속하기</button>
+        <button type="button" class="secondary-button" id="retryBtn">이 스테이지 다시 시작</button>
+        <button type="button" class="secondary-button" id="toTitleBtn">가디언 선택으로</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="menu-layer" id="menuClear" role="dialog" aria-modal="true" aria-labelledby="clear-title" aria-describedby="clear-copy" hidden>
+    <div class="menu-scrim"></div>
+    <div class="dialog-card">
+      <p class="dialog-kicker">STAGE 01 CLEAR</p>
+      <h2 class="dialog-title" id="clear-title">무대를 되찾았어!</h2>
+      <p class="dialog-copy" id="clear-copy">코랄 시티의 조명이 다시 켜졌어요. 이제 달빛 옥상에서 마지막 먹구름을 쫓아가요.</p>
+      <div class="result-stats">
+        <div class="result-stat"><strong id="clearScore">000000</strong><span>CHEERS</span></div>
+        <div class="result-stat"><strong id="clearCombo">0×</strong><span>BEST COMBO</span></div>
+        <div class="result-stat"><strong id="clearTime">0:00</strong><span>TIME</span></div>
+      </div>
+      <button type="button" class="primary-button" id="nextStageBtn">달빛 옥상으로 출격</button>
+    </div>
+  </section>
+
+  <section class="menu-layer" id="menuVictory" role="dialog" aria-modal="true" aria-labelledby="victory-title" aria-describedby="victory-copy" hidden>
+    <div class="menu-scrim"></div>
+    <div class="dialog-card">
+      <p class="dialog-kicker">ALL STAGES PURIFIED</p>
+      <h2 class="dialog-title" id="victory-title">오늘의 가디언은 바로 너!</h2>
+      <div class="result-grade" id="victoryGrade">C</div>
+      <p class="new-record" id="newRecord" hidden>★ NEW RECORD ★</p>
+      <p class="victory-best" id="victoryBest" hidden></p>
+      <p class="dialog-copy" id="victory-copy">두 무대의 그림자가 모두 별빛으로 돌아왔어요. 더 높은 점수와 빠른 기록에 다시 도전해 보세요.</p>
+      <div class="result-stats">
+        <div class="result-stat"><strong id="victoryScore">000000</strong><span>CHEERS</span></div>
+        <div class="result-stat"><strong id="victoryCombo">0×</strong><span>BEST COMBO</span></div>
+        <div class="result-stat"><strong id="victoryTime">0:00</strong><span>TIME</span></div>
+      </div>
+      <div class="dialog-actions">
+        <button type="button" class="primary-button" id="againBtn">다시 달리기</button>
+        <button type="button" class="secondary-button" id="victoryTitleBtn">다른 가디언 선택</button>
+      </div>
+    </div>
+  </section>
+</main>
+<script>
+'use strict';
+/* 별빛 레스큐 DX — vanilla engine (ported + upgraded) */
+
+const GUARDIANS = [
+  { id: 'lumi', mark: 'L', name: '루미', role: 'BALANCE · 균형형', skill: '크리스털 블레이드', color: '#ff6f91', accent: '#ffd166', speed: 410, jump: 865, damage: 20, range: 128, attackRate: 1, energyRate: 1, stats: [72, 74, 78] },
+  { id: 'mira', mark: 'M', name: '미라', role: 'POWER · 강공형', skill: '스타 스윙', color: '#ffb347', accent: '#ff5c8a', speed: 355, jump: 920, damage: 28, range: 152, attackRate: 0.82, energyRate: 0.88, stats: [94, 58, 68] },
+  { id: 'joy', mark: 'J', name: '조이', role: 'RUSH · 속공형', skill: '섀도 대시', color: '#43e6d0', accent: '#8e6cff', speed: 475, jump: 840, damage: 16, range: 116, attackRate: 1.28, energyRate: 1.34, stats: [61, 96, 84] },
+];
+
+const STAGES = [
+  {
+    title: '코랄 시티 스테이지', subtitle: 'STAGE 01 · PAPER SPOTLIGHT',
+    worldWidth: 4250, bossGate: 3260, checkpoint: null, bossHealth: 510,
+    skyTop: '#08072b', skyBottom: '#3d1764', ground: '#211646', glow: '#ff3cac',
+    enemies: [
+      { kind: 'shade', x: 760 }, { kind: 'shade', x: 1300 }, { kind: 'wisp', x: 1730 },
+      { kind: 'shade', x: 2280 }, { kind: 'brute', x: 2800 },
+    ],
+    shards: [[520, 520], [890, 430], [1220, 525], [1470, 360], [1810, 450], [2090, 525], [2390, 390], [2660, 515], [2920, 330], [3140, 500]],
+    platforms: [
+      { x: 820, y: 485, width: 250 }, { x: 1430, y: 420, width: 260 }, { x: 1790, y: 505, width: 210 },
+      { x: 2320, y: 445, width: 260 }, { x: 2860, y: 390, width: 250 },
+    ],
+  },
+  {
+    title: '달빛 옥상', subtitle: 'STAGE 02 · MOONLINE CHASE',
+    worldWidth: 4750, bossGate: 3660, checkpoint: 1780, bossHealth: 700,
+    skyTop: '#030923', skyBottom: '#112f66', ground: '#12294b', glow: '#3ce8ff',
+    enemies: [
+      { kind: 'shade', x: 700 }, { kind: 'wisp', x: 1140 }, { kind: 'brute', x: 1530 },
+      { kind: 'shade', x: 2100 }, { kind: 'wisp', x: 2490 }, { kind: 'brute', x: 2940 }, { kind: 'shade', x: 3350 },
+    ],
+    shards: [[410, 520], [740, 390], [1090, 500], [1440, 330], [1810, 510], [2130, 390], [2450, 515], [2770, 350], [3150, 500], [3470, 390]],
+    platforms: [
+      { x: 680, y: 450, width: 260 }, { x: 1320, y: 390, width: 280 }, { x: 2010, y: 450, width: 250 },
+      { x: 2650, y: 410, width: 290 }, { x: 3260, y: 460, width: 250 },
+    ],
+  },
+];
+
+const WORLD_H = 720;
+const GROUND_Y = 610;
+const STEP = 1 / 60;
+const MAX_HEALTH = 120;
+const MAX_ENERGY = 100;
+const GRAVITY = 2400;
+const COMBO_STEPS = [
+  { windup: 0.055, active: 0.085, recovery: 0.15, power: 1, knockback: 300 },
+  { windup: 0.05, active: 0.09, recovery: 0.17, power: 1.25, knockback: 380 },
+  { windup: 0.085, active: 0.12, recovery: 0.28, power: 2.15, knockback: 590 },
+];
+const BEST_KEY = 'starlight-rescue-dx-best';
+
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const approach = (v, target, amount) => (Math.abs(target - v) <= amount ? target : v + Math.sign(target - v) * amount);
+const overlap = (x1, y1, w1, h1, x2, y2, w2, h2) => Math.abs(x1 - x2) < (w1 + w2) / 2 && Math.abs(y1 - y2) < (h1 + h2) / 2;
+const guardianOf = (id) => GUARDIANS.find((g) => g.id === id) ?? GUARDIANS[0];
+const noteHz = (midi) => 440 * Math.pow(2, (midi - 69) / 12);
+
+function loadBest() {
+  try {
+    const raw = localStorage.getItem(BEST_KEY);
+    if (!raw) return null;
+    const b = JSON.parse(raw);
+    if (typeof b.score !== 'number') return null;
+    return b;
+  } catch { return null; }
+}
+function saveBest(best) {
+  try { localStorage.setItem(BEST_KEY, JSON.stringify(best)); } catch { /* private mode */ }
+}
+
+class InputBuffer {
+  constructor() { this.heldMap = new Map(); this.queue = new Map(); }
+  set(action, source, down, now) {
+    let set = this.heldMap.get(action);
+    if (!set) { set = new Set(); this.heldMap.set(action, set); }
+    if (down) {
+      if (set.has(source)) return;
+      set.add(source);
+      if (action !== 'left' && action !== 'right') this.queue.set(action, now + (action === 'attack' ? 0.2 : 0.16));
+    } else set.delete(source);
+  }
+  held(action) { return (this.heldMap.get(action)?.size ?? 0) > 0; }
+  consume(action, now) {
+    const until = this.queue.get(action) ?? -1;
+    this.queue.delete(action);
+    return until >= now;
+  }
+  clear() { this.heldMap.clear(); this.queue.clear(); }
+}
+
+class AudioEngine {
+  constructor() { this.context = null; this.master = null; this.muted = false; this.noiseBuffer = null; }
+  async unlock() {
+    try {
+      if (!this.context) {
+        const Ctx = window.AudioContext ?? window.webkitAudioContext;
+        if (!Ctx) return;
+        this.context = new Ctx();
+        this.master = this.context.createGain();
+        const comp = this.context.createDynamicsCompressor();
+        this.master.gain.value = this.muted ? 0 : 0.28;
+        this.master.connect(comp);
+        comp.connect(this.context.destination);
+        const len = Math.floor(this.context.sampleRate * 0.5);
+        this.noiseBuffer = this.context.createBuffer(1, len, this.context.sampleRate);
+        const data = this.noiseBuffer.getChannelData(0);
+        for (let i = 0; i < len; i += 1) data[i] = Math.random() * 2 - 1;
+      }
+      if (this.context.state === 'suspended') await this.context.resume();
+    } catch { /* audio unavailable */ }
+  }
+  toggle() {
+    this.muted = !this.muted;
+    if (this.master && this.context) this.master.gain.setTargetAtTime(this.muted ? 0 : 0.28, this.context.currentTime, 0.025);
+  }
+  play(name) {
+    if (this.muted || !this.context || !this.master) return;
+    const spec = {
+      jump: [320, 530, 0.12, 'sine'], dash: [240, 75, 0.12, 'sawtooth'], slash: [720, 180, 0.09, 'triangle'],
+      hit: [130, 70, 0.08, 'square'], hurt: [180, 65, 0.24, 'sawtooth'], shard: [620, 1100, 0.17, 'sine'],
+      boss: [85, 43, 0.58, 'sawtooth'], clear: [390, 780, 0.4, 'triangle'], ultimate: [90, 840, 0.55, 'sawtooth'],
+      dodge: [880, 1560, 0.14, 'sine'],
+    }[name];
+    if (!spec) return;
+    const [from, to, dur, type] = spec;
+    const t0 = this.context.currentTime;
+    const osc = this.context.createOscillator();
+    const gain = this.context.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(from, t0);
+    osc.frequency.exponentialRampToValueAtTime(to, t0 + dur);
+    gain.gain.setValueAtTime(1e-4, t0);
+    gain.gain.exponentialRampToValueAtTime(name === 'boss' ? 0.22 : 0.13, t0 + 0.008);
+    gain.gain.exponentialRampToValueAtTime(1e-4, t0 + dur);
+    osc.connect(gain);
+    gain.connect(this.master);
+    osc.start(t0);
+    osc.stop(t0 + dur + 0.02);
+    osc.onended = () => { osc.disconnect(); gain.disconnect(); };
+  }
+  dispose() {
+    const ctx = this.context;
+    this.context = null; this.master = null;
+    if (ctx) ctx.close().catch(() => undefined);
+  }
+}
+
+/* Procedural stage BGM: bass + arpeggio + kick/hat over a 4-bar loop. */
+class Music {
+  constructor(audio) {
+    this.audio = audio;
+    this.timer = 0;
+    this.nextStep = 0;
+    this.step = 0;
+    this.gain = null;
+    this.running = false;
+    this.boss = false;
+    this.theme = null;
+  }
+  themes() {
+    return [
+      { bpm: 132, chords: [[57, 60, 64], [53, 57, 60], [60, 64, 67], [55, 59, 62]] },  // Am F C G
+      { bpm: 116, chords: [[50, 53, 57], [46, 50, 53], [53, 57, 60], [48, 52, 55]] },  // Dm Bb F C
+    ];
+  }
+  start(stageIndex) {
+    const ctx = this.audio.context;
+    if (!ctx || !this.audio.master) return;
+    this.stop();
+    this.theme = this.themes()[stageIndex] ?? this.themes()[0];
+    this.gain = ctx.createGain();
+    this.gain.gain.value = 0.55;
+    this.gain.connect(this.audio.master);
+    this.step = 0;
+    this.nextStep = ctx.currentTime + 0.08;
+    this.running = true;
+    this.timer = window.setInterval(() => this.schedule(), 40);
+  }
+  setBoss(active) { this.boss = active; }
+  duck(on) {
+    const ctx = this.audio.context;
+    if (this.gain && ctx) this.gain.gain.setTargetAtTime(on ? 0.14 : 0.55, ctx.currentTime, 0.12);
+  }
+  stop() {
+    if (this.timer) { clearInterval(this.timer); this.timer = 0; }
+    this.running = false;
+    this.boss = false;
+    if (this.gain) {
+      const ctx = this.audio.context;
+      if (ctx) this.gain.gain.setTargetAtTime(0, ctx.currentTime, 0.08);
+      const g = this.gain;
+      setTimeout(() => { try { g.disconnect(); } catch { /* already gone */ } }, 400);
+      this.gain = null;
+    }
+  }
+  voice(freq, t0, dur, type, peak) {
+    const ctx = this.audio.context;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, t0);
+    gain.gain.setValueAtTime(1e-4, t0);
+    gain.gain.exponentialRampToValueAtTime(peak, t0 + 0.012);
+    gain.gain.exponentialRampToValueAtTime(1e-4, t0 + dur);
+    osc.connect(gain);
+    gain.connect(this.gain);
+    osc.start(t0);
+    osc.stop(t0 + dur + 0.02);
+    osc.onended = () => { osc.disconnect(); gain.disconnect(); };
+  }
+  noise(t0, dur, peak) {
+    const ctx = this.audio.context;
+    if (!this.audio.noiseBuffer) return;
+    const src = ctx.createBufferSource();
+    src.buffer = this.audio.noiseBuffer;
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'highpass';
+    filter.frequency.value = 6200;
+    gain.gain.setValueAtTime(peak, t0);
+    gain.gain.exponentialRampToValueAtTime(1e-4, t0 + dur);
+    src.connect(filter); filter.connect(gain); gain.connect(this.gain);
+    src.start(t0);
+    src.stop(t0 + dur + 0.02);
+    src.onended = () => { src.disconnect(); filter.disconnect(); gain.disconnect(); };
+  }
+  kick(t0) {
+    const ctx = this.audio.context;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(150, t0);
+    osc.frequency.exponentialRampToValueAtTime(42, t0 + 0.11);
+    gain.gain.setValueAtTime(0.16, t0);
+    gain.gain.exponentialRampToValueAtTime(1e-4, t0 + 0.13);
+    osc.connect(gain);
+    gain.connect(this.gain);
+    osc.start(t0);
+    osc.stop(t0 + 0.15);
+    osc.onended = () => { osc.disconnect(); gain.disconnect(); };
+  }
+  schedule() {
+    const ctx = this.audio.context;
+    if (!this.running || !ctx || !this.gain) return;
+    const stepDur = 60 / this.theme.bpm / 4;
+    while (this.nextStep < ctx.currentTime + 0.16) {
+      const t0 = this.nextStep;
+      const bar = Math.floor(this.step / 16) % this.theme.chords.length;
+      const chord = this.theme.chords[bar];
+      const s = this.step % 16;
+      if (s % 4 === 0) this.kick(t0);
+      if (this.boss ? s % 2 === 1 : s % 4 === 2) this.noise(t0, 0.045, 0.05);
+      if (s % (this.boss ? 4 : 8) === 0) this.voice(noteHz(chord[0] - 24), t0, stepDur * 3.4, 'triangle', 0.12);
+      const arpNote = chord[(s + (s % 5)) % 3] + (s % 8 >= 4 ? 12 : 0);
+      this.voice(noteHz(arpNote), t0, stepDur * 0.92, 'square', this.boss ? 0.035 : 0.028);
+      if (s === 0) this.voice(noteHz(chord[1]), t0, stepDur * 15, 'sine', 0.03);
+      this.step += 1;
+      this.nextStep += stepDur;
+    }
+  }
+}
+class Game {
+  constructor(canvas, notify) {
+    this.input = new InputBuffer();
+    this.audio = new AudioEngine();
+    this.music = new Music(this.audio);
+    this.frame = 0;
+    this.lastFrame = 0;
+    this.accumulator = 0;
+    this.disposed = false;
+    this.scale = 1;
+    this.viewWidth = 1280;
+    this.reduced = false;
+    this.phase = 'select';
+    this.guardianId = 'lumi';
+    this.player = this.makePlayer();
+    this.enemies = [];
+    this.projectiles = [];
+    this.particles = [];
+    this.floaters = [];
+    this.shards = [];
+    this.stageIndex = 0;
+    this.score = 0;
+    this.combo = 0;
+    this.maxCombo = 0;
+    this.comboTimer = 0;
+    this.playTime = 0;
+    this.camera = 0;
+    this.previousCamera = 0;
+    this.trauma = 0;
+    this.hitstop = 0;
+    this.flash = 0;
+    this.damageFlash = 0;
+    this.ambient = 0;
+    this.nextId = 1;
+    this.gateOpen = false;
+    this.bossSpawned = false;
+    this.bossDefeated = false;
+    this.clearTimer = 0;
+    this.respawnTimer = 0;
+    this.checkpointReached = false;
+    this.stageEntryScore = 0;
+    this.stageEntryMaxCombo = 0;
+    this.announcement = null;
+    this.lastPublish = 0;
+    this.zoomPulse = 0;
+    this.dodgeCooldown = 0;
+    this.runDustTimer = 0;
+    this.streakTimer = 4;
+    this.confettiTimer = 0;
+    this.best = loadBest();
+    this.newRecord = false;
+    const ctx = canvas.getContext('2d', { alpha: false });
+    if (!ctx) throw Error('Canvas 2D is unavailable');
+    this.canvas = canvas;
+    this.context = ctx;
+    this.notify = notify;
+    this.reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.resize();
+    this.loop = this.loop.bind(this);
+    this.frame = requestAnimationFrame(this.loop);
+    this.publish();
+  }
+
+  makePlayer() {
+    return {
+      x: 230, y: GROUND_Y, px: 230, py: GROUND_Y, vx: 0, vy: 0, facing: 1,
+      health: MAX_HEALTH, maxHealth: MAX_HEALTH, energy: 0,
+      grounded: true, coyote: 0.1, airJump: 1,
+      dash: 0, dashCooldown: 0,
+      attack: 0, attackTotal: 0, attackStep: 0, chain: 0, attackSerial: 0,
+      invulnerable: 0, ultimate: 0, ultimateHit: false, switchFlash: 0, dead: false,
+    };
+  }
+
+  resize() {
+    const rect = this.canvas.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = Math.max(1, Math.round(rect.width * dpr));
+    const h = Math.max(1, Math.round(rect.height * dpr));
+    if (this.canvas.width !== w || this.canvas.height !== h) { this.canvas.width = w; this.canvas.height = h; }
+    this.scale = h / WORLD_H;
+    this.viewWidth = w / this.scale;
+  }
+
+  previewGuardian(id) { this.guardianId = id; this.publish(); }
+
+  async start(id) {
+    await this.audio.unlock();
+    this.guardianId = id;
+    this.score = 0;
+    this.maxCombo = 0;
+    this.combo = 0;
+    this.playTime = 0;
+    this.stageEntryScore = 0;
+    this.stageEntryMaxCombo = 0;
+    this.checkpointReached = false;
+    this.newRecord = false;
+    this.loadStage(0, false, 0);
+    this.phase = 'playing';
+    this.music.start(0);
+    this.announce('MISSION 01', '코랄 무대를 되찾아!');
+    this.publish();
+  }
+
+  nextStage() {
+    if (this.phase !== 'stageClear') return;
+    const energy = this.player.energy;
+    this.stageEntryScore = this.score;
+    this.stageEntryMaxCombo = this.maxCombo;
+    this.checkpointReached = false;
+    this.loadStage(1, false, energy);
+    this.phase = 'playing';
+    this.music.start(1);
+    this.announce('MISSION 02', '달빛 옥상으로 출격!');
+    this.publish();
+  }
+
+  restartCampaign() { this.start(this.guardianId); }
+
+  toTitle() {
+    this.phase = 'select';
+    this.input.clear();
+    this.music.stop();
+    this.enemies = [];
+    this.projectiles = [];
+    this.shards = [];
+    this.particles = [];
+    this.floaters = [];
+    this.player = this.makePlayer();
+    this.camera = 0;
+    this.announcement = null;
+    this.publish();
+  }
+
+  togglePause() {
+    if (this.phase === 'playing') {
+      this.phase = 'paused';
+      this.input.clear();
+      this.accumulator = 0;
+      this.music.duck(true);
+      this.publish();
+    } else if (this.phase === 'paused') {
+      this.phase = 'playing';
+      this.input.clear();
+      this.lastFrame = performance.now();
+      this.music.duck(false);
+      this.publish();
+    }
+  }
+
+  pauseIfPlaying() {
+    if (this.phase !== 'playing') return;
+    this.phase = 'paused';
+    this.input.clear();
+    this.accumulator = 0;
+    this.music.duck(true);
+    this.publish();
+  }
+
+  restartStage() {
+    if (this.phase !== 'playing' && this.phase !== 'paused') return;
+    this.score = this.stageEntryScore;
+    this.maxCombo = this.stageEntryMaxCombo;
+    this.checkpointReached = false;
+    this.loadStage(this.stageIndex, false, 0);
+    this.phase = 'playing';
+    this.music.start(this.stageIndex);
+    this.announce('RETRY', STAGES[this.stageIndex].title);
+    this.publish();
+  }
+
+  switchGuardian(id) {
+    if (id === this.guardianId || this.phase !== 'playing') return;
+    this.guardianId = id;
+    this.player.switchFlash = 0.42;
+    const g = guardianOf(id);
+    this.burst(this.player.x, this.player.y - 48, g.color, 18, 'star');
+    this.floaters.push({ x: this.player.x, y: this.player.y - 118, life: 0.9, text: g.skill, color: g.color, size: 18 });
+    this.publish();
+  }
+
+  toggleMute() { this.audio.toggle(); this.publish(); }
+
+  setAction(action, source, down) {
+    if (this.phase === 'playing') this.input.set(action, source, down, this.playTime);
+  }
+
+  clearInput() { this.input.clear(); }
+
+  key(code, down, repeat) {
+    if (down && !repeat) {
+      if (code === 'Escape' || code === 'KeyP') { this.togglePause(); return; }
+      if (code === 'KeyM') { this.toggleMute(); return; }
+      if (code === 'Enter') {
+        if (this.phase === 'select') this.start(this.guardianId);
+        else if (this.phase === 'paused') this.togglePause();
+        else if (this.phase === 'stageClear') this.nextStage();
+        else if (this.phase === 'victory') this.restartCampaign();
+        return;
+      }
+    }
+    if (this.phase !== 'playing') return;
+    if (down && !repeat) {
+      if (code === 'Digit1') this.switchGuardian('lumi');
+      if (code === 'Digit2') this.switchGuardian('mira');
+      if (code === 'Digit3') this.switchGuardian('joy');
+    }
+    const action =
+      code === 'ArrowLeft' || code === 'KeyA' ? 'left'
+      : code === 'ArrowRight' || code === 'KeyD' ? 'right'
+      : code === 'ArrowUp' || code === 'KeyW' ? 'jump'
+      : code === 'Space' || code === 'KeyX' || code === 'KeyJ' ? 'attack'
+      : code === 'KeyZ' || code === 'ShiftLeft' || code === 'ShiftRight' ? 'dash'
+      : code === 'KeyC' || code === 'KeyL' ? 'ultimate'
+      : null;
+    if (!action || (repeat && action !== 'left' && action !== 'right')) return;
+    this.input.set(action, 'key:' + code, down, this.playTime);
+  }
+
+  loadStage(index, fromCheckpoint, carriedEnergy) {
+    const stage = STAGES[index];
+    this.stageIndex = index;
+    this.player = this.makePlayer();
+    this.player.energy = index === 1 ? Math.min(35, carriedEnergy) : 0;
+    if (fromCheckpoint && stage.checkpoint) { this.player.x = stage.checkpoint; this.player.px = stage.checkpoint; }
+    this.enemies = stage.enemies
+      .filter((e) => !fromCheckpoint || !stage.checkpoint || e.x > stage.checkpoint - 140)
+      .map((e) => this.makeEnemy(e.kind, e.x));
+    this.projectiles = [];
+    this.particles = [];
+    this.floaters = [];
+    this.shards = stage.shards.map(([x, y], i) => ({
+      x, y, phase: i * 0.77,
+      collected: !!(fromCheckpoint && stage.checkpoint && x < stage.checkpoint - 60),
+    }));
+    this.gateOpen = false;
+    this.bossSpawned = false;
+    this.bossDefeated = false;
+    this.clearTimer = 0;
+    this.respawnTimer = 0;
+    this.combo = 0;
+    this.comboTimer = 0;
+    this.input.clear();
+    this.music.setBoss(false);
+    this.camera = clamp(this.player.x - this.viewWidth * 0.35, 0, stage.worldWidth);
+    this.previousCamera = this.camera;
+  }
+
+  makeEnemy(kind, x) {
+    const spec = kind === 'shade'
+      ? { width: 66, height: 70, health: 58, speed: 128, damage: 16 }
+      : kind === 'wisp'
+        ? { width: 62, height: 62, health: 46, speed: 92, damage: 14 }
+        : { width: 96, height: 112, health: 125, speed: 74, damage: 24 };
+    const y = kind === 'wisp' ? GROUND_Y - 145 : GROUND_Y;
+    return {
+      id: this.nextId++, kind, x, y, px: x, py: y, vx: 0,
+      width: spec.width, height: spec.height, health: spec.health, maxHealth: spec.health,
+      speed: spec.speed, damage: spec.damage,
+      cooldown: 0.35 + (x % 270) / 500, telegraph: 0, attackType: 0, attackFired: false,
+      dash: 0, dashHit: false, stun: 0, flash: 0, spawn: 0.4, dead: false, death: 0,
+      facing: -1, lastHit: -1, phaseTwo: false, baseY: y,
+    };
+  }
+
+  makeBoss() {
+    const stage = STAGES[this.stageIndex];
+    const x = stage.worldWidth - 590;
+    return {
+      id: this.nextId++, kind: 'boss', x, y: GROUND_Y - 18, px: x, py: GROUND_Y - 18, vx: 0,
+      width: 178, height: 182, health: stage.bossHealth, maxHealth: stage.bossHealth,
+      speed: 92, damage: 28,
+      cooldown: 1.15, telegraph: 0, attackType: 0, attackFired: false,
+      dash: 0, dashHit: false, stun: 0, flash: 0, spawn: 1.05, dead: false, death: 0,
+      facing: -1, lastHit: -1, phaseTwo: false, baseY: GROUND_Y - 18,
+    };
+  }
+
+  announce(kicker, title, time = 1.85) {
+    this.announcement = { kicker, title, time };
+    this.publish();
+  }
+
+  loop(now) {
+    if (this.disposed) return;
+    this.lastFrame ||= now;
+    const dt = Math.min(0.05, (now - this.lastFrame) / 1e3);
+    this.lastFrame = now;
+    this.ambient += dt;
+    this.zoomPulse = Math.max(0, this.zoomPulse - dt * 0.8);
+    if (this.phase === 'playing') {
+      if (this.hitstop > 0) {
+        this.hitstop = Math.max(0, this.hitstop - dt);
+        this.accumulator = 0;
+      } else {
+        this.accumulator = Math.min(STEP * 4, this.accumulator + dt);
+        let steps = 0;
+        while (this.accumulator >= STEP && steps < 4) {
+          this.update(STEP);
+          this.accumulator -= STEP;
+          steps += 1;
+          if (this.hitstop > 0) { this.accumulator = 0; break; }
+        }
+      }
+    } else this.accumulator = 0;
+    this.render(this.accumulator / STEP);
+    if (now - this.lastPublish > 100) this.publish();
+    this.frame = requestAnimationFrame(this.loop);
+  }
+
+  update(dt) {
+    this.playTime += dt;
+    this.previousCamera = this.camera;
+    this.player.px = this.player.x;
+    this.player.py = this.player.y;
+    this.enemies.forEach((e) => { e.px = e.x; e.py = e.y; });
+    const p = this.player;
+    p.invulnerable = Math.max(0, p.invulnerable - dt);
+    p.dash = Math.max(0, p.dash - dt);
+    p.dashCooldown = Math.max(0, p.dashCooldown - dt);
+    p.attack = Math.max(0, p.attack - dt);
+    p.chain = Math.max(0, p.chain - dt);
+    p.ultimate = Math.max(0, p.ultimate - dt);
+    p.switchFlash = Math.max(0, p.switchFlash - dt);
+    this.comboTimer = Math.max(0, this.comboTimer - dt);
+    if (this.comboTimer <= 0) this.combo = 0;
+    this.trauma = Math.max(0, this.trauma - dt * 1.9);
+    this.flash = Math.max(0, this.flash - dt * 2.3);
+    this.damageFlash = Math.max(0, this.damageFlash - dt * 2.5);
+    this.dodgeCooldown = Math.max(0, this.dodgeCooldown - dt);
+    if (this.announcement) {
+      this.announcement.time -= dt;
+      if (this.announcement.time <= 0) { this.announcement = null; this.publish(); }
+    }
+    if (this.respawnTimer > 0) {
+      this.respawnTimer -= dt;
+      this.updateFx(dt);
+      if (this.respawnTimer <= 0) this.respawn();
+      return;
+    }
+    this.updatePlayer(dt);
+    this.updateEnemies(dt);
+    this.updateProjectiles(dt);
+    this.resolveAttack();
+    this.collectShards();
+    this.directStage(dt);
+    this.updateFx(dt);
+    this.updateAtmosphere(dt);
+    const stage = STAGES[this.stageIndex];
+    const target = clamp(
+      p.x - this.viewWidth * (p.facing > 0 ? 0.38 : 0.58),
+      0,
+      Math.max(0, stage.worldWidth - this.viewWidth),
+    );
+    this.camera = lerp(this.camera, target, 1 - Math.exp(-dt * 7.5));
+  }
+
+  updatePlayer(dt) {
+    const p = this.player;
+    const g = guardianOf(this.guardianId);
+    const stage = STAGES[this.stageIndex];
+    const move = (this.input.held('right') ? 1 : 0) - (this.input.held('left') ? 1 : 0);
+    if (move) p.facing = move > 0 ? 1 : -1;
+    if (p.grounded) { p.coyote = 0.11; p.airJump = 1; }
+    else p.coyote = Math.max(0, p.coyote - dt);
+    if (this.input.consume('dash', this.playTime) && p.dashCooldown <= 0) {
+      p.dash = 0.16;
+      p.dashCooldown = 0.58;
+      p.invulnerable = 0.2;
+      p.attack = 0;
+      p.vx = p.facing * (g.id === 'joy' ? 1120 : g.id === 'mira' ? 940 : 1020);
+      this.audio.play('dash');
+      this.afterimage();
+    }
+    if (this.input.consume('ultimate', this.playTime) && p.energy >= MAX_ENERGY) {
+      p.energy = 0;
+      p.ultimate = 0.86;
+      p.ultimateHit = false;
+      p.invulnerable = 1.05;
+      p.attack = 0;
+      this.flash = 0.8;
+      this.trauma = 0.75;
+      this.zoomPulse = 0.5;
+      this.score += 250;
+      this.audio.play('ultimate');
+      this.announce('STARLIGHT MAX', g.skill + ' · 피니시!');
+    }
+    if (p.dash <= 0 && p.ultimate <= 0 && p.attack <= 0 && this.input.consume('attack', this.playTime)) {
+      const step = p.chain > 0 ? (p.attackStep + 1) % 3 : 0;
+      const spec = COMBO_STEPS[step];
+      p.attackStep = step;
+      p.attackTotal = (spec.windup + spec.active + spec.recovery) / g.attackRate;
+      p.attack = p.attackTotal;
+      p.chain = g.id === 'joy' ? 0.62 : g.id === 'mira' ? 0.56 : 0.58;
+      p.attackSerial += 1;
+      p.vx += p.facing * (step === 2 ? 145 : 68);
+      this.audio.play('slash');
+    }
+    if (this.input.consume('jump', this.playTime)) {
+      if (p.grounded || p.coyote > 0) {
+        p.vy = -g.jump;
+        p.grounded = false;
+        p.coyote = 0;
+        this.audio.play('jump');
+        this.dust(p.x, p.y, g.color);
+      } else if (p.airJump > 0) {
+        p.vy = -g.jump * 0.9;
+        p.airJump -= 1;
+        this.audio.play('jump');
+        this.burst(p.x, p.y - 40, g.accent, 11, 'star');
+      }
+    }
+    if (!this.input.held('jump') && p.vy < -240) p.vy = approach(p.vy, -240, dt * 1800);
+    if (p.ultimate > 0) {
+      p.vx = approach(p.vx, 0, dt * 4300);
+      if (!p.ultimateHit && p.ultimate < 0.54) {
+        p.ultimateHit = true;
+        p.attackSerial += 1;
+        this.enemies.forEach((e) => {
+          if (e.dead || Math.abs(e.x - p.x) > 780) return;
+          this.strike(e, g.damage * (e.kind === 'boss' ? 4.2 : 6), p.facing * 740, true);
+        });
+        this.burst(p.x, p.y - 48, g.color, 42, 'ribbon');
+        this.ring(p.x, p.y - 48, g.color, 200);
+      }
+    } else if (p.dash > 0) {
+      p.vx = p.facing * (g.id === 'joy' ? 1120 : g.id === 'mira' ? 940 : 1020);
+      if (Math.floor(p.dash * 100) % 3 === 0) this.afterimage();
+    } else {
+      const target = move * g.speed * (p.attack > 0 ? 0.45 : 1);
+      const accel = p.grounded ? 3450 : 1900;
+      const brake = p.grounded ? 4300 : 1250;
+      p.vx = approach(p.vx, target, dt * (move ? accel : brake));
+    }
+    const prevY = p.y;
+    const wasGrounded = p.grounded;
+    const fallSpeed = p.vy;
+    p.vy = Math.min(1250, p.vy + GRAVITY * dt);
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.grounded = false;
+    if (p.y >= GROUND_Y) {
+      p.y = GROUND_Y;
+      p.vy = 0;
+      p.grounded = true;
+    } else if (p.vy >= 0) {
+      for (const plat of stage.platforms) {
+        if (p.x + 18 > plat.x - plat.width / 2 && p.x - 18 < plat.x + plat.width / 2 && prevY <= plat.y && p.y >= plat.y) {
+          p.y = plat.y;
+          p.vy = 0;
+          p.grounded = true;
+          break;
+        }
+      }
+    }
+    if (!wasGrounded && p.grounded && fallSpeed > 480) {
+      this.dust(p.x, p.y, g.color);
+      this.trauma = Math.min(1, this.trauma + 0.05);
+    }
+    if (p.grounded && Math.abs(p.vx) > g.speed * 0.75) {
+      this.runDustTimer -= dt;
+      if (this.runDustTimer <= 0) {
+        this.runDustTimer = 0.13;
+        if (!this.reduced) this.particles.push({
+          x: p.x - p.facing * 20, y: p.y - 4, vx: -p.facing * 40, vy: -40,
+          life: 0.3, maxLife: 0.3, size: 7, color: 'rgba(255,248,239,.7)', kind: 'smoke', rotation: 0,
+        });
+      }
+    }
+    const gateLocked = this.enemies.some((e) => e.kind !== 'boss' && !e.dead);
+    p.x = clamp(p.x, 70, gateLocked ? stage.bossGate - 58 : stage.worldWidth - 120);
+    if (this.stageIndex === 1 && !this.checkpointReached && stage.checkpoint && p.x >= stage.checkpoint) {
+      this.checkpointReached = true;
+      p.health = Math.min(p.maxHealth, p.health + 45);
+      this.announce('CHECKPOINT', '달빛 깃발 발견 · 하트 충전!');
+      this.audio.play('shard');
+      this.burst(stage.checkpoint, GROUND_Y - 90, '#ffd166', 26, 'star');
+    }
+  }
+
+  updateEnemies(dt) {
+    const p = this.player;
+    const stage = STAGES[this.stageIndex];
+    for (const e of this.enemies) {
+      if (e.dead) { e.death -= dt; continue; }
+      e.spawn = Math.max(0, e.spawn - dt);
+      e.stun = Math.max(0, e.stun - dt);
+      e.flash = Math.max(0, e.flash - dt);
+      e.cooldown = Math.max(0, e.cooldown - dt);
+      e.telegraph = Math.max(0, e.telegraph - dt);
+      e.dash = Math.max(0, e.dash - dt);
+      e.facing = p.x >= e.x ? 1 : -1;
+      if (e.spawn > 0 || e.stun > 0) {
+        e.vx = approach(e.vx, 0, dt * 900);
+        e.x += e.vx * dt;
+        continue;
+      }
+      const dx = p.x - e.x;
+      const dist = Math.abs(dx);
+      if (dist > Math.max(820, this.viewWidth * 0.82) && e.kind !== 'boss') continue;
+      if (e.kind === 'boss') this.updateBoss(e, dt, dx, dist);
+      else if (e.kind === 'shade') {
+        if (e.telegraph > 0) {
+          e.vx = approach(e.vx, 0, dt * 2100);
+          if (!e.attackFired && e.telegraph < 0.18) {
+            e.attackFired = true;
+            if (overlap(p.x, p.y - 47, 50, 90, e.x + e.facing * 34, e.y - 35, 105, 78)) this.hurtPlayer(e.damage, e.facing);
+          }
+        } else if (dist < 112 && e.cooldown <= 0) {
+          e.telegraph = 0.56;
+          e.cooldown = 1.08;
+          e.attackFired = false;
+        } else e.vx = approach(e.vx, Math.sign(dx) * e.speed, dt * 620);
+      } else if (e.kind === 'wisp') {
+        e.y = e.baseY + Math.sin(this.playTime * 2.6 + e.id) * 24;
+        const drift = dist < 245 ? -Math.sign(dx) * 52 : Math.sign(dx) * 46;
+        e.vx = approach(e.vx, drift, dt * 350);
+        if (dist < 620 && e.cooldown <= 0) {
+          e.telegraph = 0.68;
+          e.cooldown = 1.72;
+          e.attackFired = false;
+        }
+        if (e.telegraph > 0 && !e.attackFired && e.telegraph < 0.28) {
+          e.attackFired = true;
+          const ax = p.x - e.x;
+          const ay = p.y - 45 - e.y;
+          const len = Math.max(1, Math.hypot(ax, ay));
+          this.projectiles.push({
+            kind: 'orb', x: e.x, y: e.y - 20, vx: (ax / len) * 385, vy: (ay / len) * 385,
+            radius: 18, life: 3.2, damage: e.damage, color: '#d65cff', dead: false,
+          });
+        }
+      } else if (e.telegraph > 0) {
+        e.vx = approach(e.vx, 0, dt * 1800);
+        if (!e.attackFired && e.telegraph < 0.23) {
+          e.attackFired = true;
+          for (const dir of [-1, 1]) {
+            this.projectiles.push({
+              kind: 'wave', x: e.x, y: GROUND_Y - 12, vx: dir * 430, vy: 0,
+              radius: 28, life: 1.2, damage: e.damage, color: '#ff6589', dead: false,
+            });
+          }
+          this.trauma = Math.min(1, this.trauma + 0.25);
+        }
+      } else if (dist < 205 && e.cooldown <= 0) {
+        e.telegraph = 0.88;
+        e.cooldown = 1.65;
+        e.attackFired = false;
+      } else e.vx = approach(e.vx, Math.sign(dx) * e.speed, dt * 420);
+      e.x += e.vx * dt;
+      if (e.kind === 'boss') {
+        e.x = clamp(e.x, stage.bossGate + 70, stage.worldWidth - 100);
+        if (e.dash > 0 && !e.dashHit && overlap(p.x, p.y - 47, 48, 88, e.x, e.y - 78, e.width * 0.8, e.height * 0.82)) {
+          e.dashHit = true;
+          this.hurtPlayer(e.damage, e.facing);
+        }
+      } else {
+        e.x = clamp(e.x, 80, stage.bossGate - 92);
+        if (e.kind !== 'wisp' && e.telegraph <= 0 &&
+          overlap(p.x, p.y - 47, 48, 88, e.x, e.y - e.height / 2, e.width * 0.68, e.height * 0.76)) {
+          this.hurtPlayer(e.damage * 0.65, e.facing);
+        }
+      }
+    }
+    this.enemies = this.enemies.filter((e) => !e.dead || e.death > 0);
+  }
+
+  updateBoss(e, dt, dx, dist) {
+    if (!e.phaseTwo && e.health <= e.maxHealth / 2) {
+      e.phaseTwo = true;
+      e.speed *= 1.24;
+      e.damage += 7;
+      this.flash = 0.42;
+      this.audio.play('boss');
+      this.announce('DANGER · PHASE 2', '먹구름 대장 · 파워 업!');
+      this.burst(e.x, e.y - 80, '#ff3cac', 38, 'smoke');
+      this.ring(e.x, e.y - 80, '#ff3cac', 240);
+    }
+    if (e.dash > 0) return;
+    if (e.telegraph > 0) {
+      e.vx = approach(e.vx, 0, dt * 1500);
+      if (!e.attackFired && e.telegraph < (e.attackType === 1 ? 0.31 : 0.41)) {
+        e.attackFired = true;
+        if (e.attackType === 0) {
+          const speed = e.phaseTwo ? 510 : 410;
+          const spreads = e.phaseTwo ? [-0.28, 0, 0.28] : [0];
+          for (const spread of spreads) {
+            const ax = this.player.x - e.x;
+            const ay = this.player.y - 54 - (e.y - 72);
+            const angle = Math.atan2(ay, ax) + spread;
+            this.projectiles.push({
+              kind: 'orb', x: e.x + e.facing * 58, y: e.y - 76,
+              vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+              radius: e.phaseTwo ? 26 : 21, life: 3.4, damage: e.damage,
+              color: e.phaseTwo ? '#ff3cac' : '#a66bff', dead: false,
+            });
+          }
+        } else if (e.attackType === 1) {
+          e.dash = e.phaseTwo ? 0.42 : 0.32;
+          e.dashHit = false;
+          e.vx = e.facing * (e.phaseTwo ? 980 : 810);
+          this.trauma = Math.min(1, this.trauma + 0.35);
+        } else {
+          for (const dir of [-1, 1]) {
+            this.projectiles.push({
+              kind: 'wave', x: e.x, y: GROUND_Y - 14, vx: dir * (e.phaseTwo ? 570 : 470), vy: 0,
+              radius: e.phaseTwo ? 36 : 30, life: 1.65, damage: e.damage, color: '#ff5578', dead: false,
+            });
+          }
+          this.trauma = Math.min(1, this.trauma + 0.5);
+        }
+      }
+      return;
+    }
+    if (e.cooldown <= 0) {
+      e.attackType = dist < 280 ? 1 : (e.attackType + 1) % 3;
+      e.telegraph = e.attackType === 1 ? 0.9 : 1.04;
+      e.cooldown = e.phaseTwo ? 0.78 : 1.18;
+      e.attackFired = false;
+      return;
+    }
+    const chase = dist > 350 ? Math.sign(dx) * e.speed : -Math.sign(dx) * 35;
+    e.vx = approach(e.vx, chase, dt * 460);
+  }
+
+  updateProjectiles(dt) {
+    const p = this.player;
+    for (const pr of this.projectiles) {
+      pr.life -= dt;
+      pr.x += pr.vx * dt;
+      pr.y += pr.vy * dt;
+      if (pr.kind === 'orb') pr.vy += 55 * dt;
+      if (pr.life <= 0) pr.dead = true;
+      if (!pr.dead && overlap(
+        p.x, p.y - 47, 46, 86, pr.x, pr.y,
+        pr.kind === 'wave' ? pr.radius * 1.8 : pr.radius * 1.45,
+        pr.kind === 'wave' ? pr.radius : pr.radius * 1.45,
+      )) {
+        pr.dead = true;
+        this.hurtPlayer(pr.damage, pr.vx > 0 ? 1 : -1);
+      }
+    }
+    this.projectiles = this.projectiles.filter((pr) => !pr.dead);
+  }
+
+  resolveAttack() {
+    const p = this.player;
+    if (p.attack <= 0 || p.ultimate > 0) return;
+    const g = guardianOf(this.guardianId);
+    const spec = COMBO_STEPS[p.attackStep];
+    const elapsed = p.attackTotal - p.attack;
+    const windup = spec.windup / g.attackRate;
+    const active = spec.active / g.attackRate;
+    if (elapsed < windup || elapsed > windup + active) return;
+    const reach = g.range * (p.attackStep === 2 ? 1.34 : 1);
+    const cx = p.x + p.facing * reach * 0.55;
+    for (const e of this.enemies) {
+      if (e.dead || e.lastHit === p.attackSerial) continue;
+      if (overlap(cx, p.y - 48, reach, 112, e.x, e.y - e.height / 2, e.width, e.height)) {
+        e.lastHit = p.attackSerial;
+        this.strike(e, g.damage * spec.power, p.facing * spec.knockback, p.attackStep === 2);
+      }
+    }
+  }
+
+  strike(e, damage, knockback, heavy) {
+    const g = guardianOf(this.guardianId);
+    e.health -= damage;
+    e.flash = 0.12;
+    e.stun = e.kind === 'boss' ? 0.045 : heavy ? 0.22 : 0.12;
+    e.vx = knockback * (e.kind === 'boss' ? 0.22 : 1);
+    const killed = e.health <= 0;
+    this.combo += 1;
+    this.maxCombo = Math.max(this.maxCombo, this.combo);
+    this.comboTimer = 2.6;
+    this.score += Math.round(damage * 2.4 + (killed ? 150 : 15) + this.combo * 3);
+    this.player.energy = Math.min(MAX_ENERGY, this.player.energy + (killed ? 15 : heavy ? 10 : 6) * g.energyRate);
+    this.hitstop = Math.max(this.hitstop, killed ? 0.078 : heavy ? 0.06 : 0.036);
+    this.trauma = Math.min(1, this.trauma + (e.kind === 'boss' ? 0.27 : heavy ? 0.2 : 0.11));
+    this.audio.play('hit');
+    this.burst(e.x, e.y - e.height / 2, g.color, killed ? 25 : heavy ? 17 : 10, heavy ? 'ribbon' : 'spark');
+    if (heavy || killed) this.ring(e.x, e.y - e.height / 2, g.accent, killed ? 130 : 90);
+    this.floaters.push({
+      x: e.x, y: e.y - e.height, life: 0.62,
+      text: Math.round(damage).toString(), color: heavy ? '#ffd166' : '#fff8ef', size: heavy ? 25 : 18,
+    });
+    if (killed) {
+      e.dead = true;
+      e.death = e.kind === 'boss' ? 1.3 : 0.55;
+      if (e.kind === 'boss') {
+        this.bossDefeated = true;
+        this.clearTimer = 1.55;
+        this.flash = 0.8;
+        this.score += 700;
+        this.music.setBoss(false);
+        this.audio.play('clear');
+        this.announce('BOSS PURIFIED', '먹구름이 별빛으로 돌아왔어!');
+        this.confetti(e.x, e.y - 120, 60);
+      }
+    }
+    this.publish();
+  }
+
+  hurtPlayer(damage, dir) {
+    const p = this.player;
+    if (p.dead) return;
+    if (p.dash > 0) {
+      if (this.dodgeCooldown <= 0) {
+        this.dodgeCooldown = 0.5;
+        p.energy = Math.min(MAX_ENERGY, p.energy + 8);
+        this.score += 40;
+        this.hitstop = Math.max(this.hitstop, 0.05);
+        this.audio.play('dodge');
+        this.burst(p.x, p.y - 48, '#3ce8ff', 12, 'star');
+        this.floaters.push({ x: p.x, y: p.y - 128, life: 0.7, text: 'JUST DODGE!', color: '#3ce8ff', size: 19 });
+        this.publish();
+      }
+      return;
+    }
+    if (p.invulnerable > 0 || p.ultimate > 0) return;
+    p.health = Math.max(0, p.health - Math.round(damage));
+    p.invulnerable = 0.78;
+    p.vx = dir * 390;
+    p.vy = -380;
+    this.combo = 0;
+    this.comboTimer = 0;
+    this.damageFlash = 0.7;
+    this.trauma = Math.min(1, this.trauma + 0.48);
+    this.audio.play('hurt');
+    this.burst(p.x, p.y - 48, '#ff5578', 17, 'spark');
+    if (p.health <= 0) {
+      p.dead = true;
+      this.respawnTimer = 1.35;
+      this.announce('STARLIGHT HOLD', '잠깐 쉬고 다시 출발!');
+    } else if (p.health <= 30) {
+      this.announce('HEART WARNING', '괜찮아 · 대시로 피할 수 있어!', 1.2);
+    }
+    this.publish();
+  }
+
+  respawn() {
+    const fromCheckpoint = this.stageIndex === 1 && this.checkpointReached;
+    this.score = this.stageEntryScore;
+    this.maxCombo = this.stageEntryMaxCombo;
+    this.loadStage(this.stageIndex, fromCheckpoint, 0);
+    this.checkpointReached = fromCheckpoint;
+    this.announce('RESCUE RESTART', fromCheckpoint ? '깃발로 돌아왔어 · 하트 충전!' : '하트가 다시 반짝여!');
+    this.publish();
+  }
+
+  collectShards() {
+    for (const sh of this.shards) {
+      if (sh.collected) continue;
+      if (Math.abs(this.player.x - sh.x) < 42 && Math.abs(this.player.y - 48 - sh.y) < 64) {
+        sh.collected = true;
+        this.score += 25;
+        this.player.energy = Math.min(MAX_ENERGY, this.player.energy + 9);
+        this.audio.play('shard');
+        this.burst(sh.x, sh.y, '#ffd166', 15, 'star');
+        this.floaters.push({ x: sh.x, y: sh.y - 20, life: 0.72, text: '+25 CHEERS', color: '#ffd166', size: 15 });
+      }
+    }
+  }
+
+  directStage(dt) {
+    const stage = STAGES[this.stageIndex];
+    if (!this.enemies.some((e) => e.kind !== 'boss' && !e.dead) && !this.gateOpen) {
+      this.gateOpen = true;
+      this.audio.play('clear');
+      this.announce('BARRIER OPEN', '모든 그림자 정화 · 보스 무대로!');
+    }
+    if (this.gateOpen && !this.bossSpawned && this.player.x > stage.bossGate + 90) {
+      this.bossSpawned = true;
+      this.enemies.push(this.makeBoss());
+      this.damageFlash = 0.4;
+      this.music.setBoss(true);
+      this.audio.play('boss');
+      this.announce('BOSS ALERT', '먹구름 대장 등장!');
+    }
+    if (this.bossDefeated && this.clearTimer > 0) {
+      this.clearTimer -= dt;
+      if (this.clearTimer <= 0) {
+        this.phase = this.stageIndex === 0 ? 'stageClear' : 'victory';
+        this.input.clear();
+        if (this.phase === 'victory') {
+          this.music.stop();
+          const grade = this.grade();
+          if (!this.best || this.score > this.best.score) {
+            this.best = { score: this.score, maxCombo: this.maxCombo, time: this.playTime, grade, guardianId: this.guardianId };
+            saveBest(this.best);
+            this.newRecord = true;
+          }
+        } else this.music.duck(true);
+        this.publish();
+      }
+    }
+  }
+
+  grade() {
+    return this.score >= 4700 ? 'S' : this.score >= 3200 ? 'A' : this.score >= 1900 ? 'B' : 'C';
+  }
+
+  updateAtmosphere(dt) {
+    if (this.reduced) return;
+    this.streakTimer -= dt;
+    if (this.streakTimer <= 0) {
+      this.streakTimer = 4 + Math.random() * 5;
+      const x = this.camera + Math.random() * this.viewWidth;
+      this.particles.push({
+        x, y: 60 + Math.random() * 140, vx: -320 - Math.random() * 160, vy: 90,
+        life: 0.9, maxLife: 0.9, size: 46, color: '#d6fbff', kind: 'streak', rotation: 0,
+      });
+    }
+  }
+
+  updateFx(dt) {
+    for (const pt of this.particles) {
+      pt.life -= dt;
+      pt.x += pt.vx * dt;
+      pt.y += pt.vy * dt;
+      const gravity = pt.kind === 'smoke' ? -30 : pt.kind === 'streak' || pt.kind === 'ring' ? 0 : pt.kind === 'confetti' ? 210 : 560;
+      pt.vy += gravity * dt;
+      if (pt.kind === 'confetti') {
+        pt.rotation += dt * 9;
+        pt.vx += Math.sin(pt.life * 11 + pt.size) * 30 * dt;
+        pt.vx *= 0.6 ** dt;
+      } else if (pt.kind !== 'streak' && pt.kind !== 'ring') pt.vx *= 0.22 ** dt;
+    }
+    this.particles = this.particles.filter((pt) => pt.life > 0);
+    for (const fl of this.floaters) { fl.life -= dt; fl.y -= dt * 55; }
+    this.floaters = this.floaters.filter((fl) => fl.life > 0);
+  }
+
+  burst(x, y, color, count, kind) {
+    const n = this.reduced ? Math.ceil(count * 0.28) : count;
+    for (let i = 0; i < n && this.particles.length < 420; i += 1) {
+      const angle = (i / Math.max(1, n)) * Math.PI * 2 + Math.sin(i * 7.31);
+      const speed = 90 + ((i * 73) % 250);
+      const life = 0.3 + ((i * 29) % 45) / 100;
+      this.particles.push({
+        x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - 70,
+        life, maxLife: life,
+        size: kind === 'ribbon' ? 18 + (i % 5) * 4 : 4 + (i % 4) * 2,
+        color, kind, rotation: angle,
+      });
+    }
+  }
+
+  ring(x, y, color, radius) {
+    if (this.reduced) return;
+    this.particles.push({
+      x, y, vx: 0, vy: 0, life: 0.34, maxLife: 0.34, size: radius, color, kind: 'ring', rotation: 0,
+    });
+  }
+
+  confetti(x, y, count) {
+    const palette = ['#ff3cac', '#3ce8ff', '#ffd166', '#9b6cff', '#55efb0'];
+    const n = this.reduced ? Math.ceil(count * 0.3) : count;
+    for (let i = 0; i < n && this.particles.length < 460; i += 1) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 120 + Math.random() * 320;
+      const life = 0.9 + Math.random() * 0.8;
+      this.particles.push({
+        x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - 260,
+        life, maxLife: life, size: 5 + Math.random() * 6,
+        color: palette[i % palette.length], kind: 'confetti', rotation: Math.random() * Math.PI,
+      });
+    }
+  }
+
+  dust(x, y, color) {
+    for (let i = 0; i < (this.reduced ? 3 : 8); i += 1) {
+      const life = 0.35 + i * 0.015;
+      this.particles.push({
+        x: x + (i - 4) * 5, y: y - 4, vx: (i - 4) * 20, vy: -60 - (i % 3) * 24,
+        life, maxLife: life, size: 8 + (i % 3) * 4, color, kind: 'smoke', rotation: 0,
+      });
+    }
+  }
+
+  afterimage() {
+    if (this.reduced) return;
+    const g = guardianOf(this.guardianId);
+    this.particles.push({
+      x: this.player.x - this.player.facing * 24, y: this.player.y - 48,
+      vx: -this.player.facing * 20, vy: 0,
+      life: 0.22, maxLife: 0.22, size: 36, color: g.color, kind: 'ribbon', rotation: 0,
+    });
+  }
+
+  objective() {
+    if (this.bossSpawned && !this.bossDefeated) return '보스의 전조를 보고 공격을 피하세요';
+    const remaining = this.enemies.filter((e) => e.kind !== 'boss' && !e.dead).length;
+    if (remaining) return '그림자 ' + remaining + '체 정화 · 별빛 파편을 모으세요';
+    return this.bossSpawned ? '무대 정화 완료' : '결계가 열렸어요 · 오른쪽 보스 무대로';
+  }
+
+  publish() {
+    if (this.disposed) return;
+    const boss = this.enemies.find((e) => e.kind === 'boss' && !e.dead);
+    this.notify({
+      phase: this.phase,
+      guardianId: this.guardianId,
+      health: Math.round(this.player.health),
+      maxHealth: this.player.maxHealth,
+      energy: Math.round(this.player.energy),
+      score: this.score,
+      combo: this.combo,
+      maxCombo: this.maxCombo,
+      stage: this.stageIndex + 1,
+      stageName: STAGES[this.stageIndex].title,
+      objective: this.objective(),
+      bossHealth: boss ? Math.max(0, boss.health) : 0,
+      bossMaxHealth: boss?.maxHealth ?? 0,
+      muted: this.audio.muted,
+      playTime: this.playTime,
+      grade: this.grade(),
+      best: this.best,
+      newRecord: this.newRecord,
+      announcement: this.announcement ? { kicker: this.announcement.kicker, title: this.announcement.title } : null,
+    });
+    this.lastPublish = performance.now();
+  }
+
+  dispose() {
+    if (this.disposed) return;
+    this.disposed = true;
+    cancelAnimationFrame(this.frame);
+    this.input.clear();
+    this.music.stop();
+    this.audio.dispose();
+  }
+}
+/* Rendering — split from Game via prototype for readability. */
+Object.assign(Game.prototype, {
+  render(frameAlpha) {
+    const ctx = this.context;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = '#07051c';
+    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    ctx.setTransform(this.scale, 0, 0, this.scale, 0, 0);
+    const zoom = this.reduced ? 1 : 1 + this.zoomPulse * this.zoomPulse * 0.06;
+    if (zoom !== 1) {
+      ctx.translate(this.viewWidth / 2, WORLD_H / 2);
+      ctx.scale(zoom, zoom);
+      ctx.translate(-this.viewWidth / 2, -WORLD_H / 2);
+    }
+    const shake = this.reduced ? 0 : this.trauma * this.trauma;
+    const sx = Math.sin(this.ambient * 73) * shake * 11;
+    const sy = Math.cos(this.ambient * 61) * shake * 8;
+    ctx.save();
+    ctx.translate(sx, sy);
+    this.drawBackground();
+    this.drawWorld(frameAlpha);
+    ctx.restore();
+    this.drawScreenFx();
+  },
+
+  drawBackground() {
+    const ctx = this.context;
+    const stage = STAGES[this.stageIndex];
+    const sky = ctx.createLinearGradient(0, 0, 0, WORLD_H);
+    sky.addColorStop(0, stage.skyTop);
+    sky.addColorStop(0.68, stage.skyBottom);
+    sky.addColorStop(1, '#07051c');
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, this.viewWidth, WORLD_H);
+    const moonX = this.stageIndex === 0 ? this.viewWidth * 0.72 : this.viewWidth * 0.28;
+    const moonY = this.stageIndex === 0 ? 160 : 142;
+    const moonR = this.stageIndex === 0 ? 72 : 92;
+    ctx.save();
+    ctx.fillStyle = this.stageIndex === 0 ? '#9bfdf2' : '#d6fbff';
+    ctx.shadowColor = ctx.fillStyle;
+    ctx.shadowBlur = 38;
+    ctx.beginPath();
+    ctx.arc(moonX, moonY, moonR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = stage.skyTop;
+    ctx.beginPath();
+    ctx.arc(moonX + moonR * 0.38, moonY - moonR * 0.14, moonR * 0.92, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    for (let i = 0; i < 78; i += 1) {
+      const span = this.viewWidth + 120;
+      const x = ((((i * 173.17 - this.camera * (0.03 + (i % 3) * 0.025)) % span) + span) % span) - 40;
+      const y = 45 + ((i * 97) % 300);
+      ctx.globalAlpha = 0.38 + Math.sin(this.ambient * 1.5 + i) * 0.18;
+      ctx.fillStyle = i % 7 ? '#fff8ef' : '#ffd166';
+      ctx.fillRect(x, y, i % 11 ? 1.5 : 3, i % 11 ? 1.5 : 3);
+    }
+    ctx.globalAlpha = 1;
+    if (!this.reduced) this.drawSpotlights(stage);
+    this.skyline(0.13, 420, '#101435', 72);
+    this.skyline(0.23, 480, '#0c1535', 120);
+    this.skyline(0.38, 530, '#091127', 165);
+  },
+
+  /* Concert spotlights sweeping from above the stage. */
+  drawSpotlights(stage) {
+    const ctx = this.context;
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    const beams = [
+      { anchor: 0.22, hue: stage.glow, speed: 0.5, offset: 0 },
+      { anchor: 0.55, hue: '#ffd166', speed: 0.38, offset: 2.1 },
+      { anchor: 0.84, hue: stage.glow, speed: 0.44, offset: 4.2 },
+    ];
+    for (const beam of beams) {
+      const bx = this.viewWidth * beam.anchor - ((this.camera * 0.05) % (this.viewWidth * 0.5)) + this.viewWidth * 0.12;
+      const angle = Math.sin(this.ambient * beam.speed + beam.offset) * 0.5;
+      const grad = ctx.createLinearGradient(bx, -40, bx + angle * 700, GROUND_Y);
+      grad.addColorStop(0, beam.hue + '3d');
+      grad.addColorStop(1, beam.hue + '00');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.moveTo(bx - 26, -40);
+      ctx.lineTo(bx + 26, -40);
+      ctx.lineTo(bx + angle * 700 + 150, GROUND_Y);
+      ctx.lineTo(bx + angle * 700 - 150, GROUND_Y);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+  },
+
+  skyline(depth, top, color, heightVar) {
+    const ctx = this.context;
+    const shift = -((this.camera * depth) % 74) - 74;
+    ctx.fillStyle = color;
+    for (let i = 0; i < Math.ceil(this.viewWidth / 74) + 3; i += 1) {
+      const x = shift + i * 74;
+      const h = 45 + ((i * 61 + Math.floor(this.camera / 300)) % heightVar);
+      ctx.fillRect(x, top - h, 66, h);
+      ctx.fillStyle = i % 3 ? 'rgba(255,209,102,.1)' : 'rgba(60,232,255,.14)';
+      for (let w = 0; w < 3; w += 1) {
+        ctx.fillRect(x + 13, top - h + 16 + w * 24, 7, 10);
+        ctx.fillRect(x + 38, top - h + 16 + w * 24, 7, 10);
+      }
+      ctx.fillStyle = color;
+    }
+  },
+
+  drawWorld(frameAlpha) {
+    const ctx = this.context;
+    const stage = STAGES[this.stageIndex];
+    const cam = lerp(this.previousCamera, this.camera, frameAlpha);
+    ctx.save();
+    ctx.translate(-cam, 0);
+    this.drawStage(stage);
+    this.drawShards();
+    this.drawProjectiles();
+    this.drawEnemies(frameAlpha);
+    this.drawPlayer(frameAlpha);
+    this.drawParticles();
+    this.drawFloaters();
+    ctx.restore();
+  },
+
+  drawStage(stage) {
+    const ctx = this.context;
+    const ground = ctx.createLinearGradient(0, GROUND_Y, 0, WORLD_H);
+    ground.addColorStop(0, stage.ground);
+    ground.addColorStop(1, '#080619');
+    ctx.fillStyle = ground;
+    ctx.fillRect(0, GROUND_Y, stage.worldWidth, WORLD_H - GROUND_Y);
+    ctx.fillStyle = stage.glow;
+    ctx.globalAlpha = 0.72;
+    ctx.fillRect(0, GROUND_Y, stage.worldWidth, 3);
+    ctx.globalAlpha = 1;
+    /* Neon floor grid: receding verticals + moving highlight band. */
+    ctx.save();
+    ctx.strokeStyle = stage.glow;
+    ctx.globalAlpha = 0.1;
+    ctx.lineWidth = 2;
+    const camLeft = Math.max(0, this.camera - 80);
+    const gridStart = Math.floor(camLeft / 120) * 120;
+    for (let x = gridStart; x < camLeft + this.viewWidth + 240 && x < stage.worldWidth; x += 120) {
+      ctx.beginPath();
+      ctx.moveTo(x, GROUND_Y + 4);
+      ctx.lineTo(x + 34, WORLD_H);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 0.08;
+    for (let y = GROUND_Y + 22; y < WORLD_H; y += 30) {
+      ctx.beginPath();
+      ctx.moveTo(camLeft, y);
+      ctx.lineTo(camLeft + this.viewWidth + 200, y);
+      ctx.stroke();
+    }
+    const band = ((this.ambient * 260) % (this.viewWidth + 600)) + camLeft - 300;
+    const bandGrad = ctx.createLinearGradient(band - 130, 0, band + 130, 0);
+    bandGrad.addColorStop(0, stage.glow + '00');
+    bandGrad.addColorStop(0.5, stage.glow + '2e');
+    bandGrad.addColorStop(1, stage.glow + '00');
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = bandGrad;
+    ctx.fillRect(band - 130, GROUND_Y + 3, 260, WORLD_H - GROUND_Y);
+    ctx.restore();
+    for (let x = 220; x < stage.worldWidth; x += 900) {
+      ctx.strokeStyle = 'rgba(255,255,255,.15)';
+      ctx.lineWidth = 8;
+      ctx.beginPath();
+      ctx.moveTo(x, GROUND_Y);
+      ctx.lineTo(x, 178);
+      ctx.lineTo(x + 460, 178);
+      ctx.lineTo(x + 460, GROUND_Y);
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,209,102,.22)';
+      ctx.lineWidth = 2;
+      for (let i = 0; i < 6; i += 1) {
+        const rx = x + 35 + i * 78;
+        ctx.beginPath();
+        ctx.moveTo(rx, 178);
+        ctx.lineTo(rx - 70, GROUND_Y);
+        ctx.stroke();
+      }
+    }
+    stage.platforms.forEach((plat, i) => {
+      ctx.save();
+      ctx.translate(plat.x, plat.y);
+      ctx.fillStyle = i % 2 ? '#294f6a' : '#403268';
+      ctx.strokeStyle = i % 2 ? '#64f1dd' : '#ff7aac';
+      ctx.lineWidth = 3;
+      ctx.shadowColor = ctx.strokeStyle;
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.moveTo(-plat.width / 2, 0);
+      ctx.lineTo(plat.width / 2, 0);
+      ctx.lineTo(plat.width * 0.43, 24);
+      ctx.lineTo(-plat.width * 0.44, 24);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    });
+    if (!this.gateOpen) {
+      ctx.save();
+      ctx.translate(stage.bossGate, 0);
+      ctx.globalAlpha = 0.65 + Math.sin(this.ambient * 4.5) * 0.15;
+      ctx.strokeStyle = '#d85cff';
+      ctx.lineWidth = 5;
+      ctx.shadowColor = '#d85cff';
+      ctx.shadowBlur = 24;
+      for (let y = 185; y < GROUND_Y; y += 42) {
+        ctx.beginPath();
+        ctx.moveTo(-28, y);
+        ctx.lineTo(28, y + 24);
+        ctx.moveTo(28, y);
+        ctx.lineTo(-28, y + 24);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+    if (this.stageIndex === 1 && stage.checkpoint) {
+      ctx.save();
+      ctx.translate(stage.checkpoint, GROUND_Y);
+      ctx.strokeStyle = this.checkpointReached ? '#ffd166' : 'rgba(255,255,255,.36)';
+      ctx.lineWidth = 7;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(0, -128);
+      ctx.stroke();
+      ctx.fillStyle = this.checkpointReached ? '#ffd166' : '#65577f';
+      ctx.beginPath();
+      ctx.moveTo(3, -124);
+      ctx.quadraticCurveTo(65, -110, 84, -73);
+      ctx.quadraticCurveTo(45, -88, 3, -78);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+  },
+
+  drawShards() {
+    const ctx = this.context;
+    for (const sh of this.shards) {
+      if (sh.collected) continue;
+      ctx.save();
+      ctx.translate(sh.x, sh.y + Math.sin(this.ambient * 3 + sh.phase) * 8);
+      ctx.rotate(this.ambient * 1.2 + sh.phase);
+      ctx.fillStyle = '#ffd166';
+      ctx.shadowColor = '#ffd166';
+      ctx.shadowBlur = 18;
+      ctx.beginPath();
+      ctx.moveTo(0, -14);
+      ctx.lineTo(10, 0);
+      ctx.lineTo(0, 14);
+      ctx.lineTo(-10, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+  },
+
+  drawPlayer(frameAlpha) {
+    const ctx = this.context;
+    const p = this.player;
+    const g = guardianOf(this.guardianId);
+    const x = lerp(p.px, p.x, frameAlpha);
+    const y = lerp(p.py, p.y, frameAlpha);
+    const speedRatio = Math.min(1, Math.abs(p.vx) / g.speed);
+    const bob = p.grounded ? Math.sin(this.playTime * 13) * 4 * speedRatio : 0;
+    ctx.save();
+    ctx.translate(x, y + bob);
+    ctx.scale(p.facing, 1);
+    ctx.globalAlpha = p.invulnerable > 0 && Math.floor(this.playTime * 18) % 2 ? 0.5 : 1;
+    ctx.fillStyle = 'rgba(0,0,0,.35)';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 37, 10, 0, 0, Math.PI * 2);
+    ctx.fill();
+    if (p.switchFlash > 0 || p.ultimate > 0) {
+      ctx.strokeStyle = g.color;
+      ctx.lineWidth = 4;
+      ctx.shadowColor = g.color;
+      ctx.shadowBlur = 22;
+      ctx.beginPath();
+      ctx.arc(0, -48, 58 + Math.sin(this.ambient * 8) * 6, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    const legSwing = Math.sin(this.playTime * 13) * 10 * speedRatio;
+    ctx.strokeStyle = '#161027';
+    ctx.lineWidth = 12;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-9, -29);
+    ctx.lineTo(-12 + legSwing, -4);
+    ctx.moveTo(9, -29);
+    ctx.lineTo(13 - legSwing, -4);
+    ctx.stroke();
+    ctx.fillStyle = g.accent;
+    ctx.beginPath();
+    ctx.moveTo(-16, -77);
+    ctx.quadraticCurveTo(-52 - speedRatio * 16, -52, -35, -8);
+    ctx.lineTo(2, -21);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = g.color;
+    ctx.strokeStyle = '#fff4e8';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.roundRect(-24, -80, 48, 56, 16);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#ffcfb7';
+    ctx.beginPath();
+    ctx.arc(0, -100, 22, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = g.id === 'mira' ? '#632744' : g.id === 'joy' ? '#173b48' : '#412451';
+    ctx.beginPath();
+    ctx.arc(-3, -105, 23, Math.PI, Math.PI * 2);
+    ctx.quadraticCurveTo(25, -79, 20, -62);
+    ctx.quadraticCurveTo(8, -78, 8, -98);
+    ctx.fill();
+    ctx.fillStyle = '#1a1028';
+    ctx.beginPath();
+    ctx.arc(7, -101, 2.4, 0, Math.PI * 2);
+    ctx.fill();
+    const swing = p.attackTotal ? 1 - p.attack / p.attackTotal : 0;
+    ctx.save();
+    ctx.translate(22, -58);
+    ctx.rotate(p.attack > 0 ? -1.35 + swing * (p.attackStep === 2 ? 3.2 : 2.5) : -0.58);
+    ctx.strokeStyle = g.accent;
+    ctx.lineWidth = 7;
+    ctx.shadowColor = g.color;
+    ctx.shadowBlur = 14;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(g.id === 'mira' ? 78 : 68, 0);
+    ctx.stroke();
+    ctx.strokeStyle = '#fffaf3';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(12, -1);
+    ctx.lineTo(g.id === 'mira' ? 82 : 72, -1);
+    ctx.stroke();
+    ctx.restore();
+    if (p.attack > 0) {
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.globalAlpha *= 0.72;
+      ctx.strokeStyle = g.color;
+      ctx.lineWidth = p.attackStep === 2 ? 18 : 11;
+      ctx.shadowColor = g.color;
+      ctx.shadowBlur = 26;
+      ctx.beginPath();
+      ctx.arc(22, -58, g.range * (p.attackStep === 2 ? 0.92 : 0.72), -1.1, p.attackStep === 2 ? 1.45 : 1.05);
+      ctx.stroke();
+    }
+    ctx.restore();
+  },
+
+  drawEnemies(frameAlpha) {
+    for (const e of this.enemies) {
+      const x = lerp(e.px, e.x, frameAlpha);
+      const y = lerp(e.py, e.y, frameAlpha);
+      if (e.kind === 'boss') this.drawBoss(e, x, y);
+      else this.drawEnemy(e, x, y);
+    }
+  },
+
+  drawEnemy(e, x, y) {
+    const ctx = this.context;
+    const fade = e.dead ? clamp(e.death / 0.55, 0, 1) : 1;
+    const grow = clamp(1 - e.spawn * 0.55, 0.15, 1);
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(e.facing * grow, grow);
+    ctx.globalAlpha = fade;
+    ctx.fillStyle = 'rgba(0,0,0,.35)';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, e.width * 0.43, 9, 0, 0, Math.PI * 2);
+    ctx.fill();
+    if (e.telegraph > 0 && !e.attackFired) {
+      ctx.strokeStyle = e.kind === 'brute' ? '#ff5578' : '#ffd166';
+      ctx.lineWidth = 4;
+      ctx.setLineDash([9, 7]);
+      ctx.beginPath();
+      ctx.ellipse(0, -e.height * 0.45, e.width * 0.7, e.height * 0.66, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    if (e.kind === 'wisp') {
+      ctx.fillStyle = e.flash > 0 ? '#fff8ef' : '#6c43a5';
+      ctx.shadowColor = '#d65cff';
+      ctx.shadowBlur = 18;
+      ctx.beginPath();
+      ctx.arc(0, -28, 28, Math.PI, 0);
+      ctx.quadraticCurveTo(27, 12, 10, 20);
+      ctx.quadraticCurveTo(0, 7, -10, 20);
+      ctx.quadraticCurveTo(-28, 10, -28, -28);
+      ctx.fill();
+    } else {
+      ctx.fillStyle = e.flash > 0 ? '#fff8ef' : e.kind === 'brute' ? '#542d68' : '#39265e';
+      ctx.strokeStyle = e.kind === 'brute' ? '#ff6f91' : '#9b6cff';
+      ctx.lineWidth = 3;
+      ctx.shadowColor = ctx.strokeStyle;
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.moveTo(-e.width * 0.34, -8);
+      ctx.quadraticCurveTo(-e.width * 0.55, -e.height * 0.58, -e.width * 0.18, -e.height * 0.82);
+      ctx.lineTo(-e.width * 0.34, -e.height);
+      ctx.lineTo(-2, -e.height * 0.86);
+      ctx.lineTo(e.width * 0.32, -e.height);
+      ctx.lineTo(e.width * 0.2, -e.height * 0.79);
+      ctx.quadraticCurveTo(e.width * 0.55, -e.height * 0.55, e.width * 0.34, -8);
+      ctx.quadraticCurveTo(0, 8, -e.width * 0.34, -8);
+      ctx.fill();
+      ctx.stroke();
+    }
+    ctx.fillStyle = e.telegraph > 0 ? '#ffd166' : '#ff4fa3';
+    ctx.shadowColor = ctx.fillStyle;
+    ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.ellipse(-10, -e.height * 0.55, 5, 3, 0, 0, Math.PI * 2);
+    ctx.ellipse(10, -e.height * 0.55, 5, 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    if (e.health < e.maxHealth) {
+      const w = e.width * 0.88;
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = 'rgba(4,2,16,.72)';
+      ctx.fillRect(-w / 2, -e.height - 20, w, 6);
+      ctx.fillStyle = '#ff5578';
+      ctx.fillRect(-w / 2, -e.height - 20, w * clamp(e.health / e.maxHealth, 0, 1), 6);
+    }
+    ctx.restore();
+  },
+
+  drawBoss(e, x, y) {
+    const ctx = this.context;
+    const fade = e.dead ? clamp(e.death / 1.3, 0, 1) : 1;
+    const grow = clamp(1 - e.spawn * 0.5, 0.12, 1);
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(e.facing * grow, grow);
+    ctx.globalAlpha = fade;
+    ctx.fillStyle = 'rgba(0,0,0,.42)';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 82, 17, 0, 0, Math.PI * 2);
+    ctx.fill();
+    if (e.phaseTwo && !e.dead) {
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.strokeStyle = '#ff3cac';
+      ctx.globalAlpha = fade * (0.16 + Math.sin(this.ambient * 6) * 0.08);
+      ctx.lineWidth = 10;
+      ctx.shadowColor = '#ff3cac';
+      ctx.shadowBlur = 30;
+      ctx.beginPath();
+      ctx.arc(0, -90, 128 + Math.sin(this.ambient * 3.4) * 8, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+    if (e.telegraph > 0 && !e.attackFired) {
+      ctx.strokeStyle = e.phaseTwo ? '#ff3cac' : '#ffd166';
+      ctx.lineWidth = 6;
+      ctx.setLineDash([14, 10]);
+      ctx.beginPath();
+      if (e.attackType === 1) ctx.rect(-35, -142, 520, 150);
+      else ctx.arc(0, -80, 118 + Math.sin(this.ambient * 10) * 10, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    const edge = e.phaseTwo ? '#ff3cac' : '#a66bff';
+    ctx.fillStyle = e.flash > 0 ? '#fff8ef' : e.phaseTwo ? '#4c174e' : '#302057';
+    ctx.strokeStyle = edge;
+    ctx.lineWidth = 5;
+    ctx.shadowColor = edge;
+    ctx.shadowBlur = e.phaseTwo ? 34 : 22;
+    ctx.beginPath();
+    ctx.moveTo(-76, -38);
+    ctx.quadraticCurveTo(-104, -100, -54, -134);
+    ctx.lineTo(-70, -171);
+    ctx.lineTo(-20, -145);
+    ctx.quadraticCurveTo(4, -161, 28, -143);
+    ctx.lineTo(76, -172);
+    ctx.lineTo(60, -132);
+    ctx.quadraticCurveTo(112, -96, 78, -36);
+    ctx.quadraticCurveTo(35, 10, 0, -11);
+    ctx.quadraticCurveTo(-39, 13, -76, -38);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = e.telegraph > 0 ? '#ffd166' : '#ff4fa3';
+    ctx.beginPath();
+    ctx.ellipse(-26, -92, 12, 7, 0, 0, Math.PI * 2);
+    ctx.ellipse(26, -92, 12, 7, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  },
+
+  drawProjectiles() {
+    const ctx = this.context;
+    for (const pr of this.projectiles) {
+      ctx.save();
+      ctx.translate(pr.x, pr.y);
+      ctx.shadowColor = pr.color;
+      ctx.shadowBlur = 22;
+      if (pr.kind === 'orb') {
+        ctx.fillStyle = pr.color;
+        ctx.beginPath();
+        ctx.arc(0, 0, pr.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#fff8ef';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, pr.radius * 0.55, 0, Math.PI * 2);
+        ctx.stroke();
+      } else {
+        ctx.fillStyle = pr.color;
+        ctx.beginPath();
+        ctx.moveTo(-pr.radius, 8);
+        ctx.quadraticCurveTo(0, -pr.radius * 1.55, pr.radius, 8);
+        ctx.lineTo(pr.radius * 0.65, 17);
+        ctx.lineTo(-pr.radius * 0.65, 17);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+  },
+
+  drawParticles() {
+    const ctx = this.context;
+    for (const pt of this.particles) {
+      const n = clamp(pt.life / pt.maxLife, 0, 1);
+      ctx.save();
+      ctx.translate(pt.x, pt.y);
+      ctx.rotate(pt.rotation);
+      ctx.globalAlpha = n * (pt.kind === 'smoke' ? 0.35 : 0.9);
+      ctx.fillStyle = pt.color;
+      if (pt.kind !== 'smoke' && pt.kind !== 'confetti') {
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.shadowColor = pt.color;
+        ctx.shadowBlur = 10;
+      }
+      if (pt.kind === 'star') {
+        ctx.beginPath();
+        for (let i = 0; i < 8; i += 1) {
+          const r = i % 2 ? pt.size * 0.32 : pt.size;
+          const a = -Math.PI / 2 + (i / 8) * Math.PI * 2;
+          if (i) ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+          else ctx.moveTo(Math.cos(a) * r, Math.sin(a) * r);
+        }
+        ctx.closePath();
+        ctx.fill();
+      } else if (pt.kind === 'ribbon') {
+        ctx.fillRect(-pt.size, -2.5, pt.size * 2, 5);
+      } else if (pt.kind === 'ring') {
+        ctx.strokeStyle = pt.color;
+        ctx.lineWidth = 4 * n + 1;
+        ctx.beginPath();
+        ctx.arc(0, 0, pt.size * (1.15 - n), 0, Math.PI * 2);
+        ctx.stroke();
+      } else if (pt.kind === 'streak') {
+        ctx.strokeStyle = pt.color;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(pt.size, -pt.size * 0.28);
+        ctx.stroke();
+      } else if (pt.kind === 'confetti') {
+        ctx.fillRect(-pt.size / 2, -pt.size / 4, pt.size, pt.size / 2);
+      } else {
+        ctx.beginPath();
+        ctx.arc(0, 0, pt.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+  },
+
+  drawFloaters() {
+    const ctx = this.context;
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (const fl of this.floaters) {
+      ctx.globalAlpha = clamp(fl.life / 0.62, 0, 1);
+      ctx.font = '900 ' + fl.size + 'px Arial, sans-serif';
+      ctx.lineWidth = 5;
+      ctx.strokeStyle = 'rgba(8,5,28,.86)';
+      ctx.fillStyle = fl.color;
+      ctx.strokeText(fl.text, fl.x, fl.y);
+      ctx.fillText(fl.text, fl.x, fl.y);
+    }
+    ctx.restore();
+  },
+
+  drawScreenFx() {
+    const ctx = this.context;
+    const vignette = ctx.createRadialGradient(
+      this.viewWidth / 2, WORLD_H * 0.45, 180,
+      this.viewWidth / 2, WORLD_H / 2, Math.max(this.viewWidth, WORLD_H) * 0.68,
+    );
+    vignette.addColorStop(0, 'rgba(0,0,0,0)');
+    vignette.addColorStop(1, 'rgba(2,0,12,.72)');
+    ctx.fillStyle = vignette;
+    ctx.fillRect(0, 0, this.viewWidth, WORLD_H);
+    if (this.phase === 'playing' && !this.player.dead && this.player.health <= 30) {
+      const pulse = 0.1 + Math.sin(this.ambient * 5) * 0.05;
+      const danger = ctx.createRadialGradient(
+        this.viewWidth / 2, WORLD_H / 2, WORLD_H * 0.42,
+        this.viewWidth / 2, WORLD_H / 2, Math.max(this.viewWidth, WORLD_H) * 0.7,
+      );
+      danger.addColorStop(0, 'rgba(255,23,77,0)');
+      danger.addColorStop(1, 'rgba(255,23,77,' + (this.reduced ? 0.08 : pulse) + ')');
+      ctx.fillStyle = danger;
+      ctx.fillRect(0, 0, this.viewWidth, WORLD_H);
+    }
+    if (this.flash > 0) {
+      ctx.globalAlpha = this.reduced ? Math.min(0.1, this.flash) : Math.min(0.5, this.flash);
+      ctx.fillStyle = guardianOf(this.guardianId).color;
+      ctx.fillRect(0, 0, this.viewWidth, WORLD_H);
+    }
+    if (this.damageFlash > 0) {
+      ctx.globalAlpha = this.reduced ? 0.08 : Math.min(0.28, this.damageFlash * 0.35);
+      ctx.fillStyle = '#ff174d';
+      ctx.fillRect(0, 0, this.viewWidth, WORLD_H);
+    }
+    ctx.globalAlpha = 1;
+  },
+});
+/* UI layer — vanilla DOM binding of engine state. */
+(function bootstrap() {
+  const $ = (id) => document.getElementById(id);
+  const pad = (n) => n.toString().padStart(6, '0');
+  const fmtTime = (t) => Math.floor(t / 60) + ':' + Math.floor(t % 60).toString().padStart(2, '0');
+  const isFormTarget = (el) => el instanceof HTMLElement && !!el.closest("button, input, select, textarea, a, [role='radio']");
+
+  const root = $('gameRoot');
+  const canvas = $('gameCanvas');
+  const refs = {
+    hudWrap: $('playLayer'),
+    hud: $('hud'),
+    guardianMark: $('guardianMark'),
+    playerName: $('playerName'),
+    healthNumber: $('healthNumber'),
+    healthBar: $('healthBar'),
+    healthFill: $('healthFill'),
+    energyBar: $('energyBar'),
+    energyFill: $('energyFill'),
+    energyNumber: $('energyNumber'),
+    switchGroup: $('switchGroup'),
+    zoneKicker: $('zoneKicker'),
+    zoneTitle: $('zoneTitle'),
+    objective: $('objective'),
+    bossWrap: $('bossWrap'),
+    bossNumber: $('bossNumber'),
+    bossBar: $('bossBar'),
+    bossFill: $('bossFill'),
+    stageLabel: $('stageLabel'),
+    scoreValue: $('scoreValue'),
+    combo: $('combo'),
+    muteBtn: $('muteBtn'),
+    pauseBtn: $('pauseBtn'),
+    announcement: $('announcement'),
+    announcementKicker: $('announcementKicker'),
+    announcementTitle: $('announcementTitle'),
+    srLive: $('srLive'),
+    menuSelect: $('menuSelect'),
+    guardianGrid: $('guardianGrid'),
+    startBtn: $('startBtn'),
+    bestLine: $('bestLine'),
+    menuPause: $('menuPause'),
+    resumeBtn: $('resumeBtn'),
+    retryBtn: $('retryBtn'),
+    toTitleBtn: $('toTitleBtn'),
+    menuClear: $('menuClear'),
+    clearScore: $('clearScore'),
+    clearCombo: $('clearCombo'),
+    clearTime: $('clearTime'),
+    nextStageBtn: $('nextStageBtn'),
+    menuVictory: $('menuVictory'),
+    victoryGrade: $('victoryGrade'),
+    victoryScore: $('victoryScore'),
+    victoryCombo: $('victoryCombo'),
+    victoryTime: $('victoryTime'),
+    newRecord: $('newRecord'),
+    victoryBest: $('victoryBest'),
+    againBtn: $('againBtn'),
+    victoryTitleBtn: $('victoryTitleBtn'),
+  };
+
+  let selectedId = 'lumi';
+  let state = null;
+  let lastPhase = '';
+  let game = null;
+
+  function setGuardianVars(el, g) {
+    el.style.setProperty('--guardian-color', g.color);
+    el.style.setProperty('--guardian-accent', g.accent);
+  }
+
+  /* Guardian select cards */
+  const cardEls = new Map();
+  GUARDIANS.forEach((g) => {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.setAttribute('role', 'radio');
+    card.dataset.guardian = g.id;
+    card.className = 'guardian-card';
+    card.setAttribute('aria-label',
+      g.name + ', ' + g.role + ', 기술 ' + g.skill + ', 파워 ' + g.stats[0] + ', 스피드 ' + g.stats[1] + ', 리듬 ' + g.stats[2]);
+    setGuardianVars(card, g);
+    const content = document.createElement('div');
+    content.className = 'guardian-card-content';
+    const portrait = document.createElement('div');
+    portrait.className = 'guardian-portrait';
+    portrait.setAttribute('aria-hidden', 'true');
+    portrait.textContent = g.mark;
+    const info = document.createElement('div');
+    const role = document.createElement('div');
+    role.className = 'guardian-role';
+    role.textContent = g.role;
+    const name = document.createElement('div');
+    name.className = 'guardian-name';
+    name.textContent = g.name;
+    const skill = document.createElement('div');
+    skill.className = 'guardian-skill';
+    skill.textContent = g.skill;
+    info.append(role, name, skill);
+    content.append(portrait, info);
+    const statList = document.createElement('div');
+    statList.className = 'stat-list';
+    statList.setAttribute('aria-hidden', 'true');
+    ['파워', '스피드', '리듬'].forEach((label, i) => {
+      const row = document.createElement('div');
+      row.className = 'stat-row';
+      const span = document.createElement('span');
+      span.textContent = label;
+      const track = document.createElement('div');
+      track.className = 'stat-track';
+      const fill = document.createElement('div');
+      fill.className = 'stat-fill';
+      fill.style.setProperty('--stat-value', g.stats[i] + '%');
+      track.append(fill);
+      row.append(span, track);
+      statList.append(row);
+    });
+    card.append(content, statList);
+    card.addEventListener('click', () => selectGuardian(g.id));
+    card.addEventListener('keydown', (ev) => {
+      if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(ev.key)) return;
+      ev.preventDefault();
+      const idx = GUARDIANS.findIndex((x) => x.id === g.id);
+      const next = GUARDIANS[(idx + (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp' ? -1 : 1) + GUARDIANS.length) % GUARDIANS.length];
+      selectGuardian(next.id);
+      requestAnimationFrame(() => cardEls.get(next.id)?.focus());
+    });
+    refs.guardianGrid.append(card);
+    cardEls.set(g.id, card);
+  });
+
+  function selectGuardian(id) {
+    selectedId = id;
+    game?.previewGuardian(id);
+    syncSelectCards();
+  }
+
+  function syncSelectCards() {
+    const g = guardianOf(selectedId);
+    cardEls.forEach((card, id) => {
+      const on = id === selectedId;
+      card.classList.toggle('selected', on);
+      card.setAttribute('aria-checked', String(on));
+      card.tabIndex = on ? 0 : -1;
+    });
+    refs.startBtn.textContent = g.name + '와 무대 출격';
+  }
+
+  /* HUD guardian switch buttons */
+  const switchBtns = new Map();
+  GUARDIANS.forEach((g, i) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'control-dot switch-dot';
+    btn.setAttribute('aria-label', g.name + '로 교체');
+    btn.textContent = String(i + 1);
+    btn.addEventListener('click', () => game?.switchGuardian(g.id));
+    refs.switchGroup.append(btn);
+    switchBtns.set(g.id, btn);
+  });
+
+  /* Touch controls */
+  function bindTouch(id, action) {
+    const el = $(id);
+    const up = (ev) => game?.setAction(action, 'touch:' + ev.pointerId, false);
+    el.addEventListener('pointerdown', (ev) => {
+      ev.preventDefault();
+      el.setPointerCapture(ev.pointerId);
+      game?.setAction(action, 'touch:' + ev.pointerId, true);
+    });
+    el.addEventListener('pointerup', up);
+    el.addEventListener('pointercancel', up);
+    el.addEventListener('lostpointercapture', up);
+  }
+  ['touchLeft:left', 'touchJump:jump', 'touchRight:right', 'touchDash:dash', 'touchUlt:ultimate', 'touchAttack:attack']
+    .forEach((pair) => { const [id, action] = pair.split(':'); bindTouch(id, action); });
+
+  function focusDialog(menuEl) {
+    requestAnimationFrame(() => {
+      menuEl.querySelector('button:not(:disabled)')?.focus();
+    });
+  }
+
+  function update(next) {
+    state = next;
+    const g = guardianOf(next.guardianId);
+    setGuardianVars(root, next.phase === 'select' ? guardianOf(selectedId) : g);
+    const playing = next.phase !== 'select';
+    refs.hud.hidden = !playing;
+    document.querySelectorAll('.play-extra').forEach((el) => { el.hidden = !playing; });
+    if (playing) {
+      refs.guardianMark.textContent = g.mark;
+      refs.playerName.textContent = g.name + ' · ' + g.skill;
+      refs.healthNumber.textContent = next.health + '/' + next.maxHealth;
+      refs.healthBar.setAttribute('aria-valuenow', String(next.health));
+      refs.healthFill.style.setProperty('--bar-value', clamp(next.health / next.maxHealth, 0, 1));
+      refs.energyFill.style.setProperty('--bar-value', clamp(next.energy / MAX_ENERGY, 0, 1));
+      refs.energyFill.classList.toggle('ready', next.energy >= MAX_ENERGY);
+      refs.energyBar.setAttribute('aria-valuenow', String(next.energy));
+      refs.energyNumber.textContent = next.energy + '%';
+      switchBtns.forEach((btn, id) => {
+        const on = next.guardianId === id;
+        btn.setAttribute('aria-pressed', String(on));
+        btn.style.borderColor = on ? guardianOf(id).color : '';
+        btn.style.background = on ? 'rgba(255,255,255,.2)' : '';
+      });
+      refs.zoneKicker.textContent = STAGES[next.stage - 1].subtitle;
+      refs.zoneTitle.textContent = next.stageName;
+      refs.objective.textContent = next.objective;
+      const bossOn = next.bossMaxHealth > 0;
+      refs.bossWrap.hidden = !bossOn;
+      if (bossOn) {
+        refs.bossNumber.textContent = Math.ceil(next.bossHealth) + ' / ' + next.bossMaxHealth;
+        refs.bossBar.setAttribute('aria-valuemax', String(next.bossMaxHealth));
+        refs.bossBar.setAttribute('aria-valuenow', String(Math.max(0, Math.ceil(next.bossHealth))));
+        refs.bossFill.style.setProperty('--bar-value', clamp(next.bossHealth / next.bossMaxHealth, 0, 1));
+      }
+      refs.stageLabel.textContent = 'STAGE ' + next.stage + '/2';
+      refs.scoreValue.textContent = pad(next.score);
+      refs.combo.innerHTML = '';
+      if (next.combo >= 2) {
+        const strong = document.createElement('strong');
+        strong.textContent = next.combo + '×';
+        const span = document.createElement('span');
+        span.textContent = 'STAR COMBO';
+        refs.combo.append(strong, span);
+      } else {
+        const span = document.createElement('span');
+        span.textContent = 'BEST ' + next.maxCombo + '×';
+        refs.combo.append(span);
+      }
+      const ultBtn = $('touchUlt');
+      ultBtn.disabled = next.energy < MAX_ENERGY;
+    }
+    refs.muteBtn.textContent = next.muted ? '음소거' : 'SFX';
+    refs.muteBtn.setAttribute('aria-pressed', String(next.muted));
+    const showAnn = !!next.announcement && next.phase === 'playing';
+    refs.announcement.hidden = !showAnn;
+    if (showAnn) {
+      refs.announcementKicker.textContent = next.announcement.kicker;
+      refs.announcementTitle.textContent = next.announcement.title;
+    }
+    refs.srLive.textContent = next.announcement?.title ?? '';
+    refs.menuSelect.hidden = next.phase !== 'select';
+    refs.menuPause.hidden = next.phase !== 'paused';
+    refs.menuClear.hidden = next.phase !== 'stageClear';
+    refs.menuVictory.hidden = next.phase !== 'victory';
+    refs.hudWrap.classList.toggle('inert-layer', next.phase === 'paused' || next.phase === 'stageClear' || next.phase === 'victory');
+    if (next.phase === 'select') {
+      if (next.best) {
+        const bg = guardianOf(next.best.guardianId ?? 'lumi');
+        refs.bestLine.hidden = false;
+        refs.bestLine.textContent =
+          'BEST RECORD — ' + pad(next.best.score) + ' CHEERS · 랭크 ' + (next.best.grade ?? '-') +
+          ' · ' + bg.name + ' · ' + fmtTime(next.best.time ?? 0);
+      } else refs.bestLine.hidden = true;
+    }
+    if (next.phase !== lastPhase) {
+      if (next.phase === 'stageClear') {
+        refs.clearScore.textContent = pad(next.score);
+        refs.clearCombo.textContent = next.maxCombo + '×';
+        refs.clearTime.textContent = fmtTime(next.playTime);
+        focusDialog(refs.menuClear);
+      } else if (next.phase === 'victory') {
+        refs.victoryGrade.textContent = next.grade;
+        refs.victoryGrade.setAttribute('aria-label', '랭크 ' + next.grade);
+        refs.victoryScore.textContent = pad(next.score);
+        refs.victoryCombo.textContent = next.maxCombo + '×';
+        refs.victoryTime.textContent = fmtTime(next.playTime);
+        refs.newRecord.hidden = !next.newRecord;
+        if (next.best && !next.newRecord) {
+          refs.victoryBest.hidden = false;
+          refs.victoryBest.textContent = 'BEST ' + pad(next.best.score) + ' CHEERS';
+        } else refs.victoryBest.hidden = true;
+        focusDialog(refs.menuVictory);
+      } else if (next.phase === 'paused') focusDialog(refs.menuPause);
+      lastPhase = next.phase;
+    }
+  }
+
+  game = new Game(canvas, update);
+  window.__game = game;
+  syncSelectCards();
+
+  const resizeObserver = new ResizeObserver(() => game.resize());
+  resizeObserver.observe(canvas);
+
+  const gameKeys = new Set([
+    'ArrowLeft', 'ArrowRight', 'ArrowUp', 'Space', 'KeyA', 'KeyD', 'KeyW', 'KeyX', 'KeyJ', 'KeyZ', 'KeyC', 'KeyL',
+    'ShiftLeft', 'ShiftRight', 'Escape', 'KeyP', 'KeyM', 'Digit1', 'Digit2', 'Digit3', 'Enter',
+  ]);
+  window.addEventListener('keydown', (ev) => {
+    if (isFormTarget(ev.target)) return;
+    if (gameKeys.has(ev.code)) ev.preventDefault();
+    game.key(ev.code, true, ev.repeat);
+  }, { passive: false });
+  window.addEventListener('keyup', (ev) => {
+    if (isFormTarget(ev.target)) return;
+    game.key(ev.code, false, false);
+  });
+  window.addEventListener('blur', () => { game.clearInput(); game.pauseIfPlaying(); });
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') { game.clearInput(); game.pauseIfPlaying(); }
+  });
+  root.addEventListener('contextmenu', (ev) => ev.preventDefault());
+
+  refs.startBtn.addEventListener('click', () => void game.start(selectedId));
+  refs.muteBtn.addEventListener('click', () => game.toggleMute());
+  refs.pauseBtn.addEventListener('click', () => game.togglePause());
+  refs.resumeBtn.addEventListener('click', () => game.togglePause());
+  refs.retryBtn.addEventListener('click', () => game.restartStage());
+  refs.toTitleBtn.addEventListener('click', () => game.toTitle());
+  refs.nextStageBtn.addEventListener('click', () => game.nextStage());
+  refs.againBtn.addEventListener('click', () => game.restartCampaign());
+  refs.victoryTitleBtn.addEventListener('click', () => game.toTitle());
+
+  /* Simple focus trap for modal dialogs */
+  document.querySelectorAll('.menu-layer[role="dialog"]').forEach((dialog) => {
+    dialog.addEventListener('keydown', (ev) => {
+      if (ev.key !== 'Tab') return;
+      const focusables = Array.from(dialog.querySelectorAll('button:not(:disabled)'));
+      if (!focusables.length) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (ev.shiftKey && document.activeElement === first) { ev.preventDefault(); last.focus(); }
+      else if (!ev.shiftKey && document.activeElement === last) { ev.preventDefault(); first.focus(); }
+    });
+  });
+})();
+</script>
