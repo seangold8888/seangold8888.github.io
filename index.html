@@ -227,7 +227,7 @@
   <header>
     <div class="moon" id="moon">🌙</div>
     <h1>모험 상자</h1>
-    <p class="sub" id="subline">문제 5개를 풀면 게임 티켓 한 장!</p>
+    <p class="sub" id="subline">문제 10개를 풀면 게임 티켓 한 장!</p>
   </header>
 
   <section id="study" aria-live="polite">
@@ -345,7 +345,7 @@
   /* ---- 공부 시스템 v2 ----
      세트 = 5문제 → 게임 티켓 1장. 게임 한 판 쓰면 다시 5문제.
      하루 20문제를 다 채우면 그날은 자유 이용. */
-  var SET = 5, DAILY = 20;
+  var SET = 10, DAILY = 40;
   var ITEMS = [
     { emoji: '🍪', name: '쿠키' },
     { emoji: '🍓', name: '딸기' },
@@ -478,7 +478,7 @@
       eyebrowEl.textContent = '오늘 공부 완료';
       starsEl.textContent = '🏆';
       itemsEl.textContent = '🎉';
-      questionEl.textContent = '20문제를 다 풀었어요! 오늘은 마음껏 놀아요!';
+      questionEl.textContent = '40문제를 다 풀었어요! 오늘은 마음껏 놀아요!';
       choicesEl.innerHTML = '';
       subEl.textContent = '오늘은 어떤 모험을 떠날까?';
     } else if (hasTicket()) {
@@ -487,14 +487,14 @@
       eyebrowEl.textContent = '게임 티켓';
       starsEl.textContent = '🎫';
       itemsEl.textContent = '';
-      questionEl.textContent = '티켓 한 장이 있어요! 게임 한 판 하고 오면 문제 5개가 기다려요.';
+      questionEl.textContent = '티켓 한 장이 있어요! 게임 한 판 하고 오면 문제 10개가 기다려요.';
       choicesEl.innerHTML = '';
       subEl.textContent = '오늘은 어떤 모험을 떠날까?';
     } else {
       document.body.classList.add('locked');
       studyEl.classList.remove('done');
       eyebrowEl.textContent = '오늘의 나눗셈 공부';
-      subEl.textContent = '문제 5개를 풀면 게임 티켓 한 장!';
+      subEl.textContent = '문제 10개를 풀면 게임 티켓 한 장!';
       drawSetStars();
       renderProblem();
     }
