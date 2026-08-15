@@ -1,0 +1,708 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#201a40">
+<title>키캡 공방</title>
+<style>
+  :root {
+    --night: #201a40;
+    --night-deep: #14102b;
+    --star: #ffd93d;
+    --paper: #fff6e6;
+    --ink: #2b2350;
+    --cloud: rgba(255, 246, 230, 0.72);
+    --mint: #6bcb77;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html { height: 100%; }
+  body {
+    min-height: 100%;
+    background: linear-gradient(180deg, var(--night-deep) 0%, var(--night) 46%, #2c2456 100%);
+    color: var(--paper);
+    font-family: "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+  }
+  .wrap {
+    max-width: 1060px;
+    margin: 0 auto;
+    padding: clamp(20px, 4vw, 44px) clamp(14px, 3.5vw, 28px) 56px;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(18px, 3vw, 28px);
+  }
+  header { text-align: center; display: flex; flex-direction: column; gap: 8px; }
+  .home {
+    align-self: flex-start;
+    text-decoration: none;
+    color: var(--cloud);
+    font-weight: 900;
+    font-size: 14px;
+    background: rgba(255, 246, 230, 0.1);
+    border: 2px solid rgba(255, 246, 230, 0.25);
+    border-radius: 999px;
+    padding: 7px 14px;
+  }
+  h1 {
+    font-size: clamp(30px, 8vw, 50px);
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    color: var(--star);
+    text-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
+  }
+  .sub { font-size: clamp(14px, 3.2vw, 18px); font-weight: 700; color: var(--cloud); }
+  .studio {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: clamp(14px, 2.5vw, 22px);
+    align-items: start;
+  }
+  @media (max-width: 860px) { .studio { grid-template-columns: 1fr; } }
+  .panel {
+    border-radius: 26px;
+    background: rgba(255, 246, 230, 0.96);
+    color: var(--ink);
+    border: 3px solid rgba(20, 12, 40, 0.55);
+    box-shadow: 0 7px 0 rgba(10, 6, 24, 0.5);
+    padding: clamp(14px, 3vw, 22px);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .panel h2 {
+    font-size: clamp(15px, 3.4vw, 18px);
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    color: #b0762e;
+  }
+  #preview {
+    width: 100%;
+    height: auto;
+    border-radius: 18px;
+    background: #241d49;
+    display: block;
+  }
+  .caption { text-align: center; font-size: 13px; font-weight: 700; color: #7a5a2e; }
+  .group { display: flex; flex-direction: column; gap: 8px; }
+  .group > label { font-size: 14px; font-weight: 900; }
+  .rowline { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  select, input[type="text"] {
+    font: inherit;
+    font-weight: 800;
+    color: var(--ink);
+    background: #fff;
+    border: 2.5px solid rgba(20, 12, 40, 0.4);
+    border-radius: 12px;
+    padding: 8px 10px;
+  }
+  input[type="text"] { flex: 1 1 120px; min-width: 0; }
+  input[type="color"] {
+    width: 46px;
+    height: 38px;
+    border: 2.5px solid rgba(20, 12, 40, 0.4);
+    border-radius: 12px;
+    padding: 2px;
+    background: #fff;
+    cursor: pointer;
+  }
+  input[type="range"] { flex: 1 1 100px; accent-color: #b0762e; }
+  .swatches { display: flex; flex-wrap: wrap; gap: 6px; }
+  .swatch {
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    border: 2.5px solid rgba(20, 12, 40, 0.35);
+    cursor: pointer;
+    padding: 0;
+  }
+  .swatch:focus-visible, .posbtn:focus-visible, .chip:focus-visible, .act:focus-visible {
+    outline: 3px solid var(--ink);
+    outline-offset: 2px;
+  }
+  .posgrid {
+    display: grid;
+    grid-template-columns: repeat(3, 34px);
+    gap: 5px;
+  }
+  .posbtn {
+    width: 34px;
+    height: 30px;
+    border-radius: 9px;
+    border: 2.5px solid rgba(20, 12, 40, 0.35);
+    background: #fff;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+  }
+  .posbtn::after {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 3px;
+    background: rgba(20, 12, 40, 0.35);
+  }
+  .posbtn.on { background: var(--star); border-color: var(--ink); }
+  .posbtn.on::after { background: var(--ink); }
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; }
+  .chip {
+    font: inherit;
+    font-size: 13px;
+    font-weight: 900;
+    border: 2.5px solid rgba(20, 12, 40, 0.4);
+    border-radius: 999px;
+    padding: 7px 12px;
+    cursor: pointer;
+    color: var(--ink);
+  }
+  .factory { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+  .act {
+    font: inherit;
+    font-weight: 900;
+    font-size: clamp(14px, 3vw, 15.5px);
+    border: 3px solid rgba(20, 12, 40, 0.55);
+    border-radius: 16px;
+    padding: 12px 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 0 rgba(10, 6, 24, 0.45);
+    color: var(--ink);
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+  .act:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(10, 6, 24, 0.45); }
+  .act.stl { background: linear-gradient(135deg, #ffd93d, #f7b267); }
+  .act.png { background: linear-gradient(135deg, #b8e8f3, #8fd0e8); }
+  .act.spec { background: linear-gradient(135deg, #d8f3b8, #a8dd8f); }
+  .act.save { background: linear-gradient(135deg, #ffd3e2, #f0a8c8); }
+  .note {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #7a5a2e;
+    line-height: 1.55;
+    background: rgba(255, 217, 61, 0.18);
+    border: 2px dashed rgba(176, 118, 46, 0.5);
+    border-radius: 14px;
+    padding: 10px 12px;
+  }
+  #drawer { display: flex; flex-wrap: wrap; gap: 8px; }
+  #drawer .saved {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 2.5px solid rgba(20, 12, 40, 0.4);
+    border-radius: 12px;
+    background: #fff;
+    padding: 4px 6px;
+  }
+  #drawer .saved img { width: 44px; height: 34px; border-radius: 8px; display: block; }
+  #drawer .saved button {
+    font: inherit;
+    font-weight: 900;
+    font-size: 12px;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    color: var(--ink);
+    padding: 4px;
+  }
+  #drawer .saved .del { color: #c2452e; }
+  #drawer .empty { font-size: 13px; font-weight: 700; color: #7a5a2e; }
+  #toast {
+    position: fixed;
+    left: 50%;
+    bottom: 22px;
+    transform: translateX(-50%) translateY(80px);
+    background: rgba(20, 12, 40, 0.94);
+    color: var(--star);
+    font-weight: 900;
+    font-size: 14px;
+    border-radius: 999px;
+    padding: 11px 20px;
+    transition: transform 0.25s ease-out;
+    pointer-events: none;
+    z-index: 9;
+    max-width: 90vw;
+    text-align: center;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+  footer { text-align: center; color: var(--cloud); font-size: 13px; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="home" href="../">◀ 모험 상자</a>
+  <header>
+    <h1>⌨️ 키캡 공방</h1>
+    <p class="sub">동대문에서 구경만 하지 말고 — 디자인부터 3D 프린트 파일까지, 무인 자율 제작 라인</p>
+  </header>
+
+  <div class="studio">
+    <section class="panel">
+      <h2>미리보기</h2>
+      <canvas id="preview" width="560" height="430"></canvas>
+      <p class="caption" id="capCaption"></p>
+      <div class="group">
+        <label>테마 한 벌 입혀보기</label>
+        <div class="chips" id="themes"></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>디자인 데스크</h2>
+
+      <div class="group">
+        <label>모양</label>
+        <div class="rowline">
+          <select id="units" aria-label="키캡 크기">
+            <option value="1">1u (보통 글쇠)</option>
+            <option value="1.25">1.25u (Ctrl·Alt)</option>
+            <option value="1.5">1.5u (Tab)</option>
+            <option value="1.75">1.75u (CapsLock)</option>
+            <option value="2">2u (Backspace)</option>
+            <option value="2.25">2.25u (Enter·Shift)</option>
+            <option value="2.75">2.75u (오른쪽 Shift)</option>
+            <option value="6.25">6.25u (스페이스바)</option>
+          </select>
+          <select id="row" aria-label="키보드 줄">
+            <option value="1">R1 · 숫자 줄</option>
+            <option value="2">R2 · 윗글자 줄</option>
+            <option value="3" selected>R3 · 가운데 줄</option>
+            <option value="4">R4 · 아랫줄</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="group">
+        <label>키캡 색</label>
+        <div class="rowline">
+          <input type="color" id="capColor" value="#201a40" aria-label="키캡 색 직접 고르기">
+          <div class="swatches" id="capSwatches"></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <label>글자</label>
+        <div class="rowline">
+          <input type="text" id="legend" maxlength="6" value="별" placeholder="가, A, ★, ㅋㅋ …">
+          <input type="color" id="legendColor" value="#ffd93d" aria-label="글자 색">
+        </div>
+        <div class="rowline">
+          <select id="font" aria-label="글꼴">
+            <option value="900 |'Apple SD Gothic Neo','Malgun Gothic',sans-serif">굵은 고딕</option>
+            <option value="700 |'Batang','Nanum Myeongjo',serif">단정한 명조</option>
+            <option value="700 |'Courier New',monospace">타자기</option>
+            <option value="700 |'Comic Sans MS','Apple SD Gothic Neo',cursive">동글동글</option>
+          </select>
+          <input type="range" id="legendSize" min="20" max="100" value="58" aria-label="글자 크기">
+        </div>
+        <div class="rowline">
+          <div class="posgrid" id="posGrid" role="group" aria-label="글자 위치"></div>
+          <input type="text" id="sideLegend" maxlength="10" placeholder="옆면 글자 (선택)" style="align-self:flex-start">
+        </div>
+      </div>
+
+      <div class="group">
+        <label>무인 제작 라인</label>
+        <div class="factory">
+          <button class="act stl" id="btnSTL">🖨️ 3D 프린트 파일<br>(STL 다운로드)</button>
+          <button class="act png" id="btnPNG">🖼️ 시안 이미지<br>(PNG 다운로드)</button>
+          <button class="act spec" id="btnSpec">📋 제작 사양서<br>(치수·색상 코드)</button>
+          <button class="act save" id="btnSave">🗄️ 내 서랍에 저장</button>
+        </div>
+      </div>
+
+      <div class="group">
+        <label>내 서랍</label>
+        <div id="drawer"></div>
+      </div>
+
+      <p class="note">
+        🖨️ STL은 체리 MX 십자축에 바로 꽂히는 크기(홈 4.15×1.35mm)로 나와요.
+        레이어 0.12mm, 글자 면이 위로 가게 세워서 출력하면 예뻐요.
+        2u 이상 긴 키는 진짜 키보드에선 스태빌라이저가 필요해요.
+        글자는 출력 후 스티커·물감·마카로 꾸미면 완성!
+      </p>
+    </section>
+  </div>
+
+  <footer>아빠가 만든 무인 공방 · 디자인은 이 기기 안에만 저장돼요</footer>
+</div>
+<div id="toast" role="status"></div>
+
+<script src="stl.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var THEMES = [
+    { name: '🌙 별밤 오락실', cap: '#201a40', leg: '#ffd93d' },
+    { name: '🏮 동대문 네온', cap: '#141420', leg: '#ff4fa3' },
+    { name: '🍵 민트초코', cap: '#bfe8d8', leg: '#4a2c1a' },
+    { name: '🍑 복숭아', cap: '#ffd3c2', leg: '#8a3b2e' },
+    { name: '🍯 유자차', cap: '#ffd93d', leg: '#3a2c0f' },
+    { name: '🌇 한강 노을', cap: '#f79ac0', leg: '#3b1f3a' },
+    { name: '🌸 벚꽃', cap: '#ffe1ec', leg: '#c2457a' },
+    { name: '⚫ 흑임자', cap: '#2b2b2e', leg: '#f2ede4' },
+    { name: '🏺 백자', cap: '#f6f1e7', leg: '#33508a' }
+  ];
+  var SWATCHES = ['#201a40', '#141420', '#2b2b2e', '#f6f1e7', '#ffd93d', '#f79ac0',
+    '#ffe1ec', '#bfe8d8', '#7fb4e8', '#6bcb77', '#e08a7a', '#8f7ad6'];
+  var POS_NAMES = ['왼쪽 위', '가운데 위', '오른쪽 위', '왼쪽 중간', '정중앙', '오른쪽 중간',
+    '왼쪽 아래', '가운데 아래', '오른쪽 아래'];
+  var STORE_KEY = 'keycapWorkshopV1';
+
+  var state = {
+    units: 1, row: 3, capColor: '#201a40',
+    legend: '별', legendColor: '#ffd93d',
+    font: "900 |'Apple SD Gothic Neo','Malgun Gothic',sans-serif",
+    legendSize: 58, pos: 4, sideLegend: ''
+  };
+
+  var $ = function (id) { return document.getElementById(id); };
+  var canvas = $('preview'), ctx = canvas.getContext('2d');
+
+  /* ---- 색 도우미 ---- */
+  function hexRGB(hex) {
+    var n = parseInt(hex.slice(1), 16);
+    return [n >> 16 & 255, n >> 8 & 255, n & 255];
+  }
+  function shade(hex, amt) { // amt>0 밝게, amt<0 어둡게 (0~1)
+    var rgb = hexRGB(hex);
+    var t = amt > 0 ? 255 : 0, a = Math.abs(amt);
+    return 'rgb(' + rgb.map(function (c) { return Math.round(c + (t - c) * a); }).join(',') + ')';
+  }
+
+  /* ---- 키캡 그리기 (2.5D) ---- */
+  function rr(c, x, y, w, h, r) {
+    r = Math.min(r, w / 2, h / 2);
+    c.beginPath();
+    c.moveTo(x + r, y);
+    c.arcTo(x + w, y, x + w, y + h, r);
+    c.arcTo(x + w, y + h, x, y + h, r);
+    c.arcTo(x, y + h, x, y, r);
+    c.arcTo(x, y, x + w, y, r);
+    c.closePath();
+  }
+  function drawCap(c, cx, cy, w, h, p, ghost) {
+    var capCol = ghost ? '#4a4468' : p.capColor;
+    var rowLift = { 1: 1.18, 2: 1.08, 3: 1.0, 4: 1.06 }[p.row] || 1;
+    var inset = Math.min(w, h) * 0.16;
+    var topShift = inset * 0.55 * rowLift;
+    var x = cx - w / 2, y = cy - h / 2;
+    var ix = x + inset, iy = y + inset - topShift;
+    var iw = w - inset * 2, ih = h - inset * 2;
+
+    c.save();
+    // 바닥 그림자
+    rr(c, x + 3, y + 7, w, h, 14); c.fillStyle = 'rgba(0,0,0,0.35)'; c.fill();
+    // 옆면(바깥 사각형)
+    rr(c, x, y, w, h, 14); c.fillStyle = shade(capCol, -0.45); c.fill();
+    // 4개 경사면
+    function face(pts, col) {
+      c.beginPath();
+      c.moveTo(pts[0][0], pts[0][1]);
+      for (var i = 1; i < pts.length; i++) c.lineTo(pts[i][0], pts[i][1]);
+      c.closePath(); c.fillStyle = col; c.fill();
+    }
+    face([[x, y], [x + w, y], [ix + iw, iy], [ix, iy]], shade(capCol, 0.18));            // 위
+    face([[x + w, y], [x + w, y + h], [ix + iw, iy + ih], [ix + iw, iy]], shade(capCol, -0.22)); // 오른쪽
+    face([[x, y + h], [x + w, y + h], [ix + iw, iy + ih], [ix, iy + ih]], shade(capCol, -0.34)); // 앞
+    face([[x, y], [ix, iy], [ix, iy + ih], [x, y + h]], shade(capCol, -0.12));           // 왼쪽
+    // 윗면
+    rr(c, ix, iy, iw, ih, 10);
+    var g = c.createLinearGradient(0, iy, 0, iy + ih);
+    g.addColorStop(0, shade(capCol, 0.10));
+    g.addColorStop(1, shade(capCol, -0.06));
+    c.fillStyle = g; c.fill();
+    c.strokeStyle = 'rgba(0,0,0,0.18)'; c.lineWidth = 1.5; c.stroke();
+    // 하이라이트
+    rr(c, ix + iw * 0.08, iy + ih * 0.07, iw * 0.5, ih * 0.16, 8);
+    c.fillStyle = 'rgba(255,255,255,0.16)'; c.fill();
+
+    if (!ghost) {
+      // 윗면 글자
+      var parts = p.font.split('|');
+      var weight = parts[0].trim(), family = parts[1];
+      var fs = ih * (p.legendSize / 100) * 0.9;
+      c.font = weight + ' ' + fs + 'px ' + family;
+      c.fillStyle = p.legendColor;
+      var col = p.pos % 3, rowP = Math.floor(p.pos / 3);
+      var pad = Math.min(iw, ih) * 0.12;
+      var tx = col === 0 ? ix + pad : col === 2 ? ix + iw - pad : ix + iw / 2;
+      var ty = rowP === 0 ? iy + pad : rowP === 2 ? iy + ih - pad : iy + ih / 2;
+      c.textAlign = col === 0 ? 'left' : col === 2 ? 'right' : 'center';
+      c.textBaseline = rowP === 0 ? 'top' : rowP === 2 ? 'alphabetic' : 'middle';
+      c.save();
+      rr(c, ix, iy, iw, ih, 10); c.clip();
+      c.fillText(p.legend || '', tx, ty);
+      c.restore();
+      // 옆면(앞) 글자
+      if (p.sideLegend) {
+        c.font = '800 ' + Math.min(inset * 0.72, 15) + 'px ' + family;
+        c.fillStyle = shade(p.legendColor, 0.05);
+        c.textAlign = 'center'; c.textBaseline = 'middle';
+        c.fillText(p.sideLegend, x + w / 2, (iy + ih + y + h) / 2 + 1);
+      }
+    }
+    c.restore();
+  }
+
+  function render(c, W, H, p) {
+    c.clearRect(0, 0, W, H);
+    // 배경 데스크매트
+    var bg = c.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, '#241d49'); bg.addColorStop(1, '#1a1538');
+    c.fillStyle = bg; c.fillRect(0, 0, W, H);
+    c.fillStyle = 'rgba(255,246,230,0.05)';
+    for (var i = 0; i < 40; i++) {
+      c.fillRect((i * 97) % W, (i * 61) % (H * 0.4), 2, 2);
+    }
+    // 메인 키캡
+    var unitPx = 190;
+    var mainW = Math.min(W * 0.86, unitPx * Math.min(p.units, 2.6));
+    var mainH = unitPx;
+    drawCap(c, W / 2, H * 0.40, mainW, mainH, p, false);
+    // 아래 줄: 이웃 키 사이에 내 키캡
+    var s = 0.30, gw = unitPx * s, gap = 6;
+    var gy = H * 0.855;
+    var myW = gw * Math.min(p.units, 3.2);
+    var totalW = gw * 4 + gap * 4 + myW;
+    var startX = W / 2 - totalW / 2;
+    var gp = { row: p.row };
+    drawCap(c, startX + gw / 2, gy, gw, gw, gp, true);
+    drawCap(c, startX + gw * 1.5 + gap, gy, gw, gw, gp, true);
+    var myCx = startX + gw * 2 + gap * 2 + myW / 2;
+    drawCap(c, myCx, gy, myW, gw, {
+      units: p.units, row: p.row, capColor: p.capColor,
+      legend: p.legend, legendColor: p.legendColor, font: p.font,
+      legendSize: Math.max(p.legendSize, 46), pos: 4, sideLegend: ''
+    }, false);
+    drawCap(c, myCx + myW / 2 + gap + gw / 2, gy, gw, gw, gp, true);
+    drawCap(c, myCx + myW / 2 + gap * 2 + gw * 1.5, gy, gw, gw, gp, true);
+  }
+
+  function repaint() {
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var W = 560, H = 430;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    render(ctx, W, H, state);
+    var bw = KeycapSTL.baseWidth(state.units).toFixed(1);
+    $('capCaption').textContent =
+      '실제 크기 ' + bw + ' × ' + KeycapSTL.BASE_DEPTH + ' mm · 높이 ' +
+      KeycapSTL.ROW_HEIGHT[state.row] + ' mm · 체리 MX 호환';
+  }
+
+  /* ---- 무인 제작 라인 ---- */
+  function download(blob, filename) {
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 800);
+  }
+  function safeName() {
+    var t = (state.legend || 'keycap').replace(/[^\w가-힣ㄱ-ㅎㅏ-ㅣ]/g, '').slice(0, 8) || 'keycap';
+    return t + '-' + state.units + 'u-R' + state.row;
+  }
+  function toast(msg) {
+    var el = $('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function () { el.classList.remove('show'); }, 2600);
+  }
+
+  $('btnSTL').addEventListener('click', function () {
+    var tris = KeycapSTL.buildKeycap({ units: state.units, row: state.row });
+    var buf = KeycapSTL.toBinarySTL(tris, safeName());
+    download(new Blob([buf], { type: 'model/stl' }), safeName() + '.stl');
+    toast('🖨️ STL 완성! 슬라이서에 넣고 바로 출력하세요' +
+      (state.units >= 2 ? ' (긴 키는 스태빌라이저 필요)' : ''));
+  });
+
+  $('btnPNG').addEventListener('click', function () {
+    var scale = 3, off = document.createElement('canvas');
+    off.width = 560 * scale; off.height = 430 * scale;
+    var oc = off.getContext('2d');
+    oc.setTransform(scale, 0, 0, scale, 0, 0);
+    render(oc, 560, 430, state);
+    off.toBlob(function (blob) {
+      if (blob) download(blob, safeName() + '.png');
+      toast('🖼️ 시안 이미지 저장 완료!');
+    }, 'image/png');
+  });
+
+  $('btnSpec').addEventListener('click', function () {
+    var tris = KeycapSTL.buildKeycap({ units: state.units, row: state.row });
+    var vol = KeycapSTL.meshVolume(tris);
+    var fontName = $('font').options[$('font').selectedIndex].text;
+    var lines = [
+      '━━━ 키캡 공방 제작 사양서 ━━━',
+      '만든 날: ' + new Date().toLocaleDateString('ko-KR'),
+      '',
+      '[모양]',
+      '크기: ' + state.units + 'u  (바닥 ' + KeycapSTL.baseWidth(state.units).toFixed(1) +
+        ' × ' + KeycapSTL.BASE_DEPTH + ' mm)',
+      '줄: R' + state.row + '  (높이 ' + KeycapSTL.ROW_HEIGHT[state.row] + ' mm)',
+      '축: 체리 MX 십자 (홈 ' + KeycapSTL.ARM_LEN + ' × ' + KeycapSTL.ARM_W +
+        ' mm, 깊이 ' + KeycapSTL.SLOT_DEPTH + ' mm)',
+      '재료 부피: 약 ' + (vol / 1000).toFixed(1) + ' cm³',
+      '',
+      '[색]',
+      '키캡 색: ' + state.capColor.toUpperCase(),
+      '글자 색: ' + state.legendColor.toUpperCase(),
+      '',
+      '[글자]',
+      '윗면: "' + (state.legend || '(없음)') + '"  · 글꼴 ' + fontName +
+        ' · 크기 ' + state.legendSize + '% · 위치 ' + POS_NAMES[state.pos],
+      '옆면: "' + (state.sideLegend || '(없음)') + '"',
+      '',
+      '[출력 팁]',
+      '· 레이어 0.12mm, 인필 100%, 서포트 없이 세워서 출력',
+      '· 십자 홈이 빡빡하면 라이터 불 NO! 줄칼로 살살 넓히기',
+      state.units >= 2 ? '· 2u 이상은 키보드 장착 시 스태빌라이저 필요' : '',
+      '',
+      'JSON: ' + JSON.stringify(state)
+    ].filter(function (s) { return s !== ''; });
+    download(new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' }),
+      safeName() + '-사양서.txt');
+    toast('📋 제작 사양서 저장 완료!');
+  });
+
+  /* ---- 내 서랍 (localStorage) ---- */
+  function loadDrawer() {
+    try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
+    catch (e) { return []; }
+  }
+  function saveDrawer(list) {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(list)); } catch (e) {}
+  }
+  function thumb() {
+    var off = document.createElement('canvas');
+    off.width = 88; off.height = 68;
+    var oc = off.getContext('2d');
+    oc.fillStyle = '#241d49'; oc.fillRect(0, 0, 88, 68);
+    drawCap(oc, 44, 34, Math.min(80, 52 * Math.min(state.units, 1.5)), 52, {
+      units: state.units, row: state.row, capColor: state.capColor,
+      legend: state.legend, legendColor: state.legendColor, font: state.font,
+      legendSize: state.legendSize, pos: 4, sideLegend: ''
+    }, false);
+    return off.toDataURL('image/png');
+  }
+  function renderDrawer() {
+    var list = loadDrawer(), box = $('drawer');
+    box.innerHTML = '';
+    if (!list.length) {
+      var em = document.createElement('span');
+      em.className = 'empty';
+      em.textContent = '아직 비어 있어요 — 마음에 든 디자인을 저장해 보세요';
+      box.appendChild(em);
+      return;
+    }
+    list.forEach(function (item) {
+      var el = document.createElement('span');
+      el.className = 'saved';
+      var img = document.createElement('img');
+      img.src = item.thumb; img.alt = item.name;
+      var load = document.createElement('button');
+      load.textContent = item.name;
+      load.title = '불러오기';
+      load.addEventListener('click', function () {
+        Object.assign(state, item.params);
+        syncControls(); repaint();
+        toast('「' + item.name + '」 불러왔어요');
+      });
+      var del = document.createElement('button');
+      del.className = 'del'; del.textContent = '✕'; del.title = '삭제';
+      del.addEventListener('click', function () {
+        saveDrawer(loadDrawer().filter(function (x) { return x.id !== item.id; }));
+        renderDrawer();
+      });
+      el.appendChild(img); el.appendChild(load); el.appendChild(del);
+      box.appendChild(el);
+    });
+  }
+  $('btnSave').addEventListener('click', function () {
+    var list = loadDrawer();
+    list.unshift({
+      id: Date.now(),
+      name: (state.legend || '무제') + ' ' + state.units + 'u',
+      params: JSON.parse(JSON.stringify(state)),
+      thumb: thumb()
+    });
+    saveDrawer(list.slice(0, 12));
+    renderDrawer();
+    toast('🗄️ 내 서랍에 저장했어요 (최대 12개)');
+  });
+
+  /* ---- 컨트롤 배선 ---- */
+  function syncControls() {
+    $('units').value = String(state.units);
+    $('row').value = String(state.row);
+    $('capColor').value = state.capColor;
+    $('legend').value = state.legend;
+    $('legendColor').value = state.legendColor;
+    $('font').value = state.font;
+    $('legendSize').value = state.legendSize;
+    $('sideLegend').value = state.sideLegend;
+    document.querySelectorAll('.posbtn').forEach(function (b, i) {
+      b.classList.toggle('on', i === state.pos);
+    });
+  }
+  $('units').addEventListener('change', function () { state.units = parseFloat(this.value); repaint(); });
+  $('row').addEventListener('change', function () { state.row = parseInt(this.value, 10); repaint(); });
+  $('capColor').addEventListener('input', function () { state.capColor = this.value; repaint(); });
+  $('legend').addEventListener('input', function () { state.legend = this.value; repaint(); });
+  $('legendColor').addEventListener('input', function () { state.legendColor = this.value; repaint(); });
+  $('font').addEventListener('change', function () { state.font = this.value; repaint(); });
+  $('legendSize').addEventListener('input', function () { state.legendSize = parseInt(this.value, 10); repaint(); });
+  $('sideLegend').addEventListener('input', function () { state.sideLegend = this.value; repaint(); });
+
+  var posGrid = $('posGrid');
+  for (var i = 0; i < 9; i++) {
+    (function (idx) {
+      var b = document.createElement('button');
+      b.className = 'posbtn';
+      b.type = 'button';
+      b.setAttribute('aria-label', '글자 위치: ' + POS_NAMES[idx]);
+      b.addEventListener('click', function () { state.pos = idx; syncControls(); repaint(); });
+      posGrid.appendChild(b);
+    })(i);
+  }
+
+  var swBox = $('capSwatches');
+  SWATCHES.forEach(function (col) {
+    var b = document.createElement('button');
+    b.className = 'swatch';
+    b.type = 'button';
+    b.style.background = col;
+    b.setAttribute('aria-label', '키캡 색 ' + col);
+    b.addEventListener('click', function () { state.capColor = col; syncControls(); repaint(); });
+    swBox.appendChild(b);
+  });
+
+  var themeBox = $('themes');
+  THEMES.forEach(function (t) {
+    var b = document.createElement('button');
+    b.className = 'chip';
+    b.type = 'button';
+    b.textContent = t.name;
+    b.style.background = t.cap;
+    b.style.color = t.leg;
+    b.addEventListener('click', function () {
+      state.capColor = t.cap;
+      state.legendColor = t.leg;
+      syncControls(); repaint();
+    });
+    themeBox.appendChild(b);
+  });
+
+  syncControls();
+  repaint();
+  renderDrawer();
+})();
+</script>
+</body>
+</html>

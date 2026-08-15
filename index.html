@@ -207,6 +207,38 @@
     padding: 5px 12px;
     border-radius: 999px;
   }
+  .shop {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: clamp(16px, 3vw, 24px);
+    min-height: 104px;
+    border-radius: 26px;
+    text-decoration: none;
+    color: var(--ink);
+    background: linear-gradient(135deg, #ffe9a8, #f7b267);
+    border: 3px solid rgba(20, 12, 40, 0.55);
+    box-shadow: 0 7px 0 rgba(10, 6, 24, 0.5);
+    transition: transform 0.12s ease-out, box-shadow 0.12s ease-out;
+  }
+  .shop:active { transform: translateY(5px); box-shadow: 0 2px 0 rgba(10, 6, 24, 0.5); }
+  @media (hover: hover) {
+    .shop:hover { transform: translateY(-3px); box-shadow: 0 10px 0 rgba(10, 6, 24, 0.5); }
+  }
+  .shop:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
+  .shop .open-sign {
+    position: absolute;
+    top: -12px;
+    right: 14px;
+    background: rgba(20, 12, 40, 0.88);
+    color: var(--mint);
+    font-size: clamp(11px, 2.6vw, 13px);
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    border-radius: 999px;
+    padding: 5px 12px;
+  }
   footer {
     text-align: center;
     display: flex;
@@ -305,6 +337,16 @@
       </span>
     </a>
   </nav>
+
+  <a class="shop" href="keycap/" aria-label="키캡 공방 — 언제나 열려 있어요">
+    <span class="open-sign">24시간 영업 중</span>
+    <span class="badge">⌨️</span>
+    <span class="meta">
+      <span class="name">키캡 공방</span>
+      <span class="desc">나만의 키캡 디자인 — 3D 프린트 파일까지 뽑아 주는 무인 공방 · 공부 없이도 입장 OK</span>
+      <span class="go">공방 들어가기 ▶</span>
+    </span>
+  </a>
 
   <footer>
     <span class="tip">💡 이 페이지를 홈 화면에 추가하면 언제나 같은 자리에 있어요</span>
