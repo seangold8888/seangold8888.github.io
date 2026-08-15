@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#201a40">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="모험 상자">
+<title>모험 상자</title>
+<style>
+  /* 밤하늘 오락실 — 의도된 단일 테마 */
+  :root {
+    --night: #201a40;
+    --night-deep: #14102b;
+    --star: #ffd93d;
+    --paper: #fff6e6;
+    --ink: #2b2350;
+    --cloud: rgba(255, 246, 230, 0.72);
+    --mint: #6bcb77;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html { height: 100%; }
+  body {
+    min-height: 100%;
+    background: linear-gradient(180deg, var(--night-deep) 0%, var(--night) 46%, #2c2456 100%);
+    color: var(--paper);
+    font-family: "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+  }
+  #sky { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+  .wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 880px;
+    margin: 0 auto;
+    padding: clamp(24px, 5vw, 56px) clamp(16px, 4vw, 32px) 48px;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(22px, 4vw, 36px);
+  }
+  header { text-align: center; display: flex; flex-direction: column; gap: 10px; }
+  .moon { font-size: clamp(40px, 8vw, 58px); line-height: 1; cursor: pointer; user-select: none; }
+  h1 {
+    font-size: clamp(34px, 9vw, 58px);
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    color: var(--star);
+    text-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
+    text-wrap: balance;
+  }
+  .sub {
+    font-size: clamp(15px, 3.4vw, 19px);
+    font-weight: 700;
+    color: var(--cloud);
+    letter-spacing: 0.06em;
+  }
+  #study {
+    border-radius: 26px;
+    background: rgba(255, 246, 230, 0.96);
+    color: var(--ink);
+    border: 3px solid rgba(20, 12, 40, 0.55);
+    box-shadow: 0 7px 0 rgba(10, 6, 24, 0.5);
+    padding: clamp(18px, 4vw, 28px);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    text-align: center;
+  }
+  #study .eyebrow {
+    font-size: clamp(13px, 3vw, 15px);
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    color: #b0762e;
+  }
+  #study .items {
+    font-size: clamp(26px, 6vw, 36px);
+    line-height: 1.5;
+    letter-spacing: 0.12em;
+    word-break: keep-all;
+    white-space: pre-line;
+  }
+  #study .question {
+    font-size: clamp(18px, 4.4vw, 24px);
+    font-weight: 900;
+    line-height: 1.5;
+    text-wrap: balance;
+  }
+  #study .progress {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    font-size: clamp(18px, 4vw, 24px);
+  }
+  #study .choices {
+    display: flex;
+    justify-content: center;
+    gap: clamp(10px, 3vw, 18px);
+    flex-wrap: wrap;
+  }
+  #study .choices button {
+    font: inherit;
+    font-size: clamp(24px, 6vw, 34px);
+    font-weight: 900;
+    width: clamp(76px, 18vw, 104px);
+    height: clamp(64px, 15vw, 84px);
+    border-radius: 20px;
+    border: 3px solid rgba(20, 12, 40, 0.55);
+    background: linear-gradient(180deg, #ffe9a8, #ffd93d);
+    color: var(--ink);
+    box-shadow: 0 6px 0 rgba(10, 6, 24, 0.35);
+    cursor: pointer;
+    transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+  }
+  #study .choices button:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(10, 6, 24, 0.35); }
+  #study .choices button:focus-visible { outline: 4px solid var(--ink); outline-offset: 2px; }
+  #study .cheer { min-height: 1.6em; font-weight: 900; font-size: clamp(15px, 3.6vw, 19px); color: #2e7d3b; }
+  #study .cheer.oops { color: #c2452e; }
+  #study.done { background: rgba(107, 203, 119, 0.16); color: var(--paper); border-color: rgba(107, 203, 119, 0.6); }
+  #study.done .eyebrow { color: var(--mint); }
+  .games {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
+    gap: clamp(14px, 3vw, 22px);
+  }
+  .card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: clamp(16px, 3vw, 24px);
+    min-height: 128px;
+    border-radius: 26px;
+    text-decoration: none;
+    color: var(--ink);
+    border: 3px solid rgba(20, 12, 40, 0.55);
+    box-shadow: 0 7px 0 rgba(10, 6, 24, 0.5);
+    transition: transform 0.12s ease-out, box-shadow 0.12s ease-out, filter 0.3s;
+  }
+  .card:active { transform: translateY(5px); box-shadow: 0 2px 0 rgba(10, 6, 24, 0.5); }
+  @media (hover: hover) {
+    .card:hover { transform: translateY(-3px); box-shadow: 0 10px 0 rgba(10, 6, 24, 0.5); }
+  }
+  .card:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
+  body.locked .card {
+    filter: grayscale(0.85) brightness(0.6);
+    pointer-events: none;
+  }
+  .padlock {
+    display: none;
+    position: absolute;
+    top: -12px;
+    right: -6px;
+    font-size: clamp(26px, 6vw, 34px);
+  }
+  body.locked .padlock { display: block; }
+  .sea    { background: linear-gradient(135deg, #ffd9a0, #7fb4e8); }
+  .castle { background: linear-gradient(135deg, #cdb7f6, #8f7ad6); }
+  .gem    { background: linear-gradient(135deg, #ffd3e2, #f79ac0); }
+  .picnic { background: linear-gradient(135deg, #d8f3b8, #8fd98a); }
+  .stage  { background: linear-gradient(135deg, #b8e8f3, #f3b8e4); }
+  .badge {
+    flex: 0 0 auto;
+    width: clamp(64px, 12vw, 84px);
+    height: clamp(64px, 12vw, 84px);
+    border-radius: 22px;
+    background: rgba(255, 252, 244, 0.85);
+    border: 3px solid rgba(20, 12, 40, 0.45);
+    display: grid;
+    place-items: center;
+    font-size: clamp(34px, 7vw, 46px);
+  }
+  .meta { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+  .name {
+    font-size: clamp(19px, 4.2vw, 24px);
+    font-weight: 900;
+    line-height: 1.25;
+    text-wrap: balance;
+  }
+  .desc { font-size: clamp(13px, 3vw, 15.5px); font-weight: 700; opacity: 0.82; }
+  .go {
+    margin-top: 3px;
+    align-self: flex-start;
+    font-size: clamp(12px, 2.8vw, 14px);
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    background: rgba(20, 12, 40, 0.82);
+    color: var(--star);
+    padding: 5px 12px;
+    border-radius: 999px;
+  }
+  .go.away { background: rgba(20, 12, 40, 0.5); color: var(--cloud); }
+  footer {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    color: var(--cloud);
+    font-size: clamp(12.5px, 2.8vw, 14.5px);
+    font-weight: 700;
+  }
+  footer .tip {
+    display: inline-block;
+    margin: 0 auto;
+    background: rgba(255, 217, 61, 0.14);
+    border: 2px dashed rgba(255, 217, 61, 0.5);
+    color: var(--star);
+    border-radius: 14px;
+    padding: 9px 16px;
+  }
+  @media (prefers-reduced-motion: reduce) { #sky { display: none; } }
+</style>
+</head>
+<body>
+<canvas id="sky" aria-hidden="true"></canvas>
+
+<div class="wrap">
+  <header>
+    <div class="moon" id="moon">🌙</div>
+    <h1>모험 상자</h1>
+    <p class="sub" id="subline">공부 별 다섯 개를 모으면 상자가 열려요!</p>
+  </header>
+
+  <section id="study" aria-live="polite">
+    <div class="eyebrow" id="studyEyebrow">오늘의 나눗셈 공부</div>
+    <div class="progress" id="stars">☆ ☆ ☆ ☆ ☆</div>
+    <div class="items" id="items"></div>
+    <div class="question" id="question"></div>
+    <div class="choices" id="choices"></div>
+    <div class="cheer" id="cheer"></div>
+  </section>
+
+  <nav class="games" aria-label="게임 목록">
+    <a class="card sea" href="odyssey/">
+      <span class="padlock">🔒</span>
+      <span class="badge">⛵</span>
+      <span class="meta">
+        <span class="name">오디세이아: 집으로 가는 길</span>
+        <span class="desc">거인 동굴 · 바람 항해 · 마법의 섬, 세 가지 액션 모험</span>
+        <span class="go">모험 떠나기 ▶</span>
+      </span>
+    </a>
+    <a class="card castle" href="hogwarts/">
+      <span class="padlock">🔒</span>
+      <span class="badge">🏰</span>
+      <span class="meta">
+        <span class="name">호그와트 연대기</span>
+        <span class="desc">7년의 마법 학교 어드벤처</span>
+        <span class="go">모험 떠나기 ▶</span>
+      </span>
+    </a>
+    <a class="card picnic" href="picnic/">
+      <span class="padlock">🔒</span>
+      <span class="badge">🧺</span>
+      <span class="meta">
+        <span class="name">재이네 숫자 소풍</span>
+        <span class="desc">간식을 사이좋게 나눠 주는 숫자 놀이</span>
+        <span class="go">모험 떠나기 ▶</span>
+      </span>
+    </a>
+    <a class="card stage" href="https://claude.ai/code/artifact/a82dfcec-2560-4745-a001-36decb49f4a3">
+      <span class="padlock">🔒</span>
+      <span class="badge">🎤</span>
+      <span class="meta">
+        <span class="name">케데헌</span>
+        <span class="desc">따끈따끈한 최신 모험</span>
+        <span class="go away">클로드 앱에서 열려요 ▶</span>
+      </span>
+    </a>
+    <a class="card gem" href="https://claude.ai/code/artifact/f593fe0f-cef0-4a09-978c-6bcb3f9e2564">
+      <span class="padlock">🔒</span>
+      <span class="badge">💎</span>
+      <span class="meta">
+        <span class="name">보리의 리본 보석 미스터리</span>
+        <span class="desc">사라진 보석을 찾는 아기자기 추리 놀이</span>
+        <span class="go away">클로드 앱에서 열려요 ▶</span>
+      </span>
+    </a>
+  </nav>
+
+  <footer>
+    <span class="tip">💡 이 페이지를 홈 화면에 추가하면 언제나 같은 자리에 있어요</span>
+    <span>아빠가 만든 게임들 · 새 게임이 나오면 여기에 추가돼요</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var canvas = document.getElementById('sky');
+  if (canvas && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    var ctx = canvas.getContext('2d');
+    var fixedStars = [];
+    var resizeSky = function () {
+      canvas.width = innerWidth;
+      canvas.height = innerHeight;
+      fixedStars = [];
+      var count = Math.min(90, Math.floor(innerWidth * innerHeight / 14000));
+      for (var i = 0; i < count; i++) {
+        fixedStars.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          r: 0.8 + Math.random() * 1.6,
+          p: Math.random() * Math.PI * 2,
+          s: 0.6 + Math.random() * 1.6
+        });
+      }
+    };
+    resizeSky();
+    addEventListener('resize', resizeSky, { passive: true });
+    (function tick(t) {
+      requestAnimationFrame(tick);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (var i = 0; i < fixedStars.length; i++) {
+        var st = fixedStars[i];
+        ctx.globalAlpha = 0.25 + 0.55 * (0.5 + 0.5 * Math.sin(t * 0.001 * st.s + st.p));
+        ctx.fillStyle = '#ffe9a8';
+        ctx.beginPath();
+        ctx.arc(st.x, st.y, st.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    })(0);
+  }
+
+  var NEED = 5;
+  var ITEMS = [
+    { emoji: '🍪', name: '쿠키' },
+    { emoji: '🍓', name: '딸기' },
+    { emoji: '🍬', name: '사탕' },
+    { emoji: '🎈', name: '풍선' },
+    { emoji: '⭐', name: '별' },
+    { emoji: '🐚', name: '조개' }
+  ];
+  var CHEERS = ['정답! 참 잘했어요 🌟', '딩동댕! 멋져요 ✨', '와, 정확해요! 👏', '역시 최고! 💛'];
+  var OOPS = ['괜찮아요, 그림을 세어 보고 다시!', '아깝다! 한 번 더 생각해 볼까요?'];
+
+  var studyEl = document.getElementById('study');
+  var starsEl = document.getElementById('stars');
+  var itemsEl = document.getElementById('items');
+  var questionEl = document.getElementById('question');
+  var choicesEl = document.getElementById('choices');
+  var cheerEl = document.getElementById('cheer');
+  var subEl = document.getElementById('subline');
+  var eyebrowEl = document.getElementById('studyEyebrow');
+
+  function today() {
+    var d = new Date();
+    return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+  }
+  function isUnlocked() {
+    try { return localStorage.getItem('hub_unlock_date') === today(); } catch (_) { return false; }
+  }
+  function saveUnlock() {
+    try { localStorage.setItem('hub_unlock_date', today()); } catch (_) {}
+  }
+
+  var correct = 0;
+  var current = null;
+
+  function drawStars() {
+    var s = '';
+    for (var i = 0; i < NEED; i++) s += (i < correct ? '⭐' : '☆') + ' ';
+    starsEl.textContent = s.trim();
+  }
+
+  function makeProblem() {
+    var people = 2 + Math.floor(Math.random() * 3);
+    var each = 1 + Math.floor(Math.random() * Math.min(4, Math.floor(12 / people)));
+    var total = people * each;
+    var item = ITEMS[Math.floor(Math.random() * ITEMS.length)];
+    return { people: people, each: each, total: total, item: item };
+  }
+
+  function renderProblem() {
+    current = makeProblem();
+    var row = '';
+    for (var i = 0; i < current.total; i++) {
+      row += current.item.emoji;
+      if ((i + 1) % 6 === 0 && i + 1 < current.total) row += '\n';
+    }
+    itemsEl.textContent = row;
+    questionEl.textContent = current.item.name + ' ' + current.total + '개를 친구 ' +
+      current.people + '명이 똑같이 나누면, 한 명이 몇 개씩 가질까요?';
+
+    var answers = [current.each];
+    while (answers.length < 3) {
+      var wrong = current.each + (Math.random() < 0.5 ? -1 : 1) * (1 + Math.floor(Math.random() * 2));
+      if (wrong >= 1 && answers.indexOf(wrong) < 0) answers.push(wrong);
+    }
+    answers.sort(function (a, b) { return a - b; });
+
+    choicesEl.innerHTML = '';
+    answers.forEach(function (n) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = n + '개';
+      b.addEventListener('click', function () { pick(n, b); });
+      choicesEl.appendChild(b);
+    });
+  }
+
+  function pick(n, btn) {
+    if (n === current.each) {
+      correct++;
+      cheerEl.className = 'cheer';
+      cheerEl.textContent = CHEERS[Math.floor(Math.random() * CHEERS.length)];
+      drawStars();
+      if (correct >= NEED) { setTimeout(unlock, 650); }
+      else { setTimeout(renderProblem, 750); }
+    } else {
+      cheerEl.className = 'cheer oops';
+      cheerEl.textContent = OOPS[Math.floor(Math.random() * OOPS.length)];
+      btn.disabled = true;
+      btn.style.opacity = '0.4';
+    }
+  }
+
+  function unlock(silent) {
+    saveUnlock();
+    document.body.classList.remove('locked');
+    studyEl.classList.add('done');
+    eyebrowEl.textContent = '오늘 공부 완료';
+    starsEl.textContent = '⭐ ⭐ ⭐ ⭐ ⭐';
+    itemsEl.textContent = '🎉';
+    questionEl.textContent = silent ? '오늘은 이미 공부를 끝냈어요!' : '나눗셈 박사님, 참 잘했어요!';
+    choicesEl.innerHTML = '';
+    cheerEl.textContent = '';
+    subEl.textContent = '오늘은 어떤 모험을 떠날까?';
+  }
+
+  if (isUnlocked()) {
+    unlock(true);
+  } else {
+    document.body.classList.add('locked');
+    drawStars();
+    renderProblem();
+  }
+
+  var moonTaps = 0, moonTimer = null;
+  document.getElementById('moon').addEventListener('click', function () {
+    moonTaps++;
+    clearTimeout(moonTimer);
+    moonTimer = setTimeout(function () { moonTaps = 0; }, 1500);
+    if (moonTaps >= 5) { moonTaps = 0; unlock(true); }
+  });
+})();
+</script>
+</body>
+</html>
