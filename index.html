@@ -8,6 +8,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="모험 상자">
+<meta name="format-detection" content="telephone=no">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" type="image/png" href="icon.png">
 <title>모험 상자</title>
 <style>
   /* 밤하늘 오락실 — 의도된 단일 테마 */
@@ -21,22 +24,39 @@
     --mint: #6bcb77;
   }
   * { box-sizing: border-box; margin: 0; }
-  html { height: 100%; }
+  html {
+    height: 100%;
+    background: var(--night-deep);
+    /* iOS: 고무줄 스크롤 차단, 가로 회전 시 글자 자동 확대 금지 */
+    overscroll-behavior: none;
+    -webkit-text-size-adjust: 100%;
+  }
   body {
     min-height: 100%;
     background: linear-gradient(180deg, var(--night-deep) 0%, var(--night) 46%, #2c2456 100%);
+    background-attachment: fixed;
     color: var(--paper);
     font-family: "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
     -webkit-tap-highlight-color: transparent;
     overflow-x: hidden;
+    overscroll-behavior-y: none;
+    /* 아이 손가락이 꾹 눌러도 글자 선택·돋보기 안 뜨게 */
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
   }
   #sky { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
   .wrap {
     position: relative;
     z-index: 1;
-    max-width: 880px;
+    max-width: 1080px;
     margin: 0 auto;
-    padding: clamp(24px, 5vw, 56px) clamp(16px, 4vw, 32px) 48px;
+    /* 홈 화면 앱 모드: 노치·홈바 안전영역 안쪽으로 */
+    padding:
+      calc(clamp(24px, 5vw, 56px) + env(safe-area-inset-top, 0px))
+      calc(clamp(16px, 4vw, 32px) + env(safe-area-inset-right, 0px))
+      calc(48px + env(safe-area-inset-bottom, 0px))
+      calc(clamp(16px, 4vw, 32px) + env(safe-area-inset-left, 0px));
     display: flex;
     flex-direction: column;
     gap: clamp(22px, 4vw, 36px);
@@ -129,6 +149,7 @@
     transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
   }
   #study .choices button:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(10, 6, 24, 0.35); }
+  #study .choices button:disabled { cursor: default; }
   #study .choices button:focus-visible { outline: 4px solid var(--ink); outline-offset: 2px; }
   #study .cheer { min-height: 1.6em; font-weight: 900; font-size: clamp(15px, 3.6vw, 19px); color: #2e7d3b; }
   #study .cheer.oops { color: #c2452e; }
@@ -139,6 +160,11 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
     gap: clamp(14px, 3vw, 22px);
+  }
+  /* 아이패드 가로: 6장이 3×2로 한 화면에 */
+  @media (min-width: 1000px) and (orientation: landscape) {
+    .games { grid-template-columns: repeat(3, 1fr); }
+    .card { min-height: 148px; }
   }
   .card {
     position: relative;
@@ -158,6 +184,8 @@
   @media (hover: hover) {
     .card:hover { transform: translateY(-3px); box-shadow: 0 10px 0 rgba(10, 6, 24, 0.5); }
   }
+  /* 터치 기기: 스크롤 제스처를 탭으로 오인하지 않게 세로 팬만 허용 */
+  .card, #study .choices button, .moon { touch-action: pan-y; }
   .card:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
   body.locked .card {
     filter: grayscale(0.85) brightness(0.6);
