@@ -299,7 +299,7 @@
   </header>
 
   <section id="study" aria-live="polite">
-    <div class="eyebrow" id="studyEyebrow">오늘의 나눗셈 공부</div>
+    <div class="eyebrow" id="studyEyebrow">오늘의 가르기 공부</div>
     <div class="daily" id="daily"></div>
     <div class="progress" id="stars"></div>
     <div class="formula" id="formula"></div>
@@ -434,7 +434,11 @@
     { emoji: '🐚', name: '조개' }
   ];
   var CHEERS = ['정답! 참 잘했어요 🌟', '딩동댕! 멋져요 ✨', '와, 정확해요! 👏', '역시 최고! 💛'];
-  var OOPS = ['괜찮아요, 그림을 세어 보고 다시!', '아깝다! 한 번 더 생각해 볼까요?'];
+  var OOPS = [
+    '괜찮아요! 전체에서 보이는 만큼 빼 볼까요?',
+    '아깝다! 손가락으로 세어 봐도 좋아요.',
+    '다시 한 번! 두 쪽을 합치면 전체가 돼요.'
+  ];
 
   var studyEl = document.getElementById('study');
   var starsEl = document.getElementById('stars');
@@ -484,43 +488,148 @@
     dailyEl.textContent = '오늘 푼 문제 ' + Math.min(state.solved, DAILY) + ' / ' + DAILY;
   }
 
-  /* 세트가 진행될수록 어려워지는 4단계. "답 1개"짜리 시시한 문제는 없앤다(each ≥ 2). */
+  /* ================= 가르기(수의 분해) 엔진 =================
+     초1 핵심 개념: 한 수를 두 부분으로 가르기 / 두 부분을 모으기.
+     원칙 — 정답이 화면에 그대로 보이면 안 된다.
+       · 가려진 쪽(❓ 상자)의 개수는 절대 그리지 않는다.
+       · 보이는 쪽만 세고, 전체에서 빼는 "머릿속 계산"을 하게 만든다.
+     세트가 오를수록 큰 수 + 추상적인 표현(수식·문장)으로 넘어간다. */
   var LEVELS = [
-    { pmin: 2, pmax: 3, maxTotal: 8,  maxEach: 4, formula: false }, // 워밍업
-    { pmin: 2, pmax: 4, maxTotal: 12, maxEach: 4, formula: false }, // 기본
-    { pmin: 2, pmax: 5, maxTotal: 15, maxEach: 4, formula: false }, // 확장
-    { pmin: 2, pmax: 5, maxTotal: 20, maxEach: 5, formula: true }   // 도전 + 나눗셈 식
+    { max: 6,  types: ['hidden', 'moreOne'],                            // 1단계 워밍업
+      name: '1단계 · 가르기 첫걸음' },
+    { max: 9,  types: ['hidden', 'moreOne', 'pick2', 'gather'],         // 2단계
+      name: '2단계 · 가르기와 모으기' },
+    { max: 10, types: ['hidden', 'pick2', 'gather', 'formula', 'sameBoth'], // 3단계
+      name: '3단계 · 수로 생각하기' },
+    { max: 10, types: ['formula', 'story', 'pick2', 'gather', 'sameBoth'],  // 4단계
+      name: '4단계 · 가르기 박사' }
   ];
   function currentLevel() {
     return LEVELS[Math.min(LEVELS.length - 1, Math.floor(state.solved / SET))];
   }
 
+  function rand(n) { return Math.floor(Math.random() * n); }
+  /* 숫자를 소리 내어 읽을 때 받침이 있는지(일·삼·육·칠·팔·십·영) 보고 조사를 고른다.
+     "4을(를)" 같은 표기는 아이가 읽기 어렵다. */
+  var HAS_FINAL = { 0: true, 1: true, 2: false, 3: true, 4: false, 5: false,
+                    6: true, 7: true, 8: true, 9: false, 10: true };
+  function josa(n, withFinal, withoutFinal) {
+    return n + (HAS_FINAL[n] ? withFinal : withoutFinal);
+  }
+  /* 한글 낱말의 받침 유무로 조사 고르기 — "별를"이 아니라 "별을" */
+  function wordJosa(word, withFinal, withoutFinal) {
+    var last = word.charCodeAt(word.length - 1) - 0xac00;
+    var hasFinal = last >= 0 && last <= 11171 && last % 28 !== 0;
+    return word + (hasFinal ? withFinal : withoutFinal);
+  }
+  function pickItem() { return ITEMS[rand(ITEMS.length)]; }
+  function row(emoji, count) {
+    var s = '';
+    for (var i = 0; i < count; i++) {
+      s += emoji;
+      if ((i + 1) % 5 === 0 && i + 1 < count) s += '\n';
+    }
+    return s;
+  }
+
+  /* 문제 하나 = { formula, items, question, answer, unit } */
   function makeProblem() {
     var lv = currentLevel();
-    var people = lv.pmin + Math.floor(Math.random() * (lv.pmax - lv.pmin + 1));
-    var eachMax = Math.min(lv.maxEach, Math.floor(lv.maxTotal / people));
-    var each = 2 + Math.floor(Math.random() * Math.max(1, eachMax - 1));
-    var item = ITEMS[Math.floor(Math.random() * ITEMS.length)];
-    return { people: people, each: each, total: people * each, item: item, formula: lv.formula };
+    var type = lv.types[rand(lv.types.length)];
+    var total = 4 + rand(lv.max - 3);        // 4 ~ max
+    var left = 1 + rand(total - 1);          // 1 ~ total-1
+    var right = total - left;
+    var item = pickItem();
+
+    if (type === 'hidden') {
+      // 보이는 쪽만 그리고, 나머지는 상자로 가린다 → 답이 화면에 없다
+      return {
+        formula: '',
+        items: row(item.emoji, left) + '   +   🎁',
+        question: item.name + ' ' + total + '개를 두 접시에 나눴어요. ' +
+                  '한 접시에 ' + left + '개가 있어요. 선물 상자 안에는 몇 개일까요?',
+        answer: right, unit: '개'
+      };
+    }
+    if (type === 'moreOne') {
+      // 이미 놓인 것 + 더 필요한 것 (덧셈 빈칸 = 가르기의 다른 얼굴)
+      return {
+        formula: '',
+        items: row(item.emoji, left),
+        question: wordJosa(item.name, '을', '를') + ' 모두 ' + total + '개 만들려고 해요. ' +
+                  '지금 보이는 것 말고 몇 개를 더 놓아야 할까요?',
+        answer: right, unit: '개'
+      };
+    }
+    if (type === 'pick2') {
+      // 그림 없이 수만 보고 짝 고르기 (숫자 카드 3장 중 정답 하나)
+      return {
+        formula: josa(total, '은', '는') + ' ' + josa(left, '과', '와') + ' ❓',
+        items: '',
+        question: josa(total, '을', '를') + ' ' + josa(left, '과', '와') +
+                  ' 몇으로 가를 수 있을까요?',
+        answer: right, unit: ''
+      };
+    }
+    if (type === 'gather') {
+      // 모으기 (가르기의 역방향)
+      return {
+        formula: josa(left, '과', '와') + ' ' + josa(right, '을', '를') + ' 모으면 ❓',
+        items: '',
+        question: josa(left, '과', '와') + ' ' + josa(right, '을', '를') +
+                  ' 모으면 얼마가 될까요?',
+        answer: total, unit: ''
+      };
+    }
+    if (type === 'sameBoth') {
+      // 양쪽을 똑같이 가를 수 있는 수인지 — 짝수 개념 맛보기
+      var even = total % 2 === 0 ? total : total - 1;
+      if (even < 4) even = 4;
+      return {
+        formula: josa(even, '을', '를') + ' 똑같이 둘로 가르면?',
+        items: '',
+        question: josa(even, '을', '를') + ' 똑같은 두 쪽으로 가르면, 한 쪽은 몇이 될까요?',
+        answer: even / 2, unit: ''
+      };
+    }
+    if (type === 'formula') {
+      // 수식 빈칸 (한글 없이 순수 기호)
+      var blankLeft = Math.random() < 0.5;
+      return {
+        formula: blankLeft ? ('❓ + ' + right + ' = ' + total)
+                           : (left + ' + ❓ = ' + total),
+        items: '',
+        question: '빈칸에 알맞은 수는 무엇일까요?',
+        answer: blankLeft ? left : right, unit: ''
+      };
+    }
+    // story — 실생활 문장 (그림 없음)
+    var STORIES = [
+      { q: '주머니에 구슬이 ' + total + '개 있었어요. ' + left + '개를 친구에게 주었어요. 남은 구슬은 몇 개일까요?', a: right, u: '개' },
+      { q: '버스에 ' + total + '명이 타고 있었어요. ' + left + '명이 내렸어요. 버스에 남은 사람은 몇 명일까요?', a: right, u: '명' },
+      { q: '색종이 ' + total + '장을 두 상자에 나눠 담았어요. 한 상자에 ' + left + '장이면, 다른 상자에는 몇 장일까요?', a: right, u: '장' }
+    ];
+    var st = STORIES[rand(STORIES.length)];
+    return { formula: '', items: '', question: st.q, answer: st.a, unit: st.u };
   }
 
   function renderProblem() {
     current = makeProblem();
-    var row = '';
-    for (var i = 0; i < current.total; i++) {
-      row += current.item.emoji;
-      if ((i + 1) % 5 === 0 && i + 1 < current.total) row += '\n'; // 5개씩 끊어야 세기 쉽다
-    }
-    itemsEl.textContent = row;
-    document.getElementById('formula').textContent =
-      current.formula ? current.total + ' ÷ ' + current.people + ' = ?' : '';
-    questionEl.textContent = current.item.name + ' ' + current.total + '개를 친구 ' +
-      current.people + '명이 똑같이 나누면, 한 명이 몇 개씩 가질까요?';
+    itemsEl.textContent = current.items;
+    document.getElementById('formula').textContent = current.formula;
+    questionEl.textContent = current.question;
 
-    var answers = [current.each];
+    // 보기 3개: 정답 ±1~2 (가르기에서 흔한 실수 폭)
+    var answers = [current.answer];
+    var guard = 0;
+    while (answers.length < 3 && guard++ < 40) {
+      var delta = (Math.random() < 0.5 ? -1 : 1) * (1 + rand(2));
+      var wrong = current.answer + delta;
+      if (wrong >= 0 && wrong <= 12 && answers.indexOf(wrong) < 0) answers.push(wrong);
+    }
     while (answers.length < 3) {
-      var wrong = current.each + (Math.random() < 0.5 ? -1 : 1) * (1 + Math.floor(Math.random() * 2));
-      if (wrong >= 1 && answers.indexOf(wrong) < 0) answers.push(wrong);
+      var fill = rand(11);
+      if (answers.indexOf(fill) < 0) answers.push(fill);
     }
     answers.sort(function (a, b) { return a - b; });
 
@@ -528,14 +637,14 @@
     answers.forEach(function (n) {
       var b = document.createElement('button');
       b.type = 'button';
-      b.textContent = n + '개';
+      b.textContent = n + current.unit;
       b.addEventListener('click', function () { pick(n, b); });
       choicesEl.appendChild(b);
     });
   }
 
   function pick(n, btn) {
-    if (n === current.each) {
+    if (n === current.answer) {
       state.solved++;
       setCorrect++;
       cheerEl.className = 'cheer';
@@ -587,9 +696,7 @@
     } else {
       document.body.classList.add('locked');
       studyEl.classList.remove('done');
-      var levelNames = ['1단계 · 워밍업', '2단계 · 기본', '3단계 · 확장', '4단계 · 도전'];
-      eyebrowEl.textContent = '오늘의 나눗셈 공부 · ' +
-        levelNames[Math.min(3, Math.floor(state.solved / SET))];
+      eyebrowEl.textContent = '오늘의 가르기 공부 · ' + currentLevel().name;
       subEl.textContent = '문제 10개를 풀면 게임 티켓 한 장!';
       drawSetStars();
       renderProblem();
