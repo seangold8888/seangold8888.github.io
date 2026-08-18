@@ -324,6 +324,280 @@ h1,h2,.disp,.primary,.chips span,.puzzle-head h1,.stage-num{font-family:var(--di
 @media (prefers-reduced-motion:reduce){
   *,::before,::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition:none!important}
 }
+
+/* =========================================================================
+   그래픽 업그레이드 — 장소마다 다른 하늘, 색, 공기
+   기존 규칙 뒤에 오므로 같은 특이도면 이쪽이 이긴다.
+   ========================================================================= */
+
+/* 장소별 팔레트: 하늘 두 색, 바닥 색, 강조색 */
+.play{
+  --sky1:#7b62bb; --sky2:#9d84d4; --floor:#f7f1ff; --accent:#8a6fc4; --accent2:#ffd9ea;
+  position:relative;
+  background:
+    radial-gradient(120% 60% at 78% -6%, #ffffff5c, #0000 55%),
+    radial-gradient(90% 45% at 12% 2%, #ffffff3d, #0000 60%),
+    linear-gradient(#0000 0 22%, var(--floor) 22%),
+    linear-gradient(160deg, var(--sky1), var(--sky2));
+}
+.scene-room  {--sky1:#ff9dc0; --sky2:#ffc7dd; --floor:#fff4f8; --accent:#e8669a; --accent2:#ffe3ef}
+.scene-cafe  {--sky1:#d59a63; --sky2:#f0c496; --floor:#fff8ee; --accent:#c07a3e; --accent2:#ffe9cd}
+.scene-garden{--sky1:#5fb489; --sky2:#a8dcb4; --floor:#f2fbf1; --accent:#3f9068; --accent2:#d8f2dd}
+.scene-party {--sky1:#8a6ad0; --sky2:#c3a4ee; --floor:#f9f4ff; --accent:#7c56c7; --accent2:#ecdcff}
+.scene-finale{--sky1:#3d3068; --sky2:#6a55a8; --floor:#f4f0ff; --accent:#5b47a0; --accent2:#e3d9ff}
+
+/* 하늘과 바닥의 경계를 물결로 — 장소가 무대처럼 보인다 */
+.play::before{
+  content:"";position:absolute;left:0;right:0;top:calc(22% - 1.6rem);height:2rem;
+  background:radial-gradient(1.6rem 2rem at 1.6rem 100%, var(--floor) 98%, #0000 100%) 0 0/3.2rem 2rem repeat-x;
+  pointer-events:none;z-index:0;
+}
+
+/* 장소별 풍경 — 순수 CSS 도형이라 파일 용량이 늘지 않는다 */
+.play::after{
+  content:"";position:absolute;left:0;right:0;top:0;height:22%;
+  pointer-events:none;z-index:0;opacity:.9;
+}
+/* 방: 창문과 벽의 반짝임 */
+.scene-room::after{
+  background:
+    radial-gradient(.42rem .42rem at 12% 62%, #ffffff8a 96%, #0000),
+    radial-gradient(.3rem .3rem at 26% 34%, #ffffff70 96%, #0000),
+    radial-gradient(.34rem .34rem at 88% 46%, #ffffff70 96%, #0000),
+    linear-gradient(#ffffff40 0 0) 62% 30%/4.6rem 3.4rem no-repeat;
+}
+/* 카페: 창가 조명 세 개 */
+.scene-cafe::after{
+  background:
+    radial-gradient(2.2rem 2.2rem at 20% 24%, #fff5d18f 60%, #0000 72%),
+    radial-gradient(1.9rem 1.9rem at 52% 16%, #fff5d17a 60%, #0000 72%),
+    radial-gradient(2.4rem 2.4rem at 83% 26%, #fff5d18f 60%, #0000 72%);
+}
+/* 정원: 해와 구름 */
+.scene-garden::after{
+  background:
+    radial-gradient(2rem 2rem at 84% 26%, #fff6bd 62%, #0000 68%),
+    radial-gradient(1.5rem 1.1rem at 18% 34%, #ffffffa6 70%, #0000 74%),
+    radial-gradient(1.1rem .85rem at 27% 38%, #ffffff96 70%, #0000 74%),
+    radial-gradient(1.3rem 1rem at 56% 22%, #ffffff8a 70%, #0000 74%);
+}
+/* 파티: 삼각 깃발 가랜드 */
+.scene-party::after{
+  background:
+    linear-gradient(135deg,#0000 49%,#ffd9ea 50% 62%,#0000 63%) 0 18%/2.6rem 2.2rem repeat-x,
+    linear-gradient(45deg,#0000 49%,#fff0b8 50% 62%,#0000 63%) 1.3rem 18%/2.6rem 2.2rem repeat-x;
+  opacity:.75;
+}
+/* 마지막: 별이 뜬 밤하늘 */
+.scene-finale::after{
+  background:
+    radial-gradient(.16rem .16rem at 14% 30%, #fff 96%, #0000),
+    radial-gradient(.2rem .2rem at 33% 18%, #fff 96%, #0000),
+    radial-gradient(.14rem .14rem at 52% 38%, #ffe9a8 96%, #0000),
+    radial-gradient(.22rem .22rem at 71% 22%, #fff 96%, #0000),
+    radial-gradient(.16rem .16rem at 88% 40%, #ffe9a8 96%, #0000),
+    radial-gradient(.18rem .18rem at 62% 52%, #fff 96%, #0000);
+  animation:twinkle 3.2s ease-in-out infinite;
+}
+@keyframes twinkle{50%{opacity:.45}}
+
+/* 실제 내용은 풍경 위로 */
+.play>*{position:relative;z-index:1}
+
+/* ---------- 헤더 ---------- */
+.play header strong{text-shadow:0 .12rem .5rem #00000038}
+.play nav button{
+  background:#ffffff2e;border:1px solid #ffffff7a;
+  box-shadow:0 .18rem .5rem #00000021;
+}
+@media (hover:hover){.play nav button:hover{background:#ffffff52}}
+.play nav button:active{transform:scale(.94)}
+
+/* ---------- 보석: 단색에서 입체로 ---------- */
+.gem{
+  position:relative;overflow:hidden;
+  background:
+    radial-gradient(60% 45% at 32% 26%, #ffffffb0, #0000 62%),
+    linear-gradient(140deg, color-mix(in srgb,var(--gem),#fff 34%), var(--gem) 52%,
+                    color-mix(in srgb,var(--gem),#2b2050 26%));
+  box-shadow:
+    0 .3rem 0 color-mix(in srgb,var(--gem),#33284e 44%),
+    0 .55rem 1.1rem color-mix(in srgb,var(--gem),#2a1f4a 30%),
+    inset 0 .32rem .55rem #ffffff66,
+    inset 0 -.3rem .5rem #00000024;
+}
+/* 보석 위를 천천히 스치는 빛 */
+.gem:not(.empty)::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(105deg,#0000 42%,#ffffff9e 50%,#0000 58%);
+  background-size:260% 100%;
+  animation:gemshine 4.5s ease-in-out infinite;
+}
+@keyframes gemshine{
+  0%,72%{background-position:120% 0}
+  86%,100%{background-position:-40% 0}
+}
+.gem.empty{
+  background:linear-gradient(140deg,#ece4f3,#ded3e9);
+  box-shadow:0 .19rem 0 #bfb1cc, inset 0 .2rem .4rem #ffffff8c;
+}
+
+/* ---------- 토큰 ---------- */
+.token{
+  background:
+    radial-gradient(58% 42% at 30% 24%, #ffffffa8, #0000 60%),
+    linear-gradient(150deg, color-mix(in srgb,var(--token),#fff 26%), var(--token));
+  box-shadow:0 .25rem 0 color-mix(in srgb,var(--token),#34264c 38%),
+             0 .45rem .8rem color-mix(in srgb,var(--token),#2a1f4a 26%);
+}
+.blank{
+  background:repeating-linear-gradient(45deg,#fff 0 .45rem,#faf5ff .45rem .9rem);
+  border-color:var(--accent);color:var(--accent);
+}
+
+/* ---------- 초상화: 리본 액자 ---------- */
+.portrait{
+  position:relative;border-color:#fff;
+  box-shadow:0 .5rem 1.2rem #4b2e6440, 0 0 0 .22rem var(--accent2, #ffe3ef);
+}
+.portrait::after{
+  content:"";position:absolute;left:50%;top:-.42rem;width:1.5rem;height:.85rem;
+  transform:translateX(-50%);
+  background:
+    radial-gradient(.42rem .42rem at .42rem 50%, var(--accent,#e8669a) 92%, #0000),
+    radial-gradient(.42rem .42rem at 1.08rem 50%, var(--accent,#e8669a) 92%, #0000),
+    radial-gradient(.2rem .2rem at 50% 50%, #fff 92%, #0000);
+}
+.portrait.tiny::after{
+  width:1rem;height:.58rem;top:-.28rem;
+  background:
+    radial-gradient(.28rem .28rem at .28rem 50%, var(--accent,#e8669a) 92%, #0000),
+    radial-gradient(.28rem .28rem at .72rem 50%, var(--accent,#e8669a) 92%, #0000),
+    radial-gradient(.14rem .14rem at 50% 50%, #fff 92%, #0000);
+}
+
+/* ---------- 이야기 카드 ---------- */
+.story{
+  background:linear-gradient(120deg,#fff,color-mix(in srgb,var(--accent2,#ffe3ef),#fff 45%));
+  border-color:#ffffffe0;
+  box-shadow:0 .6rem 1.5rem #432b6626, inset 0 0 0 .12rem #ffffffb8;
+}
+.story .tag{color:var(--accent,#8b69ad)}
+
+/* ---------- 퍼즐 카드 ---------- */
+.puzzle{
+  background:linear-gradient(#fffffffa,#fffffff0);
+  box-shadow:0 1.3rem 2.8rem #38225a2e, inset 0 0 0 .12rem #ffffffde;
+  animation:cardIn .34s cubic-bezier(.22,1.2,.4,1) both;
+}
+@keyframes cardIn{from{transform:translateY(1rem) scale(.985);opacity:0}}
+.puzzle-head h1{color:var(--accent,#4d3c6d)}
+.puzzle-head .step{
+  color:#fff;
+  background:linear-gradient(135deg,var(--accent,#6b5591),
+    color-mix(in srgb,var(--accent,#6b5591),#fff 28%));
+  box-shadow:0 .2rem .5rem color-mix(in srgb,var(--accent,#6b5591),#0000 62%);
+}
+
+/* ---------- 선택 버튼 ---------- */
+.choices button,.gem-choices button,.decor-choices button{
+  background:linear-gradient(#fff,#fdfaff);
+  border-color:color-mix(in srgb,var(--accent,#c9b6de),#fff 62%);
+  box-shadow:0 .25rem 0 color-mix(in srgb,var(--accent,#d3c3e1),#fff 46%),
+             0 .5rem .9rem #4b2e6414;
+  transition:transform .12s,box-shadow .12s,background .12s;
+}
+@media (hover:hover){
+  .choices button:hover,.gem-choices button:hover,.decor-choices button:hover{
+    transform:translateY(-.14rem);
+    box-shadow:0 .38rem 0 color-mix(in srgb,var(--accent,#d3c3e1),#fff 40%),
+               0 .7rem 1.2rem #4b2e641f;
+  }
+}
+.choices button:active,.gem-choices button:active,.decor-choices button:active{
+  transform:translateY(.2rem) scale(.98);
+  box-shadow:0 .08rem 0 color-mix(in srgb,var(--accent,#d3c3e1),#fff 40%);
+}
+
+/* ---------- 각 무대 판 ---------- */
+.sequence{
+  background:linear-gradient(#fffdfe,color-mix(in srgb,var(--accent2,#f7f0ff),#fff 30%));
+  box-shadow:inset 0 .12rem .5rem #4b2e6417, 0 .3rem .8rem #4b2e640f;
+}
+.ticket{
+  background:linear-gradient(#fffdf4,#fff6e2);
+  box-shadow:0 .35rem .9rem #7a542417;
+}
+.maze{
+  background:linear-gradient(#eefadf,#dff2cf);
+  box-shadow:inset 0 .15rem .6rem #3f6d3a1f, 0 .4rem 1rem #3f6d3a14;
+}
+.maze button{
+  background:linear-gradient(#cbeeaa,#b0dd8f);
+  box-shadow:0 .25rem 0 #8db96d, 0 .4rem .6rem #3f6d3a1a;
+}
+.maze .fence{background:linear-gradient(#ded5e4,#cec3d8)}
+.maze .dead{background:linear-gradient(#efe0b8,#e0cd9a)}
+.maze .goal{
+  background:linear-gradient(#b193e6,#8f6ed0);
+  box-shadow:0 .25rem 0 #654999, 0 0 1rem #9b7bd870;
+}
+.maze .visited{background:linear-gradient(#fff0b0,#ffe17e)}
+.maze .current{border-color:#ff8daf;box-shadow:0 .25rem 0 #8db96d, 0 0 0 .22rem #ff8daf66}
+.seats>div{background:linear-gradient(#fdfaff,#f6efff)}
+.seats>div.current{box-shadow:0 0 0 .2rem #e57ea733}
+.final-slots>span{background:linear-gradient(#fbf8fe,#f4edfb)}
+.stack span.filled{background:linear-gradient(#ffeccb,#ffdba6)}
+
+/* ---------- 시작 / 결과 화면 ---------- */
+.start,.result{
+  background:
+    radial-gradient(circle at 20% 16%, #ffeb9180, #0000 18%),
+    radial-gradient(circle at 82% 28%, #ffa0c48c, #0000 22%),
+    radial-gradient(circle at 50% 96%, #ffd9ec7a, #0000 34%),
+    linear-gradient(165deg,#5b4599,#a382cf 56%,#f6bdd4);
+}
+.start-card,.result-card{
+  box-shadow:0 1.6rem 3.8rem #2b165a5c, inset 0 0 0 .35rem #ffffff85,
+             0 0 0 .5rem #ffffff26;
+  animation:cardIn .45s cubic-bezier(.22,1.2,.4,1) both;
+}
+.hero-art{box-shadow:0 .7rem 1.8rem #502e6f4a, 0 0 0 .18rem #ffffff8a}
+.primary{
+  background:linear-gradient(135deg,#8467c9,var(--rose));
+  box-shadow:0 .4rem 0 var(--deep), 0 .8rem 1.6rem #5c399152,
+             inset 0 .12rem 0 #ffffff4d;
+}
+.chips span{
+  background:linear-gradient(#f6f0ff,#ece1fb);
+  box-shadow:0 .12rem .3rem #5c39911a;
+}
+
+/* ---------- 보상 모달 ---------- */
+.reward,.dialog{
+  box-shadow:0 1.6rem 5rem #1c0e3378, inset 0 0 0 .3rem #ffffffc4;
+}
+.reward-gem{position:relative}
+.reward-gem::before{
+  content:"";position:absolute;width:9rem;height:9rem;border-radius:50%;
+  background:radial-gradient(circle,#ffe9a880,#0000 62%);
+  animation:haloPulse 2.2s ease-in-out infinite;
+}
+@keyframes haloPulse{50%{transform:scale(1.14);opacity:.6}}
+
+/* ---------- 피드백 / 힌트 ---------- */
+.feedback{
+  background:linear-gradient(#f8f5fa,#f2edf6);
+  box-shadow:inset 0 .1rem .3rem #4b2e6412;
+}
+.feedback.active{
+  background:linear-gradient(#fff4f9,#ffe9f2);
+  box-shadow:inset 0 .1rem .3rem #a5497412;
+}
+.support .hint{
+  background:linear-gradient(#f6efff,#efe4fd);
+  box-shadow:0 .18rem .4rem #5c39911a;
+}
 </style>
 <div id="app"></div>
 <canvas id="fx" aria-hidden="true"></canvas>
