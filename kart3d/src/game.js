@@ -2,6 +2,7 @@
 import * as THREE from '../vendor/three.module.min.js';
 import { TRACKS, buildTrack } from './tracks.js';
 import { buildTrackMesh } from './trackmesh.js';
+import { createAudio } from './music.js';
 import { CHARACTERS, buildKartModel, Kart, driveAI } from './karts.js';
 import {
   ITEM_TYPES, rollItem, useItem, applyMagnet,
@@ -177,6 +178,8 @@ export function startGame() {
     state.finishDelay = 0;
     state.finishSide = 0;
     driftArmed = false; jumpEdge = false;
+    sfxPrev = null;
+    audio.startMusic(state.trackIndex);
     try { state.bestLap = parseFloat(localStorage.getItem(bestKey())) || null; } catch (_) { state.bestLap = null; }
     state.scene = 'race';
     showHud(true);
@@ -257,6 +260,9 @@ export function startGame() {
       }
     }
 
+    // 소리는 상태 변화를 보고 낸다. 물리 쪽에 오디오를 끌어들이지 않기 위해서다.
+    watchSfx();
+
     if (mode.items) updateItems(dt, input);
     pushApart();
     rankKarts();
@@ -283,6 +289,8 @@ export function startGame() {
           if (!k.finished) { k.finished = true; k.finishTime = 9999; state.results.push(k); }
         });
         state.scene = 'result';
+        audio.stopMusic();
+        audio.fanfare();
         showResult();
       }
     }
@@ -447,24 +455,26 @@ export function startGame() {
   // ---------- HUD ----------
   let lastCount = null;
 
-  // 출발 신호음. 오디오가 막힌 환경에서도 게임은 그대로 돌아가야 한다.
-  let actx = null;
-  function beep(freq, dur) {
-    try {
-      const AC = window.AudioContext || window.webkitAudioContext;
-      if (!AC) return;
-      if (!actx) actx = new AC();
-      if (actx.state === 'suspended') actx.resume();
-      const t = actx.currentTime;
-      const osc = actx.createOscillator(), gain = actx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(freq, t);
-      gain.gain.setValueAtTime(0.0001, t);
-      gain.gain.exponentialRampToValueAtTime(0.16, t + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-      osc.connect(gain).connect(actx.destination);
-      osc.start(t); osc.stop(t + dur + 0.02);
-    } catch (_) {}
+  const audio = createAudio();
+
+  let sfxPrev = null;
+  function watchSfx() {
+    const p = state.player;
+    const now = {
+      boost: p.boost > 0, spin: p.spin > 0, air: p.airborne,
+      item: !!p.item, lap: p.lap
+    };
+    const q = sfxPrev;
+    if (q) {
+      if (now.spin && !q.spin) audio.sfx('hit');
+      else if (now.boost && !q.boost) audio.sfx('boost');
+      if (now.air && !q.air) audio.sfx('jump');
+      if (!now.air && q.air) audio.sfx('land');
+      if (now.item && !q.item) audio.sfx('pickup');
+      if (!now.item && q.item) audio.sfx('use');
+      if (now.lap > q.lap && now.lap > 0) audio.sfx('lap');
+    }
+    sfxPrev = now;
   }
 
   const hud = el('hud');
@@ -513,7 +523,7 @@ export function startGame() {
         cd.classList.remove('pop');
         void cd.offsetWidth;                 // 애니메이션 재시작
         cd.classList.add('pop');
-        beep(n > 0 ? 520 : 880, n > 0 ? 0.26 : 0.5);
+        audio.beep(n > 0 ? 520 : 880, n > 0 ? 0.26 : 0.5);
       }
       cd.style.display = 'block';
     } else {
@@ -618,7 +628,19 @@ export function startGame() {
   }
 
   el('again').addEventListener('click', () => { el('result').style.display = 'none'; startRace(); });
-  el('to-menu').addEventListener('click', () => { state.menuStep = 0; showMenu(); });
+  const soundBtn = el('sound');
+  function paintSound() {
+    soundBtn.textContent = audio.isMuted() ? '🔇' : '🔊';
+    soundBtn.setAttribute('aria-label', audio.isMuted() ? '소리 켜기' : '소리 끄기');
+  }
+  paintSound();
+  soundBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    audio.setMuted(!audio.isMuted());
+    paintSound();
+  });
+
+  el('to-menu').addEventListener('click', () => { state.menuStep = 0; audio.stopMusic(); showMenu(); });
 
   // ---------- 조작 ----------
   window.addEventListener('keydown', e => {
@@ -636,7 +658,7 @@ export function startGame() {
       if (e.code === 'Space' || e.code === 'Enter') { el('result').style.display = 'none'; startRace(); }
       if (e.code === 'Escape') { state.menuStep = 0; showMenu(); }
     } else if (state.scene === 'race' && e.code === 'Escape') {
-      state.menuStep = 0; showMenu(); clearRace();
+      state.menuStep = 0; audio.stopMusic(); showMenu(); clearRace();
     }
   }, { passive: false });
   window.addEventListener('keyup', e => { keys[e.code] = false; });

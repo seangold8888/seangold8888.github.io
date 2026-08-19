@@ -136,6 +136,17 @@
     100% { transform: translate(-50%,-50%) scale(1);    opacity: 1; }
   }
 
+  /* 소리 켜기/끄기 — 메뉴에서도 주행 중에도 항상 보인다 */
+  #sound {
+    position: fixed; z-index: 40; pointer-events: auto; cursor: pointer;
+    /* 오른쪽 위는 등수 패널 자리라 겹친다. 바퀴수 패널 아래 왼쪽에 둔다. */
+    top: calc(104px + env(safe-area-inset-top)); left: calc(14px + env(safe-area-inset-left));
+    width: 46px; height: 46px; border-radius: 50%;
+    display: grid; place-items: center; font-size: 22px; line-height: 1;
+    background: rgba(255,255,255,0.82); border: 3px solid rgba(140,74,99,0.25);
+  }
+  #sound:active { transform: scale(0.92); }
+
   /* ---------- 터치 조작 ---------- */
   #touch { display: none; }
   @media (pointer: coarse) { #touch { display: block; } }
@@ -190,6 +201,8 @@
 </head>
 <body>
 <canvas id="game"></canvas>
+
+<button id="sound" type="button" aria-label="소리 끄기">🔊</button>
 
 <div class="layer" id="menu">
   <h1>산리오 카트</h1>
