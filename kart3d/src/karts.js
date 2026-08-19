@@ -2,14 +2,59 @@
 import * as THREE from '../vendor/three.module.min.js';
 
 export const CHARACTERS = [
-  { id: 'kitty',  name: '헬로키티',   body: 0xff8fb4, trim: 0xffffff, top: 118, accel: 2.6, turn: 2.35, deco: 'ribbon' },
-  { id: 'melody', name: '마이멜로디', body: 0xffc2dd, trim: 0xff7aa8, top: 114, accel: 2.9, turn: 2.6,  deco: 'hood' },
-  { id: 'cinna',  name: '시나모롤',   body: 0xbfe4ff, trim: 0x7fc4e8, top: 122, accel: 2.4, turn: 2.2,  deco: 'ears' },
-  { id: 'kuromi', name: '쿠로미',     body: 0xc9b2e8, trim: 0x3d3350, top: 126, accel: 2.3, turn: 2.15, deco: 'skull' },
-  { id: 'pochaco',name: '포차코',     body: 0xffffff, trim: 0x8fd0ff, top: 116, accel: 2.7, turn: 2.45, deco: 'pup' },
-  { id: 'gude',   name: '구데타마',   body: 0xffe27a, trim: 0xfff3c4, top: 110, accel: 3.1, turn: 2.75, deco: 'egg' },
-  { id: 'purin',  name: '폼폼푸린',   body: 0xffe27a, trim: 0x8a5a33, top: 120, accel: 2.55, turn: 2.4, deco: 'purin' }
+  { id: 'kitty',  name: '헬로키티',   body: 0xff8fb4, trim: 0xffffff, fur: 0xffffff, top: 118, accel: 2.6, turn: 2.35, deco: 'ribbon', kart: 'bow' },
+  { id: 'melody', name: '마이멜로디', body: 0xffc2dd, trim: 0xff7aa8, fur: 0xffffff, top: 114, accel: 2.9, turn: 2.6,  deco: 'hood',   kart: 'petal' },
+  { id: 'cinna',  name: '시나모롤',   body: 0xbfe4ff, trim: 0x7fc4e8, fur: 0xffffff, top: 122, accel: 2.4, turn: 2.2,  deco: 'ears',   kart: 'cloud' },
+  { id: 'kuromi', name: '쿠로미',     body: 0xc9b2e8, trim: 0x3d3350, fur: 0xffffff, top: 126, accel: 2.3, turn: 2.15, deco: 'skull',  kart: 'spike' },
+  { id: 'pochaco',name: '포차코',     body: 0xffffff, trim: 0x8fd0ff, fur: 0xffffff, top: 116, accel: 2.7, turn: 2.45, deco: 'pup',    kart: 'stripe' },
+  { id: 'gude',   name: '구데타마',   body: 0xffe27a, trim: 0xfff3c4, fur: 0xffe27a, top: 110, accel: 3.1, turn: 2.75, deco: 'egg',    kart: 'pan' },
+  { id: 'purin',  name: '폼폼푸린',   body: 0xffe27a, trim: 0x8a5a33, fur: 0xffe27a, top: 120, accel: 2.55, turn: 2.4, deco: 'purin',  kart: 'pudding' }
 ];
+
+// 카트 장식 — 캐릭터마다 실루엣이 달라야 한 눈에 구분된다.
+// 여러 개짜리는 InstancedMesh 로 묶어 카트당 1 드로우콜을 지킨다.
+function addKartFlair(g, spec, mat) {
+  const dummy = new THREE.Object3D();
+  const many = (geo, m, list) => {
+    const im = new THREE.InstancedMesh(geo, m, list.length);
+    list.forEach((p, i) => {
+      dummy.position.set(p[0], p[1], p[2]);
+      dummy.rotation.set(p[3] || 0, p[4] || 0, p[5] || 0);
+      dummy.scale.setScalar(p[6] || 1);
+      dummy.updateMatrix(); im.setMatrixAt(i, dummy.matrix);
+    });
+    im.instanceMatrix.needsUpdate = true;
+    g.add(im);
+  };
+
+  if (spec.kart === 'bow') {                 // 헬로키티: 보닛 위 리본
+    many(new THREE.TorusGeometry(1.25, 0.55, 8, 14), mat(0xff5c8a),
+      [[-1.8, 10.3, 12.6, 0, 0, 0.5], [1.8, 10.3, 12.6, 0, 0, -0.5]]);
+  } else if (spec.kart === 'petal') {        // 마이멜로디: 꽃잎 노즈
+    const p = [];
+    for (let i = 0; i < 5; i++) {
+      const a = i / 5 * Math.PI * 2;
+      p.push([Math.cos(a) * 3.4, 9.6 + Math.sin(a) * 2.4, 12.8, 0, 0, a, 0.62]);
+    }
+    many(new THREE.SphereGeometry(2.0, 8, 6), mat(0xfff0f6), p);
+  } else if (spec.kart === 'cloud') {        // 시나모롤: 뭉게구름 펜더
+    many(new THREE.SphereGeometry(3.2, 10, 8), mat(0xffffff),
+      [[-8.2, 8.6, 1.5], [8.2, 8.6, 1.5], [0, 9.6, 13.4, 0, 0, 0, 0.8]]);
+  } else if (spec.kart === 'spike') {        // 쿠로미: 가시 스포일러
+    many(new THREE.ConeGeometry(1.5, 4.2, 6), mat(0x3d3350),
+      [[-4.4, 13.6, -11.2], [0, 14.4, -11.2], [4.4, 13.6, -11.2]]);
+  } else if (spec.kart === 'stripe') {       // 포차코: 레이싱 스트라이프
+    many(new THREE.BoxGeometry(3.2, 0.5, 9, 1, 1, 1), mat(0x8fd0ff),
+      [[0, 10.2, 6.5], [0, 10.2, -6.5]]);
+  } else if (spec.kart === 'pan') {          // 구데타마: 프라이팬
+    many(new THREE.CylinderGeometry(7.6, 7.6, 1.2, 18), mat(0x4a4450),
+      [[0, 9.6, 11.0, 0, 0, 0, 0.72]]);
+  } else if (spec.kart === 'pudding') {      // 폼폼푸린: 푸딩 + 캐러멜
+    many(new THREE.CylinderGeometry(2.9, 3.9, 3.4, 16), mat(0xffe27a), [[0, 9.8, 12.2]]);
+    many(new THREE.SphereGeometry(3.0, 14, 10, 0, Math.PI * 2, 0, Math.PI * 0.5), mat(0x9c6326),
+      [[0, 11.4, 12.2]]);
+  }
+}
 
 // 귀엽고 둥근 카트. 캐릭터마다 장식이 다르다.
 export function buildKartModel(spec) {
@@ -28,6 +73,33 @@ export function buildKartModel(spec) {
   seat.position.set(0, 11, -5);
   g.add(seat);
 
+  // 리어 윙
+  const wing = new THREE.Mesh(new THREE.BoxGeometry(13.5, 1.5, 4.2), mat(spec.trim));
+  wing.position.set(0, 12.3, -11.2);
+  wing.rotation.x = 0.16;
+  g.add(wing);
+
+  // 라이더 — 예전에는 머리만 떠 있었다. 몸통·팔·핸들을 넣어 앉아 있는 형태로.
+  // 머리가 크니 몸통은 어깨처럼 낮고 넓게 깔아야 실루엣이 산다
+  const torso = new THREE.Mesh(new THREE.SphereGeometry(4.2, 16, 12), mat(spec.trim));
+  torso.scale.set(1.32, 0.82, 0.95);
+  torso.position.set(0, 10.2, -2.8);
+  g.add(torso);
+
+  const steerWheel = new THREE.Mesh(new THREE.TorusGeometry(2.0, 0.42, 8, 18), mat(0x4a3550));
+  steerWheel.position.set(0, 10.8, 4.8);
+  steerWheel.rotation.x = -0.75;
+  g.add(steerWheel);
+
+  [-1, 1].forEach(sgn => {
+    const arm = new THREE.Mesh(new THREE.CapsuleGeometry(1.0, 4.2, 4, 8), mat(spec.fur));
+    arm.position.set(sgn * 2.7, 10.7, 1.8);
+    arm.rotation.set(-1.05, 0, sgn * 0.30);
+    g.add(arm);
+  });
+
+  addKartFlair(g, spec, mat);
+
   // 바퀴
   const wheelGeo = new THREE.CylinderGeometry(4.2, 4.2, 3.4, 12);
   const wheelMat = mat(0x4a3550);
@@ -41,7 +113,7 @@ export function buildKartModel(spec) {
 
   // 캐릭터 머리
   const head = new THREE.Group();
-  const face = new THREE.Mesh(new THREE.SphereGeometry(5.2, 30, 22), mat(0xffffff));
+  const face = new THREE.Mesh(new THREE.SphereGeometry(5.2, 30, 22), mat(spec.fur));
   face.scale.set(1.15, 1, 0.95);
   head.add(face);
   // 얼굴은 구슬 눈 대신 캔버스로 그린 텍스처 한 장을 머리 앞면에 씌운다.
@@ -90,8 +162,7 @@ export function buildKartModel(spec) {
       ear.position.set(x, y, 0); head.add(ear);
     });
   } else if (spec.deco === 'purin') {
-    // 폼폼푸린: 노란 얼굴에 갈색 베레모, 늘어진 귀
-    face.material = mat(0xffe27a);
+    // 폼폼푸린: 갈색 베레모, 늘어진 귀
     face.scale.set(1.2, 0.95, 1);
     // 베레모: 납작하게 얹어 귀가 가려지지 않게
     const beret = new THREE.Mesh(
@@ -121,7 +192,7 @@ export function buildKartModel(spec) {
   head.position.set(0, 15.4, -3.4);
   g.add(head);
 
-  g.userData = { wheels, head, spec };
+  g.userData = { wheels, head, spec, steerWheel };
   return g;
 }
 
@@ -385,6 +456,8 @@ export class Kart {
     const d = model.userData;
     if (d && d.wheels) d.wheels.forEach(w => { w.rotation.x = this.wheelSpin; });
     if (d && d.head) d.head.position.y = 15.4 + Math.sin(this.wheelSpin * 2) * 0.35;
+    // 핸들은 조향을 따라 돈다. lean 은 이미 조향을 부드럽게 따라가는 값이다.
+    if (d && d.steerWheel) d.steerWheel.rotation.y = -this.lean * 0.9;
   }
 }
 

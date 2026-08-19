@@ -7,6 +7,7 @@ import * as THREE from '../vendor/three.module.min.js';
 export const TRACKS = [
   {
     id: 'park',
+    tip: '넓은 길 · 처음이라면 여기',
     name: '산리오 테마파크',
     sky: 0xbfe4ff, fog: 0xd8ecff, ground: 0x8fd36f, road: 0xf0e4d4, rail: 0xff8fb4,
     laps: 3,
@@ -24,6 +25,7 @@ export const TRACKS = [
   },
   {
     id: 'cloud',
+    tip: '하늘 위 · 조금 좁아요',
     name: '구름 성',
     sky: 0xa9d8ff, fog: 0xe6f3ff, ground: 0xbcdcf5, road: 0xfff3d6, rail: 0xffd34d,
     laps: 3,
@@ -39,6 +41,7 @@ export const TRACKS = [
   },
   {
     id: 'candy',
+    tip: '가장 넓어요 · 지름길 있음',
     name: '사탕 숲',
     sky: 0xffd9ec, fog: 0xffe9f4, ground: 0xf7c9de, road: 0xffeacb, rail: 0xff7aa8,
     laps: 3,
@@ -51,6 +54,58 @@ export const TRACKS = [
     ramps: [0.45],
     shortcut: [[-380, 12, 140], [-460, 6, -10], [-400, 6, -90]],
     scenery: 'candy'
+  },
+  {
+    // 넓고 완만하다. 아직 손에 익지 않은 아이가 편하게 달리는 코스.
+    id: 'beach',
+    tip: '길고 완만해요 · 편한 코스',
+    name: '노을 해변',
+    sky: 0xffc79a, fog: 0xffdcc0, ground: 0xf0dcae, road: 0xfff0d8, rail: 0x5cc6d8,
+    laps: 3,
+    roadHalf: 36,
+    points: [
+      [0, 0, -430], [250, 0, -400], [440, 4, -230], [500, 8, 10],
+      [400, 10, 250], [180, 6, 400], [-90, 4, 420], [-330, 6, 300],
+      [-470, 4, 70], [-430, 0, -190], [-240, 0, -390]
+    ],
+    ramps: [0.4],
+    shortcut: [[440, 4, -230], [530, 8, -100], [500, 8, 10]],
+    scenery: 'beach'
+  },
+  {
+    // 좁고 굽이가 잦다. 드리프트를 익힌 다음에 오는 코스.
+    id: 'night',
+    tip: '좁고 굽이 많아요 · 어려움',
+    name: '별빛 밤길',
+    sky: 0x1a2350, fog: 0x2a3468, ground: 0x33406e, road: 0x7d87c0, rail: 0xffd34d,
+    laps: 3,
+    roadHalf: 29,
+    hemi: 0.62, sunI: 0.5,
+    points: [
+      [0, 0, -400], [210, 8, -350], [340, 16, -200], [400, 22, -20],
+      [330, 26, 150], [160, 22, 290], [-40, 16, 380], [-230, 14, 330],
+      [-350, 18, 180], [-300, 12, 20], [-410, 6, -160], [-220, 0, -340]
+    ],
+    ramps: [0.24, 0.58, 0.84],
+    shortcut: null,
+    scenery: 'night'
+  },
+  {
+    // 오르내림이 큰 하늘길. 한 바퀴가 길어서 2바퀴다.
+    id: 'rainbow',
+    tip: '오르내림이 커요 · 아치 통과',
+    name: '무지개 하늘길',
+    sky: 0xffe4f6, fog: 0xfff0fa, ground: 0xd8c8ff, road: 0xfff8e8, rail: 0xff7aa8,
+    laps: 2,
+    roadHalf: 28,
+    points: [
+      [0, 60, -470], [270, 100, -420], [470, 150, -230], [530, 190, 40],
+      [420, 150, 300], [190, 100, 450], [-100, 80, 470], [-360, 110, 340],
+      [-500, 150, 110], [-470, 110, -160], [-280, 70, -390]
+    ],
+    ramps: [0.16, 0.46, 0.74],
+    shortcut: [[-500, 150, 110], [-580, 120, -30], [-470, 110, -160]],
+    scenery: 'rainbow'
   }
 ];
 

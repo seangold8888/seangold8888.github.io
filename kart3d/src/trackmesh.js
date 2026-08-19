@@ -177,7 +177,7 @@ function addScenery(def, track, group) {
     const m = new THREE.InstancedMesh(geo, mat, placements.length);
     placements.forEach((p, i) => {
       dummy.position.set(p.x, p.y, p.z);
-      dummy.rotation.set(0, p.ry || 0, 0);
+      dummy.rotation.set(p.rx || 0, p.ry || 0, p.rz || 0);
       const s = p.s || 1;
       dummy.scale.set(s, p.sy || s, s);
       dummy.updateMatrix();
@@ -249,7 +249,7 @@ function addScenery(def, track, group) {
       t.rotation.y = Math.PI / 2;
       group.add(t);
     });
-  } else {
+  } else if (def.scenery === 'candy') {
     const sticks = [], candies = [[], [], [], []], hills = [];
     for (let i = 0; i < 95; i++) {
       const s = away(); if (!s) continue;
@@ -267,5 +267,96 @@ function addScenery(def, track, group) {
     }
     instance(new THREE.SphereGeometry(70, 10, 8),
       new THREE.MeshLambertMaterial({ color: 0x8a5a33 }), hills);
+
+  } else if (def.scenery === 'beach') {
+    // 야자수 · 파라솔 · 바다
+    const trunks = [], fronds = [], umbrella = [], poles = [];
+    for (let i = 0; i < 70; i++) {
+      const s = away(); if (!s) continue;
+      trunks.push({ x: s.x, y: s.y + 16, z: s.z, ry: rnd() * 3 });
+      // 잎은 바깥으로 눕혀야 야자수로 보인다. 세워두면 소나무가 된다.
+      const base = rnd() * Math.PI * 2;
+      for (let k = 0; k < 6; k++) {
+        const a = base + k / 6 * Math.PI * 2;
+        fronds.push({
+          x: s.x + Math.cos(a) * 6, y: s.y + 31, z: s.z + Math.sin(a) * 6,
+          ry: -a, rz: 2.05, s: 0.9 + rnd() * 0.3
+        });
+      }
+    }
+    instance(new THREE.CylinderGeometry(2.2, 3.2, 32, 6),
+      new THREE.MeshLambertMaterial({ color: 0xc49a63 }), trunks);
+    instance(new THREE.ConeGeometry(3.4, 22, 4),
+      new THREE.MeshLambertMaterial({ color: 0x4fbf7a }), fronds);
+    for (let i = 0; i < 22; i++) {
+      const s = away(); if (!s) continue;
+      poles.push({ x: s.x, y: s.y + 8, z: s.z });
+      umbrella.push({ x: s.x, y: s.y + 17, z: s.z, s: 0.9 + rnd() * 0.35 });
+    }
+    instance(new THREE.CylinderGeometry(0.8, 0.8, 16, 5),
+      new THREE.MeshLambertMaterial({ color: 0xfff3d6 }), poles);
+    instance(new THREE.ConeGeometry(11, 7, 12),
+      new THREE.MeshLambertMaterial({ color: 0xff8f6b }), umbrella);
+    const sea = new THREE.Mesh(new THREE.RingGeometry(700, 2600, 48),
+      new THREE.MeshLambertMaterial({ color: 0x49b7d6 }));
+    sea.rotation.x = -Math.PI / 2; sea.position.y = -6;
+    group.add(sea);
+
+  } else if (def.scenery === 'night') {
+    // 등불 · 별 · 검은 나무. 밤이라 등불은 스스로 빛나 보이게 Basic 재질을 쓴다.
+    const posts = [], lamps = [], stars = [], trees = [];
+    for (let i = 0; i < 46; i++) {
+      const s = away(); if (!s) continue;
+      posts.push({ x: s.x, y: s.y + 13, z: s.z });
+      lamps.push({ x: s.x, y: s.y + 28, z: s.z, s: 0.85 + rnd() * 0.4 });
+    }
+    instance(new THREE.CylinderGeometry(1, 1.4, 26, 5),
+      new THREE.MeshLambertMaterial({ color: 0x2b2f52 }), posts);
+    instance(new THREE.SphereGeometry(4.4, 10, 8),
+      new THREE.MeshBasicMaterial({ color: 0xffe9a8 }), lamps);
+    for (let i = 0; i < 80; i++) {
+      const s = away(); if (!s) continue;
+      trees.push({ x: s.x, y: s.y + 24, z: s.z, s: 0.8 + rnd() * 0.5, ry: rnd() * 3 });
+    }
+    instance(new THREE.ConeGeometry(13, 46, 7),
+      new THREE.MeshLambertMaterial({ color: 0x24305c }), trees);
+    for (let i = 0; i < 150; i++) {
+      const a = rnd() * Math.PI * 2, r = 700 + rnd() * 1500;
+      stars.push({ x: Math.cos(a) * r, y: 240 + rnd() * 620, z: Math.sin(a) * r, s: 0.6 + rnd() * 1.1 });
+    }
+    instance(new THREE.SphereGeometry(5, 6, 5),
+      new THREE.MeshBasicMaterial({ color: 0xfffbe6 }), stars);
+
+  } else if (def.scenery === 'rainbow') {
+    // 무지개 아치 · 떠 있는 섬
+    const COLORS = [0xff6b6b, 0xffa860, 0xffe066, 0x7ddf85, 0x6bc8ff, 0x9d8cff, 0xf58fd6];
+    const arcs = COLORS.map(() => []);
+    const n = track.points.length;
+    // 아치가 작으면 통과할 때 화면을 다 덮어 앞이 안 보인다. 크고 드물게.
+    for (let a = 0; a < 6; a++) {
+      const p = track.points[Math.floor(n * a / 6)];
+      COLORS.forEach((_, ci) => {
+        arcs[ci].push({ x: p.x, y: p.y + 2, z: p.z, ry: Math.atan2(p.tx, p.tz), s: 1 + ci * 0.058 });
+      });
+    }
+    COLORS.forEach((c, ci) => {
+      instance(new THREE.TorusGeometry(86, 3.4, 6, 26, Math.PI),
+        new THREE.MeshBasicMaterial({ color: c }), arcs[ci]);
+    });
+    const isles = [], tops = [];
+    for (let i = 0; i < 30; i++) {
+      const a = rnd() * Math.PI * 2, r = 240 + rnd() * 700;
+      const x = Math.cos(a) * r, z = Math.sin(a) * r;
+      const near = track.nearest(x, z);
+      if (near.dist < def.roadHalf + 110) continue;
+      // 지면판이 있는 트랙이라 도로 아래에 두면 땅을 뚫고 나온다. 하늘 쪽으로 띄운다.
+      const y = near.p.y + 95 + rnd() * 150;
+      isles.push({ x, y, z, s: 0.6 + rnd() * 0.9, rx: Math.PI });
+      tops.push({ x, y: y + 20, z, s: 0.5 + rnd() * 0.7 });
+    }
+    instance(new THREE.ConeGeometry(34, 46, 8),
+      new THREE.MeshLambertMaterial({ color: 0xc9b2e8 }), isles);
+    instance(new THREE.SphereGeometry(24, 10, 8),
+      new THREE.MeshLambertMaterial({ color: 0xffd9f0 }), tops);
   }
 }

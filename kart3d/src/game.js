@@ -113,6 +113,10 @@ export function startGame() {
     // 지면색을 반사광에 그대로 쓰면 잔디 초록이 흰 캐릭터까지 물들인다.
     // 트랙 분위기는 남기되 흰색 쪽으로 희석한다.
     hemi.groundColor.set(def.ground).lerp(WHITE, 0.66);
+    // 트랙마다 밝기를 달리한다(밤길은 어둡게).
+    hemi.intensity = def.hemi != null ? def.hemi : 1.0;
+    sun.intensity = def.sunI != null ? def.sunI : 1.12;
+    fill.intensity = def.sunI != null ? 0.34 : 0.5;
 
     const order = [state.charIndex].concat(
       CHARACTERS.map((_, i) => i).filter(i => i !== state.charIndex));
@@ -534,7 +538,7 @@ export function startGame() {
       b.className = 'card' + (i === sel ? ' on' : '');
       const sub = state.menuStep === 0
         ? '속도 ' + '★'.repeat(Math.max(1, Math.round((it.top - 106) / 5)))
-        : state.menuStep === 1 ? it.laps + '바퀴' : it.desc;
+        : state.menuStep === 1 ? it.laps + '바퀴 · ' + (it.tip || '') : it.desc;
       b.innerHTML = '<strong>' + it.name + '</strong><small>' + sub + '</small>';
       b.addEventListener('click', () => {
         if (state.menuStep === 0) state.charIndex = i;
