@@ -38,6 +38,23 @@
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: clamp(14px, 3vh, 26px); pointer-events: auto;
     background: linear-gradient(160deg, rgba(255,217,236,0.94), rgba(191,228,255,0.94));
+    /* 아이패드 가로처럼 세로가 짧으면 내용이 화면 밖으로 잘린다.
+       넘칠 때만 메뉴 안에서 스크롤되게 하고, 넘치지 않으면 지금처럼 가운데 정렬. */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding-block: clamp(10px, 2vh, 24px);
+  }
+  /* 세로가 짧을 때 여백을 줄여 웬만하면 스크롤 없이 들어오게 한다 */
+  @media (max-height: 820px) {
+    #menu { gap: clamp(8px, 1.6vh, 14px); padding-block: 6px; }
+    #menu h1 { font-size: clamp(24px, 4.4vw, 36px); }
+    #keys { padding: 8px 14px; gap: 3px; }
+    #bgm { margin-top: 0; gap: 5px; }
+    #bgm-note { line-height: 1.15; }
+    .bgmbtn { padding: 6px 14px; }
+    #menu-hint { display: none; }        /* 아래 조작 설명과 겹치는 안내라 접는다 */
+    .card { padding: 10px 14px; }
   }
   #menu h1 {
     font-size: clamp(30px, 6vw, 52px); font-weight: 900; color: #fff;
@@ -136,6 +153,27 @@
     100% { transform: translate(-50%,-50%) scale(1);    opacity: 1; }
   }
 
+  /* 내 음악 넣기 */
+  #bgm {
+    margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px;
+    align-items: center; justify-content: center; max-width: min(560px, 92vw);
+  }
+  .bgmbtn {
+    font: inherit; font-weight: 900; cursor: pointer; pointer-events: auto;
+    padding: 8px 16px; border-radius: 999px; border: 3px solid rgba(140,74,99,0.25);
+    background: rgba(255,255,255,0.88); color: var(--deep);
+    font-size: clamp(12px, 1.9vw, 15px);
+  }
+  .bgmbtn:active { transform: translateY(2px); }
+  #bgm-name {
+    flex-basis: 100%; text-align: center; font-weight: 800; color: var(--deep);
+    font-size: clamp(11px, 1.8vw, 14px);
+  }
+  #bgm-note {
+    flex-basis: 100%; text-align: center; font-weight: 700; color: #8c7a95;
+    font-size: clamp(10px, 1.5vw, 12px); opacity: .9;
+  }
+
   /* 소리 켜기/끄기 — 메뉴에서도 주행 중에도 항상 보인다 */
   #sound {
     position: fixed; z-index: 40; pointer-events: auto; cursor: pointer;
@@ -210,6 +248,14 @@
   <div id="menu-list"></div>
   <button class="ghost" id="menu-back">← 뒤로</button>
   <div id="menu-hint">← → 로 고르고 스페이스 · 화면을 눌러도 돼요</div>
+
+  <div id="bgm">
+    <label class="bgmbtn" for="bgm-file">🎵 내 음악 넣기</label>
+    <input id="bgm-file" type="file" accept="audio/*" hidden>
+    <button class="bgmbtn" id="bgm-clear" type="button" hidden>기본 음악으로</button>
+    <div id="bgm-name">지금은 게임 기본 음악이에요</div>
+    <div id="bgm-note">고른 파일은 이 기기에만 저장돼요. 인터넷으로 올라가지 않아요.</div>
+  </div>
 
   <div id="keys">
     <div class="kt">조작 방법</div>

@@ -594,6 +594,11 @@ export function startGame() {
       list.appendChild(b);
     });
     el('menu-back').style.display = state.menuStep > 0 ? 'inline-block' : 'none';
+    // 조작 설명과 음악 설정은 첫 화면에서만. 매 단계 반복하면 세로가 짧은
+    // 화면(아이패드 가로)에서 카드가 밀려 잘린다.
+    const first = state.menuStep === 0;
+    el('keys').style.display = first ? 'grid' : 'none';
+    el('bgm').style.display = first ? 'flex' : 'none';
   }
 
   function nextStep() {
@@ -628,6 +633,27 @@ export function startGame() {
   }
 
   el('again').addEventListener('click', () => { el('result').style.display = 'none'; startRace(); });
+  // 내 음악 넣기 — 파일은 이 기기 안에만 있고 어디로도 전송되지 않는다
+  const bgmFile = el('bgm-file'), bgmClear = el('bgm-clear'), bgmName = el('bgm-name');
+  function paintBgm(msg) {
+    const n = audio.userTrackName();
+    bgmName.textContent = msg || (n ? '내 음악: ' + n : '지금은 게임 기본 음악이에요');
+    bgmClear.hidden = !n;
+  }
+  bgmFile.addEventListener('change', () => {
+    const f = bgmFile.files && bgmFile.files[0];
+    bgmFile.value = '';
+    if (!f) return;
+    paintBgm('음악을 읽는 중…');
+    audio.setUserTrack(f)
+      .then(() => paintBgm())
+      .catch(() => paintBgm('이 파일은 재생할 수 없어요. 다른 파일로 해보세요'));
+  });
+  bgmClear.addEventListener('click', () => {
+    audio.clearUserTrack().then(() => paintBgm());
+  });
+  audio.restoreUserTrack().then(() => paintBgm());
+
   const soundBtn = el('sound');
   function paintSound() {
     soundBtn.textContent = audio.isMuted() ? '🔇' : '🔊';

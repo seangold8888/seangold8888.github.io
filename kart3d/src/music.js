@@ -38,6 +38,33 @@ function bassBar(root) {
   return [root, root, fifth, root, root, oct, fifth, root];   // 8분음표 8개
 }
 
+
+// ---- 기기 안에만 저장되는 사용자 음악 ----
+// 파일은 IndexedDB 에 들어가고 어디로도 올라가지 않는다. 리포에도 안 들어간다.
+function idbOpen() {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open('kart3d-audio', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('files');
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+}
+function idbDo(mode, fn) {
+  return idbOpen().then(db => new Promise((res, rej) => {
+    const tx = db.transaction('files', mode);
+    fn(tx.objectStore('files'));
+    tx.oncomplete = () => res();
+    tx.onerror = () => rej(tx.error);
+  }));
+}
+function idbGet(key) {
+  return idbOpen().then(db => new Promise((res, rej) => {
+    const rq = db.transaction('files', 'readonly').objectStore('files').get(key);
+    rq.onsuccess = () => res(rq.result);
+    rq.onerror = () => rej(rq.error);
+  }));
+}
+
 export function createAudio() {
   let ctx = null;
   let master = null, musicGain = null, sfxGain = null;
@@ -46,6 +73,7 @@ export function createAudio() {
   let live = [];
   let playing = false;
   let muted = false;
+  let userBuf = null, userName = null, userSrc = null;
   try { muted = localStorage.getItem('kart3d_music') === 'off'; } catch (_) {}
 
   function ensure() {
@@ -164,10 +192,57 @@ export function createAudio() {
     { bpm: 158, shift: 5 }    // 무지개 하늘길
   ];
 
+  // 사용자가 넣은 곡을 이어붙여 반복 재생한다
+  function playUserTrack() {
+    userSrc = ctx.createBufferSource();
+    userSrc.buffer = userBuf;
+    userSrc.loop = true;
+    userSrc.connect(musicGain);
+    userSrc.start(ctx.currentTime + 0.05);
+  }
+
+  function setUserTrack(file) {
+    if (!ensure()) return Promise.reject(new Error('이 기기에서는 오디오를 쓸 수 없어요'));
+    return file.arrayBuffer().then(raw =>
+      // decodeAudioData 는 넘긴 버퍼를 비워버린다. 저장용 원본을 남기려고 복사본을 넘긴다.
+      ctx.decodeAudioData(raw.slice(0)).then(buf => {
+        userBuf = buf; userName = file.name;
+        return idbDo('readwrite', st => st.put({ name: file.name, data: raw }, 'bgm'))
+          .catch(() => {})            // 저장이 막혀도 이번 판은 재생된다
+          .then(() => file.name);
+      })
+    );
+  }
+
+  function clearUserTrack() {
+    userBuf = null; userName = null;
+    return idbDo('readwrite', st => st.delete('bgm')).catch(() => {});
+  }
+
+  function restoreUserTrack() {
+    if (!ensure()) return Promise.resolve(null);
+    return idbGet('bgm')
+      .then(rec => {
+        if (!rec || !rec.data) return null;
+        return ctx.decodeAudioData(rec.data.slice(0)).then(buf => {
+          userBuf = buf; userName = rec.name;
+          return rec.name;
+        });
+      })
+      .catch(() => null);
+  }
+
   function startMusic(trackIndex) {
     if (!ensure()) return;
     resume();
     stopMusic(true);
+    if (userBuf) {
+      playing = true;
+      musicGain.gain.cancelScheduledValues(ctx.currentTime);
+      musicGain.gain.setValueAtTime(muted ? 0 : 0.5, ctx.currentTime);
+      playUserTrack();
+      return;
+    }
     const v = VARIANT[trackIndex % VARIANT.length];
     const spb = 60 / v.bpm;
     playing = true;
@@ -190,6 +265,7 @@ export function createAudio() {
     if (timer) { clearTimeout(timer); timer = null; }
     if (!ctx) return;
     const now = ctx.currentTime;
+    if (userSrc) { try { userSrc.stop(now); } catch (_) {} userSrc = null; }
     for (const s of live) { try { s.stop(now); } catch (_) {} }
     live = [];
     if (!silent) {
@@ -301,6 +377,8 @@ export function createAudio() {
 
   return {
     resume, beep, sfx, fanfare, startMusic, stopMusic, setMuted,
+    setUserTrack, clearUserTrack, restoreUserTrack,
+    userTrackName: () => userName,
     isMuted: () => muted,
     isPlaying: () => playing
   };
