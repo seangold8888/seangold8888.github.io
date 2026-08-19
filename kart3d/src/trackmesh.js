@@ -120,21 +120,37 @@ export function buildTrackMesh(track, scene) {
     group.add(im);
   });
 
+  // 진행방향을 따르되 좌우로는 기울지 않는 자세를 만든다.
+  // setFromUnitVectors 는 "최단호" 회전이라 접선에 수직 성분이 있으면
+  // 원치 않는 롤이 딸려 들어와 점프대가 옆으로 삐딱해진다.
+  const WORLD_UP = new THREE.Vector3(0, 1, 0);
+  const _f = new THREE.Vector3(), _r = new THREE.Vector3(), _u = new THREE.Vector3();
+  const _m = new THREE.Matrix4();
+  function alignAlong(obj, tx, ty, tz) {
+    _f.set(tx, ty, tz).normalize();
+    _r.crossVectors(WORLD_UP, _f);
+    if (_r.lengthSq() < 1e-6) _r.set(1, 0, 0);   // 거의 수직이면 임의의 수평축
+    _r.normalize();
+    _u.crossVectors(_f, _r).normalize();
+    _m.makeBasis(_r, _u, _f);                     // 로컬 +X=오른쪽(수평), +Y=위, +Z=진행
+    obj.quaternion.setFromRotationMatrix(_m);
+  }
+
   // ---- 점프대 ----
   track.ramps.forEach(r => {
     const p = r.p;
-    const tan = new THREE.Vector3(p.tx, p.ty, p.tz).normalize();
     const ramp = new THREE.Mesh(new THREE.BoxGeometry(HALF * 1.8, 3, 26),
       new THREE.MeshLambertMaterial({ color: 0xffd34d }));
     ramp.position.set(p.x, p.y + 1.6, p.z);
-    ramp.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), tan);
+    alignAlong(ramp, p.tx, p.ty, p.tz);
     ramp.rotateX(-0.24);
     group.add(ramp);
-    // 화살표 표시
+    // 진행방향을 가리키며 점프대 위에 누운 화살표
     const arrow = new THREE.Mesh(new THREE.ConeGeometry(5, 12, 4),
       new THREE.MeshLambertMaterial({ color: 0xff7aa8 }));
-    arrow.position.set(p.x, p.y + 5, p.z);
-    arrow.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), tan);
+    arrow.position.set(p.x, p.y + 4.4, p.z);
+    alignAlong(arrow, p.tx, p.ty, p.tz);
+    arrow.rotateX(Math.PI / 2 - 0.24);            // 콘의 +Y 축을 진행방향으로 눕힌다
     group.add(arrow);
   });
 
@@ -147,8 +163,8 @@ export function buildTrackMesh(track, scene) {
       const m = new THREE.Mesh(new THREE.BoxGeometry(40, 1.2, len),
         new THREE.MeshLambertMaterial({ color: 0xd8e59a }));
       m.position.copy(a).add(b).multiplyScalar(0.5);
-      m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1),
-        b.clone().sub(a).normalize());
+      const d = b.clone().sub(a);
+      alignAlong(m, d.x, d.y, d.z);
       group.add(m);
     });
   }
