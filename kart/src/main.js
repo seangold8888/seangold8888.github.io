@@ -136,13 +136,14 @@
     (function watchSfx() {
       const p = player;
       if (!p) return;
-      const now = { boost: p.boost > 0, spin: p.spin > 0, item: !!p.item, lap: p.lap };
+      const now = { boost: p.boost > 0, spin: p.spin > 0, item: p.item, lap: p.lap };
       const q = sfxPrev;
       if (q) {
         if (now.spin && !q.spin) audio.sfx('hit');
-        else if (now.boost && !q.boost) audio.sfx('boost');
+        else if (now.boost && !q.boost && !q.item) audio.sfx('boost');
         if (now.item && !q.item) audio.sfx('pickup');
-        if (!now.item && q.item) audio.sfx('use');
+        // 무엇을 썼는지 귀로도 알 수 있게 아이템 종류별로 소리를 낸다
+        if (!now.item && q.item) audio.sfx('use:' + q.item);
         if (now.lap > q.lap && now.lap > 0) audio.sfx('lap');
       }
       sfxPrev = now;
@@ -617,18 +618,57 @@
     }
 
     g.fillStyle = '#8c4a63';
-    g.font = '900 21px "Malgun Gothic", sans-serif';
+    g.font = '900 20px "Malgun Gothic", sans-serif';
     g.fillText(E_isTouch
       ? (selStep === 0 ? '카트를 눌러 고르세요' : '코스를 눌러 출발!')
-      : (selStep === 0 ? '← → 로 고르고 스페이스' : '← → 로 고르고 스페이스로 출발!'), W * 0.5, 452);
-    if (selStep === 1) {
-      g.font = '900 15px "Malgun Gothic", sans-serif';
-      g.fillText('뒤로: Esc', W * 0.5, 478);
-    }
+      : (selStep === 0 ? '← → 로 고르고 스페이스' : '← → 로 고르고 스페이스로 출발!'), W * 0.5, 418);
+
+    // 최고 기록은 위쪽에. 아래는 조작 설명 자리다.
     if (bestLap) {
-      g.font = '900 17px "Malgun Gothic", sans-serif';
-      g.fillText('최고 한 바퀴 기록 ' + fmt(bestLap), W * 0.5, 506);
+      g.font = '900 15px "Malgun Gothic", sans-serif';
+      g.fillStyle = '#a98fb0';
+      g.fillText('최고 한 바퀴 기록 ' + fmt(bestLap), W * 0.5, 134);
     }
+
+    drawControls(g);
+  }
+
+  // 조작 설명 — 아이가 처음 잡아도 알 수 있게 선택 화면에 그대로 적어 둔다.
+  // 터치 기기와 키보드는 서로 다른 줄을 보여 준다.
+  function drawControls(g) {
+    const rows = E_isTouch ? [
+      ['자동', '엑셀은 없어요. 출발하면 알아서 달려요'],
+      ['◀ ▶', '화면 왼쪽 아래 버튼으로 돌기'],
+      ['드리프트', '오른쪽 아래 버튼을 꾹 — 굽은 길에서 부스터'],
+      ['아이템', '모아둔 아이템 쓰기']
+    ] : [
+      ['자동', '엑셀은 없어요. 출발하면 알아서 달려요'],
+      ['← →', '왼쪽 · 오른쪽으로 돌기'],
+      ['스페이스', '꾹 누르면 드리프트 — 굽은 길에서 오래 미끄러지면 부스터'],
+      ['↑', '모아둔 아이템 쓰기'],
+      ['Esc', '뒤로']
+    ];
+    // 세로 540 안에 들어와야 한다. 예전에는 마지막 줄이 화면 밖으로 잘렸다.
+    const boxW = 640, lineH = 17;
+    const boxH = rows.length * lineH + 14;
+    const x0 = (W - boxW) / 2, y0 = H - boxH - 8;
+    g.save();
+    g.fillStyle = 'rgba(255,255,255,0.7)';
+    rrAt(g, x0, y0, boxW, boxH, 14); g.fill();
+    g.strokeStyle = 'rgba(140,74,99,0.22)'; g.lineWidth = 2.5; g.stroke();
+    rows.forEach((r, i) => {
+      const y = y0 + 19 + i * lineH;
+      g.textAlign = 'right';
+      g.font = '900 13px "Malgun Gothic", sans-serif';
+      g.fillStyle = '#8c4a63';
+      g.fillText(r[0], x0 + 108, y);
+      g.textAlign = 'left';
+      g.font = '800 13px "Malgun Gothic", sans-serif';
+      g.fillStyle = '#6f5c7a';
+      g.fillText(r[1], x0 + 122, y);
+    });
+    g.restore();
+    g.textAlign = 'center';
   }
 
   function rrAt(g, x, y, w, h, r) {

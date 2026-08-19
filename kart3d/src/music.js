@@ -339,9 +339,39 @@ export function createAudio() {
         env('square', t, 0.09, 0.15, f(84), f(84));
         env('square', t + 0.07, 0.14, 0.15, f(91), f(91));
         break;
-      case 'use':                          // 아이템 사용 — 짧게 쏘는 소리
+      // ---- 아이템별로 소리를 달리한다. 무엇을 썼는지 귀로도 알 수 있게. ----
+      case 'use:boost':                    // 부스터 — 위로 훑고 바람소리
+        env('sawtooth', t, 0.36, 0.16, 300, 1400);
+        burst(t, 0.30, 0.10, 800);
+        break;
+      case 'use:banana':                   // 바나나 — 통통 튀며 놓는 소리
+        env('triangle', t, 0.10, 0.14, 700, 420);
+        env('triangle', t + 0.10, 0.10, 0.11, 520, 320);
+        env('triangle', t + 0.19, 0.10, 0.08, 400, 250);
+        break;
+      case 'use:bomb':                      // 폭탄 — 쏘는 소리
+        env('square', t, 0.16, 0.15, 240, 900);
+        burst(t + 0.12, 0.16, 0.14, 900);
+        break;
+      case 'use:shield':                    // 방어막 — 감싸는 소리
+        env('sine', t, 0.34, 0.13, f(76), f(88));
+        env('sine', t + 0.06, 0.32, 0.09, f(83), f(95));
+        break;
+      case 'use:magnet':                    // 자석 — 끌어당기는 소리
+        env('sine', t, 0.40, 0.13, 1200, 300);
+        env('triangle', t + 0.08, 0.30, 0.08, 900, 240);
+        break;
+      case 'use:ribbon':                    // 리본(2D) — 날아가는 소리
+        env('sawtooth', t, 0.22, 0.14, 1000, 340);
+        burst(t, 0.08, 0.08, 2400);
+        break;
+      case 'use':                          // 그 밖 — 짧게 쏘는 소리
         env('sawtooth', t, 0.18, 0.14, 900, 220);
         burst(t, 0.09, 0.10, 2200);
+        break;
+      case 'block':                        // 방어막이 막아냄
+        env('sine', t, 0.20, 0.15, f(88), f(93));
+        burst(t, 0.06, 0.07, 3000);
         break;
       case 'boost':                        // 부스터 — 위로 훑는 소리
         env('sawtooth', t, 0.34, 0.15, 260, 1250);

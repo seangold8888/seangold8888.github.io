@@ -462,16 +462,17 @@ export function startGame() {
     const p = state.player;
     const now = {
       boost: p.boost > 0, spin: p.spin > 0, air: p.airborne,
-      item: !!p.item, lap: p.lap
+      item: p.item, lap: p.lap
     };
     const q = sfxPrev;
     if (q) {
       if (now.spin && !q.spin) audio.sfx('hit');
-      else if (now.boost && !q.boost) audio.sfx('boost');
+      else if (now.boost && !q.boost && !q.item) audio.sfx('boost');
       if (now.air && !q.air) audio.sfx('jump');
       if (!now.air && q.air) audio.sfx('land');
       if (now.item && !q.item) audio.sfx('pickup');
-      if (!now.item && q.item) audio.sfx('use');
+      // 무엇을 썼는지 귀로도 알 수 있게 아이템 종류별로 소리를 낸다
+      if (!now.item && q.item) audio.sfx('use:' + q.item);
       if (now.lap > q.lap && now.lap > 0) audio.sfx('lap');
     }
     sfxPrev = now;
