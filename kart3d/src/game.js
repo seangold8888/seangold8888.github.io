@@ -239,7 +239,8 @@ export function startGame() {
     if (mode.items) updateItems(dt, input);
     pushApart();
     rankKarts();
-    followCamera(dt, false);
+    if (state.player.finished) finishCamera(dt);
+    else followCamera(dt, false);
 
     state.karts.forEach((k, i) => k.applyToModel(state.models[i]));
     if (state.player.shieldMesh) {
@@ -256,7 +257,7 @@ export function startGame() {
 
     if (state.player.finished) {
       state.finishDelay += dt;
-      if (state.finishDelay > 2.2) {
+      if (state.finishDelay > FINISH_CAM + 0.9) {
         state.karts.forEach(k => {
           if (!k.finished) { k.finished = true; k.finishTime = 9999; state.results.push(k); }
         });
@@ -372,6 +373,41 @@ export function startGame() {
     camPos.set(tx, ty, tz);
     camera.position.lerp(camPos, k);
     camLook.set(p.x + Math.sin(p.angle) * 95, p.y + 4, p.z + Math.cos(p.angle) * 95);
+    camera.lookAt(camLook);
+  }
+
+  // 결승 통과 뒤 카메라가 옆으로 돌아 카트 앞모습을 보여준다.
+  // e=0 일 때 위 followCamera와 완전히 같은 위치·시선이라 넘어갈 때 끊기지 않는다.
+  const FINISH_CAM = 2.6;
+  function finishCamera(dt) {
+    const p = state.player;
+    const t = Math.min(1, state.finishDelay / FINISH_CAM);
+    const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;   // 부드러운 가감속
+    const phi = Math.PI * (1 - e) + 0.42 * e;   // 뒤(π) → 앞쪽 살짝 비스듬(0.42)
+    const dist = 104 - 52 * e;
+    const up = 46 - 24 * e;
+
+    // 앞에서 잡으면 앞서 달리는 카트가 항상 주인공을 가린다.
+    // 후반부에 라이벌을 부드럽게 줄여 없애고 주인공만 남긴다.
+    const solo = Math.max(0, Math.min(1, (e - 0.32) / 0.26));
+    for (let i = 0; i < state.models.length; i++) {
+      if (state.karts[i] === state.player) continue;
+      const sc = 1 - solo;
+      state.models[i].scale.setScalar(Math.max(0.001, sc));
+      state.models[i].visible = sc > 0.02;
+    }
+    if (solo > 0.5) {
+      state.boxes.forEach(b => { b.mesh.visible = false; });
+      state.projMeshes.forEach(m => { m.visible = false; });
+    }
+    camPos.set(p.x + Math.sin(p.angle + phi) * dist,
+               p.y + up,
+               p.z + Math.cos(p.angle + phi) * dist);
+    camera.position.lerp(camPos, 1 - Math.pow(0.002, dt));
+    // 시선도 "앞쪽 95" 에서 카트 얼굴로 함께 옮긴다
+    const lx = p.x + Math.sin(p.angle) * 95 * (1 - e);
+    const lz = p.z + Math.cos(p.angle) * 95 * (1 - e);
+    camLook.set(lx, p.y + 4 + 9 * e, lz);
     camera.lookAt(camLook);
   }
 

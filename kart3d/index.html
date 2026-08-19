@@ -69,6 +69,29 @@
   }
   #menu-hint { font-size: clamp(12px, 2vw, 16px); font-weight: 800; color: var(--deep); opacity: .8; }
 
+  /* 조작 설명 */
+  #keys {
+    margin-top: 14px; display: grid; gap: 6px;
+    background: rgba(255,255,255,0.82); border: 3px solid rgba(140,74,99,0.18);
+    border-radius: 18px; padding: 12px 16px; max-width: min(560px, 92vw);
+  }
+  #keys .kt {
+    font-size: clamp(12px, 1.9vw, 15px); font-weight: 900; color: var(--deep);
+    opacity: .75; letter-spacing: .04em; margin-bottom: 2px;
+  }
+  #keys .krow {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    font-size: clamp(12px, 2vw, 15px); font-weight: 800; color: #6f5c7a;
+  }
+  #keys kbd {
+    font: inherit; font-weight: 900; color: var(--deep);
+    background: #fff; border: 2px solid rgba(140,74,99,0.28);
+    border-bottom-width: 4px; border-radius: 8px; padding: 2px 9px; min-width: 22px;
+    text-align: center; white-space: nowrap;
+  }
+  @media (pointer: coarse) { #keys .only-key { display: none; } }
+  @media (pointer: fine)   { #keys .only-touch { display: none; } }
+
   /* ---------- HUD ---------- */
   #hud { display: none; }
   .panel {
@@ -168,6 +191,19 @@
   <div id="menu-list"></div>
   <button class="ghost" id="menu-back">← 뒤로</button>
   <div id="menu-hint">← → 로 고르고 스페이스 · 화면을 눌러도 돼요</div>
+
+  <div id="keys">
+    <div class="kt">조작 방법</div>
+    <div class="krow"><kbd>자동</kbd><span>엑셀은 없어요. 출발하면 알아서 앞으로 달려요</span></div>
+    <div class="krow only-key"><kbd>←</kbd><kbd>→</kbd><span>왼쪽 · 오른쪽으로 돌기</span></div>
+    <div class="krow only-key"><kbd>스페이스</kbd><span>꾹 누르면 드리프트, 톡 누르면 점프</span></div>
+    <div class="krow only-key"><kbd>Enter</kbd><kbd>Z</kbd><span>모아둔 아이템 쓰기</span></div>
+    <div class="krow only-key"><kbd>Esc</kbd><span>메뉴로 돌아가기</span></div>
+    <div class="krow only-touch"><kbd>◀</kbd><kbd>▶</kbd><span>화면 왼쪽 아래 버튼으로 돌기</span></div>
+    <div class="krow only-touch"><kbd>드리프트</kbd><span>꾹 누르면 드리프트, 톡 누르면 점프</span></div>
+    <div class="krow only-touch"><kbd>아이템</kbd><span>모아둔 아이템 쓰기</span></div>
+    <div class="krow"><kbd>드리프트 팁</kbd><span>굽은 길에서 오래 미끄러지면 부스터가 터져요</span></div>
+  </div>
 </div>
 
 <div class="layer" id="hud">
