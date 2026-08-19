@@ -118,7 +118,8 @@ export function buildKartModel(spec) {
   head.add(face);
   // 얼굴은 구슬 눈 대신 캔버스로 그린 텍스처 한 장을 머리 앞면에 씌운다.
   // 메시를 늘리지 않고도 눈·코·입·볼터치·수염까지 표현된다.
-  face.add(faceCap(spec));
+  const faceMesh = faceCap(spec);
+  face.add(faceMesh);
 
   if (spec.deco === 'ribbon') {
     [[-4.9, 5.2], [4.9, 5.2]].forEach(([x, y]) => {
@@ -192,15 +193,17 @@ export function buildKartModel(spec) {
   head.position.set(0, 15.4, -3.4);
   g.add(head);
 
-  g.userData = { wheels, head, spec, steerWheel };
+  g.userData = { wheels, head, spec, steerWheel, faceMesh, mood: 'normal' };
   return g;
 }
 
 // ---------- 얼굴 텍스처 ----------
 const faceCache = new Map();
 
-function faceTexture(spec) {
-  if (faceCache.has(spec.id)) return faceCache.get(spec.id);
+function faceTexture(spec, mood) {
+  mood = mood || 'normal';
+  const key = spec.id + ':' + mood;
+  if (faceCache.has(key)) return faceCache.get(key);
   const S = 512;
   const cv = document.createElement('canvas');
   cv.width = cv.height = S;
@@ -228,6 +231,25 @@ function faceTexture(spec) {
   }
   // 눈: 살짝 입체감 있는 검은자 + 큰 하이라이트 + 작은 반사점
   function eye(nx, ny, rx, ry, rot, tint) {
+    if (mood === 'happy') {                       // 부스터 중 — 웃는 눈 ^ ^
+      c.save(); c.translate(X(nx), Y(ny));
+      c.beginPath();
+      c.moveTo(-X(rx) * 1.15, Y(ry) * 0.48);
+      c.quadraticCurveTo(0, -Y(ry) * 1.05, X(rx) * 1.15, Y(ry) * 0.48);
+      c.strokeStyle = INK; c.lineWidth = X(0.018); c.lineCap = 'round'; c.stroke();
+      c.restore(); return;
+    }
+    if (mood === 'dizzy') {                       // 공격당해 빙글 — 뱅뱅 눈
+      c.save(); c.translate(X(nx), Y(ny));
+      c.strokeStyle = INK; c.lineWidth = X(0.014); c.lineCap = 'round';
+      c.beginPath();
+      for (let a = 0; a < Math.PI * 4; a += 0.22) {
+        const rr = (a / (Math.PI * 4)) * X(rx) * 1.25;
+        const px = Math.cos(a) * rr, py = Math.sin(a) * rr * (ry / rx);
+        if (a === 0) c.moveTo(px, py); else c.lineTo(px, py);
+      }
+      c.stroke(); c.restore(); return;
+    }
     c.save(); c.translate(X(nx), Y(ny)); if (rot) c.rotate(rot);
     const g = c.createRadialGradient(-X(rx) * 0.3, -Y(ry) * 0.35, 0, 0, 0, X(rx) * 1.35);
     g.addColorStop(0, tint || '#3b3152'); g.addColorStop(1, INK);
@@ -297,9 +319,24 @@ function faceTexture(spec) {
     blush(0.248, 0.556, 'rgba(255,150,150,0.5)'); blush(0.752, 0.556, 'rgba(255,150,150,0.5)');
   }
 
+  // 표정 입은 캐릭터 기본 입을 덮도록 마지막에 그린다
+  if (mood === 'happy') {
+    c.beginPath();
+    c.moveTo(X(0.398), Y(0.586));
+    c.quadraticCurveTo(X(0.5), Y(0.724), X(0.602), Y(0.586));
+    c.closePath(); c.fillStyle = INK; c.fill();
+    ellipse(0.5, 0.664, 0.040, 0.026, '#ff8fae');
+    blush(0.236, 0.548, 'rgba(255,120,150,0.75)', 0.086);
+    blush(0.764, 0.548, 'rgba(255,120,150,0.75)', 0.086);
+  } else if (mood === 'dizzy') {
+    ellipse(0.5, 0.622, 0.036, 0.030, INK);
+    stroke([[0.30, 0.404], [0.36, 0.372], [0.42, 0.404]], INK, 0.012);
+    stroke([[0.70, 0.404], [0.64, 0.372], [0.58, 0.404]], INK, 0.012);
+  }
+
   const tex = new THREE.CanvasTexture(cv);
   tex.anisotropy = 8;
-  faceCache.set(spec.id, tex);
+  faceCache.set(key, tex);
   return tex;
 }
 
@@ -458,6 +495,15 @@ export class Kart {
     if (d && d.head) d.head.position.y = 15.4 + Math.sin(this.wheelSpin * 2) * 0.35;
     // 핸들은 조향을 따라 돈다. lean 은 이미 조향을 부드럽게 따라가는 값이다.
     if (d && d.steerWheel) d.steerWheel.rotation.y = -this.lean * 0.9;
+    // 표정: 맞아서 도는 중이면 뱅뱅 눈, 부스터 중이면 웃는 눈
+    if (d && d.faceMesh) {
+      const mood = this.spin > 0 ? 'dizzy' : (this.boost > 0 ? 'happy' : 'normal');
+      if (d.mood !== mood) {
+        d.mood = mood;
+        d.faceMesh.material.map = faceTexture(d.spec, mood);
+        d.faceMesh.material.needsUpdate = true;
+      }
+    }
   }
 }
 

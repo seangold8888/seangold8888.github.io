@@ -129,6 +129,12 @@
     font-size: clamp(60px, 14vw, 130px); font-weight: 900; color: #fff3a6;
     text-shadow: 0 6px 0 var(--ink), 0 12px 30px rgba(0,0,0,0.3);
   }
+  #countdown.pop { animation: cdpop 0.55s cubic-bezier(.2,1.5,.4,1); }
+  @keyframes cdpop {
+    0%   { transform: translate(-50%,-50%) scale(2.1); opacity: 0; }
+    40%  { transform: translate(-50%,-50%) scale(0.9);  opacity: 1; }
+    100% { transform: translate(-50%,-50%) scale(1);    opacity: 1; }
+  }
 
   /* ---------- 터치 조작 ---------- */
   #touch { display: none; }

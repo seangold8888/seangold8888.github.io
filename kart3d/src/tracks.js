@@ -96,7 +96,7 @@ export const TRACKS = [
     tip: '오르내림이 커요 · 아치 통과',
     name: '무지개 하늘길',
     sky: 0xffe4f6, fog: 0xfff0fa, ground: 0xd8c8ff, road: 0xfff8e8, rail: 0xff7aa8,
-    laps: 2,
+    laps: 3,
     roadHalf: 28,
     points: [
       [0, 60, -470], [270, 100, -420], [470, 150, -230], [530, 190, 40],

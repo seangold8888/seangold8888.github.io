@@ -214,6 +214,7 @@ export function startGame() {
     if (state.countdown > 0) {
       state.countdown -= dt;
       followCamera(dt, true);
+      updateHud();          // 예전에는 여기서 바로 빠져나가 카운트다운이 화면에 뜨지 않았다
       return;
     }
     state.raceTime += dt;
@@ -444,6 +445,28 @@ export function startGame() {
   }
 
   // ---------- HUD ----------
+  let lastCount = null;
+
+  // 출발 신호음. 오디오가 막힌 환경에서도 게임은 그대로 돌아가야 한다.
+  let actx = null;
+  function beep(freq, dur) {
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      if (!actx) actx = new AC();
+      if (actx.state === 'suspended') actx.resume();
+      const t = actx.currentTime;
+      const osc = actx.createOscillator(), gain = actx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, t);
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.16, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      osc.connect(gain).connect(actx.destination);
+      osc.start(t); osc.stop(t + dur + 0.02);
+    } catch (_) {}
+  }
+
   const hud = el('hud');
   const mini = el('mini');
   const miniCtx = mini.getContext('2d');
@@ -482,9 +505,21 @@ export function startGame() {
     const cd = el('countdown');
     if (state.countdown > 0) {
       const n = Math.ceil(state.countdown - 0.6);
-      cd.textContent = n > 0 ? n : '출발!';
+      const label = n > 0 ? String(n) : '출발!';
+      if (label !== lastCount) {
+        lastCount = label;
+        cd.textContent = label;
+        cd.style.color = n > 0 ? '#fff3a6' : '#9be2b5';
+        cd.classList.remove('pop');
+        void cd.offsetWidth;                 // 애니메이션 재시작
+        cd.classList.add('pop');
+        beep(n > 0 ? 520 : 880, n > 0 ? 0.26 : 0.5);
+      }
       cd.style.display = 'block';
-    } else cd.style.display = 'none';
+    } else {
+      cd.style.display = 'none';
+      lastCount = null;
+    }
 
     drawMini();
   }
