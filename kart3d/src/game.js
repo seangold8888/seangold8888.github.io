@@ -32,11 +32,18 @@ export function startGame() {
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(64, 16 / 9, 1, 4000);
-  const hemi = new THREE.HemisphereLight(0xffffff, 0x88bb66, 1.15);
+  const WHITE = new THREE.Color(0xffffff);
+  const hemi = new THREE.HemisphereLight(0xffffff, 0xcdd6c2, 1.0);
   scene.add(hemi);
-  const sun = new THREE.DirectionalLight(0xffffff, 1.0);
+  const sun = new THREE.DirectionalLight(0xfff6e6, 1.12);
   sun.position.set(200, 500, 180);
   scene.add(sun);
+  // 태양은 월드에 고정이라 카메라를 향한 면은 늘 어둡게 뜬다.
+  // 카메라에 물린 약한 필 라이트로 어느 방향에서 보든 얼굴이 살아나게 한다.
+  const fill = new THREE.DirectionalLight(0xffffff, 0.5);
+  fill.position.set(0.35, 0.8, 1);
+  camera.add(fill);
+  scene.add(camera);
 
   const state = {
     scene: 'menu', menuStep: 0,        // 0 캐릭터 1 트랙 2 모드
@@ -45,7 +52,7 @@ export function startGame() {
     karts: [], models: [], player: null,
     boxes: [], projectiles: [], projMeshes: [], extraMeshes: [],
     raceTime: 0, countdown: 0, lapStart: 0, bestLap: null, myBest: null,
-    results: [], finishDelay: 0, time: 0
+    results: [], finishDelay: 0, finishSide: 0, time: 0
   };
 
   const keys = Object.create(null);
@@ -103,7 +110,9 @@ export function startGame() {
     state.trackGroup = buildTrackMesh(state.track, scene);
     scene.background = new THREE.Color(def.sky);
     scene.fog = new THREE.Fog(def.fog, 420, 1900);
-    hemi.groundColor.set(def.ground);
+    // 지면색을 반사광에 그대로 쓰면 잔디 초록이 흰 캐릭터까지 물들인다.
+    // 트랙 분위기는 남기되 흰색 쪽으로 희석한다.
+    hemi.groundColor.set(def.ground).lerp(WHITE, 0.66);
 
     const order = [state.charIndex].concat(
       CHARACTERS.map((_, i) => i).filter(i => i !== state.charIndex));
@@ -162,6 +171,7 @@ export function startGame() {
     state.myBest = null;
     state.results = [];
     state.finishDelay = 0;
+    state.finishSide = 0;
     try { state.bestLap = parseFloat(localStorage.getItem(bestKey())) || null; } catch (_) { state.bestLap = null; }
     state.scene = 'race';
     showHud(true);
@@ -378,28 +388,40 @@ export function startGame() {
 
   // 결승 통과 뒤 카메라가 옆으로 돌아 카트 앞모습을 보여준다.
   // e=0 일 때 위 followCamera와 완전히 같은 위치·시선이라 넘어갈 때 끊기지 않는다.
+
+  // 카메라와 주인공을 잇는 선을 라이벌이 얼마나 막는지 재서 덜 막히는 쪽을 고른다
+  function clearestSide() {
+    const p = state.player;
+    let best = 1, bestScore = -Infinity;
+    for (const sgn of [1, -1]) {
+      const cx = p.x + Math.sin(p.angle + sgn * 0.78) * 58;
+      const cz = p.z + Math.cos(p.angle + sgn * 0.78) * 58;
+      let score = 0;
+      for (const k of state.karts) {
+        if (k === p) continue;
+        const vx = p.x - cx, vz = p.z - cz;
+        const len2 = vx * vx + vz * vz || 1;
+        let t = ((k.x - cx) * vx + (k.z - cz) * vz) / len2;
+        t = Math.max(0, Math.min(1, t));
+        score += Math.min(46, Math.hypot(k.x - (cx + vx * t), k.z - (cz + vz * t)));
+      }
+      if (score > bestScore) { bestScore = score; best = sgn; }
+    }
+    return best;
+  }
+
   const FINISH_CAM = 2.6;
   function finishCamera(dt) {
     const p = state.player;
     const t = Math.min(1, state.finishDelay / FINISH_CAM);
     const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;   // 부드러운 가감속
-    const phi = Math.PI * (1 - e) + 0.42 * e;   // 뒤(π) → 앞쪽 살짝 비스듬(0.42)
-    const dist = 104 - 52 * e;
-    const up = 46 - 24 * e;
-
-    // 앞에서 잡으면 앞서 달리는 카트가 항상 주인공을 가린다.
-    // 후반부에 라이벌을 부드럽게 줄여 없애고 주인공만 남긴다.
-    const solo = Math.max(0, Math.min(1, (e - 0.32) / 0.26));
-    for (let i = 0; i < state.models.length; i++) {
-      if (state.karts[i] === state.player) continue;
-      const sc = 1 - solo;
-      state.models[i].scale.setScalar(Math.max(0.001, sc));
-      state.models[i].visible = sc > 0.02;
-    }
-    if (solo > 0.5) {
-      state.boxes.forEach(b => { b.mesh.visible = false; });
-      state.projMeshes.forEach(m => { m.visible = false; });
-    }
+    // 앞에서 잡으면 앞서 달리는 카트가 주인공을 가린다. 카트를 숨기는 대신,
+    // 좌·우 중 시선이 덜 막히는 쪽으로 돌아 전원이 화면에 남게 한다.
+    if (state.finishSide === 0) state.finishSide = clearestSide();
+    const start = state.finishSide > 0 ? Math.PI : -Math.PI;
+    const phi = start * (1 - e) + state.finishSide * 0.78 * e;   // 뒤 → 앞 3/4
+    const dist = 104 - 46 * e;
+    const up = 46 - 16 * e;
     camPos.set(p.x + Math.sin(p.angle + phi) * dist,
                p.y + up,
                p.z + Math.cos(p.angle + phi) * dist);

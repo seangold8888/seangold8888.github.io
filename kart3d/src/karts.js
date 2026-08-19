@@ -44,24 +44,25 @@ export function buildKartModel(spec) {
   const face = new THREE.Mesh(new THREE.SphereGeometry(5.2, 16, 12), mat(0xffffff));
   face.scale.set(1.15, 1, 0.95);
   head.add(face);
-  const eye = new THREE.SphereGeometry(0.85, 8, 6);
-  const eyeMat = mat(0x3d3350);
-  [-2.4, 2.4].forEach(x => {
-    const e = new THREE.Mesh(eye, eyeMat);
-    e.position.set(x, 0.6, 5.7);
-    head.add(e);
-  });
+  // 얼굴은 구슬 눈 대신 캔버스로 그린 텍스처 한 장을 머리 앞면에 씌운다.
+  // 메시를 늘리지 않고도 눈·코·입·볼터치·수염까지 표현된다.
+  face.add(faceCap(spec));
 
   if (spec.deco === 'ribbon') {
-    const r = new THREE.Mesh(new THREE.TorusGeometry(2.3, 1.1, 6, 10), mat(0xff5c8a));
-    r.position.set(5, 4, 1); head.add(r);
-    [[-5.6, 5.4], [5.6, 5.4]].forEach(([x, y]) => {
-      const ear = new THREE.Mesh(new THREE.ConeGeometry(2.6, 4.6, 4), mat(0xffffff));
-      ear.position.set(x, y, 0); head.add(ear);
+    [[-5.2, 5.6], [5.2, 5.6]].forEach(([x, y]) => {
+      const ear = new THREE.Mesh(new THREE.ConeGeometry(2.5, 4.8, 14), mat(0xffffff));
+      ear.position.set(x, y, -0.6);
+      ear.rotation.z = x < 0 ? 0.22 : -0.22;
+      head.add(ear);
     });
+    const r = new THREE.Mesh(new THREE.TorusGeometry(2.2, 1.05, 8, 14), mat(0xff5c8a));
+    r.position.set(6.6, 6.4, 0.4); r.rotation.y = 0.35; head.add(r);
+    const rc = new THREE.Mesh(new THREE.SphereGeometry(1.05, 10, 8), mat(0xff8fb4));
+    rc.position.set(6.6, 6.4, 0.4); head.add(rc);
   } else if (spec.deco === 'hood') {
-    const hood = new THREE.Mesh(new THREE.SphereGeometry(6.9, 14, 10, 0, Math.PI * 2, 0, Math.PI * 0.62), mat(spec.trim));
-    hood.position.y = 0.4; head.add(hood);
+    // 후드 밑단이 눈 아래까지 내려오면 얼굴이 통째로 가려진다. 위쪽만 감싼다.
+    const hood = new THREE.Mesh(new THREE.SphereGeometry(6.6, 16, 12, 0, Math.PI * 2, 0, Math.PI * 0.46), mat(spec.trim));
+    hood.position.set(0, 1.0, -0.5); head.add(hood);
     [[-4.6, 6.6], [4.6, 6.6]].forEach(([x, y]) => {
       const ear = new THREE.Mesh(new THREE.CapsuleGeometry(1.8, 5, 4, 8), mat(spec.trim));
       ear.position.set(x, y, 0); ear.rotation.z = x < 0 ? 0.4 : -0.4; head.add(ear);
@@ -72,10 +73,12 @@ export function buildKartModel(spec) {
       ear.position.set(x, y, 0); ear.rotation.z = x < 0 ? 0.75 : -0.75; head.add(ear);
     });
   } else if (spec.deco === 'skull') {
-    const hood = new THREE.Mesh(new THREE.SphereGeometry(6.9, 14, 10, 0, Math.PI * 2, 0, Math.PI * 0.6), mat(0x3d3350));
-    hood.position.y = 0.5; head.add(hood);
-    const skull = new THREE.Mesh(new THREE.SphereGeometry(2, 8, 6), mat(0xff9ec4));
-    skull.position.set(0, 4.4, 5.2); head.add(skull);
+    // 후드는 얼굴을 덮지 않고 위쪽만 감싼다. 예전에는 밑단이 눈 아래까지 내려와
+    // 얼굴이 통째로 가려졌다.
+    const hood = new THREE.Mesh(new THREE.SphereGeometry(6.6, 16, 12, 0, Math.PI * 2, 0, Math.PI * 0.46), mat(0x3d3350));
+    hood.position.set(0, 1.0, -0.5); head.add(hood);
+    const skull = new THREE.Mesh(new THREE.SphereGeometry(1.9, 10, 8), mat(0xff9ec4));
+    skull.position.set(0, 4.6, 4.6); head.add(skull);
     [[-5, 6.8], [5, 6.8]].forEach(([x, y]) => {
       const ear = new THREE.Mesh(new THREE.ConeGeometry(2.4, 4.4, 4), mat(0x3d3350));
       ear.position.set(x, y, 0); head.add(ear);
@@ -129,6 +132,113 @@ export function buildKartModel(spec) {
   return g;
 }
 
+// ---------- 얼굴 텍스처 ----------
+const faceCache = new Map();
+
+function faceTexture(spec) {
+  if (faceCache.has(spec.id)) return faceCache.get(spec.id);
+  const S = 256;
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = S;
+  const c = cv.getContext('2d');
+  const X = n => n * S, Y = n => n * S;
+  const ink = '#241d33';
+
+  function ellipse(nx, ny, rx, ry, fill, rot) {
+    c.save(); c.translate(X(nx), Y(ny)); if (rot) c.rotate(rot);
+    c.beginPath(); c.ellipse(0, 0, X(rx), Y(ry), 0, 0, Math.PI * 2);
+    c.fillStyle = fill; c.fill(); c.restore();
+  }
+  function stroke(pts, color, w, cap) {
+    c.beginPath(); c.moveTo(X(pts[0][0]), Y(pts[0][1]));
+    for (let i = 1; i < pts.length; i++) c.lineTo(X(pts[i][0]), Y(pts[i][1]));
+    c.strokeStyle = color; c.lineWidth = X(w); c.lineCap = cap || 'round'; c.stroke();
+  }
+  function arc(nx, ny, r, a0, a1, color, w) {
+    c.beginPath(); c.arc(X(nx), Y(ny), X(r), a0, a1);
+    c.strokeStyle = color; c.lineWidth = X(w); c.lineCap = 'round'; c.stroke();
+  }
+  function blush(nx, ny, tint) {
+    const g = c.createRadialGradient(X(nx), Y(ny), 0, X(nx), Y(ny), X(0.075));
+    g.addColorStop(0, tint); g.addColorStop(1, 'rgba(255,150,175,0)');
+    c.fillStyle = g; c.beginPath(); c.arc(X(nx), Y(ny), X(0.075), 0, Math.PI * 2); c.fill();
+  }
+  // 눈: 세로 타원 + 흰 하이라이트
+  function eye(nx, ny, rx, ry, rot) {
+    ellipse(nx, ny, rx, ry, ink, rot);
+    ellipse(nx - rx * 0.33, ny - ry * 0.40, rx * 0.26, ry * 0.22, 'rgba(255,255,255,0.95)');
+  }
+
+  const EY = 0.44, EX = 0.175;   // 눈 높이 / 중심에서의 좌우 간격
+
+  if (spec.deco === 'ribbon') {           // 헬로키티
+    eye(0.5 - EX, EY, 0.052, 0.072);
+    eye(0.5 + EX, EY, 0.052, 0.072);
+    ellipse(0.5, 0.545, 0.042, 0.030, '#f7c948');
+    [[0.30, 0.44], [0.28, 0.50], [0.30, 0.56]].forEach(([x, y]) => stroke([[x, y], [x - 0.16, y - 0.02]], ink, 0.012));
+    [[0.70, 0.44], [0.72, 0.50], [0.70, 0.56]].forEach(([x, y]) => stroke([[x, y], [x + 0.16, y - 0.02]], ink, 0.012));
+  } else if (spec.deco === 'hood') {      // 마이멜로디
+    eye(0.5 - EX, EY, 0.048, 0.068);
+    eye(0.5 + EX, EY, 0.048, 0.068);
+    ellipse(0.5, 0.545, 0.034, 0.026, '#ff86b0');
+    stroke([[0.455, 0.60], [0.5, 0.635], [0.545, 0.60]], ink, 0.013);
+    blush(0.255, 0.55, 'rgba(255,140,175,0.55)'); blush(0.745, 0.55, 'rgba(255,140,175,0.55)');
+  } else if (spec.deco === 'ears') {      // 시나모롤
+    eye(0.5 - 0.195, EY, 0.050, 0.070);
+    eye(0.5 + 0.195, EY, 0.050, 0.070);
+    ellipse(0.5, 0.545, 0.030, 0.023, '#f6a8bf');
+    arc(0.5, 0.575, 0.052, 0.25 * Math.PI, 0.75 * Math.PI, ink, 0.013);
+    blush(0.26, 0.55, 'rgba(255,150,180,0.5)'); blush(0.74, 0.55, 'rgba(255,150,180,0.5)');
+  } else if (spec.deco === 'skull') {     // 쿠로미
+    eye(0.5 - EX, EY + 0.005, 0.050, 0.066, -0.28);
+    eye(0.5 + EX, EY + 0.005, 0.050, 0.066, 0.28);
+    stroke([[0.26, 0.345], [0.40, 0.305]], ink, 0.016);
+    stroke([[0.74, 0.345], [0.60, 0.305]], ink, 0.016);
+    stroke([[0.44, 0.60], [0.52, 0.625], [0.60, 0.585]], ink, 0.014);
+    c.beginPath(); c.moveTo(X(0.575), Y(0.60)); c.lineTo(X(0.60), Y(0.655)); c.lineTo(X(0.615), Y(0.598));
+    c.closePath(); c.fillStyle = '#ffffff'; c.fill();
+  } else if (spec.deco === 'pup') {       // 포차코
+    eye(0.5 - EX, EY, 0.052, 0.070);
+    eye(0.5 + EX, EY, 0.052, 0.070);
+    ellipse(0.5, 0.545, 0.048, 0.036, ink);
+    c.beginPath(); c.moveTo(X(0.42), Y(0.60)); c.quadraticCurveTo(X(0.5), Y(0.70), X(0.58), Y(0.60));
+    c.closePath(); c.fillStyle = ink; c.fill();
+    ellipse(0.5, 0.645, 0.032, 0.020, '#ff9bb4');
+  } else if (spec.deco === 'egg') {       // 구데타마
+    ellipse(0.5 - 0.115, 0.47, 0.026, 0.030, ink);
+    ellipse(0.5 + 0.115, 0.47, 0.026, 0.030, ink);
+    ellipse(0.5, 0.575, 0.026, 0.032, ink);
+    stroke([[0.30, 0.395], [0.40, 0.415]], ink, 0.011);
+    stroke([[0.70, 0.395], [0.60, 0.415]], ink, 0.011);
+  } else {                                // 폼폼푸린
+    eye(0.5 - EX, EY, 0.052, 0.070);
+    eye(0.5 + EX, EY, 0.052, 0.070);
+    ellipse(0.5, 0.545, 0.046, 0.034, '#5c3a1e');
+    stroke([[0.5, 0.575], [0.5, 0.605]], '#5c3a1e', 0.012);
+    arc(0.452, 0.605, 0.048, 0, Math.PI, '#5c3a1e', 0.014);
+    arc(0.548, 0.605, 0.048, 0, Math.PI, '#5c3a1e', 0.014);
+    blush(0.255, 0.56, 'rgba(255,150,150,0.45)'); blush(0.745, 0.56, 'rgba(255,150,150,0.45)');
+  }
+
+  const tex = new THREE.CanvasTexture(cv);
+  tex.anisotropy = 4;
+  faceCache.set(spec.id, tex);
+  return tex;
+}
+
+// 머리 구(반지름 5.2)의 앞면에 살짝 띄워 씌우는 얼굴판.
+// face 의 자식으로 붙이므로 캐릭터별 얼굴 찌그러짐(scale)을 그대로 따라간다.
+function faceCap(spec) {
+  const D = 1.05, TH = 0.86;
+  const geo = new THREE.SphereGeometry(5.2 * 1.015, 28, 20,
+    Math.PI / 2 - D, D * 2, Math.PI / 2 - TH, TH * 2);
+  const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
+    map: faceTexture(spec), transparent: true, depthWrite: false
+  }));
+  m.renderOrder = 2;
+  return m;
+}
+
 const GRAV = 260;
 
 export class Kart {
@@ -146,6 +256,9 @@ export class Kart {
     this.spec = spec;
     this.track = track;
     this.baseTop = spec.top;
+    // 차체가 향한 방향(angle)과 실제로 나아가는 방향(vAngle)을 분리한다.
+    // 둘이 벌어진 만큼이 곧 미끄러짐이다.
+    this.vAngle = this.angle;
   }
 
   get topSpeed() { return this.baseTop * (this.boost > 0 ? 1.36 : 1); }
@@ -169,36 +282,55 @@ export class Kart {
     const accel = this.spec.accel * 42;
     this.speed += (cap - this.speed) * Math.min(1, accel / Math.max(1, cap) * dt);
 
-    // 조향
     let steer = input.steer || 0;
+    if (this.slip > 0) steer += Math.sin(this.slip * 17) * 0.7;
+
+    // 드리프트: 한 번 걸리면 버튼을 놓을 때까지 방향이 고정된다.
+    // 예전에는 |steer|>0.25 를 매 프레임 요구해서, 키를 잠깐만 떼도 드리프트가
+    // 끊기고 미니부스터가 제멋대로 터졌다.
+    const canDrift = !this.airborne && this.speed > this.baseTop * 0.45;
+    if (input.drift && canDrift && (this.drift > 0 || Math.abs(steer) > 0.25)) {
+      if (this.drift <= 0) this.driftDir = Math.sign(steer) || 0;
+      if (this.driftDir !== 0) {
+        this.drift += dt;
+        this.driftCharge = Math.min(1.9, this.driftCharge + dt);
+        // 안쪽으로 자동으로 조금 감기되, 조작이 항상 우선한다.
+        // 최소각을 강제하면 카운터 스티어가 먹히지 않아 코스 밖으로 카브해버린다.
+        steer = Math.max(-1, Math.min(1, steer + this.driftDir * 0.35));
+      }
+    } else if (this.drift > 0) {
+      if (this.driftCharge > 0.6) {
+        this.boost = Math.max(this.boost, this.driftCharge > 1.3 ? 1.4 : 0.85);
+      }
+      this.drift = 0; this.driftCharge = 0; this.driftDir = 0;
+    }
+
+    // 차체 회전
     if (this.spin > 0) {
       this.angle += dt * 8;
       this.speed *= 1 - dt * 0.85;
     } else if (!this.airborne) {
-      if (this.slip > 0) steer += Math.sin(this.slip * 17) * 0.7;
-      const grip = this.spec.turn * (this.drift > 0 ? 1.45 : 1);
+      const grip = this.spec.turn * (this.drift > 0 ? 1.25 : 1);
       const sf = 0.58 + 0.42 * (1 - Math.min(1, this.speed / this.baseTop));
       // steer +1 = 화면 오른쪽. 카메라가 +Z를 바라보므로 화면 오른쪽은 월드 -X 방향이라
       // 각도를 "빼야" 화면과 손이 일치한다.
       this.angle -= steer * grip * sf * dt;
     }
 
-    // 드리프트 충전
-    if (input.drift && !this.airborne && Math.abs(steer) > 0.25 && this.speed > this.baseTop * 0.45) {
-      if (this.drift <= 0) this.driftDir = Math.sign(steer);
-      this.drift += dt;
-      this.driftCharge = Math.min(1.9, this.driftCharge + dt);
-    } else if (this.drift > 0) {
-      if (this.driftCharge > 0.55) {
-        this.boost = Math.max(this.boost, this.driftCharge > 1.25 ? 1.4 : 0.85);
-      }
-      this.drift = 0; this.driftCharge = 0; this.driftDir = 0;
-    }
+    // 진행 방향은 차체를 뒤따라온다. 드리프트 중에는 느리게 따라와 실제로 옆으로 미끄러지고,
+    // 공중에서는 거의 따라오지 않아 착지할 때까지 관성이 남는다.
+    let dA = this.angle - this.vAngle;
+    while (dA > Math.PI) dA -= Math.PI * 2;
+    while (dA < -Math.PI) dA += Math.PI * 2;
+    const chase = this.airborne ? 1.2 : (this.drift > 0 ? 2.9 : 12);
+    this.vAngle += dA * Math.min(1, chase * dt);
+    this.slipAngle = dA;
+
     this.lean += ((this.drift > 0 ? this.driftDir * 0.9 : steer * 0.35) - this.lean) * Math.min(1, dt * 8);
 
     // 이동
-    this.x += Math.sin(this.angle) * this.speed * dt;
-    this.z += Math.cos(this.angle) * this.speed * dt;
+    this.x += Math.sin(this.vAngle) * this.speed * dt;
+    this.z += Math.cos(this.vAngle) * this.speed * dt;
 
     // 높이: 지면 따라가기 + 점프
     const groundY = T.sample(this.x, this.z).y;
@@ -241,7 +373,7 @@ export class Kart {
 
   applyToModel(model) {
     model.position.set(this.x, this.y, this.z);
-    model.rotation.y = this.angle - (this.drift > 0 ? this.driftDir * 0.32 : 0);
+    model.rotation.y = this.angle;
     model.rotation.z = -this.lean * 0.18;
     const d = model.userData;
     if (d && d.wheels) d.wheels.forEach(w => { w.rotation.x = this.wheelSpin; });
