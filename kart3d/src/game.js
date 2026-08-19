@@ -172,6 +172,7 @@ export function startGame() {
     state.results = [];
     state.finishDelay = 0;
     state.finishSide = 0;
+    driftArmed = false; jumpEdge = false;
     try { state.bestLap = parseFloat(localStorage.getItem(bestKey())) || null; } catch (_) { state.bestLap = null; }
     state.scene = 'race';
     showHud(true);
@@ -181,16 +182,21 @@ export function startGame() {
   // 스페이스를 누르고 있으면 드리프트, "누른 순간"에만 점프한다.
   // 둘 다 홀드로 만들면 계속 통통 튀면서 조향을 못 한다.
   let jumpEdge = false;
+  // 메뉴에서 스페이스를 눌러 레이스를 시작하면 그 키가 눌린 채로 넘어와서
+  // 출발하자마자 드리프트가 걸렸다. 한 번 뗀 뒤부터 유효하게 한다.
+  let driftArmed = true;
   function playerInput() {
     let steer = 0;
     if (keys.ArrowLeft || keys.KeyA) steer -= 1;
     if (keys.ArrowRight || keys.KeyD) steer += 1;
     steer = Math.max(-1, Math.min(1, steer + touch.steer));
-    const jump = jumpEdge;
+    const held = !!(keys.Space || touch.drift);
+    if (!held) driftArmed = true;
+    const jump = driftArmed && jumpEdge;
     jumpEdge = false;
     return {
       steer,
-      drift: !!(keys.Space || touch.drift),
+      drift: driftArmed && held,
       jump,
       use: !!(keys.Enter || keys.KeyZ || touch.item)
     };
@@ -577,7 +583,7 @@ export function startGame() {
 
   // ---------- 조작 ----------
   window.addEventListener('keydown', e => {
-    if (e.code === 'Space' && !keys.Space) jumpEdge = true;
+    if (e.code === 'Space' && !keys.Space && !e.repeat) jumpEdge = true;
     keys[e.code] = true;
     if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Space', 'Enter'].includes(e.code)) e.preventDefault();
     if (state.scene === 'menu') {

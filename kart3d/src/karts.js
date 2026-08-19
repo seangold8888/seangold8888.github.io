@@ -41,7 +41,7 @@ export function buildKartModel(spec) {
 
   // 캐릭터 머리
   const head = new THREE.Group();
-  const face = new THREE.Mesh(new THREE.SphereGeometry(5.2, 16, 12), mat(0xffffff));
+  const face = new THREE.Mesh(new THREE.SphereGeometry(5.2, 30, 22), mat(0xffffff));
   face.scale.set(1.15, 1, 0.95);
   head.add(face);
   // 얼굴은 구슬 눈 대신 캔버스로 그린 텍스처 한 장을 머리 앞면에 씌운다.
@@ -49,16 +49,16 @@ export function buildKartModel(spec) {
   face.add(faceCap(spec));
 
   if (spec.deco === 'ribbon') {
-    [[-5.2, 5.6], [5.2, 5.6]].forEach(([x, y]) => {
-      const ear = new THREE.Mesh(new THREE.ConeGeometry(2.5, 4.8, 14), mat(0xffffff));
-      ear.position.set(x, y, -0.6);
-      ear.rotation.z = x < 0 ? 0.22 : -0.22;
+    [[-4.9, 5.2], [4.9, 5.2]].forEach(([x, y]) => {
+      const ear = new THREE.Mesh(new THREE.ConeGeometry(2.3, 4.2, 16), mat(0xffffff));
+      ear.position.set(x, y, -0.4);
+      ear.rotation.z = x < 0 ? 0.26 : -0.26;
       head.add(ear);
     });
-    const r = new THREE.Mesh(new THREE.TorusGeometry(2.2, 1.05, 8, 14), mat(0xff5c8a));
-    r.position.set(6.6, 6.4, 0.4); r.rotation.y = 0.35; head.add(r);
-    const rc = new THREE.Mesh(new THREE.SphereGeometry(1.05, 10, 8), mat(0xff8fb4));
-    rc.position.set(6.6, 6.4, 0.4); head.add(rc);
+    const r = new THREE.Mesh(new THREE.TorusGeometry(2.0, 0.95, 10, 16), mat(0xff5c8a));
+    r.position.set(5.4, 5.0, 1.2); r.rotation.y = 0.4; head.add(r);
+    const rc = new THREE.Mesh(new THREE.SphereGeometry(0.95, 12, 10), mat(0xff8fb4));
+    rc.position.set(5.4, 5.0, 1.2); head.add(rc);
   } else if (spec.deco === 'hood') {
     // 후드 밑단이 눈 아래까지 내려오면 얼굴이 통째로 가려진다. 위쪽만 감싼다.
     const hood = new THREE.Mesh(new THREE.SphereGeometry(6.6, 16, 12, 0, Math.PI * 2, 0, Math.PI * 0.46), mat(spec.trim));
@@ -89,8 +89,6 @@ export function buildKartModel(spec) {
       ear.scale.set(0.8, 1.3, 0.8);
       ear.position.set(x, y, 0); head.add(ear);
     });
-    const nose2 = new THREE.Mesh(new THREE.SphereGeometry(1.5, 8, 6), mat(0x3d3350));
-    nose2.position.set(0, -1.2, 6.2); head.add(nose2);
   } else if (spec.deco === 'purin') {
     // 폼폼푸린: 노란 얼굴에 갈색 베레모, 늘어진 귀
     face.material = mat(0xffe27a);
@@ -111,11 +109,6 @@ export function buildKartModel(spec) {
       ear.position.set(sgn * 5.9, -2.1, -0.2);
       ear.rotation.z = sgn * 0.42; head.add(ear);
     });
-    const snout = new THREE.Mesh(new THREE.SphereGeometry(2.1, 10, 8), mat(0xfff0b8));
-    snout.scale.set(1.2, 0.85, 0.8);
-    snout.position.set(0, -1.6, 5.2); head.add(snout);
-    const nose3 = new THREE.Mesh(new THREE.SphereGeometry(0.9, 8, 6), mat(0x6b4a28));
-    nose3.position.set(0, -1.1, 6.6); head.add(nose3);
   } else {
     // 구데타마: 노른자
     face.scale.set(1.25, 0.9, 1.05);
@@ -137,102 +130,116 @@ const faceCache = new Map();
 
 function faceTexture(spec) {
   if (faceCache.has(spec.id)) return faceCache.get(spec.id);
-  const S = 256;
+  const S = 512;
   const cv = document.createElement('canvas');
   cv.width = cv.height = S;
   const c = cv.getContext('2d');
   const X = n => n * S, Y = n => n * S;
-  const ink = '#241d33';
+  const INK = '#1b1526';
 
   function ellipse(nx, ny, rx, ry, fill, rot) {
     c.save(); c.translate(X(nx), Y(ny)); if (rot) c.rotate(rot);
     c.beginPath(); c.ellipse(0, 0, X(rx), Y(ry), 0, 0, Math.PI * 2);
     c.fillStyle = fill; c.fill(); c.restore();
   }
-  function stroke(pts, color, w, cap) {
+  function stroke(pts, color, w) {
     c.beginPath(); c.moveTo(X(pts[0][0]), Y(pts[0][1]));
-    for (let i = 1; i < pts.length; i++) c.lineTo(X(pts[i][0]), Y(pts[i][1]));
-    c.strokeStyle = color; c.lineWidth = X(w); c.lineCap = cap || 'round'; c.stroke();
+    if (pts.length === 3) c.quadraticCurveTo(X(pts[1][0]), Y(pts[1][1]), X(pts[2][0]), Y(pts[2][1]));
+    else for (let i = 1; i < pts.length; i++) c.lineTo(X(pts[i][0]), Y(pts[i][1]));
+    c.strokeStyle = color; c.lineWidth = X(w); c.lineCap = 'round'; c.lineJoin = 'round'; c.stroke();
   }
-  function arc(nx, ny, r, a0, a1, color, w) {
-    c.beginPath(); c.arc(X(nx), Y(ny), X(r), a0, a1);
-    c.strokeStyle = color; c.lineWidth = X(w); c.lineCap = 'round'; c.stroke();
+  function blush(nx, ny, tint, r) {
+    r = r || 0.078;
+    const g = c.createRadialGradient(X(nx), Y(ny), 0, X(nx), Y(ny), X(r));
+    g.addColorStop(0, tint); g.addColorStop(0.62, tint.replace(/[\d.]+\)$/, '0.35)'));
+    g.addColorStop(1, tint.replace(/[\d.]+\)$/, '0)'));
+    c.fillStyle = g; c.beginPath(); c.arc(X(nx), Y(ny), X(r), 0, Math.PI * 2); c.fill();
   }
-  function blush(nx, ny, tint) {
-    const g = c.createRadialGradient(X(nx), Y(ny), 0, X(nx), Y(ny), X(0.075));
-    g.addColorStop(0, tint); g.addColorStop(1, 'rgba(255,150,175,0)');
-    c.fillStyle = g; c.beginPath(); c.arc(X(nx), Y(ny), X(0.075), 0, Math.PI * 2); c.fill();
+  // 눈: 살짝 입체감 있는 검은자 + 큰 하이라이트 + 작은 반사점
+  function eye(nx, ny, rx, ry, rot, tint) {
+    c.save(); c.translate(X(nx), Y(ny)); if (rot) c.rotate(rot);
+    const g = c.createRadialGradient(-X(rx) * 0.3, -Y(ry) * 0.35, 0, 0, 0, X(rx) * 1.35);
+    g.addColorStop(0, tint || '#3b3152'); g.addColorStop(1, INK);
+    c.beginPath(); c.ellipse(0, 0, X(rx), Y(ry), 0, 0, Math.PI * 2);
+    c.fillStyle = g; c.fill();
+    c.beginPath(); c.ellipse(-X(rx) * 0.32, -Y(ry) * 0.40, X(rx) * 0.30, Y(ry) * 0.25, -0.5, 0, Math.PI * 2);
+    c.fillStyle = 'rgba(255,255,255,0.96)'; c.fill();
+    c.beginPath(); c.ellipse(X(rx) * 0.30, Y(ry) * 0.34, X(rx) * 0.15, Y(ry) * 0.12, 0, 0, Math.PI * 2);
+    c.fillStyle = 'rgba(255,255,255,0.55)'; c.fill();
+    c.restore();
   }
-  // 눈: 세로 타원 + 흰 하이라이트
-  function eye(nx, ny, rx, ry, rot) {
-    ellipse(nx, ny, rx, ry, ink, rot);
-    ellipse(nx - rx * 0.33, ny - ry * 0.40, rx * 0.26, ry * 0.22, 'rgba(255,255,255,0.95)');
+  // 코: 색면 + 위쪽 하이라이트
+  function nose(nx, ny, rx, ry, fill) {
+    ellipse(nx, ny, rx, ry, fill);
+    ellipse(nx - rx * 0.22, ny - ry * 0.30, rx * 0.34, ry * 0.26, 'rgba(255,255,255,0.45)');
   }
 
-  const EY = 0.44, EX = 0.175;   // 눈 높이 / 중심에서의 좌우 간격
+  const EY = 0.435, EX = 0.180, ER = 0.058, ERY = 0.079;
 
-  if (spec.deco === 'ribbon') {           // 헬로키티
-    eye(0.5 - EX, EY, 0.052, 0.072);
-    eye(0.5 + EX, EY, 0.052, 0.072);
-    ellipse(0.5, 0.545, 0.042, 0.030, '#f7c948');
-    [[0.30, 0.44], [0.28, 0.50], [0.30, 0.56]].forEach(([x, y]) => stroke([[x, y], [x - 0.16, y - 0.02]], ink, 0.012));
-    [[0.70, 0.44], [0.72, 0.50], [0.70, 0.56]].forEach(([x, y]) => stroke([[x, y], [x + 0.16, y - 0.02]], ink, 0.012));
-  } else if (spec.deco === 'hood') {      // 마이멜로디
-    eye(0.5 - EX, EY, 0.048, 0.068);
-    eye(0.5 + EX, EY, 0.048, 0.068);
-    ellipse(0.5, 0.545, 0.034, 0.026, '#ff86b0');
-    stroke([[0.455, 0.60], [0.5, 0.635], [0.545, 0.60]], ink, 0.013);
-    blush(0.255, 0.55, 'rgba(255,140,175,0.55)'); blush(0.745, 0.55, 'rgba(255,140,175,0.55)');
-  } else if (spec.deco === 'ears') {      // 시나모롤
-    eye(0.5 - 0.195, EY, 0.050, 0.070);
-    eye(0.5 + 0.195, EY, 0.050, 0.070);
-    ellipse(0.5, 0.545, 0.030, 0.023, '#f6a8bf');
-    arc(0.5, 0.575, 0.052, 0.25 * Math.PI, 0.75 * Math.PI, ink, 0.013);
-    blush(0.26, 0.55, 'rgba(255,150,180,0.5)'); blush(0.74, 0.55, 'rgba(255,150,180,0.5)');
-  } else if (spec.deco === 'skull') {     // 쿠로미
-    eye(0.5 - EX, EY + 0.005, 0.050, 0.066, -0.28);
-    eye(0.5 + EX, EY + 0.005, 0.050, 0.066, 0.28);
-    stroke([[0.26, 0.345], [0.40, 0.305]], ink, 0.016);
-    stroke([[0.74, 0.345], [0.60, 0.305]], ink, 0.016);
-    stroke([[0.44, 0.60], [0.52, 0.625], [0.60, 0.585]], ink, 0.014);
-    c.beginPath(); c.moveTo(X(0.575), Y(0.60)); c.lineTo(X(0.60), Y(0.655)); c.lineTo(X(0.615), Y(0.598));
+  if (spec.deco === 'ribbon') {                       // 헬로키티
+    eye(0.5 - EX, EY, ER, ERY); eye(0.5 + EX, EY, ER, ERY);
+    nose(0.5, 0.545, 0.045, 0.032, '#f5bf3a');
+    const w = [[0.028, 0.42, -0.035], [0.024, 0.487, 0], [0.028, 0.554, 0.035]];
+    w.forEach(([lw, y, dy]) => {
+      stroke([[0.312, y], [0.24, y + dy * 0.4], [0.145, y + dy]], INK, lw * 0.42);
+      stroke([[0.688, y], [0.76, y + dy * 0.4], [0.855, y + dy]], INK, lw * 0.42);
+    });
+  } else if (spec.deco === 'hood') {                  // 마이멜로디
+    eye(0.5 - EX, EY, ER * 0.94, ERY * 0.94); eye(0.5 + EX, EY, ER * 0.94, ERY * 0.94);
+    nose(0.5, 0.545, 0.036, 0.028, '#ff86b0');
+    stroke([[0.448, 0.598], [0.5, 0.646], [0.552, 0.598]], INK, 0.013);
+    blush(0.252, 0.548, 'rgba(255,138,175,0.62)'); blush(0.748, 0.548, 'rgba(255,138,175,0.62)');
+  } else if (spec.deco === 'ears') {                  // 시나모롤
+    eye(0.5 - 0.196, EY, ER, ERY, 0, '#3d4a6b'); eye(0.5 + 0.196, EY, ER, ERY, 0, '#3d4a6b');
+    nose(0.5, 0.545, 0.032, 0.025, '#f2a2bb');
+    stroke([[0.452, 0.586], [0.5, 0.624], [0.548, 0.586]], INK, 0.012);
+    blush(0.256, 0.548, 'rgba(255,150,180,0.55)'); blush(0.744, 0.548, 'rgba(255,150,180,0.55)');
+  } else if (spec.deco === 'skull') {                 // 쿠로미
+    eye(0.5 - EX, EY + 0.004, ER * 0.96, ERY * 0.9, -0.26);
+    eye(0.5 + EX, EY + 0.004, ER * 0.96, ERY * 0.9, 0.26);
+    stroke([[0.262, 0.336], [0.33, 0.300], [0.404, 0.296]], INK, 0.017);
+    stroke([[0.738, 0.336], [0.67, 0.300], [0.596, 0.296]], INK, 0.017);
+    stroke([[0.428, 0.596], [0.512, 0.634], [0.596, 0.582]], INK, 0.015);
+    c.beginPath(); c.moveTo(X(0.566), Y(0.596)); c.lineTo(X(0.592), Y(0.652)); c.lineTo(X(0.612), Y(0.588));
     c.closePath(); c.fillStyle = '#ffffff'; c.fill();
-  } else if (spec.deco === 'pup') {       // 포차코
-    eye(0.5 - EX, EY, 0.052, 0.070);
-    eye(0.5 + EX, EY, 0.052, 0.070);
-    ellipse(0.5, 0.545, 0.048, 0.036, ink);
-    c.beginPath(); c.moveTo(X(0.42), Y(0.60)); c.quadraticCurveTo(X(0.5), Y(0.70), X(0.58), Y(0.60));
-    c.closePath(); c.fillStyle = ink; c.fill();
-    ellipse(0.5, 0.645, 0.032, 0.020, '#ff9bb4');
-  } else if (spec.deco === 'egg') {       // 구데타마
-    ellipse(0.5 - 0.115, 0.47, 0.026, 0.030, ink);
-    ellipse(0.5 + 0.115, 0.47, 0.026, 0.030, ink);
-    ellipse(0.5, 0.575, 0.026, 0.032, ink);
-    stroke([[0.30, 0.395], [0.40, 0.415]], ink, 0.011);
-    stroke([[0.70, 0.395], [0.60, 0.415]], ink, 0.011);
-  } else {                                // 폼폼푸린
-    eye(0.5 - EX, EY, 0.052, 0.070);
-    eye(0.5 + EX, EY, 0.052, 0.070);
-    ellipse(0.5, 0.545, 0.046, 0.034, '#5c3a1e');
-    stroke([[0.5, 0.575], [0.5, 0.605]], '#5c3a1e', 0.012);
-    arc(0.452, 0.605, 0.048, 0, Math.PI, '#5c3a1e', 0.014);
-    arc(0.548, 0.605, 0.048, 0, Math.PI, '#5c3a1e', 0.014);
-    blush(0.255, 0.56, 'rgba(255,150,150,0.45)'); blush(0.745, 0.56, 'rgba(255,150,150,0.45)');
+    blush(0.244, 0.556, 'rgba(226,120,190,0.42)');  blush(0.756, 0.556, 'rgba(226,120,190,0.42)');
+  } else if (spec.deco === 'pup') {                   // 포차코
+    eye(0.5 - EX, EY, ER, ERY); eye(0.5 + EX, EY, ER, ERY);
+    nose(0.5, 0.542, 0.050, 0.038, '#241d2e');
+    c.beginPath(); c.moveTo(X(0.414), Y(0.592));
+    c.quadraticCurveTo(X(0.5), Y(0.706), X(0.586), Y(0.592));
+    c.closePath(); c.fillStyle = INK; c.fill();
+    ellipse(0.5, 0.648, 0.036, 0.024, '#ff8fae');
+    blush(0.248, 0.552, 'rgba(255,150,170,0.5)'); blush(0.752, 0.552, 'rgba(255,150,170,0.5)');
+  } else if (spec.deco === 'egg') {                   // 구데타마
+    ellipse(0.5 - 0.112, 0.468, 0.028, 0.033, INK);
+    ellipse(0.5 + 0.112, 0.468, 0.028, 0.033, INK);
+    ellipse(0.5, 0.578, 0.027, 0.034, INK);
+    stroke([[0.296, 0.388], [0.35, 0.400], [0.404, 0.412]], INK, 0.012);
+    stroke([[0.704, 0.388], [0.65, 0.400], [0.596, 0.412]], INK, 0.012);
+  } else {                                            // 폼폼푸린
+    eye(0.5 - EX, EY, ER, ERY); eye(0.5 + EX, EY, ER, ERY);
+    nose(0.5, 0.540, 0.048, 0.036, '#5a3a1c');
+    stroke([[0.5, 0.570], [0.5, 0.602]], '#5a3a1c', 0.013);
+    stroke([[0.412, 0.596], [0.456, 0.646], [0.5, 0.604]], '#5a3a1c', 0.015);
+    stroke([[0.588, 0.596], [0.544, 0.646], [0.5, 0.604]], '#5a3a1c', 0.015);
+    blush(0.248, 0.556, 'rgba(255,150,150,0.5)'); blush(0.752, 0.556, 'rgba(255,150,150,0.5)');
   }
 
   const tex = new THREE.CanvasTexture(cv);
-  tex.anisotropy = 4;
+  tex.anisotropy = 8;
   faceCache.set(spec.id, tex);
   return tex;
 }
 
 // 머리 구(반지름 5.2)의 앞면에 살짝 띄워 씌우는 얼굴판.
-// face 의 자식으로 붙이므로 캐릭터별 얼굴 찌그러짐(scale)을 그대로 따라간다.
+// face 의 자식이라 캐릭터별 얼굴 찌그러짐(scale)을 그대로 따라가고,
+// Lambert 라서 머리와 같은 광원으로 음영이 이어진다(Basic 이면 붙여놓은 스티커처럼 뜬다).
 function faceCap(spec) {
   const D = 1.05, TH = 0.86;
-  const geo = new THREE.SphereGeometry(5.2 * 1.015, 28, 20,
+  const geo = new THREE.SphereGeometry(5.2 * 1.012, 40, 28,
     Math.PI / 2 - D, D * 2, Math.PI / 2 - TH, TH * 2);
-  const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
+  const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({
     map: faceTexture(spec), transparent: true, depthWrite: false
   }));
   m.renderOrder = 2;
