@@ -7,7 +7,8 @@ export const CHARACTERS = [
   { id: 'cinna',  name: '시나모롤',   body: 0xbfe4ff, trim: 0x7fc4e8, top: 122, accel: 2.4, turn: 2.2,  deco: 'ears' },
   { id: 'kuromi', name: '쿠로미',     body: 0xc9b2e8, trim: 0x3d3350, top: 126, accel: 2.3, turn: 2.15, deco: 'skull' },
   { id: 'pochaco',name: '포차코',     body: 0xffffff, trim: 0x8fd0ff, top: 116, accel: 2.7, turn: 2.45, deco: 'pup' },
-  { id: 'gude',   name: '구데타마',   body: 0xffe27a, trim: 0xfff3c4, top: 110, accel: 3.1, turn: 2.75, deco: 'egg' }
+  { id: 'gude',   name: '구데타마',   body: 0xffe27a, trim: 0xfff3c4, top: 110, accel: 3.1, turn: 2.75, deco: 'egg' },
+  { id: 'purin',  name: '폼폼푸린',   body: 0xffe27a, trim: 0x8a5a33, top: 120, accel: 2.55, turn: 2.4, deco: 'purin' }
 ];
 
 // 귀엽고 둥근 카트. 캐릭터마다 장식이 다르다.
@@ -87,6 +88,31 @@ export function buildKartModel(spec) {
     });
     const nose2 = new THREE.Mesh(new THREE.SphereGeometry(1.5, 8, 6), mat(0x3d3350));
     nose2.position.set(0, -1.2, 6.2); head.add(nose2);
+  } else if (spec.deco === 'purin') {
+    // 폼폼푸린: 노란 얼굴에 갈색 베레모, 늘어진 귀
+    face.material = mat(0xffe27a);
+    face.scale.set(1.2, 0.95, 1);
+    // 베레모: 납작하게 얹어 귀가 가려지지 않게
+    const beret = new THREE.Mesh(
+      new THREE.SphereGeometry(6.4, 16, 10, 0, Math.PI * 2, 0, Math.PI * 0.5), mat(spec.trim));
+    beret.position.set(0, 3.1, -0.4); beret.scale.set(1.05, 0.42, 1.05);
+    beret.rotation.x = -0.12; head.add(beret);
+    const brim = new THREE.Mesh(new THREE.CylinderGeometry(6.6, 6.6, 0.7, 18), mat(spec.trim));
+    brim.position.set(0, 3.0, -0.4); brim.rotation.x = -0.12; head.add(brim);
+    const knob = new THREE.Mesh(new THREE.SphereGeometry(1.1, 8, 6), mat(0x6b4a28));
+    knob.position.set(0, 5.6, -0.4); head.add(knob);
+    // 늘어진 귀: 옆으로 벌리고 아래로 처지게
+    [-1, 1].forEach(sgn => {
+      const ear = new THREE.Mesh(new THREE.SphereGeometry(3.4, 12, 10), mat(0xf3c85a));
+      ear.scale.set(0.62, 1.5, 0.95);
+      ear.position.set(sgn * 5.9, -2.1, -0.2);
+      ear.rotation.z = sgn * 0.42; head.add(ear);
+    });
+    const snout = new THREE.Mesh(new THREE.SphereGeometry(2.1, 10, 8), mat(0xfff0b8));
+    snout.scale.set(1.2, 0.85, 0.8);
+    snout.position.set(0, -1.6, 5.2); head.add(snout);
+    const nose3 = new THREE.Mesh(new THREE.SphereGeometry(0.9, 8, 6), mat(0x6b4a28));
+    nose3.position.set(0, -1.1, 6.6); head.add(nose3);
   } else {
     // 구데타마: 노른자
     face.scale.set(1.25, 0.9, 1.05);
@@ -152,7 +178,9 @@ export class Kart {
       if (this.slip > 0) steer += Math.sin(this.slip * 17) * 0.7;
       const grip = this.spec.turn * (this.drift > 0 ? 1.45 : 1);
       const sf = 0.58 + 0.42 * (1 - Math.min(1, this.speed / this.baseTop));
-      this.angle += steer * grip * sf * dt;
+      // steer +1 = 화면 오른쪽. 카메라가 +Z를 바라보므로 화면 오른쪽은 월드 -X 방향이라
+      // 각도를 "빼야" 화면과 손이 일치한다.
+      this.angle -= steer * grip * sf * dt;
     }
 
     // 드리프트 충전
@@ -213,7 +241,7 @@ export class Kart {
 
   applyToModel(model) {
     model.position.set(this.x, this.y, this.z);
-    model.rotation.y = this.angle + (this.drift > 0 ? this.driftDir * 0.32 : 0);
+    model.rotation.y = this.angle - (this.drift > 0 ? this.driftDir * 0.32 : 0);
     model.rotation.z = -this.lean * 0.18;
     const d = model.userData;
     if (d && d.wheels) d.wheels.forEach(w => { w.rotation.x = this.wheelSpin; });
@@ -253,7 +281,7 @@ export function driveAI(kart, playerTotal) {
   kart.baseTop = kart.spec.top * mult;
 
   return {
-    steer: Math.max(-1, Math.min(1, diff * 2.4)),
+    steer: Math.max(-1, Math.min(1, -diff * 2.4)),
     drift: Math.abs(diff) > 0.42 && Math.abs(diff) < 1.1 && kart.speed > kart.baseTop * 0.6,
     jump: false
   };

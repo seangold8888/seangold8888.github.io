@@ -9,9 +9,9 @@ import {
 } from './items.js';
 
 export const MODES = [
-  { id: 'time',   name: '타임어택',   desc: '혼자 달리며 최고 기록에 도전해요', ai: 0, items: false },
-  { id: 'speed',  name: '스피드 매치', desc: '친구들과 순수하게 속도 대결',     ai: 3, items: false },
-  { id: 'battle', name: '아이템 배틀', desc: '아이템을 쓰며 신나게 경주',       ai: 3, items: true }
+  { id: 'battle', name: '아이템 배틀', desc: '⭐ 추천 · 상자를 먹고 아이템 발사!', ai: 3, items: true },
+  { id: 'speed',  name: '스피드 매치', desc: '아이템 없이 순수 속도 대결',        ai: 3, items: false },
+  { id: 'time',   name: '타임어택',   desc: '혼자 달리며 최고 기록 도전',        ai: 0, items: false }
 ];
 
 const el = id => document.getElementById(id);
@@ -40,7 +40,7 @@ export function startGame() {
 
   const state = {
     scene: 'menu', menuStep: 0,        // 0 캐릭터 1 트랙 2 모드
-    charIndex: 0, trackIndex: 0, modeIndex: 2,
+    charIndex: 0, trackIndex: 0, modeIndex: 0,
     track: null, trackGroup: null,
     karts: [], models: [], player: null,
     boxes: [], projectiles: [], projMeshes: [], extraMeshes: [],
@@ -141,12 +141,13 @@ export function startGame() {
     // 아이템 상자
     if (mode.items) {
       const T = state.track, n = T.points.length;
-      for (let s = 0; s < 6; s++) {
-        const i = Math.floor(n * (s + 0.5) / 6);
+      const SETS = 8;
+      for (let s = 0; s < SETS; s++) {
+        const i = Math.floor(n * (s + 0.5) / SETS);
         const p = T.points[i];
         const tan = new THREE.Vector3(p.tx, p.ty, p.tz).normalize();
         const side = new THREE.Vector3().crossVectors(tan, new THREE.Vector3(0, 1, 0)).normalize();
-        [-14, 0, 14].forEach(off => {
+        [-21, -7, 7, 21].forEach(off => {
           const mesh = makeItemBoxMesh();
           mesh.position.set(p.x, p.y + 9, p.z).addScaledVector(side, off);
           scene.add(mesh);
@@ -275,8 +276,8 @@ export function startGame() {
         continue;
       }
       for (const k of state.karts) {
-        if (Math.hypot(k.x - b.x, k.z - b.z) < 16) {
-          b.alive = false; b.respawn = 6; b.mesh.visible = false;
+        if (Math.hypot(k.x - b.x, k.z - b.z) < 19) {
+          b.alive = false; b.respawn = 4.5; b.mesh.visible = false;
           if (!k.item) k.item = rollItem(k.place, state.karts.length);
           break;
         }
@@ -394,9 +395,14 @@ export function startGame() {
     el('timer').textContent = fmt(state.raceTime);
     el('best').textContent = state.bestLap ? '최고 ' + fmt(state.bestLap) : '';
     const item = el('item');
-    const t = ITEM_TYPES.find(x => x.id === p.item);
-    item.textContent = t ? t.icon : '';
-    item.className = 'item' + (t ? ' has' : '');
+    if (!MODES[state.modeIndex].items) {
+      item.style.display = 'none';
+    } else {
+      item.style.display = '';
+      const t = ITEM_TYPES.find(x => x.id === p.item);
+      item.textContent = t ? t.icon : '';
+      item.className = 'item' + (t ? ' has' : '');
+    }
     const bar = el('driftbar');
     if (p.drift > 0) {
       bar.style.display = 'block';
