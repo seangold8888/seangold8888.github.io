@@ -49,7 +49,7 @@
         g.beginPath(); g.ellipse(ex, ey, 8, 17, ex < 0 ? 0.45 : -0.45, 0, Math.PI * 2);
         g.fill(); g.stroke();
       });
-    } else {
+    } else if (id === 'kuromi') {
       // 쿠로미: 검은 두건 + 분홍 해골
       g.fillStyle = '#ffffff'; g.strokeStyle = OUT; g.lineWidth = 3;
       g.beginPath(); g.ellipse(0, -2, 21, 18, 0, 0, Math.PI * 2); g.fill(); g.stroke();
@@ -61,6 +61,44 @@
       });
       g.fillStyle = '#ff9ec4';
       g.beginPath(); g.arc(0, -14, 6, 0, Math.PI * 2); g.fill();
+    } else if (id === 'pochaco') {
+      // 포차코: 흰 머리에 검은 늘어진 귀
+      g.fillStyle = '#ffffff'; g.strokeStyle = OUT; g.lineWidth = 3;
+      g.beginPath(); g.ellipse(0, -3, 22, 19, 0, 0, Math.PI * 2); g.fill(); g.stroke();
+      g.fillStyle = '#3d3350';
+      [[-19, -8], [19, -8]].forEach(([ex, ey]) => {
+        g.beginPath(); g.ellipse(ex, ey, 8, 13, ex < 0 ? 0.5 : -0.5, 0, Math.PI * 2);
+        g.fill(); g.stroke();
+      });
+      // 뒤통수 하이라이트
+      g.fillStyle = 'rgba(143,208,255,0.55)';
+      g.beginPath(); g.ellipse(0, -12, 11, 5, 0, 0, Math.PI * 2); g.fill();
+    } else if (id === 'gude') {
+      // 구데타마: 흰자 위에 노른자. 늘 축 늘어져 있다.
+      g.fillStyle = '#fffcf0'; g.strokeStyle = OUT; g.lineWidth = 3;
+      g.beginPath();
+      g.ellipse(0, 2, 26, 13, 0, 0, Math.PI * 2); g.fill(); g.stroke();
+      g.fillStyle = '#ffe27a';
+      g.beginPath(); g.ellipse(0, -5, 17, 15, 0, 0, Math.PI * 2); g.fill(); g.stroke();
+      // 흘러내린 흰자 자락
+      g.fillStyle = '#fffcf0';
+      g.beginPath(); g.ellipse(-22, 6, 7, 5, 0.4, 0, Math.PI * 2); g.fill(); g.stroke();
+      g.beginPath(); g.ellipse(22, 6, 7, 5, -0.4, 0, Math.PI * 2); g.fill(); g.stroke();
+    } else {
+      // 폼폼푸린: 노란 머리 + 갈색 베레모 + 늘어진 귀
+      g.fillStyle = '#ffe27a'; g.strokeStyle = OUT; g.lineWidth = 3;
+      g.beginPath(); g.ellipse(0, -2, 22, 19, 0, 0, Math.PI * 2); g.fill(); g.stroke();
+      g.fillStyle = '#f3c85a';
+      [[-19, -4], [19, -4]].forEach(([ex, ey]) => {
+        g.beginPath(); g.ellipse(ex, ey, 7, 13, ex < 0 ? 0.45 : -0.45, 0, Math.PI * 2);
+        g.fill(); g.stroke();
+      });
+      // 베레모 — 납작하게 얹어 귀가 가려지지 않게
+      g.fillStyle = '#8a5a33';
+      g.beginPath(); g.ellipse(0, -13, 21, 9, 0, Math.PI, Math.PI * 2); g.fill(); g.stroke();
+      g.beginPath(); g.ellipse(0, -13, 23, 4, 0, 0, Math.PI * 2); g.fill(); g.stroke();
+      g.fillStyle = '#6b4a28';
+      g.beginPath(); g.arc(0, -22, 3.4, 0, Math.PI * 2); g.fill();
     }
   }
 

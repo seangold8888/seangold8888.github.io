@@ -5,17 +5,20 @@
   window.SK = window.SK || {};
 
   const CHARACTERS = [
-    { id: 'kitty',  name: '헬로키티',   color: '#ff8fb4', accent: '#ffffff', top: 405, accel: 2.5, turn: 2.5 },
-    { id: 'melody', name: '마이멜로디', color: '#ffc2dd', accent: '#ff7aa8', top: 392, accel: 2.8, turn: 2.75 },
-    { id: 'cinna',  name: '시나모롤',   color: '#bfe4ff', accent: '#7fc4e8', top: 418, accel: 2.3, turn: 2.35 },
-    { id: 'kuromi', name: '쿠로미',     color: '#c9b2e8', accent: '#3d3350', top: 425, accel: 2.2, turn: 2.3 }
+    { id: 'kitty',  name: '헬로키티',   color: '#ff8fb4', accent: '#ffffff', fur: '#ffffff', top: 405, accel: 2.5, turn: 2.5 },
+    { id: 'melody', name: '마이멜로디', color: '#ffc2dd', accent: '#ff7aa8', fur: '#ffffff', top: 392, accel: 2.8, turn: 2.75 },
+    { id: 'cinna',  name: '시나모롤',   color: '#bfe4ff', accent: '#7fc4e8', fur: '#ffffff', top: 418, accel: 2.3, turn: 2.35 },
+    { id: 'kuromi', name: '쿠로미',     color: '#c9b2e8', accent: '#3d3350', fur: '#ffffff', top: 425, accel: 2.2, turn: 2.3 },
+    { id: 'pochaco', name: '포차코',    color: '#ffffff', accent: '#8fd0ff', fur: '#ffffff', top: 400, accel: 2.6,  turn: 2.6 },
+    { id: 'gude',    name: '구데타마',  color: '#ffe27a', accent: '#fff3c4', fur: '#ffe27a', top: 380, accel: 3.0,  turn: 2.9 },
+    { id: 'purin',   name: '폼폼푸린',  color: '#ffe27a', accent: '#8a5a33', fur: '#ffe27a', top: 412, accel: 2.45, turn: 2.55 }
   ];
   SK.CHARACTERS = CHARACTERS;
 
   class Kart {
     constructor(spec, opts) {
       Object.assign(this, {
-        x: 0, y: 0, angle: 0, speed: 0,
+        x: 0, y: 0, angle: 0, vAngle: 0, speed: 0, slipAngle: 0,
         drift: 0, driftDir: 0, driftCharge: 0,
         boost: 0, spin: 0, slip: 0,
         lap: 0, progress: 0, prevProgress: 0, place: 1,
@@ -25,6 +28,8 @@
       }, opts);
       this.spec = spec;
       this.baseTop = spec.top;
+      // 차체 방향(angle)과 진행 방향(vAngle)의 차이가 곧 미끄러짐이다
+      this.vAngle = this.angle;
     }
 
     get topSpeed() {
@@ -50,33 +55,51 @@
       this.speed += (cap - this.speed) * Math.min(1, accel / Math.max(1, cap) * dt);
       if (this.speed > cap) this.speed += (cap - this.speed) * Math.min(1, dt * 3.2);
 
-      // 조향
       let steer = input.steer || 0;
-      if (this.spin > 0) {
-        // 부딪히면 잠깐 빙글 — 멈추지는 않는다
-        this.angle += dt * 9;
-        this.speed *= 1 - dt * 0.9;
-      } else {
-        if (this.slip > 0) steer += Math.sin(this.slip * 18) * 0.7;   // 미끄럼 아이템
-        const grip = this.spec.turn * (this.drift > 0 ? 1.5 : 1);
-        // 느릴 때 더 잘 돌아간다(아이가 코스 복귀하기 쉽게)
-        const speedFactor = 0.55 + 0.45 * (1 - Math.min(1, this.speed / this.baseTop));
-        this.angle += steer * grip * speedFactor * dt;
-      }
+      if (this.slip > 0) steer += Math.sin(this.slip * 18) * 0.7;   // 미끄럼 아이템
 
-      // 드리프트: 누르고 돌면 충전, 떼면 부스터
-      if (input.drift && Math.abs(steer) > 0.25 && this.speed > this.baseTop * 0.45) {
-        if (this.drift <= 0) this.driftDir = Math.sign(steer);
-        this.drift += dt;
-        this.driftCharge = Math.min(1.8, this.driftCharge + dt);
+      // 드리프트: 한 번 걸리면 버튼을 놓을 때까지 방향이 고정된다.
+      // 예전에는 |steer|>0.25 를 매 프레임 요구해서, 키를 잠깐만 떼도
+      // 드리프트가 끊기고 미니부스터가 제멋대로 터졌다.
+      const canDrift = this.speed > this.baseTop * 0.45;
+      if (input.drift && canDrift && (this.drift > 0 || Math.abs(steer) > 0.25)) {
+        if (this.drift <= 0) this.driftDir = Math.sign(steer) || 0;
+        if (this.driftDir !== 0) {
+          this.drift += dt;
+          this.driftCharge = Math.min(1.8, this.driftCharge + dt);
+          // 안쪽으로 자동으로 조금 감기되, 조작이 항상 우선한다
+          steer = Math.max(-1, Math.min(1, steer + this.driftDir * 0.35));
+        }
       } else if (this.drift > 0) {
         if (this.driftCharge > 0.6) this.boost = Math.max(this.boost, this.driftCharge > 1.3 ? 1.5 : 0.9);
         this.drift = 0; this.driftCharge = 0; this.driftDir = 0;
       }
 
+      // 차체 회전
+      if (this.spin > 0) {
+        // 부딪히면 잠깐 빙글 — 멈추지는 않는다
+        this.angle += dt * 9;
+        this.speed *= 1 - dt * 0.9;
+      } else {
+        const grip = this.spec.turn * (this.drift > 0 ? 1.25 : 1);
+        // 느릴 때 더 잘 돌아간다(아이가 코스 복귀하기 쉽게)
+        const speedFactor = 0.55 + 0.45 * (1 - Math.min(1, this.speed / this.baseTop));
+        this.angle += steer * grip * speedFactor * dt;
+      }
+
+      // 진행 방향은 차체를 뒤따라온다. 드리프트 중에는 느리게 따라와 실제로
+      // 옆으로 미끄러진다. 예전에는 늘 차체 방향으로만 움직여서 드리프트가
+      // "더 날카롭게 도는 것"에 그쳤다.
+      let dA = this.angle - this.vAngle;
+      while (dA > Math.PI) dA -= Math.PI * 2;
+      while (dA < -Math.PI) dA += Math.PI * 2;
+      const chase = this.drift > 0 ? 2.9 : 12;
+      this.vAngle += dA * Math.min(1, chase * dt);
+      this.slipAngle = dA;
+
       // 이동
-      this.x += Math.sin(this.angle) * this.speed * dt;
-      this.y -= Math.cos(this.angle) * this.speed * dt;
+      this.x += Math.sin(this.vAngle) * this.speed * dt;
+      this.y -= Math.cos(this.vAngle) * this.speed * dt;
       // 트랙 밖으로 아주 멀리 못 나가게 부드럽게 잡아 준다
       const S = T.SIZE;
       this.x = Math.max(40, Math.min(S - 40, this.x));
