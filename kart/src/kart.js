@@ -140,14 +140,37 @@
     const near = T.nearest(kart.x, kart.y);
     const off = near.dist;
 
-    // 앞보기 거리: 최소 곡률반경(약 350px)보다 짧게 유지한다.
-    // 코스를 벗어났으면 더 가까이 보고 빨리 돌아온다.
-    let ahead = 90 + kart.speed * 0.28;
+    const n = T.center.length;
+
+    // 중심선을 따라 dist 만큼 전진한 인덱스
+    function walk(from, dist) {
+      let i = from, w = 0;
+      while (w < dist) {
+        const a = T.center[i], b = T.center[(i + 1) % n];
+        w += Math.hypot(b.x - a.x, b.y - a.y);
+        i = (i + 1) % n;
+      }
+      return i;
+    }
+    function heading(idx) {
+      const a = T.center[idx], b = T.center[(idx + 8) % n];
+      return Math.atan2(b.x - a.x, -(b.y - a.y));
+    }
+
+    // 앞쪽 코스가 얼마나 휘는지 먼저 잰다.
+    // 코너를 만나고 나서 줄이면 이미 늦어서, 헤어핀이나 S자에서 코스를 깎는다.
+    let bend = heading(walk(near.index, 300)) - heading(near.index);
+    while (bend > Math.PI) bend -= Math.PI * 2;
+    while (bend < -Math.PI) bend += Math.PI * 2;
+    // 완만한 커브까지 감속하면 전 구간이 느려진다. 문턱을 넘는 급코너에서만 반응한다.
+    const curve = Math.min(1, Math.max(0, (Math.abs(bend) - 0.52) / 0.70));
+
+    // 앞보기 거리: 급할수록 가까이 본다. 멀리 보면 코너를 가로질러 버린다.
+    let ahead = (90 + kart.speed * 0.28) * (1 - 0.52 * curve);
     if (off > T.ROAD_HALF) ahead = 70;
-    ahead = Math.min(210, ahead);
+    ahead = Math.min(210, Math.max(58, ahead));
 
     // 거리만큼 중심선을 따라 전진한 지점을 찾는다.
-    const n = T.center.length;
     let i = near.index, walked = 0;
     while (walked < ahead) {
       const a = T.center[i], b = T.center[(i + 1) % n];
@@ -163,14 +186,14 @@
     const steer = Math.max(-1, Math.min(1, diff * 2.4));
 
     // 커브가 급하면 스스로 속도를 줄인다(코스를 벗어나지 않게).
-    kart.aiBrake = Math.abs(diff) > 0.55;
+    kart.aiBrake = Math.abs(diff) > 0.55 || curve > 0.45;
 
     // 고무줄: 아이가 뒤처지면 AI가 살짝 느긋해진다
     const gap = kart.total - playerTotal;
-    let mult = 1;
-    if (gap > 900) mult = 0.84;
-    else if (gap < -900) mult = 1.06;
-    if (kart.aiBrake) mult *= 0.82;
+    let mult = 1 - 0.34 * curve;            // 코너 진입 전에 미리 감속
+    if (gap > 900) mult *= 0.84;
+    else if (gap < -900) mult *= 1.06;
+    if (Math.abs(diff) > 0.55) mult *= 0.86;
     kart.baseTop = kart.spec.top * mult;
 
     return { steer, drift: Math.abs(diff) > 0.45 && Math.abs(diff) < 1.1 && kart.speed > kart.baseTop * 0.62 };

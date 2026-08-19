@@ -511,11 +511,34 @@ export class Kart {
 export function driveAI(kart, playerTotal) {
   const T = kart.track;
   const near = T.nearest(kart.x, kart.z);
-  let ahead = 40 + kart.speed * 0.42;
-  if (near.dist > T.roadHalf) ahead = 34;
-  ahead = Math.min(110, ahead);
-
   const n = T.points.length;
+
+  function walk(from, dist) {
+    let i = from, w = 0;
+    while (w < dist) {
+      const a = T.points[i], b = T.points[(i + 1) % n];
+      w += Math.hypot(b.x - a.x, b.z - a.z);
+      i = (i + 1) % n;
+    }
+    return i;
+  }
+  function heading(idx) {
+    const a = T.points[idx], b = T.points[(idx + 8) % n];
+    return Math.atan2(b.x - a.x, b.z - a.z);
+  }
+
+  // 앞쪽이 얼마나 휘는지 먼저 본다. 코너를 만나고 나서 줄이면 이미 늦어
+  // 급코너에서 코스를 깎는다. 완만한 커브까지 물리면 전 구간이 느려지므로
+  // 문턱을 넘을 때만 반응한다.
+  let bend = heading(walk(near.index, 130)) - heading(near.index);
+  while (bend > Math.PI) bend -= Math.PI * 2;
+  while (bend < -Math.PI) bend += Math.PI * 2;
+  const curve = Math.min(1, Math.max(0, (Math.abs(bend) - 0.5) / 0.7));
+
+  let ahead = (40 + kart.speed * 0.42) * (1 - 0.5 * curve);
+  if (near.dist > T.roadHalf) ahead = 34;
+  ahead = Math.min(110, Math.max(26, ahead));
+
   let i = near.index, walked = 0;
   while (walked < ahead) {
     const a = T.points[i], b = T.points[(i + 1) % n];
@@ -532,7 +555,7 @@ export function driveAI(kart, playerTotal) {
   // 아이가 꼴찌로 끝나 기분 상하는 일을 줄이는 장치다.
   const gap = kart.total - playerTotal;
   // 아이 상대라 AI는 완벽하게 몰지 않는다. 고무줄과 합쳐 접전을 만든다.
-  let mult = 0.965;
+  let mult = 0.965 * (1 - 0.30 * curve);   // 코너 진입 전에 미리 감속
   if (gap > 55) mult = Math.max(0.72, 0.965 - (gap - 55) / 520);
   else if (gap < -140) mult = Math.min(1.05, 0.965 + (-gap - 140) / 1600);
   if (Math.abs(diff) > 0.5) mult *= 0.84;
