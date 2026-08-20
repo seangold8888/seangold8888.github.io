@@ -298,7 +298,7 @@ const GUARDIANS = [
 const STAGES = [
   {
     title: '코랄 시티 아레나', subtitle: 'STAGE 01 · HONMOON SPOTLIGHT', boss: '그림자 사자',
-    worldWidth: 4250, bossGate: 3260, checkpoint: null, bossHealth: 510,
+    worldWidth: 4250, bossGate: 3260, checkpoint: 1650, bossHealth: 380,
     skyTop: '#08072b', skyBottom: '#3d1764', ground: '#211646', glow: '#ff3cac',
     enemies: [
       { kind: 'shade', x: 760 }, { kind: 'shade', x: 1300 }, { kind: 'wisp', x: 1730 },
@@ -312,7 +312,7 @@ const STAGES = [
   },
   {
     title: '달빛 옥상', subtitle: 'STAGE 02 · SAJA BOYS CHASE', boss: '사자 보이즈 · 진우',
-    worldWidth: 4750, bossGate: 3660, checkpoint: 1780, bossHealth: 700,
+    worldWidth: 4750, bossGate: 3660, checkpoint: 1780, bossHealth: 520,
     skyTop: '#030923', skyBottom: '#112f66', ground: '#12294b', glow: '#3ce8ff',
     bossKind: 'jinu',
     enemies: [
@@ -828,12 +828,12 @@ class Game {
 
   makeEnemy(kind, x, def = {}) {
     const spec = kind === 'shade'
-      ? { width: 66, height: 70, health: 58, speed: 128, damage: 16 }
+      ? { width: 66, height: 70, health: 44, speed: 105, damage: 10 }
       : kind === 'wisp'
-        ? { width: 62, height: 62, health: 46, speed: 92, damage: 14 }
+        ? { width: 62, height: 62, health: 36, speed: 80, damage: 9 }
         : kind === 'saja'
-          ? { width: 64, height: 118, health: 150, speed: 150, damage: 18 }
-          : { width: 96, height: 112, health: 125, speed: 74, damage: 24 };
+          ? { width: 64, height: 118, health: 105, speed: 122, damage: 12 }
+          : { width: 96, height: 112, health: 95, speed: 64, damage: 15 };
     const y = kind === 'wisp' ? GROUND_Y - 145 : GROUND_Y;
     return {
       id: this.nextId++, kind, x, y, px: x, py: y, vx: 0,
@@ -852,8 +852,8 @@ class Game {
     return {
       id: this.nextId++, kind: 'boss', bossKind: stage.bossKind ?? 'cloud', name: stage.boss, x, y: GROUND_Y - 18, px: x, py: GROUND_Y - 18, vx: 0,
       width: 178, height: 182, health: stage.bossHealth, maxHealth: stage.bossHealth,
-      speed: 92, damage: 28,
-      cooldown: 1.15, telegraph: 0, attackType: 0, attackFired: false,
+      speed: 78, damage: 18,
+      cooldown: 1.5, telegraph: 0, attackType: 0, attackFired: false,
       dash: 0, dashHit: false, stun: 0, flash: 0, spawn: 1.05, dead: false, death: 0,
       facing: -1, lastHit: -1, phaseTwo: false, baseY: GROUND_Y - 18,
     };
@@ -1052,10 +1052,10 @@ class Game {
     }
     const gateLocked = this.enemies.some((e) => e.kind !== 'boss' && !e.dead);
     p.x = clamp(p.x, 70, gateLocked ? stage.bossGate - 58 : stage.worldWidth - 120);
-    if (this.stageIndex === 1 && !this.checkpointReached && stage.checkpoint && p.x >= stage.checkpoint) {
+    if (!this.checkpointReached && stage.checkpoint && p.x >= stage.checkpoint) {
       this.checkpointReached = true;
-      p.health = Math.min(p.maxHealth, p.health + 45);
-      this.announce('CHECKPOINT', '달빛 깃발 발견 · 하트 충전!');
+      p.health = Math.min(p.maxHealth, p.health + 60);
+      this.announce('CHECKPOINT', '응원 깃발 발견 · 하트 충전!');
       this.audio.play('shard');
       this.burst(stage.checkpoint, GROUND_Y - 90, '#ffd166', 26, 'star');
     }
@@ -1090,8 +1090,8 @@ class Game {
             if (overlap(p.x, p.y - 47, 50, 90, e.x + e.facing * 34, e.y - 35, 105, 78)) this.hurtPlayer(e.damage, e.facing);
           }
         } else if (dist < 112 && e.cooldown <= 0) {
-          e.telegraph = 0.56;
-          e.cooldown = 1.08;
+          e.telegraph = 0.75;
+          e.cooldown = 1.5;
           e.attackFired = false;
         } else e.vx = approach(e.vx, Math.sign(dx) * e.speed, dt * 620);
       } else if (e.kind === 'wisp') {
@@ -1099,8 +1099,8 @@ class Game {
         const drift = dist < 245 ? -Math.sign(dx) * 52 : Math.sign(dx) * 46;
         e.vx = approach(e.vx, drift, dt * 350);
         if (dist < 620 && e.cooldown <= 0) {
-          e.telegraph = 0.68;
-          e.cooldown = 1.72;
+          e.telegraph = 0.9;
+          e.cooldown = 2.2;
           e.attackFired = false;
         }
         if (e.telegraph > 0 && !e.attackFired && e.telegraph < 0.28) {
@@ -1109,7 +1109,7 @@ class Game {
           const ay = p.y - 45 - e.y;
           const len = Math.max(1, Math.hypot(ax, ay));
           this.projectiles.push({
-            kind: 'orb', x: e.x, y: e.y - 20, vx: (ax / len) * 385, vy: (ay / len) * 385,
+            kind: 'orb', x: e.x, y: e.y - 20, vx: (ax / len) * 300, vy: (ay / len) * 300,
             radius: 18, life: 3.2, damage: e.damage, color: '#d65cff', dead: false,
           });
         }
@@ -1131,7 +1131,7 @@ class Game {
             if (e.attackType === 1) {
               e.dash = 0.3;
               e.dashHit = false;
-              e.vx = e.facing * 760;
+              e.vx = e.facing * 640;
               this.trauma = Math.min(1, this.trauma + 0.2);
             } else {
               for (const spread of [-0.32, 0, 0.32]) {
@@ -1140,7 +1140,7 @@ class Game {
                 const angle = Math.atan2(ay, ax) + spread;
                 this.projectiles.push({
                   kind: 'heart', x: e.x + e.facing * 30, y: e.y - 82,
-                  vx: Math.cos(angle) * 360, vy: Math.sin(angle) * 360,
+                  vx: Math.cos(angle) * 290, vy: Math.sin(angle) * 290,
                   radius: 16, life: 2.6, damage: e.damage * 0.8, color: e.tint, dead: false,
                 });
               }
@@ -1149,13 +1149,13 @@ class Game {
           }
         } else if (dist < 150 && e.cooldown <= 0) {
           e.attackType = 1;
-          e.telegraph = 0.62;
-          e.cooldown = 1.5;
+          e.telegraph = 0.8;
+          e.cooldown = 2.0;
           e.attackFired = false;
         } else if (dist < 520 && e.cooldown <= 0) {
           e.attackType = 0;
-          e.telegraph = 0.78;
-          e.cooldown = 1.9;
+          e.telegraph = 1.0;
+          e.cooldown = 2.5;
           e.attackFired = false;
         } else {
           const want = dist > 300 ? Math.sign(dx) * e.speed : -Math.sign(dx) * 60;
@@ -1167,15 +1167,15 @@ class Game {
           e.attackFired = true;
           for (const dir of [-1, 1]) {
             this.projectiles.push({
-              kind: 'wave', x: e.x, y: GROUND_Y - 12, vx: dir * 430, vy: 0,
+              kind: 'wave', x: e.x, y: GROUND_Y - 12, vx: dir * 340, vy: 0,
               radius: 28, life: 1.2, damage: e.damage, color: '#ff6589', dead: false,
             });
           }
           this.trauma = Math.min(1, this.trauma + 0.25);
         }
       } else if (dist < 205 && e.cooldown <= 0) {
-        e.telegraph = 0.88;
-        e.cooldown = 1.65;
+        e.telegraph = 1.1;
+        e.cooldown = 2.2;
         e.attackFired = false;
       } else e.vx = approach(e.vx, Math.sign(dx) * e.speed, dt * 420);
       e.x += e.vx * dt;
@@ -1199,8 +1199,8 @@ class Game {
   updateBoss(e, dt, dx, dist) {
     if (!e.phaseTwo && e.health <= e.maxHealth / 2) {
       e.phaseTwo = true;
-      e.speed *= 1.24;
-      e.damage += 7;
+      e.speed *= 1.12;
+      e.damage += 3;
       this.flash = 0.42;
       this.audio.play('boss');
       this.announce('DANGER · PHASE 2', STAGES[this.stageIndex].boss + ' · 파워 업!');
@@ -1213,7 +1213,7 @@ class Game {
       if (!e.attackFired && e.telegraph < (e.attackType === 1 ? 0.31 : 0.41)) {
         e.attackFired = true;
         if (e.attackType === 0) {
-          const speed = e.phaseTwo ? 510 : 410;
+          const speed = e.phaseTwo ? 420 : 340;
           const spreads = e.phaseTwo ? [-0.28, 0, 0.28] : [0];
           for (const spread of spreads) {
             const ax = this.player.x - e.x;
@@ -1229,12 +1229,12 @@ class Game {
         } else if (e.attackType === 1) {
           e.dash = e.phaseTwo ? 0.42 : 0.32;
           e.dashHit = false;
-          e.vx = e.facing * (e.phaseTwo ? 980 : 810);
+          e.vx = e.facing * (e.phaseTwo ? 820 : 700);
           this.trauma = Math.min(1, this.trauma + 0.35);
         } else {
           for (const dir of [-1, 1]) {
             this.projectiles.push({
-              kind: 'wave', x: e.x, y: GROUND_Y - 14, vx: dir * (e.phaseTwo ? 570 : 470), vy: 0,
+              kind: 'wave', x: e.x, y: GROUND_Y - 14, vx: dir * (e.phaseTwo ? 460 : 380), vy: 0,
               radius: e.phaseTwo ? 36 : 30, life: 1.65, damage: e.damage, color: '#ff5578', dead: false,
             });
           }
@@ -1245,8 +1245,8 @@ class Game {
     }
     if (e.cooldown <= 0) {
       e.attackType = dist < 280 ? 1 : (e.attackType + 1) % 3;
-      e.telegraph = e.attackType === 1 ? 0.9 : 1.04;
-      e.cooldown = e.phaseTwo ? 0.78 : 1.18;
+      e.telegraph = e.attackType === 1 ? 1.2 : 1.35;
+      e.cooldown = e.phaseTwo ? 1.05 : 1.6;
       e.attackFired = false;
       return;
     }
@@ -1303,7 +1303,7 @@ class Game {
     const killed = e.health <= 0;
     this.combo += 1;
     this.maxCombo = Math.max(this.maxCombo, this.combo);
-    this.comboTimer = 2.6;
+    this.comboTimer = 3.2;
     this.score += Math.round(damage * 2.4 + (killed ? 150 : 15) + this.combo * 3);
     this.player.energy = Math.min(MAX_ENERGY, this.player.energy + (killed ? 15 : heavy ? 10 : 6) * g.energyRate);
     this.hitstop = Math.max(this.hitstop, killed ? 0.078 : heavy ? 0.06 : 0.036);
@@ -1355,7 +1355,7 @@ class Game {
     }
     if (p.invulnerable > 0 || p.ultimate > 0) return;
     p.health = Math.max(0, p.health - Math.round(damage));
-    p.invulnerable = 0.78;
+    p.invulnerable = 1.1;
     p.vx = dir * 390;
     p.vy = -380;
     this.combo = 0;
@@ -1375,7 +1375,7 @@ class Game {
   }
 
   respawn() {
-    const fromCheckpoint = this.stageIndex === 1 && this.checkpointReached;
+    const fromCheckpoint = !!STAGES[this.stageIndex].checkpoint && this.checkpointReached;
     this.score = this.stageEntryScore;
     this.maxCombo = this.stageEntryMaxCombo;
     this.loadStage(this.stageIndex, fromCheckpoint, 0);
@@ -1443,7 +1443,7 @@ class Game {
   }
 
   grade() {
-    return this.score >= 4700 ? 'S' : this.score >= 3200 ? 'A' : this.score >= 1900 ? 'B' : 'C';
+    return this.score >= 3800 ? 'S' : this.score >= 2600 ? 'A' : this.score >= 1500 ? 'B' : 'C';
   }
 
   updateAtmosphere(dt) {
@@ -1806,7 +1806,7 @@ Object.assign(Game.prototype, {
       }
       ctx.restore();
     }
-    if (this.stageIndex === 1 && stage.checkpoint) {
+    if (stage.checkpoint) {
       ctx.save();
       ctx.translate(stage.checkpoint, GROUND_Y);
       ctx.strokeStyle = this.checkpointReached ? '#ffd166' : 'rgba(255,255,255,.36)';
