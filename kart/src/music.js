@@ -386,6 +386,10 @@ SK.createAudio = function () {
       case 'land':
         burst(t, 0.08, 0.12, 500);
         break;
+      case 'bump':                         // 칸막이에 부딪힘 — 폭신한 소리
+        env('sine', t, 0.14, 0.13, 380, 220);
+        env('triangle', t + 0.02, 0.10, 0.07, 760, 520);
+        break;
       case 'lap':                          // 한 바퀴 — 딩동
         env('triangle', t, 0.16, 0.15, f(83), f(83));
         env('triangle', t + 0.13, 0.26, 0.15, f(88), f(88));

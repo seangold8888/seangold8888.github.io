@@ -366,7 +366,8 @@ export class Kart {
       lap: 0, progress: 0, total: 0, place: 1,
       finished: false, finishTime: 0,
       item: null, itemCount: 0, itemCooldown: 0,
-      isPlayer: false, wheelSpin: 0, lean: 0
+      isPlayer: false, wheelSpin: 0, lean: 0,
+      bumpCool: 0, bumpFlash: 0
     }, opts);
     this.spec = spec;
     this.track = track;
@@ -446,6 +447,30 @@ export class Kart {
     // 이동
     this.x += Math.sin(this.vAngle) * this.speed * dt;
     this.z += Math.cos(this.vAngle) * this.speed * dt;
+
+    // 도로 옆 칸막이 — 잔디로 튕겨 나가 헤매는 일이 없게 막아 준다.
+    // 멈춰 세우면 더 답답하므로 바깥으로 향하던 속도 성분만 죽여
+    // 벽을 따라 미끄러지게 한다. 지름길 위에는 칸막이가 없다.
+    this.bumpCool = Math.max(0, (this.bumpCool || 0) - dt);
+    const sw = T.sample(this.x, this.z);
+    if (sw.kind === 'grass') {
+      const WALL = T.roadHalf + 7;
+      const c = sw.near.p, d2 = sw.near.dist;
+      if (d2 > WALL) {
+        const nx = (this.x - c.x) / d2, nz = (this.z - c.z) / d2;
+        this.x = c.x + nx * WALL;
+        this.z = c.z + nz * WALL;
+        const vx = Math.sin(this.vAngle), vz = Math.cos(this.vAngle);
+        const outward = vx * nx + vz * nz;
+        if (outward > 0) {
+          const tx = vx - nx * outward, tz = vz - nz * outward;
+          const len = Math.hypot(tx, tz);
+          if (len > 1e-4) this.vAngle = Math.atan2(tx / len, tz / len);
+          this.speed *= 0.90;
+          if (this.bumpCool <= 0) { this.bumpFlash = 1; this.bumpCool = 0.3; }
+        }
+      }
+    }
 
     // 높이: 지면 따라가기 + 점프
     const groundY = T.sample(this.x, this.z).y;

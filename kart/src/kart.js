@@ -24,7 +24,8 @@
         lap: 0, progress: 0, prevProgress: 0, place: 1,
         finished: false, finishTime: 0,
         item: null, itemCooldown: 0,
-        isPlayer: false, bob: 0
+        isPlayer: false, bob: 0,
+        bumpCool: 0, bumpFlash: 0
       }, opts);
       this.spec = spec;
       this.baseTop = spec.top;
@@ -100,6 +101,31 @@
       // 이동
       this.x += Math.sin(this.vAngle) * this.speed * dt;
       this.y -= Math.cos(this.vAngle) * this.speed * dt;
+      // 도로 옆 칸막이 — 풀밭으로 튕겨 나가 한참 헤매는 일이 없게 막아 준다.
+      // 멈춰 세우면 더 답답하므로, 바깥으로 향하던 속도 성분만 죽여
+      // 벽을 따라 미끄러지듯 흐르게 한다. 지름길 위에는 칸막이가 없다.
+      this.bumpCool = Math.max(0, this.bumpCool - dt);
+      const surf2 = T.surfaceAt(this.x, this.y);
+      if (surf2.kind === 'grass') {
+        const WALL = T.ROAD_HALF + 26;
+        const d2 = surf2.near.dist;
+        if (d2 > WALL) {
+          const c = surf2.near.point;
+          const nx = (this.x - c.x) / d2, ny = (this.y - c.y) / d2;
+          this.x = c.x + nx * WALL;
+          this.y = c.y + ny * WALL;
+          const vx = Math.sin(this.vAngle), vy = -Math.cos(this.vAngle);
+          const outward = vx * nx + vy * ny;
+          if (outward > 0) {
+            const tx = vx - nx * outward, ty = vy - ny * outward;
+            const len = Math.hypot(tx, ty);
+            if (len > 1e-4) this.vAngle = Math.atan2(tx / len, -(ty / len));
+            this.speed *= 0.90;
+            if (this.bumpCool <= 0) { this.bumpFlash = 1; this.bumpCool = 0.3; }
+          }
+        }
+      }
+
       // 트랙 밖으로 아주 멀리 못 나가게 부드럽게 잡아 준다
       const S = T.SIZE;
       this.x = Math.max(40, Math.min(S - 40, this.x));

@@ -102,6 +102,28 @@
     }
   }
 
+  // 칸막이에 부딪혔을 때 튀는 하트
+  A.drawHeart = function (g, x, y, scale, alpha, rot) {
+    g.save();
+    g.translate(x, y);
+    g.scale(scale, scale);
+    if (rot) g.rotate(rot);
+    g.globalAlpha = alpha;
+    g.fillStyle = '#ff6f9d';
+    g.strokeStyle = '#ffffff';
+    g.lineWidth = 1.5;
+    g.beginPath();
+    // 위쪽 두 봉우리를 뚜렷하게. 외곽선이 두꺼우면 작은 크기에서 타원으로 뭉갠다.
+    g.moveTo(0, 8);
+    g.bezierCurveTo(-11, -1, -8.5, -13, 0, -6);
+    g.bezierCurveTo(8.5, -13, 11, -1, 0, 8);
+    g.closePath();
+    g.fill(); g.stroke();
+    g.fillStyle = 'rgba(255,255,255,0.65)';
+    g.beginPath(); g.ellipse(-3.4, -4, 1.9, 1.3, -0.5, 0, Math.PI * 2); g.fill();
+    g.restore();
+  };
+
   /**
    * 카트를 그린다. 뒤에서 보는 시점이라 좌우 기울기만 표현한다.
    * @param lean  -1..1 (드리프트/조향에 따른 기울기)

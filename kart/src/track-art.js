@@ -31,6 +31,24 @@
       g.stroke();
     }
 
+    // ---- 도로 옆 칸막이 ----
+    // 물리에서 막는 벽(ROAD_HALF + 26)과 같은 자리에 그린다.
+    // 지름길은 이 다음에 덮어 그려서 통로가 뚫린다.
+    (function fence() {
+      const WALL = T.ROAD_HALF + 26;
+      g.lineCap = 'round'; g.lineJoin = 'round';
+      g.strokeStyle = TH.fenceOuter || TH.postA;
+      g.lineWidth = WALL * 2 + 22;
+      g.beginPath();
+      T.center.forEach((p, i) => i ? g.lineTo(p.x, p.y) : g.moveTo(p.x, p.y));
+      g.closePath(); g.stroke();
+      g.strokeStyle = TH.fenceInner || TH.postB;
+      g.lineWidth = WALL * 2 + 8;
+      g.beginPath();
+      T.center.forEach((p, i) => i ? g.lineTo(p.x, p.y) : g.moveTo(p.x, p.y));
+      g.closePath(); g.stroke();
+    })();
+
     // ---- 지름길(풀이 눌린 오솔길) ----
     if (T.shortcut) {
       g.strokeStyle = TH.path;

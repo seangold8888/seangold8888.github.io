@@ -16,10 +16,15 @@
   let trackIndex = 0;
   let time = 0, raceTime = 0, countdown = 3.6;
   let karts = [], player = null, chosen = 0;
-  let items = [], boxes = [];
+  let items = [], boxes = [], hearts = [];
   let bestLap = null, lastLapStart = 0, playerBestLap = null;
   let resultOrder = [];
-  const cam = { x: 0, y: 0, angle: 0, height: 150, fov: 320, horizon: 0.44 };
+  // height 를 낮추면 지면 렌더는 그대로다(행별 배율 = depth/fov 로 height 와 무관).
+  // 대신 화면 아래쪽이 더 가까운 땅을 비추게 되어, 카메라 118 뒤에 있는
+  // 플레이어의 실제 투영 위치가 화면 안(y≈440)으로 들어온다.
+  // 예전에는 y=644 라 옆에 붙은 AI 카트가 화면 밖으로 밀려 보이지 않았고,
+  // 플레이어만 고정 크기 1.15 로 그려서 46% 크게 보였다.
+  const cam = { x: 0, y: 0, angle: 0, height: 75, fov: 320, horizon: 0.44 };
 
   const keys = Object.create(null);
   const touch = { steer: 0, drift: false, item: false, leftId: null, rightId: null };
@@ -94,6 +99,7 @@
     }
 
     items = [];
+    hearts = [];
     raceTime = 0; countdown = 3.6; lastLapStart = 0;
     playerBestLap = null;
     resultOrder = [];
@@ -132,6 +138,25 @@
     raceTime += dt;
 
     const input = playerInput();
+    // 칸막이에 부딪히면 하트가 튄다 (부딪힌 건 물리 쪽이 알려 준다)
+    for (const k of karts) {
+      if (!k.bumpFlash) continue;
+      k.bumpFlash = 0;
+      if (k === player) audio.sfx('bump');
+      for (let i = 0; i < 7; i++) {
+        hearts.push({
+          x: k.x, y: k.y,
+          ox: (Math.random() - 0.5) * 46,
+          rise: 44 + Math.random() * 44,
+          rot: (Math.random() - 0.5) * 0.9,
+          sc: 1.1 + Math.random() * 0.9,
+          life: 0.95, max: 0.95
+        });
+      }
+    }
+    for (const h of hearts) h.life -= dt;
+    hearts = hearts.filter(h => h.life > 0);
+
     // 소리는 상태 변화를 보고 낸다. 물리 쪽에 오디오를 끌어들이지 않기 위해서다.
     (function watchSfx() {
       const p = player;
@@ -350,10 +375,19 @@
       const p = SK.Mode7.project(k.x, k.y, cam, W, H);
       if (p) drawables.push({ p, kind: 'kart', kart: k });
     }
+    for (const h of hearts) {
+      const p = SK.Mode7.project(h.x, h.y, cam, W, H);
+      if (p) drawables.push({ p, kind: 'heart', h });
+    }
     drawables.sort((a, b) => b.p.forward - a.p.forward);
     for (const d of drawables) {
-      const s = d.p.zoom * 0.62;
-      if (d.kind === 'box') SK.Sprites.drawItemBox(ctx, d.p.x, d.p.y, s, time);
+      const s = d.p.zoom * 1.81;   // 플레이어와 같은 깊이에서 1.15 가 된다
+      if (d.kind === 'heart') {
+        const h = d.h, k = 1 - h.life / h.max;
+        SK.Sprites.drawHeart(ctx, d.p.x + h.ox * d.p.zoom, d.p.y - h.rise * k * d.p.zoom,
+          s * h.sc * (0.75 + k * 0.5), Math.min(1, h.life / h.max * 2.2), h.rot);
+      }
+      else if (d.kind === 'box') SK.Sprites.drawItemBox(ctx, d.p.x, d.p.y, s, time);
       else if (d.kind === 'ribbon') SK.Sprites.drawRibbon(ctx, d.p.x, d.p.y, s, time);
       else {
         let rel = d.kart.angle - cam.angle;
@@ -751,6 +785,24 @@
     resize();
     window.addEventListener('resize', resize, { passive: true });
 
+// ---- 아이패드 확대 잠금 ----
+    // iOS 사파리는 iOS 10 부터 user-scalable=no 를 무시한다. 게임 중에 손가락이
+    // 스치거나 두 번 두드리면 화면이 확대되고, 게임 캔버스는 스크롤이 없어서
+    // 되돌릴 방법이 없다. 제스처와 더블탭을 직접 막는다.
+    ['gesturestart', 'gesturechange', 'gestureend'].forEach(function (ev) {
+      document.addEventListener(ev, function (e) { e.preventDefault(); }, { passive: false });
+    });
+    document.addEventListener('touchmove', function (e) {
+      if (e.touches && e.touches.length > 1) e.preventDefault();
+    }, { passive: false });
+    var lastTouchEnd = 0;
+    document.addEventListener('touchend', function (e) {
+      var now = Date.now();
+      if (now - lastTouchEnd < 320) e.preventDefault();
+      lastTouchEnd = now;
+    }, { passive: false });
+    document.addEventListener('dblclick', function (e) { e.preventDefault(); }, { passive: false });
+
     // ---- 소리 버튼 / 내 음악 넣기 ----
     const el = id => document.getElementById(id);
     const soundBtn = el('sound'), bgmBox = el('bgm');
@@ -857,6 +909,7 @@
     startRace, setScene(s) { scene = s; }, pick(i) { chosen = i; },
     setTrack(i) { trackIndex = i; },
     get trackName() { return SK.Track ? SK.Track.name : null; },
+    get heartCount() { return hearts.length; },
     get selStep() { return selStep; }, setStep(i) { selStep = i; },
     // 자동 검증용: 화면이 멈춘 환경에서도 게임 시간을 진행시킨다
     step(dt) { update(dt); },

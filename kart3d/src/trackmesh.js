@@ -136,6 +136,37 @@ export function buildTrackMesh(track, scene) {
     obj.quaternion.setFromRotationMatrix(_m);
   }
 
+  // ---- 도로 옆 칸막이 ----
+  // 물리에서 막는 벽(roadHalf + 7)과 같은 자리에 낮은 벽을 세운다.
+  (function fence() {
+    const WALL = HALF + 7, n = track.points.length;
+    const pos = [], col = [], idx = [];
+    const c1 = new THREE.Color(def.rail), c2 = new THREE.Color(0xffffff);
+    const HEIGHT = 5.5;
+    for (let side = -1; side <= 1; side += 2) {
+      const base = pos.length / 3;
+      for (let i = 0; i <= n; i++) {
+        const p = track.points[i % n];
+        const nx = -p.tz * side, nz = p.tx * side;
+        const x = p.x + nx * WALL, z = p.z + nz * WALL;
+        pos.push(x, p.y + 0.2, z, x, p.y + HEIGHT, z);
+        const c = (i % 6 < 3) ? c1 : c2;
+        col.push(c.r, c.g, c.b, c.r, c.g, c.b);
+      }
+      for (let i = 0; i < n; i++) {
+        const a = base + i * 2;
+        idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2);
+        idx.push(a + 2, a + 1, a, a + 2, a + 3, a + 1);   // 양면
+      }
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    geo.setIndex(idx);
+    geo.computeVertexNormals();
+    group.add(new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ vertexColors: true })));
+  })();
+
   // ---- 점프대 ----
   track.ramps.forEach(r => {
     const p = r.p;

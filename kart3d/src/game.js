@@ -92,6 +92,7 @@ export function startGame() {
     removeAndDispose(state.trackGroup);
     state.trackGroup = null;
     state.models.forEach(removeAndDispose);
+    clearHearts();
     state.boxes.forEach(b => removeAndDispose(b.mesh));
     state.projMeshes.forEach(removeAndDispose);
     state.extraMeshes.forEach(removeAndDispose);
@@ -259,6 +260,15 @@ export function startGame() {
         }
       }
     }
+
+    // 칸막이에 부딪히면 하트가 튄다 (부딪힌 건 물리 쪽이 알려 준다)
+    for (const k of state.karts) {
+      if (!k.bumpFlash) continue;
+      k.bumpFlash = 0;
+      spawnHearts(k);
+      if (k === state.player) audio.sfx('bump');
+    }
+    updateHearts(dt);
 
     // 소리는 상태 변화를 보고 낸다. 물리 쪽에 오디오를 끌어들이지 않기 위해서다.
     watchSfx();
@@ -456,6 +466,75 @@ export function startGame() {
   let lastCount = null;
 
   const audio = createAudio();
+
+  // ---- 칸막이에 부딪혔을 때 튀는 하트 ----
+  // 스프라이트 30개를 미리 만들어 돌려 쓴다. 매번 만들면 GPU 자원이 샌다.
+  let heartTex = null, heartPool = [], heartLive = [];
+  function makeHeartTexture() {
+    const S = 96, cv = document.createElement('canvas');
+    cv.width = cv.height = S;
+    const c = cv.getContext('2d');
+    c.translate(S / 2, S / 2); c.scale(S / 26, S / 26);
+    c.fillStyle = '#ff6f9d'; c.strokeStyle = '#ffffff'; c.lineWidth = 1.5;
+    c.beginPath();
+    c.moveTo(0, 8);
+    c.bezierCurveTo(-11, -1, -8.5, -13, 0, -6);
+    c.bezierCurveTo(8.5, -13, 11, -1, 0, 8);
+    c.closePath(); c.fill(); c.stroke();
+    c.fillStyle = 'rgba(255,255,255,0.65)';
+    c.beginPath(); c.ellipse(-3.4, -4, 1.9, 1.3, -0.5, 0, Math.PI * 2); c.fill();
+    const t = new THREE.CanvasTexture(cv);
+    return t;
+  }
+  function heartSprite() {
+    if (heartPool.length) return heartPool.pop();
+    if (!heartTex) heartTex = makeHeartTexture();
+    const m = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: heartTex, transparent: true, depthWrite: false
+    }));
+    m.scale.set(9, 9, 1);
+    return m;
+  }
+  function spawnHearts(k) {
+    for (let i = 0; i < 7; i++) {
+      if (heartLive.length > 40) break;
+      const sp = heartSprite();
+      sp.position.set(k.x, k.y + 12, k.z);
+      sp.material.opacity = 1;
+      scene.add(sp);
+      heartLive.push({
+        sp,
+        vx: (Math.random() - 0.5) * 26,
+        vy: 34 + Math.random() * 26,
+        vz: (Math.random() - 0.5) * 26,
+        life: 0.95, max: 0.95,
+        sc: 7 + Math.random() * 6
+      });
+    }
+  }
+  function updateHearts(dt) {
+    for (let i = heartLive.length - 1; i >= 0; i--) {
+      const h = heartLive[i];
+      h.life -= dt;
+      h.sp.position.x += h.vx * dt;
+      h.sp.position.y += h.vy * dt;
+      h.sp.position.z += h.vz * dt;
+      h.vy -= 46 * dt;
+      const k = 1 - h.life / h.max;
+      h.sp.material.opacity = Math.min(1, h.life / h.max * 2.2);
+      const sc = h.sc * (0.75 + k * 0.5);
+      h.sp.scale.set(sc, sc, 1);
+      if (h.life <= 0) {
+        scene.remove(h.sp);
+        heartPool.push(h.sp);
+        heartLive.splice(i, 1);
+      }
+    }
+  }
+  function clearHearts() {
+    for (const h of heartLive) { scene.remove(h.sp); heartPool.push(h.sp); }
+    heartLive = [];
+  }
 
   let sfxPrev = null;
   function watchSfx() {
@@ -655,7 +734,25 @@ export function startGame() {
   });
   audio.restoreUserTrack().then(() => paintBgm());
 
-  const soundBtn = el('sound');
+// ---- 아이패드 확대 잠금 ----
+  // iOS 사파리는 iOS 10 부터 user-scalable=no 를 무시한다. 게임 중에 손가락이
+  // 스치거나 두 번 두드리면 화면이 확대되고, 게임 캔버스는 스크롤이 없어서
+  // 되돌릴 방법이 없다. 제스처와 더블탭을 직접 막는다.
+  ['gesturestart', 'gesturechange', 'gestureend'].forEach(function (ev) {
+    document.addEventListener(ev, function (e) { e.preventDefault(); }, { passive: false });
+  });
+  document.addEventListener('touchmove', function (e) {
+    if (e.touches && e.touches.length > 1) e.preventDefault();
+  }, { passive: false });
+  var lastTouchEnd = 0;
+  document.addEventListener('touchend', function (e) {
+    var now = Date.now();
+    if (now - lastTouchEnd < 320) e.preventDefault();
+    lastTouchEnd = now;
+  }, { passive: false });
+  document.addEventListener('dblclick', function (e) { e.preventDefault(); }, { passive: false });
+
+    const soundBtn = el('sound');
   function paintSound() {
     soundBtn.textContent = audio.isMuted() ? '🔇' : '🔊';
     soundBtn.setAttribute('aria-label', audio.isMuted() ? '소리 켜기' : '소리 끄기');
