@@ -1,5 +1,7 @@
 <!doctype html>
-<meta charset="utf-8">
+<html lang="ko">
+<head><meta charset="utf-8" /></head>
+<body>
 <title>케데헌</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <style>
@@ -43,6 +45,67 @@
 @media (prefers-reduced-motion: reduce) {
   .new-record { animation: none; }
 }
+
+/* Portrait slots */
+.guardian-portrait { position: relative; overflow: hidden; }
+.guardian-portrait:after { display: none; }
+.guardian-portrait > canvas,
+.guardian-portrait > img.photo-portrait {
+  position: absolute; inset: 0; width: 100% !important; height: 100% !important;
+  object-fit: cover; border-radius: inherit; display: block;
+}
+.guardian-mark { position: relative; overflow: hidden; }
+.guardian-mark > canvas, .guardian-mark > img.photo-portrait {
+  position: absolute; inset: 0; width: 100% !important; height: 100% !important; object-fit: cover; border-radius: inherit;
+}
+.guardian-card { font: inherit; }
+.guardian-card:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.photo-tools { display: flex; gap: 6px; margin-top: 8px; grid-column: 1 / -1; }
+.photo-btn {
+  font: inherit; font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+  padding: 4px 10px; border-radius: 999px; cursor: pointer;
+  color: var(--text); background: #ffffff14; border: 1px solid #ffffff2e;
+}
+.photo-btn:hover { background: #ffffff24; }
+.photo-btn.ghost { opacity: 0.7; }
+.photo-hint { margin: 10px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.photo-hint b { color: var(--gold); }
+
+/* Story cutscene */
+.story-layer {
+  position: fixed; inset: 0; z-index: 30; display: flex; align-items: flex-end; justify-content: center;
+  padding: 0 clamp(12px, 3vw, 40px) calc(22px + env(safe-area-inset-bottom));
+  cursor: pointer; background: linear-gradient(180deg, #05031566 0%, #05031500 30%, #05031500 60%, #050315cc 100%);
+}
+.story-bar { position: absolute; left: 0; right: 0; height: 9vh; background: #04020f; pointer-events: none; }
+.story-bar.top { top: 0; } .story-bar.bottom { bottom: 0; }
+.story-box {
+  position: relative; z-index: 1; display: flex; gap: 18px; align-items: flex-end;
+  width: min(880px, 100%); padding: 16px 20px 14px;
+  background: #120e2feb; border: 1px solid #ffffff2e; border-radius: 22px 8px;
+  box-shadow: 0 18px 60px #0009, 0 0 40px color-mix(in srgb, var(--guardian-color) 22%, transparent);
+  animation: dx-story-in 0.28s ease-out;
+}
+.story-box.narration { border-color: #ffd16655; }
+.story-portrait { flex: 0 0 auto; width: 96px; height: 110px; border-radius: 22px 6px; overflow: hidden; border: 1px solid #ffffff33; background: #0a0618; }
+.story-portrait > canvas, .story-portrait > img { width: 100% !important; height: 100% !important; object-fit: cover; display: block; }
+.story-body { flex: 1 1 auto; min-width: 0; }
+.story-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.story-name { font-family: var(--font-display); font-size: 16px; letter-spacing: 0.08em; }
+.story-counter { color: var(--muted); font-size: 11px; letter-spacing: 0.1em; }
+.story-text { margin: 8px 0 0; min-height: 3.2em; font-size: clamp(14px, 1.7vw, 18px); line-height: 1.6; text-wrap: pretty; }
+.story-box.narration .story-text { color: #efe6ff; font-style: italic; }
+.story-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+.story-hint { color: var(--gold); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; animation: dx-blink 1.2s ease-in-out infinite; }
+.story-skip { font: inherit; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; padding: 5px 12px; border-radius: 999px; cursor: pointer; color: var(--muted); background: transparent; border: 1px solid #ffffff2e; }
+.story-skip:hover { color: var(--text); background: #ffffff14; }
+@keyframes dx-story-in { from { transform: translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes dx-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+@media (prefers-reduced-motion: reduce) { .story-box, .story-hint { animation: none; } }
+@media (max-width: 640px) {
+  .story-portrait { width: 64px; height: 74px; }
+  .story-box { gap: 12px; padding: 12px 14px 10px; }
+}
 </style>
 <main class="game-root" id="gameRoot">
   <div class="play-layer" id="playLayer">
@@ -60,7 +123,7 @@
             <span class="bar-fill health-fill" id="healthFill"></span>
           </div>
           <div class="energy-row">
-            <span class="energy-label">STAR</span>
+            <span class="energy-label">혼문</span>
             <div class="bar energy-bar" id="energyBar" role="progressbar" aria-label="피니시 에너지" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
               <span class="bar-fill energy-fill" id="energyFill"></span>
             </div>
@@ -75,7 +138,7 @@
         <div class="objective" id="objective"></div>
         <div class="boss-bar-wrap" id="bossWrap" hidden>
           <div class="boss-bar-label">
-            <span>먹구름 대장</span>
+            <span id="bossName">보스</span>
             <span id="bossNumber"></span>
           </div>
           <div class="bar boss-bar" id="bossBar" role="progressbar" aria-label="보스 체력" aria-valuemin="0" aria-valuemax="1" aria-valuenow="1">
@@ -103,7 +166,7 @@
       <span><kbd>W</kbd>더블점프</span>
       <span><kbd>X</kbd>3연타</span>
       <span><kbd>Z</kbd>대시</span>
-      <span><kbd>C</kbd>피니시</span>
+      <span><kbd>C</kbd>골든 혼문</span>
       <span><kbd>1–3</kbd>교체</span>
     </div>
 
@@ -117,7 +180,7 @@
       </div>
       <div class="touch-actions">
         <button type="button" class="touch-button" id="touchDash" aria-label="대시">대시</button>
-        <button type="button" class="touch-button ultimate" id="touchUlt" aria-label="별빛 피니시" disabled>피니시</button>
+        <button type="button" class="touch-button ultimate" id="touchUlt" aria-label="골든 혼문 피니시" disabled>골든</button>
         <button type="button" class="touch-button attack" id="touchAttack" aria-label="공격">공격</button>
       </div>
     </div>
@@ -127,15 +190,35 @@
     <div class="announcement-kicker" id="announcementKicker"></div>
     <div class="announcement-title" id="announcementTitle"></div>
   </div>
+  <section class="story-layer" id="storyLayer" role="dialog" aria-modal="true" aria-label="스토리" hidden>
+    <div class="story-bar top"></div>
+    <div class="story-bar bottom"></div>
+    <div class="story-box" id="storyBox">
+      <div class="story-portrait" id="storyPortrait"></div>
+      <div class="story-body">
+        <div class="story-head">
+          <span class="story-name" id="storyName"></span>
+          <span class="story-counter" id="storyCounter"></span>
+        </div>
+        <p class="story-text" id="storyText"></p>
+        <div class="story-foot">
+          <span class="story-hint" id="storyHint">▶ 계속 (Enter)</span>
+          <button type="button" class="story-skip" id="storySkip">건너뛰기</button>
+        </div>
+      </div>
+    </div>
+  </section>
+  <input type="file" id="photoInput" accept="image/*" hidden />
   <div class="sr-live" id="srLive" aria-live="polite" aria-atomic="true"></div>
 
   <section class="menu-layer" id="menuSelect" aria-labelledby="game-title">
     <div class="menu-scrim"></div>
     <div class="start-card">
       <header class="start-header">
-        <p class="eyebrow">NEON PAPER ACTION · 2 STAGE CAMPAIGN</p>
-        <h1 class="game-title" id="game-title">케데헌<span>별빛 레스큐 · Neon Stage DX</span></h1>
-        <p class="start-copy">그림자가 콘서트의 빛을 훔쳐 갔어요. 세 가디언을 자유롭게 교체하고, 3연타 리본 블레이드와 별빛 피니시로 두 개의 무대를 되찾으세요.</p>
+        <p class="eyebrow">K-POP DEMON HUNTERS FAN GAME · 2 STAGE CAMPAIGN</p>
+        <h1 class="game-title" id="game-title">케데헌<span>헌트릭스 · 혼문 사수 작전</span></h1>
+        <p class="start-copy">귀마의 그림자가 콘서트를 덮쳤어요. 헌트릭스 세 멤버를 자유롭게 교체하며 3연타 검무와 골든 혼문 피니시로 두 개의 무대를 되찾으세요.</p>
+        <p class="photo-hint">카드의 <b>사진</b> 버튼으로 내 기기의 캐릭터 이미지를 넣을 수 있어요 (브라우저에만 저장, 서버 전송 없음).</p>
         <p class="best-line" id="bestLine" hidden></p>
       </header>
       <div class="guardian-grid" id="guardianGrid" role="radiogroup" aria-label="가디언 선택"></div>
@@ -161,7 +244,7 @@
       <div class="dialog-actions" style="margin-top: 24px">
         <button type="button" class="primary-button" id="resumeBtn">계속하기</button>
         <button type="button" class="secondary-button" id="retryBtn">이 스테이지 다시 시작</button>
-        <button type="button" class="secondary-button" id="toTitleBtn">가디언 선택으로</button>
+        <button type="button" class="secondary-button" id="toTitleBtn">멤버 선택으로</button>
       </div>
     </div>
   </section>
@@ -171,7 +254,7 @@
     <div class="dialog-card">
       <p class="dialog-kicker">STAGE 01 CLEAR</p>
       <h2 class="dialog-title" id="clear-title">무대를 되찾았어!</h2>
-      <p class="dialog-copy" id="clear-copy">코랄 시티의 조명이 다시 켜졌어요. 이제 달빛 옥상에서 마지막 먹구름을 쫓아가요.</p>
+      <p class="dialog-copy" id="clear-copy">코랄 시티 아레나의 조명이 다시 켜졌어요. 이제 달빛 옥상으로 사자 보이즈를 쫓아가요.</p>
       <div class="result-stats">
         <div class="result-stat"><strong id="clearScore">000000</strong><span>CHEERS</span></div>
         <div class="result-stat"><strong id="clearCombo">0×</strong><span>BEST COMBO</span></div>
@@ -185,11 +268,11 @@
     <div class="menu-scrim"></div>
     <div class="dialog-card">
       <p class="dialog-kicker">ALL STAGES PURIFIED</p>
-      <h2 class="dialog-title" id="victory-title">오늘의 가디언은 바로 너!</h2>
+      <h2 class="dialog-title" id="victory-title">골든 혼문 완성!</h2>
       <div class="result-grade" id="victoryGrade">C</div>
       <p class="new-record" id="newRecord" hidden>★ NEW RECORD ★</p>
       <p class="victory-best" id="victoryBest" hidden></p>
-      <p class="dialog-copy" id="victory-copy">두 무대의 그림자가 모두 별빛으로 돌아왔어요. 더 높은 점수와 빠른 기록에 다시 도전해 보세요.</p>
+      <p class="dialog-copy" id="victory-copy">두 무대의 그림자가 모두 혼문 빛으로 돌아왔어요. 더 높은 점수와 빠른 기록에 다시 도전해 보세요.</p>
       <div class="result-stats">
         <div class="result-stat"><strong id="victoryScore">000000</strong><span>CHEERS</span></div>
         <div class="result-stat"><strong id="victoryCombo">0×</strong><span>BEST COMBO</span></div>
@@ -197,7 +280,7 @@
       </div>
       <div class="dialog-actions">
         <button type="button" class="primary-button" id="againBtn">다시 달리기</button>
-        <button type="button" class="secondary-button" id="victoryTitleBtn">다른 가디언 선택</button>
+        <button type="button" class="secondary-button" id="victoryTitleBtn">다른 멤버 선택</button>
       </div>
     </div>
   </section>
@@ -207,14 +290,14 @@
 /* 별빛 레스큐 DX — vanilla engine (ported + upgraded) */
 
 const GUARDIANS = [
-  { id: 'lumi', mark: 'L', name: '루미', role: 'BALANCE · 균형형', skill: '크리스털 블레이드', color: '#ff6f91', accent: '#ffd166', speed: 410, jump: 865, damage: 20, range: 128, attackRate: 1, energyRate: 1, stats: [72, 74, 78] },
-  { id: 'mira', mark: 'M', name: '미라', role: 'POWER · 강공형', skill: '스타 스윙', color: '#ffb347', accent: '#ff5c8a', speed: 355, jump: 920, damage: 28, range: 152, attackRate: 0.82, energyRate: 0.88, stats: [94, 58, 68] },
-  { id: 'joy', mark: 'J', name: '조이', role: 'RUSH · 속공형', skill: '섀도 대시', color: '#43e6d0', accent: '#8e6cff', speed: 475, jump: 840, damage: 16, range: 116, attackRate: 1.28, energyRate: 1.34, stats: [61, 96, 84] },
+  { id: 'lumi', mark: 'L', name: '루미', role: 'BALANCE · 균형형', skill: '사인검', color: '#ff6f91', accent: '#ffd166', speed: 410, jump: 865, damage: 20, range: 128, attackRate: 1, energyRate: 1, stats: [72, 74, 78] },
+  { id: 'mira', mark: 'M', name: '미라', role: 'POWER · 강공형', skill: '월도', color: '#ffb347', accent: '#ff5c8a', speed: 355, jump: 920, damage: 28, range: 152, attackRate: 0.82, energyRate: 0.88, stats: [94, 58, 68] },
+  { id: 'joy', mark: 'J', name: '조이', role: 'RUSH · 속공형', skill: '신칼', color: '#43e6d0', accent: '#8e6cff', speed: 475, jump: 840, damage: 16, range: 116, attackRate: 1.28, energyRate: 1.34, stats: [61, 96, 84] },
 ];
 
 const STAGES = [
   {
-    title: '코랄 시티 스테이지', subtitle: 'STAGE 01 · PAPER SPOTLIGHT',
+    title: '코랄 시티 아레나', subtitle: 'STAGE 01 · HONMOON SPOTLIGHT', boss: '그림자 사자',
     worldWidth: 4250, bossGate: 3260, checkpoint: null, bossHealth: 510,
     skyTop: '#08072b', skyBottom: '#3d1764', ground: '#211646', glow: '#ff3cac',
     enemies: [
@@ -228,12 +311,14 @@ const STAGES = [
     ],
   },
   {
-    title: '달빛 옥상', subtitle: 'STAGE 02 · MOONLINE CHASE',
+    title: '달빛 옥상', subtitle: 'STAGE 02 · SAJA BOYS CHASE', boss: '사자 보이즈 · 진우',
     worldWidth: 4750, bossGate: 3660, checkpoint: 1780, bossHealth: 700,
     skyTop: '#030923', skyBottom: '#112f66', ground: '#12294b', glow: '#3ce8ff',
+    bossKind: 'jinu',
     enemies: [
-      { kind: 'shade', x: 700 }, { kind: 'wisp', x: 1140 }, { kind: 'brute', x: 1530 },
-      { kind: 'shade', x: 2100 }, { kind: 'wisp', x: 2490 }, { kind: 'brute', x: 2940 }, { kind: 'shade', x: 3350 },
+      { kind: 'shade', x: 700 }, { kind: 'saja', x: 1150, name: '베이비', color: '#7fd4ff' }, { kind: 'brute', x: 1530 },
+      { kind: 'saja', x: 2100, name: '애비', color: '#c9a3ff' }, { kind: 'wisp', x: 2490 },
+      { kind: 'saja', x: 2940, name: '미스터리', color: '#9b6cff' }, { kind: 'saja', x: 3350, name: '로맨스', color: '#ff7ab8' },
     ],
     shards: [[410, 520], [740, 390], [1090, 500], [1440, 330], [1810, 510], [2130, 390], [2450, 515], [2770, 350], [3150, 500], [3470, 390]],
     platforms: [
@@ -518,6 +603,8 @@ class Game {
     this.confettiTimer = 0;
     this.best = loadBest();
     this.newRecord = false;
+    this.storyKey = null;
+    this.storyNext = null;
     const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) throw Error('Canvas 2D is unavailable');
     this.canvas = canvas;
@@ -565,9 +652,31 @@ class Game {
     this.checkpointReached = false;
     this.newRecord = false;
     this.loadStage(0, false, 0);
-    this.phase = 'playing';
-    this.music.start(0);
-    this.announce('MISSION 01', '코랄 무대를 되찾아!');
+    this.playStory('intro', () => {
+      this.phase = 'playing';
+      this.music.start(0);
+      this.announce('MISSION 01', '코랄 무대를 되찾아!');
+    });
+  }
+
+  playStory(key, next) {
+    this.phase = 'story';
+    this.input.clear();
+    this.accumulator = 0;
+    this.storyKey = key;
+    this.storyNext = next;
+    this.music.duck(true);
+    this.publish();
+  }
+
+  finishStory() {
+    if (this.phase !== 'story') return;
+    const next = this.storyNext;
+    this.storyKey = null;
+    this.storyNext = null;
+    this.lastFrame = performance.now();
+    this.music.duck(false);
+    if (next) next();
     this.publish();
   }
 
@@ -578,10 +687,11 @@ class Game {
     this.stageEntryMaxCombo = this.maxCombo;
     this.checkpointReached = false;
     this.loadStage(1, false, energy);
-    this.phase = 'playing';
-    this.music.start(1);
-    this.announce('MISSION 02', '달빛 옥상으로 출격!');
-    this.publish();
+    this.playStory('stage2', () => {
+      this.phase = 'playing';
+      this.music.start(1);
+      this.announce('MISSION 02', '달빛 옥상으로 출격!');
+    });
   }
 
   restartCampaign() { this.start(this.guardianId); }
@@ -694,7 +804,7 @@ class Game {
     if (fromCheckpoint && stage.checkpoint) { this.player.x = stage.checkpoint; this.player.px = stage.checkpoint; }
     this.enemies = stage.enemies
       .filter((e) => !fromCheckpoint || !stage.checkpoint || e.x > stage.checkpoint - 140)
-      .map((e) => this.makeEnemy(e.kind, e.x));
+      .map((e) => this.makeEnemy(e.kind, e.x, e));
     this.projectiles = [];
     this.particles = [];
     this.floaters = [];
@@ -705,6 +815,7 @@ class Game {
     this.gateOpen = false;
     this.bossSpawned = false;
     this.bossDefeated = false;
+    this.sajaMet = fromCheckpoint ? true : false;
     this.clearTimer = 0;
     this.respawnTimer = 0;
     this.combo = 0;
@@ -715,15 +826,18 @@ class Game {
     this.previousCamera = this.camera;
   }
 
-  makeEnemy(kind, x) {
+  makeEnemy(kind, x, def = {}) {
     const spec = kind === 'shade'
       ? { width: 66, height: 70, health: 58, speed: 128, damage: 16 }
       : kind === 'wisp'
         ? { width: 62, height: 62, health: 46, speed: 92, damage: 14 }
-        : { width: 96, height: 112, health: 125, speed: 74, damage: 24 };
+        : kind === 'saja'
+          ? { width: 64, height: 118, health: 150, speed: 150, damage: 18 }
+          : { width: 96, height: 112, health: 125, speed: 74, damage: 24 };
     const y = kind === 'wisp' ? GROUND_Y - 145 : GROUND_Y;
     return {
       id: this.nextId++, kind, x, y, px: x, py: y, vx: 0,
+      name: def.name ?? null, tint: def.color ?? '#9b6cff',
       width: spec.width, height: spec.height, health: spec.health, maxHealth: spec.health,
       speed: spec.speed, damage: spec.damage,
       cooldown: 0.35 + (x % 270) / 500, telegraph: 0, attackType: 0, attackFired: false,
@@ -736,7 +850,7 @@ class Game {
     const stage = STAGES[this.stageIndex];
     const x = stage.worldWidth - 590;
     return {
-      id: this.nextId++, kind: 'boss', x, y: GROUND_Y - 18, px: x, py: GROUND_Y - 18, vx: 0,
+      id: this.nextId++, kind: 'boss', bossKind: stage.bossKind ?? 'cloud', name: stage.boss, x, y: GROUND_Y - 18, px: x, py: GROUND_Y - 18, vx: 0,
       width: 178, height: 182, health: stage.bossHealth, maxHealth: stage.bossHealth,
       speed: 92, damage: 28,
       cooldown: 1.15, telegraph: 0, attackType: 0, attackFired: false,
@@ -852,7 +966,7 @@ class Game {
       this.zoomPulse = 0.5;
       this.score += 250;
       this.audio.play('ultimate');
-      this.announce('STARLIGHT MAX', g.skill + ' · 피니시!');
+      this.announce('GOLDEN HONMOON', g.skill + ' · 피니시!');
     }
     if (p.dash <= 0 && p.ultimate <= 0 && p.attack <= 0 && this.input.consume('attack', this.playTime)) {
       const step = p.chain > 0 ? (p.attackStep + 1) % 3 : 0;
@@ -999,6 +1113,54 @@ class Game {
             radius: 18, life: 3.2, damage: e.damage, color: '#d65cff', dead: false,
           });
         }
+      } else if (e.kind === 'saja') {
+        if (!this.sajaMet && dist < 520) {
+          this.sajaMet = true;
+          this.playStory('sajaIntro', () => { this.phase = 'playing'; this.announce('SAJA BOYS', e.name + ' 등장!'); });
+          return;
+        }
+        if (e.dash > 0) {
+          if (!e.dashHit && overlap(p.x, p.y - 47, 48, 88, e.x, e.y - e.height / 2, e.width * 0.9, e.height * 0.9)) {
+            e.dashHit = true;
+            this.hurtPlayer(e.damage, e.facing);
+          }
+        } else if (e.telegraph > 0) {
+          e.vx = approach(e.vx, 0, dt * 2000);
+          if (!e.attackFired && e.telegraph < 0.26) {
+            e.attackFired = true;
+            if (e.attackType === 1) {
+              e.dash = 0.3;
+              e.dashHit = false;
+              e.vx = e.facing * 760;
+              this.trauma = Math.min(1, this.trauma + 0.2);
+            } else {
+              for (const spread of [-0.32, 0, 0.32]) {
+                const ax = p.x - e.x;
+                const ay = p.y - 50 - (e.y - 82);
+                const angle = Math.atan2(ay, ax) + spread;
+                this.projectiles.push({
+                  kind: 'heart', x: e.x + e.facing * 30, y: e.y - 82,
+                  vx: Math.cos(angle) * 360, vy: Math.sin(angle) * 360,
+                  radius: 16, life: 2.6, damage: e.damage * 0.8, color: e.tint, dead: false,
+                });
+              }
+              this.audio.play('slash');
+            }
+          }
+        } else if (dist < 150 && e.cooldown <= 0) {
+          e.attackType = 1;
+          e.telegraph = 0.62;
+          e.cooldown = 1.5;
+          e.attackFired = false;
+        } else if (dist < 520 && e.cooldown <= 0) {
+          e.attackType = 0;
+          e.telegraph = 0.78;
+          e.cooldown = 1.9;
+          e.attackFired = false;
+        } else {
+          const want = dist > 300 ? Math.sign(dx) * e.speed : -Math.sign(dx) * 60;
+          e.vx = approach(e.vx, want, dt * 700);
+        }
       } else if (e.telegraph > 0) {
         e.vx = approach(e.vx, 0, dt * 1800);
         if (!e.attackFired && e.telegraph < 0.23) {
@@ -1025,7 +1187,7 @@ class Game {
         }
       } else {
         e.x = clamp(e.x, 80, stage.bossGate - 92);
-        if (e.kind !== 'wisp' && e.telegraph <= 0 &&
+        if (e.kind !== 'wisp' && e.kind !== 'saja' && e.telegraph <= 0 &&
           overlap(p.x, p.y - 47, 48, 88, e.x, e.y - e.height / 2, e.width * 0.68, e.height * 0.76)) {
           this.hurtPlayer(e.damage * 0.65, e.facing);
         }
@@ -1041,7 +1203,7 @@ class Game {
       e.damage += 7;
       this.flash = 0.42;
       this.audio.play('boss');
-      this.announce('DANGER · PHASE 2', '먹구름 대장 · 파워 업!');
+      this.announce('DANGER · PHASE 2', STAGES[this.stageIndex].boss + ' · 파워 업!');
       this.burst(e.x, e.y - 80, '#ff3cac', 38, 'smoke');
       this.ring(e.x, e.y - 80, '#ff3cac', 240);
     }
@@ -1155,7 +1317,12 @@ class Game {
     });
     if (killed) {
       e.dead = true;
-      e.death = e.kind === 'boss' ? 1.3 : 0.55;
+      e.death = e.kind === 'boss' ? 1.3 : e.kind === 'saja' ? 0.9 : 0.55;
+      if (e.kind === 'saja') {
+        this.score += 300;
+        this.floaters.push({ x: e.x, y: e.y - e.height - 30, life: 1.1, text: e.name + ' 정화!', color: '#ffd166', size: 22 });
+        this.ring(e.x, e.y - e.height / 2, e.tint, 170);
+      }
       if (e.kind === 'boss') {
         this.bossDefeated = true;
         this.clearTimer = 1.55;
@@ -1163,7 +1330,7 @@ class Game {
         this.score += 700;
         this.music.setBoss(false);
         this.audio.play('clear');
-        this.announce('BOSS PURIFIED', '먹구름이 별빛으로 돌아왔어!');
+        this.announce('BOSS PURIFIED', '그림자가 혼문 빛으로 돌아왔어!');
         this.confetti(e.x, e.y - 120, 60);
       }
     }
@@ -1236,7 +1403,7 @@ class Game {
     if (!this.enemies.some((e) => e.kind !== 'boss' && !e.dead) && !this.gateOpen) {
       this.gateOpen = true;
       this.audio.play('clear');
-      this.announce('BARRIER OPEN', '모든 그림자 정화 · 보스 무대로!');
+      this.announce('HONMOON OPEN', '모든 그림자 정화 · 보스 무대로!');
     }
     if (this.gateOpen && !this.bossSpawned && this.player.x > stage.bossGate + 90) {
       this.bossSpawned = true;
@@ -1244,23 +1411,33 @@ class Game {
       this.damageFlash = 0.4;
       this.music.setBoss(true);
       this.audio.play('boss');
-      this.announce('BOSS ALERT', '먹구름 대장 등장!');
+      if (this.stageIndex === 1) {
+        this.playStory('bossIntro2', () => {
+          this.phase = 'playing';
+          this.announce('BOSS ALERT', stage.boss + ' 등장!');
+        });
+      } else this.announce('BOSS ALERT', stage.boss + ' 등장!');
     }
     if (this.bossDefeated && this.clearTimer > 0) {
       this.clearTimer -= dt;
       if (this.clearTimer <= 0) {
-        this.phase = this.stageIndex === 0 ? 'stageClear' : 'victory';
         this.input.clear();
-        if (this.phase === 'victory') {
+        if (this.stageIndex === 0) {
+          this.phase = 'stageClear';
+          this.music.duck(true);
+          this.publish();
+        } else {
           this.music.stop();
-          const grade = this.grade();
-          if (!this.best || this.score > this.best.score) {
-            this.best = { score: this.score, maxCombo: this.maxCombo, time: this.playTime, grade, guardianId: this.guardianId };
-            saveBest(this.best);
-            this.newRecord = true;
-          }
-        } else this.music.duck(true);
-        this.publish();
+          this.playStory('ending', () => {
+            this.phase = 'victory';
+            const grade = this.grade();
+            if (!this.best || this.score > this.best.score) {
+              this.best = { score: this.score, maxCombo: this.maxCombo, time: this.playTime, grade, guardianId: this.guardianId };
+              saveBest(this.best);
+              this.newRecord = true;
+            }
+          });
+        }
       }
     }
   }
@@ -1384,6 +1561,8 @@ class Game {
       muted: this.audio.muted,
       playTime: this.playTime,
       grade: this.grade(),
+      bossName: STAGES[this.stageIndex].boss,
+      storyKey: this.storyKey,
       best: this.best,
       newRecord: this.newRecord,
       announcement: this.announcement ? { kicker: this.announcement.kicker, title: this.announcement.title } : null,
@@ -1607,11 +1786,16 @@ Object.assign(Game.prototype, {
     if (!this.gateOpen) {
       ctx.save();
       ctx.translate(stage.bossGate, 0);
-      ctx.globalAlpha = 0.65 + Math.sin(this.ambient * 4.5) * 0.15;
-      ctx.strokeStyle = '#d85cff';
-      ctx.lineWidth = 5;
-      ctx.shadowColor = '#d85cff';
+      ctx.globalAlpha = 0.6 + Math.sin(this.ambient * 4.5) * 0.15;
+      ctx.strokeStyle = '#ffd166';
+      ctx.lineWidth = 4;
+      ctx.shadowColor = '#ffd166';
       ctx.shadowBlur = 24;
+      ctx.beginPath();
+      ctx.moveTo(0, 170);
+      ctx.lineTo(0, GROUND_Y);
+      ctx.stroke();
+      ctx.lineWidth = 2.5;
       for (let y = 185; y < GROUND_Y; y += 42) {
         ctx.beginPath();
         ctx.moveTo(-28, y);
@@ -1763,7 +1947,10 @@ Object.assign(Game.prototype, {
     for (const e of this.enemies) {
       const x = lerp(e.px, e.x, frameAlpha);
       const y = lerp(e.py, e.y, frameAlpha);
-      if (e.kind === 'boss') this.drawBoss(e, x, y);
+      if (e.kind === 'boss') {
+        if (e.bossKind === 'jinu') this.drawSaja(e, x, y, 1.55, true);
+        else this.drawBoss(e, x, y);
+      } else if (e.kind === 'saja') this.drawSaja(e, x, y, 1, false);
       else this.drawEnemy(e, x, y);
     }
   },
@@ -1817,6 +2004,7 @@ Object.assign(Game.prototype, {
       ctx.fill();
       ctx.stroke();
     }
+    if (e.kind !== 'wisp') this.drawGat(e.width * 0.62, -e.height * 0.9, e.kind === 'brute' ? 1.25 : 1);
     ctx.fillStyle = e.telegraph > 0 ? '#ffd166' : '#ff4fa3';
     ctx.shadowColor = ctx.fillStyle;
     ctx.shadowBlur = 12;
@@ -1889,11 +2077,174 @@ Object.assign(Game.prototype, {
     ctx.quadraticCurveTo(-39, 13, -76, -38);
     ctx.fill();
     ctx.stroke();
+    this.drawGat(150, -166, 2.1);
     ctx.fillStyle = e.telegraph > 0 ? '#ffd166' : '#ff4fa3';
     ctx.beginPath();
     ctx.ellipse(-26, -92, 12, 7, 0, 0, Math.PI * 2);
     ctx.ellipse(26, -92, 12, 7, 0, 0, Math.PI * 2);
     ctx.fill();
+    ctx.restore();
+  },
+
+  /* Saja Boys — idol demons in dark stage suits with 갓. Boss variant = 진우 (scale up, phase-two aura). */
+  drawSaja(e, x, y, sc, isBoss) {
+    const ctx = this.context;
+    const fade = e.dead ? clamp(e.death / (isBoss ? 1.3 : 0.9), 0, 1) : 1;
+    const grow = clamp(1 - e.spawn * 0.5, 0.15, 1);
+    const tint = isBoss ? (e.phaseTwo ? '#ff3cac' : '#a66bff') : e.tint;
+    const walk = Math.min(1, Math.abs(e.vx) / 150);
+    const swing = Math.sin(this.ambient * 12 + e.id) * 9 * walk;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(e.facing * grow * sc, grow * sc);
+    ctx.globalAlpha = fade;
+    ctx.fillStyle = 'rgba(0,0,0,.4)';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 34, 9, 0, 0, Math.PI * 2);
+    ctx.fill();
+    if (isBoss && e.phaseTwo && !e.dead) {
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.strokeStyle = '#ff3cac';
+      ctx.globalAlpha = fade * (0.18 + Math.sin(this.ambient * 6) * 0.08);
+      ctx.lineWidth = 8;
+      ctx.shadowColor = '#ff3cac';
+      ctx.shadowBlur = 30;
+      ctx.beginPath();
+      ctx.arc(0, -62, 82 + Math.sin(this.ambient * 3.4) * 6, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+    if (e.telegraph > 0 && !e.attackFired) {
+      ctx.strokeStyle = e.attackType === 1 ? '#ff5578' : tint;
+      ctx.lineWidth = 3.5;
+      ctx.setLineDash([9, 7]);
+      ctx.beginPath();
+      if (e.attackType === 1) ctx.rect(-20, -110, 250, 112);
+      else ctx.arc(0, -70, 60 + Math.sin(this.ambient * 10) * 6, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    // legs
+    ctx.strokeStyle = '#120c1e';
+    ctx.lineWidth = 11;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-8, -34);
+    ctx.lineTo(-11 + swing, -4);
+    ctx.moveTo(8, -34);
+    ctx.lineTo(12 - swing, -4);
+    ctx.stroke();
+    // long coat
+    ctx.fillStyle = e.flash > 0 ? '#fff8ef' : '#1a1230';
+    ctx.strokeStyle = tint;
+    ctx.lineWidth = 2.5;
+    ctx.shadowColor = tint;
+    ctx.shadowBlur = 14;
+    ctx.beginPath();
+    ctx.moveTo(-22, -92);
+    ctx.lineTo(22, -92);
+    ctx.lineTo(30, -26);
+    ctx.lineTo(-30, -26);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    // shirt / tie accent
+    ctx.fillStyle = tint;
+    ctx.beginPath();
+    ctx.moveTo(-6, -90);
+    ctx.lineTo(0, -60);
+    ctx.lineTo(6, -90);
+    ctx.closePath();
+    ctx.fill();
+    // arm + mic
+    ctx.strokeStyle = '#1a1230';
+    ctx.lineWidth = 9;
+    ctx.beginPath();
+    ctx.moveTo(18, -84);
+    ctx.lineTo(34, -70 + (e.telegraph > 0 ? -18 : 0));
+    ctx.stroke();
+    ctx.strokeStyle = '#3a3050';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(34, -70 + (e.telegraph > 0 ? -18 : 0));
+    ctx.lineTo(40, -92 + (e.telegraph > 0 ? -18 : 0));
+    ctx.stroke();
+    ctx.fillStyle = tint;
+    ctx.beginPath();
+    ctx.arc(41, -96 + (e.telegraph > 0 ? -18 : 0), 5, 0, Math.PI * 2);
+    ctx.fill();
+    // head
+    ctx.fillStyle = '#e9c9b6';
+    ctx.beginPath();
+    ctx.arc(0, -108, 17, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#16101f';
+    ctx.beginPath();
+    ctx.arc(-1, -113, 18, Math.PI, Math.PI * 2);
+    ctx.quadraticCurveTo(20, -98, 16, -92);
+    ctx.quadraticCurveTo(8, -100, 6, -110);
+    ctx.fill();
+    // glowing eyes + demon marks
+    ctx.fillStyle = e.telegraph > 0 ? '#ffd166' : tint;
+    ctx.shadowColor = ctx.fillStyle;
+    ctx.shadowBlur = 8;
+    ctx.beginPath();
+    ctx.ellipse(6, -108, 3.2, 2, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = tint;
+    ctx.globalAlpha = fade * 0.7;
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(-10, -100);
+    ctx.quadraticCurveTo(-6, -94, -11, -88);
+    ctx.stroke();
+    ctx.globalAlpha = fade;
+    this.drawGat(78, -124, 1.05);
+    // name tag + hp
+    ctx.scale(e.facing, 1);
+    if (!isBoss) {
+      ctx.font = '900 13px Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = tint;
+      ctx.strokeStyle = 'rgba(8,5,28,.85)';
+      ctx.lineWidth = 4;
+      ctx.strokeText('SAJA · ' + e.name, 0, -e.height - 36);
+      ctx.fillText('SAJA · ' + e.name, 0, -e.height - 36);
+      if (e.health < e.maxHealth) {
+        const w = 70;
+        ctx.fillStyle = 'rgba(4,2,16,.72)';
+        ctx.fillRect(-w / 2, -e.height - 28, w, 6);
+        ctx.fillStyle = tint;
+        ctx.fillRect(-w / 2, -e.height - 28, w * clamp(e.health / e.maxHealth, 0, 1), 6);
+      }
+    }
+    ctx.restore();
+  },
+
+  /* 갓 (traditional wide-brim hat) worn by demon minions. */
+  drawGat(brimW, y, scale) {
+    const ctx = this.context;
+    ctx.save();
+    ctx.translate(0, y);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = 'rgba(8,4,18,.92)';
+    ctx.strokeStyle = 'rgba(255,209,102,.55)';
+    ctx.lineWidth = 1.5 * scale;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, brimW / 2, 6 * scale, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(-14 * scale, 0);
+    ctx.lineTo(-11 * scale, -22 * scale);
+    ctx.lineTo(11 * scale, -22 * scale);
+    ctx.lineTo(14 * scale, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
     ctx.restore();
   },
 
@@ -1904,7 +2255,19 @@ Object.assign(Game.prototype, {
       ctx.translate(pr.x, pr.y);
       ctx.shadowColor = pr.color;
       ctx.shadowBlur = 22;
-      if (pr.kind === 'orb') {
+      if (pr.kind === 'heart') {
+        ctx.fillStyle = pr.color;
+        ctx.rotate(Math.atan2(pr.vy, pr.vx) * 0.15);
+        const r = pr.radius;
+        ctx.beginPath();
+        ctx.moveTo(0, r * 0.9);
+        ctx.bezierCurveTo(-r * 1.3, -r * 0.1, -r * 0.6, -r * 1.1, 0, -r * 0.35);
+        ctx.bezierCurveTo(r * 0.6, -r * 1.1, r * 1.3, -r * 0.1, 0, r * 0.9);
+        ctx.fill();
+        ctx.strokeStyle = '#fff8ef';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      } else if (pr.kind === 'orb') {
         ctx.fillStyle = pr.color;
         ctx.beginPath();
         ctx.arc(0, 0, pr.radius, 0, Math.PI * 2);
@@ -2028,6 +2391,544 @@ Object.assign(Game.prototype, {
     ctx.globalAlpha = 1;
   },
 });
+/* Original vector portraits for the three hunters (canvas-drawn, no external assets). */
+const PORTRAIT_STYLE = {
+  lumi: { hair: '#6b4bd8', hairDark: '#4a2fa8', eye: '#8a5cff', skin: '#ffd9c2', lip: '#e0567c', mark: '#a985ff' },
+  mira: { hair: '#ff3f9a', hairDark: '#c4206b', eye: '#ff7ab8', skin: '#ffd2bd', lip: '#d33e6c', mark: null },
+  joy: { hair: '#1d2b3a', hairDark: '#0d151f', eye: '#3ce8ff', skin: '#ffdcc7', lip: '#e35d7f', mark: null },
+};
+
+function drawPortrait(ctx, id, w, h, opts = {}) {
+  const st = PORTRAIT_STYLE[id] ?? PORTRAIT_STYLE.lumi;
+  const g = guardianOf(id);
+  const s = Math.min(w, h) / 100; // unit scale, face designed in 100x100 box
+  ctx.save();
+  ctx.clearRect(0, 0, w, h);
+  // background glow
+  if (!opts.transparent) {
+    const bg = ctx.createRadialGradient(w * 0.5, h * 0.35, 4, w * 0.5, h * 0.5, Math.max(w, h) * 0.75);
+    bg.addColorStop(0, g.color + 'cc');
+    bg.addColorStop(1, '#120e2f');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, w, h);
+    ctx.globalAlpha = 0.18;
+    ctx.strokeStyle = '#ffd166';
+    ctx.lineWidth = 1.5 * s;
+    for (let i = 0; i < 5; i += 1) {
+      ctx.beginPath();
+      ctx.arc(w * 0.5, h * 0.55, (28 + i * 14) * s, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+  ctx.translate(w / 2, h / 2 + 6 * s);
+  ctx.scale(s, s);
+  // hair back
+  ctx.fillStyle = st.hair;
+  ctx.beginPath();
+  if (id === 'lumi') {
+    ctx.ellipse(0, -8, 30, 34, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // long braid down right side
+    ctx.strokeStyle = st.hair;
+    ctx.lineWidth = 12;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(24, 6);
+    ctx.quadraticCurveTo(34, 30, 26, 52);
+    ctx.stroke();
+    ctx.strokeStyle = st.hairDark;
+    ctx.lineWidth = 2.2;
+    for (let i = 0; i < 5; i += 1) {
+      ctx.beginPath();
+      ctx.moveTo(20 + i * 1.2, 12 + i * 8);
+      ctx.lineTo(31 + i * 0.6, 16 + i * 8);
+      ctx.stroke();
+    }
+    ctx.fillStyle = '#ffd166';
+    ctx.beginPath();
+    ctx.arc(26, 52, 3.4, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (id === 'mira') {
+    ctx.ellipse(0, -6, 31, 33, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(-31, -4);
+    ctx.quadraticCurveTo(-34, 30, -18, 40);
+    ctx.lineTo(-10, 8);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(31, -4);
+    ctx.quadraticCurveTo(34, 30, 18, 40);
+    ctx.lineTo(10, 8);
+    ctx.closePath();
+    ctx.fill();
+  } else {
+    ctx.ellipse(0, -8, 29, 32, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // twin buns
+    ctx.beginPath();
+    ctx.arc(-27, -30, 11, 0, Math.PI * 2);
+    ctx.arc(27, -30, 11, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#3ce8ff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(-27, -30, 7, 0.4, 2.2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(27, -30, 7, 1, 2.8);
+    ctx.stroke();
+  }
+  // neck
+  ctx.fillStyle = st.skin;
+  ctx.fillRect(-9, 18, 18, 18);
+  // collar
+  ctx.fillStyle = g.color;
+  ctx.beginPath();
+  ctx.moveTo(-34, 50);
+  ctx.quadraticCurveTo(-18, 30, 0, 34);
+  ctx.quadraticCurveTo(18, 30, 34, 50);
+  ctx.lineTo(34, 60);
+  ctx.lineTo(-34, 60);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = '#fff4e8';
+  ctx.beginPath();
+  ctx.moveTo(-8, 34);
+  ctx.lineTo(0, 46);
+  ctx.lineTo(8, 34);
+  ctx.closePath();
+  ctx.fill();
+  // face
+  ctx.fillStyle = st.skin;
+  ctx.beginPath();
+  ctx.moveTo(-26, -14);
+  ctx.quadraticCurveTo(-28, 22, 0, 30);
+  ctx.quadraticCurveTo(28, 22, 26, -14);
+  ctx.quadraticCurveTo(24, -36, 0, -36);
+  ctx.quadraticCurveTo(-24, -36, -26, -14);
+  ctx.closePath();
+  ctx.fill();
+  // demon-pattern marks (lumi)
+  if (st.mark) {
+    ctx.strokeStyle = st.mark;
+    ctx.globalAlpha = 0.55;
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(-6, 22);
+    ctx.quadraticCurveTo(-2, 30, -8, 36);
+    ctx.moveTo(4, 24);
+    ctx.quadraticCurveTo(9, 30, 5, 36);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+  // eyes
+  const eyeY = -6;
+  for (const sx of [-1, 1]) {
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.ellipse(sx * 11, eyeY, 7.5, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = st.eye;
+    ctx.beginPath();
+    ctx.arc(sx * 11 + (opts.look ?? 0) * 2, eyeY + 0.5, 4.6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#12061c';
+    ctx.beginPath();
+    ctx.arc(sx * 11 + (opts.look ?? 0) * 2, eyeY + 0.5, 2.6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(sx * 11 - 1.6, eyeY - 1.6, 1.4, 0, Math.PI * 2);
+    ctx.fill();
+    // lash
+    ctx.strokeStyle = '#1a0f26';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(sx * 11, eyeY, 7.6, Math.PI * 1.1, Math.PI * 1.9);
+    ctx.stroke();
+    // brow
+    ctx.lineWidth = 2.2;
+    ctx.strokeStyle = st.hairDark;
+    ctx.beginPath();
+    ctx.moveTo(sx * 5, eyeY - 12);
+    ctx.quadraticCurveTo(sx * 11, eyeY - (id === 'mira' ? 15 : 14), sx * 18, eyeY - 11);
+    ctx.stroke();
+  }
+  // nose + mouth
+  ctx.strokeStyle = '#d99a80';
+  ctx.lineWidth = 1.6;
+  ctx.beginPath();
+  ctx.moveTo(1, 2);
+  ctx.lineTo(3, 9);
+  ctx.stroke();
+  ctx.fillStyle = st.lip;
+  ctx.beginPath();
+  if (id === 'mira') {
+    ctx.moveTo(-6, 17);
+    ctx.quadraticCurveTo(0, 19, 6, 17);
+    ctx.quadraticCurveTo(0, 21, -6, 17);
+  } else {
+    ctx.moveTo(-7, 16);
+    ctx.quadraticCurveTo(0, 25, 7, 16);
+    ctx.quadraticCurveTo(0, 19, -7, 16);
+  }
+  ctx.fill();
+  // blush
+  ctx.fillStyle = 'rgba(255,120,150,.28)';
+  ctx.beginPath();
+  ctx.ellipse(-18, 8, 5, 3, 0, 0, Math.PI * 2);
+  ctx.ellipse(18, 8, 5, 3, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // hair front / bangs
+  ctx.fillStyle = st.hair;
+  ctx.beginPath();
+  if (id === 'lumi') {
+    ctx.moveTo(-28, -18);
+    ctx.quadraticCurveTo(-24, -44, 0, -42);
+    ctx.quadraticCurveTo(24, -44, 28, -18);
+    ctx.quadraticCurveTo(22, -26, 12, -22);
+    ctx.quadraticCurveTo(4, -30, -6, -20);
+    ctx.quadraticCurveTo(-16, -30, -28, -18);
+  } else if (id === 'mira') {
+    ctx.moveTo(-31, -10);
+    ctx.quadraticCurveTo(-26, -44, 0, -42);
+    ctx.quadraticCurveTo(26, -44, 31, -10);
+    ctx.lineTo(24, -12);
+    ctx.quadraticCurveTo(20, -30, 4, -22);
+    ctx.lineTo(-2, -16);
+    ctx.quadraticCurveTo(-8, -32, -22, -20);
+    ctx.lineTo(-31, -10);
+  } else {
+    ctx.moveTo(-28, -16);
+    ctx.quadraticCurveTo(-24, -42, 0, -40);
+    ctx.quadraticCurveTo(24, -42, 28, -16);
+    ctx.quadraticCurveTo(20, -24, 14, -18);
+    ctx.quadraticCurveTo(8, -30, 0, -20);
+    ctx.quadraticCurveTo(-8, -30, -14, -18);
+    ctx.quadraticCurveTo(-20, -24, -28, -16);
+  }
+  ctx.closePath();
+  ctx.fill();
+  if (id === 'joy') {
+    ctx.strokeStyle = '#3ce8ff';
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.moveTo(-10, -38);
+    ctx.quadraticCurveTo(-14, -28, -18, -20);
+    ctx.stroke();
+  }
+  if (id === 'lumi') {
+    ctx.strokeStyle = st.hairDark;
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(-8, -40);
+    ctx.quadraticCurveTo(-4, -30, -6, -22);
+    ctx.stroke();
+  }
+  // earring / accent
+  ctx.fillStyle = '#ffd166';
+  ctx.beginPath();
+  ctx.arc(id === 'lumi' ? -26 : 27, 6, 2.4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function makePortraitCanvas(id, w, h, opts) {
+  const c = document.createElement('canvas');
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  c.width = Math.round(w * dpr);
+  c.height = Math.round(h * dpr);
+  c.style.width = w + 'px';
+  c.style.height = h + 'px';
+  const ctx = c.getContext('2d');
+  ctx.scale(dpr, dpr);
+  drawPortrait(ctx, id, w, h, opts);
+  return c;
+}
+
+/* Villain portraits for cutscenes: 진우 (Saja Boys leader) and 귀마 (demon king). */
+function makeVillainPortrait(who, w, h) {
+  const c = document.createElement('canvas');
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
+  c.style.width = w + 'px'; c.style.height = h + 'px';
+  const ctx = c.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const s = Math.min(w, h) / 100;
+  const bg = ctx.createRadialGradient(w / 2, h * 0.4, 4, w / 2, h / 2, Math.max(w, h) * 0.75);
+  bg.addColorStop(0, who === 'gwima' ? '#ff3cac99' : '#a66bff99');
+  bg.addColorStop(1, '#0a0618');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, w, h);
+  ctx.translate(w / 2, h / 2 + 6 * s);
+  ctx.scale(s, s);
+  if (who === 'gwima') {
+    // swirling dark flame face
+    ctx.fillStyle = '#2a0f3a';
+    ctx.beginPath();
+    ctx.moveTo(-34, 30);
+    ctx.quadraticCurveTo(-46, -20, -14, -44);
+    ctx.lineTo(-6, -24);
+    ctx.lineTo(4, -48);
+    ctx.lineTo(12, -22);
+    ctx.lineTo(28, -40);
+    ctx.quadraticCurveTo(46, -10, 34, 30);
+    ctx.quadraticCurveTo(0, 44, -34, 30);
+    ctx.fill();
+    ctx.strokeStyle = '#ff3cac';
+    ctx.lineWidth = 2.5;
+    ctx.shadowColor = '#ff3cac';
+    ctx.shadowBlur = 16;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#ff5c8a';
+    ctx.beginPath();
+    ctx.ellipse(-13, -6, 8, 4, -0.3, 0, Math.PI * 2);
+    ctx.ellipse(13, -6, 8, 4, 0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#ffd166';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-16, 14);
+    for (let i = 0; i < 6; i += 1) ctx.lineTo(-16 + (i + 0.5) * 5.4, i % 2 ? 14 : 22);
+    ctx.lineTo(16, 14);
+    ctx.stroke();
+  } else {
+    // 진우: gat hat + sharp face + demon patterns
+    ctx.fillStyle = '#ffd2bd';
+    ctx.beginPath();
+    ctx.moveTo(-24, -12);
+    ctx.quadraticCurveTo(-26, 22, 0, 30);
+    ctx.quadraticCurveTo(26, 22, 24, -12);
+    ctx.quadraticCurveTo(22, -32, 0, -32);
+    ctx.quadraticCurveTo(-22, -32, -24, -12);
+    ctx.fill();
+    ctx.fillStyle = '#1a1226';
+    ctx.beginPath();
+    ctx.moveTo(-26, -14);
+    ctx.quadraticCurveTo(-20, -40, 0, -38);
+    ctx.quadraticCurveTo(20, -40, 26, -14);
+    ctx.quadraticCurveTo(14, -24, 6, -18);
+    ctx.quadraticCurveTo(-4, -30, -26, -14);
+    ctx.fill();
+    // gat
+    ctx.fillStyle = 'rgba(8,4,18,.95)';
+    ctx.strokeStyle = 'rgba(255,209,102,.6)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.ellipse(0, -36, 40, 6, 0, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(-15, -36); ctx.lineTo(-12, -58); ctx.lineTo(12, -58); ctx.lineTo(15, -36);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    // eyes
+    for (const sx of [-1, 1]) {
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.ellipse(sx * 10, -6, 6.5, 4.5, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#a66bff';
+      ctx.beginPath(); ctx.arc(sx * 10, -6, 3.6, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#12061c';
+      ctx.beginPath(); ctx.arc(sx * 10, -6, 2, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#1a0f26'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(sx * 4, -16); ctx.lineTo(sx * 17, -12); ctx.stroke();
+    }
+    ctx.strokeStyle = '#a66bff';
+    ctx.globalAlpha = 0.7;
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(-20, 4); ctx.quadraticCurveTo(-14, 12, -20, 20);
+    ctx.moveTo(20, 4); ctx.quadraticCurveTo(14, 12, 20, 20);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#c04a6a';
+    ctx.beginPath(); ctx.moveTo(-6, 16); ctx.quadraticCurveTo(0, 18, 6, 15); ctx.quadraticCurveTo(0, 20, -6, 16); ctx.fill();
+    ctx.fillStyle = '#a66bff';
+    ctx.beginPath();
+    ctx.moveTo(-34, 50); ctx.quadraticCurveTo(0, 32, 34, 50); ctx.lineTo(34, 60); ctx.lineTo(-34, 60); ctx.closePath(); ctx.fill();
+  }
+  return c;
+}
+/* Story cutscenes — fan homage script (original dialogue). */
+const SPEAKERS = {
+  lumi: { name: '루미', color: '#ff6f91' },
+  mira: { name: '미라', color: '#ffb347' },
+  joy: { name: '조이', color: '#43e6d0' },
+  narr: { name: '', color: '#c9c3dc' },
+  jinu: { name: '진우', color: '#a66bff' },
+  gwima: { name: '귀마', color: '#ff3cac' },
+};
+
+const STORY = {
+  intro: [
+    { who: 'narr', text: '수백 년 동안 헌트릭스는 노래로 혼문(魂門)을 지켜 왔다. 팬들의 목소리가 모일수록 혼문은 더 밝게, 더 황금빛으로 빛난다.' },
+    { who: 'lumi', text: '오늘 콘서트에서 혼문을 골든으로 완성하는 거야. 둘 다 준비됐지?' },
+    { who: 'joy', text: '당연하지! …근데 잠깐, 관객석 조명이 왜 하나씩 꺼지는 거야?' },
+    { who: 'mira', text: '그림자다. 귀마의 부하들이 팬들의 목소리를 훔치러 무대까지 올라왔어.' },
+    { who: 'lumi', text: '무대는 우리가 지킨다. 헌트릭스 — 출격!' },
+  ],
+  stage2: [
+    { who: 'narr', text: '코랄 시티의 조명은 되찾았다. 하지만 사자 보이즈는 남은 팬들을 달빛 옥상으로 끌고 갔다.' },
+    { who: 'jinu', text: '헌트릭스… 귀마님은 너희의 노래가 끊기길 원하신다. 이 옥상이 마지막 무대가 될 거야.' },
+    { who: 'lumi', text: '진우, 너도 한때 노래를 사랑했잖아. 아직 돌아올 수 있어.' },
+    { who: 'mira', text: '설득은 나중에. 달빛 옥상으로 올라간다!' },
+  ],
+  sajaIntro: [
+    { who: 'jinu', text: '헌트릭스, 무대 위에서 만나다니 반갑네. 우리 멤버들 — 애비, 미스터리, 로맨스, 베이비가 먼저 인사할 거야.' },
+    { who: 'mira', text: '사자 보이즈… 팬들 마음을 훔쳐서 혼문을 갉아먹는 놈들.' },
+    { who: 'joy', text: '아이돌 콘셉트면 뭐 해. 노래로 이길 자신 있으면 무기 내려놓든가!' },
+    { who: 'lumi', text: '하트 공격은 대시로 흘려. 하나씩 정화하고 진우한테 간다.' },
+  ],
+  bossIntro2: [
+    { who: 'jinu', text: '멤버들이 전부 정화됐군… 하지만 귀마님이 내게 주신 목소리는 아직 남아 있어.' },
+    { who: 'gwima', text: '진우, 보여 줘라. 혼문 따위 종잇장처럼 찢어 버려.' },
+    { who: 'lumi', text: '진우, 마지막으로 묻는다. 그 목소리, 정말 네 거야?' },
+    { who: 'joy', text: '대답 없으면 우리 노래로 대신할게!' },
+  ],
+  ending: [
+    { who: 'narr', text: '마지막 그림자가 흩어지자, 무대 위 혼문이 눈부신 황금빛으로 물들었다.' },
+    { who: 'joy', text: '골든 혼문… 우리 진짜 해냈어!' },
+    { who: 'mira', text: '우리가 아니라, 끝까지 소리 질러 준 팬들이 해낸 거야.' },
+    { who: 'lumi', text: '이건 끝이 아니야. 귀마가 다시 올 때까지 — 우린 계속 노래할 거야.' },
+  ],
+};
+
+class Cutscene {
+  constructor(refs, portraitFn, onDone) {
+    this.refs = refs;
+    this.portraitFn = portraitFn;
+    this.onDone = onDone;
+    this.lines = [];
+    this.index = 0;
+    this.typing = 0;
+    this.timer = 0;
+    this.active = false;
+    this.reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    refs.layer.addEventListener('click', (ev) => {
+      if (ev.target === refs.skipBtn) return;
+      this.advance();
+    });
+    refs.skipBtn.addEventListener('click', () => this.finish());
+  }
+  play(key) {
+    this.lines = STORY[key] ?? [];
+    if (!this.lines.length) { this.onDone(); return; }
+    this.index = 0;
+    this.active = true;
+    this.refs.layer.hidden = false;
+    this.show();
+  }
+  show() {
+    const line = this.lines[this.index];
+    const sp = SPEAKERS[line.who] ?? SPEAKERS.narr;
+    const isNarr = line.who === 'narr';
+    this.refs.box.classList.toggle('narration', isNarr);
+    this.refs.name.textContent = sp.name;
+    this.refs.name.style.color = sp.color;
+    this.refs.portraitWrap.innerHTML = '';
+    if (!isNarr) {
+      const p = this.portraitFn(line.who, 96, 110);
+      if (p) this.refs.portraitWrap.append(p);
+    }
+    this.refs.portraitWrap.hidden = isNarr;
+    this.refs.counter.textContent = (this.index + 1) + ' / ' + this.lines.length;
+    this.full = line.text;
+    this.typing = this.reduced ? this.full.length : 0;
+    this.refs.text.textContent = this.reduced ? this.full : '';
+    clearInterval(this.timer);
+    if (!this.reduced) {
+      this.timer = window.setInterval(() => {
+        this.typing += 1;
+        this.refs.text.textContent = this.full.slice(0, this.typing);
+        if (this.typing >= this.full.length) clearInterval(this.timer);
+      }, 26);
+    }
+    this.refs.hint.textContent = this.index === this.lines.length - 1 ? '▶ 시작 (Enter)' : '▶ 계속 (Enter)';
+  }
+  advance() {
+    if (!this.active) return;
+    if (this.typing < this.full.length) {
+      clearInterval(this.timer);
+      this.typing = this.full.length;
+      this.refs.text.textContent = this.full;
+      return;
+    }
+    this.index += 1;
+    if (this.index >= this.lines.length) this.finish();
+    else this.show();
+  }
+  finish() {
+    if (!this.active) return;
+    clearInterval(this.timer);
+    this.active = false;
+    this.refs.layer.hidden = true;
+    this.onDone();
+  }
+}
+
+/* Player-supplied character photos, stored locally in IndexedDB. */
+const PhotoStore = {
+  db: null,
+  open() {
+    return new Promise((resolve) => {
+      if (this.db) { resolve(this.db); return; }
+      if (!('indexedDB' in window)) { resolve(null); return; }
+      const req = indexedDB.open('kedehun-photos', 1);
+      req.onupgradeneeded = () => req.result.createObjectStore('photos');
+      req.onsuccess = () => { this.db = req.result; resolve(this.db); };
+      req.onerror = () => resolve(null);
+    });
+  },
+  async get(id) {
+    const db = await this.open();
+    if (!db) return null;
+    return new Promise((resolve) => {
+      const tx = db.transaction('photos', 'readonly');
+      const rq = tx.objectStore('photos').get(id);
+      rq.onsuccess = () => resolve(rq.result ?? null);
+      rq.onerror = () => resolve(null);
+    });
+  },
+  async set(id, dataUrl) {
+    const db = await this.open();
+    if (!db) return false;
+    return new Promise((resolve) => {
+      const tx = db.transaction('photos', 'readwrite');
+      tx.objectStore('photos').put(dataUrl, id);
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = () => resolve(false);
+    });
+  },
+  async remove(id) {
+    const db = await this.open();
+    if (!db) return;
+    const tx = db.transaction('photos', 'readwrite');
+    tx.objectStore('photos').delete(id);
+  },
+};
+
+/* Downscale + center-crop uploaded image to a square data URL. */
+function fileToPortraitDataUrl(file, size = 320) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = size; c.height = size;
+      const ctx = c.getContext('2d');
+      const side = Math.min(img.width, img.height);
+      const sx = (img.width - side) / 2;
+      const sy = (img.height - side) / 2 * 0.6; // bias toward top (faces)
+      ctx.drawImage(img, sx, sy, side, side, 0, 0, size, size);
+      URL.revokeObjectURL(url);
+      resolve(c.toDataURL('image/jpeg', 0.86));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('이미지를 읽을 수 없어요')); };
+    img.src = url;
+  });
+}
 /* UI layer — vanilla DOM binding of engine state. */
 (function bootstrap() {
   const $ = (id) => document.getElementById(id);
@@ -2089,6 +2990,54 @@ Object.assign(Game.prototype, {
     victoryTitleBtn: $('victoryTitleBtn'),
   };
 
+  const photos = new Map(); // id -> dataURL
+  function portraitEl(id, w, h) {
+    const url = photos.get(id);
+    if (url) {
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = '';
+      img.className = 'photo-portrait';
+      img.style.width = w + 'px';
+      img.style.height = h + 'px';
+      return img;
+    }
+    return makePortraitCanvas(id, w, h);
+  }
+  function refreshPortraits() {
+    cardEls.forEach((card, id) => {
+      const slot = card.querySelector('.guardian-portrait');
+      slot.innerHTML = '';
+      slot.append(portraitEl(id, 76, 88));
+      const btn = card.__photoBtn;
+      if (btn) btn.textContent = photos.get(id) ? '사진 변경' : '사진';
+    });
+    if (state) renderHudMark(state.guardianId);
+  }
+  let hudMarkId = null;
+  function renderHudMark(id) {
+    if (hudMarkId === id) return;
+    hudMarkId = id;
+    refs.guardianMark.innerHTML = '';
+    refs.guardianMark.append(portraitEl(id, 46, 46));
+  }
+  let pendingPhotoId = null;
+  const photoInput = $('photoInput');
+  photoInput.addEventListener('change', async () => {
+    const file = photoInput.files?.[0];
+    photoInput.value = '';
+    if (!file || !pendingPhotoId) return;
+    try {
+      const url = await fileToPortraitDataUrl(file);
+      photos.set(pendingPhotoId, url);
+      await PhotoStore.set(pendingPhotoId, url);
+      hudMarkId = null;
+      refreshPortraits();
+    } catch (err) {
+      alert(err.message || '이미지를 불러오지 못했어요');
+    }
+  });
+
   let selectedId = 'lumi';
   let state = null;
   let lastPhase = '';
@@ -2102,9 +3051,9 @@ Object.assign(Game.prototype, {
   /* Guardian select cards */
   const cardEls = new Map();
   GUARDIANS.forEach((g) => {
-    const card = document.createElement('button');
-    card.type = 'button';
+    const card = document.createElement('div');
     card.setAttribute('role', 'radio');
+    card.tabIndex = -1;
     card.dataset.guardian = g.id;
     card.className = 'guardian-card';
     card.setAttribute('aria-label',
@@ -2115,7 +3064,6 @@ Object.assign(Game.prototype, {
     const portrait = document.createElement('div');
     portrait.className = 'guardian-portrait';
     portrait.setAttribute('aria-hidden', 'true');
-    portrait.textContent = g.mark;
     const info = document.createElement('div');
     const role = document.createElement('div');
     role.className = 'guardian-role';
@@ -2147,7 +3095,38 @@ Object.assign(Game.prototype, {
     });
     card.append(content, statList);
     card.addEventListener('click', () => selectGuardian(g.id));
+    // photo slot controls
+    const tools = document.createElement('div');
+    tools.className = 'photo-tools';
+    const photoBtn = document.createElement('button');
+    photoBtn.type = 'button';
+    photoBtn.className = 'photo-btn';
+    photoBtn.textContent = '사진';
+    photoBtn.setAttribute('aria-label', g.name + ' 사진 넣기');
+    photoBtn.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      pendingPhotoId = g.id;
+      photoInput.click();
+    });
+    const clearBtn = document.createElement('button');
+    clearBtn.type = 'button';
+    clearBtn.className = 'photo-btn ghost';
+    clearBtn.textContent = '기본';
+    clearBtn.setAttribute('aria-label', g.name + ' 기본 초상화로');
+    clearBtn.addEventListener('click', async (ev) => {
+      ev.stopPropagation();
+      photos.delete(g.id);
+      await PhotoStore.remove(g.id);
+      hudMarkId = null;
+      refreshPortraits();
+    });
+    tools.append(photoBtn, clearBtn);
+    card.querySelector('.guardian-card-content').append(tools);
+    tools.querySelectorAll('button').forEach((b) => b.addEventListener('keydown', (ev) => ev.stopPropagation()));
+    // wire card.photoBtn for label refresh
+    card.__photoBtn = photoBtn;
     card.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); selectGuardian(g.id); return; }
       if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(ev.key)) return;
       ev.preventDefault();
       const idx = GUARDIANS.findIndex((x) => x.id === g.id);
@@ -2219,7 +3198,7 @@ Object.assign(Game.prototype, {
     refs.hud.hidden = !playing;
     document.querySelectorAll('.play-extra').forEach((el) => { el.hidden = !playing; });
     if (playing) {
-      refs.guardianMark.textContent = g.mark;
+      renderHudMark(g.id);
       refs.playerName.textContent = g.name + ' · ' + g.skill;
       refs.healthNumber.textContent = next.health + '/' + next.maxHealth;
       refs.healthBar.setAttribute('aria-valuenow', String(next.health));
@@ -2240,6 +3219,7 @@ Object.assign(Game.prototype, {
       const bossOn = next.bossMaxHealth > 0;
       refs.bossWrap.hidden = !bossOn;
       if (bossOn) {
+        $('bossName').textContent = next.bossName;
         refs.bossNumber.textContent = Math.ceil(next.bossHealth) + ' / ' + next.bossMaxHealth;
         refs.bossBar.setAttribute('aria-valuemax', String(next.bossMaxHealth));
         refs.bossBar.setAttribute('aria-valuenow', String(Math.max(0, Math.ceil(next.bossHealth))));
@@ -2275,7 +3255,9 @@ Object.assign(Game.prototype, {
     refs.menuPause.hidden = next.phase !== 'paused';
     refs.menuClear.hidden = next.phase !== 'stageClear';
     refs.menuVictory.hidden = next.phase !== 'victory';
-    refs.hudWrap.classList.toggle('inert-layer', next.phase === 'paused' || next.phase === 'stageClear' || next.phase === 'victory');
+    refs.hudWrap.classList.toggle('inert-layer', next.phase === 'paused' || next.phase === 'stageClear' || next.phase === 'victory' || next.phase === 'story');
+    if (next.phase === 'story' && next.storyKey && !cutscene.active) cutscene.play(next.storyKey);
+    if (next.phase !== 'story' && cutscene.active) cutscene.finish();
     if (next.phase === 'select') {
       if (next.best) {
         const bg = guardianOf(next.best.guardianId ?? 'lumi');
@@ -2308,9 +3290,20 @@ Object.assign(Game.prototype, {
     }
   }
 
+  const cutscene = new Cutscene({
+    layer: $('storyLayer'), box: $('storyBox'), portraitWrap: $('storyPortrait'),
+    name: $('storyName'), counter: $('storyCounter'), text: $('storyText'),
+    hint: $('storyHint'), skipBtn: $('storySkip'),
+  }, (who, w, h) => (GUARDIANS.some((g) => g.id === who) ? portraitEl(who, w, h) : makeVillainPortrait(who, w, h)), () => game?.finishStory());
+
   game = new Game(canvas, update);
   window.__game = game;
   syncSelectCards();
+  refreshPortraits();
+  Promise.all(GUARDIANS.map(async (g) => {
+    const url = await PhotoStore.get(g.id);
+    if (url) photos.set(g.id, url);
+  })).then(() => { hudMarkId = null; refreshPortraits(); });
 
   const resizeObserver = new ResizeObserver(() => game.resize());
   resizeObserver.observe(canvas);
@@ -2322,6 +3315,11 @@ Object.assign(Game.prototype, {
   window.addEventListener('keydown', (ev) => {
     if (isFormTarget(ev.target)) return;
     if (gameKeys.has(ev.code)) ev.preventDefault();
+    if (cutscene.active) {
+      if (!ev.repeat && (ev.code === 'Enter' || ev.code === 'Space' || ev.code === 'KeyX' || ev.code === 'KeyJ')) cutscene.advance();
+      if (!ev.repeat && ev.code === 'Escape') cutscene.finish();
+      return;
+    }
     game.key(ev.code, true, ev.repeat);
   }, { passive: false });
   window.addEventListener('keyup', (ev) => {
@@ -2358,3 +3356,6 @@ Object.assign(Game.prototype, {
   });
 })();
 </script>
+
+</body>
+</html>
