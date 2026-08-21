@@ -1535,8 +1535,23 @@
     }, { passive: false });
 
     // 아이패드 사파리: 핀치 제스처와 더블탭 확대가 게임을 벗어나게 하지 않도록
-    document.addEventListener('gesturestart', e => e.preventDefault(), { passive: false });
-    canvas.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
+    // 아이패드 확대 잠금.
+    // iOS 사파리는 iOS 10 부터 user-scalable=no 를 무시한다. 게임 중에 손가락이
+    // 스치거나 두 번 두드리면 화면이 확대되고, 전체화면 캔버스라 되돌릴 방법이 없다.
+    // dblclick 은 터치 더블탭에서는 뜨지 않으므로 터치 경로도 함께 막는다.
+    ['gesturestart', 'gesturechange', 'gestureend'].forEach(ev => {
+      document.addEventListener(ev, e => e.preventDefault(), { passive: false });
+    });
+    document.addEventListener('touchmove', e => {
+      if (e.touches && e.touches.length > 1) e.preventDefault();
+    }, { passive: false });
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', e => {
+      const now = Date.now();
+      if (now - lastTouchEnd < 320) e.preventDefault();
+      lastTouchEnd = now;
+    }, { passive: false });
+    document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
 
     window.addEventListener('blur', clearHeld);
     document.addEventListener('visibilitychange', () => {
@@ -2134,13 +2149,14 @@
   };
 
   // ---- 타이틀 -------------------------------------------------------------
-  UI.TitleScene = function (onStart) {
+  UI.TitleScene = function (onStart, onChapters) {
     let time = 0;
     let started = false;
     let launchDelay = -1;
+    let focus = 0;
     const W = ODY.E.W, H = ODY.E.H;
     const start = new UI.Button({
-      x: W * 0.5, y: 442, w: 294, h: 72,
+      x: W * 0.5 - 155, y: 442, w: 282, h: 72,
       label: '모험 시작', size: 30, color: '#ffad61',
       onTap() {
         if (started) return;
@@ -2152,6 +2168,17 @@
         UI.announce('별빛 귀향 노래와 함께 출발해요.');
       }
     });
+    // 장 고르기 — 예전에는 한 장을 끝내고 여정 지도를 거쳐야만 닿을 수 있었다.
+    const chapters = new UI.Button({
+      x: W * 0.5 + 155, y: 442, w: 282, h: 72,
+      label: '장 고르기', size: 28, color: '#9b89c9',
+      onTap() {
+        if (started) return;
+        started = true;
+        if (onChapters) onChapters();
+      }
+    });
+    const menu = [start, chapters];
     const mute = UI.makeMuteBtn();
     let totalStars = 0;
     try { totalStars = parseInt(localStorage.getItem('ody_total_stars') || '0', 10); } catch (_) {}
@@ -2161,9 +2188,13 @@
       exit() { ODY.Snd.stopBgm(); },
       update(dt, dtReal) {
         time += dtReal;
-        start.update(dtReal);
+        menu.forEach(b => b.update(dtReal));
         mute.update(dtReal);
         UI.handleMuteKey(mute);
+        if (!started) {
+          if (ODY.E.input.buffered('left', 0.16)) { ODY.E.input.consume('left'); if (focus !== 0) { focus = 0; ODY.Snd.click(); } }
+          if (ODY.E.input.buffered('right', 0.16)) { ODY.E.input.consume('right'); if (focus !== 1) { focus = 1; ODY.Snd.click(); } }
+        }
         if (started && launchDelay >= 0) {
           launchDelay -= dtReal;
           if (launchDelay <= 0) {
@@ -2175,12 +2206,15 @@
             (ODY.E.input.buffered('jump', 0.16) || ODY.E.input.buffered('ok', 0.16))) {
           ODY.E.input.consume('jump');
           ODY.E.input.consume('ok');
-          start.activate();
+          menu[focus].activate();
         }
       },
       pointer(type, x, y) {
         if (mute.pointer(type, x, y)) return;
-        if (!started) start.pointer(type, x, y);
+        if (started) return;
+        menu.forEach((b, i) => {
+          if (b.pointer(type, x, y) && type === 'down') focus = i;
+        });
       },
       draw(ctx) {
         // 파스텔 노을
@@ -2277,7 +2311,7 @@
         ctx.fillText('힘보다 지혜로, 이타카까지!', W * 0.5, 398);
         ctx.globalAlpha = 1;
 
-        start.draw(ctx, true);
+        menu.forEach((b, i) => b.draw(ctx, focus === i));
         if (totalStars > 0) {
           ctx.fillStyle = 'rgba(28,18,49,0.58)';
           UI.rr(ctx, 28, 26, 145, 45, 22); ctx.fill();
@@ -10083,7 +10117,7 @@
   function showTitle() {
     setCanvasLabel('오디세우스가 이타카로 돌아가는 여러 액션 모험');
     announce('오디세이아. 모험 시작 버튼이 있어요.');
-    ODY.E.setScene(ODY.UI.TitleScene(startAdventure));
+    ODY.E.setScene(ODY.UI.TitleScene(startAdventure, () => showAdventureSelect(null)));
   }
 
   function startAdventure() {
@@ -10282,19 +10316,20 @@
         color: '#efc65d', story: startHeliosStory, play: startHelios
       }
     };
-    const slots = unlocked.length === 1
-      ? [[W * 0.5, 270]]
-      : unlocked.length === 2
-        ? [[270, 270], [690, 270]]
-        : [[270, 225], [690, 225], [270, 350], [690, 350]];
-    const stageButtons = unlocked.map((id, index) => {
+    // 잠긴 장도 함께 보여 준다. 열린 것만 띄우면 처음에는 카드가 하나뿐이라
+    // "장 고르기"라는 말이 무색해지고, 앞으로 무엇이 남았는지도 알 수 없다.
+    const slots = [[270, 225], [690, 225], [270, 350], [690, 350]];
+    const stageButtons = STAGE_IDS.map((id, index) => {
       const definition = definitions[id];
       const stage = progress.stages[id];
       const cleared = !!(stage && stage.cleared);
+      const open = unlocked.includes(id);
       return new ODY.UI.Button({
         x: slots[index][0], y: slots[index][1], w: 390, h: 82,
-        label: (cleared ? '✓ ' : '새 길 · ') + definition.label,
-        size: 22, color: definition.color,
+        label: open ? (cleared ? '✓ ' : '새 길 · ') + definition.label
+                    : '🔒 ' + definition.label,
+        size: 22, color: open ? definition.color : '#8d84a6',
+        locked: !open,
         onTap() {
           if (done) return;
           done = true;
@@ -10302,25 +10337,31 @@
         }
       });
     });
+    const fromTitle = !returnStage;
     const backButton = new ODY.UI.Button({
       x: W * 0.5, y: 484, w: 245, h: 58,
-      label: '지도로 돌아가기', size: 22, color: '#ffad61',
+      label: fromTitle ? '처음으로' : '지도로 돌아가기', size: 22, color: '#ffad61',
       onTap() {
         if (done) return;
         done = true;
-        showJourneyMap(returnStage || getResumeStage(progress) || 'cyclops');
+        if (fromTitle) showTitle();
+        else showJourneyMap(returnStage);
       }
     });
     const buttons = stageButtons.concat(backButton);
     const mute = ODY.UI.makeMuteBtn();
 
-    setCanvasLabel('첫 번째 키클롭스 동굴부터 해금한 모험을 다시 고르는 화면');
+    setCanvasLabel('네 개의 장을 고르는 화면. 아직 열리지 않은 장은 자물쇠로 표시돼요.');
     function announceChoice() {
       const button = buttons[choice];
-      const description = choice < unlocked.length ? definitions[unlocked[choice]].description + ' ' : '';
+      const description = choice < STAGE_IDS.length
+        ? (unlocked.includes(STAGE_IDS[choice])
+            ? definitions[STAGE_IDS[choice]].description + ' '
+            : '앞의 장을 먼저 끝내면 열려요. ')
+        : '';
       announce('현재 선택: ' + button.label + '. ' + description + '화면을 누르거나 엔터로 시작해요.');
     }
-    announce('모험을 골라요. 첫 번째 키클롭스 동굴도 언제든 다시 할 수 있어요.');
+    announce('장을 골라요. 열린 장은 ' + unlocked.length + '개예요. 지나온 장은 언제든 다시 할 수 있어요.');
 
     ODY.E.setScene({
       enter() { ODY.Snd.startBgm('map', { intensity: 0.25, fade: 0.8 }); },
@@ -10367,7 +10408,11 @@
         ctx.textAlign = 'center'; ctx.fillStyle = '#342442';
         ctx.font = '900 34px "Malgun Gothic", sans-serif'; ctx.fillText('어느 모험으로 갈까요?', 0, -7);
         ctx.fillStyle = '#8e5c68'; ctx.font = '800 18px "Malgun Gothic", sans-serif';
-        ctx.fillText(choice < unlocked.length ? definitions[unlocked[choice]].description : '바닷길 지도로 돌아가요.', 0, 29);
+        ctx.fillText(choice < STAGE_IDS.length
+          ? (unlocked.includes(STAGE_IDS[choice])
+              ? definitions[STAGE_IDS[choice]].description
+              : '앞의 장을 먼저 끝내면 열려요.')
+          : (returnStage ? '바닷길 지도로 돌아가요.' : '처음 화면으로 돌아가요.'), 0, 29);
         ctx.restore();
 
         buttons.forEach((button, index) => button.draw(ctx, choice === index));
