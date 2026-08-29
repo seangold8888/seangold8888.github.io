@@ -1,0 +1,16 @@
+{
+  "name": "Avengers — Jay & Teo's Multiverse",
+  "short_name": "Jay & Teo",
+  "description": "Jay와 Teo가 함께 구하는 2인 협동 멀티버스 액션 게임",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#040812",
+  "theme_color": "#07111f",
+  "icons": [
+    { "src": "./icons/multiverse-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/multiverse-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "./icons/multiverse-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

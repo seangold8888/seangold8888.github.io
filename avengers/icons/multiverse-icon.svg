@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="70%">
+      <stop offset="0" stop-color="#233f70"/>
+      <stop offset=".58" stop-color="#101a38"/>
+      <stop offset="1" stop-color="#050812"/>
+    </radialGradient>
+    <linearGradient id="bolt" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#63ecff"/>
+      <stop offset=".5" stop-color="#fff7a0"/>
+      <stop offset="1" stop-color="#ff4974"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <circle cx="256" cy="256" r="180" fill="none" stroke="#65e9ff" stroke-width="17" opacity=".78"/>
+  <circle cx="256" cy="256" r="134" fill="none" stroke="#ff4f86" stroke-width="10" opacity=".85"/>
+  <path d="M89 300C161 163 351 132 423 271M102 194c85 148 263 181 325 36" fill="none" stroke="url(#bolt)" stroke-width="16" stroke-linecap="round"/>
+  <path d="M151 156h67v146c0 52-28 81-80 81-19 0-36-4-50-11l20-55c8 4 16 6 24 6 13 0 19-9 19-27V156Zm91 0h184v58h-58v169h-68V214h-58v-58Z" fill="#f8fbff"/>
+  <path d="m251 72 20 43 47 6-35 33 9 47-41-23-42 23 10-47-35-33 47-6Z" fill="#ffd75e"/>
+</svg>
