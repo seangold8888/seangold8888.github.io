@@ -1,8 +1,8 @@
 const CACHE_NAME = 'jay-teo-multiverse-m4-v3';
 const APP_SHELL = [
   /* PWA_PRECACHE_INJECT */
-  "./assets/index-B7UoCoo2.js",
   "./assets/index-uRBZKIPW.css",
+  "./assets/index-uX6X_qKO.js",
   './',
   './index.html',
   './manifest.webmanifest',
