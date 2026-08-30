@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "game-hub",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8777", "--directory", "C:\\Users\\김시현\\game-hub\\site"],
+      "port": 8777
+    }
+  ]
+}

@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#1d1636">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="이야기 극장">
+<link rel="apple-touch-icon" href="../icon.png">
+<link rel="icon" type="image/png" href="../icon.png">
+<title>이야기 극장</title>
+<style>
+  /* 잠들기 전 이불 속 극장 — 의도된 단일 테마 (허브와 같은 밤하늘 계열) */
+  :root {
+    --night: #1d1636;
+    --night-deep: #120d26;
+    --star: #ffd93d;
+    --paper: #fff6e6;
+    --ink: #2b2350;
+    --cloud: rgba(255, 246, 230, 0.72);
+    --mint: #6bcb77;
+    --rose: #f79ac0;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html {
+    height: 100%;
+    background: var(--night-deep);
+    overscroll-behavior: none;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    min-height: 100%;
+    background: linear-gradient(180deg, var(--night-deep) 0%, var(--night) 50%, #2a2050 100%);
+    background-attachment: fixed;
+    color: var(--paper);
+    font-family: "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+  .wrap {
+    position: relative;
+    max-width: 760px;
+    margin: 0 auto;
+    padding:
+      calc(clamp(20px, 4vw, 40px) + env(safe-area-inset-top, 0px))
+      calc(clamp(16px, 4vw, 28px) + env(safe-area-inset-right, 0px))
+      calc(140px + env(safe-area-inset-bottom, 0px))
+      calc(clamp(16px, 4vw, 28px) + env(safe-area-inset-left, 0px));
+    display: flex;
+    flex-direction: column;
+    gap: clamp(18px, 3.5vw, 28px);
+  }
+  header { text-align: center; display: flex; flex-direction: column; gap: 8px; }
+  .home {
+    align-self: flex-start;
+    text-decoration: none;
+    color: var(--cloud);
+    font-weight: 900;
+    font-size: clamp(14px, 3.2vw, 16px);
+    background: rgba(255, 246, 230, 0.1);
+    border: 2px solid rgba(255, 246, 230, 0.28);
+    border-radius: 999px;
+    padding: 8px 16px;
+  }
+  h1 {
+    font-size: clamp(30px, 8vw, 46px);
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    color: var(--star);
+    text-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
+  }
+  .sub { font-size: clamp(14px, 3.2vw, 17px); font-weight: 700; color: var(--cloud); }
+  .shelf { display: flex; flex-direction: column; gap: clamp(12px, 2.5vw, 18px); }
+  .book {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    text-align: left;
+    padding: clamp(14px, 3vw, 20px);
+    border-radius: 24px;
+    border: 3px solid rgba(20, 12, 40, 0.55);
+    box-shadow: 0 6px 0 rgba(10, 6, 24, 0.5);
+    color: var(--ink);
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.12s ease-out, box-shadow 0.12s ease-out;
+    touch-action: pan-y;
+  }
+  .book:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(10, 6, 24, 0.5); }
+  .book:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
+  .book.sea  { background: linear-gradient(135deg, #ffd9a0, #7fb4e8); }
+  .book.rose { background: linear-gradient(135deg, #ffd3e2, #cdb7f6); }
+  .book .cover {
+    flex: 0 0 auto;
+    width: clamp(58px, 11vw, 76px);
+    height: clamp(58px, 11vw, 76px);
+    border-radius: 20px;
+    background: rgba(255, 252, 244, 0.85);
+    border: 3px solid rgba(20, 12, 40, 0.45);
+    display: grid;
+    place-items: center;
+    font-size: clamp(30px, 6.5vw, 42px);
+  }
+  .book .meta { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
+  .book .name { font-size: clamp(17px, 4vw, 22px); font-weight: 900; line-height: 1.25; }
+  .book .desc { font-size: clamp(12.5px, 2.9vw, 15px); font-weight: 700; opacity: 0.82; }
+  .book .state {
+    flex: 0 0 auto;
+    font-size: clamp(22px, 5vw, 28px);
+    min-width: 1.4em;
+    text-align: center;
+  }
+  .book.playing { outline: 4px solid var(--star); outline-offset: 2px; }
+  /* ── 플레이어 바 ── */
+  #bar {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    background: rgba(18, 13, 38, 0.97);
+    border-top: 3px solid rgba(255, 217, 61, 0.5);
+    padding: 12px calc(clamp(16px, 4vw, 28px) + env(safe-area-inset-right, 0px))
+             calc(12px + env(safe-area-inset-bottom, 0px))
+             calc(clamp(16px, 4vw, 28px) + env(safe-area-inset-left, 0px));
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+  }
+  #bar.on { display: flex; }
+  #barTitle {
+    text-align: center;
+    font-weight: 900;
+    font-size: clamp(14px, 3.4vw, 17px);
+    color: var(--star);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  #seekRow { display: flex; align-items: center; gap: 10px; }
+  #seek {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 12px;
+    border-radius: 999px;
+    background: rgba(255, 246, 230, 0.22);
+    outline: none;
+  }
+  #seek::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--star);
+    border: 3px solid rgba(20, 12, 40, 0.7);
+  }
+  .time { font-size: clamp(11px, 2.6vw, 13px); font-weight: 700; color: var(--cloud); font-variant-numeric: tabular-nums; min-width: 3.4em; text-align: center; }
+  #ctrls { display: flex; justify-content: center; align-items: center; gap: clamp(14px, 4vw, 26px); }
+  #ctrls button {
+    font-family: inherit;
+    cursor: pointer;
+    border: 3px solid rgba(20, 12, 40, 0.7);
+    border-radius: 50%;
+    background: rgba(255, 246, 230, 0.92);
+    color: var(--ink);
+    font-weight: 900;
+    box-shadow: 0 4px 0 rgba(10, 6, 24, 0.5);
+    transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+    display: grid;
+    place-items: center;
+    touch-action: manipulation;
+  }
+  #ctrls button:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(10, 6, 24, 0.5); }
+  #ctrls button:focus-visible { outline: 4px solid var(--star); outline-offset: 2px; }
+  .small { width: clamp(52px, 12vw, 62px); height: clamp(52px, 12vw, 62px); font-size: clamp(13px, 3vw, 15px); }
+  #playBtn { width: clamp(72px, 16vw, 86px); height: clamp(72px, 16vw, 86px); font-size: clamp(30px, 7vw, 38px); background: var(--star); }
+  footer { text-align: center; color: var(--cloud); font-size: clamp(12px, 2.8vw, 14px); font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="home" href="../">◀ 모험 상자</a>
+    <h1>이야기 극장 🌙</h1>
+    <p class="sub">세계의 옛이야기를 귀로 떠나는 여행</p>
+  </header>
+
+  <div class="shelf" id="shelf"></div>
+
+  <footer>다 들은 이야기에는 ⭐ 이 붙어요</footer>
+</div>
+
+<div id="bar">
+  <div id="barTitle"></div>
+  <div id="seekRow">
+    <span class="time" id="tCur">0:00</span>
+    <input type="range" id="seek" min="0" max="100" step="0.1" value="0" aria-label="재생 위치">
+    <span class="time" id="tDur">0:00</span>
+  </div>
+  <div id="ctrls">
+    <button class="small" id="back10" aria-label="10초 뒤로">◀ 10</button>
+    <button id="playBtn" aria-label="재생">▶</button>
+    <button class="small" id="fwd10" aria-label="10초 앞으로">10 ▶</button>
+  </div>
+</div>
+
+<audio id="player" preload="metadata"></audio>
+
+<script>
+"use strict";
+const EPISODES = [
+  { id: "cinderella", cls: "rose", emoji: "👠",
+    title: "신데렐라",
+    desc: "유리 구두와 호박 마차 · 세계에서 가장 사랑받는 이야기",
+    src: "audio/cinderella.mp3" },
+  { id: "odyssey_cyclops", cls: "sea", emoji: "⛵",
+    title: "오디세이 1화 · 외눈박이 거인",
+    desc: "꾀 많은 오디세우스와 거인 폴리페모스의 대결",
+    src: "audio/odyssey_cyclops.mp3" },
+];
+
+const store = {
+  get(k) { try { return localStorage.getItem("story_" + k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem("story_" + k, v); } catch (e) {} },
+};
+
+const shelf = document.getElementById("shelf");
+const bar = document.getElementById("bar");
+const barTitle = document.getElementById("barTitle");
+const seek = document.getElementById("seek");
+const tCur = document.getElementById("tCur");
+const tDur = document.getElementById("tDur");
+const playBtn = document.getElementById("playBtn");
+const player = document.getElementById("player");
+let current = null;
+let seeking = false;
+
+function fmt(sec) {
+  if (!isFinite(sec)) return "0:00";
+  const m = Math.floor(sec / 60), s = Math.floor(sec % 60);
+  return m + ":" + String(s).padStart(2, "0");
+}
+
+function stateIcon(ep) {
+  if (current && current.id === ep.id && !player.paused) return "🔊";
+  if (store.get("done_" + ep.id) === "1") return "⭐";
+  return "▶️";
+}
+
+function renderShelf() {
+  shelf.innerHTML = "";
+  EPISODES.forEach(ep => {
+    const b = document.createElement("button");
+    b.className = "book " + ep.cls + (current && current.id === ep.id ? " playing" : "");
+    b.innerHTML =
+      '<span class="cover">' + ep.emoji + '</span>' +
+      '<span class="meta"><span class="name">' + ep.title + '</span>' +
+      '<span class="desc">' + ep.desc + '</span></span>' +
+      '<span class="state">' + stateIcon(ep) + '</span>';
+    b.addEventListener("click", () => tap(ep));
+    shelf.appendChild(b);
+  });
+}
+
+function tap(ep) {
+  if (current && current.id === ep.id) { toggle(); return; }
+  current = ep;
+  player.src = ep.src;
+  const saved = parseFloat(store.get("pos_" + ep.id));
+  player.currentTime = 0;
+  player.addEventListener("loadedmetadata", function once() {
+    player.removeEventListener("loadedmetadata", once);
+    if (isFinite(saved) && saved > 3 && saved < player.duration - 5) player.currentTime = saved;
+    tDur.textContent = fmt(player.duration);
+  });
+  barTitle.textContent = ep.emoji + " " + ep.title;
+  bar.classList.add("on");
+  player.play();
+  setMediaSession(ep);
+  renderShelf();
+}
+
+function toggle() {
+  if (player.paused) player.play(); else player.pause();
+}
+
+playBtn.addEventListener("click", toggle);
+document.getElementById("back10").addEventListener("click", () => { player.currentTime = Math.max(0, player.currentTime - 10); });
+document.getElementById("fwd10").addEventListener("click", () => { player.currentTime = Math.min(player.duration || 0, player.currentTime + 10); });
+
+player.addEventListener("play",  () => { playBtn.textContent = "❚❚"; renderShelf(); });
+player.addEventListener("pause", () => { playBtn.textContent = "▶"; renderShelf(); });
+player.addEventListener("timeupdate", () => {
+  if (!current) return;
+  if (!seeking && player.duration) {
+    seek.value = (player.currentTime / player.duration) * 100;
+    tCur.textContent = fmt(player.currentTime);
+  }
+  if (Math.floor(player.currentTime) % 5 === 0) store.set("pos_" + current.id, String(player.currentTime));
+});
+player.addEventListener("ended", () => {
+  if (!current) return;
+  store.set("done_" + current.id, "1");
+  store.set("pos_" + current.id, "0");
+  const idx = EPISODES.findIndex(e => e.id === current.id);
+  const next = EPISODES[idx + 1];
+  if (next) { tap(next); } else { playBtn.textContent = "▶"; renderShelf(); }
+});
+
+seek.addEventListener("input", () => {
+  seeking = true;
+  if (player.duration) tCur.textContent = fmt((seek.value / 100) * player.duration);
+});
+seek.addEventListener("change", () => {
+  if (player.duration) player.currentTime = (seek.value / 100) * player.duration;
+  seeking = false;
+});
+
+function setMediaSession(ep) {
+  if (!("mediaSession" in navigator)) return;
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title: ep.title, artist: "이야기 극장", album: "세계 명작 오디오북",
+  });
+  navigator.mediaSession.setActionHandler("play", () => player.play());
+  navigator.mediaSession.setActionHandler("pause", () => player.pause());
+  navigator.mediaSession.setActionHandler("seekbackward", () => { player.currentTime -= 10; });
+  navigator.mediaSession.setActionHandler("seekforward", () => { player.currentTime += 10; });
+}
+
+renderShelf();
+</script>
+</body>
+</html>
