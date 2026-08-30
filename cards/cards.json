@@ -1,0 +1,165 @@
+{
+  "version": 1,
+  "types": {
+    "brave":   { "label": "용기", "icon": "⚔️", "weakTo": "magic" },
+    "wise":    { "label": "지혜", "icon": "📘", "weakTo": "brave" },
+    "magic":   { "label": "마법", "icon": "✨", "weakTo": "wise" },
+    "monster": { "label": "괴물", "icon": "🌑", "weakTo": null }
+  },
+  "cards": [
+    { "id": "heracles", "name": "헤라클레스", "emoji": "💪", "type": "brave", "rarity": 3, "summonCost": 4, "hp": 120,
+      "passive": { "name": "불굴의 심장", "desc": "HP가 60 이하면 모든 기술 데미지 +20", "fx": "boost_20_below_half" },
+      "attacks": [
+        { "name": "사자 주먹", "cost": 1, "dmg": 20, "fx": null, "desc": "" },
+        { "name": "열두 과업", "cost": 3, "dmg": 60, "fx": null, "desc": "" } ],
+      "unlock": "heracles", "art": "art/heracles.png" },
+
+    { "id": "honggildong", "name": "홍길동", "emoji": "🏹", "type": "brave", "rarity": 2, "summonCost": 2, "hp": 60,
+      "passive": { "name": "동에 번쩍 서에 번쩍", "desc": "공격받을 때 동전 앞면이면 회피", "fx": "coin_evade" },
+      "attacks": [
+        { "name": "의적의 화살", "cost": 2, "dmg": 40, "fx": null, "desc": "" } ],
+      "unlock": "honggildong", "art": "art/honggildong.png" },
+
+    { "id": "perseus", "name": "페르세우스", "emoji": "🛡️", "type": "brave", "rarity": 2, "summonCost": 2, "hp": 70,
+      "passive": { "name": "거울 방패", "desc": "마법 타입에게 약점 ×2를 받지 않는다", "fx": "no_weakness" },
+      "attacks": [
+        { "name": "메두사의 머리", "cost": 3, "dmg": 30, "fx": "skip_next_enemy", "desc": "상대는 다음 턴 기술을 쓸 수 없다" } ],
+      "unlock": "perseus", "art": "art/perseus.png" },
+
+    { "id": "jack", "name": "콩나무 잭", "emoji": "🫘", "type": "brave", "rarity": 1, "summonCost": 1, "hp": 50,
+      "passive": null,
+      "attacks": [
+        { "name": "콩나무 타기", "cost": 1, "dmg": 20, "fx": null, "desc": "" },
+        { "name": "황금 거위 훔치기", "cost": 2, "dmg": 30, "fx": "gain_star_1", "desc": "내 별사탕 +1" } ],
+      "unlock": null, "art": "art/jack.png" },
+
+    { "id": "threepigs", "name": "아기돼지 삼형제", "emoji": "🐷", "type": "brave", "rarity": 1, "summonCost": 1, "hp": 40,
+      "passive": { "name": "벽돌집", "desc": "받는 데미지 항상 -10", "fx": "reduce_dmg_10" },
+      "attacks": [
+        { "name": "삼형제 박치기", "cost": 2, "dmg": 30, "fx": null, "desc": "" } ],
+      "unlock": "threepigs", "art": "art/threepigs.png" },
+
+    { "id": "arthur", "name": "아서왕", "emoji": "🗡️", "type": "brave", "rarity": 2, "summonCost": 3, "hp": 80,
+      "passive": { "name": "원탁의 기사", "desc": "대기석의 내 용기 타입 HP +10 (v2)", "fx": "v2_bench_buff" },
+      "attacks": [
+        { "name": "엑스칼리버", "cost": 3, "dmg": 50, "fx": null, "desc": "" } ],
+      "unlock": "arthur", "art": "art/arthur.png", "v1": false },
+
+    { "id": "odysseus", "name": "오디세우스", "emoji": "⛵", "type": "wise", "rarity": 3, "summonCost": 4, "hp": 90,
+      "passive": { "name": "아무도아니", "desc": "상대 싸움꾼의 특성을 무효로 만든다", "fx": "nullify_passive" },
+      "attacks": [
+        { "name": "꾀돌이 찌르기", "cost": 1, "dmg": 20, "fx": null, "desc": "" },
+        { "name": "트로이 목마", "cost": 3, "dmg": 60, "fx": null, "desc": "" } ],
+      "unlock": "odyssey_cyclops", "art": "art/odysseus.png" },
+
+    { "id": "cinderella", "name": "신데렐라", "emoji": "👠", "type": "wise", "rarity": 2, "summonCost": 2, "hp": 60,
+      "passive": { "name": "유리 구두", "desc": "기절해도 판마다 한 번 HP 30으로 부활", "fx": "revive_half_once" },
+      "attacks": [
+        { "name": "호박마차 돌진", "cost": 2, "dmg": 30, "fx": null, "desc": "" } ],
+      "unlock": "cinderella", "art": "art/cinderella.png" },
+
+    { "id": "tortoisehare", "name": "토끼와 거북", "emoji": "🐢", "type": "wise", "rarity": 2, "summonCost": 2, "hp": 50,
+      "passive": { "name": "등껍질", "desc": "받는 데미지 -10", "fx": "reduce_dmg_10" },
+      "attacks": [
+        { "name": "느림보 역전", "cost": 3, "dmg": 0, "fx": "dmg_half_enemy_hp", "desc": "데미지 = 상대 남은 HP의 절반" } ],
+      "unlock": "tortoisehare", "art": "art/tortoisehare.png" },
+
+    { "id": "redhood", "name": "빨간 모자", "emoji": "🧢", "type": "wise", "rarity": 1, "summonCost": 1, "hp": 40,
+      "passive": { "name": "가짜 할머니 간파", "desc": "괴물 타입에게 받는 데미지 -20", "fx": "reduce_dmg_20_monster" },
+      "attacks": [
+        { "name": "사냥꾼 부르기", "cost": 2, "dmg": 40, "fx": null, "desc": "" } ],
+      "unlock": null, "art": "art/redhood.png" },
+
+    { "id": "bremen", "name": "브레멘 음악대", "emoji": "🎺", "type": "wise", "rarity": 2, "summonCost": 2, "hp": 70,
+      "passive": null,
+      "attacks": [
+        { "name": "합동 연주", "cost": 2, "dmg": 0, "fx": "v2_team_heal_10", "desc": "내 카드 전원 HP +10 (v2)" },
+        { "name": "왁자지껄 대소동", "cost": 3, "dmg": 40, "fx": null, "desc": "" } ],
+      "unlock": "bremen", "art": "art/bremen.png", "v1": false },
+
+    { "id": "pinocchio", "name": "피노키오", "emoji": "🤥", "type": "wise", "rarity": 1, "summonCost": 1, "hp": 50,
+      "passive": null,
+      "attacks": [
+        { "name": "길어지는 코 찌르기", "cost": 1, "dmg": 10, "fx": "dmg_stack_10", "desc": "쓸 때마다 데미지 +10 (10→20→30…)" } ],
+      "unlock": "pinocchio", "art": "art/pinocchio.png" },
+
+    { "id": "sunwukong", "name": "손오공", "emoji": "🐒", "type": "magic", "rarity": 3, "summonCost": 4, "hp": 90,
+      "passive": { "name": "근두운", "desc": "교체를 턴마다 2번까지 (v2)", "fx": "v2_double_switch" },
+      "attacks": [
+        { "name": "분신술", "cost": 2, "dmg": 0, "fx": "v2_summon_clone", "desc": "대기석에 분신 소환 (v2)" },
+        { "name": "여의봉 크게!", "cost": 3, "dmg": 50, "fx": null, "desc": "" } ],
+      "unlock": "sunwukong", "art": "art/sunwukong.png", "v1": false },
+
+    { "id": "fairygodmother", "name": "요정 대모", "emoji": "🧚", "type": "magic", "rarity": 3, "summonCost": 3, "hp": 80,
+      "passive": null,
+      "attacks": [
+        { "name": "호박 마법", "cost": 2, "dmg": 0, "fx": "heal_40", "desc": "HP 40 회복" },
+        { "name": "자정의 기적", "cost": 4, "dmg": 0, "fx": "v2_revive_ally", "desc": "기절한 내 카드 부활 (v2)" } ],
+      "unlock": "cinderella", "art": "art/fairygodmother.png" },
+
+    { "id": "genie", "name": "램프의 요정", "emoji": "🪔", "type": "magic", "rarity": 3, "summonCost": 0, "hp": 100,
+      "passive": { "name": "램프의 계약", "desc": "소환 별 0. 대신 판마다 기술 총 3번 (세 가지 소원)", "fx": "wish_limit_3" },
+      "attacks": [
+        { "name": "소원 펑!", "cost": 2, "dmg": 50, "fx": null, "desc": "" } ],
+      "unlock": "genie", "art": "art/genie.png" },
+
+    { "id": "snowqueen", "name": "눈의 여왕", "emoji": "❄️", "type": "magic", "rarity": 2, "summonCost": 3, "hp": 70,
+      "passive": null,
+      "attacks": [
+        { "name": "얼음 거울", "cost": 2, "dmg": 30, "fx": "coin_skip_next_enemy", "desc": "동전 앞면이면 상대는 다음 턴 얼음" },
+        { "name": "눈보라", "cost": 3, "dmg": 20, "fx": "v2_aoe_20", "desc": "상대 대기석까지 20씩 (v2)" } ],
+      "unlock": "snowqueen", "art": "art/snowqueen.png" },
+
+    { "id": "witch", "name": "과자집 마녀", "emoji": "🍭", "type": "magic", "rarity": 2, "summonCost": 2, "hp": 60,
+      "passive": null,
+      "attacks": [
+        { "name": "과자집 유혹", "cost": 1, "dmg": 0, "fx": "v2_force_switch", "desc": "상대 대기석 강제 교체 (v2)" },
+        { "name": "오븐 밀치기", "cost": 2, "dmg": 40, "fx": null, "desc": "" } ],
+      "unlock": "witch", "art": "art/witch.png", "v1": false },
+
+    { "id": "mermaid", "name": "인어공주", "emoji": "🧜‍♀️", "type": "magic", "rarity": 2, "summonCost": 2, "hp": 60,
+      "passive": null,
+      "attacks": [
+        { "name": "파도타기", "cost": 1, "dmg": 20, "fx": null, "desc": "" },
+        { "name": "바다의 노래", "cost": 2, "dmg": 0, "fx": "weaken_next_20", "desc": "상대의 다음 기술 데미지 -20" } ],
+      "unlock": "mermaid", "art": "art/mermaid.png" },
+
+    { "id": "polyphemus", "name": "폴리페모스", "emoji": "👁️", "type": "monster", "rarity": 3, "summonCost": 5, "hp": 150,
+      "passive": { "name": "외눈", "desc": "기술 쓸 때 동전 뒷면이면 빗나감", "fx": "coin_miss" },
+      "attacks": [
+        { "name": "바위 던지기", "cost": 4, "dmg": 80, "fx": null, "desc": "" } ],
+      "unlock": "odyssey_cyclops", "art": "art/polyphemus.png" },
+
+    { "id": "wolf", "name": "커다란 늑대", "emoji": "🐺", "type": "monster", "rarity": 1, "summonCost": 2, "hp": 60,
+      "passive": { "name": "할머니 변장", "desc": "처음 받는 공격 1번은 데미지 0", "fx": "first_hit_zero" },
+      "attacks": [
+        { "name": "후― 불어 날리기", "cost": 2, "dmg": 30, "fx": null, "desc": "" } ],
+      "unlock": "redhood_story", "art": "art/wolf.png" },
+
+    { "id": "beanstalkgiant", "name": "콩나무 거인", "emoji": "🏔️", "type": "monster", "rarity": 2, "summonCost": 4, "hp": 110,
+      "passive": null,
+      "attacks": [
+        { "name": "쿵쿵 발구르기", "cost": 3, "dmg": 50, "fx": "v2_splash_10", "desc": "상대 대기석에도 10씩 (v2)" } ],
+      "unlock": "jack_story", "art": "art/beanstalkgiant.png", "v1": false },
+
+    { "id": "medusa", "name": "메두사", "emoji": "🐍", "type": "monster", "rarity": 2, "summonCost": 3, "hp": 70,
+      "passive": null,
+      "attacks": [
+        { "name": "뱀머리 깨물기", "cost": 1, "dmg": 20, "fx": null, "desc": "" },
+        { "name": "돌로 만들기", "cost": 3, "dmg": 0, "fx": "coin_skip_next_enemy", "desc": "동전 앞면이면 상대는 다음 턴 통째로 쉼" } ],
+      "unlock": "perseus", "art": "art/medusa.png" },
+
+    { "id": "midas", "name": "미다스 왕", "emoji": "👑", "type": "monster", "rarity": 2, "summonCost": 2, "hp": 60,
+      "passive": { "name": "황금의 저주", "desc": "내 턴이 끝날 때마다 자기 HP -10", "fx": "self_hurt_10_eot" },
+      "attacks": [
+        { "name": "황금 손", "cost": 2, "dmg": 20, "fx": "gold_freeze_gain_star", "desc": "맞은 상대 1턴 정지, 나는 별 +1" } ],
+      "unlock": "midas", "art": "art/midas.png" },
+
+    { "id": "tiger", "name": "호랑이", "emoji": "🐯", "type": "monster", "rarity": 1, "summonCost": 3, "hp": 80,
+      "passive": null,
+      "attacks": [
+        { "name": "떡 하나 주면 안 잡아먹지", "cost": 1, "dmg": 10, "fx": "steal_star_1", "desc": "상대 별사탕 1개 훔치기" },
+        { "name": "어흥!", "cost": 3, "dmg": 50, "fx": null, "desc": "" } ],
+      "unlock": "sunmoon", "art": "art/tiger.png" }
+  ]
+}
