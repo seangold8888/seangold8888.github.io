@@ -1,0 +1,154 @@
+(function () {
+  "use strict";
+
+  const TYPE_META = {
+    brave: { label: "용기", icon: "⚔️" },
+    wise: { label: "지혜", icon: "📘" },
+    magic: { label: "마법", icon: "✨" },
+    monster: { label: "괴물", icon: "🌑" }
+  };
+
+  const ART_POSITION = {
+    cinderella: "54% 38%",
+    fairygodmother: "53% 42%",
+    odysseus: "49% 45%",
+    polyphemus: "50% 25%",
+    redhood: "47% 45%",
+    jack: "54% 35%"
+  };
+
+  function el(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function rarityLabel(rarity) {
+    return "⭐".repeat(Math.max(1, Math.min(3, rarity || 1)));
+  }
+
+  function createArt(card, options) {
+    const frame = el("div", "card-art");
+    const picture = document.createElement("picture");
+    const source = document.createElement("source");
+    const img = document.createElement("img");
+    const requestedArt = card.art || ("art/" + card.id + ".png");
+    const png = requestedArt.replace(/\.webp$/i, ".png");
+    const webp = requestedArt.replace(/\.png$/i, ".webp");
+    const fallback = el("span", "art-fallback", card.emoji || "✦");
+    let retriedPng = false;
+
+    fallback.hidden = true;
+    fallback.setAttribute("aria-hidden", "true");
+    source.srcset = webp;
+    source.type = "image/webp";
+    img.src = png;
+    img.alt = card.name + " 카드 원화";
+    img.loading = options.eager ? "eager" : "lazy";
+    img.decoding = "async";
+    img.draggable = false;
+    img.style.objectPosition = ART_POSITION[card.id] || "50% 40%";
+    img.addEventListener("error", function () {
+      if (!retriedPng && source.isConnected && webp !== png) {
+        retriedPng = true;
+        source.remove();
+        img.src = png;
+        return;
+      }
+      picture.hidden = true;
+      fallback.hidden = false;
+      frame.classList.add("has-fallback");
+    });
+    picture.append(source, img);
+    frame.append(picture, fallback);
+
+    const glow = el("span", "art-glow");
+    glow.setAttribute("aria-hidden", "true");
+    frame.appendChild(glow);
+
+    if (options.locked) {
+      const veil = el("div", "lock-veil");
+      veil.append(el("span", "lock-icon", "🔒"), el("strong", "", "이야기를 들으면 깨어나요"));
+      frame.appendChild(veil);
+    }
+    return frame;
+  }
+
+  function create(card, options) {
+    options = options || {};
+    const type = TYPE_META[card.type] || TYPE_META.wise;
+    const currentHp = Number.isFinite(options.currentHp) ? options.currentHp : card.hp;
+    const cardEl = el("article", "story-card type-" + card.type);
+    cardEl.dataset.cardId = card.id;
+    cardEl.setAttribute("role", options.interactive ? "button" : "group");
+    cardEl.setAttribute(
+      "aria-label",
+      card.name + (options.locked ? ", 잠긴 카드" : options.interactive ? ", 선택 가능한 카드" : " 카드")
+    );
+    if (options.interactive) {
+      cardEl.tabIndex = 0;
+      cardEl.setAttribute("aria-pressed", options.selected ? "true" : "false");
+    }
+    if (options.locked) cardEl.classList.add("is-locked");
+    if (options.selected) cardEl.classList.add("is-selected");
+    if (options.compact) cardEl.classList.add("is-compact");
+    if (card.rarity === 3) cardEl.classList.add("is-legendary");
+    if (options.hit) cardEl.classList.add("is-hit");
+    if (options.acting) cardEl.classList.add("is-acting");
+
+    const crown = el("div", "card-crown");
+    const identity = el("div", "card-identity");
+    identity.append(el("h3", "card-name", card.name), el("span", "rarity", rarityLabel(card.rarity)));
+    const hp = el("div", "hp-gem");
+    hp.innerHTML = '<span>HP</span><strong>' + Math.max(0, currentHp) + '</strong><i>♥</i>';
+    crown.append(identity, hp);
+
+    const meta = el("div", "card-meta");
+    meta.append(el("span", "type-chip", type.icon + " " + type.label), el("span", "card-story", card.unlock ? "이야기에서 깨어난 카드" : "처음부터 함께하는 카드"));
+
+    const hpTrack = el("div", "hp-track");
+    const hpFill = el("span", "hp-fill");
+    hpFill.style.width = Math.max(0, Math.min(100, currentHp / card.hp * 100)) + "%";
+    hpTrack.appendChild(hpFill);
+
+    const details = el("div", "card-details");
+    if (card.passive) {
+      const passive = el("div", "passive-row");
+      passive.append(el("span", "passive-icon", "✦"), el("strong", "", card.passive.name), el("small", "", card.passive.desc));
+      details.appendChild(passive);
+    }
+
+    const attacks = el("div", "attack-preview");
+    (card.attacks || []).slice(0, options.compact ? 1 : 2).forEach(function (attack) {
+      const row = el("div", "attack-row");
+      const copy = el("span", "attack-copy");
+      copy.append(el("strong", "", attack.name), attack.desc ? el("small", "", attack.desc) : document.createTextNode(""));
+      const numbers = el("span", "attack-numbers");
+      numbers.append(el("b", "cost", "⭐" + attack.cost), el("b", "damage", attack.dmg ? String(attack.dmg) : "✦"));
+      row.append(copy, numbers);
+      attacks.appendChild(row);
+    });
+    details.appendChild(attacks);
+
+    cardEl.append(crown, createArt(card, options), hpTrack, meta, details);
+
+    if (options.interactive && typeof options.onSelect === "function") {
+      const activate = function () { options.onSelect(card, cardEl); };
+      cardEl.addEventListener("click", activate);
+      cardEl.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          activate();
+        }
+      });
+    }
+    return cardEl;
+  }
+
+  window.CardView = {
+    create: create,
+    artPosition: ART_POSITION,
+    typeMeta: TYPE_META
+  };
+}());

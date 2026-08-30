@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#17122f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="카드 배틀">
+  <title>이야기 카드 배틀</title>
+  <link rel="icon" href="../icon.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="sky" aria-hidden="true">
+    <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+  </div>
+
+  <header class="topbar">
+    <a class="home-link" href="../" aria-label="모험 상자로 돌아가기">← 모험 상자</a>
+    <div class="brand" aria-label="이야기 카드 배틀">
+      <span class="brand-mark">🃏</span>
+      <span>이야기 카드 배틀</span>
+    </div>
+    <button class="icon-button" id="muteButton" type="button" aria-label="소리 끄기" aria-pressed="false">🔊</button>
+  </header>
+
+  <main>
+    <section class="screen collection-screen" id="collectionScreen">
+      <div class="hero-copy">
+        <p class="eyebrow">별빛 극장의 영웅들이 카드로 깨어났어요</p>
+        <h1>이야기를 듣고,<br><em>나만의 영웅</em>을 불러요</h1>
+        <p class="hero-description">카드를 골라 별사탕을 모으고, 멋진 기술로 1:1 대결을 펼쳐 보세요.</p>
+        <div class="collection-status" aria-live="polite">
+          <span class="status-orb">✦</span>
+          <strong id="unlockCount">0 / 6</strong>
+          <span>카드가 깨어났어요</span>
+        </div>
+      </div>
+
+      <div class="section-heading">
+        <div>
+          <p class="kicker">나의 카드 컬렉션</p>
+          <h2>출전할 영웅을 선택하세요</h2>
+        </div>
+        <a class="story-link" href="../story/">🎧 이야기 들으러 가기</a>
+      </div>
+
+      <div class="card-gallery" id="collectionGrid" role="list" aria-label="카드 컬렉션"></div>
+
+      <aside class="selection-dock" id="selectionDock" aria-live="polite">
+        <div class="selected-portrait" id="selectedPortrait" aria-hidden="true">?</div>
+        <div class="selected-copy">
+          <span>오늘의 출전 카드</span>
+          <strong id="selectedName">카드를 골라 주세요</strong>
+        </div>
+        <button class="primary-button" id="battleButton" type="button" aria-label="대결 시작" disabled>
+          <span>대결 시작</span><b>⚔️</b>
+        </button>
+      </aside>
+    </section>
+
+    <section class="screen battle-screen" id="battleScreen" hidden>
+      <div class="battle-header">
+        <button class="ghost-button" id="leaveBattleButton" type="button">← 카드 바꾸기</button>
+        <div class="round-pill"><span id="turnOwner">나의 턴</span><b id="turnNumber">1</b></div>
+        <div class="battle-stars" id="battleStars" aria-live="polite">⭐ 0</div>
+      </div>
+
+      <div class="arena" id="arena">
+        <div class="combatant enemy-combatant">
+          <p class="combat-label">별그림자 상대</p>
+          <div class="battle-card-slot" id="enemyCardSlot"></div>
+        </div>
+
+        <div class="battle-center" aria-live="assertive">
+          <div class="versus">VS</div>
+          <div class="effect-burst" id="effectBurst"></div>
+          <p class="battle-message" id="battleMessage">별빛 무대가 열립니다!</p>
+        </div>
+
+        <div class="combatant player-combatant">
+          <p class="combat-label">나의 영웅</p>
+          <div class="battle-card-slot" id="playerCardSlot"></div>
+        </div>
+      </div>
+
+      <div class="action-panel">
+        <div class="action-title">
+          <span>어떤 기술을 쓸까요?</span>
+          <small id="weaknessHint">타입 약점을 노리면 ×2!</small>
+        </div>
+        <div class="action-list" id="actionList"></div>
+      </div>
+    </section>
+  </main>
+
+  <dialog class="coin-dialog" id="coinDialog" aria-labelledby="coinTitle" aria-describedby="coinInstruction">
+    <p class="kicker">운명의 동전</p>
+    <h2 id="coinTitle">동전을 던져요!</h2>
+    <p id="coinInstruction">가운데 동전을 톡 눌러 앞면과 뒷면을 확인하세요.</p>
+    <button class="coin-button" id="coinButton" type="button" aria-label="동전 던지기">
+      <span aria-hidden="true">?</span>
+    </button>
+    <p class="coin-result" id="coinResult" aria-live="assertive">동전이 기다리고 있어요</p>
+  </dialog>
+
+  <dialog class="story-dialog" id="lockedDialog" aria-labelledby="lockedTitle" aria-describedby="lockedDescription">
+    <button class="dialog-close" data-close-dialog type="button" aria-label="닫기">×</button>
+    <div class="dialog-art" id="lockedArt"></div>
+    <p class="kicker">아직 잠든 카드</p>
+    <h2 id="lockedTitle">이야기를 들으면 만날 수 있어요</h2>
+    <p id="lockedDescription"></p>
+    <a class="primary-button dialog-action" href="../story/">🎧 이야기 극장으로</a>
+  </dialog>
+
+  <dialog class="result-dialog" id="resultDialog" aria-labelledby="resultTitle" aria-describedby="resultText">
+    <div class="result-stars" aria-hidden="true">✦ ⭐ ✦</div>
+    <p class="kicker" id="resultKicker">대결 완료</p>
+    <h2 id="resultTitle">멋진 승리!</h2>
+    <p id="resultText"></p>
+    <div class="result-actions">
+      <button class="primary-button" id="rematchButton" type="button">한 판 더!</button>
+      <button class="ghost-button" id="resultCollectionButton" type="button">카드 컬렉션</button>
+    </div>
+  </dialog>
+
+  <noscript>이야기 카드 배틀을 하려면 JavaScript를 켜 주세요.</noscript>
+  <script src="js/engine.js" defer></script>
+  <script src="js/audio.js" defer></script>
+  <script src="js/card-view.js" defer></script>
+  <script src="js/app.js" defer></script>
+</body>
+</html>

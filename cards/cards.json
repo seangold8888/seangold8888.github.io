@@ -1,9 +1,9 @@
 {
   "version": 1,
   "types": {
-    "brave":   { "label": "용기", "icon": "⚔️", "weakTo": "magic" },
-    "wise":    { "label": "지혜", "icon": "📘", "weakTo": "brave" },
-    "magic":   { "label": "마법", "icon": "✨", "weakTo": "wise" },
+    "brave":   { "label": "용기", "icon": "⚔️", "weakTo": "wise" },
+    "wise":    { "label": "지혜", "icon": "📘", "weakTo": "magic" },
+    "magic":   { "label": "마법", "icon": "✨", "weakTo": "brave" },
     "monster": { "label": "괴물", "icon": "🌑", "weakTo": null }
   },
   "cards": [
@@ -21,7 +21,7 @@
       "unlock": "honggildong", "art": "art/honggildong.png" },
 
     { "id": "perseus", "name": "페르세우스", "emoji": "🛡️", "type": "brave", "rarity": 2, "summonCost": 2, "hp": 70,
-      "passive": { "name": "거울 방패", "desc": "마법 타입에게 약점 ×2를 받지 않는다", "fx": "no_weakness" },
+      "passive": { "name": "거울 방패", "desc": "약점 ×2를 받지 않는다", "fx": "no_weakness" },
       "attacks": [
         { "name": "메두사의 머리", "cost": 3, "dmg": 30, "fx": "skip_next_enemy", "desc": "상대는 다음 턴 기술을 쓸 수 없다" } ],
       "unlock": "perseus", "art": "art/perseus.png" },
@@ -46,7 +46,7 @@
       "unlock": "arthur", "art": "art/arthur.png", "v1": false },
 
     { "id": "odysseus", "name": "오디세우스", "emoji": "⛵", "type": "wise", "rarity": 3, "summonCost": 4, "hp": 90,
-      "passive": { "name": "아무도아니", "desc": "상대 싸움꾼의 특성을 무효로 만든다", "fx": "nullify_passive" },
+      "passive": { "name": "아무도아니", "desc": "상대의 이로운 특성을 무효로 만든다", "fx": "nullify_passive" },
       "attacks": [
         { "name": "꾀돌이 찌르기", "cost": 1, "dmg": 20, "fx": null, "desc": "" },
         { "name": "트로이 목마", "cost": 3, "dmg": 60, "fx": null, "desc": "" } ],
@@ -93,6 +93,7 @@
     { "id": "fairygodmother", "name": "요정 대모", "emoji": "🧚", "type": "magic", "rarity": 3, "summonCost": 3, "hp": 80,
       "passive": null,
       "attacks": [
+        { "name": "별가루 톡!", "cost": 1, "dmg": 20, "fx": null, "desc": "" },
         { "name": "호박 마법", "cost": 2, "dmg": 0, "fx": "heal_40", "desc": "HP 40 회복" },
         { "name": "자정의 기적", "cost": 4, "dmg": 0, "fx": "v2_revive_ally", "desc": "기절한 내 카드 부활 (v2)" } ],
       "unlock": "cinderella", "art": "art/fairygodmother.png" },
