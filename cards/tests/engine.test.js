@@ -337,7 +337,7 @@ test("AI는 RNG가 주어지면 30% 확률 구간에서 두 번째 좋은 수를
   });
 });
 
-test("대표 6장은 v1 기술과 PNG·WebP 원화를 모두 갖춘다", () => {
+test("기존 대표 6장은 v1 기술과 PNG·WebP 원화를 모두 갖춘다", () => {
   const featured = [
     "cinderella", "fairygodmother", "odysseus",
     "polyphemus", "redhood", "jack",
@@ -359,11 +359,40 @@ test("대표 6장은 v1 기술과 PNG·WebP 원화를 모두 갖춘다", () => {
   });
 });
 
-test("페르세우스 설명과 실제 대표 카드 상대 풀이 레어도 ±1 계약을 지킨다", () => {
-  const featured = [
-    "cinderella", "fairygodmother", "odysseus",
-    "polyphemus", "redhood", "jack",
-  ];
+test("컬렉션 해금 경제는 24장 전체를 노출하고 이야기 극장과 짝이 맞는다", () => {
+  const data = JSON.parse(
+    fs.readFileSync(path.join(__dirname, "..", "cards.json"), "utf8")
+  );
+  const byId = new Map(data.cards.map((item) => [item.id, item]));
+
+  assert.equal(new Set(data.collection).size, 24);
+  assert.deepEqual(
+    [...data.collection].sort(),
+    data.cards.map((item) => item.id).sort(),
+    "모든 카드가 컬렉션에 노출되어야 한다"
+  );
+  assert.deepEqual(
+    data.collection.filter((id) => byId.get(id).unlock === null).sort(),
+    ["jack", "redhood"],
+    "기존 기본 지급 2장은 그대로 유지한다"
+  );
+
+  ["threepigs", "tortoisehare", "wolf"].forEach((id) => {
+    const item = byId.get(id);
+    assert.equal(
+      Engine.isBattleCard(item),
+      true,
+      id + " 카드는 v1에서 바로 대전 가능해야 한다"
+    );
+  });
+
+  const giant = byId.get("beanstalkgiant");
+  assert.equal(giant.unlock, "jack_story");
+  assert.equal(giant.v1, false, "콩나무 거인은 해금·수집만 가능해야 한다");
+  assert.equal(Engine.isBattleCard(giant), false);
+});
+
+test("페르세우스 설명과 실제 v1 대전 상대 풀이 레어도 ±1 계약을 지킨다", () => {
   const data = JSON.parse(
     fs.readFileSync(path.join(__dirname, "..", "cards.json"), "utf8")
   );
@@ -371,9 +400,12 @@ test("페르세우스 설명과 실제 대표 카드 상대 풀이 레어도 ±1
 
   assert.equal(perseus.passive.desc, "약점 ×2를 받지 않는다");
 
-  const featuredCards = featured.map((id) =>
-    data.cards.find((entry) => entry.id === id)
-  );
+  const featuredCards = data.collection
+    .map((id) => data.cards.find((entry) => entry.id === id))
+    .filter(Engine.isBattleCard);
+  assert.equal(featuredCards.length, 19, "v1:false 5장을 뺀 전원이 대전 가능해야 한다");
+  assert.ok(!featuredCards.some((item) => item.id === "beanstalkgiant"));
+
   featuredCards.forEach((player) => {
     const balancedOpponents = Engine.getBalancedEnemyPool(featuredCards, player);
     assert.ok(balancedOpponents.length > 0);
@@ -406,4 +438,6 @@ test("브라우저 스크립트 실행 시 window.CardEngine을 노출한다", (
 
   assert.equal(typeof context.window.CardEngine.createGame, "function");
   assert.equal(typeof context.window.CardEngine.performAction, "function");
+  assert.equal(typeof context.window.CardEngine.isAttackSupported, "function");
+  assert.equal(typeof context.window.CardEngine.isBattleCard, "function");
 });

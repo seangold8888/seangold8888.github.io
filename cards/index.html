@@ -32,7 +32,7 @@
         <p class="hero-description">카드를 골라 별사탕을 모으고, 멋진 기술로 1:1 대결을 펼쳐 보세요.</p>
         <div class="collection-status" aria-live="polite">
           <span class="status-orb">✦</span>
-          <strong id="unlockCount">0 / 6</strong>
+          <strong id="unlockCount">0 / 10</strong>
           <span>카드가 깨어났어요</span>
         </div>
       </div>
@@ -50,11 +50,11 @@
       <aside class="selection-dock" id="selectionDock" aria-live="polite">
         <div class="selected-portrait" id="selectedPortrait" aria-hidden="true">?</div>
         <div class="selected-copy">
-          <span>오늘의 출전 카드</span>
+          <span id="selectedStatus">오늘의 출전 카드</span>
           <strong id="selectedName">카드를 골라 주세요</strong>
         </div>
         <button class="primary-button" id="battleButton" type="button" aria-label="대결 시작" disabled>
-          <span>대결 시작</span><b>⚔️</b>
+          <span id="battleButtonLabel">대결 시작</span><b>⚔️</b>
         </button>
       </aside>
     </section>

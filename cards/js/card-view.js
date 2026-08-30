@@ -72,6 +72,9 @@
       veil.append(el("span", "lock-icon", "🔒"), el("strong", "", "이야기를 들으면 깨어나요"));
       frame.appendChild(veil);
     }
+    if (options.collectionOnly) {
+      frame.appendChild(el("span", "collection-only-badge", "수집 카드 · 대전 준비 중"));
+    }
     return frame;
   }
 
@@ -82,15 +85,18 @@
     const cardEl = el("article", "story-card type-" + card.type);
     cardEl.dataset.cardId = card.id;
     cardEl.setAttribute("role", options.interactive ? "button" : "group");
-    cardEl.setAttribute(
-      "aria-label",
-      card.name + (options.locked ? ", 잠긴 카드" : options.interactive ? ", 선택 가능한 카드" : " 카드")
-    );
+    const stateLabel = options.locked
+      ? ", 잠긴 카드"
+      : options.collectionOnly
+        ? ", 컬렉션 전용 카드, 대전 준비 중"
+        : options.interactive ? ", 선택 가능한 카드" : " 카드";
+    cardEl.setAttribute("aria-label", card.name + stateLabel);
     if (options.interactive) {
       cardEl.tabIndex = 0;
       cardEl.setAttribute("aria-pressed", options.selected ? "true" : "false");
     }
     if (options.locked) cardEl.classList.add("is-locked");
+    if (options.collectionOnly) cardEl.classList.add("is-collection-only");
     if (options.selected) cardEl.classList.add("is-selected");
     if (options.compact) cardEl.classList.add("is-compact");
     if (card.rarity === 3) cardEl.classList.add("is-legendary");
@@ -105,7 +111,10 @@
     crown.append(identity, hp);
 
     const meta = el("div", "card-meta");
-    meta.append(el("span", "type-chip", type.icon + " " + type.label), el("span", "card-story", card.unlock ? "이야기에서 깨어난 카드" : "처음부터 함께하는 카드"));
+    const storyLabel = options.collectionOnly
+      ? "컬렉션 전용 · 대전 준비 중"
+      : card.unlock ? "이야기에서 깨어난 카드" : "처음부터 함께하는 카드";
+    meta.append(el("span", "type-chip", type.icon + " " + type.label), el("span", "card-story", storyLabel));
 
     const hpTrack = el("div", "hp-track");
     const hpFill = el("span", "hp-fill");

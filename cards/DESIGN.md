@@ -83,7 +83,8 @@
 - 카드 해금 판정: `card.unlock === null || localStorage["story_done_" + card.unlock] === "1"`.
 - 같은 도메인(github.io)이라 localStorage 공유됨. 경로 무관.
 - 잠긴 카드는 컬렉션 화면에 실루엣+자물쇠로 표시, 탭하면 "「○○」 이야기를 끝까지 들으면 만날 수 있어!" + /story/ 링크.
-- 현재 해금 가능: cinderella(신데렐라·요정 대모), odyssey_cyclops(오디세우스·폴리페모스).
+- v1 컬렉션은 cards.json의 collection 목록에 적힌 10장이다. 현재 완청 연동은 cinderella(신데렐라·요정 대모), odyssey_cyclops(오디세우스·폴리페모스), threepigs(아기돼지 삼형제), tortoisehare(토끼와 거북), redhood_story(커다란 늑대), jack_story(콩나무 거인).
+- 아기돼지 삼형제·토끼와 거북·커다란 늑대는 해금 즉시 v1 1:1 대전에 출전 가능하다. 콩나무 거인은 해금·수집 대상이지만 v1: false이며, 컬렉션에서 “대전 준비 중”으로 표시하고 선택·대전할 수 없게 한다.
 - 최소 시작 보장: 아무것도 해금 안 됐으면 빨간 모자·콩나무 잭 2장 기본 지급(unlock: null로 지정).
 
 ## 6. UI 원칙 (사용자 확정 사항 — 위반 금지)

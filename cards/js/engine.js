@@ -208,6 +208,11 @@
     return Boolean(SUPPORTED_ATTACK_FX[fx]);
   }
 
+  function isBattleCard(card) {
+    return Boolean(card) && card.v1 !== false &&
+      Array.isArray(card.attacks) && card.attacks.some(isAttackSupported);
+  }
+
   function wishExhausted(state, actor) {
     return (
       isPassiveActive(state, actor, "wish_limit_3") &&
@@ -771,6 +776,8 @@
     performAction: performAction,
     chooseAiAction: chooseAiAction,
     getBalancedEnemyPool: getBalancedEnemyPool,
+    isAttackSupported: isAttackSupported,
+    isBattleCard: isBattleCard,
     isPassiveActive: isPassiveActive,
     isBeneficialPassive: isBeneficialPassive,
   });
