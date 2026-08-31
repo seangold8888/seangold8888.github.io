@@ -34,6 +34,46 @@ function take(state, action, rng) {
   return Engine.performAction(state, action, rng);
 }
 
+function pngMetadata(filePath) {
+  const buffer = fs.readFileSync(filePath);
+  assert.equal(buffer.toString("hex", 0, 8), "89504e470d0a1a0a");
+  return {
+    width: buffer.readUInt32BE(16),
+    height: buffer.readUInt32BE(20),
+    colorType: buffer[25],
+  };
+}
+
+function webpSize(filePath) {
+  const buffer = fs.readFileSync(filePath);
+  assert.equal(buffer.toString("ascii", 0, 4), "RIFF");
+  assert.equal(buffer.toString("ascii", 8, 12), "WEBP");
+  const chunk = buffer.toString("ascii", 12, 16);
+
+  if (chunk === "VP8 ") {
+    assert.equal(buffer.toString("hex", 23, 26), "9d012a");
+    return {
+      width: buffer.readUInt16LE(26) & 0x3fff,
+      height: buffer.readUInt16LE(28) & 0x3fff,
+    };
+  }
+  if (chunk === "VP8L") {
+    assert.equal(buffer[20], 0x2f);
+    const bits = buffer.readUInt32LE(21);
+    return {
+      width: (bits & 0x3fff) + 1,
+      height: ((bits >>> 14) & 0x3fff) + 1,
+    };
+  }
+  if (chunk === "VP8X") {
+    return {
+      width: buffer.readUIntLE(24, 3) + 1,
+      height: buffer.readUIntLE(27, 3) + 1,
+    };
+  }
+  assert.fail("지원하지 않는 WebP 청크: " + chunk);
+}
+
 test("createGame은 플레이어 턴을 시작하며 별사탕을 1개 준다", () => {
   const state = Engine.createGame(card({ id: "p" }), card({ id: "e" }));
 
@@ -357,6 +397,52 @@ test("기존 대표 6장은 v1 기술과 PNG·WebP 원화를 모두 갖춘다", 
     assert.ok(fs.existsSync(path.join(__dirname, "..", "art", id + ".png")));
     assert.ok(fs.existsSync(path.join(__dirname, "..", "art", id + ".webp")));
   });
+});
+
+test("24장 전체 원화·프롬프트·크롭 매핑이 완전하고 1024×1536이다", () => {
+  const cardsRoot = path.join(__dirname, "..");
+  const data = JSON.parse(
+    fs.readFileSync(path.join(cardsRoot, "cards.json"), "utf8")
+  );
+  const promptSource = fs.readFileSync(
+    path.join(cardsRoot, "IMAGE_PROMPTS.md"),
+    "utf8"
+  );
+  const cardViewSource = fs.readFileSync(
+    path.join(cardsRoot, "js", "card-view.js"),
+    "utf8"
+  );
+  const context = { window: {} };
+  context.globalThis = context;
+  vm.runInNewContext(cardViewSource, context);
+
+  const ids = data.cards.map((item) => item.id).sort();
+  const cropRows = Array.from(
+    promptSource.matchAll(/^\| ([a-z0-9]+) \| `\d+% \d+%` \|$/gm),
+    (match) => match[1]
+  ).sort();
+
+  data.cards.forEach((item) => {
+    const png = path.join(cardsRoot, "art", item.id + ".png");
+    const webp = path.join(cardsRoot, "art", item.id + ".webp");
+    assert.deepEqual(pngMetadata(png), {
+      width: 1024,
+      height: 1536,
+      colorType: 2,
+    });
+    assert.deepEqual(webpSize(webp), { width: 1024, height: 1536 });
+    assert.ok(
+      promptSource.includes("- `" + item.id + ".png`:"),
+      item.id + " 카드별 장면 프롬프트가 있어야 한다"
+    );
+  });
+
+  assert.deepEqual(cropRows, ids, "프롬프트 문서의 크롭 행은 24장과 일치해야 한다");
+  assert.deepEqual(
+    Object.keys(context.window.CardView.artPosition).sort(),
+    ids,
+    "렌더러의 크롭 매핑은 24장과 일치해야 한다"
+  );
 });
 
 test("컬렉션 해금 경제는 24장 전체를 노출하고 이야기 극장과 짝이 맞는다", () => {

@@ -145,7 +145,7 @@
   function selectCard(card) {
     if (!isPlayableCard(card)) return;
     selectedCard = card;
-    window.CardAudio.magic();
+    window.CardAudio.select();
     renderCollection();
     const selected = dom.collectionGrid.querySelector('[data-card-id="' + card.id + '"]');
     if (selected) selected.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
@@ -357,8 +357,37 @@
     return { effect: "✦", message: "별빛이 다음 턴을 비춰요.", sound: "star" };
   }
 
-  function playSound(name) {
+  function playSound(name, actor) {
+    const side = game && game.sides && game.sides[actor];
+    if (
+      (name === "hit" || name === "strongHit") &&
+      side &&
+      window.CardAudio.attack
+    ) {
+      window.CardAudio.attack(side.card.type, name === "strongHit");
+      return;
+    }
     if (window.CardAudio[name]) window.CardAudio[name]();
+  }
+
+  function soundForEvents(events, fallback) {
+    const reversed = events.slice().reverse();
+    const find = function (type) {
+      return reversed.find(function (event) { return event.type === type; });
+    };
+    const damage = find("damage");
+
+    if (find("game_over")) return "strongHit";
+    if (find("revive")) return "revive";
+    if (find("attack_missed") || find("attack_evaded")) return null;
+    if (damage) {
+      if (damage.amount <= 0) return "cast";
+      return damage.weakness ? "strongHit" : "hit";
+    }
+    if (find("heal")) return "heal";
+    if (find("coin")) return null;
+    if (find("attack")) return "cast";
+    return fallback === "magic" ? "cast" : fallback;
   }
 
   function otherActor(actor) {
@@ -440,7 +469,7 @@
     void dom.coinButton.offsetWidth;
     dom.coinButton.classList.add("is-flipping");
     dom.coinResult.textContent = "빙글빙글…";
-    window.CardAudio.coin();
+    window.CardAudio.coinSpin();
 
     coinTimer = setTimeout(function () {
       if (pending.session !== battleSession) return;
@@ -449,6 +478,7 @@
       dom.coinButton.classList.add(heads ? "is-heads" : "is-tails");
       face.textContent = heads ? "앞" : "뒤";
       dom.coinResult.textContent = coinCopy(event);
+      window.CardAudio.coinLand();
 
       coinTimer = setTimeout(function () {
         revealCoinEvents(pending, nextGame, events, index + 1);
@@ -508,7 +538,7 @@
     busy = true;
     dom.battleMessage.textContent = description.message;
     setEffect(description.effect);
-    playSound(description.sound);
+    playSound(soundForEvents(game.events || [], description.sound), actor);
     renderBattle({ acting: actor, hit: description.hit });
 
     actionTimer = setTimeout(function () {
@@ -525,7 +555,7 @@
         busy = false;
         dom.battleMessage.textContent = "나의 턴! 기술을 골라 주세요.";
         renderBattle();
-        window.CardAudio.star();
+        window.CardAudio.turn();
       }
     }, 850);
   }

@@ -9,12 +9,30 @@
   };
 
   const ART_POSITION = {
-    cinderella: "54% 38%",
-    fairygodmother: "53% 42%",
+    heracles: "50% 40%",
+    honggildong: "50% 40%",
+    perseus: "50% 40%",
+    jack: "54% 35%",
+    threepigs: "50% 40%",
+    arthur: "50% 40%",
     odysseus: "49% 45%",
-    polyphemus: "50% 25%",
+    cinderella: "54% 38%",
+    tortoisehare: "50% 40%",
     redhood: "47% 45%",
-    jack: "54% 35%"
+    bremen: "50% 40%",
+    pinocchio: "50% 40%",
+    sunwukong: "50% 40%",
+    fairygodmother: "53% 42%",
+    genie: "50% 40%",
+    snowqueen: "50% 40%",
+    witch: "50% 40%",
+    mermaid: "50% 40%",
+    polyphemus: "50% 25%",
+    wolf: "50% 40%",
+    beanstalkgiant: "50% 40%",
+    medusa: "50% 40%",
+    midas: "50% 40%",
+    tiger: "50% 40%"
   };
 
   function el(tag, className, text) {
