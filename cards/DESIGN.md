@@ -193,3 +193,26 @@
 - 루프는 lookahead 스케줄러(setTimeout+currentTime)로 이음새 없이. 탭 백그라운드 전환 시 정지.
 - 음소거 버튼이 BGM까지 포함. BGM만 끄는 작은 토글(♪) 추가 — 오디오북 들으며 카드하는 경우 대비.
 - 검수 기준: 10분 틀어놔도 안 지겨울 것(변주 2개 이상 랜덤 교차), 아이패드 스피커에서 효과음을 안 가릴 것.
+
+## 10. 통합 품질 기준 (2026-08-31 사용자 승인 마스터 프롬프트)
+
+사용자가 확정한 완성 기준. 이후 모든 작업은 이 절을 만족해야 한다.
+원문 요지: "처음 보는 사람이 '진짜 판매되는 카드게임 같다'고 느낄 시각적 완성도 + 3분 안에 다시 하고 싶은 전략성."
+
+- 레퍼런스 해석: 하스스톤=타격감·자원관리·읽히는 전장, 포켓몬=캐릭터 카드 문법·수집. 단 프레임·UI배치·아이콘·로고·색체계·사운드·애니메이션은 복제 금지. 「별빛 이야기 극장」 독자 언어로.
+- 비주얼: 일러스트가 주인공. 프레임 = 별빛 동화책·인형극·보석 결합 독창형. 타입별 실루엣 구분(용기=따뜻한 금속+주황 불꽃 / 지혜=청색 잉크+책장 회오리 / 마법=보라 별가루+빛 고리 / 괴물=짙은 흙빛+묵직한 먼지). 레어도=장식 밀도와 빛, 가독성 우선. 선택 시 입체 기울기+광택 이동. 밤에 봐도 안 무섭게.
+- 사운드: '벅' 금지, 타입별 재질감, 3ms 피크+안전 저역+소프트 클리핑 (§8b·§9c와 동일).
+- UI: iPad 가로·세로+모바일, 터치 60px+, 아이콘 중심, 실루엣 폴백, reduced-motion·음소거.
+- 완료 기준: 24장 정상표시 / 한 판 완주 / 기술·조각·AI·부활·약점·기절 테스트 / iPad 양방향 무결 / 비행기모드 3종 통과 / 콘솔 오류 0 / 미구현 기능 표시 금지.
+
+### 10a. 가드레일 (검수자 클로드 — 위반 시 반려)
+1. **기존 24장 일러스트 재생성 금지.** 이미 검수 통과한 자산. 아래 공통 프롬프트는 신규 카드(예: 봉이 김선달)와 부득이한 교체 승인 건에만 사용.
+2. **§9c 배경음악 포함.** 이 마스터 프롬프트에 BGM이 명시돼 있지 않으나 §9c는 유효한 지시다.
+3. 프레임 디자인 참고: 디자인 캔버스 「금박 고서」안(남색+금박 괘선+명조 이름, 레어도=동/은/금 테) — 같은 방향의 선행 시안. 그대로 쓰라는 게 아니라 출발점.
+4. 한 판 3분·초1 가독 원칙은 어떤 연출보다 우선한다. 연출이 템포를 잡아먹으면 연출을 줄인다.
+
+### 10b. 신규 카드 일러스트 공통 프롬프트 (영문, 이미지 생성용)
+Create an original premium fantasy storybook character illustration for a collectible card game.
+Character: [이름] / Scene and action: [장면] / Expression: [표정] / Signature props: [소품] / Character type: [용기/지혜/마법/괴물]
+Art direction: original cinematic children's fantasy illustration; hand-painted storybook finish with sculpted, readable shapes; spectacular lighting and rich material detail; strong silhouette readable at small card size; energetic diagonal composition; expressive, child-friendly face; clear foreground character and atmospheric background; magical particles matching the character type; premium trading-card quality; exciting and wondrous, never frightening; leave breathing room around the head and main action; no text, numbers, logos, UI, watermark or card frame.
+Avoid: copyrighted character likenesses; recognizable Disney, Pokémon or Hearthstone costume and frame designs; adult glamour styling; horror, exposed teeth, blood, weapons aimed at the viewer; photorealistic adult facial proportions; extra fingers, malformed hands, duplicate props.
