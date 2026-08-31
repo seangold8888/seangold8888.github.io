@@ -13,6 +13,95 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>AVENGERS — JAY &amp; TEO'S MULTIVERSE</title>
+    <script>
+      (() => {
+        if (!("serviceWorker" in navigator)) return;
+        const container = navigator.serviceWorker;
+        const nativeRegister = container.register.bind(container);
+        const rootScriptUrl = new URL("../sw.js", window.location.href).href;
+        const rootScopeUrl = new URL("../", window.location.href).href;
+        const childScriptUrl = new URL("./sw.js", window.location.href).href;
+        const childScopeUrl = new URL("./", window.location.href).href;
+        let migrationPromise = null;
+
+        function waitForRootWorker(registration) {
+          if (registration.active && registration.active.state === "activated") {
+            return Promise.resolve(registration);
+          }
+          return new Promise((resolve, reject) => {
+            const timeoutId = setTimeout(
+              () => reject(new Error("통합 서비스워커 활성화 시간 초과")),
+              12000
+            );
+            const finish = () => {
+              clearTimeout(timeoutId);
+              resolve(registration);
+            };
+            const observe = worker => {
+              if (!worker) return;
+              if (worker.state === "activated") {
+                finish();
+              } else {
+                worker.addEventListener("statechange", () => {
+                  if (worker.state === "activated") finish();
+                });
+              }
+            };
+            registration.addEventListener("updatefound", () => observe(registration.installing));
+            observe(registration.installing);
+            observe(registration.waiting);
+            observe(registration.active);
+          });
+        }
+
+        function migrateToRootWorker() {
+          if (migrationPromise) return migrationPromise;
+          // Keep the legacy controller until the root worker is definitely
+          // active, so a failed install never creates an offline migration gap.
+          migrationPromise = nativeRegister(rootScriptUrl, { scope: rootScopeUrl })
+            .then(waitForRootWorker)
+            .then(rootRegistration => {
+              const registrations = typeof container.getRegistrations === "function"
+                ? container.getRegistrations()
+                : container.getRegistration(childScopeUrl)
+                  .then(registration => registration ? [registration] : []);
+              return registrations
+                .then(items => Promise.all(items
+                  .filter(registration => registration.scope === childScopeUrl)
+                  .map(registration => registration.unregister())))
+                .then(() => rootRegistration);
+            });
+          return migrationPromise;
+        }
+
+        function unifiedRegister(scriptUrl, options) {
+          let resolved;
+          try {
+            resolved = new URL(String(scriptUrl), window.location.href).href;
+          } catch (_) {
+            return nativeRegister(scriptUrl, options);
+          }
+          return resolved === childScriptUrl
+            ? migrateToRootWorker()
+            : nativeRegister(scriptUrl, options);
+        }
+
+        try {
+          Object.defineProperty(container, "register", {
+            configurable: true,
+            value: unifiedRegister,
+          });
+        } catch (_) {
+          container.register = unifiedRegister;
+        }
+
+        window.addEventListener("load", () => {
+          migrateToRootWorker().catch(error => {
+            console.warn("통합 오프라인 모드 등록 실패:", error);
+          });
+        });
+      })();
+    </script>
     <script type="module" crossorigin src="./assets/index-DV2DyMer.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-uRBZKIPW.css">
   </head>

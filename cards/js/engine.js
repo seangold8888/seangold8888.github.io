@@ -44,6 +44,17 @@
     gold_freeze_gain_star: true,
   });
 
+  var SUPPORTED_FRAGMENT_EFFECTS = Object.freeze({
+    guard_zero: true,
+    boost_damage: true,
+    reduce_next_damage: true,
+    gain_stars: true,
+    heal: true,
+    discount_attack: true,
+    oil_coin: true,
+    steal_stars: true,
+  });
+
   function clone(value) {
     return JSON.parse(JSON.stringify(value));
   }
@@ -98,7 +109,34 @@
     return copy;
   }
 
-  function makeSide(actor, card) {
+  function fragmentEffect(fragment) {
+    return fragment && fragment.effect && typeof fragment.effect === "object"
+      ? fragment.effect
+      : null;
+  }
+
+  function normaliseFragment(fragment, index) {
+    if (!fragment || typeof fragment !== "object") {
+      throw new TypeError("이야기의 조각 데이터가 필요합니다.");
+    }
+    var copy = clone(fragment);
+    if (!copy.id) copy.id = "fragment-" + index;
+    if (!copy.name) copy.name = "이야기의 조각";
+    var effect = fragmentEffect(copy);
+    if (!effect || !SUPPORTED_FRAGMENT_EFFECTS[effect.type]) {
+      throw new TypeError(copy.name + " 조각의 효과를 사용할 수 없습니다.");
+    }
+    effect.amount = Math.max(0, Number(effect.amount) || 0);
+    copy.used = false;
+    return copy;
+  }
+
+  function normaliseFragmentHand(fragments) {
+    if (!Array.isArray(fragments)) return [];
+    return fragments.slice(0, 3).map(normaliseFragment);
+  }
+
+  function makeSide(actor, card, fragments) {
     var safeCard = normaliseCard(card);
     return {
       actor: actor,
@@ -108,21 +146,26 @@
       stars: 0,
       attackUses: {},
       wishUses: 0,
+      fragmentHand: normaliseFragmentHand(fragments),
       flags: {
         revived: false,
         firstHitUsed: false,
+        fragmentUsedThisTurn: false,
       },
       status: {
         skipTurns: 0,
         weakenNext: 0,
+        fragmentDamageBoost: 0,
+        fragmentDiscount: 0,
+        fragmentGuardZero: 0,
+        fragmentReduceNext: 0,
+        fragmentOilCoin: 0,
       },
     };
   }
 
-  function createGame(playerCard, enemyCard, rng) {
-    // rng는 API 호환을 위해 받는다. 첫 공격자는 항상 플레이어이며,
-    // 실제 동전 결과는 performAction의 rng로 주입한다.
-    void rng;
+  function createGame(playerCard, enemyCard, options) {
+    options = options && typeof options === "object" ? options : {};
 
     var state = {
       version: 1,
@@ -131,8 +174,8 @@
       phase: "turn_start",
       winner: null,
       sides: {
-        player: makeSide("player", playerCard),
-        enemy: makeSide("enemy", enemyCard),
+        player: makeSide("player", playerCard, options.playerFragments),
+        enemy: makeSide("enemy", enemyCard, options.enemyFragments),
       },
       events: [],
       log: [],
@@ -158,6 +201,9 @@
     var actor = state.turn;
     var side = sideOf(state, actor);
     state.turnNumber += 1;
+    side.flags.fragmentUsedThisTurn = false;
+    side.status.fragmentDamageBoost = 0;
+    side.status.fragmentDiscount = 0;
     side.stars = Math.min(MAX_STARS, side.stars + 1);
     state.phase = "action";
     emit(state, {
@@ -220,17 +266,135 @@
     );
   }
 
+  function effectiveAttackCost(state, actor, attack) {
+    var discount = Math.max(
+      0,
+      Number(sideOf(state, actor).status.fragmentDiscount) || 0
+    );
+    return Math.max(0, (Math.max(0, Number(attack.cost) || 0)) - discount);
+  }
+
+  function canUseFragmentBase(state, actor, fragmentIndex) {
+    if (!state || state.winner || state.phase !== "action" || state.turn !== actor) {
+      return false;
+    }
+    var side = sideOf(state, actor);
+    if (
+      side.flags.fragmentUsedThisTurn ||
+      wishExhausted(state, actor) ||
+      !Number.isInteger(fragmentIndex)
+    ) {
+      return false;
+    }
+    var fragment = side.fragmentHand[fragmentIndex];
+    var effect = fragmentEffect(fragment);
+    return Boolean(
+      fragment &&
+      !fragment.used &&
+      effect &&
+      SUPPORTED_FRAGMENT_EFFECTS[effect.type]
+    );
+  }
+
+  function applyFragmentMutable(state, actor, fragmentIndex) {
+    var side = sideOf(state, actor);
+    var targetActor = other(actor);
+    var target = sideOf(state, targetActor);
+    var fragment = side.fragmentHand[fragmentIndex];
+    var effect = fragmentEffect(fragment);
+    var amount = Math.max(0, Number(effect.amount) || 0);
+
+    fragment.used = true;
+    side.flags.fragmentUsedThisTurn = true;
+    emit(state, {
+      type: "fragment_used",
+      actor: actor,
+      target: targetActor,
+      fragmentIndex: fragmentIndex,
+      fragmentId: fragment.id,
+      fragment: fragment.name,
+      effect: effect.type,
+      amount: amount,
+    });
+
+    if (effect.type === "guard_zero") {
+      side.status.fragmentGuardZero = 1;
+    } else if (effect.type === "boost_damage") {
+      side.status.fragmentDamageBoost += amount;
+    } else if (effect.type === "reduce_next_damage") {
+      side.status.fragmentReduceNext += amount;
+    } else if (effect.type === "gain_stars") {
+      addStars(state, actor, amount, "fragment:" + fragment.id);
+    } else if (effect.type === "heal") {
+      heal(state, actor, amount, "fragment:" + fragment.id);
+    } else if (effect.type === "discount_attack") {
+      side.status.fragmentDiscount += amount;
+    } else if (effect.type === "oil_coin") {
+      target.status.fragmentOilCoin = 1;
+    } else if (effect.type === "steal_stars") {
+      var room = MAX_STARS - side.stars;
+      var stolen = Math.min(amount, room, target.stars);
+      if (stolen > 0) {
+        target.stars -= stolen;
+        side.stars += stolen;
+      }
+      emit(state, {
+        type: "stars_stolen",
+        actor: actor,
+        target: targetActor,
+        amount: stolen,
+        actorStars: side.stars,
+        targetStars: target.stars,
+        reason: "fragment:" + fragment.id,
+      });
+    }
+  }
+
+  function hasAffordableAttack(state, actor) {
+    if (wishExhausted(state, actor)) return false;
+    var side = sideOf(state, actor);
+    return side.card.attacks.some(function (attack) {
+      return isAttackSupported(attack) &&
+        effectiveAttackCost(state, actor, attack) <= side.stars;
+    });
+  }
+
+  function canUseFragment(state, actor, fragmentIndex) {
+    if (!canUseFragmentBase(state, actor, fragmentIndex)) return false;
+    var projected = clone(state);
+    projected.events = [];
+    applyFragmentMutable(projected, actor, fragmentIndex);
+    return hasAffordableAttack(projected, actor);
+  }
+
+  function getAvailableFragmentActions(state) {
+    if (!state || state.winner || state.phase !== "action") return [];
+    var actor = state.turn;
+    var side = sideOf(state, actor);
+    return side.fragmentHand.reduce(function (actions, fragment, fragmentIndex) {
+      if (canUseFragment(state, actor, fragmentIndex)) {
+        actions.push({
+          type: "fragment",
+          fragmentIndex: fragmentIndex,
+          id: fragment.id,
+          name: fragment.name,
+        });
+      }
+      return actions;
+    }, []);
+  }
+
   function getAvailableActions(state) {
     if (!state || state.winner || state.phase !== "action") return [];
 
     var actor = state.turn;
     var side = sideOf(state, actor);
-    var actions = [{ type: "rest" }];
+    var actions = side.flags.fragmentUsedThisTurn ? [] : [{ type: "rest" }];
 
     if (wishExhausted(state, actor)) return actions;
 
     side.card.attacks.forEach(function (attack, attackIndex) {
-      var cost = Math.max(0, Number(attack.cost) || 0);
+      var cost = effectiveAttackCost(state, actor, attack);
       if (!isAttackSupported(attack) || cost > side.stars) return;
       actions.push({
         type: "attack",
@@ -239,6 +403,10 @@
         name: attack.name || "기술",
       });
     });
+
+    if (!side.flags.fragmentUsedThisTurn) {
+      actions = actions.concat(getAvailableFragmentActions(state));
+    }
 
     return actions;
   }
@@ -253,6 +421,27 @@
     if (!Number.isFinite(value)) value = 0.5;
     value = value - Math.floor(value);
     return value;
+  }
+
+  function drawFragments(pool, rng, count) {
+    var wanted = count === undefined ? 3 : Math.max(0, Math.floor(Number(count) || 0));
+    var seen = {};
+    var source = (Array.isArray(pool) ? pool : [])
+      .filter(function (fragment) {
+        if (!fragment || typeof fragment !== "object" || !fragment.id) return false;
+        if (seen[fragment.id]) return false;
+        seen[fragment.id] = true;
+        return true;
+      })
+      .map(clone);
+
+    for (var index = source.length - 1; index > 0; index -= 1) {
+      var swapIndex = Math.floor(randomNumber(rng) * (index + 1));
+      var held = source[index];
+      source[index] = source[swapIndex];
+      source[swapIndex] = held;
+    }
+    return source.slice(0, Math.min(wanted, source.length));
   }
 
   function flipCoin(state, rng, actor, reason) {
@@ -276,6 +465,32 @@
       fx === "coin_skip_next_enemy" ||
       fx === "weaken_next_20" ||
       fx === "gold_freeze_gain_star"
+    );
+  }
+
+  function actionNeedsCoin(state, action) {
+    if (
+      !state ||
+      state.winner ||
+      state.phase !== "action" ||
+      !action ||
+      action.type !== "attack"
+    ) {
+      return false;
+    }
+    var actor = state.turn;
+    var targetActor = other(actor);
+    var attackIndex = Number.isInteger(action.attackIndex)
+      ? action.attackIndex
+      : action.index;
+    var attack = sideOf(state, actor).card.attacks[attackIndex];
+    if (!attack || !isAttackSupported(attack)) return false;
+    var hostile = attackTargetsEnemy(attack);
+    return Boolean(
+      (hostile && sideOf(state, actor).status.fragmentOilCoin > 0) ||
+      isPassiveActive(state, actor, "coin_miss") ||
+      (hostile && isPassiveActive(state, targetActor, "coin_evade")) ||
+      attack.fx === "coin_skip_next_enemy"
     );
   }
 
@@ -323,10 +538,21 @@
       damage += 20;
     }
 
+    var fragmentBoostedBy = 0;
+    if (damage > 0 && attacker.status.fragmentDamageBoost > 0) {
+      fragmentBoostedBy = attacker.status.fragmentDamageBoost;
+      damage += fragmentBoostedBy;
+    }
+
     var weakenedBy = 0;
+    var weakenConsumed = false;
     if (damage > 0 && attacker.status.weakenNext > 0) {
-      weakenedBy = attacker.status.weakenNext;
-      damage = Math.max(0, damage - weakenedBy);
+      var damageBeforeWeaken = damage;
+      weakenConsumed = true;
+      // 약화만 반복해 0 데미지 교착이 생기지 않도록, 원래 피해가 있는
+      // 기술은 최소 10을 남긴다. 10 피해 기술도 약화 1회를 소비한다.
+      damage = Math.max(10, damage - attacker.status.weakenNext);
+      weakenedBy = damageBeforeWeaken - damage;
     }
 
     var weakness = damage > 0 && hasWeakness(state, attackerActor, defenderActor);
@@ -344,6 +570,16 @@
     }
     damage = Math.max(0, damage - reducedBy);
 
+    var fragmentGuarded = false;
+    var fragmentReducedBy = 0;
+    if (damage > 0 && defender.status.fragmentGuardZero > 0) {
+      fragmentGuarded = true;
+      damage = 0;
+    } else if (damage > 0 && defender.status.fragmentReduceNext > 0) {
+      fragmentReducedBy = Math.min(damage, defender.status.fragmentReduceNext);
+      damage = Math.max(0, damage - fragmentReducedBy);
+    }
+
     var firstHitBlocked = false;
     if (
       damage > 0 &&
@@ -359,6 +595,10 @@
       weakness: weakness,
       reducedBy: reducedBy,
       weakenedBy: weakenedBy,
+      weakenConsumed: weakenConsumed,
+      fragmentBoostedBy: fragmentBoostedBy,
+      fragmentGuarded: fragmentGuarded,
+      fragmentReducedBy: fragmentReducedBy,
       firstHitBlocked: firstHitBlocked,
     };
   }
@@ -429,6 +669,8 @@
   function applyDamage(state, attackerActor, defenderActor, result, attack) {
     var defender = sideOf(state, defenderActor);
     if (result.firstHitBlocked) defender.flags.firstHitUsed = true;
+    if (result.fragmentGuarded) defender.status.fragmentGuardZero = 0;
+    if (result.fragmentReducedBy > 0) defender.status.fragmentReduceNext = 0;
 
     defender.hp = Math.max(0, defender.hp - result.damage);
     emit(state, {
@@ -441,8 +683,26 @@
       weakness: result.weakness,
       reducedBy: result.reducedBy,
       weakenedBy: result.weakenedBy,
+      fragmentBoostedBy: result.fragmentBoostedBy,
+      fragmentGuarded: result.fragmentGuarded,
+      fragmentReducedBy: result.fragmentReducedBy,
       firstHitBlocked: result.firstHitBlocked,
     });
+
+    if (result.fragmentGuarded) {
+      emit(state, {
+        type: "fragment_guard",
+        actor: defenderActor,
+        source: attackerActor,
+      });
+    } else if (result.fragmentReducedBy > 0) {
+      emit(state, {
+        type: "fragment_reduce",
+        actor: defenderActor,
+        source: attackerActor,
+        amount: result.fragmentReducedBy,
+      });
+    }
 
     if (result.firstHitBlocked) {
       emit(state, {
@@ -514,7 +774,13 @@
     }
   }
 
+  function clearFragmentTurnEffects(side) {
+    side.status.fragmentDamageBoost = 0;
+    side.status.fragmentDiscount = 0;
+  }
+
   function finishTurn(state, actor) {
+    clearFragmentTurnEffects(sideOf(state, actor));
     applyEndOfTurn(state, actor);
     if (state.winner) return;
 
@@ -540,7 +806,21 @@
       return invalidAction(next, "행동을 선택해 주세요.");
     }
 
+    if (action.type === "fragment") {
+      var selectedFragment = Number.isInteger(action.fragmentIndex)
+        ? action.fragmentIndex
+        : action.index;
+      if (!canUseFragment(next, actor, selectedFragment)) {
+        return invalidAction(next, "지금은 이 이야기의 조각을 사용할 수 없습니다.");
+      }
+      applyFragmentMutable(next, actor, selectedFragment);
+      return next;
+    }
+
     if (action.type === "rest") {
+      if (actorSide.flags.fragmentUsedThisTurn) {
+        return invalidAction(next, "조각을 썼다면 이어서 기술을 사용해야 합니다.");
+      }
       emit(next, { type: "rest", actor: actor, stars: actorSide.stars });
       finishTurn(next, actor);
       return next;
@@ -558,13 +838,37 @@
     }
 
     var attack = actorSide.card.attacks[attackIndex];
-    var cost = Math.max(0, Number(attack.cost) || 0);
     if (!isAttackSupported(attack)) {
       return invalidAction(next, "이 기술은 v1에서 사용할 수 없습니다.");
     }
     if (wishExhausted(next, actor)) {
       return invalidAction(next, "세 가지 소원을 모두 사용했습니다.");
     }
+
+    var hasCompoundFragment =
+      Object.prototype.hasOwnProperty.call(action, "fragmentIndex") &&
+      action.fragmentIndex !== null &&
+      action.fragmentIndex !== undefined;
+    if (hasCompoundFragment) {
+      if (
+        !Number.isInteger(action.fragmentIndex) ||
+        !canUseFragmentBase(next, actor, action.fragmentIndex)
+      ) {
+        return invalidAction(next, "지금은 이 이야기의 조각을 사용할 수 없습니다.");
+      }
+      var projected = clone(next);
+      projected.events = [];
+      applyFragmentMutable(projected, actor, action.fragmentIndex);
+      var projectedSide = sideOf(projected, actor);
+      var projectedCost = effectiveAttackCost(projected, actor, attack);
+      if (projectedSide.stars < projectedCost) {
+        return invalidAction(next, "조각을 써도 별사탕이 부족합니다.");
+      }
+      applyFragmentMutable(next, actor, action.fragmentIndex);
+      actorSide = sideOf(next, actor);
+    }
+
+    var cost = effectiveAttackCost(next, actor, attack);
     if (actorSide.stars < cost) {
       return invalidAction(next, "별사탕이 부족합니다.");
     }
@@ -583,6 +887,23 @@
       cost: cost,
       stars: actorSide.stars,
     });
+
+    if (
+      attackTargetsEnemy(attack) &&
+      actorSide.status.fragmentOilCoin > 0
+    ) {
+      actorSide.status.fragmentOilCoin = 0;
+      if (!flipCoin(next, rng, actor, "fragment_oil")) {
+        emit(next, {
+          type: "attack_missed",
+          actor: actor,
+          target: targetActor,
+          reason: "fragment_oil",
+        });
+        finishTurn(next, actor);
+        return next;
+      }
+    }
 
     if (
       isPassiveActive(next, actor, "coin_miss") &&
@@ -612,11 +933,12 @@
         attackIndex,
         priorUses
       );
-      if (damageResult.weakenedBy > 0) actorSide.status.weakenNext = 0;
+      if (damageResult.weakenConsumed) actorSide.status.weakenNext = 0;
       applyDamage(next, actor, targetActor, damageResult, attack);
     }
 
     applyAttackEffect(next, actor, targetActor, attack, rng);
+    clearFragmentTurnEffects(actorSide);
     checkKnockout(next, targetActor, actor, "attack");
 
     if (!next.winner) finishTurn(next, actor);
@@ -632,6 +954,12 @@
       : { damage: 0, firstHitBlocked: false };
     var expectedDamage = result.damage;
 
+    if (
+      attackTargetsEnemy(attack) &&
+      actorSide.status.fragmentOilCoin > 0
+    ) {
+      expectedDamage *= 0.5;
+    }
     if (isPassiveActive(state, actor, "coin_miss")) expectedDamage *= 0.5;
     if (
       attackTargetsEnemy(attack) &&
@@ -642,7 +970,14 @@
 
     var score = expectedDamage;
     var fx = attack.fx || "";
-    if (result.firstHitBlocked) score = Math.max(score, 1);
+    if (
+      result.firstHitBlocked ||
+      result.fragmentGuarded ||
+      result.fragmentReducedBy > 0
+    ) {
+      // AI도 1회용 방어를 실제 공격으로 벗겨 다음 턴을 진행시킨다.
+      score = Math.max(score, 1);
+    }
     if (fx === "heal_40") {
       score += Math.min(40, actorSide.maxHp - actorSide.hp) * 0.8;
     } else if (fx === "gain_star_1") {
@@ -654,14 +989,15 @@
     } else if (fx === "coin_skip_next_enemy") {
       score += 7.5;
     } else if (fx === "weaken_next_20") {
-      score += 10;
+      // 이미 걸린 약화를 새로 덮는 행동은 추가 가치가 없다.
+      score += target.status.weakenNext > 0 ? 0 : 10;
     } else if (fx === "gold_freeze_gain_star") {
       score += 23;
     }
 
     return {
       attackIndex: attackIndex,
-      cost: Math.max(0, Number(attack.cost) || 0),
+      cost: effectiveAttackCost(state, actor, attack),
       damage: result.damage,
       expectedDamage: expectedDamage,
       score: score,
@@ -701,6 +1037,135 @@
       return { type: "attack", attackIndex: lethal[0].estimate.attackIndex };
     }
 
+    var fragmentPlans = [];
+    if (!actorSide.flags.fragmentUsedThisTurn) {
+      actorSide.fragmentHand.forEach(function (fragment, fragmentIndex) {
+        if (!canUseFragment(state, actor, fragmentIndex)) return;
+        var simulated = clone(state);
+        simulated.events = [];
+        applyFragmentMutable(simulated, actor, fragmentIndex);
+        var simulatedSide = sideOf(simulated, actor);
+        var simulatedTarget = sideOf(simulated, other(actor));
+        var simulatedCandidates = [];
+        simulatedSide.card.attacks.forEach(function (attack, attackIndex) {
+          if (!isAttackSupported(attack)) return;
+          var estimate = estimateAttack(simulated, actor, attack, attackIndex);
+          if (estimate.cost <= simulatedSide.stars) {
+            simulatedCandidates.push({ attack: attack, estimate: estimate });
+          }
+        });
+        simulatedCandidates.sort(function (a, b) {
+          if (b.estimate.score !== a.estimate.score) {
+            return b.estimate.score - a.estimate.score;
+          }
+          return b.estimate.cost - a.estimate.cost;
+        });
+        if (!simulatedCandidates.length) return;
+        fragmentPlans.push({
+          fragmentIndex: fragmentIndex,
+          effect: fragmentEffect(fragment),
+          best: simulatedCandidates[0],
+          lethal: simulatedCandidates.filter(function (candidate) {
+            return candidate.estimate.damage >= simulatedTarget.hp;
+          })[0] || null,
+        });
+      });
+    }
+
+    // 조각 없이 끝낼 수 있을 때는 위에서 이미 반환했다. 조각이 있어야
+    // 마무리가 되는 경우에만 공격 강화나 비용 할인 조각을 쓴다.
+    var fragmentLethal = fragmentPlans
+      .filter(function (plan) {
+        return plan.lethal && (
+          plan.effect.type === "boost_damage" ||
+          plan.effect.type === "discount_attack"
+        );
+      })
+      .sort(function (a, b) {
+        return b.lethal.estimate.score - a.lethal.estimate.score;
+      });
+    if (fragmentLethal.length) {
+      return {
+        type: "attack",
+        attackIndex: fragmentLethal[0].lethal.estimate.attackIndex,
+        fragmentIndex: fragmentLethal[0].fragmentIndex,
+      };
+    }
+
+    function usefulFragmentPlan(plan) {
+      var effect = plan.effect;
+      var amount = Math.max(0, Number(effect.amount) || 0);
+      if (effect.type === "heal") {
+        return amount > 0 && actorSide.hp < actorSide.maxHp;
+      }
+      if (effect.type === "guard_zero") {
+        return actorSide.status.fragmentGuardZero <= 0;
+      }
+      if (effect.type === "reduce_next_damage") {
+        return amount > 0 && actorSide.status.fragmentReduceNext <= 0;
+      }
+      if (effect.type === "oil_coin") {
+        return target.status.fragmentOilCoin <= 0;
+      }
+      if (effect.type === "gain_stars") {
+        return amount > 0 && actorSide.stars < MAX_STARS;
+      }
+      if (effect.type === "steal_stars") {
+        return amount > 0 && actorSide.stars < MAX_STARS && target.stars > 0;
+      }
+      if (effect.type === "boost_damage") {
+        return amount > 0 && plan.best.estimate.damage > 0;
+      }
+      if (effect.type === "discount_attack") {
+        return amount > 0 && plan.best.estimate.cost <
+          Math.max(0, Number(plan.best.attack.cost) || 0);
+      }
+      return false;
+    }
+
+    if (actorSide.hp <= actorSide.maxHp / 2) {
+      var survivalPriority = {
+        heal: 4,
+        guard_zero: 3,
+        reduce_next_damage: 2,
+        oil_coin: 1,
+      };
+      var survival = fragmentPlans
+        .filter(function (plan) {
+          return survivalPriority[plan.effect.type] && usefulFragmentPlan(plan);
+        })
+        .sort(function (a, b) {
+          var priority = survivalPriority[b.effect.type] - survivalPriority[a.effect.type];
+          if (priority !== 0) return priority;
+          return (Number(b.effect.amount) || 0) - (Number(a.effect.amount) || 0);
+        });
+      if (survival.length) {
+        return {
+          type: "attack",
+          attackIndex: survival[0].best.estimate.attackIndex,
+          fragmentIndex: survival[0].fragmentIndex,
+        };
+      }
+    }
+
+    var usefulPlans = fragmentPlans.filter(usefulFragmentPlan);
+    if (typeof rng === "function" && usefulPlans.length) {
+      var fragmentRoll = randomNumber(rng);
+      if (fragmentRoll < 0.3) {
+        var chosenPlan = usefulPlans[
+          Math.min(
+            usefulPlans.length - 1,
+            Math.floor(fragmentRoll / 0.3 * usefulPlans.length)
+          )
+        ];
+        return {
+          type: "attack",
+          attackIndex: chosenPlan.best.estimate.attackIndex,
+          fragmentIndex: chosenPlan.fragmentIndex,
+        };
+      }
+    }
+
     // 체력이 절반 이하일 때 실효 회복량이 있으면 생존을 우선한다.
     var healing = affordable
       .filter(function (candidate) {
@@ -724,6 +1189,11 @@
       return b.estimate.cost - a.estimate.cost;
     });
     var bestNow = affordable[0] || null;
+
+    // 조각을 단독으로 먼저 사용한 상태에서는 반드시 기술로 이어 간다.
+    if (actorSide.flags.fragmentUsedThisTurn && bestNow) {
+      return { type: "attack", attackIndex: bestNow.estimate.attackIndex };
+    }
 
     // 당장 약한 기술을 반복하는 대신, 1~3번 쉬어 큰 기술을 쓸 가치가
     // 같거나 더 높다면 별사탕을 저금한다. 오디세우스가 매 턴 1코스트만
@@ -770,11 +1240,15 @@
   return Object.freeze({
     MAX_STARS: MAX_STARS,
     TYPE_CHART: TYPE_CHART,
+    SUPPORTED_FRAGMENT_EFFECTS: SUPPORTED_FRAGMENT_EFFECTS,
     createGame: createGame,
     beginTurn: beginTurn,
+    drawFragments: drawFragments,
     getAvailableActions: getAvailableActions,
+    getAvailableFragmentActions: getAvailableFragmentActions,
     performAction: performAction,
     chooseAiAction: chooseAiAction,
+    actionNeedsCoin: actionNeedsCoin,
     getBalancedEnemyPool: getBalancedEnemyPool,
     isAttackSupported: isAttackSupported,
     isBattleCard: isBattleCard,

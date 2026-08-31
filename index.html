@@ -14,6 +14,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" type="image/png" href="icon.png">
+<link rel="manifest" href="manifest.json">
 <title>모험 상자</title>
 <style>
   /* 밤하늘 오락실 — 의도된 단일 테마 */
@@ -809,6 +810,18 @@
     }
   });
 })();
+</script>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register(
+        new URL("sw.js", window.location.href),
+        { scope: new URL("./", window.location.href).href }
+      ).catch(function (error) {
+        console.warn("오프라인 준비를 시작하지 못했어요.", error);
+      });
+    });
+  }
 </script>
 </body>
 </html>

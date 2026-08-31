@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="이야기 극장">
 <link rel="apple-touch-icon" href="../icon.png">
 <link rel="icon" type="image/png" href="../icon.png">
+<link rel="manifest" href="../manifest.json">
 <title>이야기 극장</title>
 <style>
   /* 잠들기 전 이불 속 극장 — 의도된 단일 테마 (허브와 같은 밤하늘 계열) */
@@ -74,6 +75,56 @@
     text-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
   }
   .sub { font-size: clamp(14px, 3.2vw, 17px); font-weight: 700; color: var(--cloud); }
+  .offline-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px 14px;
+    padding: 16px;
+    border: 2px solid rgba(255, 217, 61, 0.38);
+    border-radius: 22px;
+    background: rgba(255, 246, 230, 0.1);
+  }
+  .offline-copy { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .offline-copy strong { color: var(--star); font-size: clamp(15px, 3.5vw, 18px); }
+  .offline-copy span, #offlineStatus {
+    color: var(--cloud);
+    font-size: clamp(12px, 2.8vw, 14px);
+    font-weight: 700;
+    line-height: 1.45;
+  }
+  #saveAllAudio {
+    min-width: 132px;
+    min-height: 60px;
+    padding: 10px 16px;
+    border: 3px solid rgba(20, 12, 40, 0.7);
+    border-radius: 18px;
+    background: var(--star);
+    color: var(--ink);
+    box-shadow: 0 5px 0 rgba(10, 6, 24, 0.5);
+    font: inherit;
+    font-weight: 900;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  #saveAllAudio:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 2px 0 rgba(10, 6, 24, 0.5); }
+  #saveAllAudio:focus-visible { outline: 4px solid var(--paper); outline-offset: 3px; }
+  #saveAllAudio:disabled { cursor: wait; opacity: 0.68; }
+  #offlineProgress, #offlineStatus { grid-column: 1 / -1; width: 100%; }
+  #offlineProgress {
+    height: 14px;
+    overflow: hidden;
+    border: 0;
+    border-radius: 999px;
+    accent-color: var(--mint);
+  }
+  #offlineStatus { min-height: 1.45em; }
+  .offline-panel.is-complete { border-color: rgba(107, 203, 119, 0.85); background: rgba(107, 203, 119, 0.13); }
+  .offline-panel.is-error { border-color: rgba(247, 154, 192, 0.88); }
+  @media (max-width: 480px) {
+    .offline-panel { grid-template-columns: 1fr; }
+    #saveAllAudio { width: 100%; }
+  }
   .shelf { display: flex; flex-direction: column; gap: clamp(12px, 2.5vw, 18px); }
   .book {
     display: flex;
@@ -186,6 +237,16 @@
     <h1>이야기 극장 🌙</h1>
     <p class="sub">세계의 옛이야기를 귀로 떠나는 여행</p>
   </header>
+
+  <section class="offline-panel" id="offlinePanel" aria-labelledby="offlineTitle">
+    <div class="offline-copy">
+      <strong id="offlineTitle">여행 전에 이야기 저장</strong>
+      <span>재생한 편은 자동 저장돼요. 모두 저장하면 비행기 모드에서도 들어요.</span>
+    </div>
+    <button id="saveAllAudio" type="button" disabled>📥 모두 저장</button>
+    <progress id="offlineProgress" max="20" value="0" hidden aria-label="이야기 저장 진행률"></progress>
+    <p id="offlineStatus" role="status" aria-live="polite">오프라인 기능을 준비하는 중…</p>
+  </section>
 
   <div class="shelf" id="shelf"></div>
 
@@ -306,8 +367,18 @@ const tCur = document.getElementById("tCur");
 const tDur = document.getElementById("tDur");
 const playBtn = document.getElementById("playBtn");
 const player = document.getElementById("player");
+const offlinePanel = document.getElementById("offlinePanel");
+const saveAllAudio = document.getElementById("saveAllAudio");
+const offlineProgress = document.getElementById("offlineProgress");
+const offlineStatus = document.getElementById("offlineStatus");
 let current = null;
 let seeking = false;
+let workerRegistrationPromise = null;
+let audioSaveRequestId = "";
+let audioSaveChannel = null;
+let audioSaveWatchdog = null;
+const SERVICE_WORKER_READY_TIMEOUT_MS = 12000;
+const AUDIO_SAVE_WATCHDOG_MS = 55000;
 
 function fmt(sec) {
   if (!isFinite(sec)) return "0:00";
@@ -339,6 +410,7 @@ function renderShelf() {
 function tap(ep) {
   if (current && current.id === ep.id) { toggle(); return; }
   current = ep;
+  cachePlayedEpisode(ep);
   player.src = ep.src;
   const saved = parseFloat(store.get("pos_" + ep.id));
   player.currentTime = 0;
@@ -401,6 +473,185 @@ function setMediaSession(ep) {
   navigator.mediaSession.setActionHandler("seekforward", () => { player.currentTime += 10; });
 }
 
+function offlineEpisodes(episodes) {
+  return (episodes || EPISODES).map(ep => ({
+    id: ep.id,
+    title: ep.title,
+    url: new URL(ep.src, window.location.href).href,
+  }));
+}
+
+function setOfflineState(message, kind) {
+  offlineStatus.textContent = message;
+  offlinePanel.classList.toggle("is-error", kind === "error");
+  offlinePanel.classList.toggle("is-complete", kind === "complete");
+}
+
+function withTimeout(promise, timeoutMs, message) {
+  let timeoutId;
+  const timeout = new Promise((resolve, reject) => {
+    timeoutId = setTimeout(() => reject(new Error(message)), timeoutMs);
+  });
+  return Promise.race([Promise.resolve(promise), timeout])
+    .finally(() => clearTimeout(timeoutId));
+}
+
+function registerOfflineWorker() {
+  if (workerRegistrationPromise) return workerRegistrationPromise;
+  if (!("serviceWorker" in navigator)) {
+    saveAllAudio.disabled = true;
+    setOfflineState("이 브라우저에서는 오프라인 저장을 사용할 수 없어요.", "error");
+    return Promise.reject(new Error("Service Worker unavailable"));
+  }
+  const scriptUrl = new URL("../sw.js", window.location.href);
+  const scopeUrl = new URL("../", window.location.href);
+  workerRegistrationPromise = navigator.serviceWorker
+    .getRegistration(scopeUrl.href)
+    .then(registration => registration || navigator.serviceWorker.register(
+      scriptUrl,
+      { scope: scopeUrl.href }
+    ))
+    .then(registration => registration.active
+      ? registration
+      : withTimeout(
+        navigator.serviceWorker.ready,
+        SERVICE_WORKER_READY_TIMEOUT_MS,
+        "오프라인 준비 시간이 초과됐어요."
+      ))
+    .then(registration => {
+      saveAllAudio.disabled = false;
+      return registration;
+    })
+    .catch(error => {
+      workerRegistrationPromise = null;
+      saveAllAudio.disabled = true;
+      const timedOut = /시간|초과/.test(error && error.message || "");
+      setOfflineState(
+        timedOut
+          ? "오프라인 준비가 오래 걸려요. 인터넷 연결 후 페이지를 다시 열어 주세요."
+          : "오프라인 준비에 실패했어요. 인터넷 연결을 확인해 주세요.",
+        "error"
+      );
+      throw error;
+    });
+  return workerRegistrationPromise;
+}
+
+async function sendOfflineMessage(type, requestId, episodes, onMessage) {
+  const registration = await registerOfflineWorker();
+  const worker = registration.active || registration.waiting || registration.installing;
+  if (!worker) throw new Error("활성 서비스 워커가 없어요");
+  const channel = new MessageChannel();
+  channel.port1.onmessage = event => onMessage(event.data || {}, channel.port1);
+  try {
+    worker.postMessage({ type, requestId, episodes: offlineEpisodes(episodes) }, [channel.port2]);
+  } catch (error) {
+    channel.port1.close();
+    throw error;
+  }
+  return channel;
+}
+
+function showAudioCacheStatus() {
+  const requestId = "status-" + Date.now();
+  const timeoutId = setTimeout(() => {
+    setOfflineState("저장 상태를 확인하지 못했어요. 저장 버튼은 그대로 사용할 수 있어요.", "error");
+  }, 10000);
+  sendOfflineMessage("GET_AUDIO_CACHE_STATUS", requestId, EPISODES, (data, port) => {
+    if (data.type !== "AUDIO_CACHE_STATUS" || data.requestId !== requestId) return;
+    clearTimeout(timeoutId);
+    offlineProgress.max = data.total || EPISODES.length;
+    offlineProgress.value = data.saved || 0;
+    offlineProgress.hidden = !(data.saved > 0 && data.saved < data.total);
+    if (data.saved === data.total && data.total > 0) {
+      setOfflineState("✅ 이야기 " + data.total + "편이 모두 저장됐어요.", "complete");
+      saveAllAudio.textContent = "✅ 저장 완료";
+    } else if (data.saved > 0) {
+      setOfflineState("현재 " + data.saved + "/" + data.total + "편이 기기에 저장되어 있어요.");
+    } else {
+      setOfflineState("재생한 이야기는 자동으로 기기에 저장돼요.");
+    }
+    port.close();
+  }).catch(() => clearTimeout(timeoutId));
+}
+
+function cachePlayedEpisode(ep) {
+  registerOfflineWorker().then(registration => {
+    const worker = registration.active || registration.waiting || registration.installing;
+    if (worker) worker.postMessage({
+      type: "CACHE_AUDIO",
+      episodes: offlineEpisodes([ep]),
+    });
+  }).catch(() => {});
+}
+
+function clearAudioSaveWatchdog() {
+  if (audioSaveWatchdog) clearTimeout(audioSaveWatchdog);
+  audioSaveWatchdog = null;
+}
+
+function armAudioSaveWatchdog() {
+  clearAudioSaveWatchdog();
+  audioSaveWatchdog = setTimeout(() => {
+    if (audioSaveChannel) audioSaveChannel.port1.close();
+    audioSaveChannel = null;
+    saveAllAudio.disabled = false;
+    saveAllAudio.textContent = "다시 저장";
+    setOfflineState("저장 응답이 오래 걸려 멈췄어요. 연결을 확인하고 다시 눌러 주세요.", "error");
+  }, AUDIO_SAVE_WATCHDOG_MS);
+}
+
+saveAllAudio.addEventListener("click", () => {
+  audioSaveRequestId = "all-" + Date.now();
+  offlineProgress.hidden = false;
+  offlineProgress.max = EPISODES.length;
+  offlineProgress.value = 0;
+  saveAllAudio.disabled = true;
+  saveAllAudio.textContent = "저장 중…";
+  setOfflineState("0/" + EPISODES.length + "편 · 저장을 시작해요.");
+  if (audioSaveChannel) audioSaveChannel.port1.close();
+  armAudioSaveWatchdog();
+
+  sendOfflineMessage("CACHE_ALL_AUDIO", audioSaveRequestId, EPISODES, (data, port) => {
+    if (data.requestId !== audioSaveRequestId) return;
+    armAudioSaveWatchdog();
+    if (data.type === "AUDIO_CACHE_START" || data.type === "AUDIO_CACHE_PROGRESS") {
+      const total = data.total || EPISODES.length;
+      const saved = Math.min(data.saved || 0, total);
+      offlineProgress.max = total;
+      offlineProgress.value = saved;
+      const title = data.title ? " · " + data.title : "";
+      setOfflineState(saved + "/" + total + "편 저장됨" + title);
+    } else if (data.type === "AUDIO_CACHE_ERROR") {
+      setOfflineState("「" + (data.title || "이야기") + "」 저장에 실패했어요. 계속 시도할게요.", "error");
+    } else if (data.type === "AUDIO_CACHE_COMPLETE") {
+      clearAudioSaveWatchdog();
+      const total = data.total || EPISODES.length;
+      const saved = Math.min(data.saved || 0, total);
+      offlineProgress.max = total;
+      offlineProgress.value = saved;
+      saveAllAudio.disabled = false;
+      if (saved === total) {
+        saveAllAudio.textContent = "✅ 저장 완료";
+        setOfflineState("✅ 이야기 " + total + "편이 모두 저장됐어요. 이제 인터넷 없이도 들어요!", "complete");
+      } else {
+        saveAllAudio.textContent = "다시 저장";
+        setOfflineState((total - saved) + "편을 저장하지 못했어요. 인터넷 연결 후 다시 눌러 주세요.", "error");
+      }
+      port.close();
+      audioSaveChannel = null;
+    }
+  }).then(channel => {
+    audioSaveChannel = channel;
+  }).catch(() => {
+    clearAudioSaveWatchdog();
+    saveAllAudio.disabled = false;
+    saveAllAudio.textContent = "다시 저장";
+    setOfflineState("저장을 시작하지 못했어요. 인터넷 연결을 확인해 주세요.", "error");
+  });
+});
+
+registerOfflineWorker().then(showAudioCacheStatus).catch(() => {});
 renderShelf();
 </script>
 </body>

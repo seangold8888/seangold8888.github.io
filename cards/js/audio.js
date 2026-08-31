@@ -4,6 +4,8 @@
   let context = null;
   let master = null;
   let room = null;
+  let impactBus = null;
+  let impactRoomSend = null;
   let noiseBuffer = null;
   let lastSelectAt = -Infinity;
   let muted = false;
@@ -27,12 +29,27 @@
     return impulse;
   }
 
+  function makeSoftClipCurve(size, drive) {
+    const curve = new Float32Array(size);
+    const normalise = Math.tanh(drive);
+    for (let index = 0; index < size; index += 1) {
+      const input = index * 2 / (size - 1) - 1;
+      curve[index] = Math.tanh(drive * input) / normalise;
+    }
+    return curve;
+  }
+
   function setupGraph(audio) {
     const compressor = audio.createDynamicsCompressor();
     const toneFilter = audio.createBiquadFilter();
     const roomGain = audio.createGain();
+    const impactLow = audio.createBiquadFilter();
+    const impactShaper = audio.createWaveShaper();
+    const impactTrim = audio.createGain();
     master = audio.createGain();
     room = audio.createConvolver();
+    impactBus = audio.createGain();
+    impactRoomSend = audio.createGain();
 
     master.gain.value = 0.56;
     toneFilter.type = "lowpass";
@@ -45,8 +62,18 @@
     compressor.release.value = 0.3;
     room.buffer = makeRoomImpulse(audio);
     roomGain.gain.value = 0.16;
+    impactLow.type = "lowshelf";
+    impactLow.frequency.value = 140;
+    impactLow.gain.value = 4.5;
+    impactShaper.curve = makeSoftClipCurve(2048, 1.7);
+    if ("oversample" in impactShaper) impactShaper.oversample = "2x";
+    impactTrim.gain.value = 0.55;
+    impactRoomSend.gain.value = 0.0001;
 
     room.connect(roomGain).connect(master);
+    impactBus.connect(impactLow).connect(impactShaper).connect(impactTrim);
+    impactTrim.connect(master);
+    impactTrim.connect(impactRoomSend).connect(room);
     master.connect(toneFilter).connect(compressor).connect(audio.destination);
   }
 
@@ -238,6 +265,10 @@
     const audio = ctx();
     if (!audio) return;
     const start = audio.currentTime + (delay || 0);
+    noiseSweepAt(audio, start, from, to, duration, volume, roomAmount);
+  }
+
+  function noiseSweepAt(audio, start, from, to, duration, volume, roomAmount) {
     const source = audio.createBufferSource();
     const filter = audio.createBiquadFilter();
     const gain = audio.createGain();
@@ -254,53 +285,87 @@
     source.stop(start + duration + 0.02);
   }
 
-  function lowPulse(delay, from, to, duration, volume, roomAmount) {
-    if (muted) return;
-    const audio = ctx();
-    if (!audio) return;
-    const start = audio.currentTime + (delay || 0);
-    const oscillator = audio.createOscillator();
-    const gain = audio.createGain();
+  function scheduleImpactRoom(start, strong) {
+    const tailEnd = start + (strong ? 0.36 : 0.18);
+    const roomPeak = strong ? 0.075 : 0.045;
+    impactRoomSend.gain.cancelScheduledValues(start);
+    impactRoomSend.gain.setValueAtTime(0.0001, start);
+    impactRoomSend.gain.setValueAtTime(0.0001, start + 0.045);
+    impactRoomSend.gain.linearRampToValueAtTime(roomPeak, start + 0.075);
+    impactRoomSend.gain.exponentialRampToValueAtTime(0.0001, tailEnd);
+  }
 
-    oscillator.type = "sine";
-    oscillator.frequency.setValueAtTime(from + humanDetune(5), start);
-    oscillator.frequency.exponentialRampToValueAtTime(to, start + duration);
-    shape(gain, start, 0.004, duration, volume);
-    oscillator.connect(gain);
-    connectToMix(audio, gain, roomAmount || 0.04);
-    oscillator.start(start);
-    oscillator.stop(start + duration + 0.02);
+  function impactCore(audio, start, type, strong) {
+    const frequencies = {
+      brave: [108, 72],
+      wise: [100, 66],
+      magic: [96, 64],
+      monster: [92, 60]
+    };
+    const range = frequencies[type] || frequencies.brave;
+    const bodyDuration = strong ? 0.36 : 0.18;
+    const body = audio.createOscillator();
+    const bodyGain = audio.createGain();
+    const crack = audio.createBufferSource();
+    const crackFilter = audio.createBiquadFilter();
+    const crackGain = audio.createGain();
+    const crackDuration = strong ? 0.065 : 0.045;
+
+    body.type = "sine";
+    body.frequency.setValueAtTime(range[0] + humanDetune(3), start);
+    body.frequency.exponentialRampToValueAtTime(range[1], start + bodyDuration);
+    bodyGain.gain.setValueAtTime(0.0001, start);
+    bodyGain.gain.linearRampToValueAtTime(strong ? 0.13 : 0.11, start + 0.0025);
+    bodyGain.gain.exponentialRampToValueAtTime(0.0001, start + bodyDuration);
+    body.connect(bodyGain).connect(impactBus);
+    body.start(start);
+    body.stop(start + bodyDuration + 0.02);
+
+    crack.buffer = getNoise(audio);
+    crackFilter.type = "bandpass";
+    crackFilter.frequency.value = strong ? 1850 : 900;
+    crackFilter.Q.value = strong ? 0.55 : 0.7;
+    crackGain.gain.setValueAtTime(0.0001, start);
+    crackGain.gain.linearRampToValueAtTime(strong ? 0.13 : 0.075, start + 0.002);
+    crackGain.gain.exponentialRampToValueAtTime(0.0001, start + crackDuration);
+    crack.connect(crackFilter).connect(crackGain).connect(impactBus);
+    crack.start(start);
+    crack.stop(start + crackDuration + 0.02);
+
+    scheduleImpactRoom(start, strong);
   }
 
   function attackSound(type, strong) {
-    const weight = strong ? 1.16 : 1;
+    if (muted) return;
+    const audio = ctx();
+    if (!audio) return;
+    const start = audio.currentTime + 0.012;
+    const weight = strong ? 1.08 : 1;
+    impactCore(audio, start, type, strong);
 
     if (type === "magic") {
-      noiseSweep(0, 680, 2900, 0.24, 0.017 * weight, 0.2);
-      lowPulse(0.035, 270, 138, 0.15, 0.052 * weight, 0.08);
+      noiseSweepAt(audio, start, 680, 2900, 0.24, 0.014 * weight, 0.03);
       bell(strong ? 783.99 : 659.25, 0.055, {
-        volume: 0.017 * weight,
+        volume: 0.015 * weight,
         duration: 0.4,
-        room: 0.24
+        room: 0.1
       });
       return;
     }
 
     if (type === "wise") {
-      noiseSweep(0, 2400, 920, 0.11, 0.021 * weight, 0.06);
-      pluck(392, 0.018, { volume: 0.042 * weight, duration: 0.26, room: 0.12 });
-      pluck(783.99, 0.052, { volume: 0.021 * weight, duration: 0.22, room: 0.14 });
+      noiseSweepAt(audio, start, 2400, 920, 0.11, 0.018 * weight, 0.02);
+      pluck(392, 0.018, { volume: 0.036 * weight, duration: 0.26, room: 0.08 });
+      pluck(783.99, 0.052, { volume: 0.018 * weight, duration: 0.22, room: 0.1 });
       return;
     }
 
     if (type === "monster") {
-      lowPulse(0, 112, 54, 0.23, 0.105 * weight, 0.045);
-      noiseSweep(0.008, 620, 260, 0.16, 0.034 * weight, 0.035);
+      noiseSweepAt(audio, start, 620, 260, 0.16, 0.026 * weight, 0.02);
       return;
     }
 
-    noiseSweep(0, 3400, 850, 0.13, 0.032 * weight, 0.05);
-    lowPulse(0.042, 190, 104, 0.13, 0.068 * weight, 0.045);
+    noiseSweepAt(audio, start, 3400, 850, 0.13, 0.024 * weight, 0.02);
     bell(880, 0.045, {
       volume: 0.008 * weight,
       duration: 0.19,

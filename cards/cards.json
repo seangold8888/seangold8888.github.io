@@ -48,6 +48,89 @@
       "weakTo": null
     }
   },
+  "fragments": [
+    {
+      "id": "glass_slipper",
+      "name": "유리 구두",
+      "emoji": "👠",
+      "unlock": "cinderella",
+      "kind": "defense",
+      "desc": "다음 공격 피해를 0으로 막아요",
+      "effect": { "type": "guard_zero", "amount": 1 }
+    },
+    {
+      "id": "pumpkin_carriage",
+      "name": "호박 마차",
+      "emoji": "🎃",
+      "unlock": "cinderella",
+      "kind": "boost",
+      "desc": "이번 기술 데미지 +20",
+      "effect": { "type": "boost_damage", "amount": 20 }
+    },
+    {
+      "id": "sheepskin_cloak",
+      "name": "양털 망토",
+      "emoji": "🐑",
+      "unlock": "odyssey_cyclops",
+      "kind": "defense",
+      "desc": "다음 공격 데미지 -20",
+      "effect": { "type": "reduce_next_damage", "amount": 20 }
+    },
+    {
+      "id": "brick",
+      "name": "벽돌 한 장",
+      "emoji": "🧱",
+      "unlock": "threepigs",
+      "kind": "defense",
+      "desc": "다음 공격 데미지 -30",
+      "effect": { "type": "reduce_next_damage", "amount": 30 }
+    },
+    {
+      "id": "rice_cake",
+      "name": "떡 하나",
+      "emoji": "🍡",
+      "unlock": "sunmoon",
+      "kind": "resource",
+      "desc": "별사탕을 2개 얻어요",
+      "effect": { "type": "gain_stars", "amount": 2 }
+    },
+    {
+      "id": "golden_goose_egg",
+      "name": "황금 거위 알",
+      "emoji": "🥚",
+      "unlock": "jack_story",
+      "kind": "heal",
+      "desc": "HP를 30 회복해요",
+      "effect": { "type": "heal", "amount": 30 }
+    },
+    {
+      "id": "ruyi_shard",
+      "name": "여의봉 조각",
+      "emoji": "🪄",
+      "unlock": "sunwukong",
+      "kind": "boost",
+      "desc": "이번 기술 비용 -1",
+      "effect": { "type": "discount_attack", "amount": 1 }
+    },
+    {
+      "id": "sesame_oil",
+      "name": "참기름",
+      "emoji": "🫙",
+      "unlock": "sunmoon",
+      "kind": "control",
+      "desc": "상대 다음 기술은 앞면이어야 성공",
+      "effect": { "type": "oil_coin", "amount": 1 }
+    },
+    {
+      "id": "daedong_water",
+      "name": "대동강 물 한 바가지",
+      "emoji": "💧",
+      "unlock": "bongi",
+      "kind": "resource",
+      "desc": "상대 별사탕 1개를 가져와요",
+      "effect": { "type": "steal_stars", "amount": 1 }
+    }
+  ],
   "cards": [
     {
       "id": "heracles",
@@ -100,7 +183,7 @@
           "cost": 1,
           "dmg": 0,
           "fx": "weaken_next_20",
-          "desc": "상대의 다음 기술 데미지 -20"
+          "desc": "다음 기술 피해를 최대 20 줄여요 (최소 10)"
         },
         {
           "name": "의적의 화살",
@@ -503,7 +586,7 @@
           "cost": 1,
           "dmg": 0,
           "fx": "weaken_next_20",
-          "desc": "상대의 다음 기술 데미지 -20"
+          "desc": "다음 기술 피해를 최대 20 줄여요 (최소 10)"
         },
         {
           "name": "소원 펑!",
@@ -602,7 +685,7 @@
           "cost": 2,
           "dmg": 0,
           "fx": "weaken_next_20",
-          "desc": "상대의 다음 기술 데미지 -20"
+          "desc": "다음 기술 피해를 최대 20 줄여요 (최소 10)"
         }
       ],
       "unlock": "mermaid",
@@ -659,7 +742,7 @@
           "cost": 1,
           "dmg": 0,
           "fx": "weaken_next_20",
-          "desc": "상대의 다음 기술 데미지 -20"
+          "desc": "다음 기술 피해를 최대 20 줄여요 (최소 10)"
         },
         {
           "name": "후― 불어 날리기",
