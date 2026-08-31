@@ -40,6 +40,9 @@
   let impactTimer = 0;
   let techniqueImpactTimer = 0;
   let techniquePoolCursor = 0;
+  let combatParticleFrame = 0;
+  let combatParticleContext = null;
+  let combatParticleMetrics = { width: 0, height: 0, dpr: 1 };
   let battleSession = 0;
   let pendingCoinAction = null;
   let unlockSnapshot = "";
@@ -57,7 +60,8 @@
       "battleButton", "battleButtonLabel",
       "muteButton", "musicButton", "leaveBattleButton", "turnOwner", "turnNumber",
       "battleStars", "arena", "enemyCardSlot", "playerCardSlot", "battleMessage",
-      "effectBurst", "techniqueFxLayer", "actionList", "weaknessHint", "lockedDialog",
+      "effectBurst", "combatParticleCanvas", "techniqueFxLayer", "actionList",
+      "weaknessHint", "lockedDialog",
       "lockedArt", "lockedTitle", "lockedDescription", "resultDialog",
       "resultKicker", "resultTitle", "resultText", "rematchButton",
       "resultCollectionButton", "coinDialog", "coinTitle", "coinInstruction",
@@ -265,6 +269,7 @@
     if (dom.techniqueFxLayer) {
       Array.from(dom.techniqueFxLayer.children).forEach(resetTechniqueNode);
     }
+    resetCombatParticleStage();
     pendingCoinAction = null;
     selectedFragmentIndex = null;
     if (dom.coinDialog && dom.coinDialog.open) dom.coinDialog.close();
@@ -313,22 +318,6 @@
 
     if (visual.impact) {
       layer.appendChild(createFxPart("fx-hit-flash"));
-    }
-
-    if (attackType) {
-      const coreGlyph = attackType === "wise"
-        ? "➤"
-        : attackType === "magic" ? "✦" : "";
-      const particleGlyph = attackType === "wise"
-        ? "▱"
-        : attackType === "magic" ? "✦" : attackType === "brave" ? "◆" : "";
-      layer.append(
-        createFxPart("fx-core", coreGlyph),
-        createFxPart("fx-trail"),
-        createFxPart("fx-particle fx-particle-a", particleGlyph),
-        createFxPart("fx-particle fx-particle-b", particleGlyph),
-        createFxPart("fx-particle fx-particle-c", particleGlyph)
-      );
     }
 
     if (visual.damage > 0) {
@@ -453,6 +442,112 @@
     aura: Object.freeze({ impactAtMs: 160, totalMs: 450 }),
     debuff: Object.freeze({ impactAtMs: 220, totalMs: 500 })
   });
+  const COMBAT_PARTICLE_CONFIG = Object.freeze({
+    capacity: 120,
+    dprCap: 1.5,
+    bigMultiplier: 1.4
+  });
+  const FX_PALETTES = Object.freeze({
+    brave: Object.freeze({
+      hot: "#fff2bd",
+      primary: "#ffc04f",
+      secondary: "#ff6036",
+      shadow: "#8d2e22"
+    }),
+    wise: Object.freeze({
+      hot: "#e6fbff",
+      primary: "#62dfff",
+      secondary: "#386cff",
+      shadow: "#183d88"
+    }),
+    magic: Object.freeze({
+      hot: "#fff0ff",
+      primary: "#e6a2ff",
+      secondary: "#7850ff",
+      shadow: "#4b2787"
+    }),
+    monster: Object.freeze({
+      hot: "#f5dfb4",
+      primary: "#d5a86f",
+      secondary: "#8d5b37",
+      shadow: "#4e352b"
+    })
+  });
+  const PARTICLE_RECIPES = Object.freeze({
+    projectile: Object.freeze({
+      motion: "quadratic-arc",
+      shape: "spark",
+      blend: "lighter",
+      launchCount: 7,
+      impactCount: 18,
+      lifeMs: 360
+    }),
+    summon: Object.freeze({
+      motion: "portal-dash",
+      shape: "shard",
+      blend: "lighter",
+      launchCount: 12,
+      impactCount: 16,
+      lifeMs: 420
+    }),
+    strike: Object.freeze({
+      motion: "cross-slash",
+      shape: "streak",
+      blend: "lighter",
+      launchCount: 5,
+      impactCount: 20,
+      lifeMs: 300
+    }),
+    burst: Object.freeze({
+      motion: "seal-collapse",
+      shape: "shard",
+      blend: "lighter",
+      launchCount: 8,
+      impactCount: 28,
+      lifeMs: 430
+    }),
+    aura: Object.freeze({
+      motion: "rising-ribbon",
+      shape: "mote",
+      blend: "lighter",
+      launchCount: 18,
+      impactCount: 8,
+      lifeMs: 520
+    }),
+    debuff: Object.freeze({
+      motion: "ink-clamp",
+      shape: "dust",
+      blend: "source-over",
+      launchCount: 14,
+      impactCount: 12,
+      lifeMs: 460
+    })
+  });
+  const combatParticles = Array.from(
+    { length: COMBAT_PARTICLE_CONFIG.capacity },
+    function () {
+      return {
+        active: false,
+        x: 0,
+        y: 0,
+        vx: 0,
+        vy: 0,
+        age: 0,
+        life: 1,
+        size: 1,
+        color: "#fff",
+        shape: "mote",
+        gravity: 0,
+        drag: 1,
+        rotation: 0,
+        spin: 0,
+        blend: "lighter"
+      };
+    }
+  );
+  const combatJourneys = [];
+  let combatParticleCursor = 0;
+  let combatParticleLastAt = 0;
 
   function prefersReducedMotion() {
     return Boolean(
@@ -519,19 +614,539 @@
     };
   }
 
+  function particleRecipeForPlan(plan, reducedMotion) {
+    const source = PARTICLE_RECIPES[plan && plan.kind] || PARTICLE_RECIPES.burst;
+    const reduced = Boolean(reducedMotion);
+    const noContact = plan && ["miss", "evade", "support"].includes(plan.outcome);
+    const multiplier = plan && plan.big ? COMBAT_PARTICLE_CONFIG.bigMultiplier : 1;
+    const launchCount = reduced ? 0 : Math.round(source.launchCount * multiplier);
+    const impactCount = reduced || noContact
+      ? 0
+      : Math.round(source.impactCount * multiplier);
+    return {
+      motion: source.motion,
+      shape: source.shape,
+      blend: source.blend,
+      launchCount: launchCount,
+      impactCount: impactCount,
+      total: Math.min(
+        COMBAT_PARTICLE_CONFIG.capacity,
+        launchCount + impactCount
+      ),
+      lifeMs: source.lifeMs
+    };
+  }
+
+  function fxClock() {
+    return window.performance && typeof window.performance.now === "function"
+      ? window.performance.now()
+      : Date.now();
+  }
+
+  function getCombatParticleContext() {
+    if (!dom.combatParticleCanvas) return null;
+    if (!combatParticleContext) {
+      combatParticleContext = dom.combatParticleCanvas.getContext("2d", {
+        alpha: true,
+        desynchronized: true
+      });
+    }
+    return combatParticleContext;
+  }
+
+  function resizeCombatParticleCanvas() {
+    const context = getCombatParticleContext();
+    if (!context) return null;
+    const rect = dom.combatParticleCanvas.getBoundingClientRect();
+    const width = Math.max(1, Math.round(rect.width));
+    const height = Math.max(1, Math.round(rect.height));
+    const dpr = Math.min(
+      Math.max(1, Number(window.devicePixelRatio) || 1),
+      COMBAT_PARTICLE_CONFIG.dprCap
+    );
+    const physicalWidth = Math.round(width * dpr);
+    const physicalHeight = Math.round(height * dpr);
+    if (
+      dom.combatParticleCanvas.width !== physicalWidth ||
+      dom.combatParticleCanvas.height !== physicalHeight
+    ) {
+      dom.combatParticleCanvas.width = physicalWidth;
+      dom.combatParticleCanvas.height = physicalHeight;
+      combatParticleMetrics = { width: width, height: height, dpr: dpr };
+      context.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    return context;
+  }
+
+  function clearCombatParticleCanvas() {
+    const context = getCombatParticleContext();
+    if (!context) return;
+    context.save();
+    context.setTransform(1, 0, 0, 1, 0, 0);
+    context.clearRect(
+      0,
+      0,
+      dom.combatParticleCanvas.width,
+      dom.combatParticleCanvas.height
+    );
+    context.restore();
+  }
+
+  function cancelCombatParticleFrame() {
+    if (!combatParticleFrame) return;
+    if (typeof window.cancelAnimationFrame === "function") {
+      window.cancelAnimationFrame(combatParticleFrame);
+    } else {
+      clearTimeout(combatParticleFrame);
+    }
+    combatParticleFrame = 0;
+  }
+
+  function resetCombatParticleStage() {
+    cancelCombatParticleFrame();
+    combatJourneys.length = 0;
+    combatParticles.forEach(function (particle) {
+      particle.active = false;
+    });
+    combatParticleLastAt = 0;
+    clearCombatParticleCanvas();
+  }
+
+  function claimCombatParticle() {
+    for (let offset = 0; offset < combatParticles.length; offset += 1) {
+      const index = (combatParticleCursor + offset) % combatParticles.length;
+      if (!combatParticles[index].active) {
+        combatParticleCursor = (index + 1) % combatParticles.length;
+        return combatParticles[index];
+      }
+    }
+    const fallback = combatParticles[combatParticleCursor];
+    combatParticleCursor = (combatParticleCursor + 1) % combatParticles.length;
+    return fallback;
+  }
+
+  function emitCombatParticle(
+    x,
+    y,
+    vx,
+    vy,
+    life,
+    size,
+    color,
+    shape,
+    gravity,
+    drag,
+    spin,
+    blend
+  ) {
+    const particle = claimCombatParticle();
+    particle.active = true;
+    particle.x = x;
+    particle.y = y;
+    particle.vx = vx;
+    particle.vy = vy;
+    particle.age = 0;
+    particle.life = Math.max(120, life);
+    particle.size = size;
+    particle.color = color;
+    particle.shape = shape;
+    particle.gravity = gravity;
+    particle.drag = drag;
+    particle.rotation = Math.random() * Math.PI * 2;
+    particle.spin = spin;
+    particle.blend = blend;
+  }
+
+  function drawParticleShape(context, particle, alpha) {
+    const size = particle.size;
+    context.save();
+    context.globalCompositeOperation = particle.blend;
+    context.globalAlpha = alpha;
+    context.translate(particle.x, particle.y);
+    context.rotate(particle.rotation);
+    context.fillStyle = particle.color;
+    context.strokeStyle = particle.color;
+    context.lineCap = "round";
+
+    if (particle.shape === "spark") {
+      context.beginPath();
+      context.moveTo(0, -size * 1.8);
+      context.lineTo(size * 0.38, -size * 0.38);
+      context.lineTo(size * 1.8, 0);
+      context.lineTo(size * 0.38, size * 0.38);
+      context.lineTo(0, size * 1.8);
+      context.lineTo(-size * 0.38, size * 0.38);
+      context.lineTo(-size * 1.8, 0);
+      context.lineTo(-size * 0.38, -size * 0.38);
+      context.closePath();
+      context.fill();
+    } else if (particle.shape === "shard") {
+      context.beginPath();
+      context.moveTo(size * 1.9, 0);
+      context.lineTo(-size * 0.75, size * 0.48);
+      context.lineTo(-size * 0.45, -size * 0.62);
+      context.closePath();
+      context.fill();
+    } else if (particle.shape === "streak") {
+      context.lineWidth = Math.max(1, size * 0.42);
+      context.beginPath();
+      context.moveTo(-size * 2.2, 0);
+      context.lineTo(size * 1.5, 0);
+      context.stroke();
+    } else {
+      context.beginPath();
+      context.arc(0, 0, size, 0, Math.PI * 2);
+      context.fill();
+    }
+    context.restore();
+  }
+
+  function traceQuadratic(context, points, from, to) {
+    const steps = 10;
+    for (let index = 0; index <= steps; index += 1) {
+      const t = from + (to - from) * index / steps;
+      const inverse = 1 - t;
+      const x = inverse * inverse * points.startX +
+        2 * inverse * t * points.midX +
+        t * t * points.endX;
+      const y = inverse * inverse * points.startY +
+        2 * inverse * t * points.midY +
+        t * t * points.endY;
+      if (index === 0) context.moveTo(x, y);
+      else context.lineTo(x, y);
+    }
+  }
+
+  function strokeQuadraticRibbon(context, points, progress, palette) {
+    const start = Math.max(0, progress - 0.36);
+    [
+      { width: 16, color: palette.secondary, alpha: 0.13 },
+      { width: 7, color: palette.primary, alpha: 0.48 },
+      { width: 2.2, color: palette.hot, alpha: 0.95 }
+    ].forEach(function (layer) {
+      context.beginPath();
+      traceQuadratic(context, points, start, progress);
+      context.strokeStyle = layer.color;
+      context.globalAlpha = layer.alpha * Math.min(1, progress * 5);
+      context.lineWidth = layer.width;
+      context.lineCap = "round";
+      context.stroke();
+    });
+  }
+
+  function drawJourneyPrelude(context, journey, now) {
+    const plan = journey.plan;
+    const points = journey.points;
+    const palette = FX_PALETTES[plan.type] || FX_PALETTES.magic;
+    const elapsed = Math.max(0, now - journey.startedAt);
+    const impactDuration = Math.max(1, plan.impactAtMs);
+    const progress = Math.min(1, elapsed / impactDuration);
+    const pulse = 0.72 + Math.sin(elapsed * 0.028) * 0.18;
+    context.save();
+    context.globalCompositeOperation = plan.type === "monster"
+      ? "source-over"
+      : "lighter";
+
+    if (plan.kind === "projectile") {
+      strokeQuadraticRibbon(context, points, progress, palette);
+      if (elapsed - journey.lastEmitAt > 34 && progress < 1) {
+        const inverse = 1 - progress;
+        const x = inverse * inverse * points.startX +
+          2 * inverse * progress * points.midX +
+          progress * progress * points.endX;
+        const y = inverse * inverse * points.startY +
+          2 * inverse * progress * points.midY +
+          progress * progress * points.endY;
+        emitCombatParticle(
+          x,
+          y,
+          (Math.random() - 0.5) * 0.025,
+          (Math.random() - 0.5) * 0.02,
+          260,
+          1.8 + Math.random() * 2,
+          Math.random() > 0.45 ? palette.primary : palette.hot,
+          "mote",
+          -0.00001,
+          0.988,
+          0.004,
+          "lighter"
+        );
+        journey.lastEmitAt = elapsed;
+      }
+    } else if (plan.kind === "summon") {
+      const portalProgress = Math.min(1, elapsed / 180);
+      context.lineCap = "round";
+      [0, Math.PI].forEach(function (offset, index) {
+        context.beginPath();
+        context.ellipse(
+          points.startX,
+          points.startY + 10,
+          34 + index * 8,
+          12 + index * 3,
+          elapsed * (index ? -0.0025 : 0.003),
+          offset + 0.2,
+          offset + Math.PI * 0.78
+        );
+        context.strokeStyle = index ? palette.primary : palette.hot;
+        context.lineWidth = index ? 3 : 1.5;
+        context.globalAlpha = (1 - Math.max(0, progress - 0.58)) *
+          portalProgress * 0.76;
+        context.stroke();
+      });
+      if (progress > 0.35) {
+        const dash = (progress - 0.35) / 0.65;
+        context.beginPath();
+        context.moveTo(
+          points.startX + (points.endX - points.startX) * Math.max(0, dash - 0.32),
+          points.startY + (points.endY - points.startY) * Math.max(0, dash - 0.32)
+        );
+        context.lineTo(
+          points.startX + (points.endX - points.startX) * dash,
+          points.startY + (points.endY - points.startY) * dash
+        );
+        context.strokeStyle = palette.primary;
+        context.globalAlpha = 0.55;
+        context.lineWidth = 7;
+        context.stroke();
+      }
+    } else if (plan.kind === "strike") {
+      const draw = Math.max(0, Math.min(1, progress * 1.5 - 0.18));
+      context.lineCap = "round";
+      [-1, 1].forEach(function (direction, index) {
+        context.beginPath();
+        context.moveTo(
+          points.endX - 78 * draw,
+          points.endY + direction * 44 * draw
+        );
+        context.quadraticCurveTo(
+          points.endX,
+          points.endY - direction * 24,
+          points.endX + 72 * draw,
+          points.endY - direction * 42 * draw
+        );
+        context.strokeStyle = index ? palette.primary : palette.hot;
+        context.globalAlpha = draw * (index ? 0.46 : 0.92);
+        context.lineWidth = index ? 9 : 2.4;
+        context.stroke();
+      });
+    } else if (plan.kind === "burst") {
+      [1, 1.35, 1.72].forEach(function (scale, index) {
+        context.beginPath();
+        context.arc(
+          points.endX,
+          points.endY,
+          (54 - progress * 31) * scale,
+          elapsed * 0.0025 + index * 1.5,
+          elapsed * 0.0025 + index * 1.5 + Math.PI * 1.2
+        );
+        context.strokeStyle = index === 1 ? palette.hot : palette.primary;
+        context.globalAlpha = progress * (0.58 - index * 0.1);
+        context.lineWidth = index === 1 ? 2 : 4;
+        context.stroke();
+      });
+    } else if (plan.kind === "aura") {
+      context.beginPath();
+      context.ellipse(
+        points.endX,
+        points.endY + 24,
+        56 * pulse,
+        15 * pulse,
+        0,
+        0,
+        Math.PI * 2
+      );
+      context.strokeStyle = palette.primary;
+      context.globalAlpha = 0.62 * (1 - progress * 0.36);
+      context.lineWidth = 3;
+      context.stroke();
+      context.beginPath();
+      context.moveTo(points.endX - 18, points.endY + 25);
+      context.bezierCurveTo(
+        points.endX - 38,
+        points.endY - 15,
+        points.endX + 28,
+        points.endY - 52,
+        points.endX + 4,
+        points.endY - 92
+      );
+      context.strokeStyle = palette.hot;
+      context.globalAlpha = 0.34 + progress * 0.22;
+      context.lineWidth = 13;
+      context.stroke();
+    } else {
+      [0, 1, 2].forEach(function (index) {
+        const radius = 56 - progress * 19 + index * 8;
+        context.beginPath();
+        context.arc(
+          points.endX,
+          points.endY,
+          radius,
+          -Math.PI * 0.82 + index * 1.7,
+          Math.PI * 0.18 + index * 1.7
+        );
+        context.strokeStyle = index === 1 ? palette.hot : palette.secondary;
+        context.globalAlpha = progress * (0.5 - index * 0.08);
+        context.lineWidth = index === 1 ? 2 : 5;
+        context.stroke();
+      });
+    }
+    context.restore();
+  }
+
+  function combatParticleTick(now) {
+    combatParticleFrame = 0;
+    const context = getCombatParticleContext();
+    if (!context) return;
+    const previous = combatParticleLastAt || now;
+    const delta = Math.min(34, Math.max(8, now - previous));
+    combatParticleLastAt = now;
+    clearCombatParticleCanvas();
+    let active = false;
+
+    for (let index = combatJourneys.length - 1; index >= 0; index -= 1) {
+      const journey = combatJourneys[index];
+      if (journey.cancelled || now - journey.startedAt > journey.plan.totalMs) {
+        combatJourneys.splice(index, 1);
+      } else {
+        drawJourneyPrelude(context, journey, now);
+        active = true;
+      }
+    }
+
+    combatParticles.forEach(function (particle) {
+      if (!particle.active) return;
+      particle.age += delta;
+      if (particle.age >= particle.life) {
+        particle.active = false;
+        return;
+      }
+      const frameScale = delta / 16.667;
+      particle.vx *= Math.pow(particle.drag, frameScale);
+      particle.vy = particle.vy * Math.pow(particle.drag, frameScale) +
+        particle.gravity * delta;
+      particle.x += particle.vx * delta;
+      particle.y += particle.vy * delta;
+      particle.rotation += particle.spin * delta;
+      const progress = particle.age / particle.life;
+      const alpha = Math.sin(Math.min(1, progress) * Math.PI) *
+        (particle.shape === "dust" ? 0.48 : 0.9);
+      drawParticleShape(context, particle, alpha);
+      active = true;
+    });
+
+    context.globalAlpha = 1;
+    context.globalCompositeOperation = "source-over";
+    if (active) scheduleCombatParticleFrame();
+    else combatParticleLastAt = 0;
+  }
+
+  function scheduleCombatParticleFrame() {
+    if (combatParticleFrame || prefersReducedMotion() || document.hidden) return;
+    const requestFrame = typeof window.requestAnimationFrame === "function"
+      ? window.requestAnimationFrame.bind(window)
+      : function (callback) {
+        return setTimeout(function () { callback(fxClock()); }, 16);
+      };
+    combatParticleFrame = requestFrame(combatParticleTick);
+  }
+
+  function registerCombatJourney(plan, points) {
+    if (!plan || prefersReducedMotion() || plan.totalMs <= 20) return null;
+    if (!resizeCombatParticleCanvas()) return null;
+    const recipe = particleRecipeForPlan(plan, false);
+    const journey = {
+      plan: plan,
+      points: points,
+      recipe: recipe,
+      startedAt: fxClock(),
+      lastEmitAt: -Infinity,
+      cancelled: false
+    };
+    combatJourneys.push(journey);
+    const palette = FX_PALETTES[plan.type] || FX_PALETTES.magic;
+    for (let index = 0; index < recipe.launchCount; index += 1) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 0.018 + Math.random() * 0.04;
+      emitCombatParticle(
+        points.startX,
+        points.startY,
+        Math.cos(angle) * speed,
+        Math.sin(angle) * speed - 0.012,
+        recipe.lifeMs * (0.55 + Math.random() * 0.3),
+        1.2 + Math.random() * 2.4,
+        index % 3 ? palette.primary : palette.hot,
+        plan.kind === "debuff" ? "dust" : recipe.shape,
+        plan.kind === "aura" ? -0.00004 : 0.00005,
+        0.986,
+        (Math.random() - 0.5) * 0.008,
+        recipe.blend
+      );
+    }
+    scheduleCombatParticleFrame();
+    return journey;
+  }
+
+  function spawnCombatImpact(plan, points) {
+    if (!plan || !points || prefersReducedMotion()) return;
+    const recipe = particleRecipeForPlan(plan, false);
+    const palette = FX_PALETTES[plan.type] || FX_PALETTES.magic;
+    for (let index = 0; index < recipe.impactCount; index += 1) {
+      const angle = Math.PI * 2 * index / Math.max(1, recipe.impactCount) +
+        (Math.random() - 0.5) * 0.34;
+      const speed = 0.085 + Math.random() * (plan.big ? 0.18 : 0.12);
+      const color = index % 5 === 0
+        ? palette.hot
+        : index % 2 ? palette.primary : palette.secondary;
+      emitCombatParticle(
+        points.endX,
+        points.endY,
+        Math.cos(angle) * speed,
+        Math.sin(angle) * speed,
+        recipe.lifeMs * (0.62 + Math.random() * 0.38),
+        1.8 + Math.random() * (plan.big ? 4.8 : 3.6),
+        color,
+        recipe.shape,
+        plan.type === "monster" ? 0.00036 : 0.00012,
+        plan.type === "monster" ? 0.973 : 0.981,
+        (Math.random() - 0.5) * 0.018,
+        recipe.blend
+      );
+    }
+    scheduleCombatParticleFrame();
+  }
+
   function ensureTechniquePool() {
     if (!dom.techniqueFxLayer || dom.techniqueFxLayer.childElementCount) return;
     for (let index = 0; index < 4; index += 1) {
       const effect = document.createElement("div");
-      const glyph = createFxPart("technique-glyph");
-      const trail = createFxPart("technique-trail");
-      const ring = createFxPart("technique-ring");
-      const sparkA = createFxPart("technique-spark technique-spark-a", "✦");
-      const sparkB = createFxPart("technique-spark technique-spark-b", "✦");
-      const sparkC = createFxPart("technique-spark technique-spark-c", "✦");
+      const core = createFxPart("technique-core");
+      const sigil = createFxPart("technique-sigil");
+      const ribbonA = createFxPart("technique-ribbon technique-ribbon-a");
+      const ribbonB = createFxPart("technique-ribbon technique-ribbon-b");
+      const ringA = createFxPart("technique-ring technique-ring-a");
+      const ringB = createFxPart("technique-ring technique-ring-b");
+      const portalA = createFxPart("technique-portal technique-portal-a");
+      const portalB = createFxPart("technique-portal technique-portal-b");
+      const slashA = createFxPart("technique-slash technique-slash-a");
+      const slashB = createFxPart("technique-slash technique-slash-b");
+      const flare = createFxPart("technique-flare");
+      const veil = createFxPart("technique-veil");
       effect.className = "technique-fx";
       effect.setAttribute("aria-hidden", "true");
-      effect.append(glyph, trail, ring, sparkA, sparkB, sparkC);
+      core.appendChild(sigil);
+      effect.append(
+        ribbonA,
+        ribbonB,
+        portalA,
+        portalB,
+        slashA,
+        slashB,
+        core,
+        ringA,
+        ringB,
+        flare,
+        veil
+      );
       dom.techniqueFxLayer.appendChild(effect);
     }
   }
@@ -543,8 +1158,20 @@
       effect._dodgeTarget.classList.remove("is-dodging");
       effect._dodgeTarget.style.removeProperty("--dodge-duration");
     }
+    if (effect._sourceSlot && effect._castingClass) {
+      effect._sourceSlot.classList.remove(effect._castingClass);
+      effect._sourceSlot.style.removeProperty("--fx-duration");
+      effect._sourceSlot.style.removeProperty("--cast-back");
+      effect._sourceSlot.style.removeProperty("--cast-forward");
+      effect._sourceSlot.style.removeProperty("--cast-rebound");
+    }
+    if (effect._journey) effect._journey.cancelled = true;
     effect._cleanupTimer = 0;
     effect._dodgeTarget = null;
+    effect._sourceSlot = null;
+    effect._castingClass = "";
+    effect._journey = null;
+    effect._fxPoints = null;
     effect.className = "technique-fx";
     effect.removeAttribute("data-kind");
     effect.removeAttribute("data-outcome");
@@ -584,6 +1211,22 @@
       endX += direction * Math.max(130, layerRect.width * 0.22);
       endY -= Math.max(55, layerRect.height * 0.11);
     }
+    const direction = Math.sign(endX - startX) || (plan.actor === "player" ? -1 : 1);
+    const arcHeight = Math.max(72, Math.min(148, Math.abs(endX - startX) * 0.28));
+    const midX = (startX + endX) / 2;
+    const midY = (startY + endY) / 2 - arcHeight;
+    const angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
+    const distance = Math.hypot(endX - startX, endY - startY);
+    const exitX = endX + 74 * direction;
+    const farExitX = endX + 112 * direction;
+    const points = {
+      startX: startX,
+      startY: startY,
+      midX: midX,
+      midY: midY,
+      endX: endX,
+      endY: endY
+    };
 
     effect.dataset.kind = plan.kind;
     effect.dataset.outcome = plan.outcome;
@@ -591,13 +1234,20 @@
     effect.style.setProperty("--fx-start-y", startY.toFixed(1) + "px");
     effect.style.setProperty("--fx-end-x", endX.toFixed(1) + "px");
     effect.style.setProperty("--fx-end-y", endY.toFixed(1) + "px");
+    effect.style.setProperty("--fx-mid-x", midX.toFixed(1) + "px");
+    effect.style.setProperty("--fx-mid-y", midY.toFixed(1) + "px");
+    effect.style.setProperty("--fx-angle", angle.toFixed(2) + "deg");
+    effect.style.setProperty("--fx-direction", String(direction));
+    effect.style.setProperty("--fx-distance", distance.toFixed(1) + "px");
+    effect.style.setProperty("--fx-exit-x", exitX.toFixed(1) + "px");
+    effect.style.setProperty("--fx-far-exit-x", farExitX.toFixed(1) + "px");
     effect.style.setProperty("--fx-duration", plan.totalMs + "ms");
     const scale = plan.big ? 1.5 : 1;
     effect.style.setProperty("--fx-scale", String(scale));
     effect.style.setProperty("--fx-scale-down", String(scale * 0.82));
     effect.style.setProperty("--fx-scale-up", String(scale * 1.16));
     effect.style.setProperty("--fx-scale-wide", String(scale * 1.8));
-    effect.querySelector(".technique-glyph").textContent = plan.emoji;
+    effect.querySelector(".technique-sigil").textContent = plan.emoji;
     effect.classList.add(
       "is-active",
       "vfx-kind-" + plan.kind,
@@ -605,6 +1255,14 @@
       "is-" + plan.outcome
     );
     if (plan.big) effect.classList.add("is-big");
+    if (plan.weakness) effect.classList.add("is-weakness");
+    effect._castingClass = "is-casting-" + plan.kind;
+    effect._sourceSlot = sourceSlot;
+    sourceSlot.classList.add(effect._castingClass);
+    sourceSlot.style.setProperty("--fx-duration", plan.totalMs + "ms");
+    sourceSlot.style.setProperty("--cast-back", (-8 * direction) + "px");
+    sourceSlot.style.setProperty("--cast-forward", (34 * direction) + "px");
+    sourceSlot.style.setProperty("--cast-rebound", (-5 * direction) + "px");
 
     if (plan.outcome === "evade" && targetSlot) {
       targetSlot.style.setProperty(
@@ -617,10 +1275,22 @@
 
     void effect.offsetWidth;
     effect.classList.add("is-playing");
+    effect._fxPoints = points;
+    effect._journey = registerCombatJourney(plan, points);
     effect._cleanupTimer = setTimeout(function () {
       resetTechniqueNode(effect);
     }, plan.totalMs + 40);
     return effect;
+  }
+
+  function playTechniqueImpactFx(effect, plan) {
+    if (!effect || !plan || !effect.classList.contains("is-active")) return;
+    effect.classList.add(
+      plan.actualImpact || plan.outcome === "blocked"
+        ? "has-impact"
+        : "has-pass"
+    );
+    spawnCombatImpact(plan, effect._fxPoints);
   }
 
   function playFragmentAura(emoji, actor) {
@@ -1141,6 +1811,7 @@
       actor,
       prefersReducedMotion()
     );
+    const actionSound = soundForEvents(events, description.sound);
     const fragmentEvent = events.slice().reverse().find(function (event) {
       return event.type === "fragment_used";
     });
@@ -1157,13 +1828,25 @@
     if (fragmentEvent) {
       playFragmentAura(fragmentEvent.emoji || "✦", fragmentEvent.actor || actor);
     }
-    playTechniqueFx(techniquePlan);
+    if (techniquePlan) {
+      techniquePlan.sound = actionSound;
+      techniquePlan.knockout = events.some(function (event) {
+        return event.type === "game_over";
+      });
+      techniquePlan.revive = events.some(function (event) {
+        return event.type === "revive";
+      });
+    }
+    const techniqueEffect = playTechniqueFx(techniquePlan);
+    if (techniquePlan && window.CardAudio.techniqueLaunch) {
+      window.CardAudio.techniqueLaunch(techniquePlan);
+    }
 
     const revealImpact = function () {
       if (session !== battleSession || !game) return;
+      playTechniqueImpactFx(techniqueEffect, techniquePlan);
       setEffect(description.effect);
       renderBattle({
-        acting: actor,
         visuals: visuals
       });
       if (impactFlags.weak || impactFlags.monster ||
@@ -1174,7 +1857,11 @@
           Boolean(techniquePlan && techniquePlan.big && techniquePlan.actualImpact)
         );
       }
-      playSound(soundForEvents(events, description.sound), actor);
+      if (techniquePlan && window.CardAudio.techniqueImpact) {
+        window.CardAudio.techniqueImpact(techniquePlan);
+      } else {
+        playSound(actionSound, actor);
+      }
     };
 
     if (techniquePlan && techniquePlan.impactAtMs > 0) {
@@ -1350,19 +2037,22 @@
     };
     document.addEventListener("pointerdown", primeAudioOnce, {
       capture: true,
-      once: true,
       passive: true
     });
     document.addEventListener("keydown", primeAudioOnce, {
-      capture: true,
-      once: true
+      capture: true
     });
 
     window.addEventListener("pageshow", refreshUnlocks);
+    window.addEventListener("resize", function () {
+      resizeCombatParticleCanvas();
+    }, { passive: true });
     document.addEventListener("visibilitychange", function () {
       if (window.CardAudio.setPageHidden) {
         window.CardAudio.setPageHidden(document.hidden);
       }
+      if (document.hidden) resetCombatParticleStage();
+      else resizeCombatParticleCanvas();
       if (document.visibilityState === "visible") refreshUnlocks();
     });
   }
@@ -1431,7 +2121,9 @@
     impactFlagsForVisuals: impactFlagsForVisuals,
     soundForEvents: soundForEvents,
     techniquePlanForEvents: techniquePlanForEvents,
-    techniqueTimings: TECHNIQUE_TIMINGS
+    techniqueTimings: TECHNIQUE_TIMINGS,
+    particleConfig: COMBAT_PARTICLE_CONFIG,
+    particleRecipeForPlan: particleRecipeForPlan
   });
 
   document.addEventListener("DOMContentLoaded", init);

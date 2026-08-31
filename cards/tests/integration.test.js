@@ -25,6 +25,23 @@ function loadFxRuntime() {
   return sandbox.window.CardBattleFx;
 }
 
+function loadAudioRuntime() {
+  const sandbox = {
+    window: {},
+    document: { hidden: false },
+    localStorage: {
+      getItem() { return null; },
+      setItem() {}
+    },
+    setTimeout,
+    clearTimeout
+  };
+  vm.runInNewContext(read(path.join("js", "audio.js")), sandbox, {
+    filename: "cards/js/audio.js"
+  });
+  return sandbox.window.CardAudio;
+}
+
 test("이야기 조각 데이터는 9종 효과·완청 키·초기 3장 풀 계약을 지킨다", () => {
   const data = JSON.parse(read("cards.json"));
   const fragments = data.fragments;
@@ -65,7 +82,7 @@ test("이야기 조각 데이터는 9종 효과·완청 키·초기 3장 풀 계
   );
 });
 
-test("손패 UI와 캐시 버전 18이 함께 배포되도록 묶여 있다", () => {
+test("손패 UI와 캐시 버전 19가 함께 배포되도록 묶여 있다", () => {
   const html = read("index.html");
   const css = read("styles.css");
   const app = read(path.join("js", "app.js"));
@@ -73,10 +90,11 @@ test("손패 UI와 캐시 버전 18이 함께 배포되도록 묶여 있다", ()
   ["fragmentTray", "fragmentHand", "fragmentPreview"].forEach((id) => {
     assert.match(html, new RegExp('id="' + id + '"'));
   });
-  assert.match(html, /styles\.css\?v=18/);
+  assert.match(html, /styles\.css\?v=19/);
   ["engine", "audio", "card-view", "app"].forEach((file) => {
-    assert.match(html, new RegExp("js/" + file + "\\.js\\?v=18"));
+    assert.match(html, new RegExp("js/" + file + "\\.js\\?v=19"));
   });
+  assert.doesNotMatch(html, /\?v=18/);
 
   assert.match(css, /\.fragment-chip[\s\S]*?min-height: 68px/);
   assert.match(
@@ -156,8 +174,24 @@ test("공격 비주얼은 네 타입·피격·약점·기절·부활을 0.6초 �
   );
   assert.ok(animateBlock.indexOf("restartArenaImpact(") >= 0);
   assert.ok(
-    animateBlock.indexOf("restartArenaImpact(") < animateBlock.indexOf("playSound("),
-    "시각 효과와 같은 JS 프레임에서 소리를 시작해야 한다"
+    animateBlock.indexOf("playTechniqueFx(techniquePlan)") <
+      animateBlock.indexOf("const revealImpact"),
+    "기술 이동 연출은 명중 프레임 전에 시작해야 한다"
+  );
+  assert.ok(
+    animateBlock.indexOf("CardAudio.techniqueLaunch") <
+      animateBlock.indexOf("const revealImpact"),
+    "발동음은 이동 연출과 함께 시작해야 한다"
+  );
+  assert.ok(
+    animateBlock.indexOf("restartArenaImpact(") <
+      animateBlock.indexOf("CardAudio.techniqueImpact"),
+    "명중 시각 효과와 같은 JS 프레임에서 명중음을 시작해야 한다"
+  );
+  assert.match(
+    animateBlock,
+    /if \(techniquePlan && window\.CardAudio\.techniqueImpact\)[\s\S]*?else \{\s*playSound\(actionSound, actor\)/,
+    "새 명중음 위에 레거시 타격음을 겹쳐 재생하면 안 된다"
   );
   assert.match(
     animateBlock,
@@ -254,33 +288,79 @@ test("복합 행동은 상대 부활·내 자해 K.O.를 두 카드에 나누고
   );
 });
 
-test("타격 버스는 3ms 이내 피크·저역 바디·소프트 클리핑·꼬리 잔향을 고정한다", () => {
+test("프리미엄 사운드는 발동·명중을 나누고 재질·결과·안전 믹스를 고정한다", () => {
   const audio = read(path.join("js", "audio.js"));
+  const Audio = loadAudioRuntime();
 
   assert.match(audio, /createWaveShaper\(\)/);
-  assert.match(audio, /makeSoftClipCurve\(2048, 1\.7\)/);
-  assert.match(audio, /impactLow\.frequency\.value = 140/);
-  assert.match(audio, /impactLow\.gain\.value = 4\.5/);
-  assert.match(audio, /bodyDuration = strong \? 0\.36 : 0\.18/);
-  assert.match(audio, /start \+ 0\.0025/);
-  assert.match(audio, /start \+ 0\.002/);
-  assert.match(audio, /brave: \[108, 72\]/);
-  assert.match(audio, /wise: \[100, 66\]/);
-  assert.match(audio, /magic: \[96, 64\]/);
-  assert.match(audio, /monster: \[92, 60\]/);
-  assert.match(audio, /start \+ 0\.045/);
-  assert.match(audio, /strong \? 0\.075 : 0\.045/);
+  assert.match(audio, /makeSoftClipCurve\(2048, 1\.4\)/);
+  assert.match(audio, /toneFilter\.frequency\.value = 9500/);
+  assert.match(audio, /bodyLow\.frequency\.value = 170/);
+  assert.match(audio, /bodyLow\.gain\.value = 2\.4/);
+  assert.match(audio, /compressor\.threshold\.value = -8/);
+  assert.match(audio, /compressor\.ratio\.value = 12/);
+  assert.match(audio, /Math\.min\(0\.003,/);
+  assert.match(audio, /const MATERIAL_BY_EMOJI/);
+  assert.match(audio, /function techniqueLaunch\(plan\)/);
+  assert.match(audio, /function techniqueImpact\(plan\)/);
+  assert.match(audio, /musicDuckBus/);
+  assert.match(audio, /context\.state !== "running"/);
+  assert.match(audio, /context\.state !== "closed"/);
+  assert.doesNotMatch(audio, /function impactCore/);
+  assert.equal(typeof Audio.techniqueLaunch, "function");
+  assert.equal(typeof Audio.techniqueImpact, "function");
+  assert.equal(typeof Audio.soundPlanForTechnique, "function");
+
+  const base = {
+    type: "wise",
+    kind: "projectile",
+    emoji: "🪨",
+    outcome: "hit",
+    impactAtMs: 450,
+    totalMs: 590
+  };
+  const first = Audio.soundPlanForTechnique(base);
+  const second = Audio.soundPlanForTechnique(base);
+  assert.equal(first.material, "stone");
+  assert.equal(first.hasTransient, true);
+  assert.equal(first.hasBody, true);
+  assert.notEqual(first.variation, second.variation);
+
+  for (const outcome of ["miss", "evade", "support"]) {
+    const plan = Audio.soundPlanForTechnique({ ...base, outcome });
+    assert.equal(plan.hasImpact, false, outcome);
+    assert.equal(plan.hasBody, false, outcome);
+  }
+  const blocked = Audio.soundPlanForTechnique({ ...base, outcome: "blocked" });
+  assert.equal(blocked.hasTransient, true);
+  assert.equal(blocked.hasBody, false);
+  const magic = Audio.soundPlanForTechnique({
+    ...base,
+    type: "magic",
+    emoji: "✨",
+    weakness: true
+  });
+  assert.equal(magic.material, "crystal");
+  assert.equal(magic.strong, true);
+  assert.equal(magic.hasBody, false);
+
+  assert.doesNotMatch(audio, /\bfetch\s*\(|new\s+Audio\s*\(|\.(mp3|ogg|wav)\b/i);
 });
 
 test("48개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가진다", () => {
   const data = JSON.parse(read("cards.json"));
   const attacks = data.cards.flatMap((card) =>
-    card.attacks.map((attack) => ({ card: card.id, attack }))
+    card.attacks.map((attack) => ({
+      card: card.id,
+      cardType: card.type,
+      attack
+    }))
   );
+  const Audio = loadAudioRuntime();
   const counts = {};
 
   assert.equal(attacks.length, 48);
-  attacks.forEach(({ card, attack }) => {
+  attacks.forEach(({ card, cardType, attack }) => {
     assert.ok(attack.vfx, card + " / " + attack.name);
     assert.ok(attack.vfx.emoji, card + " / " + attack.name);
     assert.ok(
@@ -290,6 +370,18 @@ test("48개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가진다", () => {
     );
     if ("big" in attack.vfx) assert.equal(typeof attack.vfx.big, "boolean");
     counts[attack.vfx.kind] = (counts[attack.vfx.kind] || 0) + 1;
+    const soundPlan = Audio.soundPlanForTechnique({
+      type: cardType,
+      kind: attack.vfx.kind,
+      emoji: attack.vfx.emoji,
+      big: attack.vfx.big,
+      outcome: attack.dmg > 0 ? "hit" : "support",
+      impactAtMs: 220,
+      totalMs: 500
+    });
+    assert.ok(["stone", "metal", "paper", "crystal", "air", "fire", "earth"]
+      .includes(soundPlan.material), card + " / " + attack.name + " sound");
+    assert.ok(["brave", "wise", "magic", "monster"].includes(soundPlan.type));
   });
 
   assert.deepEqual(counts, {
@@ -394,6 +486,10 @@ test("기술 무대는 풀을 재사용하고 프레임·기울기·60px 조작 
   const view = read(path.join("js", "card-view.js"));
   const css = read("styles.css");
 
+  assert.match(
+    html,
+    /<canvas[^>]+id="combatParticleCanvas"[^>]+aria-hidden="true"/
+  );
   assert.match(html, /id="techniqueFxLayer"/);
   assert.match(app, /for \(let index = 0; index < 4; index \+= 1\)/);
   const playBlock = app.slice(
@@ -401,17 +497,101 @@ test("기술 무대는 풀을 재사용하고 프레임·기울기·60px 조작 
     app.indexOf("function playFragmentAura")
   );
   assert.doesNotMatch(playBlock, /createElement/);
-  ["projectile", "summon", "strike", "burst", "aura", "debuff"].forEach((kind) => {
+  const Fx = loadFxRuntime();
+  const kinds = ["projectile", "summon", "strike", "burst", "aura", "debuff"];
+  assert.equal(Fx.particleConfig.capacity, 120);
+  assert.equal(Fx.particleConfig.dprCap, 1.5);
+  const signatures = new Set();
+  kinds.forEach((kind) => {
     assert.match(css, new RegExp("\\.vfx-kind-" + kind));
+    const recipe = Fx.particleRecipeForPlan({
+      kind,
+      outcome: "hit",
+      big: false
+    }, false);
+    assert.ok(recipe.total > 0 && recipe.total <= Fx.particleConfig.capacity);
+    assert.ok(recipe.lifeMs > 0 && recipe.lifeMs <= 800);
+    signatures.add([recipe.motion, recipe.shape, recipe.blend].join(":"));
+    const big = Fx.particleRecipeForPlan({
+      kind,
+      outcome: "hit",
+      big: true
+    }, false);
+    assert.ok(big.total >= recipe.total);
+    assert.ok(big.total <= Fx.particleConfig.capacity);
   });
+  assert.equal(signatures.size, kinds.length, "6종 기술은 서로 다른 움직임 문법이어야 한다");
+  assert.equal(
+    Fx.particleRecipeForPlan({
+      kind: "projectile",
+      outcome: "miss"
+    }, false).impactCount,
+    0
+  );
+  assert.equal(
+    Fx.particleRecipeForPlan({
+      kind: "strike",
+      outcome: "evade"
+    }, false).impactCount,
+    0
+  );
+  assert.equal(
+    Fx.particleRecipeForPlan({
+      kind: "burst",
+      outcome: "hit"
+    }, true).total,
+    0
+  );
   [".is-miss", ".is-evade", ".is-dodging", ".is-big"].forEach((selector) => {
     assert.ok(css.includes(selector), selector);
   });
-  assert.match(css, /@keyframes technique-strike \{[\s\S]*?\n  38% \{/);
-  assert.match(css, /@keyframes technique-strike-trail \{[\s\S]*?\n  38% \{/);
-  assert.match(css, /technique-dodge var\(--dodge-duration/);
+  assert.match(css, /@keyframes premium-projectile-core/);
+  assert.match(css, /@keyframes premium-summon-core/);
+  assert.match(css, /@keyframes premium-strike-slash-a/);
+  assert.match(css, /@keyframes premium-burst-core/);
+  assert.match(css, /@keyframes premium-aura-core/);
+  assert.match(css, /@keyframes premium-debuff-core/);
+  assert.match(css, /\.technique-fx\.has-impact[\s\S]*?premium-contact-flare/);
+  assert.match(css, /premium-technique-dodge var\(--dodge-duration/);
+  assert.match(css, /@keyframes premium-arena-finisher-hit/);
   assert.match(app, /Math\.max\(420, plan\.impactAtMs \+ 120\)/);
-  assert.match(css, /prefers-reduced-motion[\s\S]*?\.technique-fx-layer/);
+  assert.match(app, /Math\.min\([\s\S]*?COMBAT_PARTICLE_CONFIG\.dprCap/);
+  assert.match(app, /cancelAnimationFrame/);
+  assert.match(app, /window\.addEventListener\("resize"/);
+  assert.match(css, /\.combat-particle-canvas \{[\s\S]*?pointer-events: none/);
+  assert.match(
+    css,
+    /prefers-reduced-motion[\s\S]*?\.combat-particle-canvas[\s\S]*?display: none/
+  );
+  assert.match(
+    css,
+    /@media \(max-width: 0px\) \{\s*\/\* §9/,
+    "구형 §9 선택자는 실제 뷰포트에서 적용되면 안 된다"
+  );
+  assert.doesNotMatch(
+    css.slice(css.indexOf("/* v19 프리미엄 전투 무대")),
+    /\.technique-fx-layer\s*\{\s*display:\s*none/,
+    "모션 감소에서도 정적 명중 플래시는 남아야 한다"
+  );
+  const tickBlock = app.slice(
+    app.indexOf("function combatParticleTick(now)"),
+    app.indexOf("function scheduleCombatParticleFrame()")
+  );
+  assert.doesNotMatch(
+    tickBlock,
+    /resizeCombatParticleCanvas|getBoundingClientRect/,
+    "rAF 중 레이아웃을 다시 읽으면 iPad 프레임이 떨어진다"
+  );
+  const journeyBlock = app.slice(
+    app.indexOf("function registerCombatJourney(plan, points)"),
+    app.indexOf("function spawnCombatImpact(plan, points)")
+  );
+  assert.match(journeyBlock, /resizeCombatParticleCanvas\(\)/);
+  assert.match(
+    css,
+    /\.technique-sigil \{[\s\S]*?font-size: clamp\(28px, 4vw, 44px\)/
+  );
+  assert.match(css, /\.technique-fx\.is-big \.technique-sigil \{[\s\S]*?48px/);
 
   assert.match(view, /dataset\.type = card\.type/);
   assert.match(view, /classList\.add\("rarity-" \+ rarity\)/);
@@ -427,6 +607,15 @@ test("기술 무대는 풀을 재사용하고 프레임·기울기·60px 조작 
   assert.match(app, /--tilt-x/);
   assert.match(app, /--shine-x/);
   assert.match(app, /\(hover: hover\) and \(pointer: fine\)/);
+  const primeBlock = app.slice(
+    app.indexOf("const primeAudioOnce"),
+    app.indexOf('window.addEventListener("pageshow"')
+  );
+  assert.doesNotMatch(
+    primeBlock,
+    /once:\s*true/,
+    "iPad 오디오 인터럽트 뒤 다음 사용자 제스처로 다시 prime해야 한다"
+  );
 
   const selectBlock = app.slice(
     app.indexOf("function selectCard(card, cardEl)"),

@@ -109,12 +109,13 @@ test("all story episode mp3 files match the service worker fallback list", () =>
   }
 });
 
-test("cache version follows exact v18 card assets and navigation aliases are canonical", () => {
-  assert.equal(sw.CACHE_VERSION, "v18");
-  assert.match(sw.STATIC_CACHE, /^adventure-box-v18-/);
+test("cache version follows exact v19 card assets and navigation aliases are canonical", () => {
+  assert.equal(sw.CACHE_VERSION, "v19");
+  assert.match(sw.STATIC_CACHE, /^adventure-box-v19-/);
   for (const asset of ["styles.css", "engine.js", "audio.js", "card-view.js", "app.js"]) {
-    assert.ok(sw.CORE_SHELL.some(entry => entry.endsWith(`${asset}?v=18`)), asset);
+    assert.ok(sw.CORE_SHELL.some(entry => entry.endsWith(asset + "?v=19")), asset);
   }
+  assert.doesNotMatch(swSource, /\?v=18|adventure-box-v18/);
 
   const cases = new Map([
     ["https://example.test/cards?preview=all", "https://example.test/cards/"],

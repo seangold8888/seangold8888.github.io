@@ -2168,6 +2168,731 @@ dialog p:not(.kicker) {
   }
 }
 
+/* v19 프리미엄 전투 무대 — 이모지는 표식, 빛·잉크·먼지가 주연이다. */
+.combat-particle-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  contain: strict;
+  transform: translateZ(0);
+}
+
+.technique-fx-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 16;
+  overflow: hidden;
+  contain: strict;
+  pointer-events: none;
+}
+
+.technique-fx {
+  position: absolute;
+  inset: 0;
+  display: none;
+  pointer-events: none;
+  --vfx-hot: #fff0ff;
+  --vfx-color: #e6a2ff;
+  --vfx-secondary: #7850ff;
+  --vfx-shadow: #4b2787;
+}
+
+.technique-fx.is-active {
+  display: block;
+}
+
+.technique-fx.vfx-type-brave {
+  --vfx-hot: #fff2bd;
+  --vfx-color: #ffc04f;
+  --vfx-secondary: #ff6036;
+  --vfx-shadow: #8d2e22;
+}
+
+.technique-fx.vfx-type-wise {
+  --vfx-hot: #e6fbff;
+  --vfx-color: #62dfff;
+  --vfx-secondary: #386cff;
+  --vfx-shadow: #183d88;
+}
+
+.technique-fx.vfx-type-magic {
+  --vfx-hot: #fff0ff;
+  --vfx-color: #e6a2ff;
+  --vfx-secondary: #7850ff;
+  --vfx-shadow: #4b2787;
+}
+
+.technique-fx.vfx-type-monster {
+  --vfx-hot: #f5dfb4;
+  --vfx-color: #d5a86f;
+  --vfx-secondary: #8d5b37;
+  --vfx-shadow: #4e352b;
+}
+
+.technique-core,
+.technique-ribbon,
+.technique-ring,
+.technique-portal,
+.technique-slash,
+.technique-flare,
+.technique-veil {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.technique-core {
+  z-index: 8;
+  display: grid;
+  width: 56px;
+  height: 56px;
+  margin: -28px 0 0 -28px;
+  place-items: center;
+  overflow: visible;
+  border: 1px solid color-mix(in srgb, var(--vfx-hot) 80%, transparent);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 38% 32%, rgba(255,255,255,.94), transparent 24%),
+    radial-gradient(circle, color-mix(in srgb, var(--vfx-color) 72%, transparent), transparent 70%);
+  box-shadow:
+    0 0 0 5px color-mix(in srgb, var(--vfx-color) 13%, transparent),
+    0 0 24px color-mix(in srgb, var(--vfx-color) 78%, transparent),
+    inset 0 0 16px rgba(255,255,255,.22);
+}
+
+.technique-core::before {
+  position: absolute;
+  inset: -8px;
+  border: 2px solid color-mix(in srgb, var(--vfx-color) 64%, transparent);
+  border-top-color: var(--vfx-hot);
+  border-radius: inherit;
+  content: "";
+  opacity: .72;
+}
+
+.technique-sigil {
+  position: relative;
+  z-index: 2;
+  display: block;
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1;
+  text-align: center;
+  filter:
+    drop-shadow(0 3px 2px rgba(13,8,31,.45))
+    drop-shadow(0 0 6px var(--vfx-hot));
+  transform: translateZ(0);
+}
+
+.technique-fx.is-big .technique-sigil {
+  font-size: 48px;
+}
+
+.technique-fx.is-big .technique-core {
+  box-shadow:
+    0 0 0 7px color-mix(in srgb, var(--vfx-color) 15%, transparent),
+    0 0 34px color-mix(in srgb, var(--vfx-color) 86%, transparent),
+    inset 0 0 18px rgba(255,255,255,.28);
+}
+
+.technique-ribbon {
+  z-index: 4;
+  width: min(var(--fx-distance), 260px);
+  height: 12px;
+  margin-top: -6px;
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg, transparent 0 18%, var(--vfx-secondary) 54%, var(--vfx-hot));
+  box-shadow:
+    0 0 5px var(--vfx-hot),
+    0 0 17px color-mix(in srgb, var(--vfx-color) 66%, transparent);
+  transform-origin: 100% 50%;
+}
+
+.technique-ribbon-b {
+  height: 3px;
+  margin-top: 6px;
+  background: linear-gradient(90deg, transparent, var(--vfx-hot));
+  filter: brightness(1.25);
+}
+
+.technique-portal {
+  z-index: 3;
+  width: 94px;
+  height: 34px;
+  margin: -17px 0 0 -47px;
+  border: 4px solid var(--vfx-color);
+  border-right-color: transparent;
+  border-radius: 50%;
+  box-shadow:
+    0 0 14px color-mix(in srgb, var(--vfx-color) 80%, transparent),
+    inset 0 0 10px rgba(255,255,255,.18);
+}
+
+.technique-portal-b {
+  width: 70px;
+  height: 25px;
+  margin: -12px 0 0 -35px;
+  border-width: 2px;
+  border-color: var(--vfx-hot) transparent var(--vfx-hot) var(--vfx-hot);
+}
+
+.technique-slash {
+  z-index: 7;
+  width: 142px;
+  height: 12px;
+  margin: -6px 0 0 -71px;
+  border-radius: 100% 0 100% 0;
+  background:
+    linear-gradient(90deg, transparent, var(--vfx-hot) 28% 67%, transparent);
+  box-shadow:
+    0 0 5px var(--vfx-hot),
+    0 0 16px var(--vfx-color),
+    0 0 30px color-mix(in srgb, var(--vfx-secondary) 55%, transparent);
+}
+
+.technique-slash-b {
+  height: 5px;
+  background: linear-gradient(90deg, transparent, var(--vfx-color), transparent);
+}
+
+.technique-ring {
+  z-index: 6;
+  width: 82px;
+  height: 82px;
+  margin: -41px 0 0 -41px;
+  border: 3px solid var(--vfx-hot);
+  border-radius: 50%;
+  box-shadow:
+    0 0 8px var(--vfx-hot),
+    0 0 20px color-mix(in srgb, var(--vfx-color) 76%, transparent);
+  animation: none;
+}
+
+.technique-ring-b {
+  width: 54px;
+  height: 54px;
+  margin: -27px 0 0 -27px;
+  border-width: 2px;
+  border-color: var(--vfx-color);
+}
+
+.technique-flare {
+  z-index: 9;
+  width: 88px;
+  height: 88px;
+  margin: -44px 0 0 -44px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, #fff 0 7%, var(--vfx-hot) 8% 16%, transparent 48%),
+    conic-gradient(
+      from 45deg,
+      transparent,
+      color-mix(in srgb, var(--vfx-color) 75%, transparent),
+      transparent 14% 25%,
+      color-mix(in srgb, var(--vfx-hot) 76%, transparent),
+      transparent 40% 75%,
+      color-mix(in srgb, var(--vfx-color) 70%, transparent),
+      transparent
+    );
+  filter: drop-shadow(0 0 10px var(--vfx-hot));
+}
+
+.technique-veil {
+  z-index: 2;
+  width: 180px;
+  height: 210px;
+  margin: -105px 0 0 -90px;
+  border-radius: 48%;
+  background:
+    radial-gradient(ellipse, color-mix(in srgb, var(--vfx-color) 24%, transparent), transparent 68%);
+  mix-blend-mode: screen;
+}
+
+.technique-fx.is-playing.vfx-kind-projectile .technique-core {
+  animation: premium-projectile-core var(--fx-duration) cubic-bezier(.16,.72,.18,1) both;
+}
+
+.technique-fx.is-playing.vfx-kind-projectile .technique-ribbon {
+  animation: premium-projectile-ribbon var(--fx-duration) cubic-bezier(.2,.74,.2,1) both;
+}
+
+.technique-fx.is-playing.vfx-kind-summon .technique-core {
+  animation: premium-summon-core var(--fx-duration) cubic-bezier(.16,.78,.18,1) both;
+}
+
+.technique-fx.is-playing.vfx-kind-summon .technique-portal-a {
+  animation: premium-portal-a var(--fx-duration) ease-out both;
+}
+
+.technique-fx.is-playing.vfx-kind-summon .technique-portal-b {
+  animation: premium-portal-b var(--fx-duration) ease-out both;
+}
+
+.technique-fx.is-playing.vfx-kind-summon .technique-ribbon {
+  animation: premium-summon-ribbon var(--fx-duration) ease-out both;
+}
+
+.technique-fx.is-playing.vfx-kind-strike .technique-core {
+  animation: premium-strike-crest var(--fx-duration) ease-out both;
+}
+
+.technique-fx.is-playing.vfx-kind-strike .technique-slash-a {
+  animation: premium-strike-slash-a var(--fx-duration) cubic-bezier(.12,.82,.18,1) both;
+}
+
+.technique-fx.is-playing.vfx-kind-strike .technique-slash-b {
+  animation: premium-strike-slash-b var(--fx-duration) cubic-bezier(.12,.82,.18,1) both;
+}
+
+.technique-fx.is-playing.vfx-kind-burst .technique-core {
+  animation: premium-burst-core var(--fx-duration) cubic-bezier(.12,.82,.18,1) both;
+}
+
+.technique-fx.is-playing.vfx-kind-burst .technique-portal {
+  animation: premium-burst-seal var(--fx-duration) ease-in both;
+}
+
+.technique-fx.is-playing.vfx-kind-aura .technique-core {
+  animation: premium-aura-core var(--fx-duration) cubic-bezier(.18,.76,.2,1) both;
+}
+
+.technique-fx.is-playing.vfx-kind-aura .technique-veil {
+  animation: premium-aura-column var(--fx-duration) ease-out both;
+}
+
+.technique-fx.is-playing.vfx-kind-aura .technique-portal {
+  animation: premium-aura-floor var(--fx-duration) ease-out both;
+}
+
+.technique-fx.is-playing.vfx-kind-debuff .technique-core {
+  animation: premium-debuff-core var(--fx-duration) cubic-bezier(.16,.76,.2,1) both;
+}
+
+.technique-fx.is-playing.vfx-kind-debuff .technique-veil {
+  background:
+    radial-gradient(ellipse, color-mix(in srgb, var(--vfx-shadow) 34%, transparent), transparent 70%);
+  animation: premium-debuff-veil var(--fx-duration) ease-out both;
+  mix-blend-mode: multiply;
+}
+
+.technique-fx.is-playing.vfx-kind-debuff .technique-portal-a {
+  border-style: dashed;
+  animation: premium-debuff-seal var(--fx-duration) linear both;
+}
+
+.technique-fx.has-impact:not(.is-miss):not(.is-evade) .technique-flare {
+  animation: premium-contact-flare .24s cubic-bezier(.1,.7,.18,1) both;
+}
+
+.technique-fx.has-impact:not(.is-miss):not(.is-evade) .technique-ring-a {
+  animation: premium-impact-ring .3s ease-out both;
+}
+
+.technique-fx.has-impact:not(.is-miss):not(.is-evade) .technique-ring-b {
+  animation: premium-impact-ring-inner .24s ease-out both;
+}
+
+.technique-fx.has-impact .technique-flare,
+.technique-fx.has-impact .technique-ring {
+  left: var(--fx-end-x);
+  top: var(--fx-end-y);
+}
+
+.technique-fx.is-weakness.has-impact .technique-flare {
+  width: 122px;
+  height: 122px;
+  margin: -61px 0 0 -61px;
+  background:
+    radial-gradient(circle, #fff 0 7%, #fff3a8 8% 18%, transparent 43%),
+    conic-gradient(
+      from 22.5deg,
+      transparent 0 5%,
+      #ffe168 6% 9%,
+      transparent 10% 25%,
+      #fff4bd 26% 30%,
+      transparent 31% 50%,
+      #ffe168 51% 55%,
+      transparent 56% 75%,
+      #fff4bd 76% 80%,
+      transparent 81%
+    );
+  filter: drop-shadow(0 0 13px #ffc93a);
+}
+
+.technique-fx.is-big.has-impact .technique-veil {
+  left: var(--fx-end-x);
+  top: var(--fx-end-y);
+  animation: premium-finisher-vignette .3s ease-out both;
+}
+
+.battle-card-slot.is-casting-projectile .story-card.is-acting,
+.battle-card-slot.is-casting-summon .story-card.is-acting,
+.battle-card-slot.is-casting-burst .story-card.is-acting,
+.battle-card-slot.is-casting-aura .story-card.is-acting,
+.battle-card-slot.is-casting-debuff .story-card.is-acting {
+  animation: premium-card-cast var(--fx-duration, .5s) cubic-bezier(.2,.8,.2,1);
+}
+
+.battle-card-slot.is-casting-strike .story-card.is-acting {
+  animation: premium-card-strike .42s cubic-bezier(.12,.8,.2,1);
+}
+
+.fx-hit-flash {
+  inset: 18% 12%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(255,255,255,.98), rgba(255,241,190,.5) 20%, transparent 62%);
+  mix-blend-mode: screen;
+  animation: premium-local-hit .24s ease-out both;
+}
+
+.damage-pop {
+  top: 40%;
+  color: #fff8eb;
+  font-size: clamp(34px, 4vw, 50px);
+  letter-spacing: -.045em;
+  text-shadow:
+    0 3px 0 rgba(91,26,42,.92),
+    0 0 10px rgba(255,255,255,.62),
+    0 0 22px rgba(255,83,102,.72);
+  animation: premium-damage-pop .56s cubic-bezier(.12,.76,.18,1) both;
+}
+
+.damage-pop.is-weak {
+  color: #fff0a0;
+  font-size: clamp(50px, 7vw, 74px);
+  text-shadow:
+    0 4px 0 #8d5500,
+    0 0 12px #fff,
+    0 0 26px #ffbd36;
+}
+
+.effect-burst {
+  z-index: 20;
+  color: #fff4bd;
+  font-size: clamp(34px, 5.4vw, 60px);
+  letter-spacing: -.04em;
+  text-shadow:
+    0 3px 0 rgba(66,34,13,.88),
+    0 0 12px rgba(255,255,255,.6),
+    0 0 26px rgba(255,183,61,.72);
+}
+
+.effect-burst.show {
+  animation: premium-effect-label .5s cubic-bezier(.12,.78,.18,1);
+}
+
+.battle-card-slot.is-knocked-out {
+  animation: premium-card-knockout .58s cubic-bezier(.2,.72,.22,1) both;
+}
+
+.battle-card-slot.is-knocked-out::after {
+  position: absolute;
+  inset: 10% 6%;
+  z-index: 22;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 22% 32%, #fff0a0 0 2px, transparent 3px),
+    radial-gradient(circle at 76% 24%, #d7ecff 0 2px, transparent 3px),
+    radial-gradient(circle at 58% 70%, #fff0a0 0 2.5px, transparent 3.5px),
+    linear-gradient(180deg, transparent, rgba(12,17,53,.62));
+  content: "";
+  opacity: 0;
+  pointer-events: none;
+  animation: premium-ko-veil .58s ease-out both;
+}
+
+.arena.is-finisher-hit::after {
+  position: absolute;
+  inset: 0;
+  z-index: 18;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255,248,211,.17), transparent 48%),
+    linear-gradient(90deg, rgba(255,255,255,.08), transparent 18% 82%, rgba(255,255,255,.08));
+  content: "";
+  pointer-events: none;
+  animation: premium-arena-flash .28s ease-out both;
+}
+
+@keyframes premium-projectile-core {
+  0% {
+    opacity: 0;
+    transform: translate3d(var(--fx-start-x),var(--fx-start-y),0) scale(.3) rotate(-18deg);
+  }
+  12% {
+    opacity: 1;
+    transform: translate3d(var(--fx-start-x),var(--fx-start-y),0) scale(.82) rotate(-8deg);
+  }
+  46% {
+    opacity: 1;
+    transform: translate3d(var(--fx-mid-x),var(--fx-mid-y),0) scale(.96) rotate(5deg);
+  }
+  76% {
+    opacity: 1;
+    transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) scale(var(--fx-scale)) rotate(18deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) scale(.48) rotate(26deg);
+  }
+}
+
+@keyframes premium-projectile-ribbon {
+  0%, 9% {
+    opacity: 0;
+    transform: translate3d(var(--fx-start-x),var(--fx-start-y),0) rotate(var(--fx-angle)) translate(-100%,-50%) scaleX(.08);
+  }
+  22% { opacity: .82; }
+  76% {
+    opacity: .72;
+    transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) rotate(var(--fx-angle)) translate(-100%,-50%) scaleX(.72);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) rotate(var(--fx-angle)) translate(-100%,-50%) scaleX(.16);
+  }
+}
+
+@keyframes premium-summon-core {
+  0% {
+    opacity: 0;
+    transform: translate3d(var(--fx-start-x),var(--fx-start-y),0) translate(-50%,-15%) scale(.18,.08);
+  }
+  19% {
+    opacity: 1;
+    transform: translate3d(var(--fx-start-x),var(--fx-start-y),0) translate(-50%,-72%) scale(1.08,.92);
+  }
+  31% {
+    opacity: 1;
+    transform: translate3d(var(--fx-start-x),var(--fx-start-y),0) translate(-50%,-54%) scale(.94,1.04);
+  }
+  66% {
+    opacity: 1;
+    transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) translate(-50%,-50%) scale(var(--fx-scale));
+  }
+  82% {
+    opacity: .58;
+    transform: translate3d(var(--fx-exit-x),var(--fx-end-y),0) translate(-50%,-62%) scale(.78);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--fx-far-exit-x),var(--fx-end-y),0) translate(-50%,-72%) scale(.32);
+  }
+}
+
+@keyframes premium-portal-a {
+  0% { opacity: 0; transform: translate3d(var(--fx-start-x),var(--fx-start-y),0) rotate(0) scale(.2); }
+  12%, 30% { opacity: .88; }
+  38%, 100% { opacity: 0; transform: translate3d(var(--fx-start-x),var(--fx-start-y),0) rotate(170deg) scale(1.25); }
+}
+
+@keyframes premium-portal-b {
+  0% { opacity: 0; transform: translate3d(var(--fx-start-x),var(--fx-start-y),0) rotate(70deg) scale(.2); }
+  10%, 28% { opacity: .82; }
+  40%, 100% { opacity: 0; transform: translate3d(var(--fx-start-x),var(--fx-start-y),0) rotate(-160deg) scale(1.4); }
+}
+
+@keyframes premium-summon-ribbon {
+  0%, 30% { opacity: 0; transform: translate3d(var(--fx-start-x),var(--fx-start-y),0) rotate(var(--fx-angle)) translate(-100%,-50%) scaleX(.08); }
+  42% { opacity: .56; }
+  66% { opacity: .78; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) rotate(var(--fx-angle)) translate(-100%,-50%) scaleX(.78); }
+  80%, 100% { opacity: 0; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) rotate(var(--fx-angle)) translate(-100%,-50%) scaleX(.2); }
+}
+
+@keyframes premium-strike-crest {
+  0%, 20% { opacity: 0; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) scale(.2) rotate(-25deg); }
+  34%, 42% { opacity: .92; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) scale(.72) rotate(4deg); }
+  64%, 100% { opacity: 0; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) scale(.28) rotate(18deg); }
+}
+
+@keyframes premium-strike-slash-a {
+  0%, 20% { opacity: 0; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) rotate(-32deg) scaleX(.08); }
+  32%, 38% { opacity: 1; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) rotate(-32deg) scaleX(1); }
+  68%, 100% { opacity: 0; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) rotate(-32deg) scaleX(1.22); }
+}
+
+@keyframes premium-strike-slash-b {
+  0%, 25% { opacity: 0; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) rotate(28deg) scaleX(.08); }
+  36%, 42% { opacity: .92; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) rotate(28deg) scaleX(.86); }
+  70%, 100% { opacity: 0; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) rotate(28deg) scaleX(1.16); }
+}
+
+@keyframes premium-burst-core {
+  0% { opacity: 0; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) scale(1.25); }
+  22% { opacity: .72; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) scale(.76); }
+  42% { opacity: 1; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) scale(.34); }
+  58% { opacity: .82; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) scale(var(--fx-scale-up)); }
+  100% { opacity: 0; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) scale(1.7); }
+}
+
+@keyframes premium-burst-seal {
+  0% { opacity: 0; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) rotate(0) scale(1.45); }
+  18% { opacity: .74; }
+  44% { opacity: .92; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) rotate(130deg) scale(.52); }
+  54%, 100% { opacity: 0; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) rotate(170deg) scale(.2); }
+}
+
+@keyframes premium-aura-core {
+  0% { opacity: 0; transform: translate3d(var(--fx-end-x),calc(var(--fx-end-y) + 32px),0) scale(.4); }
+  28% { opacity: 1; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) scale(.88); }
+  58% { opacity: .92; transform: translate3d(var(--fx-end-x),calc(var(--fx-end-y) - 30px),0) scale(var(--fx-scale)); }
+  100% { opacity: 0; transform: translate3d(var(--fx-end-x),calc(var(--fx-end-y) - 84px),0) scale(.72); }
+}
+
+@keyframes premium-aura-column {
+  0% { opacity: 0; transform: translate3d(var(--fx-end-x),calc(var(--fx-end-y) + 52px),0) scale(.42,.12); }
+  35% { opacity: .76; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) scale(.82,1); }
+  100% { opacity: 0; transform: translate3d(var(--fx-end-x),calc(var(--fx-end-y) - 44px),0) scale(1.12,1.28); }
+}
+
+@keyframes premium-aura-floor {
+  0% { opacity: 0; transform: translate3d(var(--fx-end-x),calc(var(--fx-end-y) + 38px),0) scale(.2); }
+  28% { opacity: .82; }
+  100% { opacity: 0; transform: translate3d(var(--fx-end-x),calc(var(--fx-end-y) + 38px),0) rotate(140deg) scale(1.48); }
+}
+
+@keyframes premium-debuff-core {
+  0% { opacity: 0; transform: translate3d(var(--fx-end-x),calc(var(--fx-end-y) - 92px),0) scale(.42) rotate(-10deg); }
+  35% { opacity: .82; }
+  44%, 66% { opacity: 1; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) scale(.82) rotate(4deg); }
+  100% { opacity: 0; transform: translate3d(var(--fx-end-x),calc(var(--fx-end-y) + 22px),0) scale(.64) rotate(-5deg); }
+}
+
+@keyframes premium-debuff-veil {
+  0% { opacity: 0; transform: translate3d(var(--fx-end-x),calc(var(--fx-end-y) - 70px),0) scale(.48,.2); }
+  42%, 62% { opacity: .7; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) scale(.92,1); }
+  100% { opacity: 0; transform: translate3d(var(--fx-end-x),calc(var(--fx-end-y) + 24px),0) scale(1.08,.82); }
+}
+
+@keyframes premium-debuff-seal {
+  0% { opacity: 0; transform: translate3d(var(--fx-end-x),calc(var(--fx-end-y) - 35px),0) rotate(0) scale(1.25); }
+  34% { opacity: .72; }
+  44%, 68% { opacity: .88; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) rotate(150deg) scale(.72); }
+  100% { opacity: 0; transform: translate3d(var(--fx-end-x),calc(var(--fx-end-y) + 18px),0) rotate(210deg) scale(.5); }
+}
+
+@keyframes premium-contact-flare {
+  0% { opacity: 0; transform: scale(.1) rotate(-12deg); }
+  7% { opacity: 1; transform: scale(.78) rotate(0); }
+  24% { opacity: .92; transform: scale(1.06) rotate(8deg); }
+  100% { opacity: 0; transform: scale(1.48) rotate(20deg); }
+}
+
+@keyframes premium-impact-ring {
+  0% { opacity: .95; transform: scale(.2); }
+  100% { opacity: 0; transform: scale(2.2); }
+}
+
+@keyframes premium-impact-ring-inner {
+  0% { opacity: 1; transform: scale(.18) rotate(0); }
+  100% { opacity: 0; transform: scale(1.7) rotate(70deg); }
+}
+
+@keyframes premium-finisher-vignette {
+  0% { opacity: 0; transform: scale(.5); }
+  18% { opacity: .9; transform: scale(1.2); }
+  100% { opacity: 0; transform: scale(2.3); }
+}
+
+@keyframes premium-card-cast {
+  0%, 100% { transform: translate3d(0,0,0) scale(1); }
+  18% { transform: translate3d(var(--cast-back, -5px),2px,0) scale(.985); }
+  38% { transform: translate3d(var(--cast-forward, 7px),-3px,0) scale(1.018); }
+}
+
+@keyframes premium-card-strike {
+  0% { transform: translate3d(0,0,0) scale(1); }
+  8%, 18% { transform: translate3d(var(--cast-back, -8px),2px,0) scale(.98); }
+  34%, 42% { transform: translate3d(var(--cast-forward, 34px),-4px,0) scale(1.035); }
+  58% { transform: translate3d(var(--cast-forward, 34px),-4px,0) scale(1.035); }
+  78% { transform: translate3d(var(--cast-rebound, -5px),1px,0) scale(.995); }
+  100% { transform: translate3d(0,0,0) scale(1); }
+}
+
+@keyframes premium-local-hit {
+  0% { opacity: 0; transform: scale(.35); }
+  4% { opacity: .96; transform: scale(.72); }
+  17% { opacity: .68; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.32); }
+}
+
+@keyframes premium-damage-pop {
+  0% { opacity: 0; transform: translate3d(-50%,10px,0) scale(.46); }
+  12% { opacity: 1; transform: translate3d(-50%,-2px,0) scale(1.08); }
+  28% { opacity: 1; transform: translate3d(-50%,-10px,0) scale(.98); }
+  76% { opacity: .92; transform: translate3d(-50%,-40px,0) scale(1); }
+  100% { opacity: 0; transform: translate3d(-50%,-64px,0) scale(.82); }
+}
+
+@keyframes premium-effect-label {
+  0% { opacity: 0; transform: translate(-50%,-48%) scale(.55); }
+  14% { opacity: 1; transform: translate(-50%,-50%) scale(1.05); }
+  34% { opacity: 1; transform: translate(-50%,-54%) scale(.98); }
+  100% { opacity: 0; transform: translate(-50%,-82%) scale(.82); }
+}
+
+@keyframes premium-card-knockout {
+  0% { opacity: 1; transform: translate3d(0,0,0) rotate(0) scale(1); }
+  18% { opacity: 1; transform: translate3d(0,-3px,0) rotate(.8deg) scale(.985); }
+  52% { opacity: .86; transform: translate3d(0,3px,0) rotate(-2deg) scale(.965); }
+  100% { opacity: .68; transform: translate3d(0,8px,0) rotate(-5deg) scale(.94); }
+}
+
+@keyframes premium-ko-veil {
+  0%, 20% { opacity: 0; transform: translate3d(0,18px,0) scale(.92); }
+  52% { opacity: .78; }
+  100% { opacity: .62; transform: translate3d(0,-5px,0) scale(1.02); }
+}
+
+@keyframes premium-arena-flash {
+  0% { opacity: 0; }
+  5% { opacity: .8; }
+  22% { opacity: .28; }
+  100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .combat-particle-canvas {
+    display: none !important;
+  }
+
+  .technique-fx-layer {
+    display: block !important;
+  }
+
+  .technique-fx > span,
+  .technique-core,
+  .technique-ring,
+  .technique-flare {
+    animation: none !important;
+    opacity: 0 !important;
+    transform: none !important;
+  }
+
+  .technique-fx.has-impact .technique-flare {
+    left: var(--fx-end-x);
+    top: var(--fx-end-y);
+    opacity: .78 !important;
+    transform: scale(.82) !important;
+  }
+
+  .combat-fx {
+    display: block !important;
+  }
+
+  .fx-hit-flash,
+  .damage-pop {
+    animation-duration: .12s !important;
+  }
+}
+
 @keyframes fate-coin-flip {
   0% { transform: translateY(0) rotateY(0) scale(1); }
   42% { transform: translateY(-34px) rotateY(720deg) scale(1.08); }
@@ -2490,6 +3215,8 @@ dialog p:not(.kicker) {
   72%, 100% { transform: translate3d(34%, 8%, 0) rotate(8deg); opacity: .08; }
 }
 
+/* v18 레거시 연출은 회귀 참고용으로만 남기고 실제 무대에서는 격리한다. */
+@media (max-width: 0px) {
 /* §9 — 기술 데이터가 고르는 6종 무대 연출. 모든 노드는 미리 만든 풀을 재사용한다. */
 .technique-fx-layer {
   position: absolute;
@@ -2725,6 +3452,34 @@ dialog p:not(.kicker) {
   animation: arena-finisher-hit .48s linear;
   will-change: transform;
 }
+}
+
+.battle-card-slot.is-dodging {
+  animation: premium-technique-dodge var(--dodge-duration, .42s) cubic-bezier(.2,.8,.2,1);
+  will-change: transform;
+}
+
+@keyframes premium-technique-dodge {
+  0%, 100% { transform: translate3d(0,0,0); }
+  28% { transform: translate3d(38px,-4px,0) rotate(2deg); }
+  85% { transform: translate3d(29px,0,0) rotate(1deg); }
+}
+
+@keyframes premium-arena-finisher-hit {
+  0%, 100% { transform: translate3d(0,0,0) rotate(0); }
+  7% { transform: translate3d(-7px,3px,0) rotate(-.22deg); }
+  24% { transform: translate3d(6px,-3px,0) rotate(.18deg); }
+  43% { transform: translate3d(-4px,2px,0) rotate(-.12deg); }
+  64% { transform: translate3d(3px,-1px,0) rotate(.08deg); }
+  82% { transform: translate3d(-1px,0,0) rotate(-.03deg); }
+}
+
+.arena.is-finisher-hit,
+.arena.is-finisher-hit.is-weak-hit,
+.arena.is-finisher-hit.is-monster-hit {
+  animation: premium-arena-finisher-hit .42s linear;
+  will-change: transform;
+}
 
 /* 초1 기준: 모든 핵심 조작은 최소 60px, 보조 설명도 11px 이상. */
 .home-link,
@@ -2816,8 +3571,7 @@ dialog p:not(.kicker) {
   }
 
   .story-card::after,
-  .story-card.is-selected::after,
-  .technique-fx-layer {
+  .story-card.is-selected::after {
     display: none !important;
     animation: none !important;
   }

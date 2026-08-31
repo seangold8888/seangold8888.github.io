@@ -10,7 +10,7 @@
   <link rel="icon" href="../icon.png">
   <link rel="apple-touch-icon" href="../icon.png">
   <link rel="manifest" href="../manifest.json">
-  <link rel="stylesheet" href="styles.css?v=18">
+  <link rel="stylesheet" href="styles.css?v=19">
 </head>
 <body>
   <div class="sky" aria-hidden="true">
@@ -74,6 +74,7 @@
       </div>
 
       <div class="arena" id="arena">
+        <canvas class="combat-particle-canvas" id="combatParticleCanvas" aria-hidden="true"></canvas>
         <div class="technique-fx-layer" id="techniqueFxLayer" aria-hidden="true"></div>
         <div class="combatant enemy-combatant">
           <p class="combat-label">별그림자 상대</p>
@@ -143,10 +144,10 @@
   </dialog>
 
   <noscript>이야기 카드 배틀을 하려면 JavaScript를 켜 주세요.</noscript>
-  <script src="js/engine.js?v=18" defer></script>
-  <script src="js/audio.js?v=18" defer></script>
-  <script src="js/card-view.js?v=18" defer></script>
-  <script src="js/app.js?v=18" defer></script>
+  <script src="js/engine.js?v=19" defer></script>
+  <script src="js/audio.js?v=19" defer></script>
+  <script src="js/card-view.js?v=19" defer></script>
+  <script src="js/app.js?v=19" defer></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {

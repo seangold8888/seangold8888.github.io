@@ -4,10 +4,17 @@
   let context = null;
   let master = null;
   let room = null;
-  let impactBus = null;
-  let impactRoomSend = null;
+  let roomGain = null;
+  let uiBus = null;
+  let sfxBus = null;
+  let transientBus = null;
+  let bodyBus = null;
+  let materialBus = null;
+  let materialRoomSend = null;
+  let materialRoomDelay = null;
   let musicBus = null;
-  let noiseBuffer = null;
+  let musicDuckBus = null;
+  let noiseBuffers = null;
   let lastSelectAt = -Infinity;
   let muted = false;
   let musicMuted = false;
@@ -18,6 +25,8 @@
   let musicVariation = 0;
   let battleTense = false;
   let pageHidden = typeof document !== "undefined" && document.hidden;
+  const techniquePlanCache = new WeakMap();
+  const lastTechniqueVariation = Object.create(null);
 
   const LOOKAHEAD_MS = 50;
   const SCHEDULE_AHEAD_SECONDS = 0.18;
@@ -64,41 +73,65 @@
   function setupGraph(audio) {
     const compressor = audio.createDynamicsCompressor();
     const toneFilter = audio.createBiquadFilter();
-    const roomGain = audio.createGain();
-    const impactLow = audio.createBiquadFilter();
-    const impactShaper = audio.createWaveShaper();
-    const impactTrim = audio.createGain();
+    const uiFilter = audio.createBiquadFilter();
+    const dcFilter = audio.createBiquadFilter();
+    const bodyLow = audio.createBiquadFilter();
+    const bodyShaper = audio.createWaveShaper();
+    const bodyTrim = audio.createGain();
     master = audio.createGain();
     room = audio.createConvolver();
-    impactBus = audio.createGain();
-    impactRoomSend = audio.createGain();
+    roomGain = audio.createGain();
+    uiBus = audio.createGain();
+    sfxBus = audio.createGain();
+    transientBus = audio.createGain();
+    bodyBus = audio.createGain();
+    materialBus = audio.createGain();
+    materialRoomSend = audio.createGain();
+    materialRoomDelay = audio.createDelay(0.1);
     musicBus = audio.createGain();
+    musicDuckBus = audio.createGain();
 
-    master.gain.value = 0.56;
+    master.gain.value = 0.54;
     toneFilter.type = "lowpass";
-    toneFilter.frequency.value = 4700;
-    toneFilter.Q.value = 0.5;
-    compressor.threshold.value = -18;
-    compressor.knee.value = 20;
-    compressor.ratio.value = 2.5;
-    compressor.attack.value = 0.014;
-    compressor.release.value = 0.3;
+    toneFilter.frequency.value = 9500;
+    toneFilter.Q.value = 0.42;
+    uiFilter.type = "lowpass";
+    uiFilter.frequency.value = 6600;
+    uiFilter.Q.value = 0.45;
+    dcFilter.type = "highpass";
+    dcFilter.frequency.value = 35;
+    dcFilter.Q.value = 0.52;
+    compressor.threshold.value = -8;
+    compressor.knee.value = 4;
+    compressor.ratio.value = 12;
+    compressor.attack.value = 0.002;
+    compressor.release.value = 0.11;
     room.buffer = makeRoomImpulse(audio);
     roomGain.gain.value = 0.16;
-    impactLow.type = "lowshelf";
-    impactLow.frequency.value = 140;
-    impactLow.gain.value = 4.5;
-    impactShaper.curve = makeSoftClipCurve(2048, 1.7);
-    if ("oversample" in impactShaper) impactShaper.oversample = "2x";
-    impactTrim.gain.value = 0.55;
-    impactRoomSend.gain.value = 0.0001;
+    uiBus.gain.value = 1;
+    sfxBus.gain.value = 1;
+    transientBus.gain.value = 0.94;
+    bodyBus.gain.value = 1;
+    materialBus.gain.value = 0.92;
+    bodyLow.type = "lowshelf";
+    bodyLow.frequency.value = 170;
+    bodyLow.gain.value = 2.4;
+    bodyShaper.curve = makeSoftClipCurve(2048, 1.4);
+    if ("oversample" in bodyShaper) bodyShaper.oversample = "2x";
+    bodyTrim.gain.value = 0.62;
+    materialRoomSend.gain.value = 0.12;
+    materialRoomDelay.delayTime.value = 0.035;
     musicBus.gain.value = 0.0001;
+    musicDuckBus.gain.value = 1;
 
     room.connect(roomGain).connect(master);
-    impactBus.connect(impactLow).connect(impactShaper).connect(impactTrim);
-    impactTrim.connect(master);
-    impactTrim.connect(impactRoomSend).connect(room);
-    musicBus.connect(master);
+    uiBus.connect(uiFilter).connect(master);
+    transientBus.connect(sfxBus);
+    bodyBus.connect(bodyLow).connect(bodyShaper).connect(bodyTrim).connect(sfxBus);
+    materialBus.connect(sfxBus);
+    materialBus.connect(materialRoomSend).connect(materialRoomDelay).connect(room);
+    sfxBus.connect(dcFilter).connect(master);
+    musicBus.connect(musicDuckBus).connect(master);
     master.connect(toneFilter).connect(compressor).connect(audio.destination);
   }
 
@@ -106,22 +139,33 @@
     if (!context) {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       if (AudioContext) {
-        context = new AudioContext();
+        try {
+          context = new AudioContext({ latencyHint: "interactive" });
+        } catch (error) {
+          context = new AudioContext();
+        }
         setupGraph(context);
       }
     }
-    if (context && context.state === "suspended") {
-      const resumed = context.resume();
-      if (resumed && typeof resumed.then === "function") {
-        resumed.then(ensureMusicScheduler).catch(function () {});
-      }
+    if (
+      context &&
+      context.state !== "running" &&
+      context.state !== "closed" &&
+      typeof context.resume === "function"
+    ) {
+      try {
+        const resumed = context.resume();
+        if (resumed && typeof resumed.then === "function") {
+          resumed.then(ensureMusicScheduler).catch(function () {});
+        }
+      } catch (error) {}
     }
     if (context && context.state === "running") ensureMusicScheduler();
     return context;
   }
 
   function connectToMix(audio, node, roomAmount) {
-    node.connect(master);
+    node.connect(uiBus || master);
     if (roomAmount > 0) {
       const send = audio.createGain();
       send.gain.value = roomAmount;
@@ -140,14 +184,25 @@
   }
 
   function getNoise(audio) {
-    if (!noiseBuffer) {
-      noiseBuffer = audio.createBuffer(1, audio.sampleRate, audio.sampleRate);
-      const data = noiseBuffer.getChannelData(0);
-      for (let index = 0; index < data.length; index += 1) {
-        data[index] = Math.random() * 2 - 1;
-      }
+    if (!noiseBuffers) {
+      noiseBuffers = Array.from({ length: 3 }, function (_, bufferIndex) {
+        const length = Math.floor(audio.sampleRate * 0.72);
+        const buffer = audio.createBuffer(1, length, audio.sampleRate);
+        const data = buffer.getChannelData(0);
+        let brown = 0;
+        for (let index = 0; index < data.length; index += 1) {
+          const white = Math.random() * 2 - 1;
+          brown = (brown + 0.02 * white) / 1.02;
+          data[index] = bufferIndex === 2
+            ? Math.max(-1, Math.min(1, brown * 3.5))
+            : bufferIndex === 1
+              ? (white + (index ? data[index - 1] : 0)) * 0.42
+              : white;
+        }
+        return buffer;
+      });
     }
-    return noiseBuffer;
+    return noiseBuffers[Math.floor(Math.random() * noiseBuffers.length)];
   }
 
   function makePluckBuffer(audio, frequency, duration) {
@@ -316,93 +371,590 @@
     source.stop(start + duration + 0.02);
   }
 
-  function scheduleImpactRoom(start, strong) {
-    const tailEnd = start + (strong ? 0.36 : 0.18);
-    const roomPeak = strong ? 0.075 : 0.045;
-    impactRoomSend.gain.cancelScheduledValues(start);
-    impactRoomSend.gain.setValueAtTime(0.0001, start);
-    impactRoomSend.gain.setValueAtTime(0.0001, start + 0.045);
-    impactRoomSend.gain.linearRampToValueAtTime(roomPeak, start + 0.075);
-    impactRoomSend.gain.exponentialRampToValueAtTime(0.0001, tailEnd);
+  const MATERIAL_BY_EMOJI = Object.freeze({
+    "🪨": "stone",
+    "🗿": "stone",
+    "⚔️": "metal",
+    "🗡️": "metal",
+    "🪓": "metal",
+    "👑": "metal",
+    "🪙": "metal",
+    "🏹": "metal",
+    "✨": "crystal",
+    "🌟": "crystal",
+    "❄️": "crystal",
+    "🧊": "crystal",
+    "🪄": "crystal",
+    "💨": "air",
+    "🌊": "air",
+    "🎵": "air",
+    "🎺": "air",
+    "🔥": "fire",
+    "💥": "fire",
+    "🪔": "fire"
+  });
+  const DEFAULT_MATERIAL_BY_TYPE = Object.freeze({
+    brave: "metal",
+    wise: "paper",
+    magic: "crystal",
+    monster: "earth"
+  });
+  const VALID_TECHNIQUE_KINDS = Object.freeze([
+    "projectile",
+    "summon",
+    "strike",
+    "burst",
+    "aura",
+    "debuff"
+  ]);
+
+  function chooseTechniqueVariation(key) {
+    const previous = lastTechniqueVariation[key];
+    const first = Math.floor(Math.random() * 3);
+    const next = first === previous ? (first + 1 + Math.floor(Math.random() * 2)) % 3 : first;
+    lastTechniqueVariation[key] = next;
+    return next;
   }
 
-  function impactCore(audio, start, type, strong) {
-    const frequencies = {
-      brave: [108, 72],
-      wise: [100, 66],
-      magic: [96, 64],
-      monster: [92, 60]
+  function soundPlanForTechnique(plan) {
+    plan = plan || {};
+    const type = ["brave", "wise", "magic", "monster"].includes(plan.type)
+      ? plan.type
+      : "magic";
+    const kind = VALID_TECHNIQUE_KINDS.includes(plan.kind)
+      ? plan.kind
+      : "burst";
+    const outcome = ["hit", "blocked", "miss", "evade", "support"].includes(plan.outcome)
+      ? plan.outcome
+      : "support";
+    const material = MATERIAL_BY_EMOJI[plan.emoji] ||
+      DEFAULT_MATERIAL_BY_TYPE[type];
+    const strong = Boolean(plan.big || plan.weakness);
+    const key = [kind, type, material].join(":");
+    const hasContact = outcome === "hit";
+    const blocked = outcome === "blocked";
+    return {
+      kind: kind,
+      type: type,
+      material: material,
+      outcome: outcome,
+      variation: chooseTechniqueVariation(key),
+      strong: strong,
+      weakness: Boolean(plan.weakness),
+      knockout: Boolean(plan.knockout),
+      revive: Boolean(plan.revive),
+      intent: plan.sound || null,
+      support: outcome === "support",
+      hasTransient: hasContact || blocked,
+      hasBody: hasContact && type !== "magic",
+      hasImpact: hasContact,
+      impactAtMs: Math.max(0, Number(plan.impactAtMs) || 0),
+      totalMs: Math.max(0, Number(plan.totalMs) || 0),
+      direction: plan.actor === "enemy" || plan.direction < 0 ? -1 : 1
     };
-    const range = frequencies[type] || frequencies.brave;
-    const bodyDuration = strong ? 0.36 : 0.18;
-    const body = audio.createOscillator();
-    const bodyGain = audio.createGain();
-    const crack = audio.createBufferSource();
-    const crackFilter = audio.createBiquadFilter();
-    const crackGain = audio.createGain();
-    const crackDuration = strong ? 0.065 : 0.045;
+  }
 
-    duckMusicAt(start, strong ? 0.14 : 0.22, strong ? 0.38 : 0.25);
+  function resolvedTechniqueSoundPlan(plan) {
+    if (!plan || typeof plan !== "object") return soundPlanForTechnique(plan);
+    if (!techniquePlanCache.has(plan)) {
+      techniquePlanCache.set(plan, soundPlanForTechnique(plan));
+    }
+    const cached = techniquePlanCache.get(plan);
+    cached.knockout = Boolean(plan.knockout);
+    cached.revive = Boolean(plan.revive);
+    cached.weakness = Boolean(plan.weakness);
+    cached.strong = Boolean(plan.big || plan.weakness);
+    return cached;
+  }
 
-    body.type = "sine";
-    body.frequency.setValueAtTime(range[0] + humanDetune(3), start);
-    body.frequency.exponentialRampToValueAtTime(range[1], start + bodyDuration);
-    bodyGain.gain.setValueAtTime(0.0001, start);
-    bodyGain.gain.linearRampToValueAtTime(strong ? 0.13 : 0.11, start + 0.0025);
-    bodyGain.gain.exponentialRampToValueAtTime(0.0001, start + bodyDuration);
-    body.connect(bodyGain).connect(impactBus);
-    body.start(start);
-    body.stop(start + bodyDuration + 0.02);
+  function connectWithPan(audio, node, destination, start, duration, from, to) {
+    if (typeof audio.createStereoPanner !== "function") {
+      node.connect(destination);
+      return null;
+    }
+    const panner = audio.createStereoPanner();
+    const safeFrom = Math.max(-0.35, Math.min(0.35, from || 0));
+    const safeTo = Math.max(-0.35, Math.min(0.35, to || 0));
+    panner.pan.setValueAtTime(safeFrom, start);
+    panner.pan.linearRampToValueAtTime(safeTo, start + duration);
+    node.connect(panner).connect(destination);
+    return panner;
+  }
 
-    crack.buffer = getNoise(audio);
-    crackFilter.type = "bandpass";
-    crackFilter.frequency.value = strong ? 1850 : 900;
-    crackFilter.Q.value = strong ? 0.55 : 0.7;
-    crackGain.gain.setValueAtTime(0.0001, start);
-    crackGain.gain.linearRampToValueAtTime(strong ? 0.13 : 0.075, start + 0.002);
-    crackGain.gain.exponentialRampToValueAtTime(0.0001, start + crackDuration);
-    crack.connect(crackFilter).connect(crackGain).connect(impactBus);
-    crack.start(start);
-    crack.stop(start + crackDuration + 0.02);
+  function noiseBurstAt(audio, start, options) {
+    options = options || {};
+    const duration = Math.max(0.008, options.duration || 0.045);
+    const source = audio.createBufferSource();
+    const filter = audio.createBiquadFilter();
+    const gain = audio.createGain();
+    const buffer = getNoise(audio);
+    const offsetLimit = Math.max(0, buffer.duration - duration - 0.015);
+    source.buffer = buffer;
+    filter.type = options.filterType || "bandpass";
+    filter.frequency.value = Math.max(
+      90,
+      (options.frequency || 2200) * (0.94 + Math.random() * 0.12)
+    );
+    filter.Q.value = options.q || 0.72;
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.linearRampToValueAtTime(
+      Math.min(0.075, options.volume || 0.052),
+      start + Math.min(0.003, duration * 0.14)
+    );
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    source.connect(filter).connect(gain);
+    connectWithPan(
+      audio,
+      gain,
+      options.bus || transientBus,
+      start,
+      duration,
+      options.pan || 0,
+      options.pan || 0
+    );
+    source.start(start, Math.random() * offsetLimit, duration + 0.008);
+    source.stop(start + duration + 0.012);
+  }
 
-    scheduleImpactRoom(start, strong);
+  function whooshAt(audio, start, options) {
+    options = options || {};
+    const duration = Math.max(0.06, Math.min(0.44, options.duration || 0.18));
+    const source = audio.createBufferSource();
+    const filter = audio.createBiquadFilter();
+    const gain = audio.createGain();
+    const buffer = getNoise(audio);
+    const offsetLimit = Math.max(0, buffer.duration - duration - 0.02);
+    source.buffer = buffer;
+    filter.type = "bandpass";
+    filter.Q.value = options.q || 0.58;
+    filter.frequency.setValueAtTime(
+      Math.max(90, options.fromHz || 700),
+      start
+    );
+    filter.frequency.exponentialRampToValueAtTime(
+      Math.max(90, options.toHz || 3200),
+      start + duration
+    );
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.linearRampToValueAtTime(
+      Math.min(0.055, options.volume || 0.024),
+      start + Math.min(0.055, duration * 0.28)
+    );
+    gain.gain.setValueAtTime(
+      Math.min(0.055, options.volume || 0.024),
+      start + duration * 0.62
+    );
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    source.connect(filter).connect(gain);
+    connectWithPan(
+      audio,
+      gain,
+      materialBus,
+      start,
+      duration,
+      options.panFrom || 0,
+      options.panTo || 0
+    );
+    source.start(start, Math.random() * offsetLimit, duration + 0.012);
+    source.stop(start + duration + 0.018);
+  }
+
+  function toneSweepAt(audio, start, options) {
+    options = options || {};
+    const duration = Math.max(0.045, options.duration || 0.16);
+    const oscillator = audio.createOscillator();
+    const gain = audio.createGain();
+    oscillator.type = options.type || "triangle";
+    oscillator.frequency.setValueAtTime(
+      Math.max(45, (options.fromHz || 180) * Math.pow(2, humanDetune(8) / 1200)),
+      start
+    );
+    oscillator.frequency.exponentialRampToValueAtTime(
+      Math.max(40, options.toHz || 95),
+      start + duration
+    );
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.linearRampToValueAtTime(
+      Math.min(0.13, options.volume || 0.07),
+      start + Math.min(0.003, duration * 0.1)
+    );
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    oscillator.connect(gain).connect(options.bus || bodyBus);
+    oscillator.start(start);
+    oscillator.stop(start + duration + 0.02);
+  }
+
+  function modalHitAt(audio, start, options) {
+    options = options || {};
+    const ratios = options.ratios || [1, 2.17, 3.86];
+    const levels = options.levels || [1, 0.38, 0.18];
+    const decays = options.decays || [1, 0.72, 0.5];
+    ratios.forEach(function (ratio, index) {
+      const duration = Math.max(0.07, (options.duration || 0.28) * decays[index]);
+      const oscillator = audio.createOscillator();
+      const gain = audio.createGain();
+      oscillator.type = index ? "sine" : (options.type || "triangle");
+      oscillator.frequency.value = (options.baseHz || 420) * ratio;
+      oscillator.detune.value = humanDetune(18);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.linearRampToValueAtTime(
+        Math.min(0.065, (options.volume || 0.035) * levels[index]),
+        start + (index ? 0.004 : 0.0025)
+      );
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+      oscillator.connect(gain).connect(materialBus);
+      oscillator.start(start);
+      oscillator.stop(start + duration + 0.02);
+    });
+  }
+
+  function techniqueLaunch(plan) {
+    if (muted || !plan) return null;
+    const audio = ctx();
+    if (!audio) return null;
+    const soundPlan = resolvedTechniqueSoundPlan(plan);
+    const start = audio.currentTime + 0.005;
+    const direction = soundPlan.direction;
+    const panFrom = direction > 0 ? 0.18 : -0.18;
+    const panTo = -panFrom;
+    const impactSeconds = Math.max(0.08, soundPlan.impactAtMs / 1000);
+
+    if (soundPlan.kind === "projectile") {
+      noiseBurstAt(audio, start, {
+        frequency: soundPlan.material === "stone" ? 1800 : 3100,
+        duration: 0.026,
+        volume: 0.03,
+        pan: panFrom
+      });
+      whooshAt(audio, start + 0.028, {
+        fromHz: soundPlan.material === "stone" ? 780 : 1250,
+        toHz: soundPlan.material === "stone" ? 3200 : 4700,
+        duration: Math.min(0.38, Math.max(0.18, impactSeconds - 0.065)),
+        volume: 0.022,
+        panFrom: panFrom,
+        panTo: panTo
+      });
+    } else if (soundPlan.kind === "summon") {
+      modalHitAt(audio, start, {
+        baseHz: soundPlan.material === "metal" ? 520 : 610,
+        ratios: [1, 1.5, 2.76],
+        levels: [1, 0.32, 0.15],
+        duration: 0.22,
+        volume: 0.022
+      });
+      whooshAt(audio, start + 0.205, {
+        fromHz: 900,
+        toHz: 3600,
+        duration: Math.min(0.28, Math.max(0.16, impactSeconds - 0.23)),
+        volume: 0.027,
+        panFrom: panFrom,
+        panTo: panTo
+      });
+    } else if (soundPlan.kind === "strike") {
+      whooshAt(audio, start + 0.012, {
+        fromHz: 3900,
+        toHz: 1050,
+        duration: 0.12,
+        volume: 0.034,
+        panFrom: panFrom,
+        panTo: panTo
+      });
+    } else if (soundPlan.kind === "burst") {
+      whooshAt(audio, start + 0.01, {
+        fromHz: 420,
+        toHz: 3200,
+        duration: 0.17,
+        volume: 0.027,
+        panFrom: 0,
+        panTo: 0
+      });
+      toneSweepAt(audio, start + 0.018, {
+        fromHz: 240,
+        toHz: 620,
+        duration: 0.17,
+        volume: 0.018,
+        bus: materialBus,
+        type: "sine"
+      });
+    } else if (soundPlan.kind === "aura") {
+      [523.25, 659.25, 880].forEach(function (frequency, index) {
+        modalHitAt(audio, start + index * 0.045, {
+          baseHz: frequency,
+          ratios: [1, 2.01],
+          levels: [1, 0.18],
+          decays: [1, 0.58],
+          duration: 0.26,
+          volume: 0.018 + index * 0.002
+        });
+      });
+    } else {
+      whooshAt(audio, start, {
+        fromHz: 3400,
+        toHz: 520,
+        duration: 0.19,
+        volume: 0.024,
+        panFrom: 0,
+        panTo: panTo * 0.35
+      });
+      toneSweepAt(audio, start + 0.045, {
+        fromHz: 390,
+        toHz: 205,
+        duration: 0.17,
+        volume: 0.018,
+        bus: materialBus,
+        type: "sine"
+      });
+    }
+
+    if (soundPlan.outcome === "miss" || soundPlan.outcome === "evade") {
+      whooshAt(audio, start + Math.max(0.04, impactSeconds - 0.1), {
+        fromHz: 4300,
+        toHz: 1450,
+        duration: 0.14,
+        volume: soundPlan.outcome === "evade" ? 0.029 : 0.024,
+        panFrom: panFrom,
+        panTo: panTo
+      });
+    }
+    return soundPlan;
+  }
+
+  function materialImpactAt(audio, start, soundPlan) {
+    const strong = soundPlan.strong;
+    const variation = soundPlan.variation;
+    const duration = strong ? 0.29 : 0.17;
+    const transientFrequencies = {
+      stone: 1500,
+      metal: 4300,
+      paper: 2750,
+      crystal: 3600,
+      air: 2400,
+      fire: 2100,
+      earth: 980
+    };
+    noiseBurstAt(audio, start, {
+      frequency: transientFrequencies[soundPlan.material] || 2200,
+      duration: strong ? 0.052 : 0.036,
+      volume: strong ? 0.07 : 0.052,
+      q: soundPlan.material === "earth" ? 0.5 : 0.76
+    });
+
+    if (soundPlan.hasBody) {
+      const bodyRanges = {
+        stone: [205, 108],
+        metal: [230, 126],
+        paper: [188, 116],
+        air: [170, 112],
+        fire: [195, 104],
+        earth: [178, 88]
+      };
+      const range = bodyRanges[soundPlan.material] ||
+        (soundPlan.type === "monster" ? [178, 88] : [210, 116]);
+      toneSweepAt(audio, start, {
+        fromHz: range[0] * (1 + variation * 0.025),
+        toHz: range[1],
+        duration: duration,
+        volume: strong ? 0.108 : 0.078,
+        type: soundPlan.type === "monster" ? "triangle" : "sine"
+      });
+    }
+
+    if (soundPlan.material === "stone") {
+      modalHitAt(audio, start + 0.008, {
+        baseHz: 210 + variation * 14,
+        ratios: [1, 2.1, 4.67],
+        levels: [1, 0.29, 0.1],
+        duration: strong ? 0.34 : 0.24,
+        volume: 0.039
+      });
+    } else if (soundPlan.material === "metal") {
+      modalHitAt(audio, start + 0.006, {
+        baseHz: 620 + variation * 26,
+        ratios: [1, 1.63, 2.78],
+        levels: [1, 0.42, 0.18],
+        duration: strong ? 0.4 : 0.26,
+        volume: strong ? 0.036 : 0.03
+      });
+    } else if (soundPlan.material === "crystal") {
+      modalHitAt(audio, start + 0.004, {
+        baseHz: 540 + variation * 34,
+        ratios: [1, 2.74, 4.08],
+        levels: [1, 0.28, 0.1],
+        duration: strong ? 0.48 : 0.34,
+        volume: strong ? 0.034 : 0.028,
+        type: "sine"
+      });
+    } else if (soundPlan.material === "paper" || soundPlan.material === "air") {
+      noiseBurstAt(audio, start + 0.012, {
+        frequency: soundPlan.material === "paper" ? 3150 : 2500,
+        duration: 0.075,
+        volume: 0.026,
+        filterType: "highpass",
+        bus: materialBus
+      });
+      modalHitAt(audio, start + 0.012, {
+        baseHz: 305 + variation * 18,
+        ratios: [1, 1.71, 2.83],
+        levels: [1, 0.28, 0.12],
+        duration: 0.22,
+        volume: 0.027
+      });
+    } else {
+      noiseBurstAt(audio, start + 0.008, {
+        frequency: soundPlan.material === "fire" ? 1700 : 720,
+        duration: strong ? 0.12 : 0.085,
+        volume: 0.031,
+        q: 0.46,
+        bus: materialBus
+      });
+      modalHitAt(audio, start + 0.01, {
+        baseHz: soundPlan.material === "fire" ? 260 : 185,
+        ratios: [1, 1.56, 2.94],
+        levels: [1, 0.25, 0.1],
+        duration: strong ? 0.34 : 0.23,
+        volume: 0.032
+      });
+    }
+
+    if (strong) {
+      toneSweepAt(audio, start + 0.002, {
+        fromHz: 78,
+        toHz: 55,
+        duration: 0.31,
+        volume: 0.038,
+        type: "sine"
+      });
+    }
+  }
+
+  function weaknessChimeAt(audio, start) {
+    [1046.5, 1567.98].forEach(function (frequency, index) {
+      modalHitAt(audio, start + 0.025 + index * 0.057, {
+        baseHz: frequency,
+        ratios: [1, 2.01],
+        levels: [1, 0.13],
+        decays: [1, 0.54],
+        duration: 0.32,
+        volume: index ? 0.015 : 0.019,
+        type: "sine"
+      });
+    });
+  }
+
+  function supportBloomAt(audio, start, soundPlan) {
+    const notes = soundPlan.revive
+      ? [523.25, 659.25, 783.99, 1046.5]
+      : [659.25, 830.61, 1046.5];
+    notes.forEach(function (frequency, index) {
+      modalHitAt(audio, start + index * 0.05, {
+        baseHz: frequency,
+        ratios: [1, 2.01],
+        levels: [1, 0.13],
+        decays: [1, 0.5],
+        duration: soundPlan.revive ? 0.5 : 0.34,
+        volume: soundPlan.revive ? 0.022 : 0.017,
+        type: "sine"
+      });
+    });
+  }
+
+  function techniqueImpact(plan) {
+    if (muted || !plan) return null;
+    const audio = ctx();
+    if (!audio) return null;
+    const soundPlan = resolvedTechniqueSoundPlan(plan);
+    const start = audio.currentTime + 0.003;
+
+    if (soundPlan.outcome === "miss" || soundPlan.outcome === "evade") {
+      return soundPlan;
+    }
+    if (soundPlan.support && (
+      soundPlan.kind === "aura" ||
+      soundPlan.revive ||
+      soundPlan.intent === "heal"
+    )) {
+      duckMusicAt(start, 0.58, 0.22);
+      supportBloomAt(audio, start, soundPlan);
+      return soundPlan;
+    }
+    if (soundPlan.support) {
+      duckMusicAt(start, 0.62, 0.18);
+      noiseBurstAt(audio, start, {
+        frequency: soundPlan.kind === "debuff" ? 1150 : 2450,
+        duration: 0.032,
+        volume: 0.026,
+        q: 0.72
+      });
+      modalHitAt(audio, start + 0.006, {
+        baseHz: soundPlan.kind === "debuff" ? 330 : 620,
+        ratios: soundPlan.kind === "debuff" ? [1, 1.41, 2.13] : [1, 1.5, 2.5],
+        levels: [1, 0.23, 0.09],
+        duration: 0.24,
+        volume: 0.021,
+        type: "sine"
+      });
+      return soundPlan;
+    }
+    if (soundPlan.outcome === "blocked") {
+      duckMusicAt(start, 0.62, 0.16);
+      noiseBurstAt(audio, start, {
+        frequency: 3100,
+        duration: 0.024,
+        volume: 0.032
+      });
+      modalHitAt(audio, start + 0.008, {
+        baseHz: 880,
+        ratios: [1, 1.5, 2.42],
+        levels: [1, 0.22, 0.08],
+        duration: 0.22,
+        volume: 0.022,
+        type: "sine"
+      });
+      return soundPlan;
+    }
+
+    duckMusicAt(
+      start,
+      soundPlan.strong ? 0.28 : 0.42,
+      soundPlan.strong ? 0.38 : 0.24
+    );
+    materialImpactAt(audio, start, soundPlan);
+    if (soundPlan.weakness) weaknessChimeAt(audio, start);
+    if (soundPlan.revive) {
+      supportBloomAt(audio, start + 0.09, Object.assign({}, soundPlan, {
+        revive: true
+      }));
+    }
+    if (soundPlan.knockout) {
+      noiseBurstAt(audio, start + 0.075, {
+        frequency: 520,
+        duration: 0.085,
+        volume: 0.027,
+        q: 0.55,
+        bus: materialBus
+      });
+      toneSweepAt(audio, start + 0.09, {
+        fromHz: 420,
+        toHz: 220,
+        duration: 0.3,
+        volume: 0.016,
+        bus: materialBus,
+        type: "sine"
+      });
+    }
+    return soundPlan;
   }
 
   function attackSound(type, strong) {
-    if (muted) return;
-    const audio = ctx();
-    if (!audio) return;
-    const start = audio.currentTime + 0.012;
-    const weight = strong ? 1.08 : 1;
-    impactCore(audio, start, type, strong);
-
-    if (type === "magic") {
-      noiseSweepAt(audio, start, 680, 2900, 0.24, 0.014 * weight, 0.03);
-      bell(strong ? 783.99 : 659.25, 0.055, {
-        volume: 0.015 * weight,
-        duration: 0.4,
-        room: 0.1
-      });
-      return;
-    }
-
-    if (type === "wise") {
-      noiseSweepAt(audio, start, 2400, 920, 0.11, 0.018 * weight, 0.02);
-      pluck(392, 0.018, { volume: 0.036 * weight, duration: 0.26, room: 0.08 });
-      pluck(783.99, 0.052, { volume: 0.018 * weight, duration: 0.22, room: 0.1 });
-      return;
-    }
-
-    if (type === "monster") {
-      noiseSweepAt(audio, start, 620, 260, 0.16, 0.026 * weight, 0.02);
-      return;
-    }
-
-    noiseSweepAt(audio, start, 3400, 850, 0.13, 0.024 * weight, 0.02);
-    bell(880, 0.045, {
-      volume: 0.008 * weight,
-      duration: 0.19,
-      room: 0.08
+    return techniqueImpact({
+      type: type,
+      kind: "strike",
+      emoji: type === "magic" ? "✨" : "⚔️",
+      big: Boolean(strong),
+      weakness: Boolean(strong),
+      outcome: "hit",
+      impactAtMs: 0,
+      totalMs: 420
     });
   }
 
@@ -572,12 +1124,15 @@
   }
 
   function duckMusicAt(start, depth, duration) {
-    if (!musicCanRun()) return;
-    const current = Math.max(0.0001, musicBus.gain.value || musicGainTarget());
-    musicBus.gain.cancelScheduledValues(start);
-    musicBus.gain.setValueAtTime(current, start);
-    musicBus.gain.exponentialRampToValueAtTime(Math.max(0.0001, depth), start + 0.012);
-    musicBus.gain.exponentialRampToValueAtTime(musicGainTarget(), start + duration);
+    if (!musicCanRun() || !musicDuckBus) return;
+    const current = Math.max(0.0001, musicDuckBus.gain.value || 1);
+    musicDuckBus.gain.cancelScheduledValues(start);
+    musicDuckBus.gain.setValueAtTime(current, start);
+    musicDuckBus.gain.exponentialRampToValueAtTime(
+      Math.max(0.0001, Math.min(1, depth)),
+      start + 0.012
+    );
+    musicDuckBus.gain.exponentialRampToValueAtTime(1, start + duration);
   }
 
   function duckMusic() {
@@ -601,6 +1156,30 @@
     bell(1046.5, 0.13, { volume: 0.025, duration: 0.56 });
   }
 
+  function rampEffectsMuteState(value) {
+    if (!context) return;
+    const now = context.currentTime;
+    [uiBus, sfxBus].forEach(function (bus) {
+      if (!bus) return;
+      const current = Math.max(0.0001, bus.gain.value || 0.0001);
+      bus.gain.cancelScheduledValues(now);
+      bus.gain.setValueAtTime(current, now);
+      bus.gain.exponentialRampToValueAtTime(
+        value ? 0.0001 : 1,
+        now + 0.02
+      );
+    });
+    if (roomGain) {
+      const currentRoom = Math.max(0.0001, roomGain.gain.value || 0.0001);
+      roomGain.gain.cancelScheduledValues(now);
+      roomGain.gain.setValueAtTime(currentRoom, now);
+      roomGain.gain.exponentialRampToValueAtTime(
+        value ? 0.0001 : 0.16,
+        now + 0.025
+      );
+    }
+  }
+
   const api = {
     prime: function () {
       const audio = ctx();
@@ -613,6 +1192,7 @@
       try {
         localStorage.setItem("cards_muted", muted ? "1" : "0");
       } catch (error) {}
+      rampEffectsMuteState(muted);
       if (!muted) {
         ctx();
         pluck(523.25, 0, { volume: 0.045, duration: 0.3 });
@@ -666,6 +1246,9 @@
       bell(880, 0, { volume: 0.032, duration: 0.5 });
       bell(1318.51, 0.055, { volume: 0.021, duration: 0.42 });
     },
+    soundPlanForTechnique: soundPlanForTechnique,
+    techniqueLaunch: techniqueLaunch,
+    techniqueImpact: techniqueImpact,
     attack: attackSound,
     hit: function () {
       attackSound("brave", false);
