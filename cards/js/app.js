@@ -109,7 +109,16 @@
       selectedCard = battleCards.find(isUnlocked) || null;
     }
 
-    cards.forEach(function (card) {
+    // 깨어난 카드가 맨 위, 그다음 깨울 수 있는 대전 카드, 수집 전용은 마지막.
+    // 같은 묶음 안에서는 원래 순서를 지킨다(안정 정렬).
+    const shelfOrder = cards.map(function (card, index) {
+      const tier = isUnlocked(card) ? 0 : (isPlayableCard(card) ? 1 : 2);
+      return { card: card, tier: tier, index: index };
+    }).sort(function (a, b) {
+      return a.tier - b.tier || a.index - b.index;
+    }).map(function (entry) { return entry.card; });
+
+    shelfOrder.forEach(function (card) {
       const locked = !isUnlocked(card);
       const collectionOnly = !isPlayableCard(card);
       const cardEl = window.CardView.create(card, {
