@@ -56,7 +56,10 @@
       "unlock": "cinderella",
       "kind": "defense",
       "desc": "다음 공격 피해를 0으로 막아요",
-      "effect": { "type": "guard_zero", "amount": 1 }
+      "effect": {
+        "type": "guard_zero",
+        "amount": 1
+      }
     },
     {
       "id": "pumpkin_carriage",
@@ -65,7 +68,10 @@
       "unlock": "cinderella",
       "kind": "boost",
       "desc": "이번 기술 데미지 +20",
-      "effect": { "type": "boost_damage", "amount": 20 }
+      "effect": {
+        "type": "boost_damage",
+        "amount": 20
+      }
     },
     {
       "id": "sheepskin_cloak",
@@ -74,7 +80,10 @@
       "unlock": "odyssey_cyclops",
       "kind": "defense",
       "desc": "다음 공격 데미지 -20",
-      "effect": { "type": "reduce_next_damage", "amount": 20 }
+      "effect": {
+        "type": "reduce_next_damage",
+        "amount": 20
+      }
     },
     {
       "id": "brick",
@@ -83,7 +92,10 @@
       "unlock": "threepigs",
       "kind": "defense",
       "desc": "다음 공격 데미지 -30",
-      "effect": { "type": "reduce_next_damage", "amount": 30 }
+      "effect": {
+        "type": "reduce_next_damage",
+        "amount": 30
+      }
     },
     {
       "id": "rice_cake",
@@ -92,7 +104,10 @@
       "unlock": "sunmoon",
       "kind": "resource",
       "desc": "별사탕을 2개 얻어요",
-      "effect": { "type": "gain_stars", "amount": 2 }
+      "effect": {
+        "type": "gain_stars",
+        "amount": 2
+      }
     },
     {
       "id": "golden_goose_egg",
@@ -101,7 +116,10 @@
       "unlock": "jack_story",
       "kind": "heal",
       "desc": "HP를 30 회복해요",
-      "effect": { "type": "heal", "amount": 30 }
+      "effect": {
+        "type": "heal",
+        "amount": 30
+      }
     },
     {
       "id": "ruyi_shard",
@@ -110,7 +128,10 @@
       "unlock": "sunwukong",
       "kind": "boost",
       "desc": "이번 기술 비용 -1",
-      "effect": { "type": "discount_attack", "amount": 1 }
+      "effect": {
+        "type": "discount_attack",
+        "amount": 1
+      }
     },
     {
       "id": "sesame_oil",
@@ -119,7 +140,10 @@
       "unlock": "sunmoon",
       "kind": "control",
       "desc": "상대 다음 기술은 앞면이어야 성공",
-      "effect": { "type": "oil_coin", "amount": 1 }
+      "effect": {
+        "type": "oil_coin",
+        "amount": 1
+      }
     },
     {
       "id": "daedong_water",
@@ -128,7 +152,10 @@
       "unlock": "bongi",
       "kind": "resource",
       "desc": "상대 별사탕 1개를 가져와요",
-      "effect": { "type": "steal_stars", "amount": 1 }
+      "effect": {
+        "type": "steal_stars",
+        "amount": 1
+      }
     }
   ],
   "cards": [
@@ -151,14 +178,23 @@
           "cost": 1,
           "dmg": 20,
           "fx": null,
-          "desc": ""
+          "desc": "",
+          "vfx": {
+            "kind": "strike",
+            "emoji": "👊"
+          }
         },
         {
           "name": "열두 과업",
           "cost": 3,
           "dmg": 60,
           "fx": null,
-          "desc": ""
+          "desc": "",
+          "vfx": {
+            "kind": "burst",
+            "emoji": "💥",
+            "big": true
+          }
         }
       ],
       "unlock": "heracles",
@@ -183,14 +219,22 @@
           "cost": 1,
           "dmg": 0,
           "fx": "weaken_next_20",
-          "desc": "다음 기술 피해를 최대 20 줄여요 (최소 10)"
+          "desc": "다음 기술 피해를 최대 20 줄여요 (최소 10)",
+          "vfx": {
+            "kind": "debuff",
+            "emoji": "💨"
+          }
         },
         {
           "name": "의적의 화살",
           "cost": 2,
           "dmg": 40,
           "fx": null,
-          "desc": ""
+          "desc": "",
+          "vfx": {
+            "kind": "projectile",
+            "emoji": "🏹"
+          }
         }
       ],
       "unlock": "honggildong",
@@ -215,14 +259,23 @@
           "cost": 1,
           "dmg": 20,
           "fx": null,
-          "desc": ""
+          "desc": "",
+          "vfx": {
+            "kind": "strike",
+            "emoji": "⚔️"
+          }
         },
         {
           "name": "메두사의 머리",
           "cost": 3,
           "dmg": 30,
           "fx": "skip_next_enemy",
-          "desc": "상대는 다음 턴 기술을 쓸 수 없다"
+          "desc": "상대는 다음 턴 기술을 쓸 수 없다",
+          "vfx": {
+            "kind": "debuff",
+            "emoji": "🗿",
+            "big": true
+          }
         }
       ],
       "unlock": "perseus",
@@ -243,14 +296,22 @@
           "cost": 1,
           "dmg": 20,
           "fx": null,
-          "desc": ""
+          "desc": "",
+          "vfx": {
+            "kind": "strike",
+            "emoji": "🌱"
+          }
         },
         {
           "name": "황금 거위 훔치기",
           "cost": 2,
           "dmg": 30,
           "fx": "gain_star_1",
-          "desc": "내 별사탕 +1"
+          "desc": "내 별사탕 +1",
+          "vfx": {
+            "kind": "aura",
+            "emoji": "🥚"
+          }
         }
       ],
       "unlock": null,
@@ -275,14 +336,22 @@
           "cost": 1,
           "dmg": 10,
           "fx": null,
-          "desc": ""
+          "desc": "",
+          "vfx": {
+            "kind": "projectile",
+            "emoji": "🌾"
+          }
         },
         {
           "name": "삼형제 박치기",
           "cost": 2,
           "dmg": 30,
           "fx": null,
-          "desc": ""
+          "desc": "",
+          "vfx": {
+            "kind": "strike",
+            "emoji": "🐷"
+          }
         }
       ],
       "unlock": "threepigs",
@@ -307,7 +376,12 @@
           "cost": 3,
           "dmg": 50,
           "fx": null,
-          "desc": ""
+          "desc": "",
+          "vfx": {
+            "kind": "strike",
+            "emoji": "🗡️",
+            "big": true
+          }
         }
       ],
       "unlock": "arthur",
@@ -333,14 +407,23 @@
           "cost": 1,
           "dmg": 20,
           "fx": null,
-          "desc": ""
+          "desc": "",
+          "vfx": {
+            "kind": "strike",
+            "emoji": "🗡️"
+          }
         },
         {
           "name": "트로이 목마",
           "cost": 3,
           "dmg": 60,
           "fx": null,
-          "desc": ""
+          "desc": "",
+          "vfx": {
+            "kind": "summon",
+            "emoji": "🐴",
+            "big": true
+          }
         }
       ],
       "unlock": "odyssey_cyclops",
@@ -365,14 +448,22 @@
           "cost": 1,
           "dmg": 10,
           "fx": null,
-          "desc": ""
+          "desc": "",
+          "vfx": {
+            "kind": "projectile",
+            "emoji": "👠"
+          }
         },
         {
           "name": "호박마차 돌진",
           "cost": 2,
           "dmg": 30,
           "fx": null,
-          "desc": ""
+          "desc": "",
+          "vfx": {
+            "kind": "summon",
+            "emoji": "🎃"
+          }
         }
       ],
       "unlock": "cinderella",
@@ -397,14 +488,23 @@
           "cost": 1,
           "dmg": 10,
           "fx": null,
-          "desc": ""
+          "desc": "",
+          "vfx": {
+            "kind": "strike",
+            "emoji": "🐢"
+          }
         },
         {
           "name": "느림보 역전",
           "cost": 3,
           "dmg": 0,
           "fx": "dmg_half_enemy_hp",
-          "desc": "데미지 = 상대 남은 HP의 절반"
+          "desc": "데미지 = 상대 남은 HP의 절반",
+          "vfx": {
+            "kind": "burst",
+            "emoji": "🏁",
+            "big": true
+          }
         }
       ],
       "unlock": "tortoisehare",
@@ -429,14 +529,23 @@
           "cost": 1,
           "dmg": 10,
           "fx": null,
-          "desc": ""
+          "desc": "",
+          "vfx": {
+            "kind": "projectile",
+            "emoji": "🪨"
+          }
         },
         {
           "name": "사냥꾼 부르기",
           "cost": 2,
           "dmg": 40,
           "fx": null,
-          "desc": ""
+          "desc": "",
+          "vfx": {
+            "kind": "summon",
+            "emoji": "🪓",
+            "big": true
+          }
         }
       ],
       "unlock": null,
@@ -457,14 +566,23 @@
           "cost": 2,
           "dmg": 0,
           "fx": "v2_team_heal_10",
-          "desc": "내 카드 전원 HP +10 (v2)"
+          "desc": "내 카드 전원 HP +10 (v2)",
+          "vfx": {
+            "kind": "aura",
+            "emoji": "🎵"
+          }
         },
         {
           "name": "왁자지껄 대소동",
           "cost": 3,
           "dmg": 40,
           "fx": null,
-          "desc": ""
+          "desc": "",
+          "vfx": {
+            "kind": "burst",
+            "emoji": "🎺",
+            "big": true
+          }
         }
       ],
       "unlock": "bremen",
@@ -486,14 +604,22 @@
           "cost": 1,
           "dmg": 10,
           "fx": "dmg_stack_10",
-          "desc": "쓸 때마다 데미지 +10 (10→20→30…)"
+          "desc": "쓸 때마다 데미지 +10 (10→20→30…)",
+          "vfx": {
+            "kind": "strike",
+            "emoji": "📏"
+          }
         },
         {
           "name": "참새 친구 부르기",
           "cost": 2,
           "dmg": 0,
           "fx": "heal_40",
-          "desc": "HP 40 회복"
+          "desc": "HP 40 회복",
+          "vfx": {
+            "kind": "summon",
+            "emoji": "🐦"
+          }
         }
       ],
       "unlock": "pinocchio",
@@ -518,14 +644,23 @@
           "cost": 2,
           "dmg": 0,
           "fx": "v2_summon_clone",
-          "desc": "대기석에 분신 소환 (v2)"
+          "desc": "대기석에 분신 소환 (v2)",
+          "vfx": {
+            "kind": "summon",
+            "emoji": "🐒"
+          }
         },
         {
           "name": "여의봉 크게!",
           "cost": 3,
           "dmg": 50,
           "fx": null,
-          "desc": ""
+          "desc": "",
+          "vfx": {
+            "kind": "strike",
+            "emoji": "🪄",
+            "big": true
+          }
         }
       ],
       "unlock": "sunwukong",
@@ -547,21 +682,34 @@
           "cost": 1,
           "dmg": 20,
           "fx": null,
-          "desc": ""
+          "desc": "",
+          "vfx": {
+            "kind": "projectile",
+            "emoji": "✨"
+          }
         },
         {
           "name": "호박 마법",
           "cost": 2,
           "dmg": 0,
           "fx": "heal_40",
-          "desc": "HP 40 회복"
+          "desc": "HP 40 회복",
+          "vfx": {
+            "kind": "aura",
+            "emoji": "🎃"
+          }
         },
         {
           "name": "자정의 기적",
           "cost": 4,
           "dmg": 0,
           "fx": "v2_revive_ally",
-          "desc": "기절한 내 카드 부활 (v2)"
+          "desc": "기절한 내 카드 부활 (v2)",
+          "vfx": {
+            "kind": "aura",
+            "emoji": "🌟",
+            "big": true
+          }
         }
       ],
       "unlock": "cinderella",
@@ -586,14 +734,23 @@
           "cost": 1,
           "dmg": 0,
           "fx": "weaken_next_20",
-          "desc": "다음 기술 피해를 최대 20 줄여요 (최소 10)"
+          "desc": "다음 기술 피해를 최대 20 줄여요 (최소 10)",
+          "vfx": {
+            "kind": "debuff",
+            "emoji": "💨"
+          }
         },
         {
           "name": "소원 펑!",
           "cost": 2,
           "dmg": 50,
           "fx": null,
-          "desc": ""
+          "desc": "",
+          "vfx": {
+            "kind": "burst",
+            "emoji": "🪔",
+            "big": true
+          }
         }
       ],
       "unlock": "genie",
@@ -614,21 +771,34 @@
           "cost": 1,
           "dmg": 20,
           "fx": null,
-          "desc": ""
+          "desc": "",
+          "vfx": {
+            "kind": "projectile",
+            "emoji": "❄️"
+          }
         },
         {
           "name": "얼음 거울",
           "cost": 2,
           "dmg": 30,
           "fx": "coin_skip_next_enemy",
-          "desc": "동전 앞면이면 상대는 다음 턴 얼음"
+          "desc": "동전 앞면이면 상대는 다음 턴 얼음",
+          "vfx": {
+            "kind": "debuff",
+            "emoji": "🧊"
+          }
         },
         {
           "name": "눈보라",
           "cost": 3,
           "dmg": 20,
           "fx": "v2_aoe_20",
-          "desc": "상대 대기석까지 20씩 (v2)"
+          "desc": "상대 대기석까지 20씩 (v2)",
+          "vfx": {
+            "kind": "burst",
+            "emoji": "🌨️",
+            "big": true
+          }
         }
       ],
       "unlock": "snowqueen",
@@ -649,14 +819,22 @@
           "cost": 1,
           "dmg": 0,
           "fx": "v2_force_switch",
-          "desc": "상대 대기석 강제 교체 (v2)"
+          "desc": "상대 대기석 강제 교체 (v2)",
+          "vfx": {
+            "kind": "debuff",
+            "emoji": "🍭"
+          }
         },
         {
           "name": "오븐 밀치기",
           "cost": 2,
           "dmg": 40,
           "fx": null,
-          "desc": ""
+          "desc": "",
+          "vfx": {
+            "kind": "strike",
+            "emoji": "🔥"
+          }
         }
       ],
       "unlock": "witch",
@@ -678,14 +856,22 @@
           "cost": 1,
           "dmg": 20,
           "fx": null,
-          "desc": ""
+          "desc": "",
+          "vfx": {
+            "kind": "projectile",
+            "emoji": "🌊"
+          }
         },
         {
           "name": "바다의 노래",
           "cost": 2,
           "dmg": 0,
           "fx": "weaken_next_20",
-          "desc": "다음 기술 피해를 최대 20 줄여요 (최소 10)"
+          "desc": "다음 기술 피해를 최대 20 줄여요 (최소 10)",
+          "vfx": {
+            "kind": "debuff",
+            "emoji": "🎵"
+          }
         }
       ],
       "unlock": "mermaid",
@@ -710,14 +896,23 @@
           "cost": 2,
           "dmg": 30,
           "fx": null,
-          "desc": ""
+          "desc": "",
+          "vfx": {
+            "kind": "summon",
+            "emoji": "🐑"
+          }
         },
         {
           "name": "바위 던지기",
           "cost": 4,
           "dmg": 80,
           "fx": null,
-          "desc": ""
+          "desc": "",
+          "vfx": {
+            "kind": "projectile",
+            "emoji": "🪨",
+            "big": true
+          }
         }
       ],
       "unlock": "odyssey_cyclops",
@@ -742,14 +937,22 @@
           "cost": 1,
           "dmg": 0,
           "fx": "weaken_next_20",
-          "desc": "다음 기술 피해를 최대 20 줄여요 (최소 10)"
+          "desc": "다음 기술 피해를 최대 20 줄여요 (최소 10)",
+          "vfx": {
+            "kind": "debuff",
+            "emoji": "👀"
+          }
         },
         {
           "name": "후― 불어 날리기",
           "cost": 2,
           "dmg": 30,
           "fx": null,
-          "desc": ""
+          "desc": "",
+          "vfx": {
+            "kind": "burst",
+            "emoji": "💨"
+          }
         }
       ],
       "unlock": "redhood_story",
@@ -770,7 +973,12 @@
           "cost": 3,
           "dmg": 50,
           "fx": "v2_splash_10",
-          "desc": "상대 대기석에도 10씩 (v2)"
+          "desc": "상대 대기석에도 10씩 (v2)",
+          "vfx": {
+            "kind": "burst",
+            "emoji": "🦶",
+            "big": true
+          }
         }
       ],
       "unlock": "jack_story",
@@ -792,14 +1000,23 @@
           "cost": 1,
           "dmg": 20,
           "fx": null,
-          "desc": ""
+          "desc": "",
+          "vfx": {
+            "kind": "strike",
+            "emoji": "🐍"
+          }
         },
         {
           "name": "돌로 만들기",
           "cost": 3,
           "dmg": 0,
           "fx": "coin_skip_next_enemy",
-          "desc": "동전 앞면이면 상대는 다음 턴 통째로 쉼"
+          "desc": "동전 앞면이면 상대는 다음 턴 통째로 쉼",
+          "vfx": {
+            "kind": "debuff",
+            "emoji": "🗿",
+            "big": true
+          }
         }
       ],
       "unlock": "perseus",
@@ -824,14 +1041,22 @@
           "cost": 1,
           "dmg": 20,
           "fx": null,
-          "desc": ""
+          "desc": "",
+          "vfx": {
+            "kind": "strike",
+            "emoji": "👑"
+          }
         },
         {
           "name": "황금 손",
           "cost": 2,
           "dmg": 20,
           "fx": "gold_freeze_gain_star",
-          "desc": "맞은 상대 1턴 정지, 나는 별 +1"
+          "desc": "맞은 상대 1턴 정지, 나는 별 +1",
+          "vfx": {
+            "kind": "burst",
+            "emoji": "🪙"
+          }
         }
       ],
       "unlock": "midas",
@@ -852,14 +1077,23 @@
           "cost": 1,
           "dmg": 10,
           "fx": "steal_star_1",
-          "desc": "상대 별사탕 1개 훔치기"
+          "desc": "상대 별사탕 1개 훔치기",
+          "vfx": {
+            "kind": "projectile",
+            "emoji": "🍡"
+          }
         },
         {
           "name": "어흥!",
           "cost": 3,
           "dmg": 50,
           "fx": null,
-          "desc": ""
+          "desc": "",
+          "vfx": {
+            "kind": "burst",
+            "emoji": "🐯",
+            "big": true
+          }
         }
       ],
       "unlock": "sunmoon",
