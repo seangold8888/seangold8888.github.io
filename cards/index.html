@@ -10,7 +10,7 @@
   <link rel="icon" href="../icon.png">
   <link rel="apple-touch-icon" href="../icon.png">
   <link rel="manifest" href="../manifest.json">
-  <link rel="stylesheet" href="styles.css?v=17">
+  <link rel="stylesheet" href="styles.css?v=18">
 </head>
 <body>
   <div class="sky" aria-hidden="true">
@@ -23,7 +23,12 @@
       <span class="brand-mark">🃏</span>
       <span>이야기 카드 배틀</span>
     </div>
-    <button class="icon-button" id="muteButton" type="button" aria-label="소리 끄기" aria-pressed="false">🔊</button>
+    <div class="audio-controls" aria-label="소리 설정">
+      <button class="icon-button music-button" id="musicButton" type="button" aria-label="배경음악 끄기" aria-pressed="false">
+        <span aria-hidden="true">♪</span><small>BGM</small>
+      </button>
+      <button class="icon-button" id="muteButton" type="button" aria-label="소리 끄기" aria-pressed="false">🔊</button>
+    </div>
   </header>
 
   <main>
@@ -69,6 +74,7 @@
       </div>
 
       <div class="arena" id="arena">
+        <div class="technique-fx-layer" id="techniqueFxLayer" aria-hidden="true"></div>
         <div class="combatant enemy-combatant">
           <p class="combat-label">별그림자 상대</p>
           <div class="battle-card-slot" id="enemyCardSlot"></div>
@@ -137,10 +143,10 @@
   </dialog>
 
   <noscript>이야기 카드 배틀을 하려면 JavaScript를 켜 주세요.</noscript>
-  <script src="js/engine.js?v=17" defer></script>
-  <script src="js/audio.js?v=17" defer></script>
-  <script src="js/card-view.js?v=17" defer></script>
-  <script src="js/app.js?v=17" defer></script>
+  <script src="js/engine.js?v=18" defer></script>
+  <script src="js/audio.js?v=18" defer></script>
+  <script src="js/card-view.js?v=18" defer></script>
+  <script src="js/app.js?v=18" defer></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {

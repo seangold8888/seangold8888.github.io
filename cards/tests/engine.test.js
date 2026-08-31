@@ -4,6 +4,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
+const crypto = require("node:crypto");
 const vm = require("node:vm");
 const Engine = require("../js/engine.js");
 
@@ -1062,4 +1063,60 @@ test("브라우저 스크립트 실행 시 window.CardEngine을 노출한다", (
   assert.equal(typeof context.window.CardEngine.isBattleCard, "function");
   assert.equal(typeof context.window.CardEngine.drawFragments, "function");
   assert.equal(typeof context.window.CardEngine.actionNeedsCoin, "function");
+});
+
+test("공격·조각 이벤트는 UI가 재조회 없이 쓸 VFX 메타데이터를 싣는다", () => {
+  const cue = { kind: "projectile", emoji: "🪨", big: true };
+  let state = Engine.createGame(
+    card({
+      id: "thrower",
+      attacks: [{ name: "던지기", cost: 1, dmg: 20, fx: null, vfx: cue }]
+    }),
+    card({ id: "target" })
+  );
+
+  state = take(state, { type: "attack", attackIndex: 0 });
+  assert.deepEqual(
+    state.events.find((event) => event.type === "attack").vfx,
+    cue
+  );
+
+  state = gameWithFragments(
+    card({ id: "fragment-user" }),
+    card({ id: "fragment-target" }),
+    [{
+      id: "rice",
+      name: "떡",
+      emoji: "🍡",
+      effect: { type: "gain_stars", amount: 2 }
+    }]
+  );
+  state = take(state, { type: "fragment", fragmentIndex: 0 });
+  assert.equal(
+    state.events.find((event) => event.type === "fragment_used").emoji,
+    "🍡"
+  );
+});
+
+function sha256(value) {
+  return crypto.createHash("sha256").update(value).digest("hex");
+}
+
+test("검수 완료된 24장 PNG·WebP 원화는 바뀌지 않는다", () => {
+  const data = JSON.parse(
+    fs.readFileSync(path.join(__dirname, "..", "cards.json"), "utf8")
+  );
+  const artRoot = path.join(__dirname, "..", "art");
+  const files = data.collection
+    .flatMap((id) => [id + ".png", id + ".webp"])
+    .sort();
+  const manifest = files
+    .map((name) => name + ":" + sha256(fs.readFileSync(path.join(artRoot, name))))
+    .join("\n");
+
+  assert.equal(files.length, 48);
+  assert.equal(
+    sha256(manifest),
+    "98efb5a813daf0c29fca49833b68bd9f3194d11f386cde41191389eff1592b57"
+  );
 });

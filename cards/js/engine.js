@@ -313,6 +313,7 @@
       fragmentIndex: fragmentIndex,
       fragmentId: fragment.id,
       fragment: fragment.name,
+      emoji: fragment.emoji || "✦",
       effect: effect.type,
       amount: amount,
     });
@@ -886,6 +887,11 @@
       attack: attack.name || "기술",
       cost: cost,
       stars: actorSide.stars,
+      vfx: attack.vfx ? {
+        kind: attack.vfx.kind,
+        emoji: attack.vfx.emoji,
+        big: Boolean(attack.vfx.big),
+      } : null,
     });
 
     if (

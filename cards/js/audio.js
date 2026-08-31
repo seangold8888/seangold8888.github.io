@@ -6,14 +6,36 @@
   let room = null;
   let impactBus = null;
   let impactRoomSend = null;
+  let musicBus = null;
   let noiseBuffer = null;
   let lastSelectAt = -Infinity;
   let muted = false;
+  let musicMuted = false;
+  let desiredScene = null;
+  let musicTimer = 0;
+  let nextMusicTime = 0;
+  let musicStep = 0;
+  let musicVariation = 0;
+  let battleTense = false;
+  let pageHidden = typeof document !== "undefined" && document.hidden;
+
+  const LOOKAHEAD_MS = 50;
+  const SCHEDULE_AHEAD_SECONDS = 0.18;
+  const COLLECTION_BPM = 66;
+  const BATTLE_BPM = 92;
+  const COLLECTION_BARS = 8;
+  const BATTLE_BARS = 8;
+  const TENSION_SEMITONE = Math.pow(2, 1 / 12);
 
   try {
     muted = localStorage.getItem("cards_muted") === "1";
   } catch (error) {
     muted = false;
+  }
+  try {
+    musicMuted = localStorage.getItem("cards_bgm_muted") === "1";
+  } catch (error) {
+    musicMuted = false;
   }
 
   function makeRoomImpulse(audio) {
@@ -50,6 +72,7 @@
     room = audio.createConvolver();
     impactBus = audio.createGain();
     impactRoomSend = audio.createGain();
+    musicBus = audio.createGain();
 
     master.gain.value = 0.56;
     toneFilter.type = "lowpass";
@@ -69,11 +92,13 @@
     if ("oversample" in impactShaper) impactShaper.oversample = "2x";
     impactTrim.gain.value = 0.55;
     impactRoomSend.gain.value = 0.0001;
+    musicBus.gain.value = 0.0001;
 
     room.connect(roomGain).connect(master);
     impactBus.connect(impactLow).connect(impactShaper).connect(impactTrim);
     impactTrim.connect(master);
     impactTrim.connect(impactRoomSend).connect(room);
+    musicBus.connect(master);
     master.connect(toneFilter).connect(compressor).connect(audio.destination);
   }
 
@@ -85,7 +110,13 @@
         setupGraph(context);
       }
     }
-    if (context && context.state === "suspended") context.resume();
+    if (context && context.state === "suspended") {
+      const resumed = context.resume();
+      if (resumed && typeof resumed.then === "function") {
+        resumed.then(ensureMusicScheduler).catch(function () {});
+      }
+    }
+    if (context && context.state === "running") ensureMusicScheduler();
     return context;
   }
 
@@ -311,6 +342,8 @@
     const crackGain = audio.createGain();
     const crackDuration = strong ? 0.065 : 0.045;
 
+    duckMusicAt(start, strong ? 0.14 : 0.22, strong ? 0.38 : 0.25);
+
     body.type = "sine";
     body.frequency.setValueAtTime(range[0] + humanDetune(3), start);
     body.frequency.exponentialRampToValueAtTime(range[1], start + bodyDuration);
@@ -373,6 +406,186 @@
     });
   }
 
+  const COLLECTION_PATTERNS = Object.freeze([
+    Object.freeze([0, null, 2, null, 3, null, 1, null, 0, null, 3, null, 4, null, 2, null, 1, null, 3, null, 5, null, 4, null, 2, null, 1, null, 0, null, 2, null]),
+    Object.freeze([0, null, 1, null, 3, null, 4, null, 2, null, 4, null, 5, null, 3, null, 1, null, 2, null, 4, null, 3, null, 0, null, 2, null, 1, null, 0, null])
+  ]);
+  const BATTLE_PATTERNS = Object.freeze([
+    Object.freeze([0, null, 2, 1, null, 3, 2, null, 0, 2, null, 4, 3, null, 2, 1]),
+    Object.freeze([0, 1, null, 3, 2, null, 4, 2, 1, null, 3, 4, null, 2, 1, null])
+  ]);
+  const COLLECTION_NOTES = Object.freeze([261.63, 293.66, 329.63, 392, 440, 523.25]);
+  const BATTLE_NOTES = Object.freeze([293.66, 349.23, 392, 440, 523.25]);
+
+  function musicCanRun() {
+    return Boolean(
+      context &&
+      context.state === "running" &&
+      musicBus &&
+      desiredScene &&
+      !muted &&
+      !musicMuted &&
+      !pageHidden
+    );
+  }
+
+  function musicGainTarget() {
+    return musicCanRun() ? 0.72 : 0.0001;
+  }
+
+  function rampMusicBus(target, duration) {
+    if (!context || !musicBus) return;
+    const now = context.currentTime;
+    const current = Math.max(0.0001, musicBus.gain.value || 0.0001);
+    musicBus.gain.cancelScheduledValues(now);
+    musicBus.gain.setValueAtTime(current, now);
+    musicBus.gain.exponentialRampToValueAtTime(
+      Math.max(0.0001, target),
+      now + Math.max(0.01, duration || 0.08)
+    );
+  }
+
+  function bgmPluckAt(audio, start, frequency, volume, duration) {
+    if (!musicBus) return;
+    [1, 2.01].forEach(function (ratio, index) {
+      const oscillator = audio.createOscillator();
+      const gain = audio.createGain();
+      const level = volume * (index ? 0.18 : 1);
+      const voiceDuration = duration * (index ? 0.55 : 1);
+      oscillator.type = index ? "sine" : "triangle";
+      oscillator.frequency.setValueAtTime(frequency * ratio, start);
+      oscillator.detune.value = humanDetune(index ? 2 : 4);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.linearRampToValueAtTime(level, start + 0.006);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + voiceDuration);
+      oscillator.connect(gain).connect(musicBus);
+      oscillator.start(start);
+      oscillator.stop(start + voiceDuration + 0.03);
+    });
+  }
+
+  function bgmDroneAt(audio, start, frequency, volume, duration) {
+    if (!musicBus) return;
+    const oscillator = audio.createOscillator();
+    const filter = audio.createBiquadFilter();
+    const gain = audio.createGain();
+    oscillator.type = "triangle";
+    oscillator.frequency.setValueAtTime(frequency, start);
+    filter.type = "lowpass";
+    filter.frequency.value = 420;
+    filter.Q.value = 0.55;
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.linearRampToValueAtTime(volume, start + 0.12);
+    gain.gain.setValueAtTime(volume, start + Math.max(0.14, duration - 0.28));
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    oscillator.connect(filter).connect(gain).connect(musicBus);
+    oscillator.start(start);
+    oscillator.stop(start + duration + 0.04);
+  }
+
+  function scheduleCollectionStep(audio, start, step) {
+    const pattern = COLLECTION_PATTERNS[musicVariation % COLLECTION_PATTERNS.length];
+    const degree = pattern[step % pattern.length];
+    if (degree === null || degree === undefined) return;
+    const bar = Math.floor(step / 4) % COLLECTION_BARS;
+    const breath = bar % 2 ? 0.92 : 1;
+    bgmPluckAt(audio, start, COLLECTION_NOTES[degree], 0.018 * breath, 0.72);
+  }
+
+  function scheduleBattleStep(audio, start, step) {
+    const pattern = BATTLE_PATTERNS[musicVariation % BATTLE_PATTERNS.length];
+    const degree = pattern[step % pattern.length];
+    const pitchLift = battleTense ? TENSION_SEMITONE : 1;
+    if (step % 8 === 0) {
+      const droneFrequency = (musicVariation % 2 ? 130.81 : 146.83) * pitchLift;
+      bgmDroneAt(audio, start, droneFrequency, 0.006, (60 / BATTLE_BPM) * 3.8);
+    }
+    if (degree === null || degree === undefined) return;
+    bgmPluckAt(audio, start, BATTLE_NOTES[degree] * pitchLift, 0.014, 0.28);
+  }
+
+  function schedulerTick() {
+    clearTimeout(musicTimer);
+    musicTimer = 0;
+    if (!musicCanRun()) {
+      rampMusicBus(0.0001, 0.08);
+      return;
+    }
+
+    const audio = context;
+    const collection = desiredScene === "collection";
+    const stepSeconds = collection ? 60 / COLLECTION_BPM : (60 / BATTLE_BPM) / 2;
+    const cycleSteps = collection ? COLLECTION_BARS * 4 : BATTLE_BARS * 8;
+    while (nextMusicTime < audio.currentTime + SCHEDULE_AHEAD_SECONDS) {
+      if (collection) {
+        scheduleCollectionStep(audio, nextMusicTime, musicStep);
+      } else {
+        scheduleBattleStep(audio, nextMusicTime, musicStep);
+      }
+      musicStep += 1;
+      nextMusicTime += stepSeconds;
+      if (musicStep % cycleSteps === 0) {
+        musicVariation = Math.random() < 0.5 ? 0 : 1;
+      }
+    }
+    musicTimer = setTimeout(schedulerTick, LOOKAHEAD_MS);
+  }
+
+  function ensureMusicScheduler() {
+    if (!context || !musicBus) return;
+    if (!musicCanRun()) {
+      clearTimeout(musicTimer);
+      musicTimer = 0;
+      rampMusicBus(0.0001, 0.08);
+      return;
+    }
+    rampMusicBus(musicGainTarget(), 0.16);
+    if (!musicTimer) {
+      nextMusicTime = Math.max(context.currentTime + 0.04, nextMusicTime);
+      schedulerTick();
+    }
+  }
+
+  function stopBgm() {
+    desiredScene = null;
+    clearTimeout(musicTimer);
+    musicTimer = 0;
+    nextMusicTime = 0;
+    musicStep = 0;
+    rampMusicBus(0.0001, 0.12);
+  }
+
+  function setScene(scene) {
+    const nextScene = scene === "battle" ? "battle" : scene === "collection" ? "collection" : null;
+    if (!nextScene) {
+      stopBgm();
+      return null;
+    }
+    if (desiredScene !== nextScene) {
+      desiredScene = nextScene;
+      musicStep = 0;
+      musicVariation = 0;
+      nextMusicTime = context ? context.currentTime + 0.05 : 0;
+    }
+    ensureMusicScheduler();
+    return desiredScene;
+  }
+
+  function duckMusicAt(start, depth, duration) {
+    if (!musicCanRun()) return;
+    const current = Math.max(0.0001, musicBus.gain.value || musicGainTarget());
+    musicBus.gain.cancelScheduledValues(start);
+    musicBus.gain.setValueAtTime(current, start);
+    musicBus.gain.exponentialRampToValueAtTime(Math.max(0.0001, depth), start + 0.012);
+    musicBus.gain.exponentialRampToValueAtTime(musicGainTarget(), start + duration);
+  }
+
+  function duckMusic() {
+    const audio = context;
+    if (!audio) return;
+    duckMusicAt(audio.currentTime, 0.22, 0.28);
+  }
+
   function melody(notes, gap, options) {
     options = options || {};
     notes.forEach(function (note, index) {
@@ -381,6 +594,7 @@
   }
 
   function castSound() {
+    duckMusic();
     softSweep(0);
     pluck(523.25, 0, { volume: 0.038, duration: 0.34 });
     pluck(783.99, 0.065, { volume: 0.04, duration: 0.38 });
@@ -388,7 +602,11 @@
   }
 
   const api = {
-    prime: ctx,
+    prime: function () {
+      const audio = ctx();
+      ensureMusicScheduler();
+      return audio;
+    },
     isMuted: function () { return muted; },
     setMuted: function (value) {
       muted = Boolean(value);
@@ -396,11 +614,43 @@
         localStorage.setItem("cards_muted", muted ? "1" : "0");
       } catch (error) {}
       if (!muted) {
+        ctx();
         pluck(523.25, 0, { volume: 0.045, duration: 0.3 });
         bell(659.25, 0.055, { volume: 0.026, duration: 0.46 });
       }
+      ensureMusicScheduler();
       return muted;
     },
+    isBgmMuted: function () { return musicMuted; },
+    setBgmMuted: function (value) {
+      musicMuted = Boolean(value);
+      try {
+        localStorage.setItem("cards_bgm_muted", musicMuted ? "1" : "0");
+      } catch (error) {}
+      if (!musicMuted) ctx();
+      ensureMusicScheduler();
+      return musicMuted;
+    },
+    setScene: setScene,
+    stopBgm: stopBgm,
+    updateBattleHp: function (currentHp, maxHp) {
+      const maximum = Math.max(1, Number(maxHp) || 1);
+      battleTense = Math.max(0, Number(currentHp) || 0) / maximum <= 0.3;
+      return battleTense;
+    },
+    setPageHidden: function (hidden) {
+      pageHidden = Boolean(hidden);
+      ensureMusicScheduler();
+      return pageHidden;
+    },
+    bgmConfig: Object.freeze({
+      collectionBpm: COLLECTION_BPM,
+      battleBpm: BATTLE_BPM,
+      lookaheadMs: LOOKAHEAD_MS,
+      scheduleAheadSeconds: SCHEDULE_AHEAD_SECONDS,
+      collectionBars: COLLECTION_BARS,
+      battleBars: BATTLE_BARS
+    }),
     select: function () {
       if (muted) return;
       const audio = ctx();
@@ -452,10 +702,12 @@
       api.coinLand();
     },
     win: function () {
+      stopBgm();
       melody([523.25, 659.25, 783.99, 1046.5], 0.105, { volume: 0.052, duration: 0.46 });
       bell(1318.51, 0.39, { volume: 0.034, duration: 0.82 });
     },
     lose: function () {
+      stopBgm();
       melody([392, 329.63, 261.63], 0.14, { volume: 0.043, duration: 0.52, room: 0.24 });
       woodHit(0.32, 0.025);
     }

@@ -101,14 +101,22 @@
     const type = TYPE_META[card.type] || TYPE_META.wise;
     const currentHp = Number.isFinite(options.currentHp) ? options.currentHp : card.hp;
     const cardEl = el("article", "story-card type-" + card.type);
+    const rarity = Math.max(1, Math.min(3, Number(card.rarity) || 1));
     cardEl.dataset.cardId = card.id;
+    cardEl.dataset.type = card.type;
+    cardEl.dataset.rarity = String(rarity);
+    cardEl.classList.add("rarity-" + rarity);
     cardEl.setAttribute("role", options.interactive ? "button" : "group");
     const stateLabel = options.locked
-      ? ", 잠긴 카드"
+      ? "잠긴 카드"
       : options.collectionOnly
-        ? ", 컬렉션 전용 카드, 대전 준비 중"
-        : options.interactive ? ", 선택 가능한 카드" : " 카드";
-    cardEl.setAttribute("aria-label", card.name + stateLabel);
+        ? "컬렉션 전용 카드, 대전 준비 중"
+        : options.interactive ? "선택 가능한 카드" : "대전 카드";
+    cardEl.setAttribute(
+      "aria-label",
+      card.name + ", " + type.label + " 타입, 희귀도 별 " + rarity +
+        "개, HP " + Math.max(0, currentHp) + ", " + stateLabel
+    );
     if (options.interactive) {
       cardEl.tabIndex = 0;
       cardEl.setAttribute("aria-pressed", options.selected ? "true" : "false");
@@ -117,11 +125,22 @@
     if (options.collectionOnly) cardEl.classList.add("is-collection-only");
     if (options.selected) cardEl.classList.add("is-selected");
     if (options.compact) cardEl.classList.add("is-compact");
-    if (card.rarity === 3) cardEl.classList.add("is-legendary");
+    if (rarity === 3) cardEl.classList.add("is-legendary");
     if (options.hit) cardEl.classList.add("is-hit");
     if (options.acting) cardEl.classList.add("is-acting");
 
     const crown = el("div", "card-crown");
+    const ornament = el("div", "frame-ornament");
+    const crest = el("span", "frame-crest", type.icon);
+    crest.setAttribute("aria-hidden", "true");
+    ornament.setAttribute("aria-hidden", "true");
+    ornament.append(
+      crest,
+      el("i", "frame-corner frame-corner-nw"),
+      el("i", "frame-corner frame-corner-ne"),
+      el("i", "frame-corner frame-corner-sw"),
+      el("i", "frame-corner frame-corner-se")
+    );
     const identity = el("div", "card-identity");
     identity.append(el("h3", "card-name", card.name), el("span", "rarity", rarityLabel(card.rarity)));
     const hp = el("div", "hp-gem");
@@ -158,7 +177,7 @@
     });
     details.appendChild(attacks);
 
-    cardEl.append(crown, createArt(card, options), hpTrack, meta, details);
+    cardEl.append(ornament, crown, createArt(card, options), hpTrack, meta, details);
 
     if (options.interactive && typeof options.onSelect === "function") {
       const activate = function () { options.onSelect(card, cardEl); };

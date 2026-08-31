@@ -116,7 +116,7 @@ button {
 
 .home-link {
   justify-self: start;
-  min-height: 48px;
+  min-height: 60px;
   display: inline-flex;
   align-items: center;
   padding: 0 14px;
@@ -140,8 +140,8 @@ button {
 
 .icon-button {
   justify-self: end;
-  width: 52px;
-  height: 52px;
+  width: 60px;
+  height: 60px;
   border: 1px solid rgba(255,255,255,.12);
   border-radius: 17px;
   background: rgba(255,255,255,.08);
@@ -240,7 +240,7 @@ main {
 .story-link,
 .ghost-button,
 .primary-button {
-  min-height: 58px;
+  min-height: 60px;
   border-radius: 18px;
   display: inline-flex;
   align-items: center;
@@ -394,7 +394,7 @@ main {
 
 .hp-gem span {
   grid-column: 1 / -1;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 950;
   letter-spacing: .08em;
 }
@@ -511,7 +511,7 @@ main {
 
 .card-story {
   color: #766a7b;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 750;
 }
 
@@ -539,7 +539,7 @@ main {
 
 .passive-row small {
   color: #4e6c66;
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1.3;
 }
 
@@ -577,7 +577,7 @@ main {
 .attack-copy small {
   overflow: hidden;
   color: #756b78;
-  font-size: 9px;
+  font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -775,7 +775,7 @@ main {
 
 .round-pill,
 .battle-stars {
-  min-height: 48px;
+  min-height: 60px;
   padding: 0 16px;
   display: flex;
   gap: 10px;
@@ -1237,7 +1237,7 @@ main {
 
 .fragment-title small {
   color: #c9bedf;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 750;
 }
 
@@ -1415,7 +1415,7 @@ main {
 
 .action-button small {
   color: #726579;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .action-button .action-cost {
@@ -1475,8 +1475,8 @@ dialog::backdrop {
   position: absolute;
   top: 12px;
   right: 12px;
-  width: 48px;
-  height: 48px;
+  width: 60px;
+  height: 60px;
   color: #fff;
   background: rgba(0,0,0,.25);
   border: 1px solid rgba(255,255,255,.16);
@@ -1902,7 +1902,7 @@ dialog p:not(.kicker) {
   .fragment-preview {
     min-height: 15px;
     margin-top: 3px;
-    font-size: 10px;
+    font-size: 11px;
   }
 
   .action-title {
@@ -1910,7 +1910,7 @@ dialog p:not(.kicker) {
   }
 
   .action-button {
-    min-height: 58px;
+    min-height: 64px;
     padding: 7px 10px;
   }
 }
@@ -1923,7 +1923,7 @@ dialog p:not(.kicker) {
   }
 
   .home-link {
-    width: 52px;
+    width: 60px;
     padding: 0;
     overflow: hidden;
     white-space: nowrap;
@@ -2003,7 +2003,7 @@ dialog p:not(.kicker) {
   }
 
   .battle-header .ghost-button {
-    width: 52px;
+    width: 60px;
     padding: 0;
     overflow: hidden;
     font-size: 0;
@@ -2028,7 +2028,7 @@ dialog p:not(.kicker) {
   }
 
   .combat-label {
-    font-size: 10px;
+    font-size: 11px;
   }
 
   .story-card.is-compact {
@@ -2117,11 +2117,11 @@ dialog p:not(.kicker) {
   }
 
   .fragment-name {
-    font-size: 10px;
+    font-size: 11px;
   }
 
   .fragment-preview {
-    font-size: 10px;
+    font-size: 11px;
   }
 
   .action-title small {
@@ -2177,4 +2177,654 @@ dialog p:not(.kicker) {
 @keyframes coin-dialog-in {
   from { opacity: 0; transform: translateY(16px) scale(.94); }
   to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* §10 — 별빛 고서 프레임: 기존 원화 위에 얹는 순수 CSS 장정. */
+.audio-controls {
+  justify-self: end;
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
+
+.audio-controls .icon-button {
+  width: 60px;
+  height: 60px;
+  justify-self: auto;
+}
+
+.music-button {
+  padding: 5px;
+  display: grid;
+  place-content: center;
+  color: #fff2a8;
+  line-height: 1;
+}
+
+.music-button span {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 25px;
+  font-weight: 900;
+}
+
+.music-button small {
+  margin-top: 2px;
+  color: #d9cef4;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .06em;
+}
+
+.music-button.is-muted {
+  color: #8f879f;
+  background: rgba(255,255,255,.035);
+}
+
+.story-card {
+  --frame-metal: #c78b4f;
+  --frame-shadow: #704322;
+  --frame-glow: rgba(204,132,65,.32);
+  --frame-night: #17213d;
+  --tilt-x: 0deg;
+  --tilt-y: 0deg;
+  --shine-x: 0px;
+  --shine-y: 0px;
+  --card-lift: 0px;
+  --card-scale: 1;
+  padding: 15px;
+  border: 5px solid transparent;
+  border-radius: 25px;
+  background:
+    linear-gradient(148deg, #fff7dc 0%, #ead7ab 76%, #d8ba84 100%) padding-box,
+    linear-gradient(145deg, #101a34 0%, var(--frame-metal) 18%, #1c2949 46%, var(--frame-shadow) 79%, #0e172c 100%) border-box;
+  box-shadow:
+    0 9px 0 #0a1022,
+    0 24px 50px rgba(0,0,0,.42),
+    inset 0 0 0 3px var(--frame-night),
+    inset 0 0 0 5px color-mix(in srgb, var(--frame-metal) 82%, white);
+  transform:
+    perspective(900px)
+    translate3d(0, var(--card-lift), 0)
+    rotateX(var(--tilt-x))
+    rotateY(var(--tilt-y))
+    scale(var(--card-scale));
+  transform-style: preserve-3d;
+  transition: transform .18s ease-out, box-shadow .22s ease, filter .22s ease;
+}
+
+.story-card.rarity-1 {
+  --frame-metal: #c78b4f;
+  --frame-shadow: #704322;
+  --frame-glow: rgba(204,132,65,.32);
+}
+
+.story-card.rarity-2 {
+  --frame-metal: #e7edf2;
+  --frame-shadow: #7d8b99;
+  --frame-glow: rgba(195,224,244,.36);
+}
+
+.story-card.rarity-3 {
+  --frame-metal: #ffe36e;
+  --frame-shadow: #9b6208;
+  --frame-glow: rgba(255,216,91,.5);
+}
+
+.story-card.type-brave {
+  --frame-night: #351a25;
+  border-radius: 18px 34px 18px 34px;
+}
+
+.story-card.type-wise {
+  --frame-night: #142d49;
+  border-radius: 34px 18px 34px 18px;
+}
+
+.story-card.type-magic {
+  --frame-night: #2f2052;
+  border-radius: 64px 64px 24px 24px;
+}
+
+.story-card.type-monster {
+  --frame-night: #2e2830;
+  border-radius: 21px 40px 24px 34px;
+}
+
+.story-card.is-compact {
+  padding: 10px;
+  border-width: 4px;
+}
+
+.story-card::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  z-index: 7;
+  border: 1px solid color-mix(in srgb, var(--frame-metal) 86%, white);
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 3px var(--frame-night),
+    inset 0 0 16px rgba(11,15,31,.28);
+  pointer-events: none;
+}
+
+.story-card::after {
+  inset: -42%;
+  z-index: 8;
+  opacity: .13;
+  background:
+    linear-gradient(112deg, transparent 39%, rgba(255,255,255,.08) 44%, rgba(255,248,190,.62) 49%, rgba(255,255,255,.12) 54%, transparent 60%);
+  transform: translate3d(var(--shine-x), var(--shine-y), 0) rotate(8deg);
+  transition: transform .12s linear, opacity .18s ease;
+}
+
+.story-card.is-legendary::after {
+  opacity: .22;
+  animation: foil 7s ease-in-out infinite;
+}
+
+.story-card.is-tilting {
+  will-change: transform;
+}
+
+.story-card.is-tilting::after {
+  opacity: .58;
+  animation: none;
+}
+
+.story-card[role="button"]:hover,
+.story-card[role="button"]:focus-visible {
+  --card-lift: -8px;
+  --card-scale: 1.015;
+  transform:
+    perspective(900px)
+    translate3d(0, var(--card-lift), 0)
+    rotateX(var(--tilt-x))
+    rotateY(var(--tilt-y))
+    scale(var(--card-scale));
+  box-shadow:
+    0 13px 0 #0a1022,
+    0 31px 62px rgba(0,0,0,.5),
+    0 0 34px color-mix(in srgb, var(--type) 42%, transparent),
+    inset 0 0 0 3px var(--frame-night),
+    inset 0 0 0 5px var(--frame-metal);
+}
+
+.story-card[role="button"]:focus-visible {
+  outline: 4px solid #fff2a3;
+  outline-offset: 5px;
+}
+
+.story-card.is-selected {
+  --card-lift: -10px;
+  --card-scale: 1.025;
+  transform:
+    perspective(900px)
+    translate3d(0, var(--card-lift), 0)
+    rotateX(var(--tilt-x))
+    rotateY(var(--tilt-y))
+    scale(var(--card-scale));
+  box-shadow:
+    0 12px 0 var(--frame-shadow),
+    0 30px 66px rgba(0,0,0,.52),
+    0 0 0 5px var(--frame-metal),
+    0 0 48px var(--frame-glow),
+    inset 0 0 0 3px var(--frame-night);
+}
+
+.story-card.is-selected:not(.is-tilting)::after {
+  opacity: .52;
+  animation: selected-card-shine 3.4s ease-in-out infinite;
+}
+
+.story-card.is-collection-only,
+.story-card.is-collection-only.is-selected {
+  --frame-metal: #c7b5dc;
+  --frame-shadow: #5d496f;
+  --frame-glow: rgba(196,172,224,.38);
+}
+
+.story-card > .card-crown,
+.story-card > .card-art,
+.story-card > .hp-track,
+.story-card > .card-meta,
+.story-card > .card-details {
+  position: relative;
+  z-index: 2;
+}
+
+.card-name {
+  color: #17213d;
+  font-family: Georgia, "Times New Roman", "Noto Serif KR", serif;
+  font-weight: 900;
+  letter-spacing: -.025em;
+  text-shadow: 0 1px rgba(255,255,255,.7);
+}
+
+.rarity {
+  color: var(--frame-shadow);
+  text-shadow: 0 1px rgba(255,255,255,.8);
+}
+
+.card-art {
+  border-color: var(--frame-night);
+  box-shadow:
+    0 0 0 2px var(--frame-metal),
+    0 6px 0 #0c1328,
+    inset 0 0 0 2px rgba(255,255,255,.18);
+}
+
+.type-brave .card-art {
+  clip-path: polygon(7% 0, 93% 0, 100% 7%, 100% 93%, 93% 100%, 7% 100%, 0 93%, 0 7%);
+  border-radius: 8px;
+}
+
+.type-wise .card-art {
+  clip-path: polygon(0 4%, 48% 0, 52% 3%, 100% 0, 100% 96%, 52% 100%, 48% 97%, 0 100%);
+  border-radius: 17px 8px 17px 8px;
+}
+
+.type-magic .card-art {
+  border-radius: 48% 48% 18px 18px;
+}
+
+.type-monster .card-art {
+  clip-path: polygon(5% 2%, 94% 0, 100% 9%, 97% 92%, 88% 100%, 9% 97%, 0 88%, 2% 12%);
+  border-radius: 14px 27px 16px 24px;
+}
+
+.frame-ornament {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  pointer-events: none;
+}
+
+.frame-crest {
+  position: absolute;
+  left: 50%;
+  top: 78px;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  color: #fff8c2;
+  background:
+    radial-gradient(circle at 36% 28%, #fff5bc, var(--frame-metal) 27%, var(--frame-shadow) 72%);
+  border: 3px solid var(--frame-night);
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--frame-metal), 0 5px 10px rgba(0,0,0,.35);
+  font-size: 20px;
+  transform: translate(-50%, -50%);
+}
+
+.type-wise .frame-crest {
+  border-radius: 8px 16px 8px 16px;
+}
+
+.type-magic .frame-crest {
+  border-radius: 50% 50% 42% 42%;
+  box-shadow: 0 0 0 2px var(--frame-metal), 0 0 18px rgba(190,132,255,.58);
+}
+
+.type-monster .frame-crest {
+  border-radius: 38% 54% 43% 58%;
+}
+
+.frame-corner {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  border-color: var(--frame-metal);
+  filter: drop-shadow(0 1px 0 var(--frame-shadow));
+}
+
+.frame-corner-nw { top: 12px; left: 12px; border-top: 4px solid; border-left: 4px solid; border-radius: 12px 0 0; }
+.frame-corner-ne { top: 12px; right: 12px; border-top: 4px solid; border-right: 4px solid; border-radius: 0 12px 0 0; }
+.frame-corner-sw { bottom: 12px; left: 12px; border-bottom: 4px solid; border-left: 4px solid; border-radius: 0 0 0 12px; }
+.frame-corner-se { right: 12px; bottom: 12px; border-right: 4px solid; border-bottom: 4px solid; border-radius: 0 0 12px; }
+
+@keyframes selected-card-shine {
+  0%, 16% { transform: translate3d(-34%, -8%, 0) rotate(8deg); opacity: .08; }
+  48% { opacity: .6; }
+  72%, 100% { transform: translate3d(34%, 8%, 0) rotate(8deg); opacity: .08; }
+}
+
+/* §9 — 기술 데이터가 고르는 6종 무대 연출. 모든 노드는 미리 만든 풀을 재사용한다. */
+.technique-fx-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 14;
+  overflow: hidden;
+  contain: strict;
+  pointer-events: none;
+}
+
+.technique-fx {
+  position: absolute;
+  inset: 0;
+  display: none;
+  pointer-events: none;
+}
+
+.technique-fx.is-active {
+  display: block;
+}
+
+.technique-fx > span {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.technique-glyph {
+  z-index: 5;
+  font-size: clamp(48px, 7vw, 82px);
+  line-height: 1;
+  text-align: center;
+  filter: drop-shadow(0 5px 2px rgba(0,0,0,.34)) drop-shadow(0 0 12px rgba(255,239,156,.7));
+}
+
+.technique-fx.is-big .technique-glyph {
+  filter:
+    drop-shadow(0 7px 3px rgba(0,0,0,.42))
+    drop-shadow(0 0 20px rgba(255,230,112,.92));
+}
+
+.technique-trail {
+  z-index: 2;
+  width: 120px;
+  height: 18px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(255,244,172,.9));
+  transform-origin: 100% 50%;
+}
+
+.technique-ring {
+  z-index: 3;
+  width: 108px;
+  height: 108px;
+  margin: -54px 0 0 -54px;
+  border: 5px solid rgba(255,235,142,.88);
+  border-radius: 50%;
+  box-shadow: 0 0 18px rgba(184,113,255,.76), inset 0 0 18px rgba(255,255,255,.28);
+}
+
+.technique-spark {
+  z-index: 4;
+  color: #fff3a6;
+  font-size: 25px;
+  text-shadow: 0 0 9px #bd70ff;
+}
+
+.technique-spark-a { --spark-x: -66px; --spark-y: -52px; --spark-r: -50deg; }
+.technique-spark-b { --spark-x: 62px; --spark-y: -34px; --spark-r: 65deg; }
+.technique-spark-c { --spark-x: 18px; --spark-y: 64px; --spark-r: 140deg; }
+
+.vfx-type-brave { --vfx-color: #ffab3e; }
+.vfx-type-wise { --vfx-color: #75d8ff; }
+.vfx-type-magic { --vfx-color: #d99aff; }
+.vfx-type-monster { --vfx-color: #c6a073; }
+
+.technique-fx.is-playing.vfx-kind-projectile .technique-glyph {
+  animation: technique-projectile var(--fx-duration) cubic-bezier(.18,.72,.22,1) both;
+}
+
+.technique-fx.is-playing.vfx-kind-projectile .technique-trail {
+  background: linear-gradient(90deg, transparent, var(--vfx-color));
+  animation: technique-trail var(--fx-duration) ease-out both;
+}
+
+.technique-fx.is-playing.vfx-kind-summon .technique-glyph {
+  animation: technique-summon var(--fx-duration) cubic-bezier(.18,.8,.2,1) both;
+}
+
+.technique-fx.is-playing.vfx-kind-summon .technique-ring,
+.technique-fx.is-playing.vfx-kind-aura .technique-ring {
+  border-color: var(--vfx-color);
+  animation: technique-ring var(--fx-duration) ease-out both;
+}
+
+.technique-fx.is-playing.vfx-kind-strike .technique-glyph {
+  animation: technique-strike var(--fx-duration) cubic-bezier(.12,.8,.16,1) both;
+}
+
+.technique-fx.is-playing.vfx-kind-strike .technique-trail {
+  height: 10px;
+  background: linear-gradient(90deg, transparent, #fff9cb 35%, var(--vfx-color));
+  animation: technique-strike-trail var(--fx-duration) ease-out both;
+}
+
+.technique-fx.is-playing.vfx-kind-burst .technique-glyph {
+  animation: technique-burst var(--fx-duration) cubic-bezier(.14,.8,.18,1) both;
+}
+
+.technique-fx.is-playing.vfx-kind-aura .technique-glyph {
+  animation: technique-aura var(--fx-duration) ease-out both;
+}
+
+.technique-fx.is-playing.vfx-kind-debuff .technique-glyph {
+  animation: technique-debuff var(--fx-duration) ease-out both;
+}
+
+.technique-fx.is-playing.vfx-kind-debuff .technique-ring {
+  border-color: var(--vfx-color);
+  border-style: dashed;
+  animation: technique-debuff-ring var(--fx-duration) linear both;
+}
+
+.technique-fx.is-playing .technique-spark {
+  animation: technique-spark var(--fx-duration) ease-out both;
+}
+
+.technique-fx.is-miss .technique-ring,
+.technique-fx.is-miss .technique-spark,
+.technique-fx.is-evade .technique-ring {
+  opacity: 0;
+  animation: none;
+}
+
+.battle-card-slot.is-dodging {
+  animation: technique-dodge var(--dodge-duration, .42s) cubic-bezier(.2,.8,.2,1);
+  will-change: transform;
+}
+
+@keyframes technique-projectile {
+  0% { opacity: 0; transform: translate3d(var(--fx-start-x),var(--fx-start-y),0) translate(-50%,-50%) rotate(-16deg) scale(.45); }
+  12% { opacity: 1; }
+  76% { opacity: 1; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) translate(-50%,-50%) rotate(10deg) scale(var(--fx-scale)); }
+  100% { opacity: 0; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) translate(-50%,-50%) rotate(18deg) scale(var(--fx-scale-down)); }
+}
+
+@keyframes technique-trail {
+  0% { opacity: 0; transform: translate3d(var(--fx-start-x),var(--fx-start-y),0) translate(-100%,-50%) scaleX(.1); }
+  18% { opacity: .86; }
+  78% { opacity: .72; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) translate(-100%,-50%) scaleX(1); }
+  100% { opacity: 0; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) translate(-100%,-50%) scaleX(.25); }
+}
+
+@keyframes technique-summon {
+  0% { opacity: 0; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) translate(-50%,-20%) scale(.25); }
+  34% { opacity: .25; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) translate(-50%,-72%) scale(.68); }
+  66% { opacity: 1; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) translate(-50%,-50%) scale(var(--fx-scale)); }
+  100% { opacity: 0; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) translate(-50%,-50%) scale(var(--fx-scale-up)); }
+}
+
+@keyframes technique-strike {
+  0% { opacity: 0; transform: translate3d(var(--fx-start-x),var(--fx-start-y),0) translate(-50%,-50%) rotate(-35deg) scale(.5); }
+  20% { opacity: 1; }
+  38% { opacity: 1; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) translate(-50%,-50%) rotate(8deg) scale(var(--fx-scale)); }
+  100% { opacity: 0; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) translate(-50%,-50%) rotate(25deg) scale(var(--fx-scale-down)); }
+}
+
+@keyframes technique-strike-trail {
+  0% { opacity: 0; transform: translate3d(var(--fx-start-x),var(--fx-start-y),0) translate(-100%,-50%) rotate(-24deg) scaleX(.2); }
+  32% { opacity: 1; }
+  38% { opacity: .9; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) translate(-100%,-50%) rotate(-24deg) scaleX(1.25); }
+  100% { opacity: 0; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) translate(-100%,-50%) rotate(-24deg) scaleX(.3); }
+}
+
+@keyframes technique-burst {
+  0% { opacity: 0; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) translate(-50%,-50%) scale(.2); }
+  28% { opacity: 1; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) translate(-50%,-50%) scale(var(--fx-scale-up)); }
+  62% { opacity: .88; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) translate(-50%,-50%) scale(var(--fx-scale)); }
+  100% { opacity: 0; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) translate(-50%,-50%) scale(var(--fx-scale-up)); }
+}
+
+@keyframes technique-aura {
+  0% { opacity: 0; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) translate(-50%,-35%) scale(.45); }
+  35% { opacity: 1; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) translate(-50%,-65%) scale(var(--fx-scale)); }
+  100% { opacity: 0; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) translate(-50%,-82%) scale(var(--fx-scale-up)); }
+}
+
+@keyframes technique-debuff {
+  0% { opacity: 0; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) translate(-50%,-70%) rotate(-8deg) scale(.4); }
+  30%, 68% { opacity: 1; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) translate(-50%,-52%) rotate(7deg) scale(var(--fx-scale)); }
+  100% { opacity: 0; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) translate(-50%,-36%) rotate(-5deg) scale(.72); }
+}
+
+@keyframes technique-ring {
+  0% { opacity: 0; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) scale(.2); }
+  28% { opacity: .9; }
+  100% { opacity: 0; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) scale(var(--fx-scale-wide)); }
+}
+
+@keyframes technique-debuff-ring {
+  0% { opacity: 0; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) rotate(0) scale(.45); }
+  30% { opacity: .8; }
+  100% { opacity: 0; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) rotate(150deg) scale(var(--fx-scale-up)); }
+}
+
+@keyframes technique-spark {
+  0%, 22% { opacity: 0; transform: translate3d(var(--fx-end-x),var(--fx-end-y),0) rotate(0) scale(.2); }
+  40% { opacity: 1; }
+  100% { opacity: 0; transform: translate3d(calc(var(--fx-end-x) + var(--spark-x)),calc(var(--fx-end-y) + var(--spark-y)),0) rotate(var(--spark-r)) scale(.15); }
+}
+
+@keyframes technique-dodge {
+  0%, 100% { transform: translate3d(0,0,0); }
+  32% { transform: translate3d(34px,-4px,0) rotate(2deg); }
+  85% { transform: translate3d(27px,0,0) rotate(1deg); }
+}
+
+@keyframes arena-finisher-hit {
+  0%, 100% { transform: translate3d(0,0,0) rotate(0); }
+  8% { transform: translate3d(-11px,4px,0) rotate(-.35deg); }
+  25% { transform: translate3d(10px,-4px,0) rotate(.3deg); }
+  43% { transform: translate3d(-7px,2px,0) rotate(-.2deg); }
+  64% { transform: translate3d(5px,-1px,0) rotate(.12deg); }
+  82% { transform: translate3d(-2px,0,0) rotate(-.05deg); }
+}
+
+.arena.is-finisher-hit,
+.arena.is-finisher-hit.is-weak-hit,
+.arena.is-finisher-hit.is-monster-hit {
+  animation: arena-finisher-hit .48s linear;
+  will-change: transform;
+}
+
+/* 초1 기준: 모든 핵심 조작은 최소 60px, 보조 설명도 11px 이상. */
+.home-link,
+.story-link,
+.ghost-button,
+.primary-button {
+  min-height: 60px;
+}
+
+.round-pill,
+.battle-stars {
+  min-height: 60px;
+}
+
+.dialog-close {
+  width: 60px;
+  height: 60px;
+}
+
+.action-button {
+  min-height: 68px;
+}
+
+.passive-row small,
+.attack-copy small,
+.card-story,
+.fragment-title small,
+.action-button small,
+.fragment-preview,
+.combat-label {
+  font-size: 11px;
+}
+
+@media (max-width: 680px) {
+  .audio-controls {
+    gap: 4px;
+  }
+
+  .audio-controls .icon-button,
+  .home-link,
+  .battle-header .ghost-button {
+    width: 60px;
+    height: 60px;
+  }
+
+  .music-button small {
+    font-size: 11px;
+  }
+
+  .frame-crest {
+    top: 56px;
+    width: 30px;
+    height: 30px;
+    border-width: 2px;
+    font-size: 14px;
+  }
+
+  .story-card.is-compact .frame-crest {
+    top: 43px;
+    width: 24px;
+    height: 24px;
+    font-size: 11px;
+  }
+
+  .story-card.is-compact {
+    padding: 5px;
+    border-width: 3px;
+  }
+
+  .fragment-name,
+  .fragment-preview,
+  .combat-label {
+    font-size: 11px;
+  }
+
+  .action-button {
+    min-height: 64px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .story-card,
+  .story-card[role="button"]:hover,
+  .story-card[role="button"]:focus-visible,
+  .story-card.is-selected {
+    --tilt-x: 0deg;
+    --tilt-y: 0deg;
+    transform: translate3d(0, var(--card-lift), 0) scale(var(--card-scale));
+  }
+
+  .story-card::after,
+  .story-card.is-selected::after,
+  .technique-fx-layer {
+    display: none !important;
+    animation: none !important;
+  }
+
+  .battle-card-slot.is-dodging,
+  .arena.is-finisher-hit {
+    animation: none !important;
+    transform: none !important;
+  }
 }

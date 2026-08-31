@@ -38,9 +38,13 @@
   let resultTimer = 0;
   let coinTimer = 0;
   let impactTimer = 0;
+  let techniqueImpactTimer = 0;
+  let techniquePoolCursor = 0;
   let battleSession = 0;
   let pendingCoinAction = null;
   let unlockSnapshot = "";
+  let tiltFrame = 0;
+  let tiltingCard = null;
 
   function byId(id) {
     return document.getElementById(id);
@@ -51,9 +55,9 @@
       "collectionScreen", "battleScreen", "collectionGrid", "unlockCount",
       "selectionDock", "selectedPortrait", "selectedStatus", "selectedName",
       "battleButton", "battleButtonLabel",
-      "muteButton", "leaveBattleButton", "turnOwner", "turnNumber",
+      "muteButton", "musicButton", "leaveBattleButton", "turnOwner", "turnNumber",
       "battleStars", "arena", "enemyCardSlot", "playerCardSlot", "battleMessage",
-      "effectBurst", "actionList", "weaknessHint", "lockedDialog",
+      "effectBurst", "techniqueFxLayer", "actionList", "weaknessHint", "lockedDialog",
       "lockedArt", "lockedTitle", "lockedDescription", "resultDialog",
       "resultKicker", "resultTitle", "resultText", "rematchButton",
       "resultCollectionButton", "coinDialog", "coinTitle", "coinInstruction",
@@ -141,13 +145,13 @@
         selected: selectedCard && selectedCard.id === card.id,
         interactive: locked || !collectionOnly,
         eager: card.id === "cinderella",
-        onSelect: function () {
+        onSelect: function (chosenCard, chosenElement) {
           window.CardAudio.prime();
           if (locked) {
             openLockedDialog(card);
             return;
           }
-          selectCard(card);
+          selectCard(chosenCard, chosenElement);
         }
       });
       const item = document.createElement("div");
@@ -165,12 +169,23 @@
     }
   }
 
-  function selectCard(card) {
+  function selectCard(card, cardEl) {
     if (!isPlayableCard(card)) return;
+    const previous = dom.collectionGrid.querySelector(".story-card.is-selected");
+    const selected = cardEl || dom.collectionGrid.querySelector(
+      '[data-card-id="' + card.id + '"]'
+    );
+    if (previous && previous !== selected) {
+      previous.classList.remove("is-selected");
+      previous.setAttribute("aria-pressed", "false");
+    }
     selectedCard = card;
+    if (selected) {
+      selected.classList.add("is-selected");
+      selected.setAttribute("aria-pressed", "true");
+    }
     window.CardAudio.select();
-    renderCollection();
-    const selected = dom.collectionGrid.querySelector('[data-card-id="' + card.id + '"]');
+    updateSelectionDock();
     if (selected) selected.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
   }
 
@@ -215,6 +230,9 @@
     dom.collectionScreen.hidden = battle;
     dom.battleScreen.hidden = !battle;
     document.body.classList.toggle("in-battle", battle);
+    if (window.CardAudio.setScene) {
+      window.CardAudio.setScene(battle ? "battle" : "collection");
+    }
     scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -237,8 +255,15 @@
     clearTimeout(resultTimer);
     clearTimeout(coinTimer);
     clearTimeout(impactTimer);
+    clearTimeout(techniqueImpactTimer);
     if (dom.arena) {
-      dom.arena.classList.remove("is-weak-hit", "is-monster-hit");
+      dom.arena.classList.remove("is-weak-hit", "is-monster-hit", "is-finisher-hit");
+    }
+    [dom.playerCardSlot, dom.enemyCardSlot].forEach(function (slot) {
+      if (slot) slot.classList.remove("is-dodging");
+    });
+    if (dom.techniqueFxLayer) {
+      Array.from(dom.techniqueFxLayer.children).forEach(resetTechniqueNode);
     }
     pendingCoinAction = null;
     selectedFragmentIndex = null;
@@ -420,11 +445,206 @@
     }, { weak: false, monster: false });
   }
 
+  const TECHNIQUE_TIMINGS = Object.freeze({
+    projectile: Object.freeze({ impactAtMs: 450, totalMs: 590 }),
+    summon: Object.freeze({ impactAtMs: 500, totalMs: 760 }),
+    strike: Object.freeze({ impactAtMs: 160, totalMs: 420 }),
+    burst: Object.freeze({ impactAtMs: 220, totalMs: 500 }),
+    aura: Object.freeze({ impactAtMs: 160, totalMs: 450 }),
+    debuff: Object.freeze({ impactAtMs: 220, totalMs: 500 })
+  });
+
+  function prefersReducedMotion() {
+    return Boolean(
+      window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    );
+  }
+
+  function techniquePlanForEvents(events, battleState, actor, reducedMotion) {
+    const sourceEvents = Array.isArray(events) ? events : [];
+    const attackEvent = sourceEvents.slice().reverse().find(function (event) {
+      return event.type === "attack";
+    });
+    if (!attackEvent) return null;
+
+    const state = battleState || game;
+    const side = state && state.sides && state.sides[actor];
+    const attack = side && side.card && Array.isArray(side.card.attacks)
+      ? side.card.attacks[attackEvent.attackIndex]
+      : null;
+    const declaredVfx = attackEvent.vfx || (attack && attack.vfx) || {};
+    const kind = Object.prototype.hasOwnProperty.call(
+      TECHNIQUE_TIMINGS,
+      declaredVfx.kind
+    ) ? declaredVfx.kind : "burst";
+    const damages = sourceEvents.filter(function (event) {
+      return event.type === "damage" || event.type === "self_damage";
+    });
+    const evaded = sourceEvents.some(function (event) {
+      return event.type === "attack_evaded";
+    });
+    const missed = sourceEvents.some(function (event) {
+      return event.type === "attack_missed";
+    });
+    const actualImpact = damages.some(function (event) {
+      return Math.max(0, Number(event.amount) || 0) > 0;
+    });
+    const blocked = damages.some(function (event) {
+      return Math.max(0, Number(event.amount) || 0) === 0;
+    });
+    const outcome = evaded
+      ? "evade"
+      : missed ? "miss" : actualImpact ? "hit" : blocked ? "blocked" : "support";
+    const baseTiming = TECHNIQUE_TIMINGS[kind];
+    const reduced = Boolean(reducedMotion);
+
+    return {
+      actor: actor,
+      target: outcome === "support" && kind === "aura"
+        ? actor
+        : (attackEvent.target || (actor === "player" ? "enemy" : "player")),
+      attack: attackEvent.attack || (attack && attack.name) || "기술",
+      kind: kind,
+      emoji: declaredVfx.emoji || "✦",
+      big: Boolean(declaredVfx.big),
+      outcome: outcome,
+      actualImpact: actualImpact,
+      weakness: damages.some(function (event) {
+        return Boolean(event.weakness && Number(event.amount) > 0);
+      }),
+      type: side && side.card ? side.card.type : "magic",
+      impactAtMs: reduced ? 0 : baseTiming.impactAtMs,
+      totalMs: reduced ? 20 : baseTiming.totalMs
+    };
+  }
+
+  function ensureTechniquePool() {
+    if (!dom.techniqueFxLayer || dom.techniqueFxLayer.childElementCount) return;
+    for (let index = 0; index < 4; index += 1) {
+      const effect = document.createElement("div");
+      const glyph = createFxPart("technique-glyph");
+      const trail = createFxPart("technique-trail");
+      const ring = createFxPart("technique-ring");
+      const sparkA = createFxPart("technique-spark technique-spark-a", "✦");
+      const sparkB = createFxPart("technique-spark technique-spark-b", "✦");
+      const sparkC = createFxPart("technique-spark technique-spark-c", "✦");
+      effect.className = "technique-fx";
+      effect.setAttribute("aria-hidden", "true");
+      effect.append(glyph, trail, ring, sparkA, sparkB, sparkC);
+      dom.techniqueFxLayer.appendChild(effect);
+    }
+  }
+
+  function resetTechniqueNode(effect) {
+    if (!effect) return;
+    clearTimeout(effect._cleanupTimer);
+    if (effect._dodgeTarget) {
+      effect._dodgeTarget.classList.remove("is-dodging");
+      effect._dodgeTarget.style.removeProperty("--dodge-duration");
+    }
+    effect._cleanupTimer = 0;
+    effect._dodgeTarget = null;
+    effect.className = "technique-fx";
+    effect.removeAttribute("data-kind");
+    effect.removeAttribute("data-outcome");
+    effect.removeAttribute("style");
+  }
+
+  function claimTechniqueNode() {
+    ensureTechniquePool();
+    const effects = Array.from(dom.techniqueFxLayer.children);
+    let effect = effects.find(function (candidate) {
+      return !candidate.classList.contains("is-active");
+    });
+    if (!effect && effects.length) {
+      effect = effects[techniquePoolCursor % effects.length];
+      techniquePoolCursor += 1;
+    }
+    resetTechniqueNode(effect);
+    return effect;
+  }
+
+  function playTechniqueFx(plan) {
+    if (!plan || !dom.techniqueFxLayer) return null;
+    const effect = claimTechniqueNode();
+    if (!effect) return null;
+    const sourceSlot = plan.actor === "enemy" ? dom.enemyCardSlot : dom.playerCardSlot;
+    const targetSlot = plan.target === "enemy" ? dom.enemyCardSlot : dom.playerCardSlot;
+    const layerRect = dom.techniqueFxLayer.getBoundingClientRect();
+    const sourceRect = sourceSlot.getBoundingClientRect();
+    const targetRect = targetSlot.getBoundingClientRect();
+    const startX = sourceRect.left + sourceRect.width / 2 - layerRect.left;
+    const startY = sourceRect.top + sourceRect.height * 0.46 - layerRect.top;
+    let endX = targetRect.left + targetRect.width / 2 - layerRect.left;
+    let endY = targetRect.top + targetRect.height * 0.46 - layerRect.top;
+
+    if (plan.outcome === "miss") {
+      const direction = Math.sign(endX - startX) || (plan.actor === "player" ? -1 : 1);
+      endX += direction * Math.max(130, layerRect.width * 0.22);
+      endY -= Math.max(55, layerRect.height * 0.11);
+    }
+
+    effect.dataset.kind = plan.kind;
+    effect.dataset.outcome = plan.outcome;
+    effect.style.setProperty("--fx-start-x", startX.toFixed(1) + "px");
+    effect.style.setProperty("--fx-start-y", startY.toFixed(1) + "px");
+    effect.style.setProperty("--fx-end-x", endX.toFixed(1) + "px");
+    effect.style.setProperty("--fx-end-y", endY.toFixed(1) + "px");
+    effect.style.setProperty("--fx-duration", plan.totalMs + "ms");
+    const scale = plan.big ? 1.5 : 1;
+    effect.style.setProperty("--fx-scale", String(scale));
+    effect.style.setProperty("--fx-scale-down", String(scale * 0.82));
+    effect.style.setProperty("--fx-scale-up", String(scale * 1.16));
+    effect.style.setProperty("--fx-scale-wide", String(scale * 1.8));
+    effect.querySelector(".technique-glyph").textContent = plan.emoji;
+    effect.classList.add(
+      "is-active",
+      "vfx-kind-" + plan.kind,
+      "vfx-type-" + plan.type,
+      "is-" + plan.outcome
+    );
+    if (plan.big) effect.classList.add("is-big");
+
+    if (plan.outcome === "evade" && targetSlot) {
+      targetSlot.style.setProperty(
+        "--dodge-duration",
+        Math.max(420, plan.impactAtMs + 120) + "ms"
+      );
+      targetSlot.classList.add("is-dodging");
+      effect._dodgeTarget = targetSlot;
+    }
+
+    void effect.offsetWidth;
+    effect.classList.add("is-playing");
+    effect._cleanupTimer = setTimeout(function () {
+      resetTechniqueNode(effect);
+    }, plan.totalMs + 40);
+    return effect;
+  }
+
+  function playFragmentAura(emoji, actor) {
+    return playTechniqueFx({
+      actor: actor,
+      target: actor,
+      kind: "aura",
+      emoji: emoji || "✦",
+      big: false,
+      outcome: "support",
+      actualImpact: false,
+      weakness: false,
+      type: "magic",
+      impactAtMs: 0,
+      totalMs: prefersReducedMotion() ? 20 : 450
+    });
+  }
+
   function renderBattle(flags) {
     flags = flags || {};
     if (!game) return;
-    const player = game.sides.player;
-    const enemy = game.sides.enemy;
+    const displayGame = flags.displayState || game;
+    const player = displayGame.sides.player;
+    const enemy = displayGame.sides.enemy;
     const visuals = Array.isArray(flags.visuals) ? flags.visuals : [];
     const hitTargets = new Set(
       visuals.filter(function (visual) { return visual.impact; })
@@ -453,7 +673,7 @@
         return visual.target === sideName;
       });
       const persistentKnockout = Boolean(
-        game.winner && game.sides[sideName].hp <= 0
+        displayGame.winner && displayGame.sides[sideName].hp <= 0
       );
       slots[sideName].classList.toggle(
         "is-knocked-out",
@@ -472,10 +692,13 @@
     dom.playerCardSlot.replaceChildren(playerCardEl);
     dom.enemyCardSlot.replaceChildren(enemyCardEl);
 
-    dom.turnOwner.textContent = game.turn === "player" ? "나의 턴" : "상대의 턴";
-    dom.turnNumber.textContent = String(Math.max(1, Math.ceil(game.turnNumber / 2)));
+    dom.turnOwner.textContent = displayGame.turn === "player" ? "나의 턴" : "상대의 턴";
+    dom.turnNumber.textContent = String(Math.max(1, Math.ceil(displayGame.turnNumber / 2)));
     dom.battleStars.textContent = "⭐ " + player.stars;
     dom.battleStars.setAttribute("aria-label", "나의 별사탕 " + player.stars + "개");
+    if (window.CardAudio.updateBattleHp) {
+      window.CardAudio.updateBattleHp(player.hp, player.card.hp);
+    }
     dom.leaveBattleButton.disabled = busy;
     updateWeaknessHint(player.card, enemy.card);
     renderFragmentHand();
@@ -524,6 +747,7 @@
     setEffect(before.emoji);
     window.CardAudio.magic();
     renderBattle();
+    playFragmentAura(before.emoji, "player");
   }
 
   function handleFragmentTap(index) {
@@ -744,6 +968,8 @@
     };
     const damage = find("damage");
     const gameOver = find("game_over");
+    const attack = find("attack");
+    const bigTechnique = Boolean(attack && attack.vfx && attack.vfx.big);
 
     if (gameOver) {
       const finishingDamage = reversed.find(function (event) {
@@ -752,7 +978,7 @@
           event.amount > 0;
       });
       if (finishingDamage) {
-        return finishingDamage.weakness ? "strongHit" : "hit";
+          return finishingDamage.weakness || bigTechnique ? "strongHit" : "hit";
       }
       return "hit";
     }
@@ -760,7 +986,7 @@
     if (find("attack_missed") || find("attack_evaded")) return null;
     if (damage) {
       if (damage.amount <= 0) return "cast";
-      return damage.weakness ? "strongHit" : "hit";
+      return damage.weakness || bigTechnique ? "strongHit" : "hit";
     }
     if (find("heal")) return "heal";
     if (find("coin")) return null;
@@ -808,8 +1034,9 @@
     if (!pending || pending.session !== battleSession) return;
     if (dom.coinDialog.open) dom.coinDialog.close();
     pendingCoinAction = null;
+    const previousGame = game;
     game = nextGame;
-    animateAction(pending.actor);
+    animateAction(pending.actor, previousGame);
   }
 
   function revealCoinEvents(pending, nextGame, events, index) {
@@ -890,23 +1117,30 @@
     }
   }
 
-  function restartArenaImpact(weak, monster) {
+  function restartArenaImpact(weak, monster, finisher) {
     clearTimeout(impactTimer);
-    dom.arena.classList.remove("is-weak-hit", "is-monster-hit");
+    dom.arena.classList.remove("is-weak-hit", "is-monster-hit", "is-finisher-hit");
     void dom.arena.offsetWidth;
     if (weak) dom.arena.classList.add("is-weak-hit");
     if (monster) dom.arena.classList.add("is-monster-hit");
+    if (finisher) dom.arena.classList.add("is-finisher-hit");
     impactTimer = setTimeout(function () {
-      dom.arena.classList.remove("is-weak-hit", "is-monster-hit");
+      dom.arena.classList.remove("is-weak-hit", "is-monster-hit", "is-finisher-hit");
     }, 580);
   }
 
-  function animateAction(actor) {
+  function animateAction(actor, previousGame) {
     const session = battleSession;
     const events = game.events || [];
     const description = describeEvents(events, actor);
     const visuals = actionVisualsForEvents(events, actor, game);
     const impactFlags = impactFlagsForVisuals(visuals);
+    const techniquePlan = techniquePlanForEvents(
+      events,
+      game,
+      actor,
+      prefersReducedMotion()
+    );
     const fragmentEvent = events.slice().reverse().find(function (event) {
       return event.type === "fragment_used";
     });
@@ -916,15 +1150,39 @@
     }
     busy = true;
     dom.battleMessage.textContent = description.message;
-    setEffect(description.effect);
     renderBattle({
       acting: actor,
-      visuals: visuals
+      displayState: previousGame || game
     });
-    if (impactFlags.weak || impactFlags.monster) {
-      restartArenaImpact(impactFlags.weak, impactFlags.monster);
+    if (fragmentEvent) {
+      playFragmentAura(fragmentEvent.emoji || "✦", fragmentEvent.actor || actor);
     }
-    playSound(soundForEvents(events, description.sound), actor);
+    playTechniqueFx(techniquePlan);
+
+    const revealImpact = function () {
+      if (session !== battleSession || !game) return;
+      setEffect(description.effect);
+      renderBattle({
+        acting: actor,
+        visuals: visuals
+      });
+      if (impactFlags.weak || impactFlags.monster ||
+          (techniquePlan && techniquePlan.big && techniquePlan.actualImpact)) {
+        restartArenaImpact(
+          impactFlags.weak,
+          impactFlags.monster,
+          Boolean(techniquePlan && techniquePlan.big && techniquePlan.actualImpact)
+        );
+      }
+      playSound(soundForEvents(events, description.sound), actor);
+    };
+
+    if (techniquePlan && techniquePlan.impactAtMs > 0) {
+      clearTimeout(techniqueImpactTimer);
+      techniqueImpactTimer = setTimeout(revealImpact, techniquePlan.impactAtMs);
+    } else {
+      revealImpact();
+    }
 
     actionTimer = setTimeout(function () {
       if (session !== battleSession || !game) return;
@@ -951,8 +1209,9 @@
     if (actionNeedsCoin(action)) {
       beginCoinAction("player", action);
     } else {
+      const previousGame = game;
       game = window.CardEngine.performAction(game, action);
-      animateAction("player");
+      animateAction("player", previousGame);
     }
   }
 
@@ -962,8 +1221,9 @@
     if (actionNeedsCoin(action)) {
       beginCoinAction("enemy", action);
     } else {
+      const previousGame = game;
       game = window.CardEngine.performAction(game, action);
-      animateAction("enemy");
+      animateAction("enemy", previousGame);
     }
   }
 
@@ -993,7 +1253,65 @@
     renderCollection();
   }
 
+  function cardTiltAllowed(event) {
+    if (event && event.pointerType && event.pointerType !== "mouse" && event.pointerType !== "pen") {
+      return false;
+    }
+    return Boolean(
+      window.matchMedia &&
+      window.matchMedia("(hover: hover) and (pointer: fine)").matches &&
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    );
+  }
+
+  function resetCardTilt(card) {
+    if (!card) return;
+    card.classList.remove("is-tilting");
+    card.style.removeProperty("--tilt-x");
+    card.style.removeProperty("--tilt-y");
+    card.style.removeProperty("--shine-x");
+    card.style.removeProperty("--shine-y");
+  }
+
+  function queueCardTilt(card, clientX, clientY) {
+    if (!card) return;
+    if (tiltingCard && tiltingCard !== card) resetCardTilt(tiltingCard);
+    tiltingCard = card;
+    const rect = card.getBoundingClientRect();
+    const x = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    const y = Math.max(0, Math.min(1, (clientY - rect.top) / rect.height));
+    const tiltX = (0.5 - y) * 7;
+    const tiltY = (x - 0.5) * 9;
+    const shineX = (x - 0.5) * 150;
+    const shineY = (y - 0.5) * 100;
+    if (tiltFrame) cancelAnimationFrame(tiltFrame);
+    tiltFrame = requestAnimationFrame(function () {
+      card.classList.add("is-tilting");
+      card.style.setProperty("--tilt-x", tiltX.toFixed(2) + "deg");
+      card.style.setProperty("--tilt-y", tiltY.toFixed(2) + "deg");
+      card.style.setProperty("--shine-x", shineX.toFixed(1) + "px");
+      card.style.setProperty("--shine-y", shineY.toFixed(1) + "px");
+      tiltFrame = 0;
+    });
+  }
+
+  function bindCardTilt() {
+    dom.collectionGrid.addEventListener("pointermove", function (event) {
+      if (!cardTiltAllowed(event)) return;
+      const card = event.target.closest(".story-card[role=\"button\"]");
+      if (!card || !dom.collectionGrid.contains(card)) return;
+      queueCardTilt(card, event.clientX, event.clientY);
+    }, { passive: true });
+    dom.collectionGrid.addEventListener("pointerleave", function () {
+      if (tiltFrame) cancelAnimationFrame(tiltFrame);
+      tiltFrame = 0;
+      resetCardTilt(tiltingCard);
+      tiltingCard = null;
+    });
+  }
+
   function bindEvents() {
+    bindCardTilt();
     dom.battleButton.addEventListener("click", startBattle);
     dom.leaveBattleButton.addEventListener("click", returnToCollection);
     dom.rematchButton.addEventListener("click", function () {
@@ -1018,9 +1336,33 @@
       window.CardAudio.setMuted(next);
       updateMuteButton();
     });
+    dom.musicButton.addEventListener("click", function () {
+      const next = !window.CardAudio.isBgmMuted();
+      window.CardAudio.setBgmMuted(next);
+      updateMusicButton();
+    });
+
+    const primeAudioOnce = function () {
+      window.CardAudio.prime();
+      window.CardAudio.setScene(
+        document.body.classList.contains("in-battle") ? "battle" : "collection"
+      );
+    };
+    document.addEventListener("pointerdown", primeAudioOnce, {
+      capture: true,
+      once: true,
+      passive: true
+    });
+    document.addEventListener("keydown", primeAudioOnce, {
+      capture: true,
+      once: true
+    });
 
     window.addEventListener("pageshow", refreshUnlocks);
     document.addEventListener("visibilitychange", function () {
+      if (window.CardAudio.setPageHidden) {
+        window.CardAudio.setPageHidden(document.hidden);
+      }
       if (document.visibilityState === "visible") refreshUnlocks();
     });
   }
@@ -1032,10 +1374,28 @@
     dom.muteButton.setAttribute("aria-label", muted ? "소리 켜기" : "소리 끄기");
   }
 
+  function updateMusicButton() {
+    const muted = window.CardAudio.isBgmMuted();
+    dom.musicButton.classList.toggle("is-muted", muted);
+    dom.musicButton.setAttribute("aria-pressed", muted ? "true" : "false");
+    dom.musicButton.setAttribute(
+      "aria-label",
+      muted ? "배경음악 켜기" : "배경음악 끄기"
+    );
+  }
+
   async function init() {
     cacheDom();
+    ensureTechniquePool();
     bindEvents();
     updateMuteButton();
+    updateMusicButton();
+    if (window.CardAudio.setPageHidden) {
+      window.CardAudio.setPageHidden(document.hidden);
+    }
+    if (window.CardAudio.setScene) {
+      window.CardAudio.setScene("collection");
+    }
     try {
       const response = await fetch("cards.json", { cache: "no-store" });
       if (!response.ok) throw new Error("카드 데이터를 불러오지 못했습니다.");
@@ -1069,7 +1429,9 @@
   window.CardBattleFx = Object.freeze({
     actionVisualsForEvents: actionVisualsForEvents,
     impactFlagsForVisuals: impactFlagsForVisuals,
-    soundForEvents: soundForEvents
+    soundForEvents: soundForEvents,
+    techniquePlanForEvents: techniquePlanForEvents,
+    techniqueTimings: TECHNIQUE_TIMINGS
   });
 
   document.addEventListener("DOMContentLoaded", init);

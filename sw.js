@@ -1,7 +1,7 @@
 "use strict";
 
 // Keep this value aligned with the ?v= version used by the card battle assets.
-const CACHE_VERSION = "v17";
+const CACHE_VERSION = "v18";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -25,12 +25,12 @@ const CORE_SHELL = [
   "./story/index.html",
   "./cards/",
   "./cards/index.html",
-  "./cards/styles.css?v=17",
+  "./cards/styles.css?v=18",
   "./cards/cards.json",
-  "./cards/js/engine.js?v=17",
-  "./cards/js/audio.js?v=17",
-  "./cards/js/card-view.js?v=17",
-  "./cards/js/app.js?v=17",
+  "./cards/js/engine.js?v=18",
+  "./cards/js/audio.js?v=18",
+  "./cards/js/card-view.js?v=18",
+  "./cards/js/app.js?v=18",
 ];
 
 // Existing games are precached as best-effort shells. A missing optional asset
