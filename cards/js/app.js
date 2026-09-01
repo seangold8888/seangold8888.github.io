@@ -39,6 +39,7 @@
   let coinTimer = 0;
   let impactTimer = 0;
   let techniqueImpactTimer = 0;
+  let hitStopTimer = 0;
   let techniquePoolCursor = 0;
   let combatParticleFrame = 0;
   let combatParticleContext = null;
@@ -260,11 +261,15 @@
     clearTimeout(coinTimer);
     clearTimeout(impactTimer);
     clearTimeout(techniqueImpactTimer);
+    clearTimeout(hitStopTimer);
     if (dom.arena) {
       dom.arena.classList.remove("is-weak-hit", "is-monster-hit", "is-finisher-hit");
     }
     [dom.playerCardSlot, dom.enemyCardSlot].forEach(function (slot) {
-      if (slot) slot.classList.remove("is-dodging");
+      if (slot) {
+        slot.classList.remove("is-dodging", "is-hit-stopped");
+        clearTechniqueImpactState(slot);
+      }
     });
     if (dom.techniqueFxLayer) {
       Array.from(dom.techniqueFxLayer.children).forEach(resetTechniqueNode);
@@ -312,6 +317,9 @@
     const attackType = validTypes.includes(visual.attackType)
       ? visual.attackType
       : null;
+    art.querySelectorAll(".combat-fx").forEach(function (previous) {
+      previous.remove();
+    });
     const layer = document.createElement("div");
     layer.className = "combat-fx" + (attackType ? " fx-type-" + attackType : "");
     layer.setAttribute("aria-hidden", "true");
@@ -345,6 +353,11 @@
     }
 
     art.appendChild(layer);
+    setTimeout(function () {
+      if (layer.isConnected) {
+        layer.remove();
+      }
+    }, 680);
   }
 
   function actionVisualsForEvents(events, actor, battleState) {
@@ -473,6 +486,69 @@
       shadow: "#4e352b"
     })
   });
+  const MATERIAL_PALETTES = Object.freeze({
+    stone: Object.freeze({
+      hot: "#fff3d5",
+      primary: "#9da5a4",
+      secondary: "#b97943",
+      shadow: "#4f3b32"
+    }),
+    metal: Object.freeze({
+      hot: "#fff8cf",
+      primary: "#efc35b",
+      secondary: "#c98237",
+      shadow: "#754322"
+    }),
+    ice: Object.freeze({
+      hot: "#fffaff",
+      primary: "#b9e9f5",
+      secondary: "#8d75d7",
+      shadow: "#3d4f83"
+    }),
+    earth: Object.freeze({
+      hot: "#fff0cf",
+      primary: "#c69a62",
+      secondary: "#8f6044",
+      shadow: "#49362f"
+    })
+  });
+
+  function paletteForPlan(plan) {
+    return MATERIAL_PALETTES[plan && plan.material] ||
+      FX_PALETTES[plan && plan.type] ||
+      FX_PALETTES.magic;
+  }
+
+  function recipeForAttack(side, attackEvent) {
+    if (
+      !side || !side.card || !attackEvent ||
+      !window.CardVfxRecipes ||
+      typeof window.CardVfxRecipes.get !== "function"
+    ) {
+      return null;
+    }
+    return window.CardVfxRecipes.get(side.card.id, attackEvent.attackIndex);
+  }
+
+  function warmTechniqueAssets() {
+    const registry = window.CardVfxRecipes && window.CardVfxRecipes.all;
+    if (!registry || typeof window.Image !== "function") return;
+    const assets = new Set();
+    Object.keys(registry).forEach(function (key) {
+      const recipe = registry[key];
+      if (recipe && recipe.asset) assets.add(recipe.asset);
+    });
+    assets.forEach(function (source) {
+      const image = new window.Image();
+      image.decoding = "async";
+      image.src = source;
+      if (typeof image.decode === "function") {
+        image.decode().catch(function () {
+          return null;
+        });
+      }
+    });
+  }
   const PARTICLE_RECIPES = Object.freeze({
     projectile: Object.freeze({
       motion: "quadratic-arc",
@@ -541,7 +617,8 @@
         drag: 1,
         rotation: 0,
         spin: 0,
-        blend: "lighter"
+        blend: "lighter",
+        material: ""
       };
     }
   );
@@ -568,6 +645,7 @@
     const attack = side && side.card && Array.isArray(side.card.attacks)
       ? side.card.attacks[attackEvent.attackIndex]
       : null;
+    const recipe = recipeForAttack(side, attackEvent);
     const declaredVfx = attackEvent.vfx || (attack && attack.vfx) || {};
     const kind = Object.prototype.hasOwnProperty.call(
       TECHNIQUE_TIMINGS,
@@ -593,6 +671,7 @@
       : missed ? "miss" : actualImpact ? "hit" : blocked ? "blocked" : "support";
     const baseTiming = TECHNIQUE_TIMINGS[kind];
     const reduced = Boolean(reducedMotion);
+    const contact = actualImpact || blocked;
 
     return {
       actor: actor,
@@ -603,12 +682,23 @@
       kind: kind,
       emoji: declaredVfx.emoji || "✦",
       big: Boolean(declaredVfx.big),
+      recipe: recipe,
+      recipeId: recipe ? recipe.id : "",
+      material: recipe ? recipe.material : "",
       outcome: outcome,
       actualImpact: actualImpact,
       weakness: damages.some(function (event) {
         return Boolean(event.weakness && Number(event.amount) > 0);
       }),
       type: side && side.card ? side.card.type : "magic",
+      hitStopMs: reduced || !contact
+        ? 0
+        : Math.max(
+          28,
+          Math.min(55, Number(recipe && recipe.hitStopMs) ||
+            (declaredVfx.big ? 48 : 36))
+        ),
+      recoilPx: Number(recipe && recipe.recoilPx) || (declaredVfx.big ? 8 : 5),
       impactAtMs: reduced ? 0 : baseTiming.impactAtMs,
       totalMs: reduced ? 20 : baseTiming.totalMs
     };
@@ -616,17 +706,21 @@
 
   function particleRecipeForPlan(plan, reducedMotion) {
     const source = PARTICLE_RECIPES[plan && plan.kind] || PARTICLE_RECIPES.burst;
+    const custom = plan && plan.recipe;
     const reduced = Boolean(reducedMotion);
     const noContact = plan && ["miss", "evade", "support"].includes(plan.outcome);
-    const multiplier = plan && plan.big ? COMBAT_PARTICLE_CONFIG.bigMultiplier : 1;
-    const launchCount = reduced ? 0 : Math.round(source.launchCount * multiplier);
+    const multiplier = custom ? 1 : (plan && plan.big ? COMBAT_PARTICLE_CONFIG.bigMultiplier : 1);
+    const launchBase = Number(custom && custom.launchCount) || source.launchCount;
+    const impactBase = Number(custom && custom.impactCount) || source.impactCount;
+    const launchCount = reduced ? 0 : Math.round(launchBase * multiplier);
     const impactCount = reduced || noContact
       ? 0
-      : Math.round(source.impactCount * multiplier);
+      : Math.round(impactBase * multiplier);
     return {
       motion: source.motion,
-      shape: source.shape,
-      blend: source.blend,
+      shape: custom && custom.impactShape || source.shape,
+      blend: plan && plan.material === "earth" ? "source-over" : source.blend,
+      material: plan && plan.material || "",
       launchCount: launchCount,
       impactCount: impactCount,
       total: Math.min(
@@ -737,7 +831,8 @@
     gravity,
     drag,
     spin,
-    blend
+    blend,
+    material
   ) {
     const particle = claimCombatParticle();
     particle.active = true;
@@ -755,6 +850,7 @@
     particle.rotation = Math.random() * Math.PI * 2;
     particle.spin = spin;
     particle.blend = blend;
+    particle.material = material || "";
   }
 
   function drawParticleShape(context, particle, alpha) {
@@ -779,6 +875,40 @@
       context.lineTo(-size * 1.8, 0);
       context.lineTo(-size * 0.38, -size * 0.38);
       context.closePath();
+      context.fill();
+    } else if (particle.shape === "stone-chip") {
+      context.beginPath();
+      context.moveTo(size * 1.4, -size * 0.18);
+      context.lineTo(size * 0.42, size * 0.92);
+      context.lineTo(-size * 1.18, size * 0.45);
+      context.lineTo(-size * 0.88, -size * 0.72);
+      context.lineTo(size * 0.32, -size * 0.94);
+      context.closePath();
+      context.fill();
+    } else if (particle.shape === "round-stone") {
+      context.beginPath();
+      context.ellipse(0, 0, size * 1.25, size * 0.88, 0, 0, Math.PI * 2);
+      context.fill();
+    } else if (particle.shape === "ice-shard") {
+      context.beginPath();
+      context.moveTo(size * 1.9, 0);
+      context.lineTo(0, size * 0.5);
+      context.lineTo(-size * 1.45, 0);
+      context.lineTo(0, -size * 0.5);
+      context.closePath();
+      context.fill();
+      context.globalAlpha = alpha * 0.72;
+      context.lineWidth = Math.max(0.7, size * 0.18);
+      context.strokeStyle = "#fff";
+      context.stroke();
+    } else if (particle.shape === "metal-spark") {
+      context.lineWidth = Math.max(1, size * 0.34);
+      context.beginPath();
+      context.moveTo(-size * 2.4, 0);
+      context.quadraticCurveTo(0, -size * 0.28, size * 1.8, 0);
+      context.stroke();
+      context.beginPath();
+      context.arc(size * 1.8, 0, size * 0.32, 0, Math.PI * 2);
       context.fill();
     } else if (particle.shape === "shard") {
       context.beginPath();
@@ -837,7 +967,7 @@
   function drawJourneyPrelude(context, journey, now) {
     const plan = journey.plan;
     const points = journey.points;
-    const palette = FX_PALETTES[plan.type] || FX_PALETTES.magic;
+    const palette = paletteForPlan(plan);
     const elapsed = Math.max(0, now - journey.startedAt);
     const impactDuration = Math.max(1, plan.impactAtMs);
     const progress = Math.min(1, elapsed / impactDuration);
@@ -869,7 +999,8 @@
           -0.00001,
           0.988,
           0.004,
-          "lighter"
+          "lighter",
+          plan.material
         );
         journey.lastEmitAt = elapsed;
       }
@@ -1063,9 +1194,15 @@
       cancelled: false
     };
     combatJourneys.push(journey);
-    const palette = FX_PALETTES[plan.type] || FX_PALETTES.magic;
+    const palette = paletteForPlan(plan);
+    const travelAngle = Math.atan2(
+      points.endY - points.startY,
+      points.endX - points.startX
+    );
     for (let index = 0; index < recipe.launchCount; index += 1) {
-      const angle = Math.random() * Math.PI * 2;
+      const angle = plan.recipe
+        ? travelAngle + Math.PI + (Math.random() - 0.5) * 0.9
+        : Math.random() * Math.PI * 2;
       const speed = 0.018 + Math.random() * 0.04;
       emitCombatParticle(
         points.startX,
@@ -1079,7 +1216,8 @@
         plan.kind === "aura" ? -0.00004 : 0.00005,
         0.986,
         (Math.random() - 0.5) * 0.008,
-        recipe.blend
+        recipe.blend,
+        plan.material
       );
     }
     scheduleCombatParticleFrame();
@@ -1089,27 +1227,42 @@
   function spawnCombatImpact(plan, points) {
     if (!plan || !points || prefersReducedMotion()) return;
     const recipe = particleRecipeForPlan(plan, false);
-    const palette = FX_PALETTES[plan.type] || FX_PALETTES.magic;
+    const palette = paletteForPlan(plan);
+    const direction = Math.atan2(
+      points.endY - points.startY,
+      points.endX - points.startX
+    );
+    const spread = plan.recipe ? Math.PI * 0.52 : Math.PI * 0.72;
+    const contactCount = Math.min(2, recipe.impactCount);
+    const dustStart = Math.max(contactCount, Math.round(recipe.impactCount * 0.72));
     for (let index = 0; index < recipe.impactCount; index += 1) {
-      const angle = Math.PI * 2 * index / Math.max(1, recipe.impactCount) +
-        (Math.random() - 0.5) * 0.34;
-      const speed = 0.085 + Math.random() * (plan.big ? 0.18 : 0.12);
-      const color = index % 5 === 0
+      const contact = index < contactCount;
+      const dust = !contact && index >= dustStart;
+      const angle = direction + (Math.random() - 0.5) * spread +
+        (dust ? (Math.random() - 0.5) * 0.45 : 0);
+      const speed = contact
+        ? 0.18 + Math.random() * 0.1
+        : dust ? 0.035 + Math.random() * 0.065
+          : 0.075 + Math.random() * (plan.big ? 0.16 : 0.1);
+      const color = contact
         ? palette.hot
-        : index % 2 ? palette.primary : palette.secondary;
+        : dust ? palette.shadow
+          : index % 2 ? palette.primary : palette.secondary;
+      const shape = contact ? "spark" : dust ? "dust" : recipe.shape;
       emitCombatParticle(
         points.endX,
         points.endY,
         Math.cos(angle) * speed,
-        Math.sin(angle) * speed,
-        recipe.lifeMs * (0.62 + Math.random() * 0.38),
-        1.8 + Math.random() * (plan.big ? 4.8 : 3.6),
+        Math.sin(angle) * speed - (dust ? 0.018 : 0),
+        recipe.lifeMs * (dust ? 0.9 + Math.random() * 0.35 : 0.58 + Math.random() * 0.36),
+        contact ? 1.5 + Math.random() * 1.8 : 1.8 + Math.random() * (plan.big ? 4.2 : 3.2),
         color,
-        recipe.shape,
-        plan.type === "monster" ? 0.00036 : 0.00012,
-        plan.type === "monster" ? 0.973 : 0.981,
+        shape,
+        dust || plan.material === "earth" ? 0.00032 : 0.00012,
+        dust ? 0.966 : (plan.material === "earth" ? 0.973 : 0.981),
         (Math.random() - 0.5) * 0.018,
-        recipe.blend
+        dust ? "source-over" : recipe.blend,
+        plan.material
       );
     }
     scheduleCombatParticleFrame();
@@ -1121,6 +1274,13 @@
       const effect = document.createElement("div");
       const core = createFxPart("technique-core");
       const sigil = createFxPart("technique-sigil");
+      const art = document.createElement("img");
+      art.className = "technique-art";
+      art.alt = "";
+      art.decoding = "async";
+      art.loading = "eager";
+      art.draggable = false;
+      art.hidden = true;
       const ribbonA = createFxPart("technique-ribbon technique-ribbon-a");
       const ribbonB = createFxPart("technique-ribbon technique-ribbon-b");
       const ringA = createFxPart("technique-ring technique-ring-a");
@@ -1133,7 +1293,7 @@
       const veil = createFxPart("technique-veil");
       effect.className = "technique-fx";
       effect.setAttribute("aria-hidden", "true");
-      core.appendChild(sigil);
+      core.append(art, sigil);
       effect.append(
         ribbonA,
         ribbonB,
@@ -1151,30 +1311,113 @@
     }
   }
 
+  function clearTechniqueImpactState(slot) {
+    if (!slot) return;
+    clearTimeout(slot._vfxImpactTimer);
+    slot._vfxImpactTimer = 0;
+    slot.classList.remove(
+      "is-technique-impact",
+      "is-impact-heavy",
+      "is-impact-weakness",
+      "impact-type-brave",
+      "impact-type-wise",
+      "impact-type-magic",
+      "impact-type-monster"
+    );
+    [
+      "--impact-x",
+      "--impact-back-x",
+      "--impact-settle-x",
+      "--impact-color",
+      "--impact-hot",
+      "--impact-shadow"
+    ].forEach(
+      function (property) {
+        slot.style.removeProperty(property);
+      }
+    );
+  }
+
+  function triggerTechniqueContact(effect, plan) {
+    if (!effect || !plan || !(plan.actualImpact || plan.outcome === "blocked")) return;
+    const targetSlot = effect._targetSlot;
+    const sourceSlot = effect._sourceSlot;
+    const palette = paletteForPlan(plan);
+    const direction = Math.sign(
+      effect._fxPoints.endX - effect._fxPoints.startX
+    ) || 1;
+    clearTechniqueImpactState(targetSlot);
+    targetSlot.classList.add("is-technique-impact", "impact-type-" + plan.type);
+    if (plan.big) targetSlot.classList.add("is-impact-heavy");
+    if (plan.weakness) targetSlot.classList.add("is-impact-weakness");
+    const recoil = Math.max(3, Number(plan.recoilPx) || 5);
+    targetSlot.style.setProperty(
+      "--impact-x",
+      (direction * recoil) + "px"
+    );
+    targetSlot.style.setProperty(
+      "--impact-back-x",
+      (-direction * recoil * 0.34).toFixed(2) + "px"
+    );
+    targetSlot.style.setProperty(
+      "--impact-settle-x",
+      (direction * recoil * 0.12).toFixed(2) + "px"
+    );
+    targetSlot.style.setProperty("--impact-color", palette.primary);
+    targetSlot.style.setProperty("--impact-hot", palette.hot);
+    targetSlot.style.setProperty("--impact-shadow", palette.shadow);
+    effect._impactTarget = targetSlot;
+    targetSlot._vfxImpactTimer = setTimeout(function () {
+      clearTechniqueImpactState(targetSlot);
+      effect._impactTarget = null;
+    }, plan.big ? 340 : 280);
+    if (sourceSlot && plan.hitStopMs > 0) {
+      sourceSlot.classList.add("is-hit-stopped");
+      effect._hitStopTimer = setTimeout(function () {
+        sourceSlot.classList.remove("is-hit-stopped");
+      }, plan.hitStopMs);
+    }
+  }
+
   function resetTechniqueNode(effect) {
     if (!effect) return;
     clearTimeout(effect._cleanupTimer);
+    clearTimeout(effect._impactTimer);
+    clearTimeout(effect._hitStopTimer);
     if (effect._dodgeTarget) {
       effect._dodgeTarget.classList.remove("is-dodging");
       effect._dodgeTarget.style.removeProperty("--dodge-duration");
     }
     if (effect._sourceSlot && effect._castingClass) {
       effect._sourceSlot.classList.remove(effect._castingClass);
+      effect._sourceSlot.classList.remove("is-hit-stopped");
       effect._sourceSlot.style.removeProperty("--fx-duration");
       effect._sourceSlot.style.removeProperty("--cast-back");
       effect._sourceSlot.style.removeProperty("--cast-forward");
       effect._sourceSlot.style.removeProperty("--cast-rebound");
     }
+    if (effect._impactTarget) clearTechniqueImpactState(effect._impactTarget);
     if (effect._journey) effect._journey.cancelled = true;
     effect._cleanupTimer = 0;
+    effect._impactTimer = 0;
+    effect._hitStopTimer = 0;
     effect._dodgeTarget = null;
     effect._sourceSlot = null;
+    effect._targetSlot = null;
+    effect._impactTarget = null;
     effect._castingClass = "";
     effect._journey = null;
     effect._fxPoints = null;
+    const art = effect.querySelector(".technique-art");
+    if (art) {
+      art.hidden = true;
+      art.removeAttribute("src");
+    }
     effect.className = "technique-fx";
     effect.removeAttribute("data-kind");
     effect.removeAttribute("data-outcome");
+    effect.removeAttribute("data-recipe");
+    effect.removeAttribute("data-material");
     effect.removeAttribute("style");
   }
 
@@ -1192,6 +1435,17 @@
     return effect;
   }
 
+  function slotAnchorPoint(slot, layerRect, anchor, fallbackY) {
+    const target = anchor && slot.querySelector(".card-art") || slot;
+    const rect = target.getBoundingClientRect();
+    const x = anchor && Number.isFinite(anchor.x) ? anchor.x : 0.5;
+    const y = anchor && Number.isFinite(anchor.y) ? anchor.y : fallbackY;
+    return {
+      x: rect.left + rect.width * x - layerRect.left,
+      y: rect.top + rect.height * y - layerRect.top
+    };
+  }
+
   function playTechniqueFx(plan) {
     if (!plan || !dom.techniqueFxLayer) return null;
     const effect = claimTechniqueNode();
@@ -1201,10 +1455,18 @@
     const layerRect = dom.techniqueFxLayer.getBoundingClientRect();
     const sourceRect = sourceSlot.getBoundingClientRect();
     const targetRect = targetSlot.getBoundingClientRect();
-    const startX = sourceRect.left + sourceRect.width / 2 - layerRect.left;
-    const startY = sourceRect.top + sourceRect.height * 0.46 - layerRect.top;
-    let endX = targetRect.left + targetRect.width / 2 - layerRect.left;
-    let endY = targetRect.top + targetRect.height * 0.46 - layerRect.top;
+    const startPoint = plan.recipe
+      ? slotAnchorPoint(sourceSlot, layerRect, plan.recipe.source, 0.46)
+      : { x: sourceRect.left + sourceRect.width / 2 - layerRect.left,
+        y: sourceRect.top + sourceRect.height * 0.46 - layerRect.top };
+    const endPoint = plan.recipe
+      ? slotAnchorPoint(targetSlot, layerRect, plan.recipe.target, 0.46)
+      : { x: targetRect.left + targetRect.width / 2 - layerRect.left,
+        y: targetRect.top + targetRect.height * 0.46 - layerRect.top };
+    const startX = startPoint.x;
+    const startY = startPoint.y;
+    let endX = endPoint.x;
+    let endY = endPoint.y;
 
     if (plan.outcome === "miss") {
       const direction = Math.sign(endX - startX) || (plan.actor === "player" ? -1 : 1);
@@ -1247,7 +1509,25 @@
     effect.style.setProperty("--fx-scale-down", String(scale * 0.82));
     effect.style.setProperty("--fx-scale-up", String(scale * 1.16));
     effect.style.setProperty("--fx-scale-wide", String(scale * 1.8));
-    effect.querySelector(".technique-sigil").textContent = plan.emoji;
+    const sigil = effect.querySelector(".technique-sigil");
+    const art = effect.querySelector(".technique-art");
+    if (plan.recipe && plan.recipe.asset && art) {
+      const artSize = Math.max(88, Math.min(260, Number(plan.recipe.size) || 150));
+      art.src = plan.recipe.asset;
+      art.hidden = false;
+      sigil.textContent = "";
+      effect.dataset.recipe = plan.recipe.id;
+      effect.dataset.material = plan.material;
+      effect.style.setProperty("--fx-art-size", artSize + "px");
+      effect.style.setProperty("--fx-art-offset", (-artSize / 2) + "px");
+      effect.classList.add(
+        "has-premium-art",
+        "vfx-recipe-" + plan.recipe.id
+      );
+    } else {
+      if (art) art.hidden = true;
+      sigil.textContent = plan.emoji;
+    }
     effect.classList.add(
       "is-active",
       "vfx-kind-" + plan.kind,
@@ -1258,6 +1538,7 @@
     if (plan.weakness) effect.classList.add("is-weakness");
     effect._castingClass = "is-casting-" + plan.kind;
     effect._sourceSlot = sourceSlot;
+    effect._targetSlot = targetSlot;
     sourceSlot.classList.add(effect._castingClass);
     sourceSlot.style.setProperty("--fx-duration", plan.totalMs + "ms");
     sourceSlot.style.setProperty("--cast-back", (-8 * direction) + "px");
@@ -1290,6 +1571,7 @@
         ? "has-impact"
         : "has-pass"
     );
+    triggerTechniqueContact(effect, plan);
     spawnCombatImpact(plan, effect._fxPoints);
   }
 
@@ -1309,6 +1591,45 @@
     });
   }
 
+  function syncBattleCard(slot, side, options) {
+    options = options || {};
+    let cardEl = slot.firstElementChild;
+    const sameCard = Boolean(
+      cardEl &&
+      cardEl.classList.contains("story-card") &&
+      cardEl.dataset.cardId === side.card.id
+    );
+    if (!sameCard) {
+      cardEl = window.CardView.create(side.card, {
+        compact: true,
+        eager: true,
+        currentHp: side.hp,
+        acting: Boolean(options.acting),
+        hit: Boolean(options.hit)
+      });
+      slot.replaceChildren(cardEl);
+      return cardEl;
+    }
+
+    cardEl.classList.remove("is-acting", "is-hit");
+    if (options.acting || options.hit) void cardEl.offsetWidth;
+    cardEl.classList.toggle("is-acting", Boolean(options.acting));
+    cardEl.classList.toggle("is-hit", Boolean(options.hit));
+    const hpValue = Math.max(0, Number(side.hp) || 0);
+    const hpText = cardEl.querySelector(".hp-gem strong");
+    const hpFill = cardEl.querySelector(".hp-fill");
+    if (hpText) hpText.textContent = String(hpValue);
+    if (hpFill) {
+      hpFill.style.width = Math.max(
+        0,
+        Math.min(100, hpValue / Math.max(1, Number(side.card.hp) || 1) * 100)
+      ) + "%";
+    }
+    const label = cardEl.getAttribute("aria-label") || "";
+    cardEl.setAttribute("aria-label", label.replace(/HP \d+/, "HP " + hpValue));
+    return cardEl;
+  }
+
   function renderBattle(flags) {
     flags = flags || {};
     if (!game) return;
@@ -1321,22 +1642,21 @@
         .map(function (visual) { return visual.target; })
     );
     if (flags.hit) hitTargets.add(flags.hit);
-    const playerCardEl = window.CardView.create(player.card, {
-      compact: true,
-      eager: true,
-      currentHp: player.hp,
+    const playerCardEl = syncBattleCard(dom.playerCardSlot, player, {
       acting: flags.acting === "player",
       hit: hitTargets.has("player")
     });
-    const enemyCardEl = window.CardView.create(enemy.card, {
-      compact: true,
-      eager: true,
-      currentHp: enemy.hp,
+    const enemyCardEl = syncBattleCard(dom.enemyCardSlot, enemy, {
       acting: flags.acting === "enemy",
       hit: hitTargets.has("enemy")
     });
     const slots = { player: dom.playerCardSlot, enemy: dom.enemyCardSlot };
     const cardElements = { player: playerCardEl, enemy: enemyCardEl };
+    Object.keys(cardElements).forEach(function (sideName) {
+      cardElements[sideName].querySelectorAll(".combat-fx").forEach(function (layer) {
+        layer.remove();
+      });
+    });
 
     Object.keys(slots).forEach(function (sideName) {
       const sideVisuals = visuals.filter(function (visual) {
@@ -1359,8 +1679,6 @@
         createCombatFx(cardElements[sideName], visual);
       });
     });
-    dom.playerCardSlot.replaceChildren(playerCardEl);
-    dom.enemyCardSlot.replaceChildren(enemyCardEl);
 
     dom.turnOwner.textContent = displayGame.turn === "player" ? "나의 턴" : "상대의 턴";
     dom.turnNumber.textContent = String(Math.max(1, Math.ceil(displayGame.turnNumber / 2)));
@@ -1842,13 +2160,17 @@
       window.CardAudio.techniqueLaunch(techniquePlan);
     }
 
-    const revealImpact = function () {
+    const revealDamageState = function () {
       if (session !== battleSession || !game) return;
-      playTechniqueImpactFx(techniqueEffect, techniquePlan);
       setEffect(description.effect);
       renderBattle({
         visuals: visuals
       });
+    };
+
+    const revealImpact = function () {
+      if (session !== battleSession || !game) return;
+      playTechniqueImpactFx(techniqueEffect, techniquePlan);
       if (impactFlags.weak || impactFlags.monster ||
           (techniquePlan && techniquePlan.big && techniquePlan.actualImpact)) {
         restartArenaImpact(
@@ -1861,6 +2183,15 @@
         window.CardAudio.techniqueImpact(techniquePlan);
       } else {
         playSound(actionSound, actor);
+      }
+      const hitStopMs = techniquePlan && techniquePlan.actualImpact
+        ? techniquePlan.hitStopMs
+        : 0;
+      if (hitStopMs > 0) {
+        clearTimeout(hitStopTimer);
+        hitStopTimer = setTimeout(revealDamageState, hitStopMs);
+      } else {
+        revealDamageState();
       }
     };
 
@@ -2043,7 +2374,20 @@
       capture: true
     });
 
-    window.addEventListener("pageshow", refreshUnlocks);
+    window.addEventListener("pagehide", function () {
+      if (window.CardAudio.setPageHidden) {
+        window.CardAudio.setPageHidden(true);
+      }
+    });
+    window.addEventListener("pageshow", function () {
+      if (window.CardAudio.requestRecovery) {
+        window.CardAudio.requestRecovery();
+      }
+      if (window.CardAudio.setPageHidden) {
+        window.CardAudio.setPageHidden(document.hidden);
+      }
+      refreshUnlocks();
+    });
     window.addEventListener("resize", function () {
       resizeCombatParticleCanvas();
     }, { passive: true });
@@ -2077,6 +2421,7 @@
   async function init() {
     cacheDom();
     ensureTechniquePool();
+    warmTechniqueAssets();
     bindEvents();
     updateMuteButton();
     updateMusicButton();
@@ -2123,7 +2468,10 @@
     techniquePlanForEvents: techniquePlanForEvents,
     techniqueTimings: TECHNIQUE_TIMINGS,
     particleConfig: COMBAT_PARTICLE_CONFIG,
-    particleRecipeForPlan: particleRecipeForPlan
+    particleRecipeForPlan: particleRecipeForPlan,
+    materialPalettes: MATERIAL_PALETTES,
+    paletteForPlan: paletteForPlan,
+    recipeForAttack: recipeForAttack
   });
 
   document.addEventListener("DOMContentLoaded", init);

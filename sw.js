@@ -1,7 +1,7 @@
 "use strict";
 
 // Keep this value aligned with the ?v= version used by the card battle assets.
-const CACHE_VERSION = "v19";
+const CACHE_VERSION = "v21";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -25,12 +25,13 @@ const CORE_SHELL = [
   "./story/index.html",
   "./cards/",
   "./cards/index.html",
-  "./cards/styles.css?v=19",
+  "./cards/styles.css?v=21",
   "./cards/cards.json",
-  "./cards/js/engine.js?v=19",
-  "./cards/js/audio.js?v=19",
-  "./cards/js/card-view.js?v=19",
-  "./cards/js/app.js?v=19",
+  "./cards/js/engine.js?v=21",
+  "./cards/js/audio.js?v=21",
+  "./cards/js/card-view.js?v=21",
+  "./cards/js/vfx-recipes.js?v=21",
+  "./cards/js/app.js?v=21",
 ];
 
 // Existing games are precached as best-effort shells. A missing optional asset
@@ -232,6 +233,13 @@ const CARD_ART_FILES = [
   "perseus", "pinocchio", "polyphemus", "redhood", "snowqueen", "sunwukong",
   "threepigs", "tiger", "tortoisehare", "witch", "wolf",
 ].map((id) => `./cards/art/${id}.webp`);
+
+const VFX_ART_FILES = [
+  "frost-needle",
+  "gold-blade",
+  "monster-impact",
+  "stone-arc",
+].map((id) => `./cards/art/vfx/${id}.webp`);
 
 const AUDIO_FILES = [
   ["cinderella", "신데렐라"],
@@ -668,7 +676,11 @@ if (typeof self !== "undefined" && typeof self.addEventListener === "function") 
   self.addEventListener("install", (event) => {
     event.waitUntil((async () => {
       const cache = await caches.open(STATIC_CACHE);
-      await cache.addAll([...CORE_SHELL, ...CARD_ART_FILES].map(scopedUrl));
+      await cache.addAll([
+        ...CORE_SHELL,
+        ...CARD_ART_FILES,
+        ...VFX_ART_FILES,
+      ].map(scopedUrl));
       await self.skipWaiting();
     })());
   });
@@ -704,7 +716,7 @@ if (typeof self !== "undefined" && typeof self.addEventListener === "function") 
       event.respondWith(staleWhileRevalidate(request, event));
       return;
     }
-    if (/\/cards\/art\/[^/]+\.(?:webp|png)$/i.test(url.pathname)) {
+    if (/\/cards\/art\/(?:[^/]+\/)*[^/]+\.(?:webp|png)$/i.test(url.pathname)) {
       event.respondWith(cacheFirst(request, STATIC_CACHE));
       return;
     }
@@ -748,6 +760,7 @@ if (typeof module !== "undefined" && module.exports) {
     AUDIO_FETCH_TIMEOUT_MS,
     NAVIGATION_ROUTES,
     CARD_ART_FILES,
+    VFX_ART_FILES,
     AUDIO_FILES,
     navigationCacheKey,
     canCache,

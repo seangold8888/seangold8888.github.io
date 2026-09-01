@@ -19,6 +19,9 @@ function loadFxRuntime() {
     window: {},
     document: { addEventListener() {} }
   };
+  vm.runInNewContext(read(path.join("js", "vfx-recipes.js")), sandbox, {
+    filename: "cards/js/vfx-recipes.js"
+  });
   vm.runInNewContext(read(path.join("js", "app.js")), sandbox, {
     filename: "cards/js/app.js"
   });
@@ -40,6 +43,84 @@ function loadAudioRuntime() {
     filename: "cards/js/audio.js"
   });
   return sandbox.window.CardAudio;
+}
+
+function loadAudioRuntimeWithFakeContext() {
+  const contexts = [];
+  const started = [];
+  class Param {
+    constructor(value = 1) { this.value = value; }
+    setValueAtTime(value) { this.value = value; }
+    linearRampToValueAtTime(value) { this.value = value; }
+    exponentialRampToValueAtTime(value) { this.value = value; }
+    cancelScheduledValues() {}
+  }
+  class Node {
+    constructor() {
+      [
+        "gain", "frequency", "Q", "detune", "delayTime", "pan",
+        "threshold", "knee", "ratio", "attack", "release"
+      ].forEach((key) => { this[key] = new Param(); });
+    }
+    connect(target) { return target; }
+    start(when = 0) {
+      this.startAt = when;
+      started.push(this);
+    }
+    stop(when = 0) { this.stopAt = when; }
+    addEventListener() {}
+  }
+  class FakeAudioContext {
+    constructor() {
+      this.state = "running";
+      this.currentTime = 0;
+      this.sampleRate = 100;
+      this.destination = new Node();
+      contexts.push(this);
+    }
+    createGain() { return new Node(); }
+    createConvolver() { return new Node(); }
+    createDynamicsCompressor() { return new Node(); }
+    createBiquadFilter() { return new Node(); }
+    createWaveShaper() { return new Node(); }
+    createDelay() { return new Node(); }
+    createStereoPanner() { return new Node(); }
+    createOscillator() { return new Node(); }
+    createBufferSource() { return new Node(); }
+    createBuffer(channels, length, rate) {
+      const data = Array.from(
+        { length: channels },
+        () => new Float32Array(length)
+      );
+      return {
+        numberOfChannels: channels,
+        duration: length / rate,
+        getChannelData(index) { return data[index]; }
+      };
+    }
+    resume() {
+      this.state = "running";
+      return Promise.resolve();
+    }
+  }
+  const sandbox = {
+    window: { AudioContext: FakeAudioContext },
+    document: { hidden: false },
+    localStorage: {
+      getItem() { return null; },
+      setItem() {}
+    },
+    setTimeout() { return 1; },
+    clearTimeout() {}
+  };
+  vm.runInNewContext(read(path.join("js", "audio.js")), sandbox, {
+    filename: "cards/js/audio.js"
+  });
+  return {
+    Audio: sandbox.window.CardAudio,
+    contexts,
+    started
+  };
 }
 
 test("이야기 조각 데이터는 9종 효과·완청 키·초기 3장 풀 계약을 지킨다", () => {
@@ -82,7 +163,7 @@ test("이야기 조각 데이터는 9종 효과·완청 키·초기 3장 풀 계
   );
 });
 
-test("손패 UI와 캐시 버전 19가 함께 배포되도록 묶여 있다", () => {
+test("손패 UI와 캐시 버전 21이 함께 배포되도록 묶여 있다", () => {
   const html = read("index.html");
   const css = read("styles.css");
   const app = read(path.join("js", "app.js"));
@@ -90,11 +171,11 @@ test("손패 UI와 캐시 버전 19가 함께 배포되도록 묶여 있다", ()
   ["fragmentTray", "fragmentHand", "fragmentPreview"].forEach((id) => {
     assert.match(html, new RegExp('id="' + id + '"'));
   });
-  assert.match(html, /styles\.css\?v=19/);
-  ["engine", "audio", "card-view", "app"].forEach((file) => {
-    assert.match(html, new RegExp("js/" + file + "\\.js\\?v=19"));
+  assert.match(html, /styles\.css\?v=21/);
+  ["engine", "audio", "card-view", "vfx-recipes", "app"].forEach((file) => {
+    assert.match(html, new RegExp("js/" + file + "\\.js\\?v=21"));
   });
-  assert.doesNotMatch(html, /\?v=18/);
+  assert.doesNotMatch(html, /\?v=(?:19|20)/);
 
   assert.match(css, /\.fragment-chip[\s\S]*?min-height: 68px/);
   assert.match(
@@ -301,15 +382,30 @@ test("프리미엄 사운드는 발동·명중을 나누고 재질·결과·안�
   assert.match(audio, /compressor\.ratio\.value = 12/);
   assert.match(audio, /Math\.min\(0\.003,/);
   assert.match(audio, /const MATERIAL_BY_EMOJI/);
+  assert.match(audio, /const MATERIAL_PROFILES/);
+  assert.match(audio, /function materialResonanceAt\(audio, start, soundPlan\)/);
+  assert.match(audio, /function stableTechniqueSignature\(plan\)/);
+  assert.match(audio, /const MAX_ACTIVE_ONE_SHOTS = 24/);
+  assert.match(audio, /function trackOneShot\(audio, source, start, stopAt, priority\)/);
   assert.match(audio, /function techniqueLaunch\(plan\)/);
   assert.match(audio, /function techniqueImpact\(plan\)/);
   assert.match(audio, /musicDuckBus/);
-  assert.match(audio, /context\.state !== "running"/);
+  assert.match(audio, /function attemptContextResume\(audio\)/);
+  assert.match(audio, /audio\.state === "running"/);
+  assert.match(audio, /}, 480\)/);
   assert.match(audio, /context\.state !== "closed"/);
+  assert.match(audio, /function releaseClosedGraph\(\)/);
+  assert.match(audio, /activeOneShots\.splice\(0\)/);
+  assert.match(audio, /lastSelectAt = -Infinity/);
   assert.doesNotMatch(audio, /function impactCore/);
   assert.equal(typeof Audio.techniqueLaunch, "function");
   assert.equal(typeof Audio.techniqueImpact, "function");
   assert.equal(typeof Audio.soundPlanForTechnique, "function");
+  assert.equal(Audio.soundConfig.version, 20);
+  assert.equal(Audio.soundConfig.maxActiveOneShots, 24);
+  assert.equal(Audio.soundConfig.maxMusicStepsPerTick, 8);
+  assert.equal(Audio.soundConfig.materialProfiles.length, 11);
+  assert.match(audio, /scheduledSteps < MAX_MUSIC_STEPS_PER_TICK/);
 
   const base = {
     type: "wise",
@@ -343,8 +439,123 @@ test("프리미엄 사운드는 발동·명중을 나누고 재질·결과·안�
   assert.equal(magic.material, "crystal");
   assert.equal(magic.strong, true);
   assert.equal(magic.hasBody, false);
+  assert.equal(Audio.soundPlanForTechnique({ ...base, emoji: "👠" }).material, "glass");
+  assert.equal(Audio.soundPlanForTechnique({ ...base, emoji: "🌾" }).material, "paper");
+  assert.equal(Audio.soundPlanForTechnique({ ...base, emoji: "🐴" }).material, "hollow");
+  assert.equal(Audio.soundPlanForTechnique({ ...base, emoji: "👊" }).material, "body");
+  assert.equal(Audio.soundPlanForTechnique({ ...base, emoji: "📏" }).material, "wood");
 
   assert.doesNotMatch(audio, /\bfetch\s*\(|new\s+Audio\s*\(|\.(mp3|ogg|wav)\b/i);
+});
+
+test("닫힌 iPad AudioContext를 다시 만들어도 선택음 시계가 초기화된다", () => {
+  const runtime = loadAudioRuntimeWithFakeContext();
+  const first = runtime.Audio.prime();
+  first.currentTime = 100;
+  runtime.Audio.select();
+  assert.ok(runtime.started.length > 0);
+
+  first.state = "closed";
+  const second = runtime.Audio.prime();
+  assert.notEqual(second, first);
+  assert.equal(runtime.contexts.length, 2);
+
+  const before = runtime.started.length;
+  runtime.Audio.select();
+  assert.ok(
+    runtime.started.length > before,
+    "새 context의 0초를 예전 100초 선택음 throttle과 비교하면 안 된다"
+  );
+});
+
+test("연속 강타에도 실제 동시 발음은 24개를 넘지 않고 UI가 강타를 밀어내지 않는다", () => {
+  const runtime = loadAudioRuntimeWithFakeContext();
+  runtime.Audio.prime();
+  const plan = {
+    attack: "열두 과업",
+    type: "brave",
+    kind: "burst",
+    emoji: "💥",
+    outcome: "hit",
+    big: true,
+    weakness: false,
+    impactAtMs: 0,
+    totalMs: 500
+  };
+  for (let index = 0; index < 20; index += 1) {
+    runtime.Audio.techniqueImpact(plan);
+  }
+
+  let peak = 0;
+  for (let time = 0; time < 0.6; time += 0.0005) {
+    const active = runtime.started.filter((source) =>
+      source.startAt <= time && time < source.stopAt
+    ).length;
+    peak = Math.max(peak, active);
+  }
+  assert.ok(
+    peak <= runtime.Audio.soundConfig.maxActiveOneShots,
+    "peak " + peak
+  );
+
+  const beforeUi = runtime.started.length;
+  runtime.Audio.star();
+  assert.equal(
+    runtime.started.length,
+    beforeUi,
+    "priority 1 UI tails must be dropped before priority 3 impact voices"
+  );
+});
+
+test("iPad pagehide 뒤 예약음을 버리고 다음 사용자 prime에서 새 그래프를 만든다", () => {
+  const runtime = loadAudioRuntimeWithFakeContext();
+  const first = runtime.Audio.prime();
+  first.currentTime = 12;
+  runtime.Audio.setScene("battle");
+  runtime.Audio.select();
+  assert.ok(runtime.started.length > 0);
+
+  runtime.Audio.setPageHidden(true);
+  assert.ok(runtime.started.every((source) => source.stopAt <= 12));
+  const hiddenCount = runtime.started.length;
+  runtime.Audio.techniqueImpact({
+    attack: "청동 검",
+    type: "brave",
+    kind: "strike",
+    emoji: "⚔️",
+    outcome: "hit"
+  });
+  assert.equal(runtime.started.length, hiddenCount, "hidden timer SFX must be dropped");
+
+  runtime.Audio.setPageHidden(false);
+  runtime.Audio.prime();
+  assert.equal(runtime.contexts.length, 2);
+  assert.notEqual(runtime.contexts[1], first);
+  runtime.Audio.select();
+  assert.ok(runtime.started.length > hiddenCount);
+});
+
+test("miss·evade는 충돌음을 만들지 않고 날아가는 시작음만 낸다", () => {
+  ["miss", "evade"].forEach((outcome) => {
+    const runtime = loadAudioRuntimeWithFakeContext();
+    runtime.Audio.prime();
+    const input = {
+      attack: "조약돌 던지기",
+      type: "wise",
+      kind: "projectile",
+      emoji: "🪨",
+      outcome,
+      impactAtMs: 450,
+      totalMs: 590
+    };
+    const before = runtime.started.length;
+    const result = runtime.Audio.techniqueImpact(input);
+    assert.equal(runtime.started.length, before, outcome + " impact");
+    assert.equal(result.hasBody, false);
+    assert.equal(result.hasTransient, false);
+    runtime.Audio.techniqueLaunch(input);
+    assert.ok(runtime.started.length > before, outcome + " fly-by");
+  });
 });
 
 test("48개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가진다", () => {
@@ -358,6 +569,8 @@ test("48개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가진다", () => {
   );
   const Audio = loadAudioRuntime();
   const counts = {};
+  const materialCounts = {};
+  const signatures = new Set();
 
   assert.equal(attacks.length, 48);
   attacks.forEach(({ card, cardType, attack }) => {
@@ -372,16 +585,39 @@ test("48개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가진다", () => {
     counts[attack.vfx.kind] = (counts[attack.vfx.kind] || 0) + 1;
     const soundPlan = Audio.soundPlanForTechnique({
       type: cardType,
+      attack: attack.name,
       kind: attack.vfx.kind,
       emoji: attack.vfx.emoji,
       big: attack.vfx.big,
-      outcome: attack.dmg > 0 ? "hit" : "support",
+      outcome: attack.dmg > 0 || attack.fx === "dmg_half_enemy_hp"
+        ? "hit"
+        : "support",
       impactAtMs: 220,
       totalMs: 500
     });
-    assert.ok(["stone", "metal", "paper", "crystal", "air", "fire", "earth"]
+    assert.ok(["stone", "metal", "wood", "glass", "body", "paper",
+      "crystal", "air", "fire", "earth", "hollow"]
       .includes(soundPlan.material), card + " / " + attack.name + " sound");
+    assert.equal(soundPlan.materialProfile, soundPlan.material);
+    assert.ok(soundPlan.tailMs >= 140 && soundPlan.tailMs <= 470);
+    assert.ok(Number.isInteger(soundPlan.signature));
+    signatures.add(soundPlan.signature);
+    materialCounts[soundPlan.material] = (materialCounts[soundPlan.material] || 0) + 1;
     assert.ok(["brave", "wise", "magic", "monster"].includes(soundPlan.type));
+  });
+  assert.equal(signatures.size, 48, "48개 기술은 각각 고유한 안정 음색 서명을 가져야 한다");
+  assert.deepEqual(materialCounts, {
+    body: 8,
+    fire: 3,
+    air: 10,
+    wood: 3,
+    metal: 7,
+    stone: 4,
+    paper: 2,
+    hollow: 3,
+    glass: 2,
+    crystal: 5,
+    earth: 1
   });
 
   assert.deepEqual(counts, {
@@ -478,6 +714,40 @@ test("기술 플래너는 종류·빗나감·회피·큰 기술·모션 감소�
     assert.ok(timing.impactAtMs <= timing.totalMs);
     assert.ok(timing.totalMs <= 800);
   });
+});
+
+test("대표 기술은 원본 텍스처·재질 파편·접촉 정지 레시피를 사용한다", () => {
+  const sandbox = { window: {} };
+  vm.runInNewContext(read(path.join("js", "vfx-recipes.js")), sandbox, {
+    filename: "cards/js/vfx-recipes.js"
+  });
+  const registry = sandbox.window.CardVfxRecipes;
+  const expected = new Map([
+    ["redhood:0", "stone"],
+    ["arthur:0", "metal"],
+    ["snowqueen:0", "ice"],
+    ["tiger:1", "earth"]
+  ]);
+  expected.forEach((material, key) => {
+    const [cardId, attackIndex] = key.split(":");
+    const recipe = registry.get(cardId, Number(attackIndex));
+    assert.ok(recipe, key);
+    assert.equal(recipe.material, material, key);
+    assert.ok(recipe.hitStopMs >= 28 && recipe.hitStopMs <= 55, key);
+    assert.ok(recipe.recoilPx >= 3 && recipe.recoilPx <= 10, key);
+    const assetPath = path.join(cardsRoot, recipe.asset);
+    assert.ok(fs.existsSync(assetPath), recipe.asset);
+    assert.ok(fs.statSync(assetPath).size > 1000, recipe.asset);
+    assert.ok(fs.statSync(assetPath).size < 100000, recipe.asset);
+  });
+
+  const css = read("styles.css");
+  const app = read(path.join("js", "app.js"));
+  assert.match(css, /\.technique-fx\.has-premium-art/);
+  assert.match(css, /premium-v21-target-recoil/);
+  assert.match(app, /triggerTechniqueContact\(effect, plan\)/);
+  assert.match(app, /const spread = plan\.recipe \? Math\.PI \* 0\.52/);
+  assert.match(app, /slotAnchorPoint\(sourceSlot/);
 });
 
 test("기술 무대는 풀을 재사용하고 프레임·기울기·60px 조작 기준을 지킨다", () => {
@@ -615,6 +885,12 @@ test("기술 무대는 풀을 재사용하고 프레임·기울기·60px 조작 
     primeBlock,
     /once:\s*true/,
     "iPad 오디오 인터럽트 뒤 다음 사용자 제스처로 다시 prime해야 한다"
+  );
+  assert.match(app, /window\.addEventListener\("pagehide"/);
+  assert.match(app, /window\.CardAudio\.requestRecovery\(\)/);
+  assert.match(
+    app,
+    /window\.addEventListener\("pageshow"[\s\S]*?setPageHidden\(document\.hidden\)[\s\S]*?refreshUnlocks\(\)/
   );
 
   const selectBlock = app.slice(

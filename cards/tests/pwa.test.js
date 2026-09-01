@@ -53,7 +53,10 @@ test("install is strict only for core and card art; optional warmup is bounded a
   const installSource = swSource.slice(installStart, activateStart);
   const activateSource = swSource.slice(activateStart, fetchStart);
 
-  assert.match(installSource, /cache\.addAll\(\[\.\.\.CORE_SHELL, \.\.\.CARD_ART_FILES\]/);
+  assert.match(
+    installSource,
+    /cache\.addAll\(\[[\s\S]*\.\.\.CORE_SHELL,[\s\S]*\.\.\.CARD_ART_FILES,[\s\S]*\.\.\.VFX_ART_FILES/
+  );
   assert.doesNotMatch(installSource, /OPTIONAL_SHELL|BACKGROUND_ASSETS|SANGUO_RUNTIME_ASSETS/);
   assert.match(activateSource, /void warmBackgroundAssets\(\)/);
   assert.ok(sw.BACKGROUND_WARM_CONCURRENCY >= 1);
@@ -109,13 +112,20 @@ test("all story episode mp3 files match the service worker fallback list", () =>
   }
 });
 
-test("cache version follows exact v19 card assets and navigation aliases are canonical", () => {
-  assert.equal(sw.CACHE_VERSION, "v19");
-  assert.match(sw.STATIC_CACHE, /^adventure-box-v19-/);
-  for (const asset of ["styles.css", "engine.js", "audio.js", "card-view.js", "app.js"]) {
-    assert.ok(sw.CORE_SHELL.some(entry => entry.endsWith(asset + "?v=19")), asset);
+test("cache version follows exact v21 card assets and navigation aliases are canonical", () => {
+  assert.equal(sw.CACHE_VERSION, "v21");
+  assert.match(sw.STATIC_CACHE, /^adventure-box-v21-/);
+  for (const asset of ["styles.css", "engine.js", "audio.js", "card-view.js", "vfx-recipes.js", "app.js"]) {
+    assert.ok(sw.CORE_SHELL.some(entry => entry.endsWith(asset + "?v=21")), asset);
   }
-  assert.doesNotMatch(swSource, /\?v=18|adventure-box-v18/);
+  assert.doesNotMatch(swSource, /\?v=(?:19|20)|adventure-box-v(?:19|20)/);
+  assert.deepEqual(sw.VFX_ART_FILES, [
+    "./cards/art/vfx/frost-needle.webp",
+    "./cards/art/vfx/gold-blade.webp",
+    "./cards/art/vfx/monster-impact.webp",
+    "./cards/art/vfx/stone-arc.webp",
+  ]);
+  assert.match(swSource, /\.\.\.VFX_ART_FILES/);
 
   const cases = new Map([
     ["https://example.test/cards?preview=all", "https://example.test/cards/"],

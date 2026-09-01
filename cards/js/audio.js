@@ -25,8 +25,14 @@
   let musicVariation = 0;
   let battleTense = false;
   let pageHidden = typeof document !== "undefined" && document.hidden;
+  let needsAudioRecovery = false;
+  let resumePending = false;
+  let resumeWatchdog = 0;
+  let resumeGeneration = 0;
   const techniquePlanCache = new WeakMap();
   const lastTechniqueVariation = Object.create(null);
+  const activeOneShots = [];
+  const activeMusicSources = [];
 
   const LOOKAHEAD_MS = 50;
   const SCHEDULE_AHEAD_SECONDS = 0.18;
@@ -35,6 +41,8 @@
   const COLLECTION_BARS = 8;
   const BATTLE_BARS = 8;
   const TENSION_SEMITONE = Math.pow(2, 1 / 12);
+  const MAX_ACTIVE_ONE_SHOTS = 24;
+  const MAX_MUSIC_STEPS_PER_TICK = 8;
 
   try {
     muted = localStorage.getItem("cards_muted") === "1";
@@ -135,7 +143,150 @@
     master.connect(toneFilter).connect(compressor).connect(audio.destination);
   }
 
-  function ctx() {
+  function stopActiveOneShots(atTime) {
+    const sources = activeOneShots.splice(0);
+    sources.forEach(function (entry) {
+      try {
+        entry.source.stop(atTime);
+      } catch (error) {}
+    });
+  }
+
+  function forgetMusicSource(entry) {
+    const index = activeMusicSources.indexOf(entry);
+    if (index >= 0) activeMusicSources.splice(index, 1);
+  }
+
+  function trackMusicSource(source, stopAt) {
+    const entry = { source: source, stopAt: stopAt };
+    activeMusicSources.push(entry);
+    if (typeof source.addEventListener === "function") {
+      source.addEventListener("ended", function () {
+        forgetMusicSource(entry);
+      }, { once: true });
+    }
+  }
+
+  function stopActiveMusic(atTime) {
+    const sources = activeMusicSources.splice(0);
+    sources.forEach(function (entry) {
+      try {
+        entry.source.stop(atTime);
+      } catch (error) {}
+    });
+  }
+
+  function releaseAudioGraph(force) {
+    if (!context || (!force && context.state !== "closed")) return false;
+    const staleContext = context;
+    stopActiveOneShots(staleContext.currentTime);
+    stopActiveMusic(staleContext.currentTime);
+    clearTimeout(musicTimer);
+    clearTimeout(resumeWatchdog);
+    musicTimer = 0;
+    resumeWatchdog = 0;
+    resumePending = false;
+    resumeGeneration += 1;
+    nextMusicTime = 0;
+    musicStep = 0;
+    lastSelectAt = -Infinity;
+    context = null;
+    master = null;
+    room = null;
+    roomGain = null;
+    uiBus = null;
+    sfxBus = null;
+    transientBus = null;
+    bodyBus = null;
+    materialBus = null;
+    materialRoomSend = null;
+    materialRoomDelay = null;
+    musicBus = null;
+    musicDuckBus = null;
+    noiseBuffers = null;
+    if (
+      force &&
+      staleContext.state !== "closed" &&
+      typeof staleContext.close === "function"
+    ) {
+      try {
+        const closing = staleContext.close();
+        if (closing && typeof closing.catch === "function") {
+          closing.catch(function () {});
+        }
+      } catch (error) {}
+    }
+    return true;
+  }
+
+  function releaseClosedGraph() {
+    return releaseAudioGraph(false);
+  }
+
+  function requestAudioRecovery() {
+    needsAudioRecovery = true;
+    clearTimeout(musicTimer);
+    musicTimer = 0;
+    if (context) stopActiveOneShots(context.currentTime);
+    if (context) stopActiveMusic(context.currentTime);
+  }
+
+  function attemptContextResume(audio) {
+    if (
+      !audio ||
+      audio.state === "running" ||
+      audio.state === "closed" ||
+      resumePending ||
+      typeof audio.resume !== "function"
+    ) return;
+    const generation = ++resumeGeneration;
+    resumePending = true;
+    clearTimeout(resumeWatchdog);
+    resumeWatchdog = setTimeout(function () {
+      if (context !== audio || generation !== resumeGeneration) return;
+      resumePending = false;
+      needsAudioRecovery = true;
+    }, 480);
+    try {
+      const resumed = audio.resume();
+      if (resumed && typeof resumed.then === "function") {
+        resumed.then(function () {
+          if (context !== audio || generation !== resumeGeneration) return;
+          clearTimeout(resumeWatchdog);
+          resumeWatchdog = 0;
+          resumePending = false;
+          if (audio.state === "running") ensureMusicScheduler();
+          else needsAudioRecovery = true;
+        }).catch(function () {
+          if (context !== audio || generation !== resumeGeneration) return;
+          clearTimeout(resumeWatchdog);
+          resumeWatchdog = 0;
+          resumePending = false;
+          needsAudioRecovery = true;
+        });
+      } else {
+        clearTimeout(resumeWatchdog);
+        resumeWatchdog = 0;
+        resumePending = false;
+        if (audio.state !== "running") needsAudioRecovery = true;
+      }
+    } catch (error) {
+      clearTimeout(resumeWatchdog);
+      resumeWatchdog = 0;
+      resumePending = false;
+      needsAudioRecovery = true;
+    }
+  }
+
+  function ctx(allowRecovery) {
+    if (pageHidden) return null;
+    if (needsAudioRecovery) {
+      if (!allowRecovery) return null;
+      releaseAudioGraph(true);
+      needsAudioRecovery = false;
+    } else {
+      releaseClosedGraph();
+    }
     if (!context) {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       if (AudioContext) {
@@ -147,19 +298,7 @@
         setupGraph(context);
       }
     }
-    if (
-      context &&
-      context.state !== "running" &&
-      context.state !== "closed" &&
-      typeof context.resume === "function"
-    ) {
-      try {
-        const resumed = context.resume();
-        if (resumed && typeof resumed.then === "function") {
-          resumed.then(ensureMusicScheduler).catch(function () {});
-        }
-      } catch (error) {}
-    }
+    attemptContextResume(context);
     if (context && context.state === "running") ensureMusicScheduler();
     return context;
   }
@@ -183,7 +322,55 @@
     return (Math.random() * 2 - 1) * (amount || 4);
   }
 
-  function getNoise(audio) {
+  function forgetOneShot(entry) {
+    const index = activeOneShots.indexOf(entry);
+    if (index >= 0) activeOneShots.splice(index, 1);
+  }
+
+  function trackOneShot(audio, source, start, stopAt, priority) {
+    const nextPriority = Math.max(0, Number(priority) || 0);
+    for (let index = activeOneShots.length - 1; index >= 0; index -= 1) {
+      if (activeOneShots[index].stopAt <= audio.currentTime) {
+        activeOneShots.splice(index, 1);
+      }
+    }
+    if (activeOneShots.length >= MAX_ACTIVE_ONE_SHOTS) {
+      let victimIndex = 0;
+      for (let index = 1; index < activeOneShots.length; index += 1) {
+        const candidate = activeOneShots[index];
+        const victim = activeOneShots[victimIndex];
+        if (
+          candidate.priority < victim.priority ||
+          (candidate.priority === victim.priority && candidate.stopAt < victim.stopAt)
+        ) {
+          victimIndex = index;
+        }
+      }
+      const victim = activeOneShots.splice(victimIndex, 1)[0];
+      if (nextPriority <= victim.priority) {
+        activeOneShots.splice(victimIndex, 0, victim);
+        return false;
+      }
+      try {
+        victim.source.stop(audio.currentTime);
+      } catch (error) {}
+    }
+    const entry = {
+      source: source,
+      start: start,
+      stopAt: stopAt,
+      priority: nextPriority
+    };
+    activeOneShots.push(entry);
+    if (typeof source.addEventListener === "function") {
+      source.addEventListener("ended", function () {
+        forgetOneShot(entry);
+      }, { once: true });
+    }
+    return true;
+  }
+
+  function getNoise(audio, colourIndex) {
     if (!noiseBuffers) {
       noiseBuffers = Array.from({ length: 3 }, function (_, bufferIndex) {
         const length = Math.floor(audio.sampleRate * 0.72);
@@ -202,7 +389,10 @@
         return buffer;
       });
     }
-    return noiseBuffers[Math.floor(Math.random() * noiseBuffers.length)];
+    const selected = Number.isInteger(colourIndex)
+      ? Math.max(0, Math.min(noiseBuffers.length - 1, colourIndex))
+      : Math.floor(Math.random() * noiseBuffers.length);
+    return noiseBuffers[selected];
   }
 
   function makePluckBuffer(audio, frequency, duration) {
@@ -248,6 +438,7 @@
     filter.frequency.exponentialRampToValueAtTime(Math.max(850, frequency * 1.6), start + duration);
     shape(gain, start, 0.003, duration, options.volume || 0.07);
 
+    if (!trackOneShot(audio, source, start, start + duration + 0.02, 1)) return;
     source.connect(filter).connect(gain);
     connectToMix(audio, gain, options.room === undefined ? 0.18 : options.room);
     source.start(start);
@@ -279,6 +470,13 @@
       oscillator.frequency.value = frequency * mode.ratio;
       oscillator.detune.value = humanDetune(3);
       shape(gain, start, 0.003, modeDuration, volume * mode.level);
+      if (!trackOneShot(
+        audio,
+        oscillator,
+        start,
+        start + modeDuration + 0.03,
+        1
+      )) return;
       oscillator.connect(gain).connect(bus);
       oscillator.start(start);
       oscillator.stop(start + modeDuration + 0.03);
@@ -298,6 +496,7 @@
     filter.frequency.value = frequency;
     filter.Q.value = 0.85;
     shape(gain, start, 0.002, duration, volume);
+    if (!trackOneShot(audio, source, start, start + duration + 0.01, 1)) return;
     source.connect(filter).connect(gain);
     connectToMix(audio, gain, 0.035);
     source.start(start);
@@ -317,6 +516,7 @@
     body.frequency.setValueAtTime(132 + humanDetune(7), start);
     body.frequency.exponentialRampToValueAtTime(76, start + 0.16);
     shape(gain, start, 0.003, 0.18, level);
+    if (!trackOneShot(audio, body, start, start + 0.2, 2)) return;
     body.connect(gain);
     connectToMix(audio, gain, 0.055);
     body.start(start);
@@ -340,6 +540,7 @@
     filter.frequency.setValueAtTime(700, start);
     filter.frequency.exponentialRampToValueAtTime(2600, start + 0.3);
     shape(gain, start, 0.06, 0.34, 0.018);
+    if (!trackOneShot(audio, source, start, start + 0.36, 1)) return;
     source.connect(filter).connect(gain);
     connectToMix(audio, gain, 0.24);
     source.start(start);
@@ -365,36 +566,100 @@
     filter.frequency.setValueAtTime(from, start);
     filter.frequency.exponentialRampToValueAtTime(to, start + duration);
     shape(gain, start, 0.004, duration, volume);
+    if (!trackOneShot(audio, source, start, start + duration + 0.02, 1)) return;
     source.connect(filter).connect(gain);
     connectToMix(audio, gain, roomAmount || 0.04);
     source.start(start);
     source.stop(start + duration + 0.02);
   }
 
+  const MATERIAL_PROFILES = Object.freeze({
+    stone: Object.freeze({
+      noise: 2, transientHz: 1450, transientQ: 0.58, transientDuration: 0.045,
+      bodyFrom: 205, bodyTo: 92, bodyLevel: 0.074,
+      baseHz: 190, modes: [1, 2.13, 4.67], levels: [1, 0.31, 0.1],
+      qs: [6.2, 8.5, 10.5], decay: 0.27, room: 0.07, spread: 0.13
+    }),
+    metal: Object.freeze({
+      noise: 0, transientHz: 4700, transientQ: 1.08, transientDuration: 0.032,
+      bodyFrom: 232, bodyTo: 128, bodyLevel: 0.052,
+      baseHz: 640, modes: [1, 1.63, 2.78, 4.07], levels: [1, 0.48, 0.23, 0.09],
+      qs: [15, 18, 21, 24], decay: 0.39, room: 0.19, spread: 0.2
+    }),
+    wood: Object.freeze({
+      noise: 1, transientHz: 1850, transientQ: 0.82, transientDuration: 0.038,
+      bodyFrom: 194, bodyTo: 105, bodyLevel: 0.065,
+      baseHz: 245, modes: [1, 2.46, 4.18], levels: [1, 0.34, 0.12],
+      qs: [4.4, 6.2, 7.6], decay: 0.2, room: 0.055, spread: 0.11
+    }),
+    glass: Object.freeze({
+      noise: 0, transientHz: 5600, transientQ: 1.22, transientDuration: 0.026,
+      bodyFrom: 175, bodyTo: 112, bodyLevel: 0.018,
+      baseHz: 760, modes: [1, 2.32, 4.21, 5.43], levels: [1, 0.35, 0.12, 0.055],
+      qs: [18, 22, 25, 28], decay: 0.44, room: 0.22, spread: 0.23
+    }),
+    body: Object.freeze({
+      noise: 2, transientHz: 920, transientQ: 0.48, transientDuration: 0.052,
+      bodyFrom: 174, bodyTo: 74, bodyLevel: 0.09,
+      baseHz: 128, modes: [1, 1.52, 2.61], levels: [1, 0.25, 0.08],
+      qs: [2.1, 2.8, 3.6], decay: 0.17, room: 0.035, spread: 0.06
+    }),
+    paper: Object.freeze({
+      noise: 0, transientHz: 3300, transientQ: 0.52, transientDuration: 0.075,
+      bodyFrom: 168, bodyTo: 112, bodyLevel: 0.018,
+      baseHz: 325, modes: [1, 1.72, 2.86], levels: [1, 0.24, 0.08],
+      qs: [2.6, 3.1, 3.8], decay: 0.16, room: 0.045, spread: 0.2
+    }),
+    crystal: Object.freeze({
+      noise: 0, transientHz: 4100, transientQ: 1.15, transientDuration: 0.035,
+      bodyFrom: 186, bodyTo: 118, bodyLevel: 0.016,
+      baseHz: 570, modes: [1, 2.74, 4.08, 5.77], levels: [1, 0.31, 0.12, 0.045],
+      qs: [17, 21, 24, 27], decay: 0.47, room: 0.25, spread: 0.24
+    }),
+    air: Object.freeze({
+      noise: 0, transientHz: 2450, transientQ: 0.43, transientDuration: 0.09,
+      bodyFrom: 155, bodyTo: 104, bodyLevel: 0.014,
+      baseHz: 410, modes: [1, 1.56, 2.42], levels: [1, 0.22, 0.07],
+      qs: [2.2, 2.9, 3.4], decay: 0.2, room: 0.13, spread: 0.25
+    }),
+    fire: Object.freeze({
+      noise: 0, transientHz: 2050, transientQ: 0.4, transientDuration: 0.115,
+      bodyFrom: 194, bodyTo: 96, bodyLevel: 0.046,
+      baseHz: 268, modes: [1, 1.47, 2.93], levels: [1, 0.22, 0.07],
+      qs: [2.6, 3.2, 4.1], decay: 0.24, room: 0.09, spread: 0.19
+    }),
+    earth: Object.freeze({
+      noise: 2, transientHz: 720, transientQ: 0.42, transientDuration: 0.105,
+      bodyFrom: 166, bodyTo: 67, bodyLevel: 0.097,
+      baseHz: 146, modes: [1, 1.57, 2.91], levels: [1, 0.27, 0.08],
+      qs: [2.4, 3.3, 4.2], decay: 0.25, room: 0.045, spread: 0.07
+    }),
+    hollow: Object.freeze({
+      noise: 1, transientHz: 1320, transientQ: 0.72, transientDuration: 0.052,
+      bodyFrom: 186, bodyTo: 82, bodyLevel: 0.083,
+      baseHz: 164, modes: [1, 2.31, 3.72], levels: [1, 0.38, 0.14],
+      qs: [5.2, 7.1, 8.8], decay: 0.28, room: 0.085, spread: 0.14
+    })
+  });
   const MATERIAL_BY_EMOJI = Object.freeze({
-    "🪨": "stone",
-    "🗿": "stone",
-    "⚔️": "metal",
-    "🗡️": "metal",
-    "🪓": "metal",
-    "👑": "metal",
-    "🪙": "metal",
-    "🏹": "metal",
-    "✨": "crystal",
-    "🌟": "crystal",
-    "❄️": "crystal",
-    "🧊": "crystal",
-    "🪄": "crystal",
-    "💨": "air",
-    "🌊": "air",
-    "🎵": "air",
-    "🎺": "air",
-    "🔥": "fire",
-    "💥": "fire",
-    "🪔": "fire"
+    "🪨": "stone", "🗿": "stone",
+    "⚔️": "metal", "🗡️": "metal", "🪓": "metal", "👑": "metal",
+    "🪙": "metal", "🥚": "metal",
+    "🏹": "wood", "🌱": "wood", "📏": "wood",
+    "👠": "glass", "🍭": "glass",
+    "👊": "body", "🐷": "body", "🐢": "body", "🐒": "body",
+    "🐑": "body", "🐍": "body", "🐯": "body", "🍡": "body",
+    "🌾": "paper", "🏁": "paper",
+    "✨": "crystal", "🌟": "crystal", "❄️": "crystal",
+    "🧊": "crystal", "🪄": "crystal",
+    "💨": "air", "🌊": "air", "🎵": "air", "🎺": "air",
+    "🌨️": "air", "🐦": "air", "👀": "air",
+    "🔥": "fire", "💥": "fire", "🪔": "fire",
+    "🦶": "earth",
+    "🐴": "hollow", "🎃": "hollow"
   });
   const DEFAULT_MATERIAL_BY_TYPE = Object.freeze({
-    brave: "metal",
+    brave: "body",
     wise: "paper",
     magic: "crystal",
     monster: "earth"
@@ -416,6 +681,20 @@
     return next;
   }
 
+  function stableTechniqueSignature(plan) {
+    const text = [
+      plan && plan.attack ? plan.attack : "",
+      plan && plan.emoji ? plan.emoji : "✦",
+      plan && plan.kind ? plan.kind : "burst"
+    ].join("|");
+    let hash = 2166136261;
+    for (let index = 0; index < text.length; index += 1) {
+      hash ^= text.charCodeAt(index);
+      hash = Math.imul(hash, 16777619);
+    }
+    return hash >>> 0;
+  }
+
   function soundPlanForTechnique(plan) {
     plan = plan || {};
     const type = ["brave", "wise", "magic", "monster"].includes(plan.type)
@@ -429,14 +708,22 @@
       : "support";
     const material = MATERIAL_BY_EMOJI[plan.emoji] ||
       DEFAULT_MATERIAL_BY_TYPE[type];
+    const materialProfile = MATERIAL_PROFILES[material] || MATERIAL_PROFILES.earth;
     const strong = Boolean(plan.big || plan.weakness);
-    const key = [kind, type, material].join(":");
+    const signature = stableTechniqueSignature(plan);
+    const key = [kind, type, material, signature].join(":");
     const hasContact = outcome === "hit";
     const blocked = outcome === "blocked";
     return {
       kind: kind,
       type: type,
       material: material,
+      materialProfile: material,
+      tailMs: Math.round(materialProfile.decay * 1000),
+      voicePriority: strong ? 3 : 2,
+      signature: signature,
+      signatureCents: (signature % 73) - 36,
+      brightness: 0.9 + ((signature >>> 8) % 21) / 100,
       outcome: outcome,
       variation: chooseTechniqueVariation(key),
       strong: strong,
@@ -464,6 +751,7 @@
     cached.revive = Boolean(plan.revive);
     cached.weakness = Boolean(plan.weakness);
     cached.strong = Boolean(plan.big || plan.weakness);
+    cached.voicePriority = cached.strong ? 3 : 2;
     return cached;
   }
 
@@ -487,7 +775,7 @@
     const source = audio.createBufferSource();
     const filter = audio.createBiquadFilter();
     const gain = audio.createGain();
-    const buffer = getNoise(audio);
+    const buffer = getNoise(audio, options.noise);
     const offsetLimit = Math.max(0, buffer.duration - duration - 0.015);
     source.buffer = buffer;
     filter.type = options.filterType || "bandpass";
@@ -502,6 +790,13 @@
       start + Math.min(0.003, duration * 0.14)
     );
     gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    if (!trackOneShot(
+      audio,
+      source,
+      start,
+      start + duration + 0.012,
+      options.priority === undefined ? 2 : options.priority
+    )) return;
     source.connect(filter).connect(gain);
     connectWithPan(
       audio,
@@ -545,6 +840,13 @@
       start + duration * 0.62
     );
     gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    if (!trackOneShot(
+      audio,
+      source,
+      start,
+      start + duration + 0.018,
+      options.priority === undefined ? 1 : options.priority
+    )) return;
     source.connect(filter).connect(gain);
     connectWithPan(
       audio,
@@ -579,6 +881,13 @@
       start + Math.min(0.003, duration * 0.1)
     );
     gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    if (!trackOneShot(
+      audio,
+      oscillator,
+      start,
+      start + duration + 0.02,
+      options.priority === undefined ? 2 : options.priority
+    )) return;
     oscillator.connect(gain).connect(options.bus || bodyBus);
     oscillator.start(start);
     oscillator.stop(start + duration + 0.02);
@@ -602,10 +911,80 @@
         start + (index ? 0.004 : 0.0025)
       );
       gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+      if (!trackOneShot(
+        audio,
+        oscillator,
+        start,
+        start + duration + 0.02,
+        options.priority === undefined ? 1 : options.priority
+      )) return;
       oscillator.connect(gain).connect(materialBus);
       oscillator.start(start);
       oscillator.stop(start + duration + 0.02);
     });
+  }
+
+  function materialResonanceAt(audio, start, soundPlan) {
+    const profile = MATERIAL_PROFILES[soundPlan.material] || MATERIAL_PROFILES.earth;
+    const strong = soundPlan.strong;
+    const duration = profile.decay * (strong ? 1.18 : 0.92);
+    const source = audio.createBufferSource();
+    const colourFilter = audio.createBiquadFilter();
+    const excitation = audio.createGain();
+    const buffer = getNoise(audio, profile.noise);
+    const offsetLimit = Math.max(0, buffer.duration - duration - 0.018);
+    const variationRatio = (
+      1 + (soundPlan.variation - 1) * 0.014
+    ) * Math.pow(2, (Number(soundPlan.signatureCents) || 0) / 1200);
+    const targetPan = soundPlan.direction > 0 ? -0.075 : 0.075;
+
+    source.buffer = buffer;
+    colourFilter.type = "bandpass";
+    colourFilter.frequency.value = Math.max(110, profile.transientHz * 0.64);
+    colourFilter.Q.value = Math.max(0.32, profile.transientQ * 0.72);
+    excitation.gain.setValueAtTime(0.0001, start);
+    excitation.gain.linearRampToValueAtTime(
+      strong ? 0.088 : 0.066,
+      start + 0.0025
+    );
+    excitation.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    if (!trackOneShot(
+      audio,
+      source,
+      start,
+      start + duration + 0.014,
+      soundPlan.voicePriority
+    )) return;
+    source.connect(colourFilter).connect(excitation);
+
+    profile.modes.forEach(function (ratio, index) {
+      const resonator = audio.createBiquadFilter();
+      const modeGain = audio.createGain();
+      const roomSend = audio.createGain();
+      const panOffset = (index % 2 ? 1 : -1) * profile.spread;
+      resonator.type = "bandpass";
+      resonator.frequency.value = Math.min(
+        7600,
+        profile.baseHz * ratio * variationRatio * Math.pow(2, humanDetune(7) / 1200)
+      );
+      resonator.Q.value = profile.qs[index] || profile.qs[profile.qs.length - 1];
+      modeGain.gain.value = profile.levels[index] || 0.05;
+      roomSend.gain.value = Math.max(0.001, profile.room * (strong ? 0.24 : 0.17));
+      excitation.connect(resonator).connect(modeGain);
+      connectWithPan(
+        audio,
+        modeGain,
+        materialBus,
+        start,
+        duration,
+        targetPan + panOffset,
+        targetPan + panOffset * 0.45
+      );
+      modeGain.connect(roomSend).connect(room);
+    });
+
+    source.start(start, Math.random() * offsetLimit, duration + 0.01);
+    source.stop(start + duration + 0.014);
   }
 
   function techniqueLaunch(plan) {
@@ -615,20 +994,28 @@
     const soundPlan = resolvedTechniqueSoundPlan(plan);
     const start = audio.currentTime + 0.005;
     const direction = soundPlan.direction;
+    const profile = MATERIAL_PROFILES[soundPlan.material] || MATERIAL_PROFILES.earth;
     const panFrom = direction > 0 ? 0.18 : -0.18;
     const panTo = -panFrom;
     const impactSeconds = Math.max(0.08, soundPlan.impactAtMs / 1000);
 
     if (soundPlan.kind === "projectile") {
       noiseBurstAt(audio, start, {
-        frequency: soundPlan.material === "stone" ? 1800 : 3100,
+        frequency: Math.max(
+          1100,
+          Math.min(4200, profile.transientHz * 0.78 * soundPlan.brightness)
+        ),
         duration: 0.026,
         volume: 0.03,
+        q: profile.transientQ,
+        noise: profile.noise,
         pan: panFrom
       });
       whooshAt(audio, start + 0.028, {
-        fromHz: soundPlan.material === "stone" ? 780 : 1250,
-        toHz: soundPlan.material === "stone" ? 3200 : 4700,
+        fromHz: ["stone", "body", "earth"].includes(soundPlan.material) ? 720 : 1280,
+        toHz: (
+          ["paper", "air"].includes(soundPlan.material) ? 3900 : 4700
+        ) * soundPlan.brightness,
         duration: Math.min(0.38, Math.max(0.18, impactSeconds - 0.065)),
         volume: 0.022,
         panFrom: panFrom,
@@ -636,7 +1023,7 @@
       });
     } else if (soundPlan.kind === "summon") {
       modalHitAt(audio, start, {
-        baseHz: soundPlan.material === "metal" ? 520 : 610,
+        baseHz: ["metal", "glass", "crystal"].includes(soundPlan.material) ? 540 : 420,
         ratios: [1, 1.5, 2.76],
         levels: [1, 0.32, 0.15],
         duration: 0.22,
@@ -720,99 +1107,50 @@
   }
 
   function materialImpactAt(audio, start, soundPlan) {
+    const profile = MATERIAL_PROFILES[soundPlan.material] || MATERIAL_PROFILES.earth;
     const strong = soundPlan.strong;
-    const variation = soundPlan.variation;
-    const duration = strong ? 0.29 : 0.17;
-    const transientFrequencies = {
-      stone: 1500,
-      metal: 4300,
-      paper: 2750,
-      crystal: 3600,
-      air: 2400,
-      fire: 2100,
-      earth: 980
-    };
+    const bodyDuration = profile.decay * (strong ? 1.06 : 0.78);
     noiseBurstAt(audio, start, {
-      frequency: transientFrequencies[soundPlan.material] || 2200,
-      duration: strong ? 0.052 : 0.036,
+      frequency: profile.transientHz * soundPlan.brightness,
+      duration: profile.transientDuration * (strong ? 1.16 : 0.88),
       volume: strong ? 0.07 : 0.052,
-      q: soundPlan.material === "earth" ? 0.5 : 0.76
+      q: profile.transientQ,
+      noise: profile.noise,
+      priority: 3
     });
 
-    if (soundPlan.hasBody) {
-      const bodyRanges = {
-        stone: [205, 108],
-        metal: [230, 126],
-        paper: [188, 116],
-        air: [170, 112],
-        fire: [195, 104],
-        earth: [178, 88]
-      };
-      const range = bodyRanges[soundPlan.material] ||
-        (soundPlan.type === "monster" ? [178, 88] : [210, 116]);
+    if (soundPlan.hasBody && profile.bodyLevel > 0) {
       toneSweepAt(audio, start, {
-        fromHz: range[0] * (1 + variation * 0.025),
-        toHz: range[1],
-        duration: duration,
-        volume: strong ? 0.108 : 0.078,
-        type: soundPlan.type === "monster" ? "triangle" : "sine"
+        fromHz: profile.bodyFrom * (1 + soundPlan.variation * 0.018),
+        toHz: profile.bodyTo,
+        duration: bodyDuration,
+        volume: profile.bodyLevel * (strong ? 1.12 : 0.82),
+        type: soundPlan.type === "monster" ? "triangle" : "sine",
+        priority: 3
       });
     }
 
-    if (soundPlan.material === "stone") {
-      modalHitAt(audio, start + 0.008, {
-        baseHz: 210 + variation * 14,
-        ratios: [1, 2.1, 4.67],
-        levels: [1, 0.29, 0.1],
-        duration: strong ? 0.34 : 0.24,
-        volume: 0.039
+    materialResonanceAt(audio, start + 0.003, soundPlan);
+
+    if (soundPlan.material === "air" || soundPlan.material === "fire") {
+      whooshAt(audio, start + 0.014, {
+        fromHz: soundPlan.material === "fire" ? 920 : 3300,
+        toHz: soundPlan.material === "fire" ? 2850 : 820,
+        duration: strong ? 0.17 : 0.11,
+        volume: strong ? 0.022 : 0.014,
+        panFrom: soundPlan.direction > 0 ? 0.08 : -0.08,
+        panTo: 0,
+        priority: 2
       });
-    } else if (soundPlan.material === "metal") {
-      modalHitAt(audio, start + 0.006, {
-        baseHz: 620 + variation * 26,
-        ratios: [1, 1.63, 2.78],
-        levels: [1, 0.42, 0.18],
-        duration: strong ? 0.4 : 0.26,
-        volume: strong ? 0.036 : 0.03
-      });
-    } else if (soundPlan.material === "crystal") {
-      modalHitAt(audio, start + 0.004, {
-        baseHz: 540 + variation * 34,
-        ratios: [1, 2.74, 4.08],
-        levels: [1, 0.28, 0.1],
-        duration: strong ? 0.48 : 0.34,
-        volume: strong ? 0.034 : 0.028,
-        type: "sine"
-      });
-    } else if (soundPlan.material === "paper" || soundPlan.material === "air") {
-      noiseBurstAt(audio, start + 0.012, {
-        frequency: soundPlan.material === "paper" ? 3150 : 2500,
-        duration: 0.075,
-        volume: 0.026,
-        filterType: "highpass",
-        bus: materialBus
-      });
-      modalHitAt(audio, start + 0.012, {
-        baseHz: 305 + variation * 18,
-        ratios: [1, 1.71, 2.83],
-        levels: [1, 0.28, 0.12],
-        duration: 0.22,
-        volume: 0.027
-      });
-    } else {
-      noiseBurstAt(audio, start + 0.008, {
-        frequency: soundPlan.material === "fire" ? 1700 : 720,
-        duration: strong ? 0.12 : 0.085,
-        volume: 0.031,
-        q: 0.46,
-        bus: materialBus
-      });
-      modalHitAt(audio, start + 0.01, {
-        baseHz: soundPlan.material === "fire" ? 260 : 185,
-        ratios: [1, 1.56, 2.94],
-        levels: [1, 0.25, 0.1],
-        duration: strong ? 0.34 : 0.23,
-        volume: 0.032
+    } else if (soundPlan.material === "hollow") {
+      noiseBurstAt(audio, start + 0.013, {
+        frequency: 860 + soundPlan.variation * 90,
+        duration: strong ? 0.085 : 0.055,
+        volume: strong ? 0.029 : 0.021,
+        q: 0.7,
+        noise: 1,
+        bus: materialBus,
+        priority: 2
       });
     }
 
@@ -822,7 +1160,8 @@
         toHz: 55,
         duration: 0.31,
         volume: 0.038,
-        type: "sine"
+        type: "sine",
+        priority: 3
       });
     }
   }
@@ -977,7 +1316,8 @@
       desiredScene &&
       !muted &&
       !musicMuted &&
-      !pageHidden
+      !pageHidden &&
+      !needsAudioRecovery
     );
   }
 
@@ -986,6 +1326,7 @@
   }
 
   function rampMusicBus(target, duration) {
+    releaseClosedGraph();
     if (!context || !musicBus) return;
     const now = context.currentTime;
     const current = Math.max(0.0001, musicBus.gain.value || 0.0001);
@@ -1013,6 +1354,7 @@
       oscillator.connect(gain).connect(musicBus);
       oscillator.start(start);
       oscillator.stop(start + voiceDuration + 0.03);
+      trackMusicSource(oscillator, start + voiceDuration + 0.03);
     });
   }
 
@@ -1033,6 +1375,7 @@
     oscillator.connect(filter).connect(gain).connect(musicBus);
     oscillator.start(start);
     oscillator.stop(start + duration + 0.04);
+    trackMusicSource(oscillator, start + duration + 0.04);
   }
 
   function scheduleCollectionStep(audio, start, step) {
@@ -1068,22 +1411,42 @@
     const collection = desiredScene === "collection";
     const stepSeconds = collection ? 60 / COLLECTION_BPM : (60 / BATTLE_BPM) / 2;
     const cycleSteps = collection ? COLLECTION_BARS * 4 : BATTLE_BARS * 8;
-    while (nextMusicTime < audio.currentTime + SCHEDULE_AHEAD_SECONDS) {
+    if (nextMusicTime < audio.currentTime - SCHEDULE_AHEAD_SECONDS * 2) {
+      nextMusicTime = audio.currentTime + 0.04;
+    }
+    let scheduledSteps = 0;
+    while (
+      nextMusicTime < audio.currentTime + SCHEDULE_AHEAD_SECONDS &&
+      scheduledSteps < MAX_MUSIC_STEPS_PER_TICK
+    ) {
       if (collection) {
         scheduleCollectionStep(audio, nextMusicTime, musicStep);
       } else {
         scheduleBattleStep(audio, nextMusicTime, musicStep);
       }
       musicStep += 1;
+      scheduledSteps += 1;
       nextMusicTime += stepSeconds;
       if (musicStep % cycleSteps === 0) {
         musicVariation = Math.random() < 0.5 ? 0 : 1;
       }
     }
+    if (
+      scheduledSteps === MAX_MUSIC_STEPS_PER_TICK &&
+      nextMusicTime < audio.currentTime
+    ) {
+      nextMusicTime = audio.currentTime + 0.04;
+    }
     musicTimer = setTimeout(schedulerTick, LOOKAHEAD_MS);
   }
 
   function ensureMusicScheduler() {
+    releaseClosedGraph();
+    if (needsAudioRecovery) {
+      clearTimeout(musicTimer);
+      musicTimer = 0;
+      return;
+    }
     if (!context || !musicBus) return;
     if (!musicCanRun()) {
       clearTimeout(musicTimer);
@@ -1156,7 +1519,59 @@
     bell(1046.5, 0.13, { volume: 0.025, duration: 0.56 });
   }
 
+  function pageFlipAt(audio, start, volume) {
+    const duration = 0.13;
+    const source = audio.createBufferSource();
+    const filter = audio.createBiquadFilter();
+    const gain = audio.createGain();
+    const buffer = getNoise(audio, 0);
+    const offsetLimit = Math.max(0, buffer.duration - duration - 0.02);
+    source.buffer = buffer;
+    filter.type = "bandpass";
+    filter.Q.value = 0.48;
+    filter.frequency.setValueAtTime(3800, start);
+    filter.frequency.exponentialRampToValueAtTime(1250, start + duration);
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.linearRampToValueAtTime(volume || 0.014, start + 0.026);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    if (!trackOneShot(
+      audio,
+      source,
+      start,
+      start + duration + 0.014,
+      1
+    )) return;
+    source.connect(filter).connect(gain);
+    connectWithPan(audio, gain, uiBus, start, duration, -0.14, 0.14);
+    source.start(start, Math.random() * offsetLimit, duration + 0.01);
+    source.stop(start + duration + 0.014);
+  }
+
+  function coinTickAt(audio, start, frequency, pan, volume) {
+    noiseBurstAt(audio, start, {
+      frequency: Math.min(6500, frequency * 2.8),
+      duration: 0.012,
+      volume: volume * 0.72,
+      q: 1.2,
+      noise: 0,
+      pan: pan,
+      bus: uiBus,
+      priority: 2
+    });
+    modalHitAt(audio, start + 0.001, {
+      baseHz: frequency,
+      ratios: [1, 1.57],
+      levels: [1, 0.24],
+      decays: [1, 0.58],
+      duration: 0.12,
+      volume: volume,
+      type: "sine",
+      priority: 2
+    });
+  }
+
   function rampEffectsMuteState(value) {
+    releaseClosedGraph();
     if (!context) return;
     const now = context.currentTime;
     [uiBus, sfxBus].forEach(function (bus) {
@@ -1182,7 +1597,7 @@
 
   const api = {
     prime: function () {
-      const audio = ctx();
+      const audio = ctx(true);
       ensureMusicScheduler();
       return audio;
     },
@@ -1220,9 +1635,11 @@
     },
     setPageHidden: function (hidden) {
       pageHidden = Boolean(hidden);
+      if (pageHidden) requestAudioRecovery();
       ensureMusicScheduler();
       return pageHidden;
     },
+    requestRecovery: requestAudioRecovery,
     bgmConfig: Object.freeze({
       collectionBpm: COLLECTION_BPM,
       battleBpm: BATTLE_BPM,
@@ -1230,6 +1647,12 @@
       scheduleAheadSeconds: SCHEDULE_AHEAD_SECONDS,
       collectionBars: COLLECTION_BARS,
       battleBars: BATTLE_BARS
+    }),
+    soundConfig: Object.freeze({
+      version: 20,
+      maxActiveOneShots: MAX_ACTIVE_ONE_SHOTS,
+      maxMusicStepsPerTick: MAX_MUSIC_STEPS_PER_TICK,
+      materialProfiles: Object.freeze(Object.keys(MATERIAL_PROFILES))
     }),
     select: function () {
       if (muted) return;
@@ -1240,11 +1663,17 @@
       bell(1046.5, 0.035, { volume: 0.013, duration: 0.28, room: 0.14 });
     },
     turn: function () {
-      pluck(587.33, 0, { volume: 0.032, duration: 0.28, room: 0.14 });
+      if (muted) return;
+      const audio = ctx();
+      if (!audio) return;
+      pageFlipAt(audio, audio.currentTime, 0.012);
+      pluck(587.33, 0.075, { volume: 0.028, duration: 0.3, room: 0.13 });
+      pluck(880, 0.108, { volume: 0.012, duration: 0.22, room: 0.16 });
     },
     star: function () {
-      bell(880, 0, { volume: 0.032, duration: 0.5 });
-      bell(1318.51, 0.055, { volume: 0.021, duration: 0.42 });
+      bell(880, 0, { volume: 0.026, duration: 0.46, room: 0.24 });
+      bell(1174.66, 0.047, { volume: 0.019, duration: 0.4, room: 0.28 });
+      bell(1567.98, 0.092, { volume: 0.013, duration: 0.48, room: 0.31 });
     },
     soundPlanForTechnique: soundPlanForTechnique,
     techniqueLaunch: techniqueLaunch,
@@ -1272,27 +1701,65 @@
       const audio = ctx();
       if (!audio) return;
       const start = audio.currentTime;
-      noiseTap(start, 980, 0.032, 0.018);
-      noiseTap(start + 0.055, 1120, 0.03, 0.016);
-      noiseTap(start + 0.125, 1260, 0.027, 0.014);
+      [0, 0.038, 0.083, 0.137, 0.203, 0.286].forEach(function (delay, index) {
+        const pans = [-0.2, 0.17, -0.14, 0.11, -0.075, 0.035];
+        coinTickAt(
+          audio,
+          start + delay,
+          1760 - index * 118,
+          pans[index],
+          0.013 - index * 0.0008
+        );
+      });
     },
     coinLand: function () {
-      bell(880, 0, { volume: 0.025, duration: 0.28, room: 0.13 });
-      bell(1320, 0.045, { volume: 0.018, duration: 0.34, room: 0.16 });
-      woodHit(0.11, 0.028);
+      if (muted) return;
+      const audio = ctx();
+      if (!audio) return;
+      const start = audio.currentTime + 0.003;
+      noiseBurstAt(audio, start, {
+        frequency: 5100,
+        duration: 0.018,
+        volume: 0.032,
+        q: 1.18,
+        noise: 0,
+        bus: uiBus,
+        priority: 3
+      });
+      materialResonanceAt(audio, start, {
+        material: "metal",
+        strong: false,
+        variation: Math.floor(Math.random() * 3),
+        direction: 1,
+        voicePriority: 3
+      });
+      woodHit(0.065, 0.022);
     },
     coin: function () {
       api.coinLand();
     },
     win: function () {
       stopBgm();
-      melody([523.25, 659.25, 783.99, 1046.5], 0.105, { volume: 0.052, duration: 0.46 });
-      bell(1318.51, 0.39, { volume: 0.034, duration: 0.82 });
+      const audio = ctx();
+      if (audio && !muted) pageFlipAt(audio, audio.currentTime, 0.011);
+      melody([523.25, 659.25, 783.99, 1046.5], 0.085, {
+        volume: 0.043,
+        duration: 0.48,
+        room: 0.22
+      });
+      bell(1318.51, 0.34, { volume: 0.028, duration: 0.78, room: 0.34 });
+      bell(1567.98, 0.405, { volume: 0.014, duration: 0.66, room: 0.38 });
     },
     lose: function () {
       stopBgm();
-      melody([392, 329.63, 261.63], 0.14, { volume: 0.043, duration: 0.52, room: 0.24 });
-      woodHit(0.32, 0.025);
+      const audio = ctx();
+      if (audio && !muted) pageFlipAt(audio, audio.currentTime + 0.04, 0.009);
+      melody([392, 349.23, 293.66], 0.135, {
+        volume: 0.033,
+        duration: 0.52,
+        room: 0.21
+      });
+      woodHit(0.34, 0.02);
     }
   };
 

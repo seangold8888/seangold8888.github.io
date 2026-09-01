@@ -3582,3 +3582,202 @@ dialog p:not(.kicker) {
     transform: none !important;
   }
 }
+
+/* v21 — 별빛 고서 VFX: 원화 질감, 접촉 정지, 프레임 반응. */
+.technique-art {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  transform: translateZ(0);
+  filter:
+    drop-shadow(0 3px 2px color-mix(in srgb, var(--vfx-shadow) 58%, transparent))
+    drop-shadow(0 0 8px color-mix(in srgb, var(--vfx-color) 58%, transparent));
+}
+
+.technique-art[hidden] {
+  display: none;
+}
+
+.technique-fx.has-premium-art .technique-core {
+  width: var(--fx-art-size, 150px);
+  height: var(--fx-art-size, 150px);
+  margin: var(--fx-art-offset, -75px) 0 0 var(--fx-art-offset, -75px);
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.technique-fx.has-premium-art .technique-core::before,
+.technique-fx.has-premium-art .technique-sigil,
+.technique-fx.has-premium-art .technique-ribbon,
+.technique-fx.has-premium-art .technique-portal,
+.technique-fx.has-premium-art .technique-slash {
+  display: none;
+}
+
+.technique-fx.has-premium-art .technique-ring {
+  border-radius: 46% 54% 51% 49% / 53% 44% 56% 47%;
+  border-width: 2px;
+  box-shadow:
+    0 0 5px color-mix(in srgb, var(--vfx-hot) 74%, transparent),
+    0 0 14px color-mix(in srgb, var(--vfx-color) 42%, transparent);
+}
+
+.technique-fx.has-premium-art .technique-flare {
+  background:
+    radial-gradient(circle, rgba(255,255,255,.98) 0 6%, var(--vfx-hot) 7% 13%, transparent 42%),
+    conic-gradient(
+      from 38deg,
+      transparent 0 8%,
+      color-mix(in srgb, var(--vfx-color) 68%, transparent) 9% 12%,
+      transparent 13% 41%,
+      color-mix(in srgb, var(--vfx-hot) 58%, transparent) 42% 46%,
+      transparent 47% 76%,
+      color-mix(in srgb, var(--vfx-secondary) 54%, transparent) 77% 81%,
+      transparent 82%
+    );
+}
+
+.technique-fx.has-premium-art.is-playing .technique-art {
+  animation: premium-v21-texture-breathe var(--fx-duration) ease-out both;
+}
+
+.technique-fx.vfx-recipe-stone-arc-chip .technique-art {
+  filter:
+    drop-shadow(0 4px 2px rgba(54,38,31,.48))
+    drop-shadow(0 0 7px rgba(102,211,216,.38));
+}
+
+.technique-fx.vfx-recipe-gold-blade-cleave .technique-art {
+  filter:
+    drop-shadow(0 3px 2px rgba(86,43,20,.54))
+    drop-shadow(0 0 10px rgba(255,214,108,.58));
+}
+
+.technique-fx.vfx-recipe-frost-needle-crack .technique-art {
+  filter:
+    drop-shadow(0 2px 2px rgba(43,52,101,.48))
+    drop-shadow(0 0 9px rgba(192,234,255,.58));
+}
+
+.technique-fx.vfx-recipe-storybook-bump .technique-art,
+.technique-fx.vfx-recipe-storybook-boom .technique-art {
+  filter:
+    drop-shadow(0 4px 3px rgba(67,46,36,.52))
+    drop-shadow(0 0 6px rgba(225,178,111,.28));
+}
+
+.technique-fx.has-premium-art.is-weakness .technique-art {
+  filter:
+    drop-shadow(0 3px 2px rgba(77,44,10,.52))
+    drop-shadow(0 0 12px #fff3ad)
+    drop-shadow(0 0 20px rgba(255,193,61,.48));
+}
+
+.battle-card-slot.is-hit-stopped .story-card {
+  animation-play-state: paused !important;
+}
+
+.battle-card-slot.is-technique-impact {
+  z-index: 18;
+  isolation: isolate;
+}
+
+.battle-card-slot.is-technique-impact::before {
+  position: absolute;
+  inset: -4% -5%;
+  z-index: 24;
+  border: 2px solid var(--impact-hot, #fff4c7);
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at 50% 44%, color-mix(in srgb, var(--impact-color) 24%, transparent), transparent 60%);
+  box-shadow:
+    0 0 8px var(--impact-hot, #fff4c7),
+    0 0 22px color-mix(in srgb, var(--impact-color) 68%, transparent),
+    inset 0 0 16px color-mix(in srgb, var(--impact-color) 24%, transparent);
+  content: "";
+  opacity: 0;
+  pointer-events: none;
+  animation: premium-v21-frame-rim .28s cubic-bezier(.12,.72,.18,1) both;
+}
+
+.battle-card-slot.is-technique-impact .story-card {
+  animation: premium-v21-target-recoil .28s cubic-bezier(.16,.78,.2,1) both !important;
+  will-change: transform, filter;
+}
+
+.battle-card-slot.is-impact-heavy .story-card {
+  animation-duration: .34s !important;
+}
+
+.battle-card-slot.is-technique-impact .frame-ornament {
+  animation: premium-v21-ornament-rim .28s ease-out both;
+}
+
+.battle-card-slot.is-technique-impact .card-art picture,
+.battle-card-slot.is-technique-impact .art-fallback {
+  animation: premium-v21-art-light .24s ease-out both;
+}
+
+.battle-card-slot.is-impact-weakness::before {
+  border-color: #fff2a0;
+  box-shadow:
+    0 0 10px #fff7c7,
+    0 0 30px rgba(255,194,55,.78),
+    inset 0 0 20px rgba(255,220,105,.34);
+}
+
+@keyframes premium-v21-texture-breathe {
+  0%, 100% { opacity: .92; }
+  22% { opacity: 1; }
+  62% { opacity: .97; }
+}
+
+@keyframes premium-v21-target-recoil {
+  0%, 13% { transform: translate3d(0,0,0) scale(1); filter: brightness(1); }
+  20% { transform: translate3d(var(--impact-x, 5px),-1px,0) scale(.982,1.012); filter: brightness(1.12); }
+  43% { transform: translate3d(var(--impact-back-x, -1.7px),1px,0) scale(1.008,.994); filter: brightness(1.02); }
+  70% { transform: translate3d(var(--impact-settle-x, .6px),0,0) scale(.998,1.002); filter: brightness(1); }
+  100% { transform: translate3d(0,0,0) scale(1); filter: brightness(1); }
+}
+
+@keyframes premium-v21-frame-rim {
+  0%, 8% { opacity: 0; transform: scale(.985); }
+  15% { opacity: .92; transform: scale(1); }
+  44% { opacity: .48; transform: scale(1.018); }
+  100% { opacity: 0; transform: scale(1.045); }
+}
+
+@keyframes premium-v21-ornament-rim {
+  0%, 10% { filter: brightness(1); }
+  18% { filter: brightness(1.55) saturate(1.12) drop-shadow(0 0 8px var(--impact-hot, #fff4c7)); }
+  100% { filter: brightness(1); }
+}
+
+@keyframes premium-v21-art-light {
+  0%, 10% { filter: brightness(1) saturate(1); }
+  18% { filter: brightness(1.22) saturate(.9); }
+  48% { filter: brightness(1.05) saturate(1.04); }
+  100% { filter: brightness(1) saturate(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .technique-fx.has-premium-art.is-playing .technique-art,
+  .battle-card-slot.is-technique-impact .story-card,
+  .battle-card-slot.is-technique-impact .frame-ornament,
+  .battle-card-slot.is-technique-impact .card-art picture,
+  .battle-card-slot.is-technique-impact .art-fallback {
+    animation: none !important;
+  }
+
+  .battle-card-slot.is-technique-impact::before {
+    animation: none !important;
+    opacity: .28;
+  }
+}
