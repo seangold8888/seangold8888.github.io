@@ -157,6 +157,76 @@
   #study .choices button:focus-visible { outline: 4px solid var(--ink); outline-offset: 2px; }
   #study .cheer { min-height: 1.6em; font-weight: 900; font-size: clamp(15px, 3.6vw, 19px); color: #2e7d3b; }
   #study .cheer.oops { color: #c2452e; }
+  /* 부모용 오답노트 보기 */
+  .book-open {
+    align-self: center;
+    font: inherit;
+    font-size: clamp(13px, 3vw, 15px);
+    font-weight: 900;
+    color: #7a5a2e;
+    background: rgba(185, 140, 60, 0.14);
+    border: 2px solid rgba(122, 90, 46, 0.4);
+    border-radius: 999px;
+    padding: 7px 16px;
+    cursor: pointer;
+  }
+  .book-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(14px, 4vw, 32px);
+    background: rgba(10, 6, 24, 0.65);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+  }
+  .book-modal[hidden] { display: none; }
+  .book-sheet {
+    width: min(440px, 100%);
+    max-height: min(78vh, 78svh);
+    overflow-y: auto;
+    border-radius: 26px;
+    background: rgba(255, 246, 230, 0.98);
+    color: var(--ink);
+    border: 3px solid rgba(20, 12, 40, 0.55);
+    box-shadow: 0 10px 0 rgba(10, 6, 24, 0.5);
+    padding: clamp(16px, 4vw, 24px);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .book-head { display: flex; align-items: center; justify-content: space-between; }
+  .book-head b { font-size: clamp(18px, 4.4vw, 22px); font-weight: 900; }
+  .book-head button {
+    font: inherit;
+    font-size: 18px;
+    font-weight: 900;
+    width: 40px;
+    height: 40px;
+    border-radius: 14px;
+    border: 2px solid rgba(20, 12, 40, 0.4);
+    background: #ffe9a8;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .book-hint { font-size: clamp(13px, 3vw, 15px); font-weight: 700; color: #7a5a2e; line-height: 1.5; }
+  #bookList { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  #bookList li {
+    border: 2px solid rgba(122, 90, 46, 0.3);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.7);
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    text-align: left;
+  }
+  #bookList li b { font-size: clamp(19px, 4.6vw, 23px); font-weight: 900; color: #8a5a9e; font-variant-numeric: tabular-nums; letter-spacing: 0.04em; }
+  #bookList .tname { font-size: clamp(13px, 3vw, 15px); font-weight: 900; color: var(--ink); }
+  #bookList .meta2 { font-size: clamp(12px, 2.8vw, 14px); font-weight: 700; color: #7a5a2e; font-variant-numeric: tabular-nums; }
+  #bookList .empty { text-align: center; font-weight: 900; color: #2e7d3b; border-style: dashed; }
   #study.done { background: rgba(107, 203, 119, 0.16); color: var(--paper); border-color: rgba(107, 203, 119, 0.6); }
   #study.done .eyebrow { color: var(--mint); }
   #study.done .daily { color: var(--cloud); }
@@ -316,6 +386,7 @@
     <div class="question" id="question"></div>
     <div class="choices" id="choices"></div>
     <div class="cheer" id="cheer"></div>
+    <button class="book-open" id="bookOpen" type="button" hidden>📖 오답노트 보기 (부모님용)</button>
   </section>
 
   <nav class="games" aria-label="게임 목록">
@@ -437,6 +508,17 @@
   </footer>
 </div>
 
+<div class="book-modal" id="bookModal" hidden>
+  <div class="book-sheet" role="dialog" aria-modal="true" aria-label="오답노트">
+    <div class="book-head">
+      <b>📖 오답노트</b>
+      <button id="bookClose" type="button" aria-label="닫기">✕</button>
+    </div>
+    <p class="book-hint">아이가 틀렸던 문제예요. 복습 문제를 한 번에 맞히면 틀린 횟수가 줄고, 0이 되면 노트에서 지워져요.</p>
+    <ol id="bookList"></ol>
+  </div>
+</div>
+
 <script>
 (function () {
   'use strict';
@@ -534,6 +616,9 @@
           return e && typeof e.type === 'string' &&
                  typeof e.total === 'number' && e.total >= 4 && e.total <= 20 &&
                  typeof e.left === 'number' && e.left >= 1 && e.left < e.total;
+        }).map(function (e) {
+          return { type: e.type, total: e.total, left: e.left,
+                   miss: Math.max(1, parseInt(e.miss, 10) || 1) };
         }).slice(0, BOOK_MAX);
       }
     } catch (_) {}
@@ -596,7 +681,68 @@
   function drawDaily() {
     dailyEl.textContent = '오늘 푼 문제 ' + Math.min(state.solved, DAILY) + ' / ' + DAILY +
       (state.wrong.length ? ' · 오답노트 ' + state.wrong.length + '개' : '');
+    bookOpenBtn.hidden = !state.wrong.length;
   }
+
+  /* ---- 부모용 오답노트 목록 ---- */
+  var bookOpenBtn = document.getElementById('bookOpen');
+  var bookModal = document.getElementById('bookModal');
+  var bookListEl = document.getElementById('bookList');
+  var BOOK_TYPE_NAMES = {
+    hidden: '선물 상자에 숨은 수 찾기',
+    moreOne: '몇 개 더 필요할까',
+    pick2: '수 가르기',
+    gather: '수 모으기',
+    sameBoth: '똑같이 둘로 가르기',
+    formula: '수식 빈칸 채우기',
+    story: '이야기 문제'
+  };
+  /* 오답노트 항목을 부모가 읽기 쉬운 한 줄 수식으로 */
+  function bookLine(e) {
+    var right = e.total - e.left;
+    if (e.type === 'gather') return { f: e.left + ' + ' + right + ' = ❓', a: e.total };
+    if (e.type === 'sameBoth') {
+      var even = e.total % 2 === 0 ? e.total : e.total - 1;
+      if (even < 4) even = 4;
+      return { f: even + ' = ❓ + ❓', a: even / 2 };
+    }
+    return { f: e.total + ' = ' + e.left + ' + ❓', a: right };
+  }
+  function renderBook() {
+    bookListEl.innerHTML = '';
+    if (!state.wrong.length) {
+      var empty = document.createElement('li');
+      empty.className = 'empty';
+      empty.textContent = '오답노트가 비어 있어요! 참 잘했어요 🎉';
+      bookListEl.appendChild(empty);
+      return;
+    }
+    var sorted = state.wrong.slice().sort(function (a, b) { return b.miss - a.miss; });
+    sorted.forEach(function (e) {
+      var line = bookLine(e);
+      var li = document.createElement('li');
+      var f = document.createElement('b');
+      f.textContent = line.f;
+      var tname = document.createElement('span');
+      tname.className = 'tname';
+      tname.textContent = BOOK_TYPE_NAMES[e.type] || BOOK_TYPE_NAMES.story;
+      var meta = document.createElement('span');
+      meta.className = 'meta2';
+      meta.textContent = '정답 ' + line.a + ' · 틀린 횟수 ' + e.miss + '번';
+      li.appendChild(f); li.appendChild(tname); li.appendChild(meta);
+      bookListEl.appendChild(li);
+    });
+  }
+  bookOpenBtn.addEventListener('click', function () {
+    renderBook();
+    bookModal.hidden = false;
+  });
+  document.getElementById('bookClose').addEventListener('click', function () {
+    bookModal.hidden = true;
+  });
+  bookModal.addEventListener('click', function (e) {
+    if (e.target === bookModal) bookModal.hidden = true;
+  });
 
   /* ================= 가르기(수의 분해) 엔진 =================
      초1 핵심 개념: 한 수를 두 부분으로 가르기 / 두 부분을 모으기.
