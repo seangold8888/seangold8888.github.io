@@ -1,7 +1,7 @@
 "use strict";
 
 // Keep this value aligned with the ?v= version used by the card battle assets.
-const CACHE_VERSION = "v21";
+const CACHE_VERSION = "v22";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
