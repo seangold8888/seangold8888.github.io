@@ -20,8 +20,8 @@ export const TRACKS = [
     ],
     // 점프대: 중심선 진행 거리(0~1)에 배치
     ramps: [0.18, 0.62],
-    // 지름길: 잔디를 가로지르는 별도 스플라인
-    shortcut: [[412, 19, 146], [144, 10, 201], [0, 2, 428]],
+    // 8세 난이도: 지름길(갈림길)을 막았다 — 길이 하나면 잃지 않는다.
+    shortcut: null,
     scenery: 'park'
   },
   {
@@ -44,7 +44,7 @@ export const TRACKS = [
   },
   {
     id: 'candy',
-    tip: '가장 넓어요 · 지름길 있음',
+    tip: '가장 넓어요',
     name: '사탕 숲',
     sky: 0xffd9ec, fog: 0xffe9f4, ground: 0xf7c9de, road: 0xffeacb, rail: 0xff7aa8,
     laps: 3,
@@ -56,7 +56,7 @@ export const TRACKS = [
       [0, 12, -442], [205, 22, -424], [408, 30, -350], [557, 31, -198]
     ],
     ramps: [0.45],
-    shortcut: [[-557, 14, -198], [-195, 13, -224], [0, 12, -442]],
+    shortcut: null,
     scenery: 'candy'
   },
   {
@@ -74,7 +74,7 @@ export const TRACKS = [
       [0, 6, -382], [217, 9, -423], [455, 12, -367], [605, 13, -202]
     ],
     ramps: [0.4],
-    shortcut: [[303, 12, 245], [30, 8, 234], [-217, 3, 423]],
+    shortcut: null,
     scenery: 'beach'
   },
   {
@@ -113,7 +113,7 @@ export const TRACKS = [
       [363, 204, -266], [543, 208, -172]
     ],
     ramps: [0.16, 0.46, 0.74],
-    shortcut: [[-479, 60, -152], [-202, 83, -224], [-99, 106, -489]],
+    shortcut: null,
     scenery: 'rainbow'
   }
 ];
