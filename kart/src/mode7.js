@@ -18,11 +18,19 @@
     return { x: 0, y: 0, angle: 0, height: 150, fov: 320, horizon: 0.42 };
   };
 
+  // 가로 배율 보정.
+  // 행 간격(세로 원근)은 초점거리 fov 로 정해지는데, 예전 가로 배율은
+  // height/d 라서 fov 대신 height 가 초점거리 노릇을 했다. fov=320,
+  // height=75 면 가로만 4배쯤 눌려 볼록렌즈로 보는 듯 왜곡됐다.
+  // 화면 x 를 fov/height 배 늘리면 가로·세로 초점거리가 같아진다.
+  function lensFix(cam) { return cam.fov / cam.height; }
+
   M.drawGround = function (ctx, tex, cam, W, H, step, groundColor) {
     step = step || 1;
     const horizonY = Math.floor(H * cam.horizon);
     const cs = Math.cos(cam.angle);
     const sn = Math.sin(cam.angle);
+    const lens = lensFix(cam);
 
     ctx.save();
     ctx.beginPath();
@@ -47,6 +55,7 @@
       ctx.rect(0, sy, W, step);
       ctx.clip();
       ctx.translate(W * 0.5, sy);
+      ctx.scale(lens, 1);          // 회전 뒤 화면 x 만 늘려야 기하가 맞는다
       ctx.rotate(-cam.angle);
       ctx.scale(zoom, zoom);
       ctx.drawImage(tex, -worldX, -worldY);
@@ -69,7 +78,7 @@
     const horizonY = Math.floor(H * cam.horizon);
     const zoom = cam.height / forward;
     const sy = horizonY + cam.fov * cam.height / forward;
-    const sx = W * 0.5 + right * zoom;
+    const sx = W * 0.5 + right * zoom * lensFix(cam);
     if (sy > H + 400) return null;
     return { x: sx, y: sy, zoom: zoom, forward: forward };
   };

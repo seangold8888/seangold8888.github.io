@@ -26,9 +26,8 @@
         { x: 1024, y: 296 }, { x: 1264, y: 422 }, { x: 1468, y: 529 },
         { x: 1707, y: 657 }
       ],
-      shortcut: [
-        { x: 1764, y: 880 }, { x: 1362, y: 1058 }, { x: 1307, y: 1420 }
-      ],
+      // 8세 난이도: 갈림길(지름길)을 막았다 — 길이 하나면 잃지 않는다.
+      shortcut: null,
       theme: {
         ground1: '#8fd36f', ground2: '#6fbe58', blade: 'rgba(90,170,70,0.55)', blades: 2600,
         path: '#c9d98a', roadEdge: '#f4b8cf', road: '#e9dfd0', grain: '#dfd2be',
@@ -52,9 +51,7 @@
         { x: 1024, y: 263 }, { x: 1322, y: 288 }, { x: 1619, y: 391 },
         { x: 1837, y: 603 }
       ],
-      shortcut: [
-        { x: 1322, y: 288 }, { x: 1400, y: 685 }, { x: 1864, y: 880 }
-      ],
+      shortcut: null,
       theme: {
         ground1: '#ecd39a', ground2: '#dcbf82', blade: 'rgba(214,186,132,0.5)', blades: 1500,
         path: '#efe0bb', roadEdge: '#5cc6d8', road: '#fff0d8', grain: '#f2e2c6',
@@ -67,7 +64,7 @@
     {
       id: 'candy',
       name: '사탕 마을',
-      tip: '굽이가 조금 있어요 · 지름길 있음',
+      tip: '굽이가 조금 있어요',
       roadHalf: 126, shortcutHalf: 70,
       // 모래시계 — 좌우가 한 번씩 잘록해서 S 가 두 번 나온다.
       control: [
@@ -78,9 +75,7 @@
         { x: 727, y: 395 }, { x: 952, y: 494 }, { x: 1096, y: 494 },
         { x: 1321, y: 395 }, { x: 1615, y: 412 }, { x: 1749, y: 631 }
       ],
-      shortcut: [
-        { x: 299, y: 631 }, { x: 761, y: 670 }, { x: 952, y: 494 }
-      ],
+      shortcut: null,
       theme: {
         ground1: '#f7c9de', ground2: '#efb0cd', blade: 'rgba(220,140,180,0.42)', blades: 1800,
         path: '#ffe6f2', roadEdge: '#ff7aa8', road: '#ffeacb', grain: '#f5dcb8',
