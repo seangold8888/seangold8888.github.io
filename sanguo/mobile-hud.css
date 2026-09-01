@@ -1,0 +1,49 @@
+/* 모바일 HUD 보정 — 번들 CSS 뒤에 로드되어 덮어쓴다. 데스크톱(마우스+901px↑)은 기존 그대로. */
+
+@media (pointer: coarse), (max-width: 900px) {
+  /* 캐릭터 정보(이름·체력·무쌍)를 왼쪽 아래에서 오른쪽 위로 이동 */
+  #hud .bl.player-panel {
+    left: auto;
+    bottom: auto;
+    top: calc(10px + env(safe-area-inset-top, 0px));
+    right: calc(10px + env(safe-area-inset-right, 0px));
+    transition: top .25s cubic-bezier(.22, .61, .36, 1);
+  }
+
+  /* 패널 자체를 축소해 시야를 가리지 않게 */
+  .battle-ui .player-panel {
+    width: min(186px, 46vw);
+    max-width: none;
+    padding: 5px 8px 6px;
+    transform: none;
+  }
+  .player-panel .hud-name { font-size: 15px; }
+  .player-panel .bar.hp { height: 5px; }
+  .battle-ui .progress-readout { gap: 6px; margin: 2px 0 3px; font-size: 8px; }
+  .battle-ui .progress-readout b { font-size: 9px; }
+  .battle-ui .rage-row { gap: 6px; margin-top: 4px; font-size: 8px; letter-spacing: .1em; }
+  .battle-ui .rage-row .bar { width: auto; min-width: 0; flex: 1; }
+  #hud .player-panel .mount-readout { margin-top: 3px; font-size: 8px; letter-spacing: .04em; }
+
+  /* 보스 체력바가 떠 있는 동안엔 그 아래로 내려 겹침 방지 */
+  #hud:has(.boss-hud.visible) .bl.player-panel {
+    top: calc(116px + env(safe-area-inset-top, 0px));
+  }
+}
+
+/* 폰 세로 모드: 전체 폭이던 목표 패널을 좁혀 오른쪽 위 캐릭터 패널과 겹치지 않게 */
+@media (max-width: 560px) {
+  #hud .objective {
+    width: calc(100vw - 214px);
+    min-width: 150px;
+  }
+}
+
+/* 폰 가로 모드: 보스 HUD가 오른쪽 위로 오므로 그만큼만 내린다 */
+@media (max-width: 900px) and (max-height: 560px) {
+  #hud:has(.boss-hud.visible) .bl.player-panel {
+    top: calc(94px + env(safe-area-inset-top, 0px));
+  }
+  /* 화면이 낮으면 CHAIN 콤보와 K.O. 카운터가 겹치던 것 분리 */
+  #hud .cr { top: 32%; }
+}
