@@ -152,6 +152,14 @@
     cursor: pointer;
     transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
   }
+  /* 낱말·시각 보기: 글자 수가 달라서 버튼 폭을 내용에 맞춘다 */
+  #study .choices.wordy button {
+    width: auto;
+    min-width: clamp(72px, 17vw, 104px);
+    max-width: 100%;
+    padding: 0 clamp(12px, 3vw, 20px);
+    font-size: clamp(19px, 4.6vw, 27px);
+  }
   #study .choices button:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(10, 6, 24, 0.35); }
   #study .choices button:disabled { cursor: default; }
   #study .choices button:focus-visible { outline: 4px solid var(--ink); outline-offset: 2px; }
@@ -433,7 +441,7 @@
   </header>
 
   <section id="study" aria-live="polite">
-    <div class="eyebrow" id="studyEyebrow">오늘의 가르기 공부</div>
+    <div class="eyebrow" id="studyEyebrow">오늘의 공부</div>
     <div class="daily" id="daily"></div>
     <div class="progress" id="stars"></div>
     <div class="formula" id="formula"></div>
@@ -645,7 +653,11 @@
          🌱연습 → 🌿익숙 → 🌟능숙 → 👑숙달.
        · 약한 유형이 더 자주 나오고(가중치 출제),
          숙달한 유형도 3일 넘게 안 보면 잊기 전에 다시 나온다(간격 반복).
-       · 유형을 숙달하면 왕관을 얻고, 부모 리포트에 실력 지도가 보인다. */
+       · 유형을 숙달하면 왕관을 얻고, 부모 리포트에 실력 지도가 보인다.
+     v5: 새 과목 — 속담·반대말·시계 읽기·영어 낱말.
+       · 새 과목은 문제 은행(idx) 기반이라 오답노트 복습도 같은 문제로 나온다.
+       · 새 과목도 유형별 숙달·오답노트에 연결되지만,
+         수학 난이도 단계(streak/missRow)는 수학 문제로만 움직인다. */
   var SET = 10, DAILY = 40;
   var STREAK_UP = 3;      // 한 번에 맞히기 연속 성공 → 단계 상승
   var MISS_DOWN = 2;      // 틀린 문제 연속 → 단계 하락
@@ -690,8 +702,98 @@
     gather:   { name: '수 모으기',           icon: '🧺' },
     sameBoth: { name: '똑같이 둘로 가르기',  icon: '🌓' },
     formula:  { name: '수식 빈칸 채우기',    icon: '🔢' },
-    story:    { name: '이야기 문제',         icon: '📚' }
+    story:    { name: '이야기 문제',         icon: '📚' },
+    proverb:  { name: '속담',               icon: '🗣️' },
+    word:     { name: '반대말',             icon: '🔄' },
+    clock:    { name: '시계 읽기',           icon: '⏰' },
+    english:  { name: '영어 낱말',           icon: '🅰️' }
   };
+
+  /* ---- 새 과목 문제 은행 (수학 외 과목은 idx로 같은 문제를 다시 만든다) ---- */
+  var PROVERBS = [
+    { q: '가는 말이 고와야 ___ 말이 곱다', a: '오는', w: ['가는', '예쁜'] },
+    { q: '티끌 모아 ___', a: '태산', w: ['강산', '바다'] },
+    { q: '___ 밑이 어둡다', a: '등잔', w: ['책상', '침대'] },
+    { q: '원숭이도 ___에서 떨어진다', a: '나무', w: ['지붕', '그네'] },
+    { q: '소 잃고 ___ 고친다', a: '외양간', w: ['대문', '지붕'] },
+    { q: '백지장도 ___ 낫다', a: '맞들면', w: ['혼자면', '접으면'] },
+    { q: '낮말은 새가 듣고 밤말은 ___가 듣는다', a: '쥐', w: ['개', '소'] },
+    { q: '바늘 가는 데 ___ 간다', a: '실', w: ['옷', '단추'] },
+    { q: '우물 안 ___', a: '개구리', w: ['금붕어', '올챙이'] },
+    { q: '돌다리도 ___ 보고 건너라', a: '두드려', w: ['뛰어', '달려'] },
+    { q: '하늘이 무너져도 솟아날 ___이 있다', a: '구멍', w: ['문', '길'] },
+    { q: '고래 싸움에 ___ 등 터진다', a: '새우', w: ['멸치', '오징어'] },
+    { q: '말 한마디에 천 냥 ___ 갚는다', a: '빚', w: ['돈', '떡'] },
+    { q: '금강산도 ___', a: '식후경', w: ['구경', '등산'] }
+  ];
+  var OPPOSITES = [
+    ['크다', '작다'], ['높다', '낮다'], ['길다', '짧다'], ['많다', '적다'],
+    ['빠르다', '느리다'], ['무겁다', '가볍다'], ['덥다', '춥다'], ['밝다', '어둡다'],
+    ['열다', '닫다'], ['앉다', '서다'], ['웃다', '울다'], ['낮', '밤'],
+    ['위', '아래'], ['앞', '뒤'], ['가다', '오다'], ['넓다', '좁다']
+  ];
+  var ENGLISH = [
+    { en: 'apple', e: '🍎' }, { en: 'banana', e: '🍌' }, { en: 'strawberry', e: '🍓' },
+    { en: 'dog', e: '🐶' }, { en: 'cat', e: '🐱' }, { en: 'rabbit', e: '🐰' },
+    { en: 'fish', e: '🐟' }, { en: 'bird', e: '🐦' }, { en: 'milk', e: '🥛' },
+    { en: 'bread', e: '🍞' }, { en: 'sun', e: '☀️' }, { en: 'moon', e: '🌙' },
+    { en: 'star', e: '⭐' }, { en: 'car', e: '🚗' }, { en: 'book', e: '📕' },
+    { en: 'house', e: '🏠' }, { en: 'tree', e: '🌳' }, { en: 'flower', e: '🌸' },
+    { en: 'egg', e: '🥚' }, { en: 'candy', e: '🍬' }
+  ];
+  var EXTRA_TYPES = ['proverb', 'word', 'clock', 'english'];
+  var EXTRA_RATE = 0.35;   // 새 과목이 나올 확률 (나머지는 가르기 수학)
+  var BANK_SIZES = { proverb: PROVERBS.length, word: OPPOSITES.length, clock: 24, english: ENGLISH.length };
+
+  function clockLabel(idx) {
+    var hour = (idx % 12) + 1;
+    return hour + '시' + (idx >= 12 ? ' 30분' : '');
+  }
+  /* 은행 문제 = { formula, items, question, answer, unit, choices, book }
+     choices: 보기 문자열 3개(정답 포함), book: 부모 리포트용 한 줄 */
+  function buildBankProblem(type, idx) {
+    var wrongs, pool, i;
+    if (type === 'proverb') {
+      var pv = PROVERBS[idx % PROVERBS.length];
+      return { formula: pv.q.replace('___', '❓'), items: '', question: '속담을 완성해 볼까요?',
+               answer: pv.a, unit: '', choices: [pv.a, pv.w[0], pv.w[1]],
+               book: pv.q.replace('___', '❓') };
+    }
+    if (type === 'word') {
+      var pr = OPPOSITES[idx % OPPOSITES.length];
+      wrongs = [];
+      var guard = 0;
+      while (wrongs.length < 2 && guard++ < 60) {
+        var cand = OPPOSITES[rand(OPPOSITES.length)][rand(2)];
+        if (cand !== pr[0] && cand !== pr[1] && wrongs.indexOf(cand) < 0) wrongs.push(cand);
+      }
+      return { formula: '「' + pr[0] + '」 ↔ ❓', items: '', question: '반대말은 무엇일까요?',
+               answer: pr[1], unit: '', choices: [pr[1]].concat(wrongs),
+               book: '「' + pr[0] + '」의 반대말' };
+    }
+    if (type === 'clock') {
+      var ci = idx % 24;
+      var emoji = String.fromCodePoint(0x1F550 + (ci % 12) + (ci >= 12 ? 12 : 0));
+      wrongs = [];
+      while (wrongs.length < 2) {
+        var other = clockLabel(rand(24));
+        if (other !== clockLabel(ci) && wrongs.indexOf(other) < 0) wrongs.push(other);
+      }
+      return { formula: '', items: emoji, question: '시계가 가리키는 시각은 언제일까요?',
+               answer: clockLabel(ci), unit: '', choices: [clockLabel(ci)].concat(wrongs),
+               book: emoji + ' 시계 읽기' };
+    }
+    // english — 영어 낱말을 읽고 알맞은 그림 고르기
+    var ei = ENGLISH[idx % ENGLISH.length];
+    wrongs = [];
+    while (wrongs.length < 2) {
+      var pick2e = ENGLISH[rand(ENGLISH.length)].e;
+      if (pick2e !== ei.e && wrongs.indexOf(pick2e) < 0) wrongs.push(pick2e);
+    }
+    return { formula: ei.en, items: '', question: '영어 낱말을 읽고 알맞은 그림을 골라요!',
+             answer: ei.e, unit: '', choices: [ei.e].concat(wrongs),
+             book: ei.en + ' = ' + ei.e };
+  }
   var TIERS = [
     { min: MASTER_AT, name: '숙달',   icon: '👑' },
     { min: 6,         name: '능숙',   icon: '🌟' },
@@ -745,12 +847,17 @@
       var wb = JSON.parse(localStorage.getItem('hub2_wrongbook') || '[]');
       if (wb && wb.length) {
         s.wrong = wb.filter(function (e) {
-          return e && typeof e.type === 'string' &&
-                 typeof e.total === 'number' && e.total >= 4 && e.total <= 20 &&
+          if (!e || typeof e.type !== 'string') return false;
+          if (BANK_SIZES[e.type]) {
+            return typeof e.idx === 'number' && e.idx >= 0 && e.idx < BANK_SIZES[e.type];
+          }
+          return typeof e.total === 'number' && e.total >= 4 && e.total <= 20 &&
                  typeof e.left === 'number' && e.left >= 1 && e.left < e.total;
         }).map(function (e) {
-          return { type: e.type, total: e.total, left: e.left,
-                   miss: Math.max(1, parseInt(e.miss, 10) || 1) };
+          var m = Math.max(1, parseInt(e.miss, 10) || 1);
+          return BANK_SIZES[e.type]
+            ? { type: e.type, idx: e.idx, miss: m }
+            : { type: e.type, total: e.total, left: e.left, miss: m };
         }).slice(0, BOOK_MAX);
       }
       var sk = JSON.parse(localStorage.getItem('hub2_skills') || '{}');
@@ -784,12 +891,16 @@
   var sinceReview = 0;    // 마지막 복습 문제 이후 새 문제 수
   var lastReviewKey = ''; // 같은 복습 문제가 연달아 나오지 않게
 
-  function bookKey(seed) { return seed.type + ':' + seed.total + ':' + seed.left; }
+  function bookKey(seed) {
+    return seed.type + ':' + (typeof seed.idx === 'number' ? 'i' + seed.idx : seed.total + ':' + seed.left);
+  }
   function addToBook(seed) {
     for (var i = 0; i < state.wrong.length; i++) {
       if (bookKey(state.wrong[i]) === bookKey(seed)) { state.wrong[i].miss++; return; }
     }
-    state.wrong.push({ type: seed.type, total: seed.total, left: seed.left, miss: 1 });
+    state.wrong.push(typeof seed.idx === 'number'
+      ? { type: seed.type, idx: seed.idx, miss: 1 }
+      : { type: seed.type, total: seed.total, left: seed.left, miss: 1 });
     if (state.wrong.length > BOOK_MAX) state.wrong.shift();
   }
   /* 복습 성공 1번 = miss 1 감소. 0이 되면 노트에서 사라진다.
@@ -831,17 +942,12 @@
   var bookOpenBtn = document.getElementById('bookOpen');
   var bookModal = document.getElementById('bookModal');
   var bookListEl = document.getElementById('bookList');
-  var BOOK_TYPE_NAMES = {
-    hidden: '선물 상자에 숨은 수 찾기',
-    moreOne: '몇 개 더 필요할까',
-    pick2: '수 가르기',
-    gather: '수 모으기',
-    sameBoth: '똑같이 둘로 가르기',
-    formula: '수식 빈칸 채우기',
-    story: '이야기 문제'
-  };
-  /* 오답노트 항목을 부모가 읽기 쉬운 한 줄 수식으로 */
+  /* 오답노트 항목을 부모가 읽기 쉬운 한 줄로 */
   function bookLine(e) {
+    if (BANK_SIZES[e.type]) {
+      var bp = buildBankProblem(e.type, e.idx);
+      return { f: bp.book, a: bp.answer };
+    }
     var right = e.total - e.left;
     if (e.type === 'gather') return { f: e.left + ' + ' + right + ' = ❓', a: e.total };
     if (e.type === 'sameBoth') {
@@ -896,7 +1002,7 @@
       f.textContent = line.f;
       var tname = document.createElement('span');
       tname.className = 'tname';
-      tname.textContent = BOOK_TYPE_NAMES[e.type] || BOOK_TYPE_NAMES.story;
+      tname.textContent = (SKILL_INFO[e.type] || SKILL_INFO.story).name;
       var meta = document.createElement('span');
       meta.className = 'meta2';
       meta.textContent = '정답 ' + line.a + ' · 틀린 횟수 ' + e.miss + '번';
@@ -969,7 +1075,14 @@
      seed(type·total·left)가 있으면 그 문제를 그대로 다시 만든다 → 오답노트 복습용 */
   function makeProblem(seed) {
     var lv = currentLevel();
-    var type = seed ? seed.type : pickWeightedType(lv.types);
+    var type = seed ? seed.type
+      : (Math.random() < EXTRA_RATE ? pickWeightedType(EXTRA_TYPES) : pickWeightedType(lv.types));
+    if (BANK_SIZES[type]) {
+      var idx = seed && typeof seed.idx === 'number' ? seed.idx : rand(BANK_SIZES[type]);
+      var bp = buildBankProblem(type, idx);
+      bp.seed = { type: type, idx: idx };
+      return bp;
+    }
     var total = seed ? seed.total : 4 + rand(lv.max - 3);   // 4 ~ max
     var left = seed ? seed.left : 1 + rand(total - 1);      // 1 ~ total-1
     var p = buildProblem(type, total, left);
@@ -1068,20 +1181,31 @@
     document.getElementById('formula').textContent = current.formula;
     questionEl.textContent = (current.review ? '📖 복습 문제! ' : '') + current.question;
 
-    // 보기 3개: 정답 ±1~2 (가르기에서 흔한 실수 폭)
-    var cap = Math.max(12, currentLevel().max + 2);
-    var answers = [current.answer];
-    var guard = 0;
-    while (answers.length < 3 && guard++ < 40) {
-      var delta = (Math.random() < 0.5 ? -1 : 1) * (1 + rand(2));
-      var wrong = current.answer + delta;
-      if (wrong >= 0 && wrong <= cap && answers.indexOf(wrong) < 0) answers.push(wrong);
+    var answers;
+    if (current.choices) {
+      // 새 과목: 문제가 보기(정답 포함 문자열 3개)를 직접 준다 → 순서만 섞는다
+      answers = current.choices.slice();
+      for (var s = answers.length - 1; s > 0; s--) {
+        var j = rand(s + 1);
+        var tmp = answers[s]; answers[s] = answers[j]; answers[j] = tmp;
+      }
+    } else {
+      // 수학 보기 3개: 정답 ±1~2 (가르기에서 흔한 실수 폭)
+      var cap = Math.max(12, currentLevel().max + 2);
+      answers = [current.answer];
+      var guard = 0;
+      while (answers.length < 3 && guard++ < 40) {
+        var delta = (Math.random() < 0.5 ? -1 : 1) * (1 + rand(2));
+        var wrong = current.answer + delta;
+        if (wrong >= 0 && wrong <= cap && answers.indexOf(wrong) < 0) answers.push(wrong);
+      }
+      while (answers.length < 3) {
+        var fill = rand(cap + 1);
+        if (answers.indexOf(fill) < 0) answers.push(fill);
+      }
+      answers.sort(function (a, b) { return a - b; });
     }
-    while (answers.length < 3) {
-      var fill = rand(cap + 1);
-      if (answers.indexOf(fill) < 0) answers.push(fill);
-    }
-    answers.sort(function (a, b) { return a - b; });
+    choicesEl.classList.toggle('wordy', !!current.choices);
 
     choicesEl.innerHTML = '';
     answers.forEach(function (n) {
@@ -1101,31 +1225,35 @@
       cheerEl.className = 'cheer';
       var msg = CHEERS[Math.floor(Math.random() * CHEERS.length)];
 
-      /* 유형별 실력: 한 번에 맞히면 +1, 틀렸던 문제면 그대로 */
+      /* 유형별 실력: 한 번에 맞히면 +1, 틀렸던 문제면 그대로.
+         수학 난이도 단계(streak/missRow)는 수학 문제로만 움직인다. */
+      var isMath = !BANK_SIZES[current.seed.type];
       var sk = skillOf(current.seed.type);
       sk.d = dayNum();
       if (firstTry) {
         var wasMaster = sk.s >= MASTER_AT;
         sk.s = Math.min(10, sk.s + 1);
-        missRow = 0;
         if (current.review) {
           msg = removeFromBook(current.seed)
             ? '복습 성공! 오답노트에서 지웠어요 📖✨'
             : '복습 성공! 한 번 더 맞히면 오답노트에서 지워져요 📖';
         }
-        state.streak++;
-        /* 한 번에 맞히기 연속 성공 → 난이도를 서서히 올린다 */
-        if (state.streak >= STREAK_UP && state.level < LEVELS.length - 1) {
-          state.level++;
-          state.streak = 0;
-          msg = '🎉 ' + STREAK_UP + '문제 연속 정답! 「' + currentLevel().name + '」로 올라가요!';
-          eyebrowEl.textContent = '오늘의 가르기 공부 · ' + currentLevel().name;
+        if (isMath) {
+          missRow = 0;
+          state.streak++;
+          /* 한 번에 맞히기 연속 성공 → 난이도를 서서히 올린다 */
+          if (state.streak >= STREAK_UP && state.level < LEVELS.length - 1) {
+            state.level++;
+            state.streak = 0;
+            msg = '🎉 ' + STREAK_UP + '문제 연속 정답! 「' + currentLevel().name + '」로 올라가요!';
+            eyebrowEl.textContent = '오늘의 공부 · ' + currentLevel().name;
+          }
         }
         /* 유형 숙달 왕관 — 가장 큰 축하라서 다른 문구보다 우선 */
         if (!wasMaster && sk.s >= MASTER_AT) {
           msg = '👑 「' + SKILL_INFO[current.seed.type].name + '」 숙달! 왕관을 얻었어요!';
         }
-      } else {
+      } else if (isMath) {
         state.streak = 0;
       }
 
@@ -1154,13 +1282,15 @@
         var wsk = skillOf(current.seed.type);
         wsk.s = Math.max(0, wsk.s - 2);
         wsk.d = dayNum();
-        state.streak = 0;
-        missRow++;
+        if (!BANK_SIZES[current.seed.type]) {
+          state.streak = 0;
+          missRow++;
+        }
         if (missRow >= MISS_DOWN && state.level > 0) {
           state.level--;
           missRow = 0;
           oops = '괜찮아요! 「' + currentLevel().name + '」 문제로 다시 연습해요 💪';
-          eyebrowEl.textContent = '오늘의 가르기 공부 · ' + currentLevel().name;
+          eyebrowEl.textContent = '오늘의 공부 · ' + currentLevel().name;
         } else {
           oops += ' (오답노트에 적어 둘게요 📖)';
         }
@@ -1211,7 +1341,7 @@
     } else {
       document.body.classList.add('locked');
       studyEl.classList.remove('done');
-      eyebrowEl.textContent = '오늘의 가르기 공부 · ' + currentLevel().name;
+      eyebrowEl.textContent = '오늘의 공부 · ' + currentLevel().name;
       subEl.textContent = '문제 10개를 풀면 게임 티켓 한 장!';
       drawSetStars();
       renderProblem();
