@@ -212,6 +212,50 @@
     cursor: pointer;
   }
   .book-hint { font-size: clamp(13px, 3vw, 15px); font-weight: 700; color: #7a5a2e; line-height: 1.5; }
+  .book-sub { font-size: clamp(15px, 3.4vw, 17px); font-weight: 900; color: var(--ink); margin-top: 4px; }
+  #skillList { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  #skillList li {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-rows: auto auto;
+    align-items: center;
+    column-gap: 10px;
+    row-gap: 5px;
+    border: 2px solid rgba(122, 90, 46, 0.3);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.7);
+    padding: 9px 14px;
+    text-align: left;
+  }
+  #skillList .sicon { font-size: clamp(18px, 4.4vw, 22px); }
+  #skillList .sname { font-size: clamp(14px, 3.2vw, 16px); font-weight: 900; color: var(--ink); }
+  #skillList .stier { font-size: clamp(12px, 2.8vw, 14px); font-weight: 900; color: #7a5a2e; white-space: nowrap; }
+  #skillList .sbar {
+    grid-column: 1 / -1;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(122, 90, 46, 0.18);
+    overflow: hidden;
+  }
+  #skillList .sbar i {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #6bcb77, #ffd93d);
+  }
+  #gameList { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  #gameList li {
+    border: 2px solid rgba(122, 90, 46, 0.3);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.7);
+    padding: 9px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    text-align: left;
+  }
+  #gameList li b { font-size: clamp(15px, 3.4vw, 17px); font-weight: 900; color: var(--ink); }
+  #gameList .meta2 { font-size: clamp(12px, 2.8vw, 14px); font-weight: 700; color: #7a5a2e; font-variant-numeric: tabular-nums; }
   #bookList { list-style: none; display: flex; flex-direction: column; gap: 10px; }
   #bookList li {
     border: 2px solid rgba(122, 90, 46, 0.3);
@@ -302,6 +346,17 @@
     text-wrap: balance;
   }
   .desc { font-size: clamp(13px, 3vw, 15.5px); font-weight: 700; opacity: 0.82; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .genre, .plays {
+    font-size: clamp(11px, 2.6vw, 13px);
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    padding: 3px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .genre { background: rgba(255, 252, 244, 0.78); border: 2px solid rgba(20, 12, 40, 0.3); color: var(--ink); }
+  .plays { background: rgba(20, 12, 40, 0.82); color: #ffd93d; border: 2px solid transparent; }
   .go {
     margin-top: 3px;
     align-self: flex-start;
@@ -386,7 +441,7 @@
     <div class="question" id="question"></div>
     <div class="choices" id="choices"></div>
     <div class="cheer" id="cheer"></div>
-    <button class="book-open" id="bookOpen" type="button" hidden>📖 오답노트 보기 (부모님용)</button>
+    <button class="book-open" id="bookOpen" type="button">📖 학습 리포트 (부모님용)</button>
   </section>
 
   <nav class="games" aria-label="게임 목록">
@@ -395,6 +450,7 @@
       <span class="badge">🛡️</span>
       <span class="meta">
         <span class="name">제이와 태오의 멀티버스</span>
+        <span class="tags"><span class="genre">🥊 2인 협동 액션</span></span>
         <span class="desc">둘이 함께하는 히어로 액션 · 영웅 7명 · 4개의 세계 · 합동 필살기</span>
         <span class="go">모험 떠나기 ▶</span>
       </span>
@@ -404,6 +460,7 @@
       <span class="badge">🃏</span>
       <span class="meta">
         <span class="name">이야기 카드 배틀</span>
+        <span class="tags"><span class="genre">🃏 카드 배틀</span></span>
         <span class="desc">이야기를 들으면 영웅 카드 해금 · 별사탕으로 펼치는 1:1 대결</span>
         <span class="go">카드 대결하기 ▶</span>
       </span>
@@ -413,6 +470,7 @@
       <span class="badge">⛵</span>
       <span class="meta">
         <span class="name">오디세이아: 집으로 가는 길</span>
+        <span class="tags"><span class="genre">⚔️ 모험 액션</span></span>
         <span class="desc">키클롭스 동굴부터 이어지는, 지혜로 떠나는 액션 모험</span>
         <span class="go">모험 떠나기 ▶</span>
       </span>
@@ -422,6 +480,7 @@
       <span class="badge">🏁</span>
       <span class="meta">
         <span class="name">산리오 카트 3D</span>
+        <span class="tags"><span class="genre">🏁 3D 레이싱</span></span>
         <span class="desc">진짜 3D 레이싱 · 코스 6개 · 캐릭터 7명 · 아이템 배틀 · 내 음악 넣기</span>
         <span class="go">모험 떠나기 ▶</span>
       </span>
@@ -431,6 +490,7 @@
       <span class="badge">🏎️</span>
       <span class="meta">
         <span class="name">산리오 카트 (간단판)</span>
+        <span class="tags"><span class="genre">🏎️ 레이싱</span></span>
         <span class="desc">코스 4개 · 캐릭터 7명 · 드리프트 부스터 · 내 음악 넣기</span>
         <span class="go">모험 떠나기 ▶</span>
       </span>
@@ -440,6 +500,7 @@
       <span class="badge">🐉</span>
       <span class="meta">
         <span class="name">삼국지 · 서유기 · 수호지</span>
+        <span class="tags"><span class="genre">⚔️ 전장 액션</span></span>
         <span class="desc">세 고전을 넘나드는 별빛 연대기 횡스크롤 전장</span>
         <span class="go">모험 떠나기 ▶</span>
       </span>
@@ -449,6 +510,7 @@
       <span class="badge">🏰</span>
       <span class="meta">
         <span class="name">호그와트 마법학교</span>
+        <span class="tags"><span class="genre">✨ 마법 어드벤처</span></span>
         <span class="desc">7년의 마법 학교 어드벤처</span>
         <span class="go">모험 떠나기 ▶</span>
       </span>
@@ -458,6 +520,7 @@
       <span class="badge">🎤</span>
       <span class="meta">
         <span class="name">케데헌</span>
+        <span class="tags"><span class="genre">🎵 리듬 러너</span></span>
         <span class="desc">무대를 달리는 데몬 헌터스</span>
         <span class="go">모험 떠나기 ▶</span>
       </span>
@@ -467,6 +530,7 @@
       <span class="badge">💎</span>
       <span class="meta">
         <span class="name">헬로키티의 리본방</span>
+        <span class="tags"><span class="genre">🔍 추리 · 미니게임</span></span>
         <span class="desc">사라진 보석을 찾는 아기자기 추리 놀이</span>
         <span class="go">모험 떠나기 ▶</span>
       </span>
@@ -476,6 +540,7 @@
       <span class="badge">🧺</span>
       <span class="meta">
         <span class="name">재이네 숫자 소풍</span>
+        <span class="tags"><span class="genre">➗ 숫자 놀이</span></span>
         <span class="desc">간식을 사이좋게 나눠 주는 숫자 놀이</span>
         <span class="go">모험 떠나기 ▶</span>
       </span>
@@ -487,6 +552,7 @@
     <span class="badge">🎧</span>
     <span class="meta">
       <span class="name">이야기 극장</span>
+        <span class="tags"><span class="genre">🎧 오디오북</span></span>
       <span class="desc">세계의 옛이야기를 귀로 떠나는 여행 · 오디오북 · 공부 없이도 입장 OK</span>
       <span class="go">극장 들어가기 ▶</span>
     </span>
@@ -497,6 +563,7 @@
     <span class="badge">⌨️</span>
     <span class="meta">
       <span class="name">키캡 공방</span>
+        <span class="tags"><span class="genre">🎨 만들기 공방</span></span>
       <span class="desc">나만의 키캡 디자인 — 3D 프린트 파일까지 뽑아 주는 무인 공방 · 공부 없이도 입장 OK</span>
       <span class="go">공방 들어가기 ▶</span>
     </span>
@@ -511,11 +578,18 @@
 <div class="book-modal" id="bookModal" hidden>
   <div class="book-sheet" role="dialog" aria-modal="true" aria-label="오답노트">
     <div class="book-head">
-      <b>📖 오답노트</b>
+      <b>📖 학습 리포트</b>
       <button id="bookClose" type="button" aria-label="닫기">✕</button>
     </div>
+    <h3 class="book-sub">실력 지도</h3>
+    <p class="book-hint">문제 유형별 실력이에요. 약한 유형이 더 자주 나오고, 👑 숙달한 유형도 며칠 지나면 잊기 전에 다시 나와요.</p>
+    <ul id="skillList"></ul>
+    <h3 class="book-sub">오답노트</h3>
     <p class="book-hint">아이가 틀렸던 문제예요. 복습 문제를 한 번에 맞히면 틀린 횟수가 줄고, 0이 되면 노트에서 지워져요.</p>
     <ol id="bookList"></ol>
+    <h3 class="book-sub">게임 기록</h3>
+    <p class="book-hint">자주 하는 게임 순서예요. 오래 안 하는 게임은 업데이트해 볼까요? 😄</p>
+    <ul id="gameList"></ul>
   </div>
 </div>
 
@@ -558,19 +632,27 @@
     })(0);
   }
 
-  /* ---- 공부 시스템 v3 ----
+  /* ---- 공부 시스템 v4 ----
      세트 = 10문제 → 게임 티켓 1장. 게임 한 판 쓰면 다시 10문제.
      하루 40문제를 다 채우면 그날은 자유 이용.
      v3: 오답노트 + 적응형 난이도.
        · 틀린 문제는 오답노트(날짜가 바뀌어도 유지)에 적히고,
          몇 문제마다 "복습 문제"로 다시 나온다. 한 번에 맞히면 지워진다.
        · 연속 3문제를 한 번에 맞히면 단계가 오르고,
-         연속 2문제를 틀리면 단계가 내려간다. */
+         연속 2문제를 틀리면 단계가 내려간다.
+     v4: 칸아카데미식 유형별 숙달.
+       · 문제 유형마다 실력 점수(0~10)를 따로 기른다:
+         🌱연습 → 🌿익숙 → 🌟능숙 → 👑숙달.
+       · 약한 유형이 더 자주 나오고(가중치 출제),
+         숙달한 유형도 3일 넘게 안 보면 잊기 전에 다시 나온다(간격 반복).
+       · 유형을 숙달하면 왕관을 얻고, 부모 리포트에 실력 지도가 보인다. */
   var SET = 10, DAILY = 40;
   var STREAK_UP = 3;      // 한 번에 맞히기 연속 성공 → 단계 상승
   var MISS_DOWN = 2;      // 틀린 문제 연속 → 단계 하락
   var REVIEW_GAP = 2;     // 새 문제 몇 개마다 오답노트 복습을 끼워 넣나
   var BOOK_MAX = 24;      // 오답노트 최대 크기
+  var MASTER_AT = 9;      // 이 점수부터 숙달(왕관)
+  var FORGET_DAYS = 3;    // 숙달 유형을 다시 보여주기까지의 날짜 간격
   var ITEMS = [
     { emoji: '🍪', name: '쿠키' },
     { emoji: '🍓', name: '딸기' },
@@ -600,8 +682,58 @@
     var d = new Date();
     return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
   }
+  /* ---- 유형별 숙달 (칸아카데미의 Mastery를 본뜬 구조) ---- */
+  var SKILL_INFO = {
+    hidden:   { name: '선물 상자에 숨은 수', icon: '🎁' },
+    moreOne:  { name: '몇 개 더 필요할까',   icon: '🖐️' },
+    pick2:    { name: '수 가르기',           icon: '✂️' },
+    gather:   { name: '수 모으기',           icon: '🧺' },
+    sameBoth: { name: '똑같이 둘로 가르기',  icon: '🌓' },
+    formula:  { name: '수식 빈칸 채우기',    icon: '🔢' },
+    story:    { name: '이야기 문제',         icon: '📚' }
+  };
+  var TIERS = [
+    { min: MASTER_AT, name: '숙달',   icon: '👑' },
+    { min: 6,         name: '능숙',   icon: '🌟' },
+    { min: 3,         name: '익숙',   icon: '🌿' },
+    { min: 0,         name: '연습 중', icon: '🌱' }
+  ];
+  function tierOf(score) {
+    for (var i = 0; i < TIERS.length; i++) if (score >= TIERS[i].min) return TIERS[i];
+    return TIERS[TIERS.length - 1];
+  }
+  function dayNum() { return Math.floor(Date.now() / 864e5); }
+  function skillOf(type) {
+    if (!state.skills[type]) state.skills[type] = { s: 0, d: dayNum() };
+    return state.skills[type];
+  }
+  function masteredCount() {
+    var n = 0;
+    for (var t in SKILL_INFO) {
+      if (state.skills[t] && state.skills[t].s >= MASTER_AT) n++;
+    }
+    return n;
+  }
+  /* 약한 유형일수록 자주, 숙달했어도 오래 안 봤으면 다시 (간격 반복) */
+  function pickWeightedType(types) {
+    var weights = types.map(function (t) {
+      var sk = skillOf(t);
+      var w = 1 + Math.max(0, 8 - sk.s);
+      if (sk.s >= MASTER_AT && dayNum() - sk.d >= FORGET_DAYS) w += 4;
+      return w;
+    });
+    var sum = 0, i;
+    for (i = 0; i < weights.length; i++) sum += weights[i];
+    var r = Math.random() * sum;
+    for (i = 0; i < types.length; i++) {
+      r -= weights[i];
+      if (r < 0) return types[i];
+    }
+    return types[types.length - 1];
+  }
+
   function loadState() {
-    var s = { solved: 0, credit: 0, level: 0, streak: 0, wrong: [] };
+    var s = { solved: 0, credit: 0, level: 0, streak: 0, wrong: [], skills: {} };
     try {
       if (localStorage.getItem('hub2_date') === todayKey()) {
         s.solved = Math.max(0, parseInt(localStorage.getItem('hub2_solved') || '0', 10) || 0);
@@ -621,6 +753,15 @@
                    miss: Math.max(1, parseInt(e.miss, 10) || 1) };
         }).slice(0, BOOK_MAX);
       }
+      var sk = JSON.parse(localStorage.getItem('hub2_skills') || '{}');
+      for (var t in SKILL_INFO) {
+        if (sk[t] && typeof sk[t].s === 'number') {
+          s.skills[t] = {
+            s: Math.max(0, Math.min(10, Math.round(sk[t].s))),
+            d: Math.max(0, parseInt(sk[t].d, 10) || 0)
+          };
+        }
+      }
     } catch (_) {}
     return s;
   }
@@ -632,6 +773,7 @@
       localStorage.setItem('hub2_level', String(state.level));
       localStorage.setItem('hub2_streak', String(state.streak));
       localStorage.setItem('hub2_wrongbook', JSON.stringify(state.wrong));
+      localStorage.setItem('hub2_skills', JSON.stringify(state.skills));
     } catch (_) {}
   }
 
@@ -679,9 +821,10 @@
     starsEl.textContent = s.trim();
   }
   function drawDaily() {
+    var crowns = masteredCount();
     dailyEl.textContent = '오늘 푼 문제 ' + Math.min(state.solved, DAILY) + ' / ' + DAILY +
-      (state.wrong.length ? ' · 오답노트 ' + state.wrong.length + '개' : '');
-    bookOpenBtn.hidden = !state.wrong.length;
+      (state.wrong.length ? ' · 오답노트 ' + state.wrong.length + '개' : '') +
+      (crowns ? ' · 왕관 👑 ' + crowns + '개' : '');
   }
 
   /* ---- 부모용 오답노트 목록 ---- */
@@ -708,7 +851,35 @@
     }
     return { f: e.total + ' = ' + e.left + ' + ❓', a: right };
   }
+  var skillListEl = document.getElementById('skillList');
+  function renderSkills() {
+    skillListEl.innerHTML = '';
+    for (var t in SKILL_INFO) {
+      var info = SKILL_INFO[t];
+      var score = state.skills[t] ? state.skills[t].s : 0;
+      var tier = tierOf(score);
+      var li = document.createElement('li');
+      var icon = document.createElement('span');
+      icon.className = 'sicon';
+      icon.textContent = info.icon;
+      var name = document.createElement('span');
+      name.className = 'sname';
+      name.textContent = info.name;
+      var tierEl = document.createElement('span');
+      tierEl.className = 'stier';
+      tierEl.textContent = tier.icon + ' ' + tier.name;
+      var bar = document.createElement('span');
+      bar.className = 'sbar';
+      var fill = document.createElement('i');
+      fill.style.width = (score * 10) + '%';
+      bar.appendChild(fill);
+      li.appendChild(icon); li.appendChild(name); li.appendChild(tierEl); li.appendChild(bar);
+      skillListEl.appendChild(li);
+    }
+  }
   function renderBook() {
+    renderSkills();
+    renderGames();
     bookListEl.innerHTML = '';
     if (!state.wrong.length) {
       var empty = document.createElement('li');
@@ -798,7 +969,7 @@
      seed(type·total·left)가 있으면 그 문제를 그대로 다시 만든다 → 오답노트 복습용 */
   function makeProblem(seed) {
     var lv = currentLevel();
-    var type = seed ? seed.type : lv.types[rand(lv.types.length)];
+    var type = seed ? seed.type : pickWeightedType(lv.types);
     var total = seed ? seed.total : 4 + rand(lv.max - 3);   // 4 ~ max
     var left = seed ? seed.left : 1 + rand(total - 1);      // 1 ~ total-1
     var p = buildProblem(type, total, left);
@@ -930,7 +1101,12 @@
       cheerEl.className = 'cheer';
       var msg = CHEERS[Math.floor(Math.random() * CHEERS.length)];
 
+      /* 유형별 실력: 한 번에 맞히면 +1, 틀렸던 문제면 그대로 */
+      var sk = skillOf(current.seed.type);
+      sk.d = dayNum();
       if (firstTry) {
+        var wasMaster = sk.s >= MASTER_AT;
+        sk.s = Math.min(10, sk.s + 1);
         missRow = 0;
         if (current.review) {
           msg = removeFromBook(current.seed)
@@ -944,6 +1120,10 @@
           state.streak = 0;
           msg = '🎉 ' + STREAK_UP + '문제 연속 정답! 「' + currentLevel().name + '」로 올라가요!';
           eyebrowEl.textContent = '오늘의 가르기 공부 · ' + currentLevel().name;
+        }
+        /* 유형 숙달 왕관 — 가장 큰 축하라서 다른 문구보다 우선 */
+        if (!wasMaster && sk.s >= MASTER_AT) {
+          msg = '👑 「' + SKILL_INFO[current.seed.type].name + '」 숙달! 왕관을 얻었어요!';
         }
       } else {
         state.streak = 0;
@@ -971,6 +1151,9 @@
       if (!current.missed) {
         current.missed = true;
         addToBook(current.seed);
+        var wsk = skillOf(current.seed.type);
+        wsk.s = Math.max(0, wsk.s - 2);
+        wsk.d = dayNum();
         state.streak = 0;
         missRow++;
         if (missRow >= MISS_DOWN && state.level > 0) {
@@ -1036,7 +1219,93 @@
     syncGameCardAccess();
   }
 
-  /* 게임 카드: 티켓을 쓰고 입장 (하루 20문제 채우면 무료 입장) */
+  /* ---- 게임 놀이 기록: 무엇을 얼마나 자주 하는지 ---- */
+  function loadPlays() {
+    try {
+      var p = JSON.parse(localStorage.getItem('hub2_plays') || '{}');
+      return p && typeof p === 'object' ? p : {};
+    } catch (_) { return {}; }
+  }
+  var plays = loadPlays();
+  function savePlays() {
+    try { localStorage.setItem('hub2_plays', JSON.stringify(plays)); } catch (_) {}
+  }
+  function gameKey(link) {
+    return (link.getAttribute('href') || '').replace(/\W/g, '');
+  }
+  function playCount(link) {
+    var e = plays[gameKey(link)];
+    return e && e.n ? e.n : 0;
+  }
+  /* 카드에 놀이 횟수 칩을 달고, 자주 하는 게임을 앞으로 */
+  function annotatePlays() {
+    var links = document.querySelectorAll('.card, .shop');
+    var max = 0;
+    links.forEach(function (l) { max = Math.max(max, playCount(l)); });
+    links.forEach(function (l) {
+      var tags = l.querySelector('.tags');
+      if (!tags) return;
+      var old = tags.querySelector('.plays');
+      if (old) old.remove();
+      var n = playCount(l);
+      if (n > 0) {
+        var chip = document.createElement('span');
+        chip.className = 'plays';
+        chip.textContent = (n === max && max >= 3 ? '⭐ 최애 · ' : '🔥 ') + n + '번 놀았어요';
+        tags.appendChild(chip);
+      }
+    });
+    var grid = document.querySelector('.games');
+    Array.prototype.slice.call(grid.children)
+      .map(function (c, i) { return { c: c, i: i, n: playCount(c) }; })
+      .sort(function (a, b) { return b.n - a.n || a.i - b.i; })
+      .forEach(function (o) { grid.appendChild(o.c); });
+  }
+  var gameListEl = document.getElementById('gameList');
+  function renderGames() {
+    gameListEl.innerHTML = '';
+    var rows = [];
+    document.querySelectorAll('.card, .shop').forEach(function (l) {
+      var e = plays[gameKey(l)] || { n: 0, d: 0 };
+      var badge = l.querySelector('.badge');
+      var name = l.querySelector('.name');
+      rows.push({
+        icon: badge ? badge.textContent : '🎮',
+        name: name ? name.textContent : gameKey(l),
+        n: e.n || 0, d: e.d || 0
+      });
+    });
+    rows.sort(function (a, b) { return b.n - a.n; });
+    rows.forEach(function (r) {
+      var li = document.createElement('li');
+      var b = document.createElement('b');
+      b.textContent = r.icon + ' ' + r.name;
+      var m = document.createElement('span');
+      m.className = 'meta2';
+      if (r.n) {
+        var days = dayNum() - r.d;
+        m.textContent = r.n + '번 놀았어요 · 마지막은 ' + (days <= 0 ? '오늘' : days + '일 전');
+      } else {
+        m.textContent = '아직 안 해봤어요';
+      }
+      li.appendChild(b); li.appendChild(m);
+      gameListEl.appendChild(li);
+    });
+  }
+
+  /* 실제로 입장할 때만 놀이 횟수를 센다 (잠긴 카드 탭은 제외).
+     티켓을 소모하는 핸들러보다 먼저 등록해야 소모 전 상태로 판단한다. */
+  document.querySelectorAll('.card, .shop').forEach(function (link) {
+    link.addEventListener('click', function () {
+      if (link.classList.contains('card') && !isFree() && !hasTicket()) return;
+      var k = gameKey(link);
+      var e = plays[k] || { n: 0, d: 0 };
+      e.n++; e.d = dayNum();
+      plays[k] = e;
+      savePlays();
+    });
+  });
+  /* 게임 카드: 티켓을 쓰고 입장 (하루 40문제 채우면 무료 입장) */
   document.querySelectorAll('.card').forEach(function (card) {
     card.addEventListener('click', function (event) {
       if (isFree()) return;
@@ -1053,12 +1322,15 @@
   window.addEventListener('pageshow', function (e) {
     if (e.persisted) {
       state = loadState();
+      plays = loadPlays();
       setCorrect = 0;
       applyState();
+      annotatePlays();
     }
   });
 
   applyState();
+  annotatePlays();
 
   /* 아빠 전용: 달 5연타 = 오늘 자유 이용 */
   var moonTaps = 0, moonTimer = null;
