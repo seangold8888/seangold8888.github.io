@@ -95,6 +95,29 @@
     }
   }
 
+  // 같은 카드로 연달아 대결해도 같은 문제가 반복되지 않게 최근 3문항을 기억한다.
+  function quizMemoryKey(cardId) {
+    return "cards_quiz_recent_" + cardId;
+  }
+
+  function readRecentQuizIds(cardId) {
+    try {
+      const raw = localStorage.getItem(quizMemoryKey(cardId));
+      const list = raw ? JSON.parse(raw) : [];
+      return Array.isArray(list) ? list.filter(function (id) { return typeof id === "string"; }) : [];
+    } catch (error) {
+      return [];
+    }
+  }
+
+  function rememberQuizId(cardId, questionId) {
+    try {
+      const next = readRecentQuizIds(cardId).filter(function (id) { return id !== questionId; });
+      next.push(questionId);
+      localStorage.setItem(quizMemoryKey(cardId), JSON.stringify(next.slice(-3)));
+    } catch (error) {}
+  }
+
   function isUnlocked(card) {
     return !card.unlock || isStoryDone(card.unlock);
   }
@@ -304,8 +327,11 @@
     const fragmentPool = getUnlockedFragmentPool();
     storyChallenge = window.CardStoryGates &&
       typeof window.CardStoryGates.getForCard === "function"
-      ? window.CardStoryGates.getForCard(selectedCard, Math.random)
+      ? window.CardStoryGates.getForCard(selectedCard, Math.random, {
+          avoidIds: readRecentQuizIds(selectedCard.id)
+        })
       : null;
+    if (storyChallenge) rememberQuizId(selectedCard.id, storyChallenge.id);
     game = window.CardEngine.createGame(selectedCard, enemy, {
       playerFragments: window.CardEngine.drawFragments(fragmentPool, Math.random, 3),
       enemyFragments: window.CardEngine.drawFragments(fragmentPool, Math.random, 3)

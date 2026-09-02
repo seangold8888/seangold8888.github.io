@@ -45,15 +45,19 @@ test("exports one story gate for every playable card", function () {
     function (question) { return question.cardId; }
   ).sort();
 
-  assert.equal(gates.all.length, 19);
+  assert.ok(gates.all.length >= 19 * 5, "카드당 5문항 이상이어야 한다");
   assert.equal(
     new Set(Array.from(gates.all, function (question) {
       return question.id;
     })).size,
-    19
+    gates.all.length,
+    "문항 id는 유일해야 한다"
   );
   assert.deepEqual(mappedIds, expected);
-  assert.deepEqual(questionCardIds, expected);
+  assert.deepEqual(Array.from(new Set(questionCardIds)), expected);
+  PLAYABLE_CARD_IDS.forEach(function (cardId) {
+    assert.ok(gates.countForCard(cardId) >= 5, cardId + " needs 5+ questions");
+  });
 
   PLAYABLE_CARD_IDS.forEach(function (cardId) {
     const question = gates.getForCard(cardId, function () { return 0; });
@@ -148,14 +152,12 @@ test("getForCard uses the supplied rng and returns a deep clone", function () {
   assert.notEqual(third.choices[0].text, first.choices[0].text);
   assert.notEqual(third.source.refs[0], first.source.refs[0]);
 
-  assert.equal(
-    gates.getForCard("cinderella", function () { return -1; }).id,
-    third.id
-  );
-  assert.equal(
-    gates.getForCard("cinderella", function () { return 1; }).id,
-    third.id
-  );
+  const bankIds = Array.from(gates.all)
+    .filter(function (q) { return q.cardId === "cinderella"; })
+    .map(function (q) { return q.id; });
+  assert.ok(bankIds.includes(gates.getForCard("cinderella", function () { return -1; }).id));
+  assert.ok(bankIds.includes(gates.getForCard("cinderella", function () { return 1; }).id));
+  assert.ok(bankIds.includes(gates.getForCard("cinderella", function () { return NaN; }).id));
 });
 
 test("unknown or malformed card inputs return null", function () {
@@ -169,3 +171,16 @@ test("unknown or malformed card inputs return null", function () {
   assert.equal(gates.storyIdForCard(null), null);
 });
 
+test("getForCard skips recently asked questions when others remain", function () {
+  const gates = loadStoryGates();
+  const pick = function (avoid) {
+    return gates.getForCard("cinderella", function () { return 0; }, { avoidIds: avoid });
+  };
+  const first = pick([]);
+  const second = pick([first.id]);
+  assert.notEqual(second.id, first.id);
+  const allIds = Array.from(gates.all)
+    .filter(function (q) { return q.cardId === "cinderella"; })
+    .map(function (q) { return q.id; });
+  assert.ok(pick(allIds), "모두 피하면 전체에서 다시 고른다");
+});

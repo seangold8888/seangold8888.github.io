@@ -163,7 +163,7 @@ test("이야기 조각 데이터는 9종 효과·완청 키·초기 3장 풀 계
   );
 });
 
-test("손패 UI와 캐시 버전 23이 함께 배포되도록 묶여 있다", () => {
+test("손패 UI와 캐시 버전 24이 함께 배포되도록 묶여 있다", () => {
   const html = read("index.html");
   const css = read("styles.css");
   const app = read(path.join("js", "app.js"));
@@ -171,9 +171,9 @@ test("손패 UI와 캐시 버전 23이 함께 배포되도록 묶여 있다", ()
   ["fragmentTray", "fragmentHand", "fragmentPreview"].forEach((id) => {
     assert.match(html, new RegExp('id="' + id + '"'));
   });
-  assert.match(html, /styles\.css\?v=23/);
+  assert.match(html, /styles\.css\?v=24/);
   ["engine", "audio", "card-view", "vfx-recipes", "story-gates", "app"].forEach((file) => {
-    assert.match(html, new RegExp("js/" + file + "\\.js\\?v=23"));
+    assert.match(html, new RegExp("js/" + file + "\\.js\\?v=24"));
   });
   assert.doesNotMatch(html, /\?v=(?:19|20|21|22)/);
 

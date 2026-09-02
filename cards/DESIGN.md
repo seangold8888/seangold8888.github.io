@@ -244,3 +244,10 @@ Avoid: copyrighted character likenesses; recognizable Disney, Pokémon or Hearth
 ### 11d. 검수
 - 방어 전후 피해·만료·우선순위, AI 생존 방어, 관문 2회 제한, 필살기 중립 50/판당 1회/동전 무시를 자동 테스트한다.
 - 상대 예고와 방어 버튼은 iPad와 모바일에서 동시에 읽혀야 하며, 이야기 문제 dialog는 카드 잠금 dialog와 독립이어야 한다.
+
+## 12. v1.8 이야기 관문 확장 (2026-09-03, 사용자 피드백 "하나의 퀴즈가 반복돼")
+
+- 문항 은행: 카드당 1문항 → **5~6문항**(총 100+), `js/story-gates.js`. 유형을 섞음 — 사건·인물·소품·이유·숫자·대사. 정답은 오디오 v2 대본 기준.
+- 반복 방지: `getForCard(card, rng, {avoidIds})` + app.js가 카드별 최근 3문항을 `localStorage["cards_quiz_recent_<cardId>"]`에 기억. 같은 카드로 연달아 대결해도 같은 문제가 안 나옴.
+- 오디오 v2: 20편 전부 확장(총 334세그먼트, 편당 +40%). 퀴즈에 쓸 사건(소 이름 밀키화이트, 콩 다섯 알, 히드라 아홉 머리, 팍톨로스 강, 세 노파의 눈 하나…)을 추가. 에피소드 id·파일명은 그대로라 완청 기록·해금 유지.
+- 캐시 v24. (참고: tests/pwa.test.js 「Avengers migrates…」는 이 변경 이전부터 실패 — 어벤져스 index.html 마이그레이션 순서 검사, 코덱스 확인 필요.)
