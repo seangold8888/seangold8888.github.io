@@ -339,7 +339,11 @@ test("wish_limit_3은 사용한 기술이 세 번이면 이후 공격을 막는�
   }
 
   assert.equal(state.sides.player.wishUses, 3);
-  assert.deepEqual(Engine.getAvailableActions(state), [{ type: "rest" }]);
+  const remaining = Engine.getAvailableActions(state);
+  assert.equal(remaining.some((action) => action.type === "attack"), false);
+  assert.equal(remaining.some((action) => action.type === "rest"), true);
+  assert.equal(remaining.some((action) => action.type === "guard"), true);
+  assert.equal(remaining.some((action) => action.type === "ultimate"), false);
 });
 
 test("AI는 큰 기술이 가치 있으면 쉬면서 별을 저금한 뒤 사용한다", () => {

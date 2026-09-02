@@ -216,3 +216,31 @@ Create an original premium fantasy storybook character illustration for a collec
 Character: [이름] / Scene and action: [장면] / Expression: [표정] / Signature props: [소품] / Character type: [용기/지혜/마법/괴물]
 Art direction: original cinematic children's fantasy illustration; hand-painted storybook finish with sculpted, readable shapes; spectacular lighting and rich material detail; strong silhouette readable at small card size; energetic diagonal composition; expressive, child-friendly face; clear foreground character and atmospheric background; magical particles matching the character type; premium trading-card quality; exciting and wondrous, never frightening; leave breathing room around the head and main action; no text, numbers, logos, UI, watermark or card frame.
 Avoid: copyrighted character likenesses; recognizable Disney, Pokémon or Hearthstone costume and frame designs; adult glamour styling; horror, exposed teeth, blood, weapons aimed at the viewer; photorealistic adult facial proportions; extra fingers, malformed hands, duplicate props.
+
+## 11. v1.7 전투 가독성·방어·이야기 필살기 (2026-09-02 사용자 확정)
+
+### 11a. 읽히는 대형 공격 연출
+- §8f의 `0.6초 이내` 제한은 이번 사용자 피드백으로 대체한다. 기술 종류별 총 길이는 **0.72~0.96초**, 접촉은 0.27~0.64초에 발생한다.
+- 공격 궤적·포털·베기·링·섬광·잔광 범위를 기존보다 약 1.45배 확대한다. 프리미엄 원화 VFX는 124~340px, 이모지 폴백은 일반 1.5배·강타 2.1배다.
+- 느려지는 부분은 예고/이동 구간이다. 피격 플래시·링·히트스톱은 0.24~0.34초로 짧게 유지하고, 소리와 시각 접촉은 같은 프레임에 실행한다.
+- 확대 후에도 Canvas 파티클 풀 120개, DPR 1.5 상한, transform/opacity 중심, reduced-motion 계약을 유지한다.
+
+### 11b. 공용 방어 행동 + 상대 행동 예고
+- 모든 v1 대전 카드는 `🛡️ 방어하기`를 사용할 수 있다. 비용은 별사탕 1개이며 턴을 종료한다.
+- 다음 상대 공격의 최종 양의 피해를 최대 20 줄이되, 최소 10 피해는 남긴다. 첫 피격 무효·완전 방어 조각·감소 조각을 먼저 계산하여 강한 1회용 방어가 낭비되지 않게 한다.
+- 실제 피해를 줄였을 때만 방어막을 소비한다. 상대가 공격하지 않으면 다음 내 턴 시작에 만료된다.
+- 방어를 사용한 바로 다음 내 턴에는 재정비 때문에 다시 방어할 수 없고, 그다음 내 턴부터 다시 사용할 수 있다. 방어만 반복하는 교착을 막으면서 상대 예고를 읽는 선택은 유지한다.
+- 플레이어 턴에는 상대의 예약 행동(기술명·예상 피해·동전/조각·강타/치명 여부)을 미리 보여 준다. 플레이어의 별 훔치기·약화 등으로 예약 행동이 불가능해진 경우에만 AI가 합법 행동을 다시 계산한다.
+- AI는 방어해야만 다음 치명타를 생존할 수 있으면 방어를 우선하고, 체력 절반 이하에서는 유효 방어를 30% 확률로 선택한다.
+
+### 11c. 완청 연동 「이야기 관문」 필살기
+- `localStorage["story_done_<episodeId>"] === "1"`인 이야기만 문제를 열 수 있다. 기본 카드 잭·빨간 모자도 각각 `jack_story`·`redhood_story` 완청이 필요하다.
+- 문제는 카드 표면의 수치가 아니라 이야기 속 사건을 묻는 초1용 3지선다다. 정답이면 턴·HP·별사탕을 쓰지 않고 즉시 필살기를 해금한다.
+- 첫 오답은 다음 내 턴에 한 번 더 답할 수 있다. 두 번째 오답이면 그 판의 관문만 닫힌다. 오답으로 HP·별·턴을 빼앗지 않는다.
+- 필살기 `🌟 별빛 이야기`: 판당 1회, 별사탕 3개, 중립 기본 피해 50. 약점 ×2·공격자 강화·데미지 조각은 적용하지 않고 동전 없이 확정 명중한다. 상대의 영구 감소·방어 조각·첫 피격 무효·공용 방어는 정상 적용한다.
+- v1에서는 플레이어 전용 보상이다. 컴퓨터는 문제를 푼 것으로 간주하거나 필살기를 자동 해금하지 않는다.
+- 문항 데이터는 `cards/js/story-gates.js`에 두어 `cards.json` 24장/48기술/검수 완료 원화를 변경하지 않는다.
+
+### 11d. 검수
+- 방어 전후 피해·만료·우선순위, AI 생존 방어, 관문 2회 제한, 필살기 중립 50/판당 1회/동전 무시를 자동 테스트한다.
+- 상대 예고와 방어 버튼은 iPad와 모바일에서 동시에 읽혀야 하며, 이야기 문제 dialog는 카드 잠금 dialog와 독립이어야 한다.

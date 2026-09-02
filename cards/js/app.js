@@ -30,6 +30,8 @@
   let fragments = [];
   let selectedCard = null;
   let selectedFragmentIndex = null;
+  let enemyIntent = null;
+  let storyChallenge = null;
   let game = null;
   let busy = false;
   let effectTimer = 0;
@@ -40,6 +42,7 @@
   let impactTimer = 0;
   let techniqueImpactTimer = 0;
   let hitStopTimer = 0;
+  let quizTimer = 0;
   let techniquePoolCursor = 0;
   let combatParticleFrame = 0;
   let combatParticleContext = null;
@@ -62,7 +65,10 @@
       "muteButton", "musicButton", "leaveBattleButton", "turnOwner", "turnNumber",
       "battleStars", "arena", "enemyCardSlot", "playerCardSlot", "battleMessage",
       "effectBurst", "combatParticleCanvas", "techniqueFxLayer", "actionList",
-      "weaknessHint", "lockedDialog",
+      "weaknessHint", "enemyIntent", "enemyIntentIcon", "enemyIntentName",
+      "enemyIntentDetail", "enemyIntentBadge", "storyGateBar", "storyGateStatus",
+      "storyGateButton", "storyQuizDialog", "storyQuizTitle", "storyQuizQuestion",
+      "storyQuizChoices", "storyQuizResult", "lockedDialog",
       "lockedArt", "lockedTitle", "lockedDescription", "resultDialog",
       "resultKicker", "resultTitle", "resultText", "rematchButton",
       "resultCollectionButton", "coinDialog", "coinTitle", "coinInstruction",
@@ -262,6 +268,7 @@
     clearTimeout(impactTimer);
     clearTimeout(techniqueImpactTimer);
     clearTimeout(hitStopTimer);
+    clearTimeout(quizTimer);
     if (dom.arena) {
       dom.arena.classList.remove("is-weak-hit", "is-monster-hit", "is-finisher-hit");
     }
@@ -277,7 +284,10 @@
     resetCombatParticleStage();
     pendingCoinAction = null;
     selectedFragmentIndex = null;
+    enemyIntent = null;
+    storyChallenge = null;
     if (dom.coinDialog && dom.coinDialog.open) dom.coinDialog.close();
+    if (dom.storyQuizDialog && dom.storyQuizDialog.open) dom.storyQuizDialog.close();
   }
 
   function getUnlockedFragmentPool() {
@@ -292,10 +302,15 @@
     window.CardAudio.prime();
     const enemy = pickEnemy();
     const fragmentPool = getUnlockedFragmentPool();
+    storyChallenge = window.CardStoryGates &&
+      typeof window.CardStoryGates.getForCard === "function"
+      ? window.CardStoryGates.getForCard(selectedCard, Math.random)
+      : null;
     game = window.CardEngine.createGame(selectedCard, enemy, {
       playerFragments: window.CardEngine.drawFragments(fragmentPool, Math.random, 3),
       enemyFragments: window.CardEngine.drawFragments(fragmentPool, Math.random, 3)
     });
+    prepareEnemyIntent(true);
     busy = false;
     showScreen("battle");
     dom.battleMessage.textContent = selectedCard.name + "의 별빛 무대가 열렸어요!";
@@ -327,6 +342,10 @@
     if (visual.impact) {
       layer.appendChild(createFxPart("fx-hit-flash"));
     }
+    if (visual.guarded) {
+      layer.appendChild(createFxPart("fx-guard-dome"));
+      layer.appendChild(createFxPart("fx-guard-ripple"));
+    }
 
     if (visual.damage > 0) {
       const damagePop = createFxPart(
@@ -357,7 +376,7 @@
       if (layer.isConnected) {
         layer.remove();
       }
-    }, 680);
+    }, visual.guarded ? 900 : 680);
   }
 
   function actionVisualsForEvents(events, actor, battleState) {
@@ -382,7 +401,9 @@
           weakness: false,
           impact: false,
           knockout: false,
-          revive: false
+          revive: false,
+          guarded: false,
+          guardReducedBy: 0
         };
         order.push(target);
       }
@@ -405,6 +426,8 @@
         visual.damage += amount;
         visual.impact = visual.impact || amount > 0;
         visual.weakness = visual.weakness || Boolean(amount > 0 && event.weakness);
+        visual.guarded = visual.guarded || Boolean(event.guarded || event.guardReducedBy > 0);
+        visual.guardReducedBy += Math.max(0, Number(event.guardReducedBy) || 0);
       } else if (event.type === "self_damage") {
         visual = ensureVisual(event.actor);
         if (!visual) return;
@@ -448,12 +471,12 @@
   }
 
   const TECHNIQUE_TIMINGS = Object.freeze({
-    projectile: Object.freeze({ impactAtMs: 450, totalMs: 590 }),
-    summon: Object.freeze({ impactAtMs: 500, totalMs: 760 }),
-    strike: Object.freeze({ impactAtMs: 160, totalMs: 420 }),
-    burst: Object.freeze({ impactAtMs: 220, totalMs: 500 }),
-    aura: Object.freeze({ impactAtMs: 160, totalMs: 450 }),
-    debuff: Object.freeze({ impactAtMs: 220, totalMs: 500 })
+    projectile: Object.freeze({ impactAtMs: 640, totalMs: 840 }),
+    summon: Object.freeze({ impactAtMs: 635, totalMs: 960 }),
+    strike: Object.freeze({ impactAtMs: 275, totalMs: 720 }),
+    burst: Object.freeze({ impactAtMs: 350, totalMs: 800 }),
+    aura: Object.freeze({ impactAtMs: 270, totalMs: 760 }),
+    debuff: Object.freeze({ impactAtMs: 350, totalMs: 800 })
   });
   const COMBAT_PARTICLE_CONFIG = Object.freeze({
     capacity: 120,
@@ -950,9 +973,9 @@
   function strokeQuadraticRibbon(context, points, progress, palette) {
     const start = Math.max(0, progress - 0.36);
     [
-      { width: 16, color: palette.secondary, alpha: 0.13 },
-      { width: 7, color: palette.primary, alpha: 0.48 },
-      { width: 2.2, color: palette.hot, alpha: 0.95 }
+      { width: 26, color: palette.secondary, alpha: 0.13 },
+      { width: 12, color: palette.primary, alpha: 0.48 },
+      { width: 3.2, color: palette.hot, alpha: 0.95 }
     ].forEach(function (layer) {
       context.beginPath();
       traceQuadratic(context, points, start, progress);
@@ -979,7 +1002,7 @@
 
     if (plan.kind === "projectile") {
       strokeQuadraticRibbon(context, points, progress, palette);
-      if (elapsed - journey.lastEmitAt > 34 && progress < 1) {
+      if (elapsed - journey.lastEmitAt > 50 && progress < 1) {
         const inverse = 1 - progress;
         const x = inverse * inverse * points.startX +
           2 * inverse * progress * points.midX +
@@ -1012,8 +1035,8 @@
         context.ellipse(
           points.startX,
           points.startY + 10,
-          34 + index * 8,
-          12 + index * 3,
+          48 + index * 11,
+          17 + index * 4,
           elapsed * (index ? -0.0025 : 0.003),
           offset + 0.2,
           offset + Math.PI * 0.78
@@ -1037,7 +1060,7 @@
         );
         context.strokeStyle = palette.primary;
         context.globalAlpha = 0.55;
-        context.lineWidth = 7;
+        context.lineWidth = 10;
         context.stroke();
       }
     } else if (plan.kind === "strike") {
@@ -1046,14 +1069,14 @@
       [-1, 1].forEach(function (direction, index) {
         context.beginPath();
         context.moveTo(
-          points.endX - 78 * draw,
-          points.endY + direction * 44 * draw
+          points.endX - 110 * draw,
+          points.endY + direction * 64 * draw
         );
         context.quadraticCurveTo(
           points.endX,
           points.endY - direction * 24,
-          points.endX + 72 * draw,
-          points.endY - direction * 42 * draw
+          points.endX + 104 * draw,
+          points.endY - direction * 61 * draw
         );
         context.strokeStyle = index ? palette.primary : palette.hot;
         context.globalAlpha = draw * (index ? 0.46 : 0.92);
@@ -1066,7 +1089,7 @@
         context.arc(
           points.endX,
           points.endY,
-          (54 - progress * 31) * scale,
+          (76 - progress * 44) * scale,
           elapsed * 0.0025 + index * 1.5,
           elapsed * 0.0025 + index * 1.5 + Math.PI * 1.2
         );
@@ -1080,8 +1103,8 @@
       context.ellipse(
         points.endX,
         points.endY + 24,
-        56 * pulse,
-        15 * pulse,
+        78 * pulse,
+        21 * pulse,
         0,
         0,
         Math.PI * 2
@@ -1106,7 +1129,7 @@
       context.stroke();
     } else {
       [0, 1, 2].forEach(function (index) {
-        const radius = 56 - progress * 19 + index * 8;
+        const radius = 78 - progress * 27 + index * 11;
         context.beginPath();
         context.arc(
           points.endX,
@@ -1232,7 +1255,7 @@
       points.endY - points.startY,
       points.endX - points.startX
     );
-    const spread = plan.recipe ? Math.PI * 0.52 : Math.PI * 0.72;
+    const spread = plan.recipe ? Math.PI * 0.78 : Math.PI * 0.92;
     const contactCount = Math.min(2, recipe.impactCount);
     const dustStart = Math.max(contactCount, Math.round(recipe.impactCount * 0.72));
     for (let index = 0; index < recipe.impactCount; index += 1) {
@@ -1240,22 +1263,23 @@
       const dust = !contact && index >= dustStart;
       const angle = direction + (Math.random() - 0.5) * spread +
         (dust ? (Math.random() - 0.5) * 0.45 : 0);
-      const speed = contact
+      const speedBase = contact
         ? 0.18 + Math.random() * 0.1
         : dust ? 0.035 + Math.random() * 0.065
           : 0.075 + Math.random() * (plan.big ? 0.16 : 0.1);
+      const speed = speedBase * 1.45;
       const color = contact
         ? palette.hot
         : dust ? palette.shadow
           : index % 2 ? palette.primary : palette.secondary;
       const shape = contact ? "spark" : dust ? "dust" : recipe.shape;
       emitCombatParticle(
-        points.endX,
-        points.endY,
+        points.endX + (Math.random() - 0.5) * (plan.big ? 28 : 18),
+        points.endY + (Math.random() - 0.5) * (plan.big ? 24 : 15),
         Math.cos(angle) * speed,
         Math.sin(angle) * speed - (dust ? 0.018 : 0),
         recipe.lifeMs * (dust ? 0.9 + Math.random() * 0.35 : 0.58 + Math.random() * 0.36),
-        contact ? 1.5 + Math.random() * 1.8 : 1.8 + Math.random() * (plan.big ? 4.2 : 3.2),
+        (contact ? 1.5 + Math.random() * 1.8 : 1.8 + Math.random() * (plan.big ? 4.2 : 3.2)) * 1.12,
         color,
         shape,
         dust || plan.material === "earth" ? 0.00032 : 0.00012,
@@ -1504,7 +1528,10 @@
     effect.style.setProperty("--fx-exit-x", exitX.toFixed(1) + "px");
     effect.style.setProperty("--fx-far-exit-x", farExitX.toFixed(1) + "px");
     effect.style.setProperty("--fx-duration", plan.totalMs + "ms");
-    const scale = plan.big ? 1.5 : 1;
+    const hasPremiumArt = Boolean(plan.recipe && plan.recipe.asset);
+    const scale = hasPremiumArt
+      ? (plan.big ? 1.5 : 1)
+      : (plan.big ? 2.1 : 1.5);
     effect.style.setProperty("--fx-scale", String(scale));
     effect.style.setProperty("--fx-scale-down", String(scale * 0.82));
     effect.style.setProperty("--fx-scale-up", String(scale * 1.16));
@@ -1512,7 +1539,9 @@
     const sigil = effect.querySelector(".technique-sigil");
     const art = effect.querySelector(".technique-art");
     if (plan.recipe && plan.recipe.asset && art) {
-      const artSize = Math.max(88, Math.min(260, Number(plan.recipe.size) || 150));
+      const footprintScale = plan.big ? 1.4 : 1.5;
+      const baseArtSize = Number(plan.recipe.size) || 150;
+      const artSize = Math.max(124, Math.min(340, baseArtSize * footprintScale));
       art.src = plan.recipe.asset;
       art.hidden = false;
       sigil.textContent = "";
@@ -1587,7 +1616,7 @@
       weakness: false,
       type: "magic",
       impactAtMs: 0,
-      totalMs: prefersReducedMotion() ? 20 : 450
+      totalMs: prefersReducedMotion() ? 20 : TECHNIQUE_TIMINGS.aura.totalMs
     });
   }
 
@@ -1628,6 +1657,236 @@
     const label = cardEl.getAttribute("aria-label") || "";
     cardEl.setAttribute("aria-label", label.replace(/HP \d+/, "HP " + hpValue));
     return cardEl;
+  }
+
+  function storyGateStoryName() {
+    if (!storyChallenge) return "새로운 이야기";
+    return STORY_NAMES[storyChallenge.storyId] || storyChallenge.title || "새로운 이야기";
+  }
+
+  function storyGateHasListeningProof() {
+    return Boolean(storyChallenge && isStoryDone(storyChallenge.storyId));
+  }
+
+  function prepareEnemyIntent(force) {
+    if (!game || game.winner || !window.CardEngine.previewAiIntent) {
+      enemyIntent = null;
+      return;
+    }
+    if (!force && enemyIntent) return;
+    enemyIntent = window.CardEngine.previewAiIntent(game, "enemy", Math.random);
+  }
+
+  function renderEnemyIntent() {
+    if (!dom.enemyIntent) return;
+    const intent = enemyIntent;
+    dom.enemyIntent.hidden = !game || Boolean(game && game.winner);
+    if (!game || game.winner) return;
+    const kind = intent ? intent.danger || intent.type || "normal" : "normal";
+    ["normal", "rest", "guard", "strong", "lethal", "trick"].forEach(function (name) {
+      dom.enemyIntent.classList.toggle("intent-" + name, kind === name);
+    });
+    if (!intent) {
+      dom.enemyIntentIcon.textContent = "🔮";
+      dom.enemyIntentName.textContent = "별빛을 살펴보는 중…";
+      dom.enemyIntentDetail.textContent = "곧 다음 행동을 알려 줄게요";
+      dom.enemyIntentBadge.textContent = "예고";
+      return;
+    }
+    const executing = game.turn === "enemy";
+    if (intent.type === "attack") {
+      dom.enemyIntentIcon.textContent = intent.danger === "lethal" ? "🚨" : (intent.big ? "💥" : "⚔️");
+      dom.enemyIntentName.textContent = intent.name;
+      dom.enemyIntentDetail.textContent = (intent.damage > 0 ? "예상 피해 " + intent.damage : "상태 변화 기술") +
+        (intent.coin ? " · 동전 판정" : "") + (intent.fragment ? " · 이야기 조각" : "");
+      dom.enemyIntentBadge.textContent = executing ? "실행 중" : (intent.danger === "lethal" ? "위험!" : "예고");
+    } else if (intent.type === "guard") {
+      dom.enemyIntentIcon.textContent = "🛡️";
+      dom.enemyIntentName.textContent = "방어하기";
+      dom.enemyIntentDetail.textContent = "다음 공격 피해를 최대 20 막아요";
+      dom.enemyIntentBadge.textContent = executing ? "실행 중" : "방어";
+    } else if (intent.type === "skip") {
+      dom.enemyIntentIcon.textContent = "💫";
+      dom.enemyIntentName.textContent = "한 턴 쉬기";
+      dom.enemyIntentDetail.textContent = "이번에는 공격하지 못해요";
+      dom.enemyIntentBadge.textContent = "틈!";
+    } else {
+      dom.enemyIntentIcon.textContent = "⭐";
+      dom.enemyIntentName.textContent = "별사탕 모으기";
+      dom.enemyIntentDetail.textContent = "강한 기술을 위해 별을 아껴요";
+      dom.enemyIntentBadge.textContent = executing ? "실행 중" : "준비";
+    }
+  }
+
+  function reservedEnemyActionIsAvailable(intent) {
+    if (!game || game.turn !== "enemy" || !intent || !intent.action) return false;
+    const action = intent.action;
+    if (action.type === "attack" && Number.isInteger(action.fragmentIndex)) {
+      const fragmentAvailable = window.CardEngine.getAvailableFragmentActions(game).some(function (candidate) {
+        return candidate.fragmentIndex === action.fragmentIndex;
+      });
+      if (!fragmentAvailable) return false;
+      const withFragment = window.CardEngine.performAction(game, {
+        type: "fragment",
+        fragmentIndex: action.fragmentIndex
+      });
+      if ((withFragment.events || []).some(function (event) { return event.type === "invalid_action"; })) {
+        return false;
+      }
+      return window.CardEngine.getAvailableActions(withFragment).some(function (candidate) {
+        return candidate.type === "attack" && candidate.attackIndex === action.attackIndex;
+      });
+    }
+    return window.CardEngine.getAvailableActions(game).some(function (candidate) {
+      return candidate.type === action.type &&
+        (action.type !== "attack" || candidate.attackIndex === action.attackIndex);
+    });
+  }
+
+  function renderStoryGate() {
+    if (!dom.storyGateBar) return;
+    const flags = game && game.sides && game.sides.player.flags;
+    dom.storyGateBar.hidden = !game || !storyChallenge;
+    if (!game || !storyChallenge || !flags) return;
+    dom.storyGateBar.classList.remove("is-locked", "is-ready", "is-awake", "is-used", "is-failed", "is-waiting");
+    const canInteract = !busy && game.turn === "player" && !game.winner;
+    if (!storyGateHasListeningProof()) {
+      dom.storyGateBar.classList.add("is-locked");
+      dom.storyGateStatus.textContent = "「" + storyGateStoryName() + "」을 들으면 필살기 관문이 열려요";
+      dom.storyGateButton.textContent = "이야기 듣기";
+      dom.storyGateButton.disabled = !canInteract;
+      return;
+    }
+    if (flags.ultimateUsed) {
+      dom.storyGateBar.classList.add("is-used");
+      dom.storyGateStatus.textContent = "별빛 이야기를 멋지게 사용했어요!";
+      dom.storyGateButton.textContent = "사용 완료";
+      dom.storyGateButton.disabled = true;
+      return;
+    }
+    if (flags.ultimateUnlocked) {
+      const enoughStars = game.sides.player.stars >= window.CardEngine.ULTIMATE_COST;
+      dom.storyGateBar.classList.add(enoughStars ? "is-ready" : "is-awake");
+      dom.storyGateStatus.textContent = enoughStars
+        ? "필살기 준비 완료! 지금 사용할 수 있어요"
+        : "필살기가 깨어났어요 · 별사탕 " + window.CardEngine.ULTIMATE_COST + "개를 모아요";
+      dom.storyGateButton.textContent = enoughStars ? "준비 완료" : "해금 완료";
+      dom.storyGateButton.disabled = true;
+      return;
+    }
+    if (flags.ultimateFailed) {
+      dom.storyGateBar.classList.add("is-failed");
+      dom.storyGateStatus.textContent = "이번 판의 관문은 쉬어요 · 다음 판에 다시 도전!";
+      dom.storyGateButton.textContent = "다음 판에";
+      dom.storyGateButton.disabled = true;
+      return;
+    }
+    if (game.turnNumber < flags.ultimateRetryTurn) {
+      dom.storyGateBar.classList.add("is-waiting");
+      dom.storyGateStatus.textContent = "다음 내 턴에 한 번 더 생각해 볼 수 있어요";
+      dom.storyGateButton.textContent = "잠시 기다리기";
+      dom.storyGateButton.disabled = true;
+      return;
+    }
+    dom.storyGateBar.classList.add("is-awake");
+    dom.storyGateStatus.textContent = flags.ultimateAttempts
+      ? "마지막 기회! 이야기를 잘 떠올려 봐요"
+      : "이야기를 기억하면 강력한 필살기가 깨어나요";
+    dom.storyGateButton.textContent = flags.ultimateAttempts ? "다시 도전" : "문제 열기";
+    dom.storyGateButton.disabled = !canInteract;
+  }
+
+  function showStoryListeningGate() {
+    const storyName = storyGateStoryName();
+    dom.lockedArt.style.backgroundImage = 'linear-gradient(rgba(17,13,37,.22), rgba(17,13,37,.42)), url("' + artUrl(selectedCard) + '")';
+    dom.lockedArt.style.backgroundPosition = window.CardView.artPosition[selectedCard.id] || "50% 40%";
+    dom.lockedTitle.textContent = "이야기를 듣고 관문을 열어요";
+    dom.lockedDescription.textContent = "「" + storyName + "」을 끝까지 들으면, 대결 중 문제를 풀고 강력한 필살기를 깨울 수 있어요.";
+    dom.lockedDialog.showModal();
+  }
+
+  function normalizedQuizChoice(choice, index) {
+    if (choice && typeof choice === "object") {
+      return {
+        id: String(choice.id),
+        label: String(choice.label || choice.text || "")
+      };
+    }
+    return { id: String(index), label: String(choice) };
+  }
+
+  function openStoryQuiz() {
+    if (!game || !storyChallenge || busy || game.turn !== "player" || game.winner) return;
+    if (!storyGateHasListeningProof()) {
+      showStoryListeningGate();
+      return;
+    }
+    const flags = game.sides.player.flags;
+    if (flags.ultimateUnlocked || flags.ultimateUsed || flags.ultimateFailed ||
+        game.turnNumber < flags.ultimateRetryTurn) return;
+    dom.storyQuizTitle.textContent = "「" + storyGateStoryName() + "」 이야기 관문";
+    dom.storyQuizQuestion.textContent = storyChallenge.question || storyChallenge.prompt || "";
+    dom.storyQuizResult.textContent = "정답을 고르면 턴을 쓰지 않고 필살기가 깨어나요.";
+    dom.storyQuizResult.className = "story-quiz-result";
+    dom.storyQuizChoices.replaceChildren();
+    (storyChallenge.choices || []).forEach(function (rawChoice, index) {
+      const choice = normalizedQuizChoice(rawChoice, index);
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "story-quiz-choice";
+      button.textContent = choice.label;
+      button.disabled = flags.ultimateTriedChoices.includes(choice.id);
+      if (button.disabled) button.setAttribute("aria-label", choice.label + " · 이미 골랐던 답");
+      button.addEventListener("click", function () { answerStoryQuiz(choice, button); });
+      dom.storyQuizChoices.appendChild(button);
+    });
+    if (!dom.storyQuizDialog.open) dom.storyQuizDialog.showModal();
+  }
+
+  function answerStoryQuiz(choice, selectedButton) {
+    if (!game || !storyChallenge || busy || game.turn !== "player" || game.winner) return;
+    Array.from(dom.storyQuizChoices.children).forEach(function (button) { button.disabled = true; });
+    const correct = String(choice.id) === String(storyChallenge.correctChoiceId);
+    const next = window.CardEngine.performAction(game, {
+      type: "story_gate_answer",
+      gateId: storyChallenge.id,
+      storyId: storyChallenge.storyId,
+      choiceId: choice.id,
+      correct: correct
+    });
+    const answerEvent = (next.events || []).find(function (event) {
+      return event.type === "story_gate_answer";
+    });
+    if (!answerEvent) {
+      renderStoryGate();
+      return;
+    }
+    game = next;
+    selectedButton.classList.add(correct ? "is-correct" : "is-wrong");
+    if (correct) {
+      dom.storyQuizResult.textContent = "정답! 별사탕 이야기의 힘이 깨어났어요!";
+      dom.storyQuizResult.classList.add("is-correct");
+      setEffect("필살기 해금!");
+      playFragmentAura("🌟", "player");
+      if (window.CardAudio.ultimateUnlock) window.CardAudio.ultimateUnlock();
+      else window.CardAudio.magic();
+    } else if (game.sides.player.flags.ultimateFailed) {
+      dom.storyQuizResult.textContent = "괜찮아요. 이번 판은 쉬고 다음 판에 다시 도전해요!";
+      dom.storyQuizResult.classList.add("is-wrong");
+      if (window.CardAudio.quizWrong) window.CardAudio.quizWrong();
+    } else {
+      dom.storyQuizResult.textContent = "아깝다! 다음 내 턴에 한 번 더 생각해 봐요.";
+      dom.storyQuizResult.classList.add("is-wrong");
+      if (window.CardAudio.quizWrong) window.CardAudio.quizWrong();
+    }
+    dom.battleMessage.textContent = correct
+      ? "이야기 기억 성공! 필살기 「별빛 이야기」가 깨어났어요."
+      : "틀려도 HP와 별사탕은 그대로예요.";
+    renderBattle();
+    clearTimeout(quizTimer);
+    quizTimer = setTimeout(function () {
+      if (dom.storyQuizDialog.open) dom.storyQuizDialog.close();
+    }, correct ? 1000 : 1200);
   }
 
   function renderBattle(flags) {
@@ -1675,6 +1934,10 @@
         "is-reviving",
         sideVisuals.some(function (visual) { return visual.revive; })
       );
+      slots[sideName].classList.toggle(
+        "is-guard-ready",
+        Boolean(displayGame.sides[sideName].status.guardReduction > 0)
+      );
       sideVisuals.forEach(function (visual) {
         createCombatFx(cardElements[sideName], visual);
       });
@@ -1691,6 +1954,8 @@
     updateWeaknessHint(player.card, enemy.card);
     renderFragmentHand();
     renderActions();
+    renderEnemyIntent();
+    renderStoryGate();
   }
 
   function updateWeaknessHint(player, enemy) {
@@ -1840,6 +2105,10 @@
         .map(function (action) { return [action.attackIndex, action]; })
     );
     const canRest = actions.some(function (action) { return action.type === "rest"; });
+    const guardAction = actions.find(function (action) { return action.type === "guard"; });
+    const ultimateAction = actions.find(function (action) {
+      return action.type === "ultimate";
+    });
 
     side.card.attacks.forEach(function (attack, index) {
       if (!isSupportedAttack(attack)) return;
@@ -1868,6 +2137,58 @@
       });
       dom.actionList.appendChild(button);
     });
+
+    const guard = document.createElement("button");
+    guard.className = "action-button guard-button";
+    guard.type = "button";
+    const guardCooldown = Number(side.status.guardCooldownUntilTurnNumber) || 0;
+    const guardCoolingDown = game.turnNumber < guardCooldown;
+    const guardDetail = guardCoolingDown
+      ? "이번 턴은 재정비 중 · 다음 내 턴에 다시 쓸 수 있어요"
+      : "상대의 다음 공격 피해를 최대 20 막아요";
+    guard.disabled = busy || game.turn !== "player" || Boolean(game.winner) || !guardAction;
+    guard.innerHTML = "<strong>🛡️ 방어하기</strong><small>" + guardDetail + "</small><span class=\"action-cost\">⭐ " +
+      window.CardEngine.GUARD_COST + "</span>";
+    guard.setAttribute(
+      "aria-label",
+      (guardCoolingDown ? "방어하기 재정비 중. 다음 내 턴에 다시 사용할 수 있습니다. " : "방어하기. ") +
+        "별사탕 " + window.CardEngine.GUARD_COST +
+        "개. 상대의 다음 공격 피해를 최대 20 막고 최소 10 피해는 받습니다."
+    );
+    guard.addEventListener("click", function () { performPlayerAction({ type: "guard" }); });
+    dom.actionList.appendChild(guard);
+
+    if (storyChallenge) {
+      const ultimate = document.createElement("button");
+      const flags = side.flags;
+      const listeningDone = storyGateHasListeningProof();
+      const ready = Boolean(ultimateAction);
+      ultimate.className = "action-button ultimate-button";
+      ultimate.classList.toggle("is-ultimate-ready", ready);
+      ultimate.classList.toggle("is-story-locked", !flags.ultimateUnlocked);
+      ultimate.type = "button";
+      ultimate.disabled = busy || game.turn !== "player" || Boolean(game.winner) || !ready;
+      const title = document.createElement("strong");
+      const detail = document.createElement("small");
+      const cost = document.createElement("span");
+      title.textContent = "🌟 별빛 이야기";
+      cost.className = "action-cost";
+      cost.textContent = "⭐ " + window.CardEngine.ULTIMATE_COST;
+      if (flags.ultimateUsed) {
+        detail.textContent = "이번 대결에서 이미 사용했어요";
+      } else if (!listeningDone) {
+        detail.textContent = "이야기를 끝까지 듣고 관문을 열어요";
+      } else if (!flags.ultimateUnlocked) {
+        detail.textContent = "이야기 문제를 맞히면 해금 · 중립 피해 50";
+      } else if (!ready) {
+        detail.textContent = "별사탕을 더 모아요 · 중립 피해 50";
+      } else {
+        detail.textContent = "판당 1회 · 약점과 동전 없이 중립 피해 50";
+      }
+      ultimate.append(title, detail, cost);
+      ultimate.addEventListener("click", function () { performPlayerAction({ type: "ultimate" }); });
+      dom.actionList.appendChild(ultimate);
+    }
 
     const rest = document.createElement("button");
     rest.className = "action-button rest-button";
@@ -1902,6 +2223,9 @@
     const coin = find("coin");
     const rest = find("rest");
     const attack = find("attack");
+    const guard = find("guard");
+    const guardBlock = find("guard_block");
+    const ultimate = find("ultimate_used");
 
     if (gameOver) return { effect: "K.O.!", message: gameOver.winner === "player" ? "상대 카드가 별빛으로 돌아갔어요!" : "우리 영웅이 잠시 쉬러 갔어요.", sound: "hit" };
     if (revive) return { effect: "부활!", message: "유리 구두가 한 번 더 빛났어요!", sound: "magic" };
@@ -1923,6 +2247,21 @@
         hit: damage.amount > 0 ? damage.target : null
       };
     }
+    if (damage && damage.guardReducedBy > 0) {
+      const owner = damage.target === "player" ? "내 영웅의" : "상대의";
+      return {
+        effect: "🛡️ -" + damage.guardReducedBy,
+        message: owner + " 방어막이 피해를 " + damage.guardReducedBy + " 막았어요!",
+        sound: "guard",
+        hit: damage.amount > 0 ? damage.target : null
+      };
+    }
+    if (damage && ultimate) return {
+      effect: damage.amount > 0 ? "🌟 -" + damage.amount : "막음!",
+      message: "필살기 「별빛 이야기」! 기억의 별빛이 폭발해요!",
+      sound: damage.amount > 0 ? "strongHit" : "guard",
+      hit: damage.amount > 0 ? damage.target : null
+    };
     if (damage) return {
       effect: damage.weakness ? "×2!" : "-" + damage.amount,
       message: damage.weakness ? "약점을 정확히 맞혔어요!" : (damage.attack + " 공격!"),
@@ -1931,6 +2270,7 @@
     };
     if (heal) return { effect: "+" + heal.amount, message: "따뜻한 마법으로 HP를 회복했어요.", sound: "magic" };
     if (coin) return { effect: coin.result === "heads" ? "앞면!" : "뒷면!", message: "운명의 동전이 빙글빙글!", sound: "coin" };
+    if (guard) return { effect: "🛡️", message: "방어 자세! 다음 공격 피해를 최대 20 막아요.", sound: "guard" };
     if (rest) return { effect: "+⭐", message: actor === "player" ? "별사탕을 아껴 더 큰 기술을 준비해요." : "상대가 별사탕을 모으고 있어요.", sound: "star" };
     if (attack) return { effect: "공격!", message: attack.attack + "!", sound: "magic" };
     return { effect: "✦", message: "별빛이 다음 턴을 비춰요.", sound: "star" };
@@ -1972,6 +2312,8 @@
     }
     if (find("revive")) return "revive";
     if (find("attack_missed") || find("attack_evaded")) return null;
+    if (find("guard_block")) return "guard";
+    if (find("guard")) return "guard";
     if (damage) {
       if (damage.amount <= 0) return "cast";
       return damage.weakness || bigTechnique ? "strongHit" : "hit";
@@ -1984,7 +2326,21 @@
   }
 
   function actionNeedsCoin(action) {
-    return window.CardEngine.actionNeedsCoin(game, action);
+    let state = game;
+    if (
+      state && action && action.type === "attack" &&
+      Number.isInteger(action.fragmentIndex)
+    ) {
+      const projected = window.CardEngine.performAction(state, {
+        type: "fragment",
+        fragmentIndex: action.fragmentIndex
+      });
+      const invalid = (projected.events || []).some(function (event) {
+        return event.type === "invalid_action";
+      });
+      if (!invalid) state = projected;
+    }
+    return window.CardEngine.actionNeedsCoin(state, action);
   }
 
   function coinCopy(event) {
@@ -2133,6 +2489,9 @@
     const fragmentEvent = events.slice().reverse().find(function (event) {
       return event.type === "fragment_used";
     });
+    const guardEvent = events.slice().reverse().find(function (event) {
+      return event.type === "guard";
+    });
     if (fragmentEvent) {
       const owner = fragmentEvent.actor === "enemy" ? "상대가" : "내 영웅이";
       description.message = owner + " 「" + (fragmentEvent.fragment || fragmentEvent.name) + "」 조각 사용. " + description.message;
@@ -2145,6 +2504,9 @@
     });
     if (fragmentEvent) {
       playFragmentAura(fragmentEvent.emoji || "✦", fragmentEvent.actor || actor);
+    }
+    if (guardEvent) {
+      playFragmentAura("🛡️", guardEvent.actor || actor);
     }
     if (techniquePlan) {
       techniquePlan.sound = actionSound;
@@ -2159,6 +2521,14 @@
     if (techniquePlan && window.CardAudio.techniqueLaunch) {
       window.CardAudio.techniqueLaunch(techniquePlan);
     }
+    const contactTailMs = techniquePlan &&
+      (techniquePlan.actualImpact || techniquePlan.outcome === "blocked")
+      ? (techniquePlan.big ? 340 : 280)
+      : 120;
+    const actionSettleMs = techniquePlan
+      ? Math.max(850, techniquePlan.totalMs + 60,
+        techniquePlan.impactAtMs + contactTailMs + 40)
+      : 850;
 
     const revealDamageState = function () {
       if (session !== battleSession || !game) return;
@@ -2213,12 +2583,13 @@
           if (session === battleSession) runEnemyTurn();
         }, 700);
       } else {
+        prepareEnemyIntent(true);
         busy = false;
         dom.battleMessage.textContent = "나의 턴! 기술을 골라 주세요.";
         renderBattle();
         window.CardAudio.turn();
       }
-    }, 850);
+    }, actionSettleMs);
   }
 
   function performPlayerAction(action) {
@@ -2235,7 +2606,15 @@
 
   function runEnemyTurn() {
     if (!game || game.winner || game.turn !== "enemy") return;
-    const action = window.CardEngine.chooseAiAction(game, Math.random) || { type: "rest" };
+    if (!reservedEnemyActionIsAvailable(enemyIntent)) {
+      enemyIntent = window.CardEngine.previewAiIntent
+        ? window.CardEngine.previewAiIntent(game, "enemy", Math.random)
+        : null;
+    }
+    const action = reservedEnemyActionIsAvailable(enemyIntent)
+      ? enemyIntent.action
+      : (window.CardEngine.chooseAiAction(game, Math.random) || { type: "rest" });
+    renderEnemyIntent();
     if (actionNeedsCoin(action)) {
       beginCoinAction("enemy", action);
     } else {
@@ -2340,6 +2719,16 @@
     dom.coinButton.addEventListener("click", triggerCoinAction);
     dom.coinDialog.addEventListener("cancel", function (event) {
       event.preventDefault();
+    });
+    dom.storyGateButton.addEventListener("click", openStoryQuiz);
+    document.querySelectorAll("[data-quiz-close]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        clearTimeout(quizTimer);
+        if (dom.storyQuizDialog.open) dom.storyQuizDialog.close();
+      });
+    });
+    dom.storyQuizDialog.addEventListener("cancel", function () {
+      clearTimeout(quizTimer);
     });
 
     document.querySelectorAll("[data-close-dialog]").forEach(function (button) {

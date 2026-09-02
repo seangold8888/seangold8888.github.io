@@ -15,6 +15,11 @@
   "use strict";
 
   var MAX_STARS = 5;
+  var GUARD_COST = 1;
+  var GUARD_REDUCTION = 20;
+  var GUARD_MIN_DAMAGE = 10;
+  var ULTIMATE_COST = 3;
+  var ULTIMATE_DAMAGE = 50;
 
   // 사용자 확정 상성: 용기 > 마법 > 지혜 > 용기.
   // 즉, 각 타입은 weakTo에 적힌 타입의 공격을 받으면 데미지가 두 배다.
@@ -151,6 +156,12 @@
         revived: false,
         firstHitUsed: false,
         fragmentUsedThisTurn: false,
+        ultimateUnlocked: false,
+        ultimateUsed: false,
+        ultimateAttempts: 0,
+        ultimateFailed: false,
+        ultimateTriedChoices: [],
+        ultimateRetryTurn: 0,
       },
       status: {
         skipTurns: 0,
@@ -160,6 +171,9 @@
         fragmentGuardZero: 0,
         fragmentReduceNext: 0,
         fragmentOilCoin: 0,
+        guardReduction: 0,
+        guardExpiresTurnNumber: 0,
+        guardCooldownUntilTurnNumber: 0,
       },
     };
   }
@@ -201,6 +215,18 @@
     var actor = state.turn;
     var side = sideOf(state, actor);
     state.turnNumber += 1;
+    if (
+      side.status.guardReduction > 0 &&
+      side.status.guardExpiresTurnNumber > 0 &&
+      state.turnNumber >= side.status.guardExpiresTurnNumber
+    ) {
+      var expiredGuard = side.status.guardReduction;
+      side.status.guardReduction = 0;
+      side.status.guardExpiresTurnNumber = 0;
+      emit(state, {
+        type: "guard_expired", actor: actor, amount: expiredGuard, reason: "turn_start",
+      });
+    }
     side.flags.fragmentUsedThisTurn = false;
     side.status.fragmentDamageBoost = 0;
     side.status.fragmentDiscount = 0;
@@ -385,27 +411,69 @@
     }, []);
   }
 
+  function ultimateAttackFor(side) {
+    return {
+      name: "별빛 이야기",
+      cost: ULTIMATE_COST,
+      dmg: ULTIMATE_DAMAGE,
+      fx: "",
+      isUltimate: true,
+      neutralDamage: true,
+      vfx: { kind: "burst", emoji: "🌟", big: true },
+    };
+  }
+
   function getAvailableActions(state) {
     if (!state || state.winner || state.phase !== "action") return [];
 
     var actor = state.turn;
     var side = sideOf(state, actor);
-    var actions = side.flags.fragmentUsedThisTurn ? [] : [{ type: "rest" }];
-
-    if (wishExhausted(state, actor)) return actions;
-
-    side.card.attacks.forEach(function (attack, attackIndex) {
-      var cost = effectiveAttackCost(state, actor, attack);
-      if (!isAttackSupported(attack) || cost > side.stars) return;
-      actions.push({
-        type: "attack",
-        attackIndex: attackIndex,
-        cost: cost,
-        name: attack.name || "기술",
-      });
-    });
+    var actions = [];
 
     if (!side.flags.fragmentUsedThisTurn) {
+      actions.push({ type: "rest" });
+      if (
+        side.stars >= GUARD_COST &&
+        state.turnNumber >= side.status.guardCooldownUntilTurnNumber
+      ) {
+        actions.push({
+          type: "guard",
+          name: "방어하기",
+          cost: GUARD_COST,
+          amount: GUARD_REDUCTION,
+          minimumDamage: GUARD_MIN_DAMAGE,
+        });
+      }
+    }
+
+    if (!wishExhausted(state, actor)) {
+      side.card.attacks.forEach(function (attack, attackIndex) {
+        var cost = effectiveAttackCost(state, actor, attack);
+        if (!isAttackSupported(attack) || cost > side.stars) return;
+        actions.push({
+          type: "attack",
+          attackIndex: attackIndex,
+          cost: cost,
+          name: attack.name || "기술",
+        });
+      });
+    }
+
+    if (
+      !side.flags.fragmentUsedThisTurn &&
+      side.flags.ultimateUnlocked &&
+      !side.flags.ultimateUsed &&
+      side.stars >= ULTIMATE_COST
+    ) {
+      actions.push({
+        type: "ultimate",
+        name: ultimateAttackFor(side).name,
+        cost: ULTIMATE_COST,
+        damage: ULTIMATE_DAMAGE,
+      });
+    }
+
+    if (!side.flags.fragmentUsedThisTurn && !wishExhausted(state, actor)) {
       actions = actions.concat(getAvailableFragmentActions(state));
     }
 
@@ -522,6 +590,7 @@
     var priorUses = Number.isFinite(priorUsesOverride)
       ? priorUsesOverride
       : Number(attacker.attackUses[attackIndex]) || 0;
+    var neutralDamage = Boolean(attack.neutralDamage);
 
     if (fx === "dmg_half_enemy_hp") {
       // 10 HP에서도 0 데미지로 영원히 끝나지 않는 상태를 막기 위해 최소 10.
@@ -533,6 +602,7 @@
     }
 
     if (
+      !neutralDamage &&
       isPassiveActive(state, attackerActor, "boost_20_below_half") &&
       attacker.hp <= attacker.maxHp / 2
     ) {
@@ -540,7 +610,7 @@
     }
 
     var fragmentBoostedBy = 0;
-    if (damage > 0 && attacker.status.fragmentDamageBoost > 0) {
+    if (!neutralDamage && damage > 0 && attacker.status.fragmentDamageBoost > 0) {
       fragmentBoostedBy = attacker.status.fragmentDamageBoost;
       damage += fragmentBoostedBy;
     }
@@ -556,7 +626,8 @@
       weakenedBy = damageBeforeWeaken - damage;
     }
 
-    var weakness = damage > 0 && hasWeakness(state, attackerActor, defenderActor);
+    var weakness = !neutralDamage && damage > 0 &&
+      hasWeakness(state, attackerActor, defenderActor);
     if (weakness) damage *= 2;
 
     var reducedBy = 0;
@@ -591,6 +662,15 @@
       damage = 0;
     }
 
+    var guardReducedBy = 0;
+    if (damage > GUARD_MIN_DAMAGE && defender.status.guardReduction > 0) {
+      guardReducedBy = Math.min(
+        defender.status.guardReduction,
+        damage - GUARD_MIN_DAMAGE
+      );
+      damage = Math.max(GUARD_MIN_DAMAGE, damage - guardReducedBy);
+    }
+
     return {
       damage: damage,
       weakness: weakness,
@@ -601,6 +681,7 @@
       fragmentGuarded: fragmentGuarded,
       fragmentReducedBy: fragmentReducedBy,
       firstHitBlocked: firstHitBlocked,
+      guardReducedBy: guardReducedBy,
     };
   }
 
@@ -672,6 +753,10 @@
     if (result.firstHitBlocked) defender.flags.firstHitUsed = true;
     if (result.fragmentGuarded) defender.status.fragmentGuardZero = 0;
     if (result.fragmentReducedBy > 0) defender.status.fragmentReduceNext = 0;
+    if (result.guardReducedBy > 0) {
+      defender.status.guardReduction = 0;
+      defender.status.guardExpiresTurnNumber = 0;
+    }
 
     defender.hp = Math.max(0, defender.hp - result.damage);
     emit(state, {
@@ -688,6 +773,9 @@
       fragmentGuarded: result.fragmentGuarded,
       fragmentReducedBy: result.fragmentReducedBy,
       firstHitBlocked: result.firstHitBlocked,
+      guarded: result.guardReducedBy > 0,
+      guardReducedBy: result.guardReducedBy,
+      ultimate: Boolean(attack.isUltimate),
     });
 
     if (result.fragmentGuarded) {
@@ -702,6 +790,16 @@
         actor: defenderActor,
         source: attackerActor,
         amount: result.fragmentReducedBy,
+      });
+    }
+    if (result.guardReducedBy > 0) {
+      emit(state, {
+        type: "guard_block",
+        actor: defenderActor,
+        source: attackerActor,
+        attack: attack.name || "기술",
+        amount: result.guardReducedBy,
+        remaining: result.damage,
       });
     }
 
@@ -807,6 +905,57 @@
       return invalidAction(next, "행동을 선택해 주세요.");
     }
 
+    if (action.type === "story_gate_answer") {
+      var choiceId = String(action.choiceId || "");
+      if (
+        actorSide.flags.ultimateUnlocked ||
+        actorSide.flags.ultimateFailed ||
+        !choiceId ||
+        actorSide.flags.ultimateTriedChoices.indexOf(choiceId) >= 0 ||
+        next.turnNumber < actorSide.flags.ultimateRetryTurn
+      ) {
+        return invalidAction(next, "지금은 이야기 관문에 답할 수 없습니다.");
+      }
+      var correct = Boolean(action.correct);
+      actorSide.flags.ultimateAttempts += 1;
+      actorSide.flags.ultimateTriedChoices.push(choiceId);
+      emit(next, {
+        type: "story_gate_answer",
+        actor: actor,
+        gateId: String(action.gateId || ""),
+        storyId: String(action.storyId || ""),
+        choiceId: choiceId,
+        correct: correct,
+        attempt: actorSide.flags.ultimateAttempts,
+        attemptsLeft: Math.max(0, 2 - actorSide.flags.ultimateAttempts),
+      });
+      if (correct) {
+        actorSide.flags.ultimateUnlocked = true;
+        actorSide.flags.ultimateRetryTurn = 0;
+        emit(next, {
+          type: "ultimate_unlocked",
+          actor: actor,
+          gateId: String(action.gateId || ""),
+          storyId: String(action.storyId || ""),
+          name: ultimateAttackFor(actorSide).name,
+          cost: ULTIMATE_COST,
+          damage: ULTIMATE_DAMAGE,
+        });
+      } else if (actorSide.flags.ultimateAttempts >= 2) {
+        actorSide.flags.ultimateFailed = true;
+        actorSide.flags.ultimateRetryTurn = 0;
+        emit(next, {
+          type: "story_gate_failed",
+          actor: actor,
+          gateId: String(action.gateId || ""),
+          storyId: String(action.storyId || ""),
+        });
+      } else {
+        actorSide.flags.ultimateRetryTurn = next.turnNumber + 2;
+      }
+      return next;
+    }
+
     if (action.type === "fragment") {
       var selectedFragment = Number.isInteger(action.fragmentIndex)
         ? action.fragmentIndex
@@ -815,6 +964,78 @@
         return invalidAction(next, "지금은 이 이야기의 조각을 사용할 수 없습니다.");
       }
       applyFragmentMutable(next, actor, selectedFragment);
+      return next;
+    }
+
+    if (action.type === "guard") {
+      if (actorSide.flags.fragmentUsedThisTurn) {
+        return invalidAction(next, "조각을 썼다면 이어서 기술을 사용해야 합니다.");
+      }
+      if (actorSide.stars < GUARD_COST) {
+        return invalidAction(next, "별사탕이 부족합니다.");
+      }
+      if (next.turnNumber < actorSide.status.guardCooldownUntilTurnNumber) {
+        return invalidAction(next, "방어는 다음 내 턴에 다시 준비됩니다.");
+      }
+      actorSide.stars -= GUARD_COST;
+      actorSide.status.guardReduction = GUARD_REDUCTION;
+      actorSide.status.guardExpiresTurnNumber = next.turnNumber + 2;
+      actorSide.status.guardCooldownUntilTurnNumber = next.turnNumber + 4;
+      emit(next, {
+        type: "guard",
+        actor: actor,
+        target: actor,
+        cost: GUARD_COST,
+        stars: actorSide.stars,
+        amount: GUARD_REDUCTION,
+        minimumDamage: GUARD_MIN_DAMAGE,
+        expiresTurnNumber: actorSide.status.guardExpiresTurnNumber,
+        readyTurnNumber: actorSide.status.guardCooldownUntilTurnNumber,
+      });
+      finishTurn(next, actor);
+      return next;
+    }
+
+    if (action.type === "ultimate") {
+      if (actorSide.flags.fragmentUsedThisTurn) {
+        return invalidAction(next, "조각을 썼다면 이어서 일반 기술을 사용해야 합니다.");
+      }
+      if (!actorSide.flags.ultimateUnlocked || actorSide.flags.ultimateUsed) {
+        return invalidAction(next, "이야기 관문을 먼저 열어 주세요.");
+      }
+      if (actorSide.stars < ULTIMATE_COST) {
+        return invalidAction(next, "별사탕이 부족합니다.");
+      }
+      var ultimate = ultimateAttackFor(actorSide);
+      actorSide.stars -= ULTIMATE_COST;
+      actorSide.flags.ultimateUsed = true;
+      emit(next, {
+        type: "attack",
+        actor: actor,
+        target: targetActor,
+        attackIndex: "ultimate",
+        attack: ultimate.name,
+        cost: ULTIMATE_COST,
+        stars: actorSide.stars,
+        ultimate: true,
+        vfx: clone(ultimate.vfx),
+      });
+      emit(next, {
+        type: "ultimate_used",
+        actor: actor,
+        target: targetActor,
+        cost: ULTIMATE_COST,
+        stars: actorSide.stars,
+        baseDamage: ULTIMATE_DAMAGE,
+      });
+      var ultimateResult = calculateDamage(
+        next, actor, targetActor, ultimate, "ultimate", 0
+      );
+      if (ultimateResult.weakenConsumed) actorSide.status.weakenNext = 0;
+      applyDamage(next, actor, targetActor, ultimateResult, ultimate);
+      clearFragmentTurnEffects(actorSide);
+      checkKnockout(next, targetActor, actor, "ultimate");
+      if (!next.winner) finishTurn(next, actor);
       return next;
     }
 
@@ -979,7 +1200,8 @@
     if (
       result.firstHitBlocked ||
       result.fragmentGuarded ||
-      result.fragmentReducedBy > 0
+      result.fragmentReducedBy > 0 ||
+      result.guardReducedBy > 0
     ) {
       // AI도 1회용 방어를 실제 공격으로 벗겨 다음 턴을 진행시킨다.
       score = Math.max(score, 1);
@@ -1010,17 +1232,65 @@
     };
   }
 
+  function estimateIncomingThreat(state, defenderActor) {
+    var attackerActor = other(defenderActor);
+    var projected = clone(state);
+    var attacker = sideOf(projected, attackerActor);
+    var defender = sideOf(projected, defenderActor);
+    var gainsTurnStar = projected.turn !== attackerActor || projected.phase !== "action";
+    if (gainsTurnStar) attacker.stars = Math.min(MAX_STARS, attacker.stars + 1);
+    if (attacker.status.skipTurns > 0) {
+      return { rawDamage: 0, guardedDamage: 0, reducedBy: 0 };
+    }
+
+    var rawDamage = 0;
+    var guardedDamage = 0;
+    function includeThreat(attack, attackIndex) {
+      var raw = calculateDamage(
+        projected, attackerActor, defenderActor, attack, attackIndex
+      ).damage;
+      rawDamage = Math.max(rawDamage, raw);
+      var previousGuard = defender.status.guardReduction;
+      defender.status.guardReduction = GUARD_REDUCTION;
+      var guarded = calculateDamage(
+        projected, attackerActor, defenderActor, attack, attackIndex
+      ).damage;
+      defender.status.guardReduction = previousGuard;
+      guardedDamage = Math.max(guardedDamage, guarded);
+    }
+
+    if (!wishExhausted(projected, attackerActor)) {
+      attacker.card.attacks.forEach(function (attack, attackIndex) {
+        if (!isAttackSupported(attack)) return;
+        if (effectiveAttackCost(projected, attackerActor, attack) > attacker.stars) return;
+        includeThreat(attack, attackIndex);
+      });
+    }
+    if (
+      attacker.flags.ultimateUnlocked &&
+      !attacker.flags.ultimateUsed &&
+      attacker.stars >= ULTIMATE_COST
+    ) {
+      includeThreat(ultimateAttackFor(attacker), "ultimate");
+    }
+    return {
+      rawDamage: rawDamage,
+      guardedDamage: guardedDamage,
+      reducedBy: Math.max(0, rawDamage - guardedDamage),
+    };
+  }
+
   function chooseAiAction(state, rng) {
     if (!state || state.winner || state.phase !== "action") return null;
 
     var actor = state.turn;
     var actorSide = sideOf(state, actor);
     var target = sideOf(state, other(actor));
-    if (wishExhausted(state, actor)) return { type: "rest" };
+    var attacksExhausted = wishExhausted(state, actor);
 
     var candidates = [];
     actorSide.card.attacks.forEach(function (attack, attackIndex) {
-      if (!isAttackSupported(attack)) return;
+      if (attacksExhausted || !isAttackSupported(attack)) return;
       candidates.push({
         attack: attack,
         estimate: estimateAttack(state, actor, attack, attackIndex),
@@ -1044,7 +1314,7 @@
     }
 
     var fragmentPlans = [];
-    if (!actorSide.flags.fragmentUsedThisTurn) {
+    if (!attacksExhausted && !actorSide.flags.fragmentUsedThisTurn) {
       actorSide.fragmentHand.forEach(function (fragment, fragmentIndex) {
         if (!canUseFragment(state, actor, fragmentIndex)) return;
         var simulated = clone(state);
@@ -1172,6 +1442,24 @@
       }
     }
 
+    // 방어 10에 첫 코 공격이 막힌 10 HP 상대 앞에서 회복만 반복하지 않는다.
+    // 다음 반격을 확실히 버틸 때만 누적 공격을 준비해 생존 우선순위는 지킨다.
+    var safeStackSetup = affordable.filter(function (candidate) {
+      return candidate.attack.fx === "dmg_stack_10";
+    })[0] || null;
+    if (safeStackSetup) {
+      var stackThreat = estimateIncomingThreat(state, actor);
+      if (
+        actorSide.hp > stackThreat.rawDamage &&
+        (target.hp <= 10 || stackThreat.rawDamage === 0)
+      ) {
+        return {
+          type: "attack",
+          attackIndex: safeStackSetup.estimate.attackIndex,
+        };
+      }
+    }
+
     // 체력이 절반 이하일 때 실효 회복량이 있으면 생존을 우선한다.
     var healing = affordable
       .filter(function (candidate) {
@@ -1186,6 +1474,29 @@
       });
     if (healing.length) {
       return { type: "attack", attackIndex: healing[0].estimate.attackIndex };
+    }
+
+    var canGuard =
+      !actorSide.flags.fragmentUsedThisTurn &&
+      actorSide.stars >= GUARD_COST &&
+      actorSide.status.guardReduction <= 0 &&
+      state.turnNumber >= actorSide.status.guardCooldownUntilTurnNumber;
+    if (canGuard) {
+      var threat = estimateIncomingThreat(state, actor);
+      var survivesWithGuard =
+        threat.rawDamage >= actorSide.hp &&
+        threat.guardedDamage < actorSide.hp;
+      if (threat.reducedBy >= 10 && survivesWithGuard) {
+        return { type: "guard" };
+      }
+      if (
+        threat.reducedBy >= 10 &&
+        actorSide.hp <= actorSide.maxHp / 2 &&
+        typeof rng === "function" &&
+        randomNumber(rng) < 0.3
+      ) {
+        return { type: "guard" };
+      }
     }
 
     affordable.sort(function (a, b) {
@@ -1243,8 +1554,94 @@
     return { type: "attack", attackIndex: bestNow.estimate.attackIndex };
   }
 
+  function previewAiIntent(state, actor, rng) {
+    if (!state || state.winner || state.phase === "game_over") return null;
+    actor = actor === "player" ? "player" : "enemy";
+    var projected = clone(state);
+    projected.events = [];
+
+    if (projected.turn !== actor || projected.phase !== "action") {
+      projected.turn = actor;
+      projected.phase = "turn_start";
+      if (sideOf(projected, actor).status.skipTurns > 0) {
+        return {
+          type: "skip",
+          action: null,
+          name: "한 턴 쉬기",
+          cost: 0,
+          damage: 0,
+          danger: "rest",
+          nextStars: Math.min(MAX_STARS, sideOf(projected, actor).stars + 1),
+        };
+      }
+      beginTurnMutable(projected);
+    }
+    if (projected.turn !== actor || projected.phase !== "action") return null;
+
+    var action = chooseAiAction(projected, rng) || { type: "rest" };
+    var actorSide = sideOf(projected, actor);
+    var target = sideOf(projected, other(actor));
+    if (action.type === "rest") {
+      return {
+        type: "rest",
+        action: clone(action),
+        name: "별사탕 모으기",
+        cost: 0,
+        damage: 0,
+        danger: "rest",
+        nextStars: actorSide.stars,
+      };
+    }
+    if (action.type === "guard") {
+      return {
+        type: "guard",
+        action: clone(action),
+        name: "방어하기",
+        cost: GUARD_COST,
+        damage: 0,
+        danger: "guard",
+        nextStars: actorSide.stars,
+      };
+    }
+
+    var displayState = projected;
+    if (Number.isInteger(action.fragmentIndex)) {
+      displayState = clone(projected);
+      displayState.events = [];
+      applyFragmentMutable(displayState, actor, action.fragmentIndex);
+    }
+    var displaySide = sideOf(displayState, actor);
+    var attack = displaySide.card.attacks[action.attackIndex];
+    if (!attack) return null;
+    var estimate = estimateAttack(
+      displayState, actor, attack, action.attackIndex
+    );
+    var danger = estimate.damage >= target.hp
+      ? "lethal"
+      : ((attack.vfx && attack.vfx.big) || estimate.damage >= 40)
+        ? "strong"
+        : estimate.damage > 0 ? "normal" : "trick";
+    return {
+      type: "attack",
+      action: clone(action),
+      name: attack.name || "기술",
+      cost: estimate.cost,
+      damage: estimate.damage,
+      danger: danger,
+      coin: actionNeedsCoin(displayState, action),
+      big: Boolean(attack.vfx && attack.vfx.big),
+      fragment: Number.isInteger(action.fragmentIndex),
+      nextStars: displaySide.stars,
+    };
+  }
+
   return Object.freeze({
     MAX_STARS: MAX_STARS,
+    GUARD_COST: GUARD_COST,
+    GUARD_REDUCTION: GUARD_REDUCTION,
+    GUARD_MIN_DAMAGE: GUARD_MIN_DAMAGE,
+    ULTIMATE_COST: ULTIMATE_COST,
+    ULTIMATE_DAMAGE: ULTIMATE_DAMAGE,
     TYPE_CHART: TYPE_CHART,
     SUPPORTED_FRAGMENT_EFFECTS: SUPPORTED_FRAGMENT_EFFECTS,
     createGame: createGame,
@@ -1260,5 +1657,7 @@
     isBattleCard: isBattleCard,
     isPassiveActive: isPassiveActive,
     isBeneficialPassive: isBeneficialPassive,
+    previewAiIntent: previewAiIntent,
+    estimateIncomingThreat: estimateIncomingThreat,
   });
 });

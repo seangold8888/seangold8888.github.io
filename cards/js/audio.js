@@ -813,7 +813,7 @@
 
   function whooshAt(audio, start, options) {
     options = options || {};
-    const duration = Math.max(0.06, Math.min(0.44, options.duration || 0.18));
+    const duration = Math.max(0.06, Math.min(0.55, options.duration || 0.18));
     const source = audio.createBufferSource();
     const filter = audio.createBiquadFilter();
     const gain = audio.createGain();
@@ -987,6 +987,10 @@
     source.stop(start + duration + 0.014);
   }
 
+  function launchEnvelopeDuration(impactSeconds, startOffset, preImpactGap, minimum, maximum) {
+    return Math.min(maximum, Math.max(minimum, impactSeconds - startOffset - preImpactGap));
+  }
+
   function techniqueLaunch(plan) {
     if (muted || !plan) return null;
     const audio = ctx();
@@ -1000,6 +1004,7 @@
     const impactSeconds = Math.max(0.08, soundPlan.impactAtMs / 1000);
 
     if (soundPlan.kind === "projectile") {
+      const startOffset = 0.028;
       noiseBurstAt(audio, start, {
         frequency: Math.max(
           1100,
@@ -1011,17 +1016,18 @@
         noise: profile.noise,
         pan: panFrom
       });
-      whooshAt(audio, start + 0.028, {
+      whooshAt(audio, start + startOffset, {
         fromHz: ["stone", "body", "earth"].includes(soundPlan.material) ? 720 : 1280,
         toHz: (
           ["paper", "air"].includes(soundPlan.material) ? 3900 : 4700
         ) * soundPlan.brightness,
-        duration: Math.min(0.38, Math.max(0.18, impactSeconds - 0.065)),
+        duration: launchEnvelopeDuration(impactSeconds, startOffset, 0.09, 0.26, 0.55),
         volume: 0.022,
         panFrom: panFrom,
         panTo: panTo
       });
     } else if (soundPlan.kind === "summon") {
+      const startOffset = 0.205;
       modalHitAt(audio, start, {
         baseHz: ["metal", "glass", "crystal"].includes(soundPlan.material) ? 540 : 420,
         ratios: [1, 1.5, 2.76],
@@ -1029,36 +1035,39 @@
         duration: 0.22,
         volume: 0.022
       });
-      whooshAt(audio, start + 0.205, {
+      whooshAt(audio, start + startOffset, {
         fromHz: 900,
         toHz: 3600,
-        duration: Math.min(0.28, Math.max(0.16, impactSeconds - 0.23)),
+        duration: launchEnvelopeDuration(impactSeconds, startOffset, 0.05, 0.2, 0.38),
         volume: 0.027,
         panFrom: panFrom,
         panTo: panTo
       });
     } else if (soundPlan.kind === "strike") {
-      whooshAt(audio, start + 0.012, {
+      const startOffset = 0.012;
+      whooshAt(audio, start + startOffset, {
         fromHz: 3900,
         toHz: 1050,
-        duration: 0.12,
+        duration: launchEnvelopeDuration(impactSeconds, startOffset, 0.055, 0.14, 0.22),
         volume: 0.034,
         panFrom: panFrom,
         panTo: panTo
       });
     } else if (soundPlan.kind === "burst") {
-      whooshAt(audio, start + 0.01, {
+      const whooshOffset = 0.01;
+      const toneOffset = 0.018;
+      whooshAt(audio, start + whooshOffset, {
         fromHz: 420,
         toHz: 3200,
-        duration: 0.17,
+        duration: launchEnvelopeDuration(impactSeconds, whooshOffset, 0.06, 0.18, 0.28),
         volume: 0.027,
         panFrom: 0,
         panTo: 0
       });
-      toneSweepAt(audio, start + 0.018, {
+      toneSweepAt(audio, start + toneOffset, {
         fromHz: 240,
         toHz: 620,
-        duration: 0.17,
+        duration: launchEnvelopeDuration(impactSeconds, toneOffset, 0.06, 0.18, 0.27),
         volume: 0.018,
         bus: materialBus,
         type: "sine"
@@ -1075,18 +1084,19 @@
         });
       });
     } else {
+      const toneOffset = 0.045;
       whooshAt(audio, start, {
         fromHz: 3400,
         toHz: 520,
-        duration: 0.19,
+        duration: launchEnvelopeDuration(impactSeconds, 0, 0.06, 0.19, 0.29),
         volume: 0.024,
         panFrom: 0,
         panTo: panTo * 0.35
       });
-      toneSweepAt(audio, start + 0.045, {
+      toneSweepAt(audio, start + toneOffset, {
         fromHz: 390,
         toHz: 205,
-        duration: 0.17,
+        duration: launchEnvelopeDuration(impactSeconds, toneOffset, 0.06, 0.17, 0.27),
         volume: 0.018,
         bus: materialBus,
         type: "sine"
@@ -1205,6 +1215,10 @@
     const start = audio.currentTime + 0.003;
 
     if (soundPlan.outcome === "miss" || soundPlan.outcome === "evade") {
+      return soundPlan;
+    }
+    if (soundPlan.intent === "guard") {
+      guardSound();
       return soundPlan;
     }
     if (soundPlan.support && (
@@ -1570,6 +1584,175 @@
     });
   }
 
+  function guardSound() {
+    if (muted) return null;
+    const audio = ctx();
+    if (!audio) return null;
+    const start = audio.currentTime + 0.003;
+    duckMusicAt(start, 0.72, 0.22);
+    noiseBurstAt(audio, start, {
+      frequency: 760,
+      duration: 0.075,
+      volume: 0.027,
+      q: 0.58,
+      noise: 2,
+      bus: materialBus,
+      priority: 2
+    });
+    toneSweepAt(audio, start + 0.004, {
+      fromHz: 246.94,
+      toHz: 196,
+      duration: 0.2,
+      volume: 0.027,
+      type: "sine",
+      bus: bodyBus,
+      priority: 2
+    });
+    modalHitAt(audio, start + 0.026, {
+      baseHz: 392,
+      ratios: [1, 1.5],
+      levels: [1, 0.18],
+      decays: [1, 0.62],
+      duration: 0.24,
+      volume: 0.018,
+      type: "sine",
+      priority: 2
+    });
+    return true;
+  }
+
+  function quizCorrectSound() {
+    if (muted) return null;
+    const audio = ctx();
+    if (!audio) return null;
+    const start = audio.currentTime + 0.003;
+    duckMusicAt(start, 0.82, 0.28);
+    pageFlipAt(audio, start, 0.009);
+    modalHitAt(audio, start + 0.02, {
+      baseHz: 659.25,
+      ratios: [1, 2.01],
+      levels: [1, 0.15],
+      decays: [1, 0.58],
+      duration: 0.24,
+      volume: 0.017,
+      type: "sine",
+      priority: 2
+    });
+    modalHitAt(audio, start + 0.115, {
+      baseHz: 880,
+      ratios: [1, 1.5],
+      levels: [1, 0.13],
+      decays: [1, 0.54],
+      duration: 0.32,
+      volume: 0.02,
+      type: "sine",
+      priority: 2
+    });
+    noiseBurstAt(audio, start + 0.118, {
+      frequency: 5200,
+      duration: 0.016,
+      volume: 0.011,
+      q: 0.92,
+      noise: 0,
+      bus: uiBus,
+      priority: 2
+    });
+    return true;
+  }
+
+  function quizWrongSound() {
+    if (muted) return null;
+    const audio = ctx();
+    if (!audio) return null;
+    const start = audio.currentTime + 0.003;
+    duckMusicAt(start, 0.86, 0.25);
+    noiseBurstAt(audio, start, {
+      frequency: 1100,
+      duration: 0.085,
+      volume: 0.014,
+      q: 0.52,
+      noise: 2,
+      bus: uiBus,
+      priority: 2
+    });
+    toneSweepAt(audio, start + 0.008, {
+      fromHz: 392,
+      toHz: 329.63,
+      duration: 0.22,
+      volume: 0.019,
+      type: "sine",
+      bus: uiBus,
+      priority: 2
+    });
+    modalHitAt(audio, start + 0.13, {
+      baseHz: 293.66,
+      ratios: [1, 1.5],
+      levels: [1, 0.1],
+      decays: [1, 0.55],
+      duration: 0.21,
+      volume: 0.013,
+      type: "sine",
+      priority: 2
+    });
+    return true;
+  }
+
+  function ultimateUnlockSound() {
+    if (muted) return null;
+    const audio = ctx();
+    if (!audio) return null;
+    const start = audio.currentTime + 0.003;
+    duckMusicAt(start, 0.58, 0.56);
+    whooshAt(audio, start, {
+      fromHz: 650,
+      toHz: 5200,
+      duration: 0.32,
+      volume: 0.021,
+      panFrom: -0.16,
+      panTo: 0.16,
+      priority: 3
+    });
+    toneSweepAt(audio, start + 0.015, {
+      fromHz: 130.81,
+      toHz: 261.63,
+      duration: 0.38,
+      volume: 0.028,
+      type: "sine",
+      bus: bodyBus,
+      priority: 3
+    });
+    modalHitAt(audio, start + 0.185, {
+      baseHz: 523.25,
+      ratios: [1, 1.5, 2.01],
+      levels: [1, 0.28, 0.13],
+      decays: [1, 0.72, 0.55],
+      duration: 0.42,
+      volume: 0.026,
+      type: "sine",
+      priority: 3
+    });
+    modalHitAt(audio, start + 0.33, {
+      baseHz: 783.99,
+      ratios: [1, 2.01],
+      levels: [1, 0.14],
+      decays: [1, 0.58],
+      duration: 0.5,
+      volume: 0.018,
+      type: "sine",
+      priority: 3
+    });
+    noiseBurstAt(audio, start + 0.33, {
+      frequency: 4700,
+      duration: 0.018,
+      volume: 0.018,
+      q: 1.04,
+      noise: 0,
+      bus: transientBus,
+      priority: 3
+    });
+    return true;
+  }
+
   function rampEffectsMuteState(value) {
     releaseClosedGraph();
     if (!context) return;
@@ -1675,6 +1858,10 @@
       bell(1174.66, 0.047, { volume: 0.019, duration: 0.4, room: 0.28 });
       bell(1567.98, 0.092, { volume: 0.013, duration: 0.48, room: 0.31 });
     },
+    guard: guardSound,
+    quizCorrect: quizCorrectSound,
+    quizWrong: quizWrongSound,
+    ultimateUnlock: ultimateUnlockSound,
     soundPlanForTechnique: soundPlanForTechnique,
     techniqueLaunch: techniqueLaunch,
     techniqueImpact: techniqueImpact,

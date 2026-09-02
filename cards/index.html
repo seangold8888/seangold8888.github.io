@@ -17,7 +17,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   <link rel="icon" href="../icon.png">
   <link rel="apple-touch-icon" href="../icon.png">
   <link rel="manifest" href="../manifest.json">
-  <link rel="stylesheet" href="styles.css?v=21">
+  <link rel="stylesheet" href="styles.css?v=23">
 </head>
 <body>
   <div class="sky" aria-hidden="true">
@@ -101,6 +101,23 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       </div>
 
       <div class="action-panel">
+        <section class="enemy-intent intent-normal" id="enemyIntent" aria-live="polite" aria-label="상대의 다음 행동">
+          <span class="enemy-intent-icon" id="enemyIntentIcon" aria-hidden="true">🔮</span>
+          <span class="enemy-intent-copy">
+            <small>상대의 다음 행동</small>
+            <strong id="enemyIntentName">별빛을 살펴보는 중…</strong>
+            <span id="enemyIntentDetail">행동을 고르면 미리 알려 줄게요</span>
+          </span>
+          <b class="enemy-intent-badge" id="enemyIntentBadge">예고</b>
+        </section>
+        <section class="story-gate is-locked" id="storyGateBar" aria-live="polite">
+          <span class="story-gate-orb" aria-hidden="true">📖</span>
+          <span class="story-gate-copy">
+            <small>이야기 관문 · 판당 한 번</small>
+            <strong id="storyGateStatus">이야기를 기억하면 필살기가 깨어나요</strong>
+          </span>
+          <button class="story-gate-button" id="storyGateButton" type="button">문제 열기</button>
+        </section>
         <div class="fragment-tray" id="fragmentTray">
           <div class="fragment-title">
             <span>📖 이야기의 조각</span>
@@ -112,10 +129,10 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
           </p>
         </div>
         <div class="action-title">
-          <span>어떤 기술을 쓸까요?</span>
+          <span id="actionHeading">어떤 행동을 할까요?</span>
           <small id="weaknessHint">타입 약점을 노리면 ×2!</small>
         </div>
-        <div class="action-list" id="actionList"></div>
+        <div class="action-list" id="actionList" role="group" aria-labelledby="actionHeading"></div>
       </div>
     </section>
   </main>
@@ -139,6 +156,17 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     <a class="primary-button dialog-action" href="../story/">🎧 이야기 극장으로</a>
   </dialog>
 
+  <dialog class="story-quiz-dialog" id="storyQuizDialog" aria-labelledby="storyQuizTitle" aria-describedby="storyQuizQuestion">
+    <button class="dialog-close" data-quiz-close type="button" aria-label="나중에 풀기">×</button>
+    <div class="quiz-book" aria-hidden="true"><span>✦</span>📖<span>✦</span></div>
+    <p class="kicker">이야기 관문</p>
+    <h2 id="storyQuizTitle">이야기를 기억하나요?</h2>
+    <p class="story-quiz-question" id="storyQuizQuestion"></p>
+    <div class="story-quiz-choices" id="storyQuizChoices" role="group" aria-label="정답 고르기"></div>
+    <p class="story-quiz-result" id="storyQuizResult" aria-live="assertive"></p>
+    <button class="ghost-button quiz-later" data-quiz-close type="button">나중에 풀기</button>
+  </dialog>
+
   <dialog class="result-dialog" id="resultDialog" aria-labelledby="resultTitle" aria-describedby="resultText">
     <div class="result-stars" aria-hidden="true">✦ ⭐ ✦</div>
     <p class="kicker" id="resultKicker">대결 완료</p>
@@ -151,11 +179,12 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   </dialog>
 
   <noscript>이야기 카드 배틀을 하려면 JavaScript를 켜 주세요.</noscript>
-  <script src="js/engine.js?v=21" defer></script>
-  <script src="js/audio.js?v=21" defer></script>
-  <script src="js/card-view.js?v=21" defer></script>
-  <script src="js/vfx-recipes.js?v=21" defer></script>
-  <script src="js/app.js?v=21" defer></script>
+  <script src="js/engine.js?v=23" defer></script>
+  <script src="js/audio.js?v=23" defer></script>
+  <script src="js/card-view.js?v=23" defer></script>
+  <script src="js/vfx-recipes.js?v=23" defer></script>
+  <script src="js/story-gates.js?v=23" defer></script>
+  <script src="js/app.js?v=23" defer></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {

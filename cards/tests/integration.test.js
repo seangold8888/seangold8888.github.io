@@ -163,7 +163,7 @@ test("이야기 조각 데이터는 9종 효과·완청 키·초기 3장 풀 계
   );
 });
 
-test("손패 UI와 캐시 버전 21이 함께 배포되도록 묶여 있다", () => {
+test("손패 UI와 캐시 버전 23이 함께 배포되도록 묶여 있다", () => {
   const html = read("index.html");
   const css = read("styles.css");
   const app = read(path.join("js", "app.js"));
@@ -171,11 +171,11 @@ test("손패 UI와 캐시 버전 21이 함께 배포되도록 묶여 있다", ()
   ["fragmentTray", "fragmentHand", "fragmentPreview"].forEach((id) => {
     assert.match(html, new RegExp('id="' + id + '"'));
   });
-  assert.match(html, /styles\.css\?v=21/);
-  ["engine", "audio", "card-view", "vfx-recipes", "app"].forEach((file) => {
-    assert.match(html, new RegExp("js/" + file + "\\.js\\?v=21"));
+  assert.match(html, /styles\.css\?v=23/);
+  ["engine", "audio", "card-view", "vfx-recipes", "story-gates", "app"].forEach((file) => {
+    assert.match(html, new RegExp("js/" + file + "\\.js\\?v=23"));
   });
-  assert.doesNotMatch(html, /\?v=(?:19|20)/);
+  assert.doesNotMatch(html, /\?v=(?:19|20|21|22)/);
 
   assert.match(css, /\.fragment-chip[\s\S]*?min-height: 68px/);
   assert.match(
@@ -192,14 +192,14 @@ test("손패 UI와 캐시 버전 21이 함께 배포되도록 묶여 있다", ()
   assert.match(app, /drawFragments\(fragmentPool, Math\.random, 3\)/);
   assert.match(app, /getAvailableFragmentActions\(game\)/);
   assert.match(app, /performAction\(game, \{[\s\S]*?type: "fragment"/);
-  assert.match(app, /actionNeedsCoin\(game, action\)/);
+  assert.match(app, /actionNeedsCoin\(action\)/);
   assert.match(
     app,
     /restartArenaImpact\(\s*impactFlags\.weak,\s*impactFlags\.monster,\s*Boolean\(/
   );
 });
 
-test("공격 비주얼은 네 타입·피격·약점·기절·부활을 0.6초 안에 소리와 동기화한다", () => {
+test("공격 비주얼은 네 타입·피격·약점·기절·부활을 읽기 쉬운 타임라인에 동기화한다", () => {
   const css = read("styles.css");
   const app = read(path.join("js", "app.js"));
 
@@ -669,12 +669,12 @@ test("기술 플래너는 종류·빗나감·회피·큰 기술·모션 감소�
   assert.deepEqual(
     JSON.parse(JSON.stringify(Fx.techniqueTimings)),
     {
-      projectile: { impactAtMs: 450, totalMs: 590 },
-      summon: { impactAtMs: 500, totalMs: 760 },
-      strike: { impactAtMs: 160, totalMs: 420 },
-      burst: { impactAtMs: 220, totalMs: 500 },
-      aura: { impactAtMs: 160, totalMs: 450 },
-      debuff: { impactAtMs: 220, totalMs: 500 }
+      projectile: { impactAtMs: 640, totalMs: 840 },
+      summon: { impactAtMs: 635, totalMs: 960 },
+      strike: { impactAtMs: 275, totalMs: 720 },
+      burst: { impactAtMs: 350, totalMs: 800 },
+      aura: { impactAtMs: 270, totalMs: 760 },
+      debuff: { impactAtMs: 350, totalMs: 800 }
     }
   );
 
@@ -684,8 +684,8 @@ test("기술 플래너는 종류·빗나감·회피·큰 기술·모션 감소�
   );
   assert.equal(hit.outcome, "hit");
   assert.equal(hit.actualImpact, true);
-  assert.equal(hit.impactAtMs, 450);
-  assert.equal(hit.totalMs, 590);
+  assert.equal(hit.impactAtMs, 640);
+  assert.equal(hit.totalMs, 840);
 
   const miss = plan(
     { kind: "projectile", emoji: "🪨", big: true },
@@ -712,7 +712,8 @@ test("기술 플래너는 종류·빗나감·회피·큰 기술·모션 감소�
 
   Object.values(JSON.parse(JSON.stringify(Fx.techniqueTimings))).forEach((timing) => {
     assert.ok(timing.impactAtMs <= timing.totalMs);
-    assert.ok(timing.totalMs <= 800);
+    assert.ok(timing.totalMs >= 720);
+    assert.ok(timing.totalMs <= 1000);
   });
 });
 
@@ -746,7 +747,7 @@ test("대표 기술은 원본 텍스처·재질 파편·접촉 정지 레시피�
   assert.match(css, /\.technique-fx\.has-premium-art/);
   assert.match(css, /premium-v21-target-recoil/);
   assert.match(app, /triggerTechniqueContact\(effect, plan\)/);
-  assert.match(app, /const spread = plan\.recipe \? Math\.PI \* 0\.52/);
+  assert.match(app, /const spread = plan\.recipe \? Math\.PI \* 0\.78/);
   assert.match(app, /slotAnchorPoint\(sourceSlot/);
 });
 

@@ -1,7 +1,7 @@
 "use strict";
 
 // Keep this value aligned with the ?v= version used by the card battle assets.
-const CACHE_VERSION = "v22";
+const CACHE_VERSION = "v23";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -25,13 +25,14 @@ const CORE_SHELL = [
   "./story/index.html",
   "./cards/",
   "./cards/index.html",
-  "./cards/styles.css?v=21",
+  "./cards/styles.css?v=23",
   "./cards/cards.json",
-  "./cards/js/engine.js?v=21",
-  "./cards/js/audio.js?v=21",
-  "./cards/js/card-view.js?v=21",
-  "./cards/js/vfx-recipes.js?v=21",
-  "./cards/js/app.js?v=21",
+  "./cards/js/engine.js?v=23",
+  "./cards/js/audio.js?v=23",
+  "./cards/js/card-view.js?v=23",
+  "./cards/js/vfx-recipes.js?v=23",
+  "./cards/js/story-gates.js?v=23",
+  "./cards/js/app.js?v=23",
 ];
 
 // Existing games are precached as best-effort shells. A missing optional asset
@@ -40,7 +41,7 @@ const OPTIONAL_SHELL = [
   "./avengers/",
   "./avengers/sw.js",
   "./avengers/manifest.webmanifest",
-  "./avengers/assets/index-DV2DyMer.js",
+  "./avengers/assets/index-D_Krq1Fc.js",
   "./avengers/assets/index-uRBZKIPW.css",
   "./avengers/icons/apple-touch-icon-180.png",
   "./avengers/icons/multiverse-icon-192.png",
@@ -71,8 +72,8 @@ const OPTIONAL_SHELL = [
   "./odyssey/",
   "./picnic/",
   "./sanguo/",
-  "./sanguo/assets/index-CiQbQyTw.js",
-  "./sanguo/assets/index-tzZ5q7aX.css",
+  "./sanguo/assets/index-D01EyL6X.js",
+  "./sanguo/assets/index-CCa-MMqO.css",
   "./sanguo/data/gamedata.json",
   "./sanguo/fonts/pretendard/PretendardVariable.woff2",
   "./sanguo/fonts/gowun/GowunBatang-Regular.woff2",
