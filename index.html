@@ -2,15 +2,9 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style id="no-zoom-style">*{touch-action:manipulation}canvas{touch-action:none}</style>
-<script id="no-zoom-guard">/* 게임 중 화면이 갑자기 확대되는 것 방지: 핀치·더블탭 줌 차단 */
-(function(){var s=function(e){e.preventDefault()};
-document.addEventListener('gesturestart',s,{passive:false});
-document.addEventListener('gesturechange',s,{passive:false});
-document.addEventListener('gestureend',s,{passive:false});
-document.addEventListener('dblclick',s,{passive:false});})();</script>
-<meta name="theme-color" content="#201a40">
+<meta name="theme-color" content="#101433">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -18,6 +12,16 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 <meta name="format-detection" content="telephone=no">
 <!-- 새 게임을 추가해도 아이패드가 예전 목록을 계속 보여주는 일이 없게 -->
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
+<meta name="description" content="이야기를 듣고, 문제를 풀고, 카드를 모으며 떠나는 어린이 별빛 모험 로비">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://seangold8888.github.io/">
+<meta property="og:title" content="모험 상자 — 별빛 모험 기지">
+<meta property="og:description" content="듣고, 배우고, 함께 떠나는 별빛 모험">
+<meta property="og:image" content="https://seangold8888.github.io/og-adventure-v3.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="모험 상자 — 별빛 모험 기지">
+<meta name="twitter:description" content="듣고, 배우고, 함께 떠나는 별빛 모험">
+<meta name="twitter:image" content="https://seangold8888.github.io/og-adventure-v3.png">
 <meta http-equiv="Pragma" content="no-cache">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" type="image/png" href="icon.png">
@@ -436,31 +440,467 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   }
   @media (prefers-reduced-motion: reduce) { #sky { display: none; } }
 </style>
+<style id="dashboard-v3">
+  :root {
+    --void: #08091d;
+    --navy: #101433;
+    --navy-soft: #171d43;
+    --panel: rgba(18, 23, 55, 0.92);
+    --line: rgba(255, 255, 255, 0.13);
+    --text: #f8f7ff;
+    --muted: #b9bdd8;
+    --electric: #66e3ff;
+    --violet: #9e82ff;
+    --coral: #ff718f;
+    --lime: #b9f56a;
+    --gold: #ffd56a;
+    --display: ui-rounded, "Arial Rounded MT Bold", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  }
+  html { scroll-behavior: smooth; background: var(--void); }
+  body {
+    background:
+      radial-gradient(circle at 8% 0%, rgba(70, 93, 255, 0.28), transparent 30rem),
+      radial-gradient(circle at 92% 18%, rgba(255, 74, 147, 0.18), transparent 26rem),
+      linear-gradient(155deg, #090a22 0%, #0e1230 48%, #090b24 100%);
+    color: var(--text);
+    font-family: var(--display);
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.24;
+    background-image:
+      linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+    background-size: 36px 36px;
+    mask-image: linear-gradient(to bottom, black, transparent 76%);
+  }
+  .wrap {
+    width: min(1280px, 100%);
+    max-width: none;
+    gap: clamp(20px, 3vw, 34px);
+    padding-top: calc(18px + env(safe-area-inset-top, 0px));
+  }
+  .topbar {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 14px;
+    text-align: left;
+  }
+  .brand-orb {
+    width: 58px;
+    height: 58px;
+    padding: 6px;
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 19px 7px;
+    background: linear-gradient(145deg, rgba(255,255,255,.2), rgba(255,255,255,.04));
+    box-shadow: 0 12px 30px rgba(0,0,0,.3), inset 0 1px rgba(255,255,255,.25);
+    cursor: pointer;
+    transform: rotate(-3deg);
+  }
+  .brand-orb img { width: 100%; height: 100%; display: block; border-radius: 13px 5px; }
+  .brand-copy { min-width: 0; }
+  .brand-kicker {
+    color: var(--electric);
+    font-size: 10px;
+    font-weight: 950;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+  }
+  .brand-copy h1 {
+    color: var(--text);
+    font-size: clamp(25px, 4vw, 38px);
+    line-height: 1;
+    letter-spacing: -.055em;
+    text-shadow: none;
+  }
+  .brand-copy .sub {
+    margin-top: 5px;
+    color: var(--muted);
+    font-size: clamp(12px, 2vw, 14px);
+    letter-spacing: 0;
+  }
+  .player-hud { display: flex; align-items: stretch; justify-content: flex-end; gap: 8px; }
+  .hud-chip, .parent-entry {
+    min-height: 54px;
+    border: 1px solid var(--line);
+    background: rgba(18, 23, 55, .78);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: inset 0 1px rgba(255,255,255,.07), 0 12px 28px rgba(0,0,0,.18);
+  }
+  .hud-chip {
+    min-width: 80px;
+    padding: 9px 12px;
+    border-radius: 15px 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+  }
+  .hud-chip small { color: var(--muted); font-size: 9px; font-weight: 900; letter-spacing: .08em; }
+  .hud-chip strong { color: var(--text); font-size: 14px; font-weight: 950; white-space: nowrap; }
+  .hud-chip.ticket strong { color: var(--gold); }
+  .hud-chip.crown strong { color: var(--lime); }
+  .parent-entry {
+    width: 54px;
+    padding: 0;
+    border-radius: 5px 15px;
+    color: var(--muted);
+    font: inherit;
+    font-size: 20px;
+    cursor: pointer;
+  }
+  .hero-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(340px, .65fr); gap: 18px; }
+  .feature-stage {
+    position: relative;
+    min-height: 470px;
+    overflow: hidden;
+    isolation: isolate;
+    border: 1px solid rgba(143, 179, 255, .3);
+    border-radius: 38px 12px;
+    background: #121635;
+    box-shadow: 0 26px 70px rgba(0,0,0,.36), inset 0 1px rgba(255,255,255,.14);
+  }
+  .feature-stage::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    background:
+      radial-gradient(circle at 78% 35%, rgba(102,227,255,.28), transparent 30%),
+      radial-gradient(circle at 58% 76%, rgba(255,113,143,.28), transparent 32%),
+      linear-gradient(120deg, #151a42 0 52%, #232155 100%);
+  }
+  .feature-stage::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(90deg, rgba(8,9,29,.98) 0%, rgba(8,9,29,.82) 38%, rgba(8,9,29,.15) 72%, rgba(8,9,29,.38) 100%);
+  }
+  .feature-copy {
+    position: relative;
+    z-index: 3;
+    width: min(56%, 520px);
+    min-height: 470px;
+    padding: clamp(30px, 5vw, 58px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .feature-label {
+    margin-bottom: 13px;
+    padding: 6px 10px;
+    border: 1px solid rgba(102,227,255,.42);
+    border-radius: 999px;
+    color: var(--electric);
+    background: rgba(102,227,255,.08);
+    font-size: 10px;
+    font-weight: 950;
+    letter-spacing: .14em;
+  }
+  .feature-copy h2 {
+    max-width: 500px;
+    color: var(--text);
+    font-size: clamp(42px, 6.3vw, 76px);
+    line-height: .96;
+    letter-spacing: -.075em;
+    text-wrap: balance;
+  }
+  .feature-copy h2 em { color: var(--gold); font-style: normal; }
+  .feature-copy p { margin-top: 17px; color: var(--muted); font-size: 14px; line-height: 1.65; font-weight: 760; text-wrap: balance; }
+  .feature-actions { margin-top: 22px; display: flex; flex-wrap: wrap; gap: 9px; }
+  .feature-button {
+    min-height: 48px;
+    padding: 0 18px;
+    border-radius: 14px 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #101226;
+    background: linear-gradient(110deg, var(--gold), #fff0a7);
+    box-shadow: 0 7px 0 #9e5770, 0 14px 26px rgba(0,0,0,.25);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 950;
+  }
+  .feature-button.secondary { color: var(--text); background: rgba(255,255,255,.08); border: 1px solid var(--line); box-shadow: none; }
+  .feature-button:active { transform: translateY(4px); box-shadow: 0 3px 0 #9e5770; }
+  .feature-stats { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 7px; }
+  .feature-stats span { color: #d9dcf1; font-size: 10px; font-weight: 900; padding: 5px 9px; border-radius: 999px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.09); }
+  .art-fan { position: absolute; z-index: 0; inset: 28px 10px 18px 43%; pointer-events: none; }
+  .art-fan img {
+    position: absolute;
+    right: clamp(20px, 5vw, 62px);
+    top: 50%;
+    width: clamp(170px, 22vw, 250px);
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border: 2px solid rgba(255,255,255,.52);
+    border-radius: 24px 8px;
+    box-shadow: 0 28px 56px rgba(0,0,0,.48), inset 0 0 0 5px rgba(255,255,255,.08);
+  }
+  .art-fan .art-left { transform: translate(-44%, -49%) rotate(-10deg); filter: brightness(.72) saturate(.9); }
+  .art-fan .art-right { transform: translate(32%, -49%) rotate(9deg); filter: brightness(.76) saturate(.9); }
+  .art-fan .art-main { z-index: 2; transform: translate(-4%, -51%) rotate(-1deg); }
+  #study {
+    --quest-progress: 0;
+    min-width: 0;
+    min-height: 470px;
+    padding: clamp(22px, 3vw, 30px);
+    gap: 11px;
+    justify-content: center;
+    text-align: left;
+    border: 1px solid rgba(185,245,106,.26);
+    border-radius: 12px 38px;
+    background: linear-gradient(160deg, rgba(29,39,72,.98), rgba(15,20,49,.98));
+    color: var(--text);
+    box-shadow: 0 26px 70px rgba(0,0,0,.3), inset 0 1px rgba(255,255,255,.1);
+  }
+  .quest-head { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: 14px; }
+  #study .eyebrow { color: var(--lime); font-size: 10px; letter-spacing: .17em; }
+  #study .daily { margin-top: 5px; color: var(--muted); font-size: 11px; line-height: 1.4; }
+  .quest-ring {
+    width: 68px;
+    height: 68px;
+    padding: 7px;
+    border-radius: 50%;
+    background: conic-gradient(var(--lime) calc(var(--quest-progress) * 1%), rgba(255,255,255,.09) 0);
+    box-shadow: 0 0 24px rgba(185,245,106,.12);
+  }
+  .quest-ring span { width: 100%; height: 100%; border-radius: inherit; display: grid; place-items: center; background: #111634; color: var(--text); font-size: 12px; font-weight: 950; }
+  #study .progress { min-height: 24px; justify-content: flex-start; gap: 3px; color: var(--gold); font-size: clamp(14px, 2vw, 18px); letter-spacing: -.12em; }
+  #study .formula { color: #c9b9ff; font-size: clamp(22px, 3.3vw, 30px); }
+  #study .items { color: var(--text); font-size: clamp(24px, 4vw, 34px); line-height: 1.35; }
+  #study .question { color: var(--text); font-size: clamp(17px, 2.4vw, 22px); line-height: 1.38; }
+  #study .choices { justify-content: flex-start; gap: 9px; }
+  #study .choices button {
+    width: clamp(70px, 7vw, 88px);
+    height: 62px;
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 16px 6px;
+    background: linear-gradient(145deg, #fff2ad, var(--gold));
+    color: #17182f;
+    box-shadow: 0 6px 0 #8d4f70, 0 10px 22px rgba(0,0,0,.2);
+    font-size: clamp(22px, 3vw, 29px);
+  }
+  #study .choices.wordy button { min-width: 72px; font-size: clamp(17px, 2.5vw, 23px); }
+  #study .cheer { color: var(--lime); font-size: 14px; }
+  #study .cheer.oops { color: #ff9dae; }
+  #study.done { background: linear-gradient(150deg, rgba(31,67,65,.98), rgba(16,27,50,.98)); color: var(--text); border-color: rgba(185,245,106,.45); }
+  #study.done .eyebrow { color: var(--lime); }
+  #study.done .daily { color: #c6d8d0; }
+  .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+  .section-kicker { color: var(--electric); font-size: 10px; font-weight: 950; letter-spacing: .2em; text-transform: uppercase; }
+  .section-heading h2 { margin-top: 5px; color: var(--text); font-size: clamp(26px, 4vw, 40px); letter-spacing: -.055em; }
+  .section-heading p { max-width: 420px; color: var(--muted); font-size: 12px; line-height: 1.55; font-weight: 750; text-align: right; }
+  .games { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 13px; }
+  .card {
+    --cover: radial-gradient(circle at 75% 25%, #6f76e8, transparent 28%), linear-gradient(145deg, #242a62, #11152f);
+    grid-column: span 4;
+    min-height: 232px;
+    padding: 20px;
+    align-items: flex-end;
+    overflow: hidden;
+    isolation: isolate;
+    border: 1px solid rgba(255,255,255,.17);
+    border-radius: 24px 8px;
+    color: var(--text);
+    background: #151936;
+    box-shadow: 0 18px 42px rgba(0,0,0,.26), inset 0 1px rgba(255,255,255,.09);
+    transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+  }
+  .card::before { content: ""; position: absolute; inset: 0; z-index: -2; background: var(--cover) var(--cover-pos, center 38%) / var(--cover-size, cover) no-repeat; transition: transform .45s ease, filter .25s ease; }
+  .card::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(8,9,29,.04) 4%, rgba(8,9,29,.34) 42%, rgba(8,9,29,.96) 100%); }
+  .card.battle { grid-column: span 8; min-height: 330px; --cover-pos: 50% 31%; }
+  .card.hero { --cover-size: 72%; --cover-pos: 50% 27%; background: linear-gradient(155deg, #46235c, #182e61); }
+  .card.sea { --cover-pos: 50% 28%; }
+  .card.war { --cover-pos: 50% 50%; }
+  .card.castle { --cover-size: 62%; --cover-pos: 50% 28%; background: linear-gradient(145deg, #302257, #111832); }
+  .card.kart3d { --cover: radial-gradient(circle at 70% 28%, #ff77bb 0 11%, transparent 12%), repeating-linear-gradient(120deg, transparent 0 28px, rgba(255,255,255,.08) 29px 31px), linear-gradient(140deg, #6c55d8, #1c2a58); }
+  .card.kart { --cover: radial-gradient(circle at 72% 30%, #ffe76b 0 10%, transparent 11%), repeating-linear-gradient(-45deg, transparent 0 24px, rgba(255,255,255,.07) 25px 28px), linear-gradient(140deg, #f06c9b, #682e75); }
+  .card.stage { --cover: linear-gradient(115deg, transparent 35%, rgba(102,227,255,.38) 36% 38%, transparent 39% 58%, rgba(255,113,143,.42) 59% 62%, transparent 63%), radial-gradient(circle at 68% 28%, #d86bd1, transparent 23%), linear-gradient(145deg, #241549, #0d1734); }
+  .card.gem { --cover: radial-gradient(circle at 72% 24%, #9ffcff 0 7%, transparent 8%), radial-gradient(circle at 62% 35%, #ff9dd4 0 11%, transparent 12%), linear-gradient(145deg, #503079, #172450); }
+  .card.picnic { --cover-pos: 50% 38%; }
+  .card .badge { position: relative; z-index: 2; width: 48px; height: 48px; border: 1px solid rgba(255,255,255,.22); border-radius: 15px 5px; background: rgba(12,15,39,.7); color: white; font-size: 25px; backdrop-filter: blur(10px); }
+  .card .meta { position: relative; z-index: 2; gap: 6px; }
+  .card .name { color: var(--text); font-size: clamp(20px, 2.5vw, 27px); letter-spacing: -.035em; text-shadow: 0 2px 12px rgba(0,0,0,.5); }
+  .card .desc { max-width: 600px; color: #d8dbec; opacity: .9; font-size: 12px; line-height: 1.5; }
+  .card .genre { color: #e6e9f8; background: rgba(12,15,39,.62); border: 1px solid rgba(255,255,255,.16); font-size: 10px; }
+  .card .plays { color: #15162e; background: var(--lime); border: 0; font-size: 10px; }
+  .card .go { color: var(--gold); background: transparent; padding: 2px 0; font-size: 11px; }
+  .padlock { z-index: 4; top: 14px; right: 14px; width: 42px; height: 42px; place-items: center; border: 1px solid rgba(255,255,255,.22); border-radius: 14px 5px; background: rgba(9,11,31,.82); font-size: 20px; backdrop-filter: blur(10px); }
+  body.locked .card { pointer-events: auto; filter: none; opacity: .82; }
+  body.locked .padlock { display: grid; }
+  body.locked .card::before { filter: saturate(.52) brightness(.58); }
+  body.locked .card::after { background: linear-gradient(180deg, rgba(8,9,29,.26), rgba(8,9,29,.97)); }
+  @media (hover: hover) {
+    .card:hover { transform: translateY(-6px); border-color: rgba(102,227,255,.58); box-shadow: 0 24px 52px rgba(0,0,0,.36), 0 0 0 1px rgba(102,227,255,.12); }
+    .card:hover::before { transform: scale(1.045); }
+  }
+  .card:active { transform: translateY(3px) scale(.99); box-shadow: 0 10px 28px rgba(0,0,0,.25); }
+  .open-deck { padding: clamp(22px, 3vw, 30px); border: 1px solid rgba(255,213,106,.19); border-radius: 30px 10px; background: rgba(255,255,255,.035); }
+  .open-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+  .shop {
+    --cover: linear-gradient(145deg, #433470, #1a3154);
+    min-height: 190px;
+    padding: 22px;
+    align-items: flex-end;
+    overflow: hidden;
+    isolation: isolate;
+    border: 1px solid rgba(255,255,255,.16);
+    border-radius: 22px 7px;
+    color: var(--text);
+    background: #171b3b;
+    box-shadow: 0 16px 36px rgba(0,0,0,.22);
+  }
+  .shop::before { content: ""; position: absolute; inset: 0; z-index: -2; background: var(--cover) var(--cover-pos, center 36%) / cover no-repeat; transition: transform .45s ease; }
+  .shop::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(9,11,31,.94), rgba(9,11,31,.35)); }
+  .shop .badge, .shop .meta { position: relative; z-index: 2; }
+  .shop .badge { width: 54px; height: 54px; border: 1px solid rgba(255,255,255,.18); background: rgba(12,15,39,.66); font-size: 27px; }
+  .shop .name { color: var(--text); font-size: clamp(20px, 2.5vw, 26px); }
+  .shop .desc { color: #d8dbec; font-size: 12px; line-height: 1.5; }
+  .shop .genre { color: var(--text); background: rgba(12,15,39,.62); border: 1px solid rgba(255,255,255,.14); font-size: 10px; }
+  .shop .go { color: var(--gold); background: transparent; padding: 2px 0; font-size: 11px; }
+  .shop .open-sign { z-index: 4; top: 13px; right: 13px; color: #10152c; background: var(--lime); font-size: 9px; border-radius: 9px 3px; }
+  .shop.story { --cover-pos: 50% 33%; background: #25204e; }
+  .shop.craft { --cover: repeating-linear-gradient(135deg, transparent 0 26px, rgba(255,255,255,.06) 27px 29px), radial-gradient(circle at 78% 28%, #ffd56a 0 9%, transparent 10%), linear-gradient(145deg, #66415f, #24335f); }
+  .lock-notice { position: fixed; z-index: 80; left: 50%; bottom: calc(22px + env(safe-area-inset-bottom,0px)); width: min(440px, calc(100% - 28px)); transform: translateX(-50%); padding: 14px 15px; border: 1px solid rgba(255,213,106,.35); border-radius: 17px 6px; background: rgba(10,13,35,.96); color: var(--text); box-shadow: 0 22px 50px rgba(0,0,0,.45); display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 11px; }
+  .lock-notice[hidden] { display: none; }
+  .lock-notice strong { font-size: 13px; }
+  .lock-notice span { color: var(--muted); font-size: 11px; line-height: 1.4; }
+  .lock-notice button { width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 12px 4px; color: var(--text); background: rgba(255,255,255,.08); font: inherit; cursor: pointer; }
+  .book-open { margin: 0; }
+  .book-modal { background: rgba(5,7,22,.78); backdrop-filter: blur(12px); }
+  .book-sheet { border: 1px solid rgba(255,255,255,.2); border-radius: 28px 9px; background: #f7f3e9; box-shadow: 0 30px 80px rgba(0,0,0,.48); }
+  .book-head button { width: 44px; height: 44px; }
+  footer { color: #8f96ba; }
+  footer .tip { color: var(--gold); background: rgba(255,213,106,.07); border: 1px solid rgba(255,213,106,.24); border-radius: 13px 4px; }
+  @media (max-width: 980px) {
+    .topbar { grid-template-columns: auto minmax(0,1fr); }
+    .player-hud { grid-column: 1 / -1; justify-content: stretch; display: grid; grid-template-columns: repeat(4, minmax(0,1fr)) 54px; }
+    .hud-chip { min-width: 0; }
+    .hero-grid { grid-template-columns: 1fr; }
+    .feature-stage, .feature-copy, #study { min-height: 430px; }
+    .games { grid-template-columns: repeat(12, minmax(0,1fr)); }
+    .card { grid-column: span 6; }
+    .card.battle { grid-column: span 12; }
+    .card.hero { grid-column: span 6; }
+  }
+  @media (max-width: 640px) {
+    .wrap { gap: 18px; padding-left: calc(13px + env(safe-area-inset-left,0px)); padding-right: calc(13px + env(safe-area-inset-right,0px)); }
+    .brand-orb { width: 50px; height: 50px; }
+    .brand-copy h1 { font-size: 27px; }
+    .brand-copy .sub { max-width: 240px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .player-hud { grid-template-columns: repeat(2, minmax(0,1fr)) 50px; }
+    .hud-chip.offline, .hud-chip.crown { display: none; }
+    .parent-entry { width: 50px; min-height: 50px; }
+    .feature-stage { min-height: 500px; border-radius: 27px 9px; }
+    .feature-stage::after { background: linear-gradient(180deg, rgba(8,9,29,.1) 15%, rgba(8,9,29,.92) 58%, rgba(8,9,29,.99)); }
+    .feature-copy { width: 100%; min-height: 500px; justify-content: flex-end; padding: 24px; }
+    .feature-copy h2 { max-width: 360px; font-size: clamp(39px, 12vw, 58px); }
+    .feature-copy p { max-width: 350px; }
+    .art-fan { inset: 12px -10px 150px 4%; opacity: .92; }
+    .art-fan img { right: 18%; width: min(43vw, 185px); border-radius: 18px 6px; }
+    .feature-stats { display: none; }
+    #study { min-height: 420px; border-radius: 9px 27px; }
+    .section-heading { align-items: flex-start; flex-direction: column; gap: 6px; }
+    .section-heading p { text-align: left; }
+    .card, .card.hero, .card.battle { grid-column: span 12; min-height: 220px; }
+    .card.battle { min-height: 290px; }
+    .open-deck { padding: 18px; border-radius: 22px 7px; }
+    .open-grid { grid-template-columns: 1fr; }
+    .shop { min-height: 180px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    .card:hover::before, .shop:hover::before { transform: none; }
+  }
+  .lock-notice .lock-notice-icon { color: inherit; font-size: 25px; line-height: 1; }
+  .feature-button:focus-visible, .parent-entry:focus-visible,
+  .lock-notice button:focus-visible, #study .choices button:focus-visible {
+    outline: 3px solid var(--electric);
+    outline-offset: 3px;
+  }
+  .brand-orb:focus-visible { outline: 3px solid var(--gold); outline-offset: 4px; }
+</style>
 </head>
 <body>
 <canvas id="sky" aria-hidden="true"></canvas>
 
-<div class="wrap">
-  <header>
-    <div class="moon" id="moon">🌙</div>
-    <h1>모험 상자</h1>
-    <p class="sub" id="subline">문제 10개를 풀면 게임 티켓 한 장!</p>
+<main class="wrap lobby-shell">
+  <header class="topbar">
+    <button class="moon brand-orb" id="moon" type="button" aria-label="모험 상자 비밀 버튼">
+      <img src="icon-192.png" alt="">
+    </button>
+    <div class="brand-copy">
+      <span class="brand-kicker">Starlight Adventure Base</span>
+      <h1>모험 상자</h1>
+      <p class="sub" id="subline">문제 10개를 풀면 게임 티켓 한 장!</p>
+    </div>
+    <div class="player-hud" aria-label="오늘의 모험 상태">
+      <span class="hud-chip quest"><small>오늘의 퀘스트</small><strong id="hubDailyStat">0 / 40</strong></span>
+      <span class="hud-chip ticket"><small>게임 티켓</small><strong id="hubTicketStat">준비 중</strong></span>
+      <span class="hud-chip crown"><small>숙달 왕관</small><strong id="hubCrownStat">0개</strong></span>
+      <span class="hud-chip offline"><small>기기 저장</small><strong id="hubOfflineStat">확인 중</strong></span>
+      <button class="book-open parent-entry" id="bookOpen" type="button" aria-label="부모님용 학습 리포트 열기">📖</button>
+    </div>
   </header>
 
+  <section class="hero-grid" aria-label="오늘의 추천과 학습 퀘스트">
+    <article class="feature-stage">
+      <div class="feature-copy">
+        <span class="feature-label">NEW · 이야기가 힘이 되는 배틀</span>
+        <h2>듣고, 모으고,<br><em>결투하자.</em></h2>
+        <p>이야기를 끝까지 듣고 영웅을 깨워요. 이야기 속 문제를 맞히면 강력한 별빛 필살기도 사용할 수 있어요.</p>
+        <div class="feature-actions">
+          <a class="feature-button" href="#adventureWorlds">월드 고르기 <span aria-hidden="true">↓</span></a>
+          <a class="feature-button secondary feature-shop" href="story/">이야기 먼저 듣기</a>
+        </div>
+        <div class="feature-stats" aria-label="카드 배틀 특징">
+          <span>24 영웅 카드</span><span>1:1 전략 배틀</span><span>오프라인 플레이</span>
+        </div>
+      </div>
+      <div class="art-fan" aria-hidden="true">
+        <img class="art-left" src="cards/art/redhood.webp" alt="" decoding="async">
+        <img class="art-right" src="cards/art/sunwukong.webp" alt="" decoding="async">
+        <img class="art-main" src="cards/art/arthur.webp" alt="" decoding="async" fetchpriority="high">
+      </div>
+    </article>
+
   <section id="study" aria-live="polite">
-    <div class="eyebrow" id="studyEyebrow">오늘의 공부</div>
-    <div class="daily" id="daily"></div>
+    <div class="quest-head">
+      <div>
+        <div class="eyebrow" id="studyEyebrow">오늘의 퀘스트</div>
+        <div class="daily" id="daily"></div>
+      </div>
+      <div class="quest-ring" id="questRing" aria-hidden="true"><span id="questRingLabel">0/10</span></div>
+    </div>
     <div class="progress" id="stars"></div>
     <div class="formula" id="formula"></div>
     <div class="items" id="items"></div>
     <div class="question" id="question"></div>
     <div class="choices" id="choices"></div>
     <div class="cheer" id="cheer"></div>
-    <button class="book-open" id="bookOpen" type="button">📖 학습 리포트 (부모님용)</button>
+  </section>
   </section>
 
-  <nav class="games" aria-label="게임 목록">
-    <a class="card hero" href="avengers/">
+  <section class="world-deck" id="adventureWorlds">
+    <div class="section-heading">
+      <div><div class="section-kicker">Choose your world</div><h2>어디로 떠날까?</h2></div>
+      <p>좋아하는 월드는 위로 올라와요. 티켓 한 장으로 원하는 게임 한 판!</p>
+    </div>
+    <nav class="games" aria-label="게임 목록">
+    <a class="card hero" href="avengers/" style="--cover:url('avengers/icons/multiverse-icon-512.png')">
       <span class="padlock">🔒</span>
       <span class="badge">🛡️</span>
       <span class="meta">
@@ -470,7 +910,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         <span class="go">모험 떠나기 ▶</span>
       </span>
     </a>
-    <a class="card battle" href="cards/">
+    <a class="card battle" href="cards/" style="--cover:url('cards/art/cinderella.webp')">
       <span class="padlock">🔒</span>
       <span class="badge">🃏</span>
       <span class="meta">
@@ -480,7 +920,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         <span class="go">카드 대결하기 ▶</span>
       </span>
     </a>
-    <a class="card sea" href="odyssey/">
+    <a class="card sea" href="odyssey/" style="--cover:url('cards/art/odysseus.webp')">
       <span class="padlock">🔒</span>
       <span class="badge">⛵</span>
       <span class="meta">
@@ -510,7 +950,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         <span class="go">모험 떠나기 ▶</span>
       </span>
     </a>
-    <a class="card war" href="sanguo/">
+    <a class="card war" href="sanguo/" style="--cover:url('sanguo/art/side-scroller/hulao-arcade-bg-v3.png')">
       <span class="padlock">🔒</span>
       <span class="badge">🐉</span>
       <span class="meta">
@@ -520,7 +960,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         <span class="go">모험 떠나기 ▶</span>
       </span>
     </a>
-    <a class="card castle" href="hogwarts/">
+    <a class="card castle" href="hogwarts/" style="--cover:url('hogwarts/icon.png')">
       <span class="padlock">🔒</span>
       <span class="badge">🏰</span>
       <span class="meta">
@@ -550,7 +990,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         <span class="go">모험 떠나기 ▶</span>
       </span>
     </a>
-    <a class="card picnic" href="picnic/">
+    <a class="card picnic" href="picnic/" style="--cover:url('cards/art/threepigs.webp')">
       <span class="padlock">🔒</span>
       <span class="badge">🧺</span>
       <span class="meta">
@@ -561,8 +1001,15 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       </span>
     </a>
   </nav>
+  </section>
 
-  <a class="shop story" href="story/" aria-label="이야기 극장 — 언제나 열려 있어요">
+  <section class="open-deck" id="alwaysOpen">
+    <div class="section-heading">
+      <div><div class="section-kicker">Always open</div><h2>티켓 없이 바로!</h2></div>
+      <p>듣기와 만들기는 언제든 열려 있어요.</p>
+    </div>
+    <div class="open-grid">
+  <a class="shop story" href="story/" aria-label="이야기 극장 — 언제나 열려 있어요" style="--cover:url('cards/art/cinderella.webp')">
     <span class="open-sign">24시간 영업 중</span>
     <span class="badge">🎧</span>
     <span class="meta">
@@ -573,7 +1020,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     </span>
   </a>
 
-  <a class="shop" href="keycap/" aria-label="키캡 공방 — 언제나 열려 있어요">
+  <a class="shop craft" href="keycap/" aria-label="키캡 공방 — 언제나 열려 있어요">
     <span class="open-sign">24시간 영업 중</span>
     <span class="badge">⌨️</span>
     <span class="meta">
@@ -583,17 +1030,25 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       <span class="go">공방 들어가기 ▶</span>
     </span>
   </a>
+    </div>
+  </section>
 
   <footer>
-    <span class="tip">💡 이 페이지를 홈 화면에 추가하면 언제나 같은 자리에 있어요</span>
-    <span>아빠가 만든 게임들 · 새 게임이 나오면 여기에 추가돼요</span>
+    <span class="tip">✦ 홈 화면에 추가하면 비행기 안에서도 모험을 이어갈 수 있어요</span>
+    <span>우리 가족의 별빛 모험 기지 · 새로운 월드는 계속 열려요</span>
   </footer>
+</main>
+
+<div class="lock-notice" id="lockNotice" hidden role="status" aria-live="polite">
+  <span class="lock-notice-icon" aria-hidden="true">🎫</span>
+  <div><strong id="lockNoticeTitle">티켓이 필요해요</strong><br><span id="lockNoticeText">오늘의 퀘스트를 풀면 바로 출발할 수 있어요.</span></div>
+  <button id="lockNoticeClose" type="button" aria-label="안내 닫기">✕</button>
 </div>
 
 <div class="book-modal" id="bookModal" hidden>
-  <div class="book-sheet" role="dialog" aria-modal="true" aria-label="오답노트">
+  <div class="book-sheet" role="dialog" aria-modal="true" aria-labelledby="bookModalTitle">
     <div class="book-head">
-      <b>📖 학습 리포트</b>
+      <b id="bookModalTitle">📖 학습 리포트</b>
       <button id="bookClose" type="button" aria-label="닫기">✕</button>
     </div>
     <h3 class="book-sub">실력 지도</h3>
@@ -696,6 +1151,11 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   var subEl = document.getElementById('subline');
   var eyebrowEl = document.getElementById('studyEyebrow');
   var dailyEl = document.getElementById('daily');
+  var hubDailyStat = document.getElementById('hubDailyStat');
+  var hubTicketStat = document.getElementById('hubTicketStat');
+  var hubCrownStat = document.getElementById('hubCrownStat');
+  var questRingLabel = document.getElementById('questRingLabel');
+  var lockNotice = document.getElementById('lockNotice');
 
   function todayKey() {
     var d = new Date();
@@ -892,7 +1352,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   }
 
   var state = loadState();
-  var setCorrect = 0;
+  var setCorrect = state.solved % SET;
   var current = null;
   var missRow = 0;        // 틀린 문제가 연속으로 몇 개째인지
   var sinceReview = 0;    // 마지막 복습 문제 이후 새 문제 수
@@ -943,12 +1403,30 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     dailyEl.textContent = '오늘 푼 문제 ' + Math.min(state.solved, DAILY) + ' / ' + DAILY +
       (state.wrong.length ? ' · 오답노트 ' + state.wrong.length + '개' : '') +
       (crowns ? ' · 왕관 👑 ' + crowns + '개' : '');
+    updateLobbyHud(crowns);
+  }
+  function updateLobbyHud(crowns) {
+    crowns = typeof crowns === 'number' ? crowns : masteredCount();
+    var dailySolved = Math.min(state.solved, DAILY);
+    var progress = isFree() || hasTicket() ? 100 : Math.min(100, Math.round(setCorrect / SET * 100));
+    if (hubDailyStat) hubDailyStat.textContent = dailySolved + ' / ' + DAILY;
+    if (hubCrownStat) hubCrownStat.textContent = crowns + '개';
+    if (hubTicketStat) {
+      hubTicketStat.textContent = isFree()
+        ? '자유 모험'
+        : (hasTicket() ? '1장 준비' : Math.max(1, SET - setCorrect) + '문제 남음');
+    }
+    if (questRingLabel) {
+      questRingLabel.textContent = isFree() ? '완료' : (hasTicket() ? '티켓' : setCorrect + '/' + SET);
+    }
+    studyEl.style.setProperty('--quest-progress', String(progress));
   }
 
   /* ---- 부모용 오답노트 목록 ---- */
   var bookOpenBtn = document.getElementById('bookOpen');
   var bookModal = document.getElementById('bookModal');
   var bookListEl = document.getElementById('bookList');
+  var lobbyMain = document.querySelector('main');
   /* 오답노트 항목을 부모가 읽기 쉬운 한 줄로 */
   function bookLine(e) {
     if (BANK_SIZES[e.type]) {
@@ -1017,15 +1495,47 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       bookListEl.appendChild(li);
     });
   }
+  var bookCloseBtn = document.getElementById('bookClose');
+  var bookLastFocus = null;
+  function closeBookModal() {
+    if (bookModal.hidden) return;
+    bookModal.hidden = true;
+    if (bookLastFocus && bookLastFocus.focus) bookLastFocus.focus();
+    if (lobbyMain) lobbyMain.inert = false;
+  }
   bookOpenBtn.addEventListener('click', function () {
+    bookLastFocus = document.activeElement;
     renderBook();
     bookModal.hidden = false;
+    if (lobbyMain) lobbyMain.inert = true;
+    bookCloseBtn.focus();
   });
-  document.getElementById('bookClose').addEventListener('click', function () {
-    bookModal.hidden = true;
-  });
+  bookCloseBtn.addEventListener('click', closeBookModal);
   bookModal.addEventListener('click', function (e) {
-    if (e.target === bookModal) bookModal.hidden = true;
+    if (e.target === bookModal) closeBookModal();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (bookModal.hidden) return;
+    if (e.key === 'Escape') {
+      closeBookModal();
+      return;
+    }
+    if (e.key !== 'Tab') return;
+    var focusable = bookModal.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])');
+    if (!focusable.length) {
+      e.preventDefault();
+      bookCloseBtn.focus();
+      return;
+    }
+    var first = focusable[0];
+    var last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
   });
 
   /* ================= 가르기(수의 분해) 엔진 =================
@@ -1315,7 +1825,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     document.querySelectorAll('.card').forEach(function (card) {
       if (locked) {
         card.setAttribute('aria-disabled', 'true');
-        card.setAttribute('tabindex', '-1');
+        card.removeAttribute('tabindex');
       } else {
         card.removeAttribute('aria-disabled');
         card.removeAttribute('tabindex');
@@ -1432,7 +1942,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 
   /* 실제로 입장할 때만 놀이 횟수를 센다 (잠긴 카드 탭은 제외).
      티켓을 소모하는 핸들러보다 먼저 등록해야 소모 전 상태로 판단한다. */
-  document.querySelectorAll('.card, .shop').forEach(function (link) {
+  document.querySelectorAll('.card, .shop, .feature-shop').forEach(function (link) {
     link.addEventListener('click', function () {
       if (link.classList.contains('card') && !isFree() && !hasTicket()) return;
       var k = gameKey(link);
@@ -1443,6 +1953,27 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     });
   });
   /* 게임 카드: 티켓을 쓰고 입장 (하루 40문제 채우면 무료 입장) */
+  var lockNoticeTimer = 0;
+  var lockNoticeClose = document.getElementById('lockNoticeClose');
+  function hideLockNotice() {
+    clearTimeout(lockNoticeTimer);
+    if (lockNotice) lockNotice.hidden = true;
+  }
+  function showLockNotice(card) {
+    if (!lockNotice) return;
+    var name = card.querySelector('.name');
+    var title = document.getElementById('lockNoticeTitle');
+    var text = document.getElementById('lockNoticeText');
+    var remaining = Math.max(1, SET - setCorrect);
+    if (title) title.textContent = (name ? name.textContent : '이 모험') + ' 출발 준비!';
+    if (text) {
+      text.textContent = '오늘의 퀘스트 ' + remaining + '문제만 더 풀면 게임 티켓을 받아요.';
+    }
+    lockNotice.hidden = false;
+    clearTimeout(lockNoticeTimer);
+    lockNoticeTimer = setTimeout(hideLockNotice, 3200);
+  }
+  if (lockNoticeClose) lockNoticeClose.addEventListener('click', hideLockNotice);
   document.querySelectorAll('.card').forEach(function (card) {
     card.addEventListener('click', function (event) {
       if (isFree()) return;
@@ -1452,6 +1983,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         return; // 이동은 그대로 진행
       }
       event.preventDefault();
+      showLockNotice(card);
     });
   });
 
@@ -1460,7 +1992,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     if (e.persisted) {
       state = loadState();
       plays = loadPlays();
-      setCorrect = 0;
+      setCorrect = state.solved % SET;
       applyState();
       annotatePlays();
     }
@@ -1486,14 +2018,30 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 </script>
 <script>
   if ("serviceWorker" in navigator) {
+    var offlineLabel = document.getElementById("hubOfflineStat");
+    function showOfflineState(label) {
+      if (offlineLabel) offlineLabel.textContent = label;
+    }
+    window.addEventListener("offline", function () { showOfflineState("오프라인"); });
+    window.addEventListener("online", function () {
+      showOfflineState(navigator.serviceWorker.controller ? "저장됨" : "연결됨");
+    });
     window.addEventListener("load", function () {
       navigator.serviceWorker.register(
         new URL("sw.js", window.location.href),
         { scope: new URL("./", window.location.href).href }
-      ).catch(function (error) {
+      ).then(function () {
+        return navigator.serviceWorker.ready;
+      }).then(function () {
+        showOfflineState(navigator.onLine ? "저장됨" : "오프라인");
+      }).catch(function (error) {
+        showOfflineState("연결 필요");
         console.warn("오프라인 준비를 시작하지 못했어요.", error);
       });
     });
+  } else {
+    var unsupportedLabel = document.getElementById("hubOfflineStat");
+    if (unsupportedLabel) unsupportedLabel.textContent = "연결 필요";
   }
 </script>
 </body>
