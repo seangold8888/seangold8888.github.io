@@ -198,7 +198,12 @@
         }
       ],
       "unlock": "heracles",
-      "art": "art/heracles.png"
+      "art": "art/heracles.png",
+      "stats": {
+        "attack": 5,
+        "defense": 5,
+        "spirit": 1
+      }
     },
     {
       "id": "honggildong",
@@ -238,7 +243,12 @@
         }
       ],
       "unlock": "honggildong",
-      "art": "art/honggildong.png"
+      "art": "art/honggildong.png",
+      "stats": {
+        "attack": 3,
+        "defense": 3,
+        "spirit": 2
+      }
     },
     {
       "id": "perseus",
@@ -279,7 +289,12 @@
         }
       ],
       "unlock": "perseus",
-      "art": "art/perseus.png"
+      "art": "art/perseus.png",
+      "stats": {
+        "attack": 2,
+        "defense": 4,
+        "spirit": 2
+      }
     },
     {
       "id": "jack",
@@ -315,7 +330,12 @@
         }
       ],
       "unlock": null,
-      "art": "art/jack.png"
+      "art": "art/jack.png",
+      "stats": {
+        "attack": 2,
+        "defense": 2,
+        "spirit": 2
+      }
     },
     {
       "id": "threepigs",
@@ -355,7 +375,12 @@
         }
       ],
       "unlock": "threepigs",
-      "art": "art/threepigs.png"
+      "art": "art/threepigs.png",
+      "stats": {
+        "attack": 2,
+        "defense": 2,
+        "spirit": 1
+      }
     },
     {
       "id": "arthur",
@@ -386,7 +411,12 @@
       ],
       "unlock": "arthur",
       "art": "art/arthur.png",
-      "v1": false
+      "v1": false,
+      "stats": {
+        "attack": 4,
+        "defense": 4,
+        "spirit": 1
+      }
     },
     {
       "id": "odysseus",
@@ -427,7 +457,12 @@
         }
       ],
       "unlock": "odyssey_cyclops",
-      "art": "art/odysseus.png"
+      "art": "art/odysseus.png",
+      "stats": {
+        "attack": 4,
+        "defense": 4,
+        "spirit": 3
+      }
     },
     {
       "id": "cinderella",
@@ -467,7 +502,12 @@
         }
       ],
       "unlock": "cinderella",
-      "art": "art/cinderella.png"
+      "art": "art/cinderella.png",
+      "stats": {
+        "attack": 2,
+        "defense": 3,
+        "spirit": 2
+      }
     },
     {
       "id": "tortoisehare",
@@ -508,7 +548,12 @@
         }
       ],
       "unlock": "tortoisehare",
-      "art": "art/tortoisehare.png"
+      "art": "art/tortoisehare.png",
+      "stats": {
+        "attack": 1,
+        "defense": 3,
+        "spirit": 3
+      }
     },
     {
       "id": "redhood",
@@ -549,7 +594,12 @@
         }
       ],
       "unlock": null,
-      "art": "art/redhood.png"
+      "art": "art/redhood.png",
+      "stats": {
+        "attack": 3,
+        "defense": 2,
+        "spirit": 2
+      }
     },
     {
       "id": "bremen",
@@ -587,7 +637,12 @@
       ],
       "unlock": "bremen",
       "art": "art/bremen.png",
-      "v1": false
+      "v1": false,
+      "stats": {
+        "attack": 3,
+        "defense": 3,
+        "spirit": 3
+      }
     },
     {
       "id": "pinocchio",
@@ -623,7 +678,12 @@
         }
       ],
       "unlock": "pinocchio",
-      "art": "art/pinocchio.png"
+      "art": "art/pinocchio.png",
+      "stats": {
+        "attack": 2,
+        "defense": 2,
+        "spirit": 4
+      }
     },
     {
       "id": "sunwukong",
@@ -665,7 +725,12 @@
       ],
       "unlock": "sunwukong",
       "art": "art/sunwukong.png",
-      "v1": false
+      "v1": false,
+      "stats": {
+        "attack": 4,
+        "defense": 4,
+        "spirit": 3
+      }
     },
     {
       "id": "fairygodmother",
@@ -713,7 +778,12 @@
         }
       ],
       "unlock": "cinderella",
-      "art": "art/fairygodmother.png"
+      "art": "art/fairygodmother.png",
+      "stats": {
+        "attack": 1,
+        "defense": 4,
+        "spirit": 4
+      }
     },
     {
       "id": "genie",
@@ -754,7 +824,12 @@
         }
       ],
       "unlock": "genie",
-      "art": "art/genie.png"
+      "art": "art/genie.png",
+      "stats": {
+        "attack": 4,
+        "defense": 4,
+        "spirit": 4
+      }
     },
     {
       "id": "snowqueen",
@@ -802,7 +877,12 @@
         }
       ],
       "unlock": "snowqueen",
-      "art": "art/snowqueen.png"
+      "art": "art/snowqueen.png",
+      "stats": {
+        "attack": 2,
+        "defense": 3,
+        "spirit": 4
+      }
     },
     {
       "id": "witch",
@@ -839,7 +919,12 @@
       ],
       "unlock": "witch",
       "art": "art/witch.png",
-      "v1": false
+      "v1": false,
+      "stats": {
+        "attack": 3,
+        "defense": 2,
+        "spirit": 3
+      }
     },
     {
       "id": "mermaid",
@@ -875,7 +960,12 @@
         }
       ],
       "unlock": "mermaid",
-      "art": "art/mermaid.png"
+      "art": "art/mermaid.png",
+      "stats": {
+        "attack": 1,
+        "defense": 2,
+        "spirit": 3
+      }
     },
     {
       "id": "polyphemus",
@@ -916,7 +1006,12 @@
         }
       ],
       "unlock": "odyssey_cyclops",
-      "art": "art/polyphemus.png"
+      "art": "art/polyphemus.png",
+      "stats": {
+        "attack": 5,
+        "defense": 5,
+        "spirit": 1
+      }
     },
     {
       "id": "wolf",
@@ -956,7 +1051,12 @@
         }
       ],
       "unlock": "redhood_story",
-      "art": "art/wolf.png"
+      "art": "art/wolf.png",
+      "stats": {
+        "attack": 2,
+        "defense": 3,
+        "spirit": 2
+      }
     },
     {
       "id": "beanstalkgiant",
@@ -983,7 +1083,12 @@
       ],
       "unlock": "jack_story",
       "art": "art/beanstalkgiant.png",
-      "v1": false
+      "v1": false,
+      "stats": {
+        "attack": 4,
+        "defense": 5,
+        "spirit": 2
+      }
     },
     {
       "id": "medusa",
@@ -1020,7 +1125,12 @@
         }
       ],
       "unlock": "perseus",
-      "art": "art/medusa.png"
+      "art": "art/medusa.png",
+      "stats": {
+        "attack": 1,
+        "defense": 3,
+        "spirit": 2
+      }
     },
     {
       "id": "midas",
@@ -1060,7 +1170,12 @@
         }
       ],
       "unlock": "midas",
-      "art": "art/midas.png"
+      "art": "art/midas.png",
+      "stats": {
+        "attack": 1,
+        "defense": 1,
+        "spirit": 2
+      }
     },
     {
       "id": "tiger",
@@ -1097,7 +1212,12 @@
         }
       ],
       "unlock": "sunmoon",
-      "art": "art/tiger.png"
+      "art": "art/tiger.png",
+      "stats": {
+        "attack": 4,
+        "defense": 4,
+        "spirit": 2
+      }
     }
   ]
 }
