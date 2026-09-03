@@ -1,7 +1,7 @@
 "use strict";
 
-// Keep this value aligned with the ?v= version used by the card battle assets.
-const CACHE_VERSION = "v26";
+// Advance this generation whenever a shared shell or optional game's immutable assets change.
+const CACHE_VERSION = "v27";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -68,6 +68,9 @@ const OPTIONAL_SHELL = [
   "./kart3d/src/tracks.js",
   "./kart3d/vendor/three.module.min.js",
   "./kedehun/",
+  "./kedehun/art/characters/lumi-v2.png?v=27",
+  "./kedehun/art/characters/mira-v2.png?v=27",
+  "./kedehun/art/characters/joy-v2.png?v=27",
   "./keycap/",
   "./keycap/stl.js",
   "./odyssey/",

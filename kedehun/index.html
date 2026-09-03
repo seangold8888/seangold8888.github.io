@@ -1,9 +1,12 @@
 <!doctype html>
 <html lang="ko">
-<head><meta charset="utf-8" /></head>
-<body>
+<head>
+<meta charset="utf-8" />
 <title>케데헌</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<link rel="preload" as="image" href="art/characters/lumi-v2.png?v=27">
+<link rel="preload" as="image" href="art/characters/mira-v2.png?v=27">
+<link rel="preload" as="image" href="art/characters/joy-v2.png?v=27">
 <style id="no-zoom-style">*{touch-action:manipulation}canvas{touch-action:none}</style>
 <script id="no-zoom-guard">/* 게임 중 화면이 갑자기 확대되는 것 방지: 핀치·더블탭 줌 차단 */
 (function(){var s=function(e){e.preventDefault()};
@@ -113,7 +116,88 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   .story-portrait { width: 64px; height: 74px; }
   .story-box { gap: 12px; padding: 12px 14px 10px; }
 }
+
+/* Character art v2 — one premium source shared by select, HUD, story and combat. */
+.character-portrait-art {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+  object-position: var(--portrait-position, 50% 16%);
+  pointer-events: none;
+  filter: drop-shadow(0 8px 12px rgba(3, 1, 14, .42));
+}
+.guardian-portrait > img.character-portrait-art,
+.guardian-mark > img.character-portrait-art {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.guardian-portrait > img.character-portrait-art {
+  transform: scale(1.18);
+  transform-origin: var(--portrait-position, 50% 16%);
+}
+.guardian-mark > img.character-portrait-art {
+  transform: scale(3);
+  transform-origin: var(--portrait-position, 50% 16%);
+}
+.story-portrait > img.character-portrait-art {
+  transform: scale(2.15);
+  transform-origin: var(--portrait-position, 50% 16%);
+}
+.guardian-option { min-width: 0; }
+.guardian-option > .guardian-card { width: 100%; }
+.guardian-option > .photo-tools {
+  justify-content: center;
+  margin: 8px 0 0;
+}
+.guardian-portrait {
+  background:
+    radial-gradient(circle at 50% 22%, color-mix(in srgb, var(--guardian-color) 48%, white), transparent 34%),
+    linear-gradient(155deg, #21164b, #09061d 72%);
+}
+.guardian-card.selected .character-portrait-art {
+  filter:
+    drop-shadow(0 10px 14px rgba(3, 1, 14, .48))
+    drop-shadow(0 0 10px color-mix(in srgb, var(--guardian-color) 54%, transparent));
+}
+.primary-button:disabled {
+  cursor: wait;
+  opacity: .62;
+  filter: saturate(.55);
+  transform: none;
+}
+
+@media (min-width: 801px) and (min-height: 620px) {
+  .guardian-card { padding: 12px; }
+  .guardian-card-content {
+    grid-template-columns: 124px minmax(0, 1fr);
+    gap: 15px;
+  }
+  .guardian-portrait {
+    width: 124px;
+    height: 164px;
+    border-radius: 34px 10px;
+    box-shadow:
+      inset 0 -26px 36px rgba(0,0,0,.34),
+      0 0 34px color-mix(in srgb, var(--guardian-color) 38%, transparent);
+  }
+  .guardian-name { font-size: clamp(24px, 2.3vw, 31px); }
+  .guardian-skill { font-size: 12px; }
+}
+
+@media (min-width: 600px) and (max-width: 800px) and (orientation: portrait) {
+  .guardian-card-content { grid-template-columns: 88px minmax(0, 1fr); }
+  .guardian-portrait { width: 86px; height: 108px; border-radius: 25px 7px; }
+  .guardian-name { font-size: 24px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guardian-card.selected .character-portrait-art { filter: none; }
+}
 </style>
+</head>
+<body>
 <main class="game-root" id="gameRoot">
   <div class="play-layer" id="playLayer">
     <canvas id="gameCanvas" class="game-canvas" aria-label="케데헌 횡스크롤 액션 게임 화면"></canvas>
@@ -301,6 +385,151 @@ const GUARDIANS = [
   { id: 'mira', mark: 'M', name: '미라', role: 'POWER · 강공형', skill: '월도', color: '#ffb347', accent: '#ff5c8a', speed: 355, jump: 920, damage: 28, range: 152, attackRate: 0.82, energyRate: 0.88, stats: [94, 58, 68] },
   { id: 'joy', mark: 'J', name: '조이', role: 'RUSH · 속공형', skill: '신칼', color: '#43e6d0', accent: '#8e6cff', speed: 475, jump: 840, damage: 16, range: 116, attackRate: 1.28, energyRate: 1.34, stats: [61, 96, 84] },
 ];
+
+const CHARACTER_ART_VERSION = '27';
+const CHARACTER_ART = Object.freeze({
+  lumi: Object.freeze({
+    src: 'art/characters/lumi-v2.png?v=' + CHARACTER_ART_VERSION,
+    portraitPosition: '50% 15%',
+    combatHeight: 134,
+    footOffset: 7,
+  }),
+  mira: Object.freeze({
+    src: 'art/characters/mira-v2.png?v=' + CHARACTER_ART_VERSION,
+    portraitPosition: '50% 14%',
+    combatHeight: 142,
+    footOffset: 7,
+  }),
+  joy: Object.freeze({
+    src: 'art/characters/joy-v2.png?v=' + CHARACTER_ART_VERSION,
+    portraitPosition: '50% 14%',
+    combatHeight: 130,
+    footOffset: 7,
+  }),
+});
+
+const characterArtCache = new Map();
+let characterArtReadyForPlay = false;
+const CHARACTER_ART_READY = Promise.allSettled(Object.entries(CHARACTER_ART).map(([id, spec]) => new Promise((resolve) => {
+  const image = new Image();
+  let settled = false;
+  const finish = (loaded) => {
+    if (settled) return;
+    settled = true;
+    clearTimeout(timeoutId);
+    resolve({ id, loaded });
+  };
+  const decodeThenFinish = () => {
+    const decode = typeof image.decode === 'function'
+      ? image.decode().catch(() => undefined)
+      : Promise.resolve();
+    Promise.race([
+      decode,
+      new Promise((done) => setTimeout(done, 900)),
+    ]).finally(() => finish(true));
+  };
+  const timeoutId = setTimeout(() => finish(false), 7000);
+  image.decoding = 'async';
+  image.addEventListener('load', decodeThenFinish, { once: true });
+  image.addEventListener('error', () => finish(false), { once: true });
+  characterArtCache.set(id, image);
+  image.src = spec.src;
+})));
+
+function getCharacterImage(id) {
+  const image = characterArtCache.get(id);
+  return image?.complete && image.naturalWidth > 0 ? image : null;
+}
+
+function resolvePlayerArtState(player) {
+  if (player.dead) return 'dead';
+  if (player.ultimate > 0) return 'ultimate';
+  if (player.hurt > 0) return 'hurt';
+  if (player.dash > 0) return 'dash';
+  if (player.attack > 0) return 'attack' + (player.attackStep + 1);
+  if (!player.grounded) return player.vy < 0 ? 'jump' : 'fall';
+  if (Math.abs(player.vx) > 48) return 'run';
+  return 'idle';
+}
+
+function drawGeneratedPlayer(ctx, player, guardian, ambient, reduced) {
+  const image = getCharacterImage(guardian.id);
+  const spec = CHARACTER_ART[guardian.id];
+  if (!image || !spec) return false;
+
+  const state = resolvePlayerArtState(player);
+  const motionTime = reduced ? 0 : ambient;
+  const attackProgress = player.attackTotal > 0 ? clamp(1 - player.attack / player.attackTotal, 0, 1) : 0;
+  const attackKick = Math.sin(attackProgress * Math.PI);
+  let tx = 0;
+  let ty = 0;
+  let rotation = 0;
+  let scaleX = 1;
+  let scaleY = 1;
+
+  if (state === 'idle') {
+    ty = Math.sin(motionTime * 3.2) * -1.7;
+    scaleY = 1 + Math.sin(motionTime * 3.2) * .009;
+  } else if (state === 'run') {
+    ty = Math.abs(Math.sin(motionTime * 12)) * -4;
+    rotation = .045;
+    scaleX = 1.025;
+    scaleY = .98;
+  } else if (state === 'jump') {
+    ty = -5;
+    rotation = -.065;
+  } else if (state === 'fall') {
+    rotation = .055;
+    scaleY = 1.025;
+  } else if (state === 'dash') {
+    tx = 18;
+    rotation = .115;
+    scaleX = 1.13;
+    scaleY = .9;
+  } else if (state.startsWith('attack')) {
+    const finisher = player.attackStep === 2;
+    tx = attackKick * (finisher ? 28 : 18);
+    ty = -attackKick * (finisher ? 7 : 3);
+    rotation = attackKick * (player.attackStep === 1 ? .1 : -.075);
+    scaleX = 1 + attackKick * (finisher ? .1 : .055);
+    scaleY = 1 - attackKick * .035;
+  } else if (state === 'ultimate') {
+    const pulse = reduced ? 0 : Math.sin(motionTime * 14) * .035;
+    ty = -9;
+    scaleX = 1.08 + pulse;
+    scaleY = 1.08 + pulse;
+  } else if (state === 'hurt') {
+    tx = -11;
+    ty = 5;
+    rotation = -.13;
+    scaleX = .96;
+    scaleY = 1.04;
+  } else if (state === 'dead') {
+    tx = -18;
+    ty = 8;
+    rotation = -1.12;
+    scaleX = .93;
+    scaleY = .93;
+  }
+
+  let height = spec.combatHeight;
+  let width = height * (image.naturalWidth / image.naturalHeight);
+  const maxWidth = state.startsWith('attack') ? 226 : 204;
+  if (width > maxWidth) {
+    height *= maxWidth / width;
+    width = maxWidth;
+  }
+
+  ctx.save();
+  ctx.translate(tx, ty);
+  ctx.rotate(rotation);
+  ctx.scale(scaleX, scaleY);
+  if (state === 'hurt') ctx.globalAlpha *= .78;
+  if (state === 'dead') ctx.globalAlpha *= .74;
+  ctx.drawImage(image, -width * .5, -height + spec.footOffset, width, height);
+  ctx.restore();
+  return true;
+}
 
 const STAGES = [
   {
@@ -631,7 +860,7 @@ class Game {
       grounded: true, coyote: 0.1, airJump: 1,
       dash: 0, dashCooldown: 0,
       attack: 0, attackTotal: 0, attackStep: 0, chain: 0, attackSerial: 0,
-      invulnerable: 0, ultimate: 0, ultimateHit: false, switchFlash: 0, dead: false,
+      invulnerable: 0, hurt: 0, ultimate: 0, ultimateHit: false, switchFlash: 0, dead: false,
     };
   }
 
@@ -648,6 +877,7 @@ class Game {
   previewGuardian(id) { this.guardianId = id; this.publish(); }
 
   async start(id) {
+    if (!characterArtReadyForPlay) return;
     await this.audio.unlock();
     this.guardianId = id;
     this.score = 0;
@@ -906,6 +1136,7 @@ class Game {
     this.enemies.forEach((e) => { e.px = e.x; e.py = e.y; });
     const p = this.player;
     p.invulnerable = Math.max(0, p.invulnerable - dt);
+    p.hurt = Math.max(0, p.hurt - dt);
     p.dash = Math.max(0, p.dash - dt);
     p.dashCooldown = Math.max(0, p.dashCooldown - dt);
     p.attack = Math.max(0, p.attack - dt);
@@ -1362,6 +1593,7 @@ class Game {
     }
     if (p.invulnerable > 0 || p.ultimate > 0) return;
     p.health = Math.max(0, p.health - Math.round(damage));
+    p.hurt = 0.3;
     p.invulnerable = 1.1;
     p.vx = dir * 390;
     p.vy = -380;
@@ -1865,7 +2097,7 @@ Object.assign(Game.prototype, {
     ctx.save();
     ctx.translate(x, y + bob);
     ctx.scale(p.facing, 1);
-    ctx.globalAlpha = p.invulnerable > 0 && Math.floor(this.playTime * 18) % 2 ? 0.5 : 1;
+    ctx.globalAlpha = p.invulnerable > 0 ? (this.reduced ? .74 : (Math.floor(this.playTime * 18) % 2 ? .5 : 1)) : 1;
     ctx.fillStyle = 'rgba(0,0,0,.35)';
     ctx.beginPath();
     ctx.ellipse(0, 0, 37, 10, 0, 0, Math.PI * 2);
@@ -1878,6 +2110,40 @@ Object.assign(Game.prototype, {
       ctx.beginPath();
       ctx.arc(0, -48, 58 + Math.sin(this.ambient * 8) * 6, 0, Math.PI * 2);
       ctx.stroke();
+    }
+    if (drawGeneratedPlayer(ctx, p, g, this.ambient, this.reduced)) {
+      if (p.attack > 0) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.globalAlpha *= .86;
+        ctx.lineCap = 'round';
+        const finisher = p.attackStep === 2;
+        const radius = g.range * (finisher ? .98 : .74);
+        ctx.strokeStyle = g.color;
+        ctx.lineWidth = finisher ? (g.id === 'mira' ? 25 : 20) : 12;
+        ctx.shadowColor = g.color;
+        ctx.shadowBlur = finisher ? 34 : 24;
+        ctx.beginPath();
+        ctx.arc(20, -63, radius, -1.12, finisher ? 1.5 : 1.08);
+        ctx.stroke();
+        ctx.globalAlpha *= .72;
+        ctx.strokeStyle = g.accent;
+        ctx.lineWidth = finisher ? 8 : 4;
+        ctx.beginPath();
+        ctx.arc(20, -63, radius + 5, -1.08, finisher ? 1.44 : 1.02);
+        ctx.stroke();
+        if (g.id === 'joy') {
+          ctx.globalAlpha *= .8;
+          ctx.strokeStyle = '#e9ffff';
+          ctx.lineWidth = finisher ? 6 : 3;
+          ctx.beginPath();
+          ctx.arc(12, -56, radius * .78, -.58, 1.7);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+      ctx.restore();
+      return;
     }
     const legSwing = Math.sin(this.playTime * 13) * 10 * speedRatio;
     ctx.strokeStyle = '#161027';
@@ -2656,6 +2922,24 @@ function makePortraitCanvas(id, w, h, opts) {
   return c;
 }
 
+function makeCharacterPortrait(id, w, h) {
+  const spec = CHARACTER_ART[id];
+  if (!spec) return makePortraitCanvas(id, w, h);
+  const image = document.createElement('img');
+  image.src = spec.src;
+  image.alt = '';
+  image.decoding = 'async';
+  image.className = 'character-portrait-art';
+  image.style.width = w + 'px';
+  image.style.height = h + 'px';
+  image.style.setProperty('--portrait-position', spec.portraitPosition);
+  image.addEventListener('error', () => {
+    const fallback = makePortraitCanvas(id, w, h);
+    if (image.parentNode) image.parentNode.replaceChild(fallback, image);
+  }, { once: true });
+  return image;
+}
+
 /* Villain portraits for cutscenes: 진우 (Saja Boys leader) and 귀마 (demon king). */
 function makeVillainPortrait(who, w, h) {
   const c = document.createElement('canvas');
@@ -2997,6 +3281,11 @@ function fileToPortraitDataUrl(file, size = 320) {
     victoryTitleBtn: $('victoryTitleBtn'),
   };
 
+  let characterArtSettled = false;
+  refs.startBtn.disabled = true;
+  refs.startBtn.setAttribute('aria-busy', 'true');
+  refs.guardianGrid.setAttribute('aria-busy', 'true');
+
   const photos = new Map(); // id -> dataURL
   function portraitEl(id, w, h) {
     const url = photos.get(id);
@@ -3009,7 +3298,7 @@ function fileToPortraitDataUrl(file, size = 320) {
       img.style.height = h + 'px';
       return img;
     }
-    return makePortraitCanvas(id, w, h);
+    return makeCharacterPortrait(id, w, h);
   }
   function refreshPortraits() {
     cardEls.forEach((card, id) => {
@@ -3058,6 +3347,9 @@ function fileToPortraitDataUrl(file, size = 320) {
   /* Guardian select cards */
   const cardEls = new Map();
   GUARDIANS.forEach((g) => {
+    const option = document.createElement('div');
+    option.className = 'guardian-option';
+    option.setAttribute('role', 'presentation');
     const card = document.createElement('div');
     card.setAttribute('role', 'radio');
     card.tabIndex = -1;
@@ -3128,7 +3420,7 @@ function fileToPortraitDataUrl(file, size = 320) {
       refreshPortraits();
     });
     tools.append(photoBtn, clearBtn);
-    card.querySelector('.guardian-card-content').append(tools);
+    option.append(card, tools);
     tools.querySelectorAll('button').forEach((b) => b.addEventListener('keydown', (ev) => ev.stopPropagation()));
     // wire card.photoBtn for label refresh
     card.__photoBtn = photoBtn;
@@ -3141,7 +3433,7 @@ function fileToPortraitDataUrl(file, size = 320) {
       selectGuardian(next.id);
       requestAnimationFrame(() => cardEls.get(next.id)?.focus());
     });
-    refs.guardianGrid.append(card);
+    refs.guardianGrid.append(option);
     cardEls.set(g.id, card);
   });
 
@@ -3159,7 +3451,7 @@ function fileToPortraitDataUrl(file, size = 320) {
       card.setAttribute('aria-checked', String(on));
       card.tabIndex = on ? 0 : -1;
     });
-    refs.startBtn.textContent = g.name + '와 무대 출격';
+    refs.startBtn.textContent = characterArtSettled ? g.name + '와 무대 출격' : '헌트릭스 준비 중…';
   }
 
   /* HUD guardian switch buttons */
@@ -3311,6 +3603,17 @@ function fileToPortraitDataUrl(file, size = 320) {
     const url = await PhotoStore.get(g.id);
     if (url) photos.set(g.id, url);
   })).then(() => { hudMarkId = null; refreshPortraits(); });
+  CHARACTER_ART_READY.then(() => {
+    characterArtReadyForPlay = true;
+    characterArtSettled = true;
+    refs.startBtn.disabled = false;
+    refs.startBtn.removeAttribute('aria-busy');
+    refs.guardianGrid.setAttribute('aria-busy', 'false');
+    hudMarkId = null;
+    refreshPortraits();
+    syncSelectCards();
+    refs.srLive.textContent = '헌트릭스 캐릭터 준비 완료';
+  });
 
   const resizeObserver = new ResizeObserver(() => game.resize());
   resizeObserver.observe(canvas);

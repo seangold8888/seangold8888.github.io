@@ -144,13 +144,12 @@ test("열린 카드는 상세에서만 출전 선택하고 잠긴 카드는 기�
   assert.match(app, /origin && origin\.isConnected[\s\S]*?origin\.focus/);
 });
 
-test("양쪽 전투 카드가 같은 3줄 별점 렌더러를 사용하고 캐시는 v26이다", () => {
+test("양쪽 전투 카드가 같은 3줄 별점 렌더러를 사용하고 카드 자산은 v26이다", () => {
   assert.match(app, /syncBattleCard\(dom\.playerCardSlot/);
   assert.match(app, /syncBattleCard\(dom\.enemyCardSlot/);
   assert.match(app, /CardView\.create\(side\.card, \{[\s\S]*?compact: true/);
   assert.match(viewSource, /else if \(options\.compact\) \{[\s\S]*?crown, stats, art/);
   assert.equal((html.match(/\?v=26/g) || []).length, 7);
   assert.doesNotMatch(html, /\?v=(?:24|25)/);
-  assert.match(sw, /const CACHE_VERSION = "v26"/);
   assert.equal((sw.match(/\.\/cards\/[^"\n]+\?v=26/g) || []).length, 7);
 });
