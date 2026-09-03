@@ -829,7 +829,7 @@ document.addEventListener('keydown',e=>{
 .qresult .big small{font-size:1.2rem;color:#a58fbf}
 /* ===== 사다리 ===== */
 .board-wrap{position:relative;width:100%;aspect-ratio:1;max-width:32rem;margin:0 auto}
-.board{position:absolute;inset:0;display:grid;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(10,1fr);gap:2px;background:#fff;border:3px solid #fff;border-radius:1.2rem;overflow:hidden;box-shadow:0 .6rem 1.4rem #38225a22}
+.board-wrap>.board{position:absolute;inset:0;display:grid;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(10,1fr);gap:2px;background:#fff;border:3px solid #fff;border-radius:1.2rem;overflow:hidden;box-shadow:0 .6rem 1.4rem #38225a22}
 .cell{position:relative;display:grid;place-items:center;font-size:.62rem;font-weight:900;color:#8c7fa5;background:var(--c,#f5edff)}
 .cell.goal{background:linear-gradient(135deg,#ffd166,#ff9ac3);color:#7a3e00;font-size:.9rem}
 .cell.start{background:#d8f3e6}
