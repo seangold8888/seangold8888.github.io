@@ -29,6 +29,8 @@
   let battleCards = [];
   let fragments = [];
   let selectedCard = null;
+  let detailCard = null;
+  let detailOrigin = null;
   let selectedFragmentIndex = null;
   let enemyIntent = null;
   let storyChallenge = null;
@@ -68,7 +70,8 @@
       "weaknessHint", "enemyIntent", "enemyIntentIcon", "enemyIntentName",
       "enemyIntentDetail", "enemyIntentBadge", "storyGateBar", "storyGateStatus",
       "storyGateButton", "storyQuizDialog", "storyQuizTitle", "storyQuizQuestion",
-      "storyQuizChoices", "storyQuizResult", "lockedDialog",
+      "storyQuizChoices", "storyQuizResult", "cardDetailDialog", "cardDetailCard",
+      "cardDetailTitle", "cardDetailStatus", "detailSelectButton", "lockedDialog",
       "lockedArt", "lockedTitle", "lockedDescription", "resultDialog",
       "resultKicker", "resultTitle", "resultText", "rematchButton",
       "resultCollectionButton", "coinDialog", "coinTitle", "coinInstruction",
@@ -146,6 +149,7 @@
     const nextSnapshot = getUnlockSnapshot();
     if (nextSnapshot === unlockSnapshot) return;
     if (dom.lockedDialog.open) dom.lockedDialog.close();
+    if (dom.cardDetailDialog.open) closeCardDetail();
     renderCollection();
   }
 
@@ -177,7 +181,9 @@
         locked: locked,
         collectionOnly: collectionOnly,
         selected: selectedCard && selectedCard.id === card.id,
-        interactive: locked || !collectionOnly,
+        interactive: true,
+        compact: true,
+        collectionCompact: true,
         eager: card.id === "cinderella",
         onSelect: function (chosenCard, chosenElement) {
           window.CardAudio.prime();
@@ -185,7 +191,7 @@
             openLockedDialog(card);
             return;
           }
-          selectCard(chosenCard, chosenElement);
+          openCardDetail(chosenCard, chosenElement);
         }
       });
       const item = document.createElement("div");
@@ -202,6 +208,33 @@
       if (nextFocused) nextFocused.focus({ preventScroll: true });
     }
   }
+  function closeCardDetail() {
+    if (dom.cardDetailDialog.open) dom.cardDetailDialog.close();
+  }
+
+  function openCardDetail(card, cardEl) {
+    detailCard = card;
+    detailOrigin = cardEl;
+    const playable = isPlayableCard(card);
+    const detailView = window.CardView.create(card, {
+      collectionOnly: !playable,
+      eager: true
+    });
+    dom.cardDetailTitle.textContent = card.name;
+    dom.cardDetailCard.replaceChildren(detailView);
+    dom.cardDetailStatus.textContent = playable
+      ? "기술과 특성을 확인했어요. 이 영웅으로 출전할까요?"
+      : "컬렉션 전용 카드예요. 대전은 다음 모험에서 열려요.";
+    dom.detailSelectButton.disabled = !playable;
+    dom.detailSelectButton.textContent = playable ? "출전 선택" : "대전 준비 중";
+    dom.detailSelectButton.setAttribute(
+      "aria-label",
+      playable ? card.name + " 출전 선택" : card.name + " 카드는 대전 준비 중"
+    );
+    dom.cardDetailDialog.showModal();
+    window.CardAudio.select();
+  }
+
 
   function selectCard(card, cardEl) {
     if (!isPlayableCard(card)) return;
@@ -2741,6 +2774,24 @@
       dom.resultDialog.close();
       startBattle();
     });
+    document.querySelectorAll("[data-detail-close]").forEach(function (button) {
+      button.addEventListener("click", closeCardDetail);
+    });
+    dom.detailSelectButton.addEventListener("click", function () {
+      if (!detailCard || !isPlayableCard(detailCard)) return;
+      selectCard(detailCard, detailOrigin);
+      dom.cardDetailDialog.close("selected");
+    });
+    dom.cardDetailDialog.addEventListener("click", function (event) {
+      if (event.target === dom.cardDetailDialog) closeCardDetail();
+    });
+    dom.cardDetailDialog.addEventListener("close", function () {
+      const origin = detailOrigin;
+      detailCard = null;
+      detailOrigin = null;
+      if (origin && origin.isConnected) origin.focus({ preventScroll: true });
+    });
+
     dom.resultCollectionButton.addEventListener("click", returnToCollection);
     dom.coinButton.addEventListener("click", triggerCoinAction);
     dom.coinDialog.addEventListener("cancel", function (event) {

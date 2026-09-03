@@ -17,7 +17,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   <link rel="icon" href="../icon.png">
   <link rel="apple-touch-icon" href="../icon.png">
   <link rel="manifest" href="../manifest.json">
-  <link rel="stylesheet" href="styles.css?v=24">
+  <link rel="stylesheet" href="styles.css?v=25">
 </head>
 <body>
   <div class="sky" aria-hidden="true">
@@ -40,23 +40,22 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 
   <main>
     <section class="screen collection-screen" id="collectionScreen">
-      <div class="hero-copy">
-        <p class="eyebrow">별빛 극장의 영웅들이 카드로 깨어났어요</p>
-        <h1>이야기를 듣고,<br><em>나만의 영웅</em>을 불러요</h1>
-        <p class="hero-description">카드를 골라 별사탕을 모으고, 멋진 기술로 1:1 대결을 펼쳐 보세요.</p>
+      <div class="collection-toolbar">
+        <div class="collection-title">
+          <p class="eyebrow">나의 카드 컬렉션</p>
+          <h1>영웅 도감</h1>
+        </div>
         <div class="collection-status" aria-live="polite">
           <span class="status-orb">✦</span>
           <strong id="unlockCount">0 / 10</strong>
-          <span>카드가 깨어났어요</span>
+          <span>깨어남</span>
         </div>
+        <a class="story-link" href="../story/">🎧 이야기</a>
       </div>
 
-      <div class="section-heading">
-        <div>
-          <p class="kicker">나의 카드 컬렉션</p>
-          <h2>출전할 영웅을 선택하세요</h2>
-        </div>
-        <a class="story-link" href="../story/">🎧 이야기 들으러 가기</a>
+      <div class="collection-guide">
+        <h2>카드를 탭해 능력을 보고 출전 영웅을 골라요</h2>
+        <p aria-label="능력치 읽는 법"><span>⚔ 세기</span><span>🛡 튼튼</span><span>✨ 똑똑</span></p>
       </div>
 
       <div class="card-gallery" id="collectionGrid" role="list" aria-label="카드 컬렉션"></div>
@@ -156,6 +155,18 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     <a class="primary-button dialog-action" href="../story/">🎧 이야기 극장으로</a>
   </dialog>
 
+  <dialog class="card-detail-dialog" id="cardDetailDialog" aria-labelledby="cardDetailTitle" aria-describedby="cardDetailStatus">
+    <button class="dialog-close" data-detail-close type="button" aria-label="카드 상세 닫기">×</button>
+    <p class="kicker">영웅 카드 자세히</p>
+    <h2 id="cardDetailTitle">영웅 카드</h2>
+    <div class="card-detail-card" id="cardDetailCard"></div>
+    <p class="card-detail-status" id="cardDetailStatus">기술과 특성을 살펴보세요.</p>
+    <div class="card-detail-actions">
+      <button class="primary-button" id="detailSelectButton" type="button">출전 선택</button>
+      <button class="ghost-button" data-detail-close type="button">계속 보기</button>
+    </div>
+  </dialog>
+
   <dialog class="story-quiz-dialog" id="storyQuizDialog" aria-labelledby="storyQuizTitle" aria-describedby="storyQuizQuestion">
     <button class="dialog-close" data-quiz-close type="button" aria-label="나중에 풀기">×</button>
     <div class="quiz-book" aria-hidden="true"><span>✦</span>📖<span>✦</span></div>
@@ -179,12 +190,12 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   </dialog>
 
   <noscript>이야기 카드 배틀을 하려면 JavaScript를 켜 주세요.</noscript>
-  <script src="js/engine.js?v=24" defer></script>
-  <script src="js/audio.js?v=24" defer></script>
-  <script src="js/card-view.js?v=24" defer></script>
-  <script src="js/vfx-recipes.js?v=24" defer></script>
-  <script src="js/story-gates.js?v=24" defer></script>
-  <script src="js/app.js?v=24" defer></script>
+  <script src="js/engine.js?v=25" defer></script>
+  <script src="js/audio.js?v=25" defer></script>
+  <script src="js/card-view.js?v=25" defer></script>
+  <script src="js/vfx-recipes.js?v=25" defer></script>
+  <script src="js/story-gates.js?v=25" defer></script>
+  <script src="js/app.js?v=25" defer></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {

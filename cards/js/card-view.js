@@ -7,6 +7,12 @@
     magic: { label: "마법", icon: "✨" },
     monster: { label: "괴물", icon: "🌑" }
   };
+  const STAT_META = Object.freeze([
+    Object.freeze({ key: "attack", label: "공격력", short: "세기", icon: "⚔" }),
+    Object.freeze({ key: "defense", label: "방어력", short: "튼튼", icon: "🛡" }),
+    Object.freeze({ key: "spirit", label: "정신력", short: "똑똑", icon: "✨" })
+  ]);
+
 
   const ART_POSITION = {
     heracles: "50% 40%",
@@ -45,6 +51,33 @@
   function rarityLabel(rarity) {
     return "⭐".repeat(Math.max(1, Math.min(3, rarity || 1)));
   }
+  function statValue(card, key) {
+    const value = card && card.stats ? Number(card.stats[key]) : 1;
+    return Math.max(1, Math.min(5, Number.isFinite(value) ? Math.round(value) : 1));
+  }
+
+  function createStats(card) {
+    const stats = el("div", "card-stats");
+    stats.setAttribute("aria-label", "카드 능력치");
+    STAT_META.forEach(function (meta) {
+      const value = statValue(card, meta.key);
+      const row = el("div", "stat-row stat-" + meta.key);
+      row.setAttribute("role", "img");
+      const label = el("span", "stat-label", meta.icon + " " + meta.short);
+      const meter = el("span", "stat-meter");
+      row.setAttribute("aria-label", meta.label + " " + value + "점 만점 5");
+      label.setAttribute("aria-hidden", "true");
+      meter.setAttribute("aria-hidden", "true");
+      meter.dataset.value = String(value);
+      for (let index = 0; index < 5; index += 1) {
+        meter.appendChild(el("i", "stat-star" + (index < value ? " is-filled" : "")));
+      }
+      row.append(label, meter);
+      stats.appendChild(row);
+    });
+    return stats;
+  }
+
 
   function createArt(card, options) {
     const frame = el("div", "card-art");
@@ -115,18 +148,25 @@
     cardEl.setAttribute(
       "aria-label",
       card.name + ", " + type.label + " 타입, 희귀도 별 " + rarity +
-        "개, HP " + Math.max(0, currentHp) + ", " + stateLabel
+        "개, HP " + Math.max(0, currentHp) +
+        ", 공격력 " + statValue(card, "attack") + "점" +
+        ", 방어력 " + statValue(card, "defense") + "점" +
+        ", 정신력 " + statValue(card, "spirit") + "점, " + stateLabel
     );
     if (options.interactive) {
       cardEl.tabIndex = 0;
       cardEl.setAttribute("aria-pressed", options.selected ? "true" : "false");
     }
     if (options.locked) cardEl.classList.add("is-locked");
+    if (options.interactive && options.collectionCompact) {
+      cardEl.setAttribute("aria-haspopup", "dialog");
+    }
     if (options.collectionOnly) cardEl.classList.add("is-collection-only");
     if (options.selected) cardEl.classList.add("is-selected");
     if (options.compact) cardEl.classList.add("is-compact");
     if (rarity === 3) cardEl.classList.add("is-legendary");
     if (options.hit) cardEl.classList.add("is-hit");
+    if (options.collectionCompact) cardEl.classList.add("is-collection-compact");
     if (options.acting) cardEl.classList.add("is-acting");
 
     const crown = el("div", "card-crown");
@@ -159,6 +199,7 @@
     hpTrack.appendChild(hpFill);
 
     const details = el("div", "card-details");
+    const stats = createStats(card);
     if (card.passive) {
       const passive = el("div", "passive-row");
       passive.append(el("span", "passive-icon", "✦"), el("strong", "", card.passive.name), el("small", "", card.passive.desc));
@@ -177,7 +218,14 @@
     });
     details.appendChild(attacks);
 
-    cardEl.append(ornament, crown, createArt(card, options), hpTrack, meta, details);
+    const art = createArt(card, options);
+    if (options.collectionCompact) {
+      cardEl.append(ornament, art, crown, stats);
+    } else if (options.compact) {
+      cardEl.append(ornament, crown, stats, art, hpTrack, meta, details);
+    } else {
+      cardEl.append(ornament, crown, art, hpTrack, meta, stats, details);
+    }
 
     if (options.interactive && typeof options.onSelect === "function") {
       const activate = function () { options.onSelect(card, cardEl); };
@@ -195,6 +243,7 @@
   window.CardView = {
     create: create,
     artPosition: ART_POSITION,
-    typeMeta: TYPE_META
+    typeMeta: TYPE_META,
+    statMeta: STAT_META
   };
 }());
