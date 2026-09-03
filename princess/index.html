@@ -19,42 +19,48 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 <title>공주 옷장: 마음대로 꾸며요!</title>
 <style>
   :root{
-    --rose:#ff8fc1; --rose-deep:#e2599a; --lilac:#c9b6ff; --cream:#fff8fb; --ink:#4a2c4f; --ink-soft:#8a6a8e;
-    --gold:#ffcf5a; --mint:#9ff0dc; --sky:#cfe9ff;
-    --panel:#fff; --shadow:0 6px 0 rgba(74,44,79,.12);
+    --rose:#ff74b8; --rose-deep:#d83e8a; --lilac:#a88cff; --cream:#fff8fc; --ink:#432449; --ink-soft:#806484;
+    --gold:#ffd86a; --gold-deep:#e5a82f; --mint:#8ee8d3; --sky:#bfe6ff;
+    --panel:#fff; --shadow:0 5px 0 rgba(83,40,91,.13),0 10px 24px rgba(83,40,91,.08);
     --tab-h: 64px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%}
+  html,body{height:100%;height:100dvh}
   html{background:#f7d6ea;overscroll-behavior:none;-webkit-text-size-adjust:100%}
   body{
     font-family:"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
     color:var(--ink);
     background:
-      radial-gradient(circle at 12% 18%, #fff2f9 0 9%, transparent 10%),
-      radial-gradient(circle at 88% 82%, #e6dcff 0 11%, transparent 12%),
-      radial-gradient(circle at 80% 12%, #d9f5ff 0 8%, transparent 9%),
-      linear-gradient(160deg,#fbe0ef 0%,#f3dcf7 50%,#dcefff 100%);
+      radial-gradient(circle at 14% 13%,rgba(255,255,255,.9) 0 4px,transparent 5px),
+      radial-gradient(circle at 86% 22%,rgba(255,255,255,.75) 0 3px,transparent 4px),
+      radial-gradient(circle at 8% 80%,#ffd8eb 0 12%,transparent 28%),
+      radial-gradient(circle at 92% 82%,#d8d0ff 0 13%,transparent 30%),
+      linear-gradient(145deg,#ffdcec 0%,#f1ddff 48%,#d7efff 100%);
     -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;
     overflow:hidden;
     display:flex;flex-direction:column;
     padding-top:env(safe-area-inset-top,0px);
   }
   header{
-    display:flex;align-items:center;gap:8px;padding:8px 12px;
+    display:flex;align-items:center;gap:8px;padding:9px 12px 10px;
+    background:linear-gradient(180deg,rgba(255,255,255,.64),rgba(255,255,255,.18));
+    border-bottom:1px solid rgba(255,255,255,.62);
+    box-shadow:0 8px 24px rgba(101,51,108,.07);
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
     flex:0 0 auto;
   }
-  header h1{font-size:clamp(16px,3vw,26px);font-weight:900;letter-spacing:-.02em;color:var(--ink);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 2px 0 #fff}
-  header h1 span{color:var(--rose-deep)}
+  header h1{font-size:clamp(17px,3vw,27px);font-weight:900;letter-spacing:-.025em;color:var(--ink);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 2px 0 #fff,0 4px 12px rgba(216,62,138,.13)}
+  header h1 span{background:linear-gradient(135deg,#d73386,#8d55d9);background-clip:text;-webkit-background-clip:text;color:transparent}
   .btn{
-    border:0;border-radius:16px;background:var(--panel);color:var(--ink);font-weight:900;
-    font-size:clamp(13px,2.4vw,16px);padding:10px 12px;box-shadow:var(--shadow);cursor:pointer;
+    border:1px solid rgba(255,255,255,.95);border-radius:16px;background:linear-gradient(160deg,#fff,#fff8fc);color:var(--ink);font-weight:900;
+    font-size:clamp(14px,2.4vw,16px);padding:10px 12px;min-height:44px;box-shadow:var(--shadow);cursor:pointer;
     display:inline-flex;align-items:center;gap:6px;line-height:1;font-family:inherit;
-    transition:transform .12s;
+    transition:transform .16s,box-shadow .16s,filter .16s;
   }
+  .btn:focus-visible,.tab:focus-visible,.item:focus-visible,.sw:focus-visible{outline:4px solid rgba(109,74,205,.45);outline-offset:2px}
   .btn:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(74,44,79,.12)}
-  .btn.rose{background:linear-gradient(160deg,#ffb1d6,#ff7fbb);color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.15)}
-  .btn.gold{background:linear-gradient(160deg,#ffe28a,#ffc63d);color:#5a3d00}
+  .btn.rose{background:linear-gradient(145deg,#ff9dcd,#ef5aa8 58%,#d63e89);color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.15);box-shadow:0 5px 0 #b83775,0 10px 22px rgba(216,62,138,.2)}
+  .btn.gold{background:linear-gradient(145deg,#fff0a5,#ffd05a 58%,#efb63e);color:#654000;box-shadow:0 5px 0 #d19a28,0 10px 22px rgba(193,132,22,.16)}
   .btn .ic{font-size:1.25em}
   main{
     flex:1 1 auto;min-height:0;
@@ -62,112 +68,142 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     gap:10px;padding:0 12px calc(10px + env(safe-area-inset-bottom,0px));
   }
   #stageWrap{
-    position:relative;min-height:0;display:flex;align-items:center;justify-content:center;
+    position:relative;min-height:0;display:flex;align-items:center;justify-content:center;isolation:isolate;
   }
+  #stageWrap::before{content:"";position:absolute;width:min(96%,520px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.75),rgba(255,255,255,.08) 54%,transparent 72%);filter:blur(2px);z-index:-1;pointer-events:none}
+  #stageCard{height:100%;max-height:100%;aspect-ratio:420/680;max-width:100%;position:relative}
   #stage{
-    height:100%;max-height:100%;aspect-ratio:420/680;max-width:100%;
-    border-radius:26px;border:5px solid #fff;box-shadow:0 18px 40px rgba(120,60,120,.22);
-    overflow:hidden;background:#fff;
+    width:100%;height:100%;
+    border-radius:30px;border:5px solid rgba(255,255,255,.98);outline:2px solid rgba(255,205,100,.58);outline-offset:-9px;
+    box-shadow:0 24px 48px rgba(91,45,99,.24),0 8px 0 rgba(105,55,112,.1),inset 0 0 0 1px rgba(255,255,255,.8);
+    overflow:hidden;background:#fff;position:relative;
     transition:transform .25s;
   }
   #stage.pop{animation:pop .45s ease}
   @keyframes pop{0%{transform:scale(1)}35%{transform:scale(1.04) rotate(-1deg)}70%{transform:scale(.99) rotate(1deg)}100%{transform:scale(1)}}
   #stage svg{display:block;width:100%;height:100%}
+  #stage svg .twinkle{transform-box:fill-box;transform-origin:center;animation:twinkle 2.8s ease-in-out infinite}
+  #stage svg .twinkle:nth-of-type(2n){animation-delay:-1.1s}
+  #stage svg .twinkle:nth-of-type(3n){animation-delay:-2s}
+  @keyframes twinkle{0%,100%{opacity:.38;transform:scale(.72)}50%{opacity:1;transform:scale(1.18)}}
   #nameTag{
-    position:absolute;left:50%;bottom:12px;transform:translateX(-50%);
-    background:rgba(255,255,255,.92);border-radius:999px;padding:8px 16px;font-weight:900;
-    font-size:clamp(13px,2.2vw,17px);box-shadow:0 4px 14px rgba(74,44,79,.18);white-space:nowrap;pointer-events:none;
+    position:absolute;left:14px;top:14px;
+    background:linear-gradient(160deg,rgba(255,255,255,.97),rgba(255,244,251,.95));border:2px solid rgba(255,216,106,.9);border-radius:999px;padding:8px 17px;font-weight:900;
+    font-size:clamp(14px,2.2vw,17px);box-shadow:0 5px 0 rgba(111,61,117,.12),0 10px 22px rgba(74,44,79,.16);white-space:nowrap;pointer-events:none;
   }
   #nameTag small{color:var(--ink-soft);font-weight:800;margin-left:6px}
   #panel{
     min-height:0;display:flex;flex-direction:column;gap:8px;
-    background:rgba(255,255,255,.72);border-radius:24px;padding:10px;
-    box-shadow:inset 0 0 0 3px #fff, 0 12px 30px rgba(120,60,120,.12);
-    backdrop-filter:blur(8px);
+    background:linear-gradient(155deg,rgba(255,255,255,.9),rgba(255,247,252,.69));border-radius:26px;padding:11px;
+    border:1px solid rgba(255,255,255,.86);box-shadow:inset 0 0 0 2px rgba(255,255,255,.7),0 18px 38px rgba(91,45,99,.14);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   }
   #tabs{
     display:flex;gap:6px;overflow-x:auto;flex:0 0 auto;padding-bottom:4px;scrollbar-width:none;
   }
   #tabs::-webkit-scrollbar{display:none}
   .tab{
-    flex:0 0 auto;border:0;border-radius:18px;background:#fff;color:var(--ink-soft);font-weight:900;
-    padding:8px 12px;font-size:clamp(12px,2vw,14px);display:flex;flex-direction:column;align-items:center;gap:2px;
+    flex:0 0 auto;border:1px solid rgba(255,255,255,.95);border-radius:18px;background:linear-gradient(160deg,#fff,#fff7fc);color:var(--ink-soft);font-weight:900;
+    padding:8px 12px;font-size:clamp(13px,2vw,14px);display:flex;flex-direction:column;align-items:center;gap:3px;
     box-shadow:var(--shadow);cursor:pointer;min-width:62px;font-family:inherit;
+    transition:transform .16s,box-shadow .16s,background .16s;
   }
+  .tab:active{transform:translateY(3px)}
   .tab .ic{font-size:clamp(20px,3.4vw,26px);line-height:1}
-  .tab.on{background:linear-gradient(160deg,#ffb1d6,#ff7fbb);color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.15)}
+  .tab.on{background:linear-gradient(145deg,#ff9fd0,#ef62ac 58%,#d74691);color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.15);box-shadow:0 5px 0 #b83b79,0 10px 20px rgba(216,62,138,.18)}
   #swatches{
-    display:flex;gap:7px;flex-wrap:wrap;flex:0 0 auto;padding:6px 4px;align-items:center;
+    display:flex;gap:9px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;flex:0 0 auto;padding:9px 8px;align-items:center;
+    background:rgba(255,255,255,.5);border-radius:17px;border:1px solid rgba(255,255,255,.76);-webkit-overflow-scrolling:touch;
   }
+  #swatches::-webkit-scrollbar{display:none}
   #swatches:empty{display:none}
-  #swatches .lbl{font-size:12px;font-weight:900;color:var(--ink-soft);margin-right:2px}
+  #swatches .lbl{font-size:14px;font-weight:900;color:var(--ink-soft);margin-right:2px;white-space:nowrap}
   .sw{
-    width:30px;height:30px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 6px rgba(74,44,79,.25);cursor:pointer;
+    width:44px;height:44px;min-width:44px;border-radius:50%;border:3px solid #fff;box-shadow:inset 5px 6px 8px rgba(255,255,255,.38),inset -4px -5px 7px rgba(49,24,54,.16),0 3px 8px rgba(74,44,79,.22);cursor:pointer;
     transition:transform .12s;flex:0 0 auto;
   }
-  .sw.on{transform:scale(1.22);box-shadow:0 0 0 3px var(--ink), 0 2px 6px rgba(74,44,79,.25)}
+  .sw.on{transform:scale(1.12);box-shadow:inset 5px 6px 8px rgba(255,255,255,.36),0 0 0 3px var(--ink),0 4px 10px rgba(74,44,79,.28)}
   #items{
     flex:1 1 auto;min-height:0;overflow-y:auto;
     display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px;align-content:start;
     padding:4px 2px 12px;-webkit-overflow-scrolling:touch;
   }
   .item{
-    border:0;border-radius:18px;background:#fff;padding:6px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;
-    box-shadow:var(--shadow);cursor:pointer;font-family:inherit;color:var(--ink);font-weight:900;font-size:12px;
-    position:relative;transition:transform .12s;
+    border:1px solid rgba(255,255,255,.96);border-radius:19px;background:linear-gradient(165deg,#fff,#fff8fc);padding:7px 5px 9px;display:flex;flex-direction:column;align-items:center;gap:5px;
+    box-shadow:var(--shadow);cursor:pointer;font-family:inherit;color:var(--ink);font-weight:900;font-size:13px;min-height:44px;
+    position:relative;transition:transform .15s,box-shadow .15s,background .15s;
   }
   .item:active{transform:scale(.95)}
-  .item.on{box-shadow:0 0 0 4px var(--rose), var(--shadow);background:#fff4fa}
-  .item.on::after{content:"✓";position:absolute;top:4px;right:6px;width:20px;height:20px;border-radius:50%;background:var(--rose-deep);color:#fff;font-size:13px;display:grid;place-items:center}
-  .item svg{width:100%;aspect-ratio:1;display:block;border-radius:12px;background:linear-gradient(160deg,#fff4fa,#eef4ff)}
-  .item.pr svg{background:linear-gradient(160deg,#ffe9f4,#e6e0ff)}
+  .item.on{box-shadow:0 0 0 4px var(--rose),0 7px 0 rgba(154,46,106,.16),0 14px 24px rgba(216,62,138,.16);background:linear-gradient(160deg,#fff,#fff0f8)}
+  .item.on::after{content:"✓";position:absolute;top:5px;right:6px;width:22px;height:22px;border-radius:50%;background:linear-gradient(145deg,#f25baa,#c93480);color:#fff;font-size:14px;display:grid;place-items:center;border:2px solid #fff;box-shadow:0 3px 8px rgba(94,33,75,.28)}
+  .item svg{width:100%;aspect-ratio:1;display:block;border-radius:13px;background:radial-gradient(circle at 35% 25%,#fff 0 9%,transparent 10%),linear-gradient(160deg,#fff3fa,#e9f1ff);box-shadow:inset 0 0 0 1px rgba(131,91,144,.08)}
+  .item.pr svg{background:radial-gradient(circle at 30% 20%,#fff 0 8%,transparent 9%),linear-gradient(160deg,#ffe7f3,#ded8ff)}
+  @media (hover:hover){
+    .btn:hover{filter:brightness(1.035);transform:translateY(-1px)}
+    .item:hover{transform:translateY(-2px);box-shadow:0 7px 0 rgba(83,40,91,.11),0 14px 24px rgba(83,40,91,.12)}
+  }
   .item .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
   #intro{
-    flex:0 0 auto;font-size:clamp(12px,2vw,14px);font-weight:800;color:var(--ink-soft);padding:2px 6px;line-height:1.45;
+    flex:0 0 auto;font-size:clamp(14px,2vw,15px);font-weight:800;color:var(--ink-soft);padding:3px 7px;line-height:1.45;
   }
   #intro:empty{display:none}
   /* 세로 화면(아이패드 세로·폰) */
   @media (orientation:portrait){
     main{grid-template-columns:1fr;grid-template-rows:minmax(0,50%) minmax(0,1fr)}
-    #stage{height:100%}
+    #stageCard{height:100%}
+  }
+  @media (max-width:720px){
+    header{gap:6px;padding-inline:8px}
+    header .btn{padding:9px 10px}
+    header h1{font-size:16px}
+    main{padding-inline:8px;gap:8px}
+  }
+  @media (max-width:540px){
+    header h1{font-size:0}
+    header h1::after{content:"공주 옷장";font-size:16px}
+    header .btn-label{display:none}
+    header .btn{width:44px;justify-content:center;padding-inline:0}
   }
   /* 오버레이(사진·앨범) */
-  .overlay{position:fixed;inset:0;background:rgba(74,44,79,.55);display:none;align-items:center;justify-content:center;z-index:20;padding:16px}
+  .overlay{position:fixed;inset:0;background:rgba(52,27,58,.62);display:none;align-items:center;justify-content:center;z-index:20;padding:16px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
   .overlay.show{display:flex}
   .sheet{
-    background:#fff;border-radius:26px;padding:16px;max-width:min(92vw,560px);max-height:92vh;display:flex;flex-direction:column;gap:12px;
-    box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden;
+    background:linear-gradient(160deg,#fff,#fff6fb);border:2px solid rgba(255,255,255,.95);border-radius:28px;padding:16px;max-width:min(92vw,560px);max-height:92vh;max-height:92dvh;display:flex;flex-direction:column;gap:12px;
+    box-shadow:0 24px 70px rgba(50,24,56,.34),inset 0 0 0 2px rgba(255,216,106,.24);overflow:hidden;
   }
   .sheet h2{font-size:20px;font-weight:900;display:flex;align-items:center;gap:8px}
   .sheet h2 .sp{flex:1}
   .sheet .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
-  #photoImg{max-height:58vh;max-width:100%;border-radius:16px;border:4px solid #ffe4f1;display:block;margin:0 auto;-webkit-touch-callout:default;user-select:auto;-webkit-user-select:auto}
-  .hint{font-size:13px;font-weight:800;color:var(--ink-soft);text-align:center}
+  #photoImg{max-height:58vh;max-height:58dvh;max-width:100%;border-radius:18px;border:4px solid #ffe0f0;outline:2px solid rgba(255,216,106,.45);display:block;margin:0 auto;box-shadow:0 12px 30px rgba(83,40,91,.16);-webkit-touch-callout:default;user-select:auto;-webkit-user-select:auto}
+  .hint{font-size:14px;font-weight:800;color:var(--ink-soft);text-align:center}
   #albumGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;overflow-y:auto;min-height:0;padding:4px}
-  #albumGrid .shot{position:relative;border-radius:14px;overflow:hidden;border:3px solid #ffe4f1;background:#fdf3f8}
+  #albumGrid .shot{position:relative;border-radius:16px;overflow:hidden;border:3px solid #ffe0f0;background:#fdf3f8;box-shadow:0 8px 18px rgba(83,40,91,.13)}
   #albumGrid .shot img{display:block;width:100%;aspect-ratio:420/680;object-fit:cover}
-  #albumGrid .shot button{position:absolute;top:4px;right:4px;border:0;border-radius:50%;width:26px;height:26px;background:rgba(255,255,255,.9);font-weight:900;cursor:pointer;color:#c33}
-  #albumGrid .shot .cap{font-size:11px;font-weight:900;text-align:center;padding:4px}
+  #albumGrid .shot button{position:absolute;top:4px;right:4px;border:2px solid #fff;border-radius:50%;width:44px;height:44px;background:rgba(255,255,255,.94);font-weight:900;cursor:pointer;color:#c33;box-shadow:0 3px 10px rgba(60,30,65,.18)}
+  #albumGrid .shot .cap{font-size:13px;font-weight:900;text-align:center;padding:5px}
   #albumEmpty{padding:30px;text-align:center;color:var(--ink-soft);font-weight:800}
   #toast{position:fixed;left:50%;top:14px;transform:translateX(-50%) translateY(-80px);background:var(--ink);color:#fff;font-weight:900;padding:10px 18px;border-radius:999px;transition:transform .3s;z-index:30;font-size:14px;pointer-events:none}
   #toast.show{transform:translateX(-50%) translateY(0)}
   .sparkle{position:absolute;pointer-events:none;font-size:26px;animation:spark .8s ease-out forwards;z-index:5}
   @keyframes spark{0%{transform:translate(-50%,-50%) scale(.3);opacity:1}100%{transform:translate(-50%,-50%) translateY(-40px) scale(1.3);opacity:0}}
+  @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 </style>
 </head>
 <body>
 <header>
   <h1>👑 <span>공주 옷장</span> · 마음대로 꾸며요</h1>
-  <button class="btn gold" id="btnRandom"><span class="ic">🎲</span>뽑기</button>
-  <button class="btn rose" id="btnPhoto"><span class="ic">📸</span>사진</button>
-  <button class="btn" id="btnAlbum"><span class="ic">📚</span>앨범</button>
-  <button class="btn" id="btnSound"><span class="ic" id="soundIc">🔊</span></button>
-  <a class="btn" href="../" id="btnHome"><span class="ic">🏠</span></a>
+  <button class="btn gold" id="btnRandom"><span class="ic">🎲</span><span class="btn-label">뽑기</span></button>
+  <button class="btn rose" id="btnPhoto"><span class="ic">📸</span><span class="btn-label">사진</span></button>
+  <button class="btn" id="btnAlbum"><span class="ic">📚</span><span class="btn-label">앨범</span></button>
+  <button class="btn" id="btnSound" aria-label="소리 켜기 또는 끄기"><span class="ic" id="soundIc">🔊</span></button>
+  <a class="btn" href="../" id="btnHome" aria-label="모험 보드로 돌아가기"><span class="ic">🏠</span></a>
 </header>
 <main>
   <div id="stageWrap">
-    <div id="stage"></div>
-    <div id="nameTag"></div>
+    <div id="stageCard">
+      <div id="stage"></div>
+      <div id="nameTag"></div>
+    </div>
   </div>
   <section id="panel">
     <div id="tabs"></div>
@@ -221,7 +257,7 @@ const PRINCESSES=[
   {id:'cinder', name:'신데렐라',  hair:'bun',     hairColor:'#f3cc6a', skin:'#ffdfcc', eye:'#4a7dc2', intro:'유리 구두를 남기고 무도회를 떠난 공주예요.', def:{dress:['ballgown','#6fc3ff'],shoes:['glass','#6fc3ff'],crown:['tiara','#6fc3ff'],neck:['pearls','#ffffff'],pet:['mouse','#c9c9d9'],bg:'ballroom'}},
   {id:'rapunzel',name:'라푼젤',   hair:'braid',   hairColor:'#f3cc6a', skin:'#ffdfcc', eye:'#5fa872', intro:'긴 머리카락을 탑 아래로 내려 주는 공주예요.', def:{dress:['party','#c98bff'],shoes:['sandals','#ffd93d'],crown:['flowers','#ff8fc1'],hand:['bouquet','#ff8fc1'],pet:['frog','#7ad97a'],bg:'tower'}},
   {id:'mermaid',name:'인어공주',  hair:'wavy',    hairColor:'#5fd9c9', skin:'#ffe4d6', eye:'#2f8fb0', intro:'바다 깊은 궁전에서 노래하는 공주예요.', def:{dress:['tail','#5fd9c9'],crown:['pearls','#ffffff'],neck:['gem','#8a7dff'],pet:['fish','#ff9a4d'],bg:'sea'}},
-  {id:'thumb',  name:'엄지공주',  hair:'pigtails',hairColor:'#b07a4a', skin:'#ffe4d6', eye:'#7a5230', intro:'꽃잎 속에서 태어난 아주 작은 공주예요.', def:{dress:['summer','#7ad97a'],shoes:['ballet','#ff8fc1'],crown:['petal','#ff8fc1'],back:['butterfly','#ffd93d'],pet:['butterfly','#c98bff'],bg:'meadow'}},
+  {id:'thumb',  name:'엄지공주',  hair:'pigtails',hairColor:'#b07a4a', skin:'#ffe4d6', eye:'#7a5230', intro:'꽃잎 속에서 태어난 아주 작은 공주예요.', def:{dress:['summer','#7ad97a'],shoes:['ballet','#ff8fc1'],crown:['flowers','#ff8fc1'],back:['butterfly','#ffd93d'],pet:['butterfly','#c98bff'],bg:'meadow'}},
   {id:'kongjwi',name:'콩쥐',      hair:'daenggi', hairColor:'#2b2230', skin:'#ffe4d6', eye:'#3a2a26', intro:'착한 마음으로 두꺼비와 참새의 도움을 받은 우리 옛이야기 주인공이에요.', def:{dress:['hanbok','#ff8fc1'],shoes:['kkotsin','#ff5a6e'],crown:['daenggi','#ff5a6e'],neck:['norigae','#7ad97a'],pet:['toad','#7ad97a'],bg:'hanok'}},
   {id:'briar',  name:'들장미 공주',hair:'curls',  hairColor:'#e0553d', skin:'#ffdfcc', eye:'#7a4a8a', intro:'장미 넝쿨에 둘러싸인 성에서 백 년 동안 잠든 공주예요.', def:{dress:['rose','#ff8fc1'],shoes:['pumps','#c98bff'],crown:['crown','#ffd93d'],neck:['heart','#ff5a6e'],pet:['cat','#ffffff'],bg:'rosecastle'}},
   {id:'moon',   name:'달빛 공주',  hair:'afro',    hairColor:'#2b2230', skin:'#8d5a3c', eye:'#2b2230', intro:'밤하늘의 별을 모아 왕관을 만든 공주예요.', def:{dress:['star','#3b3f7a'],shoes:['boots','#8a7dff'],crown:['moon','#ffd93d'],hand:['wand','#ffd93d'],pet:['dragon','#8a7dff'],bg:'night'}},
@@ -278,42 +314,80 @@ const HAIR={
   }
 };
 
+// 머리 모양마다 빛을 받는 방향을 달리해 한 겹 더 입체적으로 보이게 한다.
+function hairDetailSVG(style,c,layer='front'){
+  const hi=lt(c,.42),mid=lt(c,.24),lo=dk(c,.24);
+  const common='<path d="M174 92 Q194 69 222 70" stroke="'+hi+'" stroke-width="7" fill="none" opacity=".52" stroke-linecap="round"/>'+
+    '<path d="M258 108 Q265 142 258 170" stroke="'+lo+'" stroke-width="4" fill="none" opacity=".38" stroke-linecap="round"/>';
+  const detail={
+    bob:'<path d="M166 145 Q170 177 164 194 M246 180 Q232 198 216 201" stroke="'+mid+'" stroke-width="5" fill="none" opacity=".46" stroke-linecap="round"/>',
+    bun:'<path d="M194 48 Q210 35 226 49" stroke="'+hi+'" stroke-width="6" fill="none" opacity=".5" stroke-linecap="round"/><path d="M202 63 Q210 54 218 63" stroke="'+lo+'" stroke-width="3" fill="none" opacity=".36"/>',
+    braid:'<path d="M274 190 Q294 292 287 390" stroke="'+hi+'" stroke-width="5" fill="none" opacity=".36" stroke-linecap="round"/>',
+    wavy:'<path d="M164 164 C150 230 158 300 166 352 M250 170 C266 230 258 302 252 356" stroke="'+hi+'" stroke-width="6" fill="none" opacity=".38" stroke-linecap="round"/>',
+    pigtails:'<path d="M137 164 Q146 148 158 165 M261 165 Q272 149 281 166" stroke="'+hi+'" stroke-width="5" fill="none" opacity=".5" stroke-linecap="round"/>',
+    daenggi:'<path d="M145 174 Q126 260 132 356" stroke="'+hi+'" stroke-width="5" fill="none" opacity=".38" stroke-linecap="round"/>',
+    curls:[[139,176],[137,264],[158,374],[282,218],[264,374]].map(([x,y])=>'<path d="M'+(x-7)+' '+(y-7)+' Q'+x+' '+(y-16)+' '+(x+8)+' '+(y-5)+'" stroke="'+hi+'" stroke-width="4" fill="none" opacity=".5" stroke-linecap="round"/>').join(''),
+    afro:[[130,84],[119,160],[164,207],[260,206],[300,132],[250,48]].map(([x,y])=>'<path d="M'+(x-8)+' '+(y-5)+' Q'+x+' '+(y-14)+' '+(x+8)+' '+(y-4)+'" stroke="'+hi+'" stroke-width="4" fill="none" opacity=".48" stroke-linecap="round"/>').join('')
+  };
+  const backOnly=['braid','wavy','daenggi','curls','afro'].includes(style);
+  if(layer==='back')return backOnly?'<g aria-hidden="true">'+(detail[style]||'')+'</g>':'';
+  return '<g aria-hidden="true">'+common+(backOnly?'':(detail[style]||''))+'</g>';
+}
+
 // ---------- 몸 ----------
 function bodySVG(p, tail){
-  const s=p.skin, o=dk(s,.18);
+  const s=p.skin,o=dk(s,.2),hi=lt(s,.35);
   const legs = tail ? '' : `
     <path d="M190 350 L186 560" stroke="${s}" stroke-width="32" stroke-linecap="round"/>
     <path d="M230 350 L234 560" stroke="${s}" stroke-width="32" stroke-linecap="round"/>
-    <ellipse cx="184" cy="572" rx="20" ry="11" fill="${s}"/><ellipse cx="236" cy="572" rx="20" ry="11" fill="${s}"/>`;
+    <path d="M195 360 L191 552 M235 360 L239 552" stroke="${o}" stroke-width="5" opacity=".2" stroke-linecap="round"/>
+    <path d="M184 365 L181 545 M224 365 L229 545" stroke="${hi}" stroke-width="4" opacity=".32" stroke-linecap="round"/>
+    <ellipse cx="184" cy="572" rx="20" ry="11" fill="${s}" stroke="${o}" stroke-width="1.5" opacity=".98"/><ellipse cx="236" cy="572" rx="20" ry="11" fill="${s}" stroke="${o}" stroke-width="1.5" opacity=".98"/>`;
   return `<g id="body">
     ${legs}
     <path d="M164 210 Q 138 270 128 340" stroke="${s}" stroke-width="22" stroke-linecap="round" fill="none"/>
     <path d="M256 210 Q 282 270 292 340" stroke="${s}" stroke-width="22" stroke-linecap="round" fill="none"/>
+    <path d="M162 216 Q143 270 132 336 M258 216 Q277 270 288 336" stroke="${hi}" stroke-width="4" stroke-linecap="round" fill="none" opacity=".34"/>
+    <path d="M170 216 Q148 278 137 337 M250 216 Q272 278 283 337" stroke="${o}" stroke-width="3" stroke-linecap="round" fill="none" opacity=".18"/>
     <rect x="197" y="176" width="26" height="34" rx="9" fill="${dk(s,.08)}"/>
+    <path d="M199 180 Q210 190 221 180 L221 204 Q210 211 199 204Z" fill="${o}" opacity=".16"/>
     <path d="M162 205 Q210 194 258 205 L252 300 Q210 314 168 300 Z" fill="${s}"/>
     <path d="M168 300 Q210 314 252 300 L262 352 Q210 368 158 352 Z" fill="${s}"/>
-    <circle cx="156" cy="132" r="10" fill="${s}"/><circle cx="264" cy="132" r="10" fill="${s}"/>
-    <ellipse cx="${HEAD.cx}" cy="${HEAD.cy}" rx="${HEAD.rx}" ry="${HEAD.ry}" fill="${s}"/>
-    <circle cx="128" cy="345" r="13" fill="${s}"/><circle cx="292" cy="345" r="13" fill="${s}"/>
+    <circle cx="156" cy="132" r="10" fill="${s}" stroke="${o}" stroke-width="1.2"/><circle cx="264" cy="132" r="10" fill="${s}" stroke="${o}" stroke-width="1.2"/>
+    <circle cx="157" cy="132" r="5" fill="${o}" opacity=".13"/><circle cx="263" cy="132" r="5" fill="${o}" opacity=".13"/>
+    <ellipse cx="${HEAD.cx}" cy="${HEAD.cy}" rx="${HEAD.rx}" ry="${HEAD.ry}" fill="${s}" stroke="${o}" stroke-width="1.5"/>
+    <ellipse cx="193" cy="106" rx="25" ry="34" fill="${hi}" opacity=".14" transform="rotate(-18 193 106)"/>
+    <path d="M170 157 Q210 191 250 157" stroke="${o}" stroke-width="2" fill="none" opacity=".15"/>
+    <circle cx="128" cy="345" r="13" fill="${s}" stroke="${o}" stroke-width="1.2"/><circle cx="292" cy="345" r="13" fill="${s}" stroke="${o}" stroke-width="1.2"/>
+    <path d="M121 345 q7 5 14 0 M285 345 q7 5 14 0" stroke="${o}" stroke-width="1.5" fill="none" opacity=".35" stroke-linecap="round"/>
+    <circle cx="124" cy="341" r="3.5" fill="${hi}" opacity=".5"/><circle cx="288" cy="341" r="3.5" fill="${hi}" opacity=".5"/>
   </g>`;
 }
 function faceSVG(p){
-  const e=p.eye;
-  const eye=(x)=>`<ellipse cx="${x}" cy="130" rx="9.5" ry="12" fill="#fff"/><circle cx="${x}" cy="132" r="6.5" fill="${e}"/><circle cx="${x}" cy="133" r="3.2" fill="#1a1020"/><circle cx="${x-2.5}" cy="128" r="2.4" fill="#fff"/>
-    <path d="M${x-10} 118 Q${x} 112 ${x+10} 118" stroke="#1a1020" stroke-width="2.4" fill="none" stroke-linecap="round"/>`;
-  return `<g id="face">
-    ${eye(188)}${eye(232)}
-    <path d="M178 108 Q188 103 198 107" stroke="${dk(p.skin,.45)}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-    <path d="M222 107 Q232 103 242 108" stroke="${dk(p.skin,.45)}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-    <path d="M208 146 Q210 150 213 147" stroke="${dk(p.skin,.35)}" stroke-width="2" fill="none" stroke-linecap="round"/>
-    <path d="M197 156 Q210 168 223 156" stroke="#c94a6a" stroke-width="3" fill="none" stroke-linecap="round"/>
-    <circle cx="174" cy="150" r="9" fill="#ff8fa8" opacity=".45"/><circle cx="246" cy="150" r="9" fill="#ff8fa8" opacity=".45"/>
+  const e=p.eye,s=p.skin,blush=mix(s,'#ff668c',.34),brow=dk(s,.48);
+  const eye=(x,d)=>`<ellipse cx="${x}" cy="130" rx="10.5" ry="12.5" fill="#fffdfd" stroke="${dk(e,.3)}" stroke-width="1.2"/>
+    <circle cx="${x}" cy="132" r="7.2" fill="${dk(e,.12)}"/><circle cx="${x}" cy="131" r="5.5" fill="${e}"/><circle cx="${x}" cy="133" r="3.3" fill="#1a1020"/>
+    <ellipse cx="${x-2.5}" cy="127.5" rx="2.6" ry="3.2" fill="#fff"/><circle cx="${x+2.5}" cy="135" r="1.2" fill="#fff" opacity=".8"/>
+    <path d="M${x-10} 119 Q${x} 112 ${x+10} 119" stroke="#29172f" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M${x+d*9} 118 l${d*6} -4 M${x+d*9} 121 l${d*7} 0" stroke="#29172f" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+  const freckles=(p.id==='rapunzel'||p.id==='thumb')?`<g fill="${brow}" opacity=".28"><circle cx="178" cy="149" r="1.4"/><circle cx="183" cy="151" r="1.2"/><circle cx="237" cy="151" r="1.2"/><circle cx="242" cy="149" r="1.4"/></g>`:'';
+  return `<g data-layer="face">
+    ${eye(188,-1)}${eye(232,1)}
+    <path d="M178 108 Q188 102 198 107" stroke="${brow}" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+    <path d="M222 107 Q232 102 242 108" stroke="${brow}" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+    <path d="M207 145 Q209 151 214 147" stroke="${dk(s,.38)}" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <ellipse cx="208" cy="144" rx="2.5" ry="4" fill="#fff" opacity=".26"/>
+    <path d="M197 157 C202 160 205 164 210 164 C215 164 218 160 223 157 C221 169 199 169 197 157Z" fill="#c94a6a"/>
+    <path d="M202 161 Q210 165 218 161" stroke="${lt('#c94a6a',.5)}" stroke-width="1.7" fill="none" opacity=".75" stroke-linecap="round"/>
+    <ellipse cx="174" cy="151" rx="11" ry="7" fill="${blush}" opacity=".34"/><ellipse cx="246" cy="151" rx="11" ry="7" fill="${blush}" opacity=".34"/>
+    ${freckles}
   </g>`;
 }
 
 // ---------- 드레스 ----------
 const BODICE='M162 205 Q210 194 258 205 L252 300 Q210 314 168 300 Z';
-const puff=(c)=>`<circle cx="164" cy="214" r="16" fill="${c}"/><circle cx="256" cy="214" r="16" fill="${c}"/>`;
+const puff=(c)=>`<circle cx="164" cy="214" r="16" fill="${c}" stroke="${dk(c,.18)}" stroke-width="2"/><circle cx="256" cy="214" r="16" fill="${c}" stroke="${dk(c,.18)}" stroke-width="2"/>
+  <path d="M153 209 Q164 199 174 208 M246 208 Q256 199 267 209" stroke="${lt(c,.5)}" stroke-width="4" fill="none" opacity=".72" stroke-linecap="round"/>`;
 const DRESSES=[
   {id:'ballgown',name:'무도회 드레스',svg:c=>`${puff(lt(c,.2))}<path d="${BODICE}" fill="${c}"/>
     <path d="M168 300 Q210 314 252 300 C 300 380, 330 470, 342 552 Q210 578 78 552 C 90 470, 120 380, 168 300 Z" fill="${c}"/>
@@ -385,6 +459,48 @@ const DRESSES=[
     <path d="M196 208 L210 240 L224 208" stroke="${lt(c,.5)}" stroke-width="6" fill="none" stroke-linecap="round"/>`},
 ];
 
+function dressFinishSVG(dress,c){
+  if(!dress)return '';
+  const hi=lt(c,.62),soft=lt(c,.36),sh=dk(c,.28);
+  const bodice=dress.id==='tail'
+    ?`<path d="M184 216 Q192 225 200 216 M220 216 Q228 225 236 216" stroke="${hi}" stroke-width="3" fill="none" opacity=".62" stroke-linecap="round"/>`
+    :`<path d="M174 216 Q210 202 246 216" stroke="${hi}" stroke-width="4" fill="none" opacity=".55" stroke-linecap="round"/>
+      <path d="M170 224 Q174 266 176 292" stroke="${sh}" stroke-width="4" fill="none" opacity=".22" stroke-linecap="round"/>
+      <path d="M244 224 Q240 258 242 290" stroke="${hi}" stroke-width="3" fill="none" opacity=".34" stroke-linecap="round"/>`;
+  let skirt='';
+  if(['ballgown','star','rose','rainbow'].includes(dress.id)){
+    skirt=`<path d="M168 312 C138 382 111 468 100 539" stroke="${sh}" stroke-width="9" fill="none" opacity=".22" stroke-linecap="round"/>
+      <path d="M230 316 C248 386 274 468 289 536" stroke="${hi}" stroke-width="10" fill="none" opacity=".34" stroke-linecap="round"/>
+      <path d="M151 324 Q210 342 269 324" stroke="${soft}" stroke-width="5" fill="none" opacity=".46"/>`;
+  }else if(['aline','winter'].includes(dress.id)){
+    skirt=`<path d="M165 316 Q142 399 132 490" stroke="${sh}" stroke-width="7" fill="none" opacity=".2" stroke-linecap="round"/>
+      <path d="M230 319 Q255 402 271 487" stroke="${hi}" stroke-width="8" fill="none" opacity=".32" stroke-linecap="round"/>`;
+  }else if(dress.id==='mermaidline'){
+    skirt=`<path d="M176 316 Q172 405 180 487" stroke="${sh}" stroke-width="6" fill="none" opacity=".23" stroke-linecap="round"/>
+      <path d="M234 318 Q241 406 232 480" stroke="${hi}" stroke-width="7" fill="none" opacity=".34" stroke-linecap="round"/>`;
+  }else if(dress.id==='hanbok'){
+    skirt=`<path d="M154 280 C124 366 106 470 96 540" stroke="${sh}" stroke-width="9" fill="none" opacity=".18" stroke-linecap="round"/>
+      <path d="M242 282 C270 366 294 468 310 538" stroke="${hi}" stroke-width="10" fill="none" opacity=".3" stroke-linecap="round"/>
+      <path d="M192 292 Q210 304 228 292" stroke="#ffd86a" stroke-width="4" fill="none" opacity=".78"/>`;
+  }else if(dress.id==='tail'){
+    skirt=`<path d="M176 354 Q166 430 190 508" stroke="${sh}" stroke-width="7" fill="none" opacity=".22" stroke-linecap="round"/>
+      <path d="M236 354 Q250 426 225 510" stroke="${hi}" stroke-width="8" fill="none" opacity=".38" stroke-linecap="round"/>
+      <path d="M112 586 Q158 570 191 540 M308 586 Q262 570 229 540" stroke="${hi}" stroke-width="4" fill="none" opacity=".46"/>`;
+  }else if(['party','summer'].includes(dress.id)){
+    skirt=`<path d="M170 314 Q151 360 143 416" stroke="${sh}" stroke-width="6" fill="none" opacity=".2" stroke-linecap="round"/>
+      <path d="M233 314 Q253 360 271 414" stroke="${hi}" stroke-width="7" fill="none" opacity=".34" stroke-linecap="round"/>`;
+  }else if(dress.id==='tutu'){
+    skirt=`<path d="M120 330 Q210 350 300 330" stroke="${hi}" stroke-width="5" fill="none" opacity=".45"/>
+      <path d="M126 345 Q210 366 294 345" stroke="${sh}" stroke-width="4" fill="none" opacity=".2"/>`;
+  }else if(dress.id==='adventure'){
+    skirt=`<path d="M176 218 L210 246 L244 218 M210 246 V350" stroke="${hi}" stroke-width="4" fill="none" opacity=".48" stroke-linecap="round"/>
+      <path d="M168 365 Q210 378 252 365" stroke="${sh}" stroke-width="3" fill="none" opacity=".36"/>`;
+  }
+  const glint=['ballgown','star','rose','hanbok'].includes(dress.id)?`<path d="M268 370 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3Z" fill="#fff" opacity=".72"/>
+    <circle cx="156" cy="402" r="3" fill="#fff" opacity=".66"/>`:'';
+  return `<g id="dressFinish" aria-hidden="true">${bodice}${skirt}${glint}</g>`;
+}
+
 // ---------- 신발 ----------
 const shoePair=(fn)=>`<g transform="translate(${FEET.L[0]} ${FEET.L[1]})">${fn(-1)}</g><g transform="translate(${FEET.R[0]} ${FEET.R[1]})">${fn(1)}</g>`;
 const SHOES=[
@@ -410,10 +526,10 @@ const CROWNS=[
   {id:'witch',name:'마녀 모자',svg:c=>`<ellipse cx="210" cy="86" rx="72" ry="14" fill="${dk(c,.1)}"/><path d="M162 84 Q210 76 258 84 L228 -6 Q205 -20 202 8 Z" fill="${c}"/><path d="M175 78 Q210 70 245 78" stroke="#ffd93d" stroke-width="6" fill="none"/><circle cx="210" cy="72" r="5" fill="#ff8fc1"/>`},
   {id:'bunny',name:'토끼 귀',svg:c=>`<g><ellipse cx="180" cy="40" rx="14" ry="42" fill="${c}" transform="rotate(-12 180 40)"/><ellipse cx="180" cy="42" rx="7" ry="30" fill="#ffb3cc" transform="rotate(-12 180 40)"/><ellipse cx="240" cy="40" rx="14" ry="42" fill="${c}" transform="rotate(12 240 40)"/><ellipse cx="240" cy="42" rx="7" ry="30" fill="#ffb3cc" transform="rotate(12 240 40)"/></g>`},
   {id:'catears',name:'고양이 귀',svg:c=>`<path d="M162 96 L166 46 L202 78 Z M258 96 L254 46 L218 78 Z" fill="${c}"/><path d="M170 88 L172 58 L194 78 Z M250 88 L248 58 L226 78 Z" fill="#ffb3cc"/>`},
-  {id:'hennin',name:'고깔 모자',svg:c=>`<path d="M262 92 L232 -40 L172 96 Z" fill="${c}"/><path d="M232 -40 C 280 -20, 300 60, 320 140" stroke="${lt(c,.6)}" stroke-width="10" fill="none" opacity=".85" stroke-linecap="round"/><path d="M172 96 Q220 78 262 92" stroke="${dk(c,.2)}" stroke-width="6" fill="none"/>`},
+  {id:'hennin',name:'고깔 모자',vb:'115 -55 230 230',svg:c=>`<path d="M262 92 L232 -40 L172 96 Z" fill="${c}"/><path d="M232 -40 C 280 -20, 300 60, 320 140" stroke="${lt(c,.6)}" stroke-width="10" fill="none" opacity=".85" stroke-linecap="round"/><path d="M172 96 Q220 78 262 92" stroke="${dk(c,.2)}" stroke-width="6" fill="none"/>`},
   {id:'daenggi',name:'배씨댕기',svg:c=>`<path d="M186 62 Q210 50 234 62" stroke="${c}" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M210 48 l8 10 -8 10 -8 -10Z" fill="#ffd93d"/><circle cx="196" cy="60" r="4" fill="#7ad97a"/><circle cx="224" cy="60" r="4" fill="#7ad97a"/>`},
   {id:'moon',name:'달빛 관',svg:c=>`<path d="M160 92 Q210 62 260 92" stroke="${c}" stroke-width="5" fill="none"/><path d="M210 30 a20 20 0 1 0 14 34 a14 14 0 1 1 -14 -34Z" fill="${c}"/><path d="M178 70 l3 7 7 .5 -5.5 4.5 2 7 -6.5 -4 -6.5 4 2 -7 -5.5 -4.5 7 -.5Z M242 70 l3 7 7 .5 -5.5 4.5 2 7 -6.5 -4 -6.5 4 2 -7 -5.5 -4.5 7 -.5Z" fill="${lt(c,.4)}"/>`},
-  {id:'veil',name:'면사포',svg:c=>`<path d="M156 92 C 120 200, 130 330, 150 420 Q210 400 270 420 C 290 330, 300 200, 264 92 Q210 70 156 92 Z" fill="${lt(c,.6)}" opacity=".55"/><path d="M158 92 Q210 66 262 92" stroke="#fff" stroke-width="5" fill="none"/>${[[170,92],[190,80],[210,76],[230,80],[250,92]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="5" fill="${c}"/>`).join('')}`},
+  {id:'veil',name:'면사포',vb:'100 35 220 400',svg:c=>`<path d="M156 92 C 120 200, 130 330, 150 420 Q210 400 270 420 C 290 330, 300 200, 264 92 Q210 70 156 92 Z" fill="${lt(c,.6)}" opacity=".55"/><path d="M158 92 Q210 66 262 92" stroke="#fff" stroke-width="5" fill="none"/>${[[170,92],[190,80],[210,76],[230,80],[250,92]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="5" fill="${c}"/>`).join('')}`},
 ];
 
 // ---------- 목걸이 ----------
@@ -424,7 +540,7 @@ const NECKS=[
   {id:'scarf',name:'스카프',svg:c=>`<path d="M186 206 Q210 222 234 206 L232 216 Q210 232 188 216Z" fill="${c}"/><path d="M212 220 C 190 214, 186 236, 208 232 C 232 236, 230 214, 212 220Z" fill="${c}"/><circle cx="212" cy="222" r="4" fill="${dk(c,.3)}"/><path d="M206 226 L196 250 M216 226 L226 250" stroke="${c}" stroke-width="7" stroke-linecap="round"/>`},
   {id:'choker',name:'리본 초커',svg:c=>`<path d="M190 200 Q210 210 230 200" stroke="${c}" stroke-width="7" fill="none"/><path d="M210 206 C 198 198, 196 214, 210 206 C 222 198, 224 214, 210 206Z" fill="${lt(c,.2)}"/><circle cx="210" cy="206" r="3" fill="${dk(c,.3)}"/>`},
   {id:'star',name:'별 목걸이',svg:c=>`<path d="M188 204 Q210 236 232 204" stroke="#f0d070" stroke-width="2.5" fill="none"/><path d="M210 224 l3.5 7 7.5 .8 -5.6 5 1.8 7.5 -7.2 -4.2 -7.2 4.2 1.8 -7.5 -5.6 -5 7.5 -.8Z" fill="${c}" stroke="#fff" stroke-width="1.2"/>`},
-  {id:'norigae',name:'노리개',svg:c=>`<path d="M232 260 L232 280" stroke="#e8b04a" stroke-width="3"/><circle cx="232" cy="284" r="7" fill="${c}"/><path d="M228 290 L226 330 M232 290 L232 334 M236 290 L238 330" stroke="${c}" stroke-width="3" stroke-linecap="round"/><path d="M230 274 l2 -6 2 6Z" fill="#ffd93d"/>`},
+  {id:'norigae',name:'노리개',vb:'195 238 75 110',svg:c=>`<path d="M232 260 L232 280" stroke="#e8b04a" stroke-width="3"/><circle cx="232" cy="284" r="7" fill="${c}"/><path d="M228 290 L226 330 M232 290 L232 334 M236 290 L238 330" stroke="${c}" stroke-width="3" stroke-linecap="round"/><path d="M230 274 l2 -6 2 6Z" fill="#ffd93d"/>`},
   {id:'flowerlei',name:'꽃 목걸이',svg:c=>`${[[184,206],[194,220],[210,228],[226,220],[236,206]].map(([x,y],i)=>`<g transform="translate(${x} ${y})">${[0,72,144,216,288].map(a=>`<ellipse cx="0" cy="-5" rx="3" ry="5" fill="${i%2?lt(c,.35):c}" transform="rotate(${a})"/>`).join('')}<circle r="2.5" fill="#ffd93d"/></g>`).join('')}`},
 ];
 
@@ -433,7 +549,7 @@ const HANDS_ITEMS=[
   {id:'wand',name:'요술봉',svg:c=>`<path d="M292 345 L318 262" stroke="#f0d070" stroke-width="6" stroke-linecap="round"/><path d="M320 236 l6 13 14 1.2 -10.8 9.2 3.4 14 -12.6 -7.6 -12.6 7.6 3.4 -14 -10.8 -9.2 14 -1.2Z" fill="${c}" stroke="#fff" stroke-width="2"/>${[[300,250],[340,262],[334,232]].map(([x,y])=>`<path d="M${x} ${y-6} l1.5 4.5 4.5 1.5 -4.5 1.5 -1.5 4.5 -1.5 -4.5 -4.5 -1.5 4.5 -1.5Z" fill="#fff"/>`).join('')}`},
   {id:'fan',name:'부채',svg:c=>`<g transform="translate(292 345) rotate(-30)"><path d="M0 0 L-42 -70 A 60 60 0 0 1 42 -70 Z" fill="${c}"/>${[-30,-15,0,15,30].map(a=>`<path d="M0 0 L${(80*Math.sin(a*Math.PI/180)).toFixed(1)} ${(-80*Math.cos(a*Math.PI/180)).toFixed(1)}" stroke="${dk(c,.25)}" stroke-width="2"/>`).join('')}<path d="M-42 -70 A 60 60 0 0 1 42 -70" stroke="${lt(c,.5)}" stroke-width="5" fill="none"/><circle r="6" fill="${dk(c,.3)}"/></g>`},
   {id:'bouquet',name:'꽃다발',svg:c=>`<path d="M292 345 L300 300" stroke="#7ad97a" stroke-width="6" stroke-linecap="round"/><path d="M280 318 L292 345 L306 318" fill="#c98bff" opacity=".8"/>${[[290,290],[310,286],[300,270],[280,300],[318,302]].map(([x,y],i)=>`<g transform="translate(${x} ${y})">${[0,72,144,216,288].map(a=>`<ellipse cx="0" cy="-7" rx="4" ry="7" fill="${i%2?lt(c,.35):c}" transform="rotate(${a})"/>`).join('')}<circle r="3.5" fill="#ffd93d"/></g>`).join('')}`},
-  {id:'umbrella',name:'양산',svg:c=>`<path d="M292 345 L318 210" stroke="#8b5a3c" stroke-width="5" stroke-linecap="round"/><path d="M228 220 Q318 120 408 220 Q385 208 363 220 Q340 208 318 220 Q296 208 273 220 Q250 208 228 220Z" fill="${c}"/><path d="M318 130 L318 212" stroke="${dk(c,.3)}" stroke-width="2"/><circle cx="318" cy="128" r="4" fill="${dk(c,.3)}"/><path d="M250 210 Q318 150 386 210" stroke="${lt(c,.45)}" stroke-width="5" fill="none"/>`},
+  {id:'umbrella',name:'양산',vb:'205 105 220 260',svg:c=>`<path d="M292 345 L318 210" stroke="#8b5a3c" stroke-width="5" stroke-linecap="round"/><path d="M228 220 Q318 120 408 220 Q385 208 363 220 Q340 208 318 220 Q296 208 273 220 Q250 208 228 220Z" fill="${c}"/><path d="M318 130 L318 212" stroke="${dk(c,.3)}" stroke-width="2"/><circle cx="318" cy="128" r="4" fill="${dk(c,.3)}"/><path d="M250 210 Q318 150 386 210" stroke="${lt(c,.45)}" stroke-width="5" fill="none"/>`},
   {id:'bag',name:'가방',svg:c=>`<path d="M292 345 Q300 360 296 386" stroke="${dk(c,.3)}" stroke-width="4" fill="none"/><rect x="270" y="380" width="52" height="44" rx="12" fill="${c}"/><path d="M270 396 h52" stroke="${dk(c,.2)}" stroke-width="3"/><circle cx="296" cy="404" r="5" fill="#ffd93d"/>`},
   {id:'balloon',name:'풍선',svg:c=>`<path d="M292 345 C 300 300, 318 280, 326 236" stroke="#888" stroke-width="2" fill="none"/><ellipse cx="330" cy="200" rx="30" ry="38" fill="${c}"/><ellipse cx="320" cy="186" rx="8" ry="12" fill="#fff" opacity=".5"/><path d="M326 236 l4 -6 4 6Z" fill="${dk(c,.2)}"/>`},
   {id:'book',name:'동화책',svg:c=>`<g transform="translate(292 345) rotate(-15)"><rect x="-4" y="-40" width="44" height="52" rx="4" fill="${c}"/><rect x="2" y="-34" width="32" height="40" rx="2" fill="${lt(c,.6)}"/><path d="M10 -22 h16 M10 -12 h16 M10 -2 h10" stroke="${dk(c,.2)}" stroke-width="3" stroke-linecap="round"/></g>`},
@@ -527,7 +643,12 @@ function defaultState(p){
 function loadPrincess(id){
   cur=id;
   const p=PRINCESSES.find(x=>x.id===id);
-  state=outfits[id]?Object.assign(defaultState(p),outfits[id]):defaultState(p);
+  const base=defaultState(p);
+  state=outfits[id]?Object.assign({},base,outfits[id]):base;
+  if(!BGS.some(bg=>bg.id===state.bg))state.bg=base.bg;
+  for(const k of SLOTS){
+    if(state[k]&&!itemOf(k,state[k].id))state[k]=base[k];
+  }
   persist();
 }
 function persist(){
@@ -536,27 +657,99 @@ function persist(){
 }
 function princess(){return PRINCESSES.find(x=>x.id===cur)}
 function itemOf(key,id){const c=CATS.find(x=>x.key===key);return c.list.find(i=>i.id===id)}
+function scopeSvgIds(svg,scope){
+  return svg
+    .replace(/\bid="([^"]+)"/g,(m,id)=>'id="'+scope+'-'+id+'"')
+    .replace(/url\(#([^)]+)\)/g,(m,id)=>'url(#'+scope+'-'+id+')');
+}
 
 // ---------- 그리기 ----------
+function backgroundDepthSVG(bgId){
+  const layers={
+    plain:`<path d="M0 76 Q105 118 210 76 T420 76" stroke="#fff" stroke-width="6" fill="none" opacity=".4"/>
+      <path d="M0 548 H420 M0 578 H420" stroke="#d890b4" stroke-width="2" opacity=".22"/>
+      <g fill="#fff" opacity=".42"><circle cx="62" cy="206" r="5"/><circle cx="356" cy="286" r="7"/><circle cx="92" cy="448" r="4"/></g>`,
+    forest:`<path d="M72 0 L172 420 L208 420 L126 0Z M292 0 L238 410 L270 410 L352 0Z" fill="#fff" opacity=".12"/>
+      <g fill="#eaffdf" opacity=".34"><circle cx="42" cy="402" r="35"/><circle cx="390" cy="390" r="44"/><circle cx="350" cy="82" r="16"/></g>
+      <path d="M0 632 Q72 594 126 638 T250 632 T420 626 V680 H0Z" fill="#4b9e61" opacity=".28"/>`,
+    castle:`<path d="M0 430 Q74 372 146 416 T292 410 T420 366 V520 H0Z" fill="#fff" opacity=".16"/>
+      <path d="M42 0 L146 450 L182 450 L112 0Z M320 0 L268 430 L302 430 L380 0Z" fill="#fff" opacity=".1"/>
+      <g fill="#fff" opacity=".58"><ellipse cx="58" cy="252" rx="36" ry="12"/><ellipse cx="364" cy="292" rx="42" ry="14"/></g>`,
+    sea:`<path d="M44 0 L136 438 L184 438 L122 0Z M246 0 L214 430 L266 430 L340 0Z" fill="#fff" opacity=".1"/>
+      <g fill="none" stroke="#d9f8ff" opacity=".5"><circle cx="48" cy="314" r="10"/><circle cx="370" cy="368" r="14"/><circle cx="322" cy="96" r="7"/><circle cx="94" cy="196" r="5"/></g>
+      <path d="M0 516 Q52 490 104 516 T208 516 T312 516 T420 516" stroke="#c7f7ff" stroke-width="4" fill="none" opacity=".26"/>`,
+    night:`<path d="M-36 246 Q110 122 236 226 T470 194" stroke="#bd8cff" stroke-width="42" fill="none" opacity=".1"/>
+      <path d="M-20 278 Q120 166 240 256 T450 224" stroke="#72e6de" stroke-width="18" fill="none" opacity=".1"/>
+      <g fill="#fff4b0" opacity=".55"><circle cx="84" cy="220" r="2"/><circle cx="324" cy="322" r="2.5"/><circle cx="142" cy="390" r="1.8"/></g>`,
+    cherry:`<g fill="#fff" opacity=".45"><circle cx="82" cy="174" r="18"/><circle cx="342" cy="232" r="24"/></g>
+      <g fill="#ff80b4" opacity=".6"><ellipse cx="82" cy="350" rx="5" ry="9" transform="rotate(-32 82 350)"/><ellipse cx="334" cy="404" rx="5" ry="9" transform="rotate(28 334 404)"/><ellipse cx="58" cy="500" rx="4" ry="8" transform="rotate(20 58 500)"/></g>`,
+    ballroom:`<path d="M0 0 H54 C82 152 74 344 34 520 H0Z M420 0 H366 C338 152 346 344 386 520 H420Z" fill="#b44978" opacity=".16"/>
+      <path d="M12 0 Q54 214 20 514 M408 0 Q366 214 400 514" stroke="#fff3d0" stroke-width="8" fill="none" opacity=".32"/>
+      <path d="M40 680 L182 560 H238 L380 680Z" fill="#fff" opacity=".09"/>`,
+    snow:`<path d="M0 456 Q102 430 202 462 T420 450 V520 Q308 490 210 516 T0 510Z" fill="#fff" opacity=".28"/>
+      <g fill="#fff" opacity=".75"><circle cx="98" cy="190" r="3"/><circle cx="346" cy="192" r="4"/><circle cx="202" cy="238" r="2.5"/></g>`,
+    rainbow:`<g fill="#fff" opacity=".72"><ellipse cx="42" cy="290" rx="54" ry="19"/><ellipse cx="378" cy="330" rx="58" ry="21"/></g>
+      <path d="M0 510 Q86 474 164 514 T330 514 T420 496" stroke="#fff" stroke-width="8" fill="none" opacity=".32"/>`,
+    candy:`<path d="M0 92 Q92 54 170 104 T330 92 T420 70" stroke="#fff" stroke-width="10" fill="none" opacity=".42"/>
+      <g fill="#fff" opacity=".65"><circle cx="52" cy="344" r="6"/><circle cx="362" cy="292" r="8"/><circle cx="252" cy="92" r="5"/></g>`,
+    tower:`<path d="M0 382 Q104 332 170 376 T318 370 T420 342 V510 H0Z" fill="#fff" opacity=".16"/>
+      <path d="M48 0 L156 470 L194 470 L116 0Z" fill="#fff" opacity=".1"/>`,
+    meadow:`<g fill="#fff" opacity=".55"><circle cx="55" cy="256" r="16"/><circle cx="366" cy="300" r="22"/><circle cx="278" cy="166" r="10"/></g>
+      <path d="M0 520 Q82 474 158 522 T308 518 T420 486 V680 H0Z" fill="#62b775" opacity=".16"/>`,
+    hanok:`<path d="M18 150 Q72 118 126 150 T234 150" stroke="#fff" stroke-width="12" fill="none" opacity=".5"/>
+      <path d="M278 126 Q324 100 374 128" stroke="#fff" stroke-width="10" fill="none" opacity=".44"/>
+      <path d="M0 602 Q104 570 210 604 T420 596 V680 H0Z" fill="#b98d62" opacity=".13"/>`,
+    rosecastle:`<path d="M0 120 Q112 62 210 116 T420 104" stroke="#fff" stroke-width="12" fill="none" opacity=".32"/>
+      <g fill="#ff7aaa" opacity=".54"><ellipse cx="56" cy="366" rx="5" ry="10" transform="rotate(-24 56 366)"/><ellipse cx="360" cy="350" rx="5" ry="10" transform="rotate(28 360 350)"/><ellipse cx="318" cy="500" rx="4" ry="8" transform="rotate(-20 318 500)"/></g>`
+  };
+  return `<g data-layer="background-depth" aria-hidden="true">${layers[bgId]||''}</g>`;
+}
+function sceneFloorSVG(tail,bgId){
+  const ink=bgId==='night'?'#171337':bgId==='sea'?'#155d78':'#4b3156';
+  const y=tail?601:584,rx=tail?132:88;
+  return `<g id="groundShadow" aria-hidden="true">
+    <ellipse cx="210" cy="${y}" rx="${rx}" ry="20" fill="${ink}" opacity=".13"/>
+    <ellipse cx="210" cy="${y-4}" rx="${Math.round(rx*.7)}" ry="10" fill="#fff" opacity=".13"/>
+  </g>`;
+}
+function sceneFinishSVG(bgId){
+  const gold=bgId==='night'||bgId==='sea'?'#fff1a6':'#ffd86a';
+  const glints=[[34,74,6],[375,118,5],[48,340,4],[365,410,6],[72,535,4],[344,585,4]];
+  const star=([x,y,r])=>{const a=+(r*.3).toFixed(1),b=+(r*.7).toFixed(1);return `<path class="twinkle" d="M${x} ${y-r} l${a} ${b} ${b} ${a} -${b} ${a} -${a} ${b} -${a} -${b} -${b} -${a} ${b} -${a}Z" fill="${gold}" opacity=".72"/>`};
+  return `<g id="sceneFX" aria-hidden="true">
+    <path d="M0 0 H190 L0 338Z" fill="#fff" opacity=".07"/>
+    ${glints.map(star).join('')}
+    <rect x="9" y="9" width="402" height="662" rx="22" fill="none" stroke="#fff" stroke-width="3" opacity=".43"/>
+    <path d="M24 86 V34 Q24 24 34 24 H86 M334 24 H386 Q396 24 396 34 V86 M24 594 V646 Q24 656 34 656 H86 M334 656 H386 Q396 656 396 646 V594" fill="none" stroke="${gold}" stroke-width="3" opacity=".72" stroke-linecap="round"/>
+    <circle cx="24" cy="24" r="4" fill="#fff" opacity=".85"/><circle cx="396" cy="24" r="4" fill="#fff" opacity=".85"/>
+  </g>`;
+}
 function dollSVG(st,p){
   const bg=BGS.find(b=>b.id===st.bg)||BGS[0];
   const dress=st.dress?itemOf('dress',st.dress.id):null;
   const tail=!!(dress&&dress.tail);
   const hair=HAIR[p.hair];
   const part=(key)=>{const v=st[key];if(!v)return '';const it=itemOf(key,v.id);return it?it.svg(v.color):''};
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 680" width="420" height="680">
-    <g id="bg">${bg.svg()}</g>
-    <g id="back">${part('back')}</g>
-    <g id="hairBack">${hair.back(st.hairColor)}</g>
-    ${bodySVG(p,tail)}
-    ${faceSVG(p)}
-    <g id="dress">${dress?dress.svg(st.dress.color):''}</g>
-    <g id="shoes">${tail?'':part('shoes')}</g>
-    <g id="hairFront">${hair.front(st.hairColor)}</g>
-    <g id="neck">${part('neck')}</g>
-    <g id="crown">${part('crown')}</g>
-    <g id="hand">${part('hand')}</g>
-    <g id="pet">${part('pet')}</g>
+  const bgArt=scopeSvgIds(bg.svg(),'stage-bg');
+  const dressArt=dress?scopeSvgIds(dress.svg(st.dress.color),'stage-dress'):'';
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 680" width="420" height="680" role="img" aria-label="${p.name} 꾸미기">
+    <g id="bg">${bgArt}</g>
+    ${backgroundDepthSVG(bg.id)}
+    ${sceneFloorSVG(tail,bg.id)}
+    <g id="doll">
+      <g id="back">${part('back')}</g>
+      <g id="hairBack">${hair.back(st.hairColor)}${hairDetailSVG(p.hair,st.hairColor,'back')}</g>
+      ${bodySVG(p,tail)}
+      ${faceSVG(p)}
+      <g id="dress">${dressArt}${dress?dressFinishSVG(dress,st.dress.color):''}</g>
+      <g id="shoes">${tail?'':part('shoes')}</g>
+      <g id="hairFront">${hair.front(st.hairColor)}${hairDetailSVG(p.hair,st.hairColor)}</g>
+      <g id="neck">${part('neck')}</g>
+      <g id="crown">${part('crown')}</g>
+      <g id="hand">${part('hand')}</g>
+      <g id="pet">${part('pet')}</g>
+    </g>
+    ${sceneFinishSVG(bg.id)}
   </svg>`;
 }
 function renderStage(){
@@ -570,8 +763,8 @@ function renderStage(){
 // 썸네일
 function thumbSVG(key,item,color){
   const cat=CATS.find(c=>c.key===key);
-  let vb=cat.vb;
-  let inner=item.svg(color);
+  let vb=item.vb||cat.vb;
+  let inner=scopeSvgIds(item.svg(color),'thumb-'+key+'-'+item.id);
   if(cat.petVb){
     // 펫은 그려지는 위치가 제각각 → transform 좌표를 읽어 주변을 자른다
     const m=inner.match(/translate\((-?\d+\.?\d*) (-?\d+\.?\d*)\)/);
@@ -582,13 +775,14 @@ function thumbSVG(key,item,color){
 }
 function princessThumb(p,hairColor){
   return `<svg viewBox="130 20 160 200" preserveAspectRatio="xMidYMid meet">
-    ${HAIR[p.hair].back(hairColor)}
+    ${HAIR[p.hair].back(hairColor)}${hairDetailSVG(p.hair,hairColor,'back')}
     <rect x="197" y="176" width="26" height="40" rx="9" fill="${dk(p.skin,.08)}"/>
     <path d="M150 210 Q210 190 270 210 L280 240 L140 240Z" fill="${p.skin}"/>
     <circle cx="156" cy="132" r="10" fill="${p.skin}"/><circle cx="264" cy="132" r="10" fill="${p.skin}"/>
-    <ellipse cx="210" cy="125" rx="54" ry="60" fill="${p.skin}"/>
+    <ellipse cx="210" cy="125" rx="54" ry="60" fill="${p.skin}" stroke="${dk(p.skin,.2)}" stroke-width="1.5"/>
+    <ellipse cx="193" cy="106" rx="25" ry="34" fill="${lt(p.skin,.35)}" opacity=".14" transform="rotate(-18 193 106)"/>
     ${faceSVG(p)}
-    ${HAIR[p.hair].front(hairColor)}
+    ${HAIR[p.hair].front(hairColor)}${hairDetailSVG(p.hair,hairColor)}
   </svg>`;
 }
 
@@ -597,13 +791,24 @@ function renderTabs(){
   el.innerHTML=CATS.map(c=>`<button class="tab ${c.key===tab?'on':''}" data-key="${c.key}"><span class="ic">${c.ic}</span>${c.label}</button>`).join('');
   el.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{tab=b.dataset.key;click();renderTabs();renderPanel();}));
 }
+function rerenderPanelKeepingPosition(){
+  const oldSw=document.getElementById('swatches'),oldItems=document.getElementById('items');
+  const swLeft=oldSw.scrollLeft,itemTop=oldItems.scrollTop;
+  renderPanel();
+  const restore=()=>{
+    document.getElementById('swatches').scrollLeft=swLeft;
+    document.getElementById('items').scrollTop=itemTop;
+  };
+  restore();
+  requestAnimationFrame(restore);
+}
 function renderPanel(){
   const items=document.getElementById('items'), sw=document.getElementById('swatches'), intro=document.getElementById('intro');
   const p=princess();
   if(tab==='princess'){
     intro.textContent=`${p.name} — ${p.intro}`;
     sw.innerHTML=`<span class="lbl">머리 색</span>`+HAIR_PALETTE.map(c=>`<button class="sw ${c===state.hairColor?'on':''}" style="background:${c}" data-c="${c}" aria-label="머리색"></button>`).join('');
-    sw.querySelectorAll('.sw').forEach(b=>b.addEventListener('click',()=>{state.hairColor=b.dataset.c;persist();click();renderStage();renderPanel();}));
+    sw.querySelectorAll('.sw').forEach(b=>b.addEventListener('click',()=>{state.hairColor=b.dataset.c;persist();click();renderStage();rerenderPanelKeepingPosition();}));
     items.innerHTML=PRINCESSES.map(q=>`<button class="item pr ${q.id===cur?'on':''}" data-id="${q.id}">${princessThumb(q,(outfits[q.id]&&outfits[q.id].hairColor)||q.hairColor)}<span class="nm">${q.name}</span></button>`).join('');
     items.querySelectorAll('.item').forEach(b=>b.addEventListener('click',()=>{loadPrincess(b.dataset.id);tada();renderStage();renderPanel();popStage();}));
     return;
@@ -612,7 +817,7 @@ function renderPanel(){
   const cat=CATS.find(c=>c.key===tab);
   if(tab==='bg'){
     sw.innerHTML='';
-    items.innerHTML=cat.list.map(it=>`<button class="item ${it.id===state.bg?'on':''}" data-id="${it.id}"><svg viewBox="0 0 420 680" preserveAspectRatio="xMidYMid slice">${it.svg()}</svg><span class="nm">${it.name}</span></button>`).join('');
+    items.innerHTML=cat.list.map(it=>`<button class="item ${it.id===state.bg?'on':''}" data-id="${it.id}"><svg viewBox="0 0 420 680" preserveAspectRatio="xMidYMid slice">${scopeSvgIds(it.svg(),'thumb-bg-'+it.id)}${backgroundDepthSVG(it.id)}</svg><span class="nm">${it.name}</span></button>`).join('');
     items.querySelectorAll('.item').forEach(b=>b.addEventListener('click',()=>{state.bg=b.dataset.id;persist();click();renderStage();renderPanel();}));
     return;
   }
@@ -622,7 +827,7 @@ function renderPanel(){
   sw.querySelectorAll('.sw').forEach(b=>b.addEventListener('click',()=>{
     const c=b.dataset.c;
     if(state[tab]) state[tab].color=c; else state[tab]={id:cat.list[0].id,color:c};
-    persist();click();renderStage();renderPanel();
+    persist();click();renderStage();rerenderPanelKeepingPosition();
   }));
   const none=`<button class="item ${!curSel?'on':''}" data-id=""><svg viewBox="0 0 100 100"><text x="50" y="62" text-anchor="middle" font-size="40">🚫</text></svg><span class="nm">없음</span></button>`;
   items.innerHTML=none+cat.list.map(it=>`<button class="item ${curSel&&curSel.id===it.id?'on':''}" data-id="${it.id}">${thumbSVG(tab,it,curColor)}<span class="nm">${it.name}</span></button>`).join('');
