@@ -1,7 +1,7 @@
 "use strict";
 
 // Keep this value aligned with the ?v= version used by the card battle assets.
-const CACHE_VERSION = "v24";
+const CACHE_VERSION = "v25";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -72,6 +72,8 @@ const OPTIONAL_SHELL = [
   "./keycap/stl.js",
   "./odyssey/",
   "./picnic/",
+  "./princess/",
+  "./princess/cover.svg",
   "./sanguo/",
   "./sanguo/assets/index-CwgIUExR.js",
   "./sanguo/assets/index-suNetyzF.css",
@@ -226,7 +228,7 @@ const BACKGROUND_RETRY_MS = 5 * 60 * 1000;
 const AUDIO_FETCH_TIMEOUT_MS = 45000;
 const NAVIGATION_ROUTES = [
   "cards", "story", "avengers", "bori", "hogwarts", "kart", "kart3d",
-  "kedehun", "keycap", "odyssey", "picnic", "sanguo",
+  "kedehun", "keycap", "odyssey", "picnic", "princess", "sanguo",
 ];
 
 const CARD_ART_FILES = [

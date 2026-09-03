@@ -730,6 +730,7 @@
   .card.stage { --cover: linear-gradient(115deg, transparent 35%, rgba(102,227,255,.38) 36% 38%, transparent 39% 58%, rgba(255,113,143,.42) 59% 62%, transparent 63%), radial-gradient(circle at 68% 28%, #d86bd1, transparent 23%), linear-gradient(145deg, #241549, #0d1734); }
   .card.gem { --cover: radial-gradient(circle at 72% 24%, #9ffcff 0 7%, transparent 8%), radial-gradient(circle at 62% 35%, #ff9dd4 0 11%, transparent 12%), linear-gradient(145deg, #503079, #172450); }
   .card.picnic { --cover-pos: 50% 38%; }
+  .card.princess { --cover-size: 78%; --cover-pos: 50% 22%; background: linear-gradient(150deg, #f7b8dc, #7e58c8); }
   .card .badge { position: relative; z-index: 2; width: 48px; height: 48px; border: 1px solid rgba(255,255,255,.22); border-radius: 15px 5px; background: rgba(12,15,39,.7); color: white; font-size: 25px; backdrop-filter: blur(10px); }
   .card .meta { position: relative; z-index: 2; gap: 6px; }
   .card .name { color: var(--text); font-size: clamp(20px, 2.5vw, 27px); letter-spacing: -.035em; text-shadow: 0 2px 12px rgba(0,0,0,.5); }
@@ -988,6 +989,16 @@
         <span class="tags"><span class="genre">🔍 추리 · 미니게임</span></span>
         <span class="desc">사라진 보석을 찾는 아기자기 추리 놀이</span>
         <span class="go">모험 떠나기 ▶</span>
+      </span>
+    </a>
+    <a class="card princess" href="princess/" style="--cover:url('princess/cover.svg')">
+      <span class="padlock">🔒</span>
+      <span class="badge">👗</span>
+      <span class="meta">
+        <span class="name">공주 옷장</span>
+        <span class="tags"><span class="genre">👑 꾸미기</span></span>
+        <span class="desc">옛이야기 공주 8명 · 드레스·왕관·신발·친구 마음대로 · 사진 앨범</span>
+        <span class="go">꾸미러 가기 ▶</span>
       </span>
     </a>
     <a class="card picnic" href="picnic/" style="--cover:url('cards/art/threepigs.webp')">
