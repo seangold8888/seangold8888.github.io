@@ -1,4 +1,51 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 680" width="420" height="680" role="img" aria-label="백설공주 꾸미기">
+    <defs>
+    <linearGradient id="dressVolume" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#24142d" stop-opacity=".42"/>
+      <stop offset=".14" stop-color="#fff" stop-opacity=".2"/>
+      <stop offset=".32" stop-color="#281731" stop-opacity=".2"/>
+      <stop offset=".5" stop-color="#fff" stop-opacity=".28"/>
+      <stop offset=".7" stop-color="#24142d" stop-opacity=".2"/>
+      <stop offset=".87" stop-color="#fff" stop-opacity=".18"/>
+      <stop offset="1" stop-color="#24142d" stop-opacity=".44"/>
+    </linearGradient>
+    <linearGradient id="dressFalloff" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity=".2"/>
+      <stop offset=".42" stop-color="#fff" stop-opacity="0"/>
+      <stop offset=".76" stop-color="#2a1732" stop-opacity=".07"/>
+      <stop offset="1" stop-color="#1e1026" stop-opacity=".3"/>
+    </linearGradient>
+    <radialGradient id="dressSheen" cx=".36" cy=".26" r=".68">
+      <stop offset="0" stop-color="#fff" stop-opacity=".54"/>
+      <stop offset=".34" stop-color="#fff" stop-opacity=".12"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="fabricFx" x="-18%" y="-12%" width="136%" height="130%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency=".025 .5" numOctaves="2" seed="17" result="weave"/>
+      <feColorMatrix in="weave" type="matrix" values="0 0 0 0 .42  0 0 0 0 .36  0 0 0 0 .46  0 0 0 .2 0" result="grain"/>
+      <feComposite in="grain" in2="SourceGraphic" operator="in" result="clothGrain"/>
+      <feBlend in="SourceGraphic" in2="clothGrain" mode="multiply" result="textured"/>
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1.4" result="fabricAlpha"/>
+      <feSpecularLighting in="fabricAlpha" surfaceScale="3.2" specularConstant=".28" specularExponent="15" lighting-color="#fff" result="fabricShine">
+        <feDistantLight azimuth="225" elevation="55"/>
+      </feSpecularLighting>
+      <feComposite in="fabricShine" in2="SourceAlpha" operator="in" result="fabricClippedShine"/>
+      <feBlend in="textured" in2="fabricClippedShine" mode="screen" result="fabricLit"/>
+      <feDropShadow in="fabricLit" dx="0" dy="3.5" stdDeviation="2.5" flood-color="#30192f" flood-opacity=".31"/>
+    </filter>
+    <filter id="accessoryFx" x="-24%" y="-24%" width="148%" height="156%" color-interpolation-filters="sRGB">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1.2" result="softAlpha"/>
+      <feSpecularLighting in="softAlpha" surfaceScale="4" specularConstant=".55" specularExponent="18" lighting-color="#fff" result="shine">
+        <feDistantLight azimuth="225" elevation="52"/>
+      </feSpecularLighting>
+      <feComposite in="shine" in2="SourceAlpha" operator="in" result="clippedShine"/>
+      <feBlend in="SourceGraphic" in2="clippedShine" mode="screen" result="lit"/>
+      <feDropShadow in="lit" dx="0" dy="2.2" stdDeviation="1.7" flood-color="#24152d" flood-opacity=".3"/>
+    </filter>
+    <filter id="hairFx" x="-16%" y="-12%" width="132%" height="128%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="3" stdDeviation="2.4" flood-color="#211328" flood-opacity=".3"/>
+    </filter>
+  </defs>
     <g id="bg"><rect width="420" height="680" fill="#dff5e4"/><circle cx="40" cy="260" r="60" fill="#8fd39a"/><rect x="30" y="300" width="20" height="80" fill="#8b5a3c"/><circle cx="130" cy="200" r="80" fill="#8fd39a"/><rect x="120" y="260" width="20" height="80" fill="#8b5a3c"/><circle cx="300" cy="220" r="90" fill="#8fd39a"/><rect x="290" y="290" width="20" height="80" fill="#8b5a3c"/><circle cx="390" cy="280" r="60" fill="#8fd39a"/><rect x="380" y="320" width="20" height="80" fill="#8b5a3c"/><circle cx="220" cy="160" r="70" fill="#8fd39a"/><rect x="210" y="210" width="20" height="80" fill="#8b5a3c"/><rect y="520" width="420" height="160" fill="#a9dc8e"/><path d="M0 540 Q100 560 200 540 T420 540 L420 680 L0 680Z" fill="#8cc973"/><circle cx="60" cy="600" r="8" fill="#ff8fc1"/><circle cx="60" cy="600" r="3" fill="#ffd93d"/><circle cx="120" cy="640" r="8" fill="#ff8fc1"/><circle cx="120" cy="640" r="3" fill="#ffd93d"/><circle cx="330" cy="610" r="8" fill="#ff8fc1"/><circle cx="330" cy="610" r="3" fill="#ffd93d"/><circle cx="380" cy="650" r="8" fill="#ff8fc1"/><circle cx="380" cy="650" r="3" fill="#ffd93d"/><circle cx="250" cy="630" r="8" fill="#ff8fc1"/><circle cx="250" cy="630" r="3" fill="#ffd93d"/><circle cx="80" cy="80" r="30" fill="#fff4a8"/></g>
     <g data-layer="background-depth" aria-hidden="true"><path d="M72 0 L172 420 L208 420 L126 0Z M292 0 L238 410 L270 410 L352 0Z" fill="#fff" opacity=".12"/>
       <g fill="#eaffdf" opacity=".34"><circle cx="42" cy="402" r="35"/><circle cx="390" cy="390" r="44"/><circle cx="350" cy="82" r="16"/></g>
@@ -8,64 +55,92 @@
     <ellipse cx="210" cy="580" rx="62" ry="10" fill="#fff" opacity=".13"/>
   </g>
     <g id="doll">
-      <g id="back"></g>
-      <g id="hairBack"><path d="M150 130 Q148 62 210 58 Q272 62 270 130 L274 200 Q210 212 146 200 Z" fill="#2b2230"/></g>
-      <g id="body">
-
-    <path d="M190 350 L186 560" stroke="#fff0e6" stroke-width="32" stroke-linecap="round"/>
-    <path d="M230 350 L234 560" stroke="#fff0e6" stroke-width="32" stroke-linecap="round"/>
-    <path d="M195 360 L191 552 M235 360 L239 552" stroke="#d8c6c4" stroke-width="5" opacity=".2" stroke-linecap="round"/>
-    <path d="M184 365 L181 545 M224 365 L229 545" stroke="#fff5ef" stroke-width="4" opacity=".32" stroke-linecap="round"/>
-    <ellipse cx="184" cy="572" rx="20" ry="11" fill="#fff0e6" stroke="#d8c6c4" stroke-width="1.5" opacity=".98"/><ellipse cx="236" cy="572" rx="20" ry="11" fill="#fff0e6" stroke="#d8c6c4" stroke-width="1.5" opacity=".98"/>
-    <path d="M164 210 Q 138 270 128 340" stroke="#fff0e6" stroke-width="22" stroke-linecap="round" fill="none"/>
-    <path d="M256 210 Q 282 270 292 340" stroke="#fff0e6" stroke-width="22" stroke-linecap="round" fill="none"/>
-    <path d="M162 216 Q143 270 132 336 M258 216 Q277 270 288 336" stroke="#fff5ef" stroke-width="4" stroke-linecap="round" fill="none" opacity=".34"/>
-    <path d="M170 216 Q148 278 137 337 M250 216 Q272 278 283 337" stroke="#d8c6c4" stroke-width="3" stroke-linecap="round" fill="none" opacity=".18"/>
-    <rect x="197" y="176" width="26" height="34" rx="9" fill="#efdfd8"/>
-    <path d="M199 180 Q210 190 221 180 L221 204 Q210 211 199 204Z" fill="#d8c6c4" opacity=".16"/>
-    <path d="M162 205 Q210 194 258 205 L252 300 Q210 314 168 300 Z" fill="#fff0e6"/>
-    <path d="M168 300 Q210 314 252 300 L262 352 Q210 368 158 352 Z" fill="#fff0e6"/>
-    <circle cx="156" cy="132" r="10" fill="#fff0e6" stroke="#d8c6c4" stroke-width="1.2"/><circle cx="264" cy="132" r="10" fill="#fff0e6" stroke="#d8c6c4" stroke-width="1.2"/>
-    <circle cx="157" cy="132" r="5" fill="#d8c6c4" opacity=".13"/><circle cx="263" cy="132" r="5" fill="#d8c6c4" opacity=".13"/>
-    <ellipse cx="210" cy="125" rx="54" ry="60" fill="#fff0e6" stroke="#d8c6c4" stroke-width="1.5"/>
-    <ellipse cx="193" cy="106" rx="25" ry="34" fill="#fff5ef" opacity=".14" transform="rotate(-18 193 106)"/>
-    <path d="M170 157 Q210 191 250 157" stroke="#d8c6c4" stroke-width="2" fill="none" opacity=".15"/>
-    <circle cx="128" cy="345" r="13" fill="#fff0e6" stroke="#d8c6c4" stroke-width="1.2"/><circle cx="292" cy="345" r="13" fill="#fff0e6" stroke="#d8c6c4" stroke-width="1.2"/>
-    <path d="M121 345 q7 5 14 0 M285 345 q7 5 14 0" stroke="#d8c6c4" stroke-width="1.5" fill="none" opacity=".35" stroke-linecap="round"/>
-    <circle cx="124" cy="341" r="3.5" fill="#fff5ef" opacity=".5"/><circle cx="288" cy="341" r="3.5" fill="#fff5ef" opacity=".5"/>
+      <g id="back" filter="url(#accessoryFx)" transform="translate(0 -38)"></g>
+      <g id="hairBack" filter="url(#hairFx)"><g transform="translate(31.5 -40) scale(.85)"><path d="M150 130 Q148 62 210 58 Q272 62 270 130 L274 200 Q210 212 146 200 Z" fill="#2b2230"/></g></g>
+      <g id="fashionDollBody">
+    <defs><filter id="dollToneFx" x="-8%" y="-5%" width="116%" height="112%" color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix" values="1.085 0 0 0 0  0 1.250 0 0 0  0 0 1.250 0 0  0 0 0 1 0"/>
+      <feDropShadow dx="0" dy="2" stdDeviation="1.6" flood-color="#2b1830" flood-opacity=".2"/>
+    </filter></defs>
+    <image href="assets/fashion-doll-base-v1.png" x="20" y="10" width="380" height="570" preserveAspectRatio="xMidYMid meet" filter="url(#dollToneFx)"/>
   </g>
-      <g data-layer="face">
-    <ellipse cx="188" cy="130" rx="10.5" ry="12.5" fill="#fffdfd" stroke="#453233" stroke-width="1.2"/>
-    <circle cx="188" cy="132" r="7.2" fill="#483730"/><circle cx="188" cy="131" r="5.5" fill="#4a3a2e"/><circle cx="188" cy="133" r="3.3" fill="#1a1020"/>
-    <ellipse cx="185.5" cy="127.5" rx="2.6" ry="3.2" fill="#fff"/><circle cx="190.5" cy="135" r="1.2" fill="#fff" opacity=".8"/>
-    <path d="M178 119 Q188 112 198 119" stroke="#29172f" stroke-width="3" fill="none" stroke-linecap="round"/>
-    <path d="M179 118 l-6 -4 M179 121 l-7 0" stroke="#29172f" stroke-width="2" fill="none" stroke-linecap="round"/><ellipse cx="232" cy="130" rx="10.5" ry="12.5" fill="#fffdfd" stroke="#453233" stroke-width="1.2"/>
-    <circle cx="232" cy="132" r="7.2" fill="#483730"/><circle cx="232" cy="131" r="5.5" fill="#4a3a2e"/><circle cx="232" cy="133" r="3.3" fill="#1a1020"/>
-    <ellipse cx="229.5" cy="127.5" rx="2.6" ry="3.2" fill="#fff"/><circle cx="234.5" cy="135" r="1.2" fill="#fff" opacity=".8"/>
-    <path d="M222 119 Q232 112 242 119" stroke="#29172f" stroke-width="3" fill="none" stroke-linecap="round"/>
-    <path d="M241 118 l6 -4 M241 121 l7 0" stroke="#29172f" stroke-width="2" fill="none" stroke-linecap="round"/>
-    <path d="M178 108 Q188 102 198 107" stroke="#a08c95" stroke-width="2.6" fill="none" stroke-linecap="round"/>
-    <path d="M222 107 Q232 102 242 108" stroke="#a08c95" stroke-width="2.6" fill="none" stroke-linecap="round"/>
-    <path d="M207 145 Q209 151 214 147" stroke="#b4a1a6" stroke-width="2" fill="none" stroke-linecap="round"/>
-    <ellipse cx="208" cy="144" rx="2.5" ry="4" fill="#fff" opacity=".26"/>
-    <path d="M197 157 C202 160 205 164 210 164 C215 164 218 160 223 157 C221 169 199 169 197 157Z" fill="#c94a6a"/>
-    <path d="M202 161 Q210 165 218 161" stroke="#e4a5b5" stroke-width="1.7" fill="none" opacity=".75" stroke-linecap="round"/>
-    <ellipse cx="174" cy="151" rx="11" ry="7" fill="#ffc1c7" opacity=".34"/><ellipse cx="246" cy="151" rx="11" ry="7" fill="#ffc1c7" opacity=".34"/>
-
-  </g>
-      <g id="dress"><circle cx="164" cy="214" r="16" fill="#ffd93d" stroke="#dcb83d" stroke-width="2"/><circle cx="256" cy="214" r="16" fill="#ffd93d" stroke="#dcb83d" stroke-width="2"/>
-  <path d="M153 209 Q164 199 174 208 M246 208 Q256 199 267 209" stroke="#ffec9e" stroke-width="4" fill="none" opacity=".72" stroke-linecap="round"/><path d="M162 205 Q210 194 258 205 L252 300 Q210 314 168 300 Z" fill="#ffd93d"/>
-    <path d="M168 300 Q210 314 252 300 L300 505 Q210 528 120 505 Z" fill="#ffd93d"/>
-    <circle cx="160" cy="420" r="9" fill="#ffeea8"/><circle cx="160" cy="420" r="3.5" fill="#ffd93d"/><circle cx="210" cy="470" r="9" fill="#ffeea8"/><circle cx="210" cy="470" r="3.5" fill="#ffd93d"/><circle cx="260" cy="420" r="9" fill="#ffeea8"/><circle cx="260" cy="420" r="3.5" fill="#ffd93d"/><circle cx="190" cy="505" r="9" fill="#ffeea8"/><circle cx="190" cy="505" r="3.5" fill="#ffd93d"/><circle cx="235" cy="505" r="9" fill="#ffeea8"/><circle cx="235" cy="505" r="3.5" fill="#ffd93d"/><circle cx="210" cy="360" r="9" fill="#ffeea8"/><circle cx="210" cy="360" r="3.5" fill="#ffd93d"/>
-    <path d="M168 300 Q210 322 252 300" stroke="#ffec9e" stroke-width="6" fill="none"/><g id="dressFinish" aria-hidden="true"><path d="M174 216 Q210 202 246 216" stroke="#fff1b5" stroke-width="4" fill="none" opacity=".55" stroke-linecap="round"/>
-      <path d="M170 224 Q174 266 176 292" stroke="#c8a53d" stroke-width="4" fill="none" opacity=".22" stroke-linecap="round"/>
-      <path d="M244 224 Q240 258 242 290" stroke="#fff1b5" stroke-width="3" fill="none" opacity=".34" stroke-linecap="round"/><path d="M165 316 Q142 399 132 490" stroke="#c8a53d" stroke-width="7" fill="none" opacity=".2" stroke-linecap="round"/>
-      <path d="M230 319 Q255 402 271 487" stroke="#fff1b5" stroke-width="8" fill="none" opacity=".32" stroke-linecap="round"/></g></g>
-      <g id="shoes"><g transform="translate(184 572)"><ellipse cx="0" cy="2" rx="22" ry="12" fill="#ff5a6e"/><rect x="8" y="4" width="7" height="14" rx="2" fill="#c4485f"/><ellipse cx="-4" cy="-4" rx="10" ry="5" fill="#ff9ca8"/></g><g transform="translate(236 572)"><ellipse cx="0" cy="2" rx="22" ry="12" fill="#ff5a6e"/><rect x="-14" y="4" width="7" height="14" rx="2" fill="#c4485f"/><ellipse cx="4" cy="-4" rx="10" ry="5" fill="#ff9ca8"/></g></g>
-      <g id="hairFront"><path d="M156 128 Q152 58 210 56 Q268 58 264 128 Q252 96 210 98 Q168 96 156 128 Z" fill="#2b2230"/><path d="M156 128 Q170 112 200 120 Q205 100 214 98 Q240 100 264 128 Q250 96 210 96 Q170 96 156 128Z" fill="#2d2232" opacity=".5"/><g aria-hidden="true"><path d="M174 92 Q194 69 222 70" stroke="#847f87" stroke-width="7" fill="none" opacity=".52" stroke-linecap="round"/><path d="M258 108 Q265 142 258 170" stroke="#2f2133" stroke-width="4" fill="none" opacity=".38" stroke-linecap="round"/><path d="M166 145 Q170 177 164 194 M246 180 Q232 198 216 201" stroke="#5e5762" stroke-width="5" fill="none" opacity=".46" stroke-linecap="round"/></g></g>
-      <g id="neck"></g>
-      <g id="crown"><g transform="translate(252 82) rotate(15)"><path d="M0 0 C -30 -22, -34 14, 0 0 C 30 -22, 34 14, 0 0Z" fill="#ff5a6e"/><path d="M0 0 C -24 -14, -26 10, 0 0" fill="#ff8c9a" opacity=".6"/><circle r="6" fill="#ce4b62"/><path d="M-4 4 L-10 24 M4 4 L10 24" stroke="#ff5a6e" stroke-width="6" stroke-linecap="round"/></g></g>
-      <g id="hand"></g>
+      <g transform="translate(31.5 -40) scale(.85)"></g>
+      <g id="dress" filter="url(#fabricFx)" transform="translate(210 165) scale(1.12 1.1) translate(-210 -205)">
+    <path d="M168 292 C158 350 139 434 110 508 Q210 542 310 508 C281 434 262 350 252 292Z" fill="#e7c33d" stroke="#caa73d" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M170 294 C164 358 150 430 126 500 Q210 526 294 500 C270 430 256 358 250 294Z" fill="#ffd93d"/>
+    <path d="M188 298 C184 372 178 447 166 510 M210 300 V518 M232 298 C236 372 242 447 254 510" stroke="#ffea96" stroke-width="4" fill="none" opacity=".5" stroke-linecap="round"/>
+    <path d="M162 208 Q210 192 258 208 L251 292 Q210 307 169 292Z" fill="#ffd93d" stroke="#caa73d" stroke-width="2.5"/>
+    <path d="M163 208 C148 202 140 217 147 232 Q158 241 174 229Z M257 208 C272 202 280 217 273 232 Q262 241 246 229Z" fill="#ffea96" stroke="#caa73d" stroke-width="2"/>
+    <path d="M178 209 Q210 225 242 209" stroke="#ffea96" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M168 291 Q210 307 252 291" stroke="#caa73d" stroke-width="5" fill="none"/>
+    <path d="M154 461 C169 438 176 408 186 378 C192 358 201 341 214 327" stroke="#65a96c" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M172 421 q-14 -13 -22 1 q14 9 22 -1Z M188 378 q14 -13 22 1 q-14 9 -22 -1Z" fill="#74bd79" stroke="#3f7b4d" stroke-width="1"/>
+    <g transform="translate(154 461) scale(0.72)">
+  <ellipse cy="-7" rx="4.5" ry="8" fill="#ffe67f" stroke="#d8b43d" stroke-width="1" transform="rotate(0)"/><ellipse cy="-7" rx="4.5" ry="8" fill="#ffe67f" stroke="#d8b43d" stroke-width="1" transform="rotate(72)"/><ellipse cy="-7" rx="4.5" ry="8" fill="#ffe67f" stroke="#d8b43d" stroke-width="1" transform="rotate(144)"/><ellipse cy="-7" rx="4.5" ry="8" fill="#ffe67f" stroke="#d8b43d" stroke-width="1" transform="rotate(216)"/><ellipse cy="-7" rx="4.5" ry="8" fill="#ffe67f" stroke="#d8b43d" stroke-width="1" transform="rotate(288)"/>
+  <circle r="3.2" fill="#ffd86a"/><circle cx="-1" cy="-1" r="1" fill="#fff" opacity=".75"/>
+</g><g transform="translate(179 409) scale(0.6)">
+  <ellipse cy="-7" rx="4.5" ry="8" fill="#ffe67f" stroke="#d8b43d" stroke-width="1" transform="rotate(0)"/><ellipse cy="-7" rx="4.5" ry="8" fill="#ffe67f" stroke="#d8b43d" stroke-width="1" transform="rotate(72)"/><ellipse cy="-7" rx="4.5" ry="8" fill="#ffe67f" stroke="#d8b43d" stroke-width="1" transform="rotate(144)"/><ellipse cy="-7" rx="4.5" ry="8" fill="#ffe67f" stroke="#d8b43d" stroke-width="1" transform="rotate(216)"/><ellipse cy="-7" rx="4.5" ry="8" fill="#ffe67f" stroke="#d8b43d" stroke-width="1" transform="rotate(288)"/>
+  <circle r="3.2" fill="#ffd86a"/><circle cx="-1" cy="-1" r="1" fill="#fff" opacity=".75"/>
+</g><g transform="translate(211 333) scale(0.68)">
+  <ellipse cy="-7" rx="4.5" ry="8" fill="#ffe67f" stroke="#d8b43d" stroke-width="1" transform="rotate(0)"/><ellipse cy="-7" rx="4.5" ry="8" fill="#ffe67f" stroke="#d8b43d" stroke-width="1" transform="rotate(72)"/><ellipse cy="-7" rx="4.5" ry="8" fill="#ffe67f" stroke="#d8b43d" stroke-width="1" transform="rotate(144)"/><ellipse cy="-7" rx="4.5" ry="8" fill="#ffe67f" stroke="#d8b43d" stroke-width="1" transform="rotate(216)"/><ellipse cy="-7" rx="4.5" ry="8" fill="#ffe67f" stroke="#d8b43d" stroke-width="1" transform="rotate(288)"/>
+  <circle r="3.2" fill="#ffd86a"/><circle cx="-1" cy="-1" r="1" fill="#fff" opacity=".75"/>
+</g>
+    <path d="M118 503 Q210 536 302 503" stroke="#ffea96" stroke-width="5" fill="none" stroke-dasharray="2 8" stroke-linecap="round"/>
+  <defs><clipPath id="stage-dress-material-clip">
+    <path d="M168 292 C158 350 139 434 110 508 Q210 542 310 508 C281 434 262 350 252 292Z" fill="#e7c33d" stroke="#caa73d" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M170 294 C164 358 150 430 126 500 Q210 526 294 500 C270 430 256 358 250 294Z" fill="#ffd93d"/>
+    <path d="M188 298 C184 372 178 447 166 510 M210 300 V518 M232 298 C236 372 242 447 254 510" stroke="#ffea96" stroke-width="4" fill="none" opacity=".5" stroke-linecap="round"/>
+    <path d="M162 208 Q210 192 258 208 L251 292 Q210 307 169 292Z" fill="#ffd93d" stroke="#caa73d" stroke-width="2.5"/>
+    <path d="M163 208 C148 202 140 217 147 232 Q158 241 174 229Z M257 208 C272 202 280 217 273 232 Q262 241 246 229Z" fill="#ffea96" stroke="#caa73d" stroke-width="2"/>
+    <path d="M178 209 Q210 225 242 209" stroke="#ffea96" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M168 291 Q210 307 252 291" stroke="#caa73d" stroke-width="5" fill="none"/>
+    <path d="M154 461 C169 438 176 408 186 378 C192 358 201 341 214 327" stroke="#65a96c" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M172 421 q-14 -13 -22 1 q14 9 22 -1Z M188 378 q14 -13 22 1 q-14 9 -22 -1Z" fill="#74bd79" stroke="#3f7b4d" stroke-width="1"/>
+    <g transform="translate(154 461) scale(0.72)">
+  <ellipse cy="-7" rx="4.5" ry="8" fill="#ffe67f" stroke="#d8b43d" stroke-width="1" transform="rotate(0)"/><ellipse cy="-7" rx="4.5" ry="8" fill="#ffe67f" stroke="#d8b43d" stroke-width="1" transform="rotate(72)"/><ellipse cy="-7" rx="4.5" ry="8" fill="#ffe67f" stroke="#d8b43d" stroke-width="1" transform="rotate(144)"/><ellipse cy="-7" rx="4.5" ry="8" fill="#ffe67f" stroke="#d8b43d" stroke-width="1" transform="rotate(216)"/><ellipse cy="-7" rx="4.5" ry="8" fill="#ffe67f" stroke="#d8b43d" stroke-width="1" transform="rotate(288)"/>
+  <circle r="3.2" fill="#ffd86a"/><circle cx="-1" cy="-1" r="1" fill="#fff" opacity=".75"/>
+</g><g transform="translate(179 409) scale(0.6)">
+  <ellipse cy="-7" rx="4.5" ry="8" fill="#ffe67f" stroke="#d8b43d" stroke-width="1" transform="rotate(0)"/><ellipse cy="-7" rx="4.5" ry="8" fill="#ffe67f" stroke="#d8b43d" stroke-width="1" transform="rotate(72)"/><ellipse cy="-7" rx="4.5" ry="8" fill="#ffe67f" stroke="#d8b43d" stroke-width="1" transform="rotate(144)"/><ellipse cy="-7" rx="4.5" ry="8" fill="#ffe67f" stroke="#d8b43d" stroke-width="1" transform="rotate(216)"/><ellipse cy="-7" rx="4.5" ry="8" fill="#ffe67f" stroke="#d8b43d" stroke-width="1" transform="rotate(288)"/>
+  <circle r="3.2" fill="#ffd86a"/><circle cx="-1" cy="-1" r="1" fill="#fff" opacity=".75"/>
+</g><g transform="translate(211 333) scale(0.68)">
+  <ellipse cy="-7" rx="4.5" ry="8" fill="#ffe67f" stroke="#d8b43d" stroke-width="1" transform="rotate(0)"/><ellipse cy="-7" rx="4.5" ry="8" fill="#ffe67f" stroke="#d8b43d" stroke-width="1" transform="rotate(72)"/><ellipse cy="-7" rx="4.5" ry="8" fill="#ffe67f" stroke="#d8b43d" stroke-width="1" transform="rotate(144)"/><ellipse cy="-7" rx="4.5" ry="8" fill="#ffe67f" stroke="#d8b43d" stroke-width="1" transform="rotate(216)"/><ellipse cy="-7" rx="4.5" ry="8" fill="#ffe67f" stroke="#d8b43d" stroke-width="1" transform="rotate(288)"/>
+  <circle r="3.2" fill="#ffd86a"/><circle cx="-1" cy="-1" r="1" fill="#fff" opacity=".75"/>
+</g>
+    <path d="M118 503 Q210 536 302 503" stroke="#ffea96" stroke-width="5" fill="none" stroke-dasharray="2 8" stroke-linecap="round"/>
+  </clipPath></defs>
+    <g clip-path="url(#stage-dress-material-clip)" aria-hidden="true" pointer-events="none">
+      <rect x="48" y="170" width="324" height="430" fill="url(#dressVolume)" opacity=".76" style="mix-blend-mode:soft-light"/>
+      <rect x="48" y="170" width="324" height="430" fill="url(#dressFalloff)" opacity=".7" style="mix-blend-mode:multiply"/>
+      <ellipse cx="176" cy="290" rx="118" ry="270" fill="url(#dressSheen)" opacity=".68" style="mix-blend-mode:screen"/>
+      <path d="M128 224 C147 304 132 412 112 535 M181 210 C166 314 172 438 164 568 M239 210 C254 314 248 438 256 568 M292 224 C273 304 288 412 308 535"
+        stroke="#fff" stroke-width="5" fill="none" opacity=".13" stroke-linecap="round"/>
+      <path d="M144 238 C158 324 151 428 137 548 M276 238 C262 324 269 428 283 548"
+        stroke="#211129" stroke-width="6" fill="none" opacity=".11" stroke-linecap="round"/>
+    </g></g>
+      <g id="shoes" filter="url(#accessoryFx)"><g transform="translate(184 572)"><g transform="scale(-1 1)">
+    <path d="M-22 4 C-21 -6 -13 -13 1 -13 C12 -13 21 -7 25 1 L23 8 C12 13 -8 15 -22 9Z" fill="#c4485f"/>
+    <path d="M-21 1 C-18 -8 -10 -11 1 -10 C11 -10 19 -6 23 0 C14 1 7 4 1 9 C-9 10 -17 8 -21 4Z" fill="#ff5a6e" stroke="#b8455c" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M-11 -6 C-4 -10 5 -9 12 -5 C6 -3 1 0 -3 4 C-8 3 -11 0 -11 -6Z" fill="#9d3d56" opacity=".78"/>
+    <path d="M1 -8 C9 -8 16 -4 20 0" stroke="#ffcad1" stroke-width="3" fill="none" opacity=".75" stroke-linecap="round"/>
+    <path d="M-18 8 L-11 8 L-13 20 Q-15 23 -18 20Z" fill="#a43f57"/><path d="M-22 8 C-7 13 11 12 23 6" stroke="#a03e56" stroke-width="2.5" fill="none"/>
+  </g></g><g transform="translate(236 572)"><g transform="scale(1 1)">
+    <path d="M-22 4 C-21 -6 -13 -13 1 -13 C12 -13 21 -7 25 1 L23 8 C12 13 -8 15 -22 9Z" fill="#c4485f"/>
+    <path d="M-21 1 C-18 -8 -10 -11 1 -10 C11 -10 19 -6 23 0 C14 1 7 4 1 9 C-9 10 -17 8 -21 4Z" fill="#ff5a6e" stroke="#b8455c" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M-11 -6 C-4 -10 5 -9 12 -5 C6 -3 1 0 -3 4 C-8 3 -11 0 -11 -6Z" fill="#9d3d56" opacity=".78"/>
+    <path d="M1 -8 C9 -8 16 -4 20 0" stroke="#ffcad1" stroke-width="3" fill="none" opacity=".75" stroke-linecap="round"/>
+    <path d="M-18 8 L-11 8 L-13 20 Q-15 23 -18 20Z" fill="#a43f57"/><path d="M-22 8 C-7 13 11 12 23 6" stroke="#a03e56" stroke-width="2.5" fill="none"/>
+  </g></g></g>
+      <g id="hairFront" filter="url(#hairFx)"><g transform="translate(31.5 -40) scale(.85)"><path d="M156 128 Q152 58 210 56 Q268 58 264 128 Q252 96 210 98 Q168 96 156 128 Z" fill="#2b2230"/><path d="M156 128 Q170 112 200 120 Q205 100 214 98 Q240 100 264 128 Q250 96 210 96 Q170 96 156 128Z" fill="#2d2232" opacity=".5"/><g aria-hidden="true"><path d="M174 92 Q194 69 222 70" stroke="#847f87" stroke-width="7" fill="none" opacity=".52" stroke-linecap="round"/><path d="M258 108 Q265 142 258 170" stroke="#2f2133" stroke-width="4" fill="none" opacity=".38" stroke-linecap="round"/><path d="M166 145 Q170 177 164 194 M246 180 Q232 198 216 201" stroke="#5e5762" stroke-width="5" fill="none" opacity=".46" stroke-linecap="round"/></g></g></g>
+      <g id="neck" filter="url(#accessoryFx)" transform="translate(31.5 -40) scale(.85)"></g>
+      <g id="crown" filter="url(#accessoryFx)" transform="translate(31.5 -40) scale(.85)"><g transform="translate(252 82) rotate(12)">
+    <path d="M-3 2 C-24 21 -43 20 -39 -1 C-36 -20 -17 -18 0 -4 C18 -20 39 -18 42 1 C45 20 24 21 3 2Z" fill="#c84960"/>
+    <path d="M-1 -2 C-20 -15 -34 -16 -35 0 C-36 12 -20 12 -3 3 C-16 17 -10 28 -4 21 L2 5 C20 14 36 13 37 1 C38 -14 20 -15 1 -2Z" fill="#ff5a6e" stroke="#b8455c" stroke-width="1.5"/>
+    <path d="M-29 -2 Q-18 -8 -7 0 M11 0 Q23 -8 32 0" stroke="#ffbac2" stroke-width="3.5" fill="none" opacity=".72"/>
+    <path d="M-5 7 L-13 29 L-2 23 L5 31 L8 7Z" fill="#ff5a6e" stroke="#ba455d" stroke-width="1.3"/>
+    <ellipse cx="0" cy="1" rx="8" ry="7" fill="#d04c62"/><ellipse cx="-2" cy="-1" rx="4" ry="3" fill="#ffc0c8" opacity=".75"/>
+    <path d="M-5 -4 Q0 1 5 -4 M-5 5 Q0 0 5 5" stroke="#c84960" stroke-width="1" fill="none"/>
+  </g></g>
+      <g id="hand" filter="url(#accessoryFx)" transform="translate(318 290) scale(.72) translate(-292 -345)"></g>
       <g id="pet"><g transform="translate(118 262)"><ellipse cx="0" cy="0" rx="20" ry="16" fill="#6fc3ff"/><circle cx="14" cy="-12" r="12" fill="#6fc3ff"/><path d="M-20 0 L-38 -10 L-30 6Z" fill="#64a2d8"/><path d="M-4 -2 Q-14 -18 6 -14Z" fill="#9ad5ff"/><path d="M24 -12 l10 3 -10 3Z" fill="#ffb347"/><circle cx="17" cy="-14" r="2.5" fill="#1a1020"/><path d="M-4 14 l-2 8 M4 14 l2 8" stroke="#ffb347" stroke-width="2"/></g></g>
     </g>
     <g id="sceneFX" aria-hidden="true">
