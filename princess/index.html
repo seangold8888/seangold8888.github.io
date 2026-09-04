@@ -367,7 +367,28 @@ const DOLL_BASE_SRC='assets/fashion-doll-base-v1.png';
 const HEAD_DOLL_TX='translate(31.5 -40) scale(.85)';
 const DRESS_DOLL_TX='translate(210 165) scale(1.12 1.1) translate(-210 -205)';
 const HAND_DOLL_TX='translate(318 290) scale(.72) translate(-292 -345)';
+const FABRIC_TEXTURES={
+  satin:'assets/fabric-satin-taffeta-v1.jpg',
+  chiffon:'assets/fabric-chiffon-organza-v1.jpg',
+  brocade:'assets/fabric-brocade-velvet-v1.jpg'
+};
+const DRESS_FABRICS={
+  ballgown:{texture:'satin',blend:'soft-light',opacity:.46,position:'xMidYMid slice'},
+  aline:{texture:'chiffon',blend:'soft-light',opacity:.28,position:'xMidYMid slice'},
+  party:{texture:'satin',blend:'soft-light',opacity:.38,position:'xMidYMin slice'},
+  mermaidline:{texture:'satin',blend:'soft-light',opacity:.44,position:'xMidYMid slice'},
+  hanbok:{texture:'brocade',blend:'soft-light',opacity:.36,position:'xMidYMid slice'},
+  tutu:{texture:'chiffon',blend:'screen',opacity:.18,position:'xMidYMin slice'},
+  tail:{texture:'satin',blend:'soft-light',opacity:.40,position:'xMidYMax slice'},
+  winter:{texture:'brocade',blend:'soft-light',opacity:.42,position:'xMidYMid slice'},
+  star:{texture:'brocade',blend:'screen',opacity:.22,position:'xMidYMid slice'},
+  rainbow:{texture:'chiffon',blend:'soft-light',opacity:.20,position:'xMidYMid slice'},
+  summer:{texture:'chiffon',blend:'soft-light',opacity:.24,position:'xMidYMin slice'},
+  rose:{texture:'brocade',blend:'soft-light',opacity:.32,position:'xMidYMid slice'},
+  adventure:{texture:'brocade',blend:'soft-light',opacity:.24,position:'xMidYMin slice'}
+};
 let dollBaseReady=false,dollBaseDataUrl=null,dollBasePromise=null;
+const fabricDataUrls=new Map(),fabricPromises=new Map();
 function primeDollBase(){
   if(typeof Image==='undefined')return;
   const img=new Image();
@@ -388,6 +409,30 @@ function ensureDollBaseData(){
     reader.readAsDataURL(blob);
   })).then(data=>{dollBaseReady=true;dollBaseDataUrl=data;return data}).catch(()=>{dollBasePromise=null;return null});
   return dollBasePromise;
+}
+function blobToDataUrl(blob){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve(reader.result);
+    reader.onerror=reject;
+    reader.readAsDataURL(blob);
+  });
+}
+function dressFabricSpec(dressId){return DRESS_FABRICS[dressId]||null}
+function ensureFabricDataUrl(textureId){
+  const src=FABRIC_TEXTURES[textureId];
+  if(!src)return Promise.resolve(null);
+  if(fabricDataUrls.has(textureId))return Promise.resolve(fabricDataUrls.get(textureId));
+  if(fabricPromises.has(textureId))return fabricPromises.get(textureId);
+  const pending=fetch(src,{cache:'force-cache'}).then(r=>{
+    if(!r.ok)throw new Error('fabric asset '+r.status);
+    return r.blob();
+  }).then(blobToDataUrl).then(data=>{
+    fabricDataUrls.set(textureId,data);
+    return data;
+  }).catch(()=>null).finally(()=>fabricPromises.delete(textureId));
+  fabricPromises.set(textureId,pending);
+  return pending;
 }
 function dollToneMatrix(hex){
   const v=parseInt(hex.slice(1),16),rgb=[(v>>16)&255,(v>>8)&255,v&255],base=[235,190,165];
@@ -1082,9 +1127,17 @@ function materialDefs(){
       <stop offset=".34" stop-color="#fff" stop-opacity=".12"/>
       <stop offset="1" stop-color="#fff" stop-opacity="0"/>
     </radialGradient>
+    <filter id="fabricPhotoFx" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer>
+        <feFuncR type="linear" slope=".94" intercept=".03"/>
+        <feFuncG type="linear" slope=".94" intercept=".03"/>
+        <feFuncB type="linear" slope=".94" intercept=".03"/>
+      </feComponentTransfer>
+    </filter>
     <filter id="fabricFx" x="-18%" y="-12%" width="136%" height="130%" color-interpolation-filters="sRGB">
       <feTurbulence type="fractalNoise" baseFrequency=".025 .5" numOctaves="2" seed="17" result="weave"/>
-      <feColorMatrix in="weave" type="matrix" values="0 0 0 0 .42  0 0 0 0 .36  0 0 0 0 .46  0 0 0 .2 0" result="grain"/>
+      <feColorMatrix in="weave" type="matrix" values="0 0 0 0 .42  0 0 0 0 .36  0 0 0 0 .46  0 0 0 .08 0" result="grain"/>
       <feComposite in="grain" in2="SourceGraphic" operator="in" result="clothGrain"/>
       <feBlend in="SourceGraphic" in2="clothGrain" mode="multiply" result="textured"/>
       <feGaussianBlur in="SourceAlpha" stdDeviation="1.4" result="fabricAlpha"/>
@@ -1109,14 +1162,25 @@ function materialDefs(){
     </filter>
   </defs>`;
 }
-function materialize(key,svg){
+function materialize(key,svg,item=null,color=null){
   const fx=key==='dress'?'fabricFx':key==='pet'?'':'accessoryFx';
+  if(key==='dress'&&item){
+    const art=scopeSvgIds(svg,'thumb-dress-art');
+    const clipArt=scopeSvgIds(item.svg(color),'thumb-dress-clip');
+    return materialDefs()+`<g filter="url(#fabricFx)">${art}${dressMaterialSVG(clipArt,item,'thumb-dress-material-clip')}</g>`;
+  }
   return materialDefs()+(fx?`<g filter="url(#${fx})">${svg}</g>`:svg);
 }
-function dressMaterialSVG(clipArt){
+function dressMaterialSVG(clipArt,dress,clipId='stage-dress-material-clip',fabricHrefs=undefined){
   if(!clipArt)return '';
-  return `<defs><clipPath id="stage-dress-material-clip">${clipArt}</clipPath></defs>
-    <g clip-path="url(#stage-dress-material-clip)" aria-hidden="true" pointer-events="none">
+  const spec=dress&&dressFabricSpec(dress.id);
+  const textureHref=spec?(fabricHrefs===undefined?FABRIC_TEXTURES[spec.texture]:(fabricHrefs&&fabricHrefs[spec.texture])||''):'';
+  const photo=textureHref?`<image href="${textureHref}" x="48" y="170" width="324" height="430"
+      preserveAspectRatio="${spec.position}" opacity="${spec.opacity}" filter="url(#fabricPhotoFx)"
+      style="mix-blend-mode:${spec.blend}"/>`:'';
+  return `<defs><clipPath id="${clipId}">${clipArt}</clipPath></defs>
+    <g clip-path="url(#${clipId})" aria-hidden="true" pointer-events="none">
+      ${photo}
       <rect x="48" y="170" width="324" height="430" fill="url(#dressVolume)" opacity=".76" style="mix-blend-mode:soft-light"/>
       <rect x="48" y="170" width="324" height="430" fill="url(#dressFalloff)" opacity=".7" style="mix-blend-mode:multiply"/>
       <ellipse cx="176" cy="290" rx="118" ry="270" fill="url(#dressSheen)" opacity=".68" style="mix-blend-mode:screen"/>
@@ -1188,7 +1252,7 @@ function sceneFinishSVG(bgId){
     <circle cx="24" cy="24" r="4" fill="#fff" opacity=".85"/><circle cx="396" cy="24" r="4" fill="#fff" opacity=".85"/>
   </g>`;
 }
-function dollSVG(st,p,bodyHref=dollBaseReady?DOLL_BASE_SRC:null){
+function dollSVG(st,p,bodyHref=dollBaseReady?DOLL_BASE_SRC:null,fabricHrefs=undefined){
   const bg=BGS.find(b=>b.id===st.bg)||BGS[0];
   const dress=st.dress?itemOf('dress',st.dress.id):null;
   const tail=!!(dress&&dress.tail);
@@ -1196,7 +1260,7 @@ function dollSVG(st,p,bodyHref=dollBaseReady?DOLL_BASE_SRC:null){
   const part=(key)=>{const v=st[key];if(!v)return '';const it=itemOf(key,v.id);return it?scopeSvgIds(it.svg(v.color),'stage-'+key+'-'+it.id):''};
   const bgArt=scopeSvgIds(bg.svg(),'stage-bg');
   const dressArt=dress?scopeSvgIds(dress.svg(st.dress.color),'stage-dress'):'';
-  const dressMaterial=dress?dressMaterialSVG(scopeSvgIds(dress.svg(st.dress.color),'stage-dress-material')):'';
+  const dressMaterial=dress?dressMaterialSVG(scopeSvgIds(dress.svg(st.dress.color),'stage-dress-material'),dress,'stage-dress-material-clip',fabricHrefs):'';
   const headTx=bodyHref?HEAD_DOLL_TX:'',dressTx=bodyHref?DRESS_DOLL_TX:'',handTx=bodyHref?HAND_DOLL_TX:'';
   const faceArt=bodyHref?'':faceSVG(p);
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 680" width="420" height="680" role="img" aria-label="${p.name} 꾸미기">
@@ -1232,7 +1296,7 @@ function renderStage(){
 function thumbSVG(key,item,color){
   const cat=CATS.find(c=>c.key===key);
   let vb=item.vb||cat.vb;
-  let inner=scopeSvgIds(materialize(key,item.svg(color)),'thumb-'+key+'-'+item.id);
+  let inner=scopeSvgIds(materialize(key,item.svg(color),item,color),'thumb-'+key+'-'+item.id);
   if(cat.petVb){
     // 펫은 그려지는 위치가 제각각 → transform 좌표를 읽어 주변을 자른다
     const m=inner.match(/translate\((-?\d+\.?\d*) (-?\d+\.?\d*)\)/);
@@ -1340,22 +1404,39 @@ function svgToPng(svgText,w,h){
     const blob=new Blob([svgText],{type:'image/svg+xml;charset=utf-8'});
     const url=URL.createObjectURL(blob);
     const img=new Image();
-    img.onload=()=>{const cv=document.createElement('canvas');cv.width=w;cv.height=h;const ctx=cv.getContext('2d');ctx.drawImage(img,0,0,w,h);URL.revokeObjectURL(url);try{res(cv.toDataURL('image/png'))}catch(e){rej(e)}};
+    img.onload=()=>{
+      try{
+        const cv=document.createElement('canvas');cv.width=w;cv.height=h;
+        const ctx=cv.getContext('2d');ctx.drawImage(img,0,0,w,h);
+        res(cv.toDataURL('image/png'));
+      }catch(e){rej(e)}finally{URL.revokeObjectURL(url)}
+    };
     img.onerror=e=>{URL.revokeObjectURL(url);rej(e)};
     img.src=url;
   });
 }
-let lastPhoto=null;
-async function buildExportSvg(){
-  const bodyHref=await ensureDollBaseData();
-  return dollSVG(state,princess(),bodyHref);
+let lastPhoto=null,lastPhotoSvg=null;
+async function buildExportSvg(st=JSON.parse(JSON.stringify(state)),p=princess()){
+  const dress=st.dress?itemOf('dress',st.dress.id):null;
+  const spec=dress&&dressFabricSpec(dress.id);
+  const [bodyHref,fabricHref]=await Promise.all([
+    ensureDollBaseData(),
+    spec?ensureFabricDataUrl(spec.texture):Promise.resolve(null)
+  ]);
+  const fabricHrefs={};
+  if(spec){
+    if(!fabricHref)throw new Error('fabric unavailable');
+    fabricHrefs[spec.texture]=fabricHref;
+  }
+  return dollSVG(st,p,bodyHref,fabricHrefs);
 }
 async function takePhoto(){
   shutter();
   const st=document.getElementById('stage');
   st.style.filter='brightness(2)';setTimeout(()=>st.style.filter='',120);
   try{
-    lastPhoto=await svgToPng(await buildExportSvg(),840,1360);
+    lastPhotoSvg=await buildExportSvg();
+    lastPhoto=await svgToPng(lastPhotoSvg,840,1360);
     document.getElementById('photoImg').src=lastPhoto;
     document.getElementById('photoOverlay').classList.add('show');
   }catch(e){toast('사진을 만들지 못했어요');}
@@ -1363,11 +1444,11 @@ async function takePhoto(){
 function album(){try{return JSON.parse(localStorage.getItem(ALBUM_KEY)||'[]')||[]}catch(e){return []}}
 function saveAlbum(list){try{localStorage.setItem(ALBUM_KEY,JSON.stringify(list));return true}catch(e){return false}}
 async function addToAlbum(){
-  if(!lastPhoto)return;
+  if(!lastPhoto||!lastPhotoSvg)return;
   let list=album();
   // 앨범용은 작게 저장(용량 절약)
   let small=lastPhoto;
-  try{small=await svgToPng(await buildExportSvg(),280,453)}catch(e){}
+  try{small=await svgToPng(lastPhotoSvg,280,453)}catch(e){}
   list.unshift({src:small,name:princess().name,t:Date.now()});
   while(list.length>12)list.pop();
   while(list.length&&!saveAlbum(list))list.pop();

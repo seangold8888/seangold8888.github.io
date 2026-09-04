@@ -20,9 +20,17 @@
       <stop offset=".34" stop-color="#fff" stop-opacity=".12"/>
       <stop offset="1" stop-color="#fff" stop-opacity="0"/>
     </radialGradient>
+    <filter id="fabricPhotoFx" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer>
+        <feFuncR type="linear" slope=".94" intercept=".03"/>
+        <feFuncG type="linear" slope=".94" intercept=".03"/>
+        <feFuncB type="linear" slope=".94" intercept=".03"/>
+      </feComponentTransfer>
+    </filter>
     <filter id="fabricFx" x="-18%" y="-12%" width="136%" height="130%" color-interpolation-filters="sRGB">
       <feTurbulence type="fractalNoise" baseFrequency=".025 .5" numOctaves="2" seed="17" result="weave"/>
-      <feColorMatrix in="weave" type="matrix" values="0 0 0 0 .42  0 0 0 0 .36  0 0 0 0 .46  0 0 0 .2 0" result="grain"/>
+      <feColorMatrix in="weave" type="matrix" values="0 0 0 0 .42  0 0 0 0 .36  0 0 0 0 .46  0 0 0 .08 0" result="grain"/>
       <feComposite in="grain" in2="SourceGraphic" operator="in" result="clothGrain"/>
       <feBlend in="SourceGraphic" in2="clothGrain" mode="multiply" result="textured"/>
       <feGaussianBlur in="SourceAlpha" stdDeviation="1.4" result="fabricAlpha"/>
@@ -109,6 +117,9 @@
     <path d="M118 503 Q210 536 302 503" stroke="#ffea96" stroke-width="5" fill="none" stroke-dasharray="2 8" stroke-linecap="round"/>
   </clipPath></defs>
     <g clip-path="url(#stage-dress-material-clip)" aria-hidden="true" pointer-events="none">
+      <image href="assets/fabric-chiffon-organza-v1.jpg" x="48" y="170" width="324" height="430"
+      preserveAspectRatio="xMidYMid slice" opacity="0.28" filter="url(#fabricPhotoFx)"
+      style="mix-blend-mode:soft-light"/>
       <rect x="48" y="170" width="324" height="430" fill="url(#dressVolume)" opacity=".76" style="mix-blend-mode:soft-light"/>
       <rect x="48" y="170" width="324" height="430" fill="url(#dressFalloff)" opacity=".7" style="mix-blend-mode:multiply"/>
       <ellipse cx="176" cy="290" rx="118" ry="270" fill="url(#dressSheen)" opacity=".68" style="mix-blend-mode:screen"/>
