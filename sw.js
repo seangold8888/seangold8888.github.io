@@ -34,6 +34,18 @@ const CORE_SHELL = [
   "./cards/js/vfx-recipes.js?v=26",
   "./cards/js/story-gates.js?v=26",
   "./cards/js/app.js?v=26",
+  "./starkart/",
+  "./starkart/index.html",
+  "./starkart/src/main.js?v=1",
+  "./starkart/src/contracts.js",
+  "./starkart/src/race.js",
+  "./starkart/src/track.js",
+  "./starkart/src/vehicle.js",
+  "./starkart/src/ai.js",
+  "./starkart/src/cards.js",
+  "./starkart/src/hud.js",
+  "./starkart/src/vfx.js",
+  "./starkart/src/audio.js",
 ];
 
 // Existing games are precached as best-effort shells. A missing optional asset
