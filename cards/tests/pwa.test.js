@@ -112,9 +112,9 @@ test("all story episode mp3 files match the service worker fallback list", () =>
   }
 });
 
-test("cache generation v27 preserves exact v26 card assets and canonical navigation aliases", () => {
-  assert.equal(sw.CACHE_VERSION, "v27");
-  assert.match(sw.STATIC_CACHE, /^adventure-box-v27-/);
+test("cache generation v28 preserves exact v26 card assets and canonical navigation aliases", () => {
+  assert.equal(sw.CACHE_VERSION, "v28");
+  assert.match(sw.STATIC_CACHE, /^adventure-box-v28-/);
   for (const asset of ["styles.css", "engine.js", "audio.js", "card-view.js", "vfx-recipes.js", "story-gates.js", "app.js"]) {
     assert.ok(sw.CORE_SHELL.some(entry => entry.endsWith(asset + "?v=26")), asset);
   }

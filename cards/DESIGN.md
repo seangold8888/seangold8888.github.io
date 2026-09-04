@@ -272,7 +272,7 @@ Avoid: copyrighted character likenesses; recognizable Disney, Pokémon or Hearth
 - **탭하면 상세**: 기존 큰 카드(기술·특성·출전)를 dialog/시트로 확대 표시. 거기서 「출전 선택」. 잠긴 카드 탭은 기존 잠금 dialog 유지.
 - 전투 화면 카드에도 능력치 3줄을 HP 아래 작게 노출(상대 카드 읽기 = 전략).
 - 폴백·접근성: `aria-label="공격력 4점 만점 5"` 식으로 별점 읽기. 60px 터치 규격 유지(카드 전체가 탭 타깃).
-- 캐시: styles/js 수정 시 `?v=26`, sw.js CACHE_VERSION v26 동시 상향.
+- 캐시: 카드 styles/js는 `?v=26`, 현재 sw.js CACHE_VERSION은 공주 3D 에셋 반영용 v28.
 - 테스트: 24장 stats 존재·1~5 범위 / 그리드 열 수 브레이크포인트 / 상세 dialog 열림·출전 선택 / 기존 잠금 흐름 유지.
 
 ### 13c. 검수 기준
