@@ -149,11 +149,34 @@ globalThis.PrincessStudio=(()=>{
     const longSleeves=['hanbok','winter','adventure'].includes(st.dress?.id),y=longSleeves?278:225;
     return `<defs><clipPath id="${scope}-front-arms"><path d="M65 ${y}H145L158 ${y+12}L125 335H65Z M275 ${y}H360V335H294L261 ${y+12}Z"/></clipPath></defs><g data-wear-layer="arms-over-clothes" transform="translate(${identities[p.id].dx} 0)" clip-path="url(#${scope}-front-arms)" mask="url(#${scope}-body-visible)"><use href="#${scope}-body-source"/></g>`;
   }
-  function hair(p,color,scope,embedded,front=false){
-    const piece=sprite('hair',p.hair,color,scope,embedded),r=rects.hair[p.hair];
-    const fit={moon:.87,briar:.92,kongjwi:.95,mermaid:.96,snow:1,cinder:1,rapunzel:.98,thumb:.95}[p.id];
-    const fill=front||!['curls','afro','wavy','pigtails'].includes(p.hair)?'':`<defs>${tone(scope+'-fill-tint',color,'hair')}<clipPath id="${scope}-inset"><rect x="165" y="35" width="90" height="76"/></clipPath><filter id="${scope}-fill" x="-25%" y="-25%" width="150%" height="150%"><feMorphology in="SourceGraphic" operator="dilate" radius="8"/></filter></defs><g clip-path="url(#${scope}-inset)" filter="url(#${scope}-fill-tint)"><image href="${escape(href('hair',p.hair,embedded))}" x="${r[0]}" y="${r[1]}" width="${r[2]}" height="${r[3]}" preserveAspectRatio="none" filter="url(#${scope}-fill)"/></g>`;
-    return `<g data-wear-layer="${front?'hair-front':'hair-back'}" transform="translate(210 0) scale(${fit} 1) translate(-210 0)">${fill}${piece}</g>`;
+  // Measured on the actual bald doll assets: crown top and temple edges in scene units.
+  const headAnchors={
+    snow:[18.3125,183.875,239.09375],cinder:[18.90625,183.875,236.125],
+    rapunzel:[14.15625,185.65625,239.09375],mermaid:[18.90625,186.25,242.0625],
+    thumb:[14.75,183.875,242.65625],kongjwi:[20.6875,189.21875,241.46875],
+    briar:[16.53125,186.84375,240.28125],moon:[15.34375,183.28125,236.125]
+  };
+  // Normalized forehead opening, temple row/edges, crown volume and natural length.
+  const hairAnchors={
+    bob:[.2663,.4142,.3186,.6845,6,125],bun:[.3548,.5046,.2874,.7356,25,132],
+    braid:[.1455,.2933,.2537,.7122,6,225],wavy:[.1376,.2867,.3496,.5962,8,224],
+    pigtails:[.2061,.356,.362,.6329,10,192],daenggi:[.1533,.3021,.25,.755,5,225],
+    curls:[.1583,.3073,.3581,.5934,8,202],afro:[.3081,.4569,.3816,.6276,16,158]
+  };
+  function hairPlacement(p,bodyOffset=identities[p.id].dx){
+    const [top,left,right]=headAnchors[p.id],a=hairAnchors[p.hair];
+    const width=(right-left-4)/(a[3]-a[2]);
+    return {x:(left+right)/2+bodyOffset-(a[2]+a[3])/2*width,width,
+      knots:[[0,top-a[4]],[a[0],top+18],[a[1],57.5],[1,a[5]+top-18]]};
+  }
+  function hair(p,color,scope,embedded,front=false,bodyOffset=identities[p.id].dx){
+    const fit=hairPlacement(p,bodyOffset),asset=scope+'-source',tid=scope+'-tone';
+    // Three continuous sections preserve strands without thin-strip alpha seams.
+    const slices=fit.knots.slice(0,-1).map((a,i)=>{
+      const b=fit.knots[i+1];
+      return `<svg x="${fit.x}" y="${a[1]}" width="${fit.width}" height="${b[1]-a[1]+.35}" viewBox="0 ${a[0]} 1 ${b[0]-a[0]}" preserveAspectRatio="none" overflow="hidden"><use href="#${asset}"/></svg>`;
+    });
+    return `<g data-studio-part="hair/${p.hair}" data-hair-fit="head-anchors-v33" data-wear-layer="${front?'hair-front':'hair-back'}" filter="url(#${tid})"><defs>${tone(tid,color,'hair')}<image id="${asset}" href="${escape(href('hair',p.hair,embedded))}" width="1" height="1" preserveAspectRatio="none"/></defs>${slices.join('')}</g>`;
   }
   function render(st,p,bodyHref='assets/fashion-doll-base-v1.png',embedded){
     p={...p,hair:selectedHair(st,p)};
@@ -201,7 +224,7 @@ globalThis.PrincessStudio=(()=>{
   function portrait(p,color,embedded,bodyHref='assets/fashion-doll-base-v1.png'){
     const scope='portrait-'+p.id;
     bodyHref=href('body',p.id,embedded);
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="125 -24 170 208" preserveAspectRatio="xMidYMid meet" data-art-version="studio-v3">${hair(p,color,scope+'-back',embedded)}${body(p,bodyHref,scope,false)}${hair(p,color,scope+'-front',embedded,true)}</svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="125 -24 170 208" preserveAspectRatio="xMidYMid meet" data-art-version="studio-v3">${hair(p,color,scope+'-back',embedded,false,0)}${body(p,bodyHref,scope,false)}${hair(p,color,scope+'-front',embedded,true,0)}</svg>`;
   }
   function loadFile(k){
     if(cache.has(k))return Promise.resolve(cache.get(k));
@@ -220,5 +243,5 @@ globalThis.PrincessStudio=(()=>{
     const values=await Promise.all(keys.map(loadFile));
     return Object.fromEntries(keys.map((k,i)=>[k,values[i]]));
   }
-  return {render,thumb,portrait,background,exportAssets,fileKeys,path,rects,identities};
+  return {render,thumb,portrait,background,exportAssets,fileKeys,path,rects,identities,headAnchors,hairAnchors,hairPlacement};
 })();

@@ -216,3 +216,23 @@ require('node:test')('hair tab controls change style and color without changing 
   assert.equal(JSON.parse(stored.get('princess:outfits')).snow.hairStyle,'wavy');
   assert(node('stage').innerHTML.includes('data-studio-part="hair/wavy"'));
 });
+require('node:test')('all 64 hairstyles attach to measured foreheads and temples, including portrait offsets',()=>{
+  const {api,studio}=environment();let combinations=0;
+  for(const p of api.PRINCESSES)for(const {id} of api.CATS.find(c=>c.key==='hair').list){
+    const q={...p,hair:id},fit=studio.hairPlacement(q),anchor=studio.hairAnchors[id];
+    const [top,left,right]=studio.headAnchors[p.id],dx=studio.identities[p.id].dx;
+    assert(Math.abs(fit.x+anchor[2]*fit.width-(left+dx+2))<.001,'left temple detached');
+    assert(Math.abs(fit.x+anchor[3]*fit.width-(right+dx-2))<.001,'right temple detached');
+    assert.equal(fit.knots[1][1],top+18,'forehead root mismatch');
+    assert.equal(fit.knots[2][1],57.5,'temple height mismatch');
+    for(let i=1;i<fit.knots.length;i++)assert(fit.knots[i][1]>fit.knots[i-1][1],'folded hair mesh');
+    const identity=studio.identities[p.id];
+    assert(24+.96*(604-580*identity.sy+fit.knots[0][1]*identity.sy)>=16,'hair clipped by photo');
+    const portrait=studio.hairPlacement(q,0);assert(Math.abs(portrait.x+dx-fit.x)<.001);
+    const st={...json(api.defaultState(p)),hairStyle:id};
+    const svg=api.dollSVG(st,p);checkSvg(svg);assert(svg.includes('data-hair-fit="head-anchors-v33"'));
+    checkSvg(api.princessThumb(p,p.hairColor,id));combinations++;
+  }
+  assert.equal(combinations,64);
+  assert(studio.hairPlacement({...api.PRINCESSES[0],hair:'bob'}).knots[0][1]>12,'Snow bob is still floating above scalp');
+});
