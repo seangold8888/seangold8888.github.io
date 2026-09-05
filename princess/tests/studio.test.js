@@ -64,8 +64,9 @@ async function main(){
     const bytes=fs.readFileSync(path.join(dir,bodyPath));
     assert(bytes.includes(Buffer.from('tRNS'))||bytes[25]===6,'body PNG has no transparency: '+p.id);
     assert(studio.identities[p.id]);
+    const gripPath=studio.path('grip',p.id);assert(fs.existsSync(path.join(dir,gripPath)));allPaths.push(gripPath);
   }
-  assert.equal(new Set(allPaths).size,103,'expected 95 wardrobe/scenery assets and 8 individual bodies');
+  assert.equal(new Set(allPaths).size,111,'expected 95 wardrobe/scenery assets, 8 bodies and 8 gripping hands');
   const dirFiles=fs.readdirSync(path.join(dir,'assets/studio-v3'));
   assert.equal(dirFiles.filter(f=>/\.(png|jpg)$/.test(f)).length,95,'studio image count');
   const thumbDocument=api.CATS.filter(c=>c.list).map(c=>c.list.map(i=>api.thumbSVG(c.key,i,'#ff8fc1')).join('')).join('')+api.PRINCESSES.map(p=>api.princessThumb(p,p.hairColor)).join('');
@@ -127,3 +128,24 @@ async function main(){
   console.log(JSON.stringify({ok:true,studioPaths:new Set(allPaths).size,catalogCounts,exportCases,legacyPrincesses:api.PRINCESSES.length,thumbnailIds:ids(thumbDocument).length,allSlots:true,tailShoeSuppression:true,assetRetry:true,bodyRetry:true,readerRetry:true,concurrentRequestDeduplication:true,repeatSameItemThumbnailDuplicateIds:ids(repeated).length-new Set(ids(repeated)).size},null,2));
 }
 require('node:test')('studio assets, all selections, saved outfits and photo export stay in sync', main);
+require('node:test')('wearing layers preserve shoe openings, hair occlusion and gripping hands',()=>{
+  const {api,studio}=environment();let combinations=0;
+  for(const p of api.PRINCESSES)for(const dress of api.CATS.find(c=>c.key==='dress').list)for(const shoe of api.CATS.find(c=>c.key==='shoes').list){
+    const s=json(api.defaultState(p));s.dress={id:dress.id,color:'#6fc3ff'};s.shoes={id:shoe.id,color:'#ff8fc1'};
+    s.hand={id:'wand',color:'#ffd93d'};s.neck={id:'pearls',color:'#ffffff'};
+    const svg=api.dollSVG(s,p);checkSvg(svg);
+    const at=name=>svg.indexOf('data-wear-layer="'+name+'"');
+    assert(at('neck-front')<at('hair-front'));
+    assert(at('held-prop')<at('gripping-fingers'));
+    assert(svg.includes('data-studio-part="grip/'+p.id+'"'));
+    if(dress.id!=='tail'){
+      assert(at('shoe-back')<svg.indexOf('data-studio-part="body/'));
+      assert(dress.id==='adventure'?at('shoe-front')>at('clothes'):at('shoe-front')<at('clothes'));
+      assert(svg.includes('-opening-0')&&svg.includes('-opening-1'));
+    }else assert.equal(at('shoe-front'),-1);
+    combinations++;
+  }
+  assert.equal(combinations,936);
+  const p=api.PRINCESSES[0],s=json(api.defaultState(p));s.hand=null;
+  assert(!studio.fileKeys(s,p).some(k=>k.startsWith('grip/')));
+});

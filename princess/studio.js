@@ -3,6 +3,9 @@
 // independently of the retired vector figure's coordinates.
 globalThis.PrincessStudio=(()=>{
   const ROOT='assets/studio-v3/';
+  const wearGeometry={"shoes":{"pumps":[[0.01042,0.00463,0.48958,0.99074],[0.50521,0.00463,0.48958,0.99074]],"glass":[[0.00521,0.0045,0.47396,0.99099],[0.52083,0.0045,0.47396,0.99099]],"boots":[[0.00649,0.00781,0.46753,0.99219],[0.50649,0.00391,0.48701,0.99609]],"sneakers":[[0.00521,0.00478,0.49479,0.99522],[0.5,0.00478,0.49479,0.99522]],"sandals":[[0.00521,0.00926,0.48958,0.98611],[0.51042,0.00463,0.48438,0.99074]],"ballet":[[0.00521,0,0.49479,0.9919],[0.5,0,0.49479,0.9919]],"rain":[[0.00524,0,0.48691,0.99609],[0.50262,0,0.49215,0.99609]],"slippers":[[0.01042,0.01935,0.48958,0.96774],[0.5,0.0129,0.49479,0.98065]],"kkotsin":[[0.00521,0.00515,0.48438,0.98969],[0.51042,0.00515,0.48438,0.98969]]},"bodies":{"snow":{"wrist":[299.66,278],"feet":[[177.34,26.72],[213.56,27.31]]},"cinder":{"wrist":[304.41,278],"feet":[[183.28,24.34],[211.78,24.34]]},"rapunzel":{"wrist":[307.97,278],"feet":[[177.94,26.13],[214.75,26.13]]},"mermaid":{"wrist":[307.67,278],"feet":[[183.28,25.53],[214.75,26.13]]},"thumb":{"wrist":[308.86,278],"feet":[[182.09,26.13],[213.56,26.13]]},"kongjwi":{"wrist":[307.97,278],"feet":[[180.91,26.13],[217.72,26.13]]},"briar":{"wrist":[311.23,278],"feet":[[174.97,28.5],[211.78,29.09]]},"moon":{"wrist":[304.41,278],"feet":[[177.34,27.31],[211.19,27.31]]}}};
+  const shoeWear={pumps:[533,46,.60],glass:[533,46,.60],boots:[475,104,0],sneakers:[542,37,.22],sandals:[535,44,.73],ballet:[521,58,.66],rain:[505,74,0],slippers:[549,30,.46],kkotsin:[540,39,.48]};
+  const gripPoints={wand:[.5,.84],fan:[.5,.9],bouquet:[.5,.8],umbrella:[.51,.88],bag:[.5,.12],balloon:[.47,.96],book:[.16,.62],lollipop:[.5,.86],sword:[.5,.74],mirror:[.5,.86],basket:[.5,.14]};
   // Individual fictional character designs; body build is not derived from ethnicity.
   const identities={
     snow:{sx:.97,sy:.95,fit:1.04,dx:0},cinder:{sx:.98,sy:1.01,fit:1.04,dx:0},
@@ -33,7 +36,7 @@ globalThis.PrincessStudio=(()=>{
     neck:{
       pearls:[185,112,51,44],heart:[193,113,36,49],gem:[190,113,42,52],
       scarf:[181,110,61,63],choker:[190,113,41,22],star:[192,112,38,53],
-      norigae:[208,179,34,102],flowerlei:[178,110,65,61]
+      norigae:[218,204,24,82],flowerlei:[178,110,65,61]
     },
     hand:{
       wand:[305,190,34,121],fan:[277,239,82,73],bouquet:[283,226,74,103],
@@ -60,6 +63,10 @@ globalThis.PrincessStudio=(()=>{
   };
   const cache=new Map(),pending=new Map();
   const dressMeshes={
+    party:[[0,123,190],[.052,132,205],[.112,151,265],[.176,174,280],[.313,215,290],[.485,273,215],[1,382,180]],
+    tutu:[[0,126,285],[.198,150,300],[.254,174,310],[.427,215,300],[.586,263,242],[1,336,190]],
+    summer:[[0,128,222],[.175,151,238],[.242,174,252],[.418,215,202],[.547,269,184],[1,392,171]],
+    rainbow:[[0,145,460],[.069,172,480],[.142,215,475],[.274,272,290],[.5,385,248],[1,568,245]],
     ballgown:[[0,125,300],[.10,152,300],[.15,184,495],[.20,215,440],[.28,246,320],[.5,350,278],[1,570,270]],
     aline:[[0,127,300],[.1,149,315],[.165,170,315],[.26,215,315],[.39,271,273],[.6,395,230],[1,548,220]],
     mermaidline:[[0,127,340],[.106,151,380],[.142,170,420],[.225,215,400],[.334,269,368],[.5,375,360],[.68,443,250],[1,570,218]],
@@ -69,10 +76,11 @@ globalThis.PrincessStudio=(()=>{
   };
   const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
   const key=(cat,id)=>cat+'/'+id;
-  const path=(cat,id)=>cat==='body'?'assets/bodies-v4/body-'+id+'.png':ROOT+cat+'-'+id+(cat==='bg'?'.jpg':'.png');
+  const path=(cat,id)=>cat==='grip'?'assets/wear-v5/grip-'+id+'.png':cat==='body'?'assets/bodies-v4/body-'+id+'.png':ROOT+cat+'-'+id+(cat==='bg'?'.jpg':'.png');
   const href=(cat,id,embedded)=>embedded===undefined?path(cat,id):embedded[key(cat,id)];
   const fileKeys=(st,p)=>{
     const list=[key('bg',st.bg),key('hair',p.hair),key('body',p.id)];
+    if(st.hand)list.push(key('grip',p.id));
     for(const cat of ['back','dress','shoes','crown','neck','hand','pet']){
       if(st[cat]&&!(cat==='shoes'&&st.dress?.id==='tail'))list.push(key(cat,st[cat].id));
     }
@@ -110,43 +118,77 @@ globalThis.PrincessStudio=(()=>{
     const src=href('bg',id,embedded);if(!src)throw new Error('Missing background '+id);
     return `<image data-studio-background="${id}" href="${escape(src)}" width="420" height="680" preserveAspectRatio="xMidYMid slice"/>`;
   }
-  function body(p,bodyHref,scope,tail,dressColor){
-    const [r,g,b]=[1,1,1]; // Each original already contains its own complexion and facial sculpt.
-    const lining=dressColor?`<defs>${tone(scope+'-lining',dressColor,'dress')}<clipPath id="${scope}-lining-clip"><path d="M169 141Q209 148 252 141L243 177Q237 201 236 215Q238 235 251 260L229 274L216 286H204L190 274L168 260Q179 236 182 215Q180 194 175 177Z"/></clipPath></defs><image href="${escape(bodyHref)}" x="20" y="10" width="380" height="570" preserveAspectRatio="xMidYMid meet" filter="url(#${scope}-lining)" clip-path="url(#${scope}-lining-clip)"/>`:'';
-    return `<defs><filter id="${scope}-skin" color-interpolation-filters="sRGB"><feColorMatrix values="${r} 0 0 0 0 0 ${g} 0 0 0 0 0 ${b} 0 0 0 0 0 1 0"/></filter><clipPath id="${scope}-body-clip"><rect width="420" height="${tail?250:680}"/>${tail?'<rect width="141" height="680"/><rect x="279" width="141" height="680"/>':''}</clipPath></defs><g clip-path="url(#${scope}-body-clip)"><image data-studio-body="true" href="${escape(bodyHref)}" x="20" y="10" width="380" height="570" preserveAspectRatio="xMidYMid meet" filter="url(#${scope}-skin)"/>${lining}</g>`;
+  function body(p,bodyHref,scope,tail,dressColor,shoeId=null,holding=false,trousers=false){
+    const wx=wearGeometry.bodies[p.id].wrist[0],wear=shoeId&&shoeWear[shoeId];
+    const cuts=(tail?'<rect x="140" y="250" width="140" height="430" fill="black"/>':'')+
+      (trousers?`<rect x="140" y="250" width="140" height="${wear?wear[0]-250:430}" fill="black"/>`:'')+
+      (wear?`<rect x="145" y="${wear[0]+wear[1]*wear[2]}" width="140" height="150" fill="black"/>`:'')+
+      (holding?`<path d="M${wx-10} 278L${wx+9} 270L380 350H285Z" fill="black"/>`:'');
+    const lining=dressColor?`<defs>${tone(scope+'-lining',dressColor,'dress')}<clipPath id="${scope}-lining-clip"><path d="M169 141Q209 148 252 141L243 177Q237 201 236 215Q238 235 251 260L229 274L216 286H204L190 274L168 260Q179 236 182 215Q180 194 175 177Z"/></clipPath></defs><use href="#${scope}-body-source" filter="url(#${scope}-lining)" clip-path="url(#${scope}-lining-clip)"/>`:'';
+    return `<defs><image id="${scope}-body-source" data-studio-body="true" href="${escape(bodyHref)}" x="20" y="10" width="380" height="570" preserveAspectRatio="xMidYMid meet"/><mask id="${scope}-body-visible" maskUnits="userSpaceOnUse" x="0" y="0" width="420" height="680"><rect width="420" height="680" fill="white"/>${cuts}</mask></defs><g mask="url(#${scope}-body-visible)"><use href="#${scope}-body-source"/>${lining}</g>`;
+  }
+  function fittedShoes(st,p,scope,embedded,front){
+    if(!st.shoes||st.dress?.id==='tail')return '';
+    const {id,color}=st.shoes,[y,h,opening]=shoeWear[id],sid=scope+'-shoes-'+(front?'front':'back'),src=href('shoes',id,embedded);
+    const feet=wearGeometry.bodies[p.id].feet,dx=identities[p.id].dx;
+    const pairs=feet.map(([left,width],i)=>{
+      const box=wearGeometry.shoes[id][i],x=left+dx-2,w=width+4,mask=sid+'-opening-'+i;
+      const hole=front&&opening>0?`<path fill="black" d="M${x+w*.26} ${y+h*.07} Q${x+w*.5} ${y-h*.03} ${x+w*.74} ${y+h*.07} L${x+w*.81} ${y+h*opening} Q${x+w*.5} ${y+h*(opening+.1)} ${x+w*.19} ${y+h*opening}Z"/>`:'';
+      return `<defs><mask id="${mask}" maskUnits="userSpaceOnUse" x="${x-2}" y="${y-2}" width="${w+4}" height="${h+4}"><rect x="${x-2}" y="${y-2}" width="${w+4}" height="${h+4}" fill="white"/>${hole}</mask></defs><g mask="url(#${mask})"><svg x="${x}" y="${y}" width="${w}" height="${h}" viewBox="${box.join(' ')}" preserveAspectRatio="none" overflow="hidden"><image href="${escape(src)}" width="1" height="1" preserveAspectRatio="none"/></svg></g>`;
+    }).join('');
+    return `<g data-studio-part="shoes/${id}" data-wear-layer="${front?'shoe-front':'shoe-back'}" filter="url(#${sid}-tone)"><defs>${tone(sid+'-tone',color,'shoes')}</defs>${pairs}</g>`;
+  }
+  function heldProp(st,p,scope,embedded){
+    if(!st.hand)return '';
+    const {id,color}=st.hand,r=rects.hand[id],a=gripPoints[id],wx=wearGeometry.bodies[p.id].wrist[0]+identities[p.id].dx;
+    const tx=wx+16-(r[0]+r[2]*a[0]),ty=297-(r[1]+r[3]*a[1]);
+    return `<g data-wear-layer="held-prop" transform="translate(${tx} ${ty})" filter="url(#${scope}-contact)">${sprite('hand',id,color,scope+'-hand',embedded)}</g><image data-studio-part="grip/${p.id}" data-wear-layer="gripping-fingers" href="${escape(href('grip',p.id,embedded))}" x="${wx-7}" y="270" width="33" height="42" preserveAspectRatio="none"/>`;
+  }
+  function frontArms(st,p,scope){
+    const longSleeves=['hanbok','winter','adventure'].includes(st.dress?.id),y=longSleeves?278:225;
+    return `<defs><clipPath id="${scope}-front-arms"><path d="M65 ${y}H145L158 ${y+12}L125 335H65Z M275 ${y}H360V335H294L261 ${y+12}Z"/></clipPath></defs><g data-wear-layer="arms-over-clothes" transform="translate(${identities[p.id].dx} 0)" clip-path="url(#${scope}-front-arms)" mask="url(#${scope}-body-visible)"><use href="#${scope}-body-source"/></g>`;
   }
   function hair(p,color,scope,embedded,front=false){
-    const piece=sprite('hair',p.hair,color,scope,embedded);
+    const piece=sprite('hair',p.hair,color,scope,embedded),r=rects.hair[p.hair];
     const fit={moon:.87,briar:.92,kongjwi:.95,mermaid:.96,snow:1,cinder:1,rapunzel:.98,thumb:.95}[p.id];
-    return `<g transform="translate(210 0) scale(${fit} 1) translate(-210 0)">${piece}</g>`;
+    const fill=front||!['curls','afro','wavy','pigtails'].includes(p.hair)?'':`<defs>${tone(scope+'-fill-tint',color,'hair')}<clipPath id="${scope}-inset"><rect x="165" y="35" width="90" height="76"/></clipPath><filter id="${scope}-fill" x="-25%" y="-25%" width="150%" height="150%"><feMorphology in="SourceGraphic" operator="dilate" radius="8"/></filter></defs><g clip-path="url(#${scope}-inset)" filter="url(#${scope}-fill-tint)"><image href="${escape(href('hair',p.hair,embedded))}" x="${r[0]}" y="${r[1]}" width="${r[2]}" height="${r[3]}" preserveAspectRatio="none" filter="url(#${scope}-fill)"/></g>`;
+    return `<g data-wear-layer="${front?'hair-front':'hair-back'}" transform="translate(210 0) scale(${fit} 1) translate(-210 0)">${fill}${piece}</g>`;
   }
   function render(st,p,bodyHref='assets/fashion-doll-base-v1.png',embedded){
     const scope='studio-'+p.id,tail=st.dress?.id==='tail',identity=identities[p.id];
-    bodyHref=href('body',p.id,embedded);
-    if(!bodyHref)throw new Error('Missing body '+p.id);
+    bodyHref=href('body',p.id,embedded);if(!bodyHref)throw new Error('Missing body '+p.id);
     const part=cat=>{
       if(!st[cat])return '';
       const art=sprite(cat,st[cat].id,st[cat].color,scope+'-'+cat,embedded);
-      return cat==='dress'?`<g transform="translate(210 0) scale(${identity.fit} 1) translate(-210 0)">${art}</g>`:art;
+      const hem=st.dress?.id==='adventure'&&st.shoes?shoeWear[st.shoes.id][0]+5:680;
+      return cat==='dress'?`<defs><clipPath id="${scope}-hem"><rect width="420" height="${hem}"/></clipPath></defs><g data-wear-layer="clothes" filter="url(#${scope}-contact)" clip-path="url(#${scope}-hem)"><g mask="url(#${scope}-dress-fit)"><g transform="translate(210 0) scale(${identity.fit} 1) translate(-210 0)">${art}</g></g></g>`:art;
     };
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 680" width="420" height="680" role="img" aria-label="${escape(p.name)} 인형 꾸미기" data-art-version="studio-v3">
-      <defs><radialGradient id="${scope}-shade"><stop offset="0" stop-color="#17111f" stop-opacity=".34"/><stop offset="1" stop-color="#17111f" stop-opacity="0"/></radialGradient><linearGradient id="${scope}-edge" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".06"/><stop offset=".72" stop-color="#17111f" stop-opacity="0"/><stop offset="1" stop-color="#17111f" stop-opacity=".18"/></linearGradient></defs>
+    const neck=front=>{
+      if(!st.neck)return '';const {id,color}=st.neck,sid=scope+'-neck-'+front,scale=id==='norigae'?1:id==='choker'?.78:.86;
+      if(!front&&id==='norigae')return '';
+      return `<defs><clipPath id="${sid}-clip"><rect x="0" y="${front?119:0}" width="420" height="${front?561:119}"/></clipPath></defs><g data-wear-layer="neck-${front?'front':'back'}" clip-path="url(#${sid}-clip)" transform="translate(210 0) scale(${scale} 1) translate(-210 0)">${sprite('neck',id,color,sid,embedded)}</g>`;
+    };
+    const crown=front=>{
+      if(!st.crown)return '';const {id,color}=st.crown,sid=scope+'-crown-'+front,r=rects.crown[id];
+      const cut=id==='veil'?42:['crown','tiara','flowers','pearls','moon'].includes(id)?r[1]+r[3]*.80:680;
+      return `<defs><clipPath id="${sid}-clip"><rect x="0" y="-30" width="420" height="${front?cut+30:710}"/></clipPath></defs><g data-wear-layer="headwear-${front?'front':'back'}" clip-path="url(#${sid}-clip)" filter="url(#${scope}-contact)">${sprite('crown',id,color,sid,embedded)}</g>`;
+    };
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 680" width="420" height="680" role="img" aria-label="${escape(p.name)} 인형 꾸미기" data-art-version="wear-v5">
+      <defs><filter id="${scope}-contact" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB"><feDropShadow dx=".5" dy="1.2" stdDeviation=".85" flood-color="#2a1823" flood-opacity=".30"/></filter><radialGradient id="${scope}-shade"><stop offset="0" stop-color="#17111f" stop-opacity=".34"/><stop offset="1" stop-color="#17111f" stop-opacity="0"/></radialGradient></defs>
+      <defs><filter id="${scope}-torso-contour"><feMorphology in="SourceAlpha" operator="dilate" radius="6" result="contour"/><feFlood flood-color="white"/><feComposite in2="contour" operator="in"/></filter><mask id="${scope}-dress-fit" maskUnits="userSpaceOnUse" x="0" y="0" width="420" height="680"><use href="#${scope}-body-source" transform="translate(${identity.dx} 0)" filter="url(#${scope}-torso-contour)"/><rect y="220" width="420" height="460" fill="white"/></mask></defs>
       ${background(st.bg,embedded)}
-      <rect width="420" height="680" fill="url(#${scope}-edge)"/>
       <ellipse cx="210" cy="603" rx="97" ry="21" fill="url(#${scope}-shade)"/>
       <g data-body-identity="${p.id}" transform="translate(210 ${604-580*identity.sy}) scale(${identity.sx} ${identity.sy}) translate(-210 0)">
-      ${part('back')}
+      ${part('back')}${crown(false)}
       ${hair(p,st.hairColor,scope+'-hair-back',embedded)}
-      <g data-studio-part="body/${p.id}" transform="translate(${identity.dx} 0)">${body(p,bodyHref,scope,tail||st.dress?.id==='adventure',st.dress?.color)}</g>
-      ${tail||st.dress?.id==='adventure'?'':part('shoes')}
-      ${part('dress')}
-      ${st.dress?.id==='adventure'?part('shoes'):''}
+      ${neck(false)}${fittedShoes(st,p,scope,embedded,false)}
+      <g data-studio-part="body/${p.id}" transform="translate(${identity.dx} 0)">${body(p,bodyHref,scope,tail,st.dress?.color,tail?null:st.shoes?.id,!!st.hand,st.dress?.id==='adventure')}</g>
+      ${st.dress?.id==='adventure'?'':fittedShoes(st,p,scope,embedded,true)}
+      ${part('dress')}${st.dress?.id==='adventure'?fittedShoes(st,p,scope,embedded,true):''}${frontArms(st,p,scope)}
+      ${neck(true)}
       ${hair(p,st.hairColor,scope+'-hair-front',embedded,true)}
-      ${part('neck')}
-      ${part('crown')}
-      ${part('hand')}
-      </g>
-      <g transform="translate(0 24)">${part('pet')}</g>
+      ${crown(true)}${heldProp(st,p,scope,embedded)}
+      </g><g transform="translate(0 24)">${part('pet')}</g>
     </svg>`;
   }
   function thumb(cat,item,color,embedded){
