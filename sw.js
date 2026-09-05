@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v36";
+const CACHE_VERSION = "v37";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
