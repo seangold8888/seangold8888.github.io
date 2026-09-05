@@ -19,7 +19,7 @@ function environment(seed = {}, options = {}) {
       const failures = pendingFailures.get(url) || 0;
       if (failures) { pendingFailures.set(url, failures - 1); throw new Error('injected network failure: '+url); }
       const bytes = fs.readFileSync(path.join(dir,url));
-      return {ok: true, status: 200, blob: async () => ({bytes, type: url.endsWith('.jpg')?'image/jpeg':'image/png'})};
+      return {ok: true, status: 200, blob: async () => ({bytes, type: url.endsWith('.jpg')?'image/jpeg':url.endsWith('.webp')?'image/webp':'image/png'})};
     },
     FileReader: class { readAsDataURL(blob) { queueMicrotask(() => {
       if(options.readerFailures > 0){options.readerFailures--; this.onerror(new Error('injected reader failure')); return;}
@@ -29,7 +29,7 @@ function environment(seed = {}, options = {}) {
   vm.createContext(ctx);
   vm.runInContext(studioSource,ctx,{filename:'studio.js'});
   vm.runInContext(appSource,ctx,{filename:'index.html-inline'});
-  vm.runInContext('globalThis.QA={PRINCESSES,CATS,SLOTS,defaultState,loadPrincess,princess,dollSVG,thumbSVG,princessThumb,buildExportSvg,ensureDollBaseData,getState:()=>state,getOutfits:()=>outfits}',ctx);
+  vm.runInContext('globalThis.QA={PRINCESSES,CATS,SLOTS,defaultState,loadPrincess,princess,dollSVG,thumbSVG,princessThumb,buildExportSvg,ensureDollBaseData,renderPanel,renderTabs,setTab:value=>tab=value,getState:()=>state,getOutfits:()=>outfits}',ctx);
   return {ctx, api: ctx.QA, studio: ctx.PrincessStudio, calls, stored};
 }
 function ids(svg){return [...svg.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);}
@@ -62,13 +62,14 @@ async function main(){
     const bodyPath=studio.path('body',p.id);
     assert(fs.existsSync(path.join(dir,bodyPath)),bodyPath);allPaths.push(bodyPath);
     const bytes=fs.readFileSync(path.join(dir,bodyPath));
-    assert(bytes.includes(Buffer.from('tRNS'))||bytes[25]===6,'body PNG has no transparency: '+p.id);
+    assert.equal(bytes.toString('ascii',8,12),'WEBP');
+    assert(bytes[20]&16,'body WebP has no alpha channel: '+p.id);
     assert(studio.identities[p.id]);
     const gripPath=studio.path('grip',p.id);assert(fs.existsSync(path.join(dir,gripPath)));allPaths.push(gripPath);
   }
   assert.equal(new Set(allPaths).size,111,'expected 95 wardrobe/scenery assets, 8 bodies and 8 gripping hands');
   const dirFiles=fs.readdirSync(path.join(dir,'assets/studio-v3'));
-  assert.equal(dirFiles.filter(f=>/\.(png|jpg)$/.test(f)).length,95,'studio image count');
+  assert.equal(dirFiles.filter(f=>/\.(webp|jpg)$/.test(f)).length,95,'studio image count');
   const thumbDocument=api.CATS.filter(c=>c.list).map(c=>c.list.map(i=>api.thumbSVG(c.key,i,'#ff8fc1')).join('')).join('')+api.PRINCESSES.map(p=>api.princessThumb(p,p.hairColor)).join('');
   assert.equal(ids(thumbDocument).length,new Set(ids(thumbDocument)).size,'cross-thumbnail duplicate IDs');
   let exportCases=0;
@@ -88,7 +89,7 @@ async function main(){
   const p=api.PRINCESSES[0];
   for(const cat of api.CATS.filter(c=>c.list))for(const item of cat.list){
     const s=json(api.defaultState(p));
-    if(cat.key==='bg')s.bg=item.id;else s[cat.key]={id:item.id,color:'#6fc3ff'};
+    if(cat.key==='bg')s.bg=item.id;else if(cat.key==='hair')s.hairStyle=item.id;else s[cat.key]={id:item.id,color:'#6fc3ff'};
     const svg=await api.buildExportSvg(s,p);checkSvg(svg);
     assert(!/<image\b[^>]*href="(?!data:image\/)/.test(svg),'unembedded image: '+cat.key+'/'+item.id);
     if(cat.key==='bg')assert(svg.includes('data-studio-background="'+item.id+'"'));
@@ -148,4 +149,70 @@ require('node:test')('wearing layers preserve shoe openings, hair occlusion and 
   assert.equal(combinations,936);
   const p=api.PRINCESSES[0],s=json(api.defaultState(p));s.hand=null;
   assert(!studio.fileKeys(s,p).some(k=>k.startsWith('grip/')));
+});
+require('node:test')('all hair choices export and persist independently; old saves keep their original hair',async()=>{
+  const {api,studio}=environment(),styles=api.CATS.find(c=>c.key==='hair').list;
+  assert.equal(styles.length,8);
+  for(const p of api.PRINCESSES)for(const hair of styles){
+    const s={...json(api.defaultState(p)),hairStyle:hair.id,hairColor:'#c98bff'};
+    assert(studio.fileKeys(s,p).includes('hair/'+hair.id));
+    const svg=await api.buildExportSvg(s,p);checkSvg(svg);
+    assert(svg.includes('data-studio-part="hair/'+hair.id+'"'));
+    assert(svg.includes('data:image/webp;base64,'));
+    assert(!/<image\b[^>]*href="(?!data:image\/)/.test(svg));
+  }
+  const saved={snow:{hairStyle:'afro',hairColor:'#c98bff'},moon:{hairStyle:'braid',hairColor:'#ffffff'},cinder:{hairStyle:'removed'}};
+  const env=environment({'princess:outfits':JSON.stringify(saved)});
+  env.api.loadPrincess('snow');assert.equal(env.api.getState().hairStyle,'afro');
+  env.api.loadPrincess('moon');assert.equal(env.api.getState().hairStyle,'braid');
+  env.api.loadPrincess('snow');assert.equal(env.api.getState().hairStyle,'afro');
+  const reloaded=environment({'princess:outfits':env.stored.get('princess:outfits')});
+  reloaded.api.loadPrincess('moon');assert.equal(reloaded.api.getState().hairStyle,'braid');
+  env.api.loadPrincess('cinder');assert.equal(env.api.getState().hairStyle,'bun');
+  for(const p of api.PRINCESSES){
+    const old=json(api.defaultState(p));delete old.hairStyle;
+    const migrated=environment({'princess:outfits':JSON.stringify({[p.id]:old})});
+    migrated.api.loadPrincess(p.id);assert.equal(migrated.api.getState().hairStyle,p.hair);
+    assert(studio.fileKeys(old,p).includes('hair/'+p.hair));
+  }
+});
+require('node:test')('photo safe area contains every crown and hairstyle for all eight body heights',()=>{
+  const {api,studio}=environment();
+  for(const p of api.PRINCESSES){
+    const identity=studio.identities[p.id],offset=604-580*identity.sy;
+    for(const rect of [...Object.values(studio.rects.crown),...Object.values(studio.rects.hair)]){
+      const top=24+.96*(offset+rect[1]*identity.sy);
+      assert(top>=16,`${p.id} headwear outside safe top margin: ${top}`);
+    }
+    const s={...json(api.defaultState(p)),crown:{id:'bunny',color:'#ffffff'}};
+    const svg=api.dollSVG(s,p);
+    assert.match(svg,/data-photo-safe="true" transform="translate\(0 24\) scale\(1 .96\)"/);
+    assert(24+.96*(offset+587*identity.sy)<650,'feet or tail outside frame');
+  }
+});
+require('node:test')('hair tab controls change style and color without changing the princess or dress',()=>{
+  const {api,ctx,stored}=environment(),nodes=new Map();
+  function node(id){
+    if(!nodes.has(id))nodes.set(id,{innerHTML:'',scrollLeft:0,scrollTop:0,querySelectorAll(){
+      return [...this.innerHTML.matchAll(/<button\b([^>]*)>/g)].map(m=>({
+        dataset:Object.fromEntries([...m[1].matchAll(/data-([\w]+)="([^"]*)"/g)].map(a=>[a[1],a[2]])),
+        addEventListener(event,fn){this[event]=fn;},
+      }));
+    }});
+    return nodes.get(id);
+  }
+  ctx.document={getElementById:node};ctx.requestAnimationFrame=fn=>fn();
+  // Retain the synthetic buttons that receive the real event handlers.
+  for(const id of ['items','swatches','tabs']){const el=node(id),query=el.querySelectorAll;el.querySelectorAll=function(){return this.buttons=query.call(this);};}
+  api.loadPrincess('snow');api.renderTabs();
+  node('tabs').buttons.find(b=>b.dataset.key==='hair').click();
+  const previousDress=json(api.getState().dress);
+  assert.equal(node('items').buttons.length,8);
+  node('items').buttons.find(b=>b.dataset.id==='wavy').click();
+  assert.equal(api.getState().hairStyle,'wavy');
+  assert.equal(api.princess().id,'snow');assert.deepEqual(json(api.getState().dress),previousDress);
+  const color=node('swatches').buttons.at(-1).dataset.c;
+  node('swatches').buttons.at(-1).click();assert.equal(api.getState().hairColor,color);
+  assert.equal(JSON.parse(stored.get('princess:outfits')).snow.hairStyle,'wavy');
+  assert(node('stage').innerHTML.includes('data-studio-part="hair/wavy"'));
 });

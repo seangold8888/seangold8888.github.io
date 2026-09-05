@@ -76,10 +76,11 @@ globalThis.PrincessStudio=(()=>{
   };
   const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
   const key=(cat,id)=>cat+'/'+id;
-  const path=(cat,id)=>cat==='grip'?'assets/wear-v5/grip-'+id+'.png':cat==='body'?'assets/bodies-v4/body-'+id+'.png':ROOT+cat+'-'+id+(cat==='bg'?'.jpg':'.png');
+  const path=(cat,id)=>cat==='grip'?'assets/wear-v5/grip-'+id+'.webp':cat==='body'?'assets/bodies-v4/body-'+id+'.webp':ROOT+cat+'-'+id+(cat==='bg'?'.jpg':'.webp');
+  const selectedHair=(st,p)=>Object.hasOwn(rects.hair,st.hairStyle)?st.hairStyle:p.hair;
   const href=(cat,id,embedded)=>embedded===undefined?path(cat,id):embedded[key(cat,id)];
   const fileKeys=(st,p)=>{
-    const list=[key('bg',st.bg),key('hair',p.hair),key('body',p.id)];
+    const list=[key('bg',st.bg),key('hair',selectedHair(st,p)),key('body',p.id)];
     if(st.hand)list.push(key('grip',p.id));
     for(const cat of ['back','dress','shoes','crown','neck','hand','pet']){
       if(st[cat]&&!(cat==='shoes'&&st.dress?.id==='tail'))list.push(key(cat,st[cat].id));
@@ -155,6 +156,7 @@ globalThis.PrincessStudio=(()=>{
     return `<g data-wear-layer="${front?'hair-front':'hair-back'}" transform="translate(210 0) scale(${fit} 1) translate(-210 0)">${fill}${piece}</g>`;
   }
   function render(st,p,bodyHref='assets/fashion-doll-base-v1.png',embedded){
+    p={...p,hair:selectedHair(st,p)};
     const scope='studio-'+p.id,tail=st.dress?.id==='tail',identity=identities[p.id];
     bodyHref=href('body',p.id,embedded);if(!bodyHref)throw new Error('Missing body '+p.id);
     const part=cat=>{
@@ -177,6 +179,7 @@ globalThis.PrincessStudio=(()=>{
       <defs><filter id="${scope}-contact" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB"><feDropShadow dx=".5" dy="1.2" stdDeviation=".85" flood-color="#2a1823" flood-opacity=".30"/></filter><radialGradient id="${scope}-shade"><stop offset="0" stop-color="#17111f" stop-opacity=".34"/><stop offset="1" stop-color="#17111f" stop-opacity="0"/></radialGradient></defs>
       <defs><filter id="${scope}-torso-contour"><feMorphology in="SourceAlpha" operator="dilate" radius="6" result="contour"/><feFlood flood-color="white"/><feComposite in2="contour" operator="in"/></filter><mask id="${scope}-dress-fit" maskUnits="userSpaceOnUse" x="0" y="0" width="420" height="680"><use href="#${scope}-body-source" transform="translate(${identity.dx} 0)" filter="url(#${scope}-torso-contour)"/><rect y="220" width="420" height="460" fill="white"/></mask></defs>
       ${background(st.bg,embedded)}
+      <g data-photo-safe="true" transform="translate(0 24) scale(1 .96)">
       <ellipse cx="210" cy="603" rx="97" ry="21" fill="url(#${scope}-shade)"/>
       <g data-body-identity="${p.id}" transform="translate(210 ${604-580*identity.sy}) scale(${identity.sx} ${identity.sy}) translate(-210 0)">
       ${part('back')}${crown(false)}
@@ -188,7 +191,7 @@ globalThis.PrincessStudio=(()=>{
       ${neck(true)}
       ${hair(p,st.hairColor,scope+'-hair-front',embedded,true)}
       ${crown(true)}${heldProp(st,p,scope,embedded)}
-      </g><g transform="translate(0 24)">${part('pet')}</g>
+      </g><g transform="translate(0 24)">${part('pet')}</g></g>
     </svg>`;
   }
   function thumb(cat,item,color,embedded){

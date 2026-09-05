@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v31";
+const CACHE_VERSION = "v32";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -49,7 +49,7 @@ const PRINCESS_STUDIO_ASSETS = Object.entries({
   pet: "cat dog rabbit bird frog unicorn deer butterfly dragon hamster mouse fish toad",
   bg: "plain castle forest sea night cherry ballroom snow rainbow candy tower meadow hanok rosecastle",
 }).flatMap(([category, ids]) => ids.split(" ").map(id =>
-  `./princess/assets/studio-v3/${category}-${id}.${category === "bg" ? "jpg" : "png"}`
+  `./princess/assets/studio-v3/${category}-${id}.${category === "bg" ? "jpg" : "webp"}`
 ));
 const OPTIONAL_SHELL = [
   "./avengers/",
@@ -91,14 +91,10 @@ const OPTIONAL_SHELL = [
   "./princess/",
   "./princess/cover.svg",
   "./princess/cover.jpg?v=31",
-  "./princess/studio.js?v=31",
-  ..."snow cinder rapunzel mermaid thumb kongjwi briar moon".split(" ").map(id => `./princess/assets/wear-v5/grip-${id}.png`),
+  "./princess/studio.js?v=32",
+  ..."snow cinder rapunzel mermaid thumb kongjwi briar moon".split(" ").map(id => `./princess/assets/wear-v5/grip-${id}.webp`),
   ...PRINCESS_STUDIO_ASSETS,
-  ..."snow cinder rapunzel mermaid thumb kongjwi briar moon".split(" ").map(id => `./princess/assets/bodies-v4/body-${id}.png`),
-  "./princess/assets/fashion-doll-base-v1.png",
-  "./princess/assets/fabric-satin-taffeta-v1.jpg",
-  "./princess/assets/fabric-chiffon-organza-v1.jpg",
-  "./princess/assets/fabric-brocade-velvet-v1.jpg",
+  ..."snow cinder rapunzel mermaid thumb kongjwi briar moon".split(" ").map(id => `./princess/assets/bodies-v4/body-${id}.webp`),
   "./sanguo/",
   "./sanguo/assets/index-CwgIUExR.js",
   "./sanguo/assets/index-suNetyzF.css",

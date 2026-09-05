@@ -230,7 +230,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 </div>
 <div id="toast"></div>
 
-<script src="studio.js?v=31"></script>
+<script src="studio.js?v=32"></script>
 <script>
 'use strict';
 /* =========================================================
@@ -1057,8 +1057,15 @@ const BGS=[
 ];
 
 // ---------- 카테고리 ----------
+const HAIR_STYLES=[
+  {id:'bob',name:'단발머리'},{id:'bun',name:'올림머리'},
+  {id:'braid',name:'긴 땋은 머리'},{id:'wavy',name:'웨이브'},
+  {id:'pigtails',name:'양갈래'},{id:'daenggi',name:'댕기머리'},
+  {id:'curls',name:'굵은 곱슬'},{id:'afro',name:'풍성한 곱슬'},
+];
 const CATS=[
   {key:'princess',label:'공주',ic:'👸'},
+  {key:'hair',label:'머리',ic:'💇',list:HAIR_STYLES},
   {key:'dress',label:'드레스',ic:'👗',list:DRESSES,vb:'50 180 320 420'},
   {key:'shoes',label:'신발',ic:'👠',list:SHOES,vb:'140 480 140 120'},
   {key:'crown',label:'왕관',ic:'👑',list:CROWNS,vb:'130 -50 160 160'},
@@ -1080,7 +1087,7 @@ let tab='princess';
 let muted=false; try{muted=localStorage.getItem(MUTE_KEY)==='1'}catch(e){}
 
 function defaultState(p){
-  const s={hairColor:p.hairColor,bg:p.def.bg||'plain'};
+  const s={hairStyle:p.hair,hairColor:p.hairColor,bg:p.def.bg||'plain'};
   for(const k of SLOTS){ const d=p.def[k]; s[k]=d?{id:d[0],color:d[1]}:null; }
   return s;
 }
@@ -1090,6 +1097,7 @@ function loadPrincess(id){
   const base=defaultState(p);
   state=outfits[id]?Object.assign({},base,outfits[id]):base;
   if(!BGS.some(bg=>bg.id===state.bg))state.bg=base.bg;
+  if(!HAIR_STYLES.some(h=>h.id===state.hairStyle))state.hairStyle=base.hairStyle;
   for(const k of SLOTS){
     if(state[k]&&!itemOf(k,state[k].id))state[k]=base[k];
   }
@@ -1268,8 +1276,8 @@ function renderStage(){
 function thumbSVG(key,item,color){
   return PrincessStudio.thumb(key,item,color);
 }
-function princessThumb(p,hairColor){
-  return PrincessStudio.portrait(p,hairColor);
+function princessThumb(p,hairColor,hairStyle=p.hair){
+  return PrincessStudio.portrait({...p,hair:HAIR_STYLES.some(h=>h.id===hairStyle)?hairStyle:p.hair},hairColor);
 }
 
 function renderTabs(){
@@ -1295,12 +1303,20 @@ function renderPanel(){
     intro.textContent=`${p.name} — ${p.intro}`;
     sw.innerHTML=`<span class="lbl">머리 색</span>`+HAIR_PALETTE.map(c=>`<button class="sw ${c===state.hairColor?'on':''}" style="background:${c}" data-c="${c}" aria-label="머리색"></button>`).join('');
     sw.querySelectorAll('.sw').forEach(b=>b.addEventListener('click',()=>{state.hairColor=b.dataset.c;persist();click();renderStage();rerenderPanelKeepingPosition();}));
-    items.innerHTML=PRINCESSES.map(q=>`<button class="item pr ${q.id===cur?'on':''}" data-id="${q.id}">${princessThumb(q,(outfits[q.id]&&outfits[q.id].hairColor)||q.hairColor)}<span class="nm">${q.name}</span></button>`).join('');
+    items.innerHTML=PRINCESSES.map(q=>`<button class="item pr ${q.id===cur?'on':''}" data-id="${q.id}">${princessThumb(q,outfits[q.id]?.hairColor||q.hairColor,outfits[q.id]?.hairStyle||q.hair)}<span class="nm">${q.name}</span></button>`).join('');
     items.querySelectorAll('.item').forEach(b=>b.addEventListener('click',()=>{loadPrincess(b.dataset.id);tada();renderStage();renderPanel();popStage();}));
     return;
   }
   intro.textContent='';
   const cat=CATS.find(c=>c.key===tab);
+  if(tab==='hair'){
+    intro.textContent='머리 모양과 색을 골라 보세요. 공주마다 따로 저장돼요.';
+    sw.innerHTML=`<span class="lbl">머리 색</span>`+HAIR_PALETTE.map(c=>`<button class="sw ${c===state.hairColor?'on':''}" style="background:${c}" data-c="${c}" aria-label="머리색"></button>`).join('');
+    sw.querySelectorAll('.sw').forEach(b=>b.addEventListener('click',()=>{state.hairColor=b.dataset.c;persist();click();renderStage();rerenderPanelKeepingPosition();}));
+    items.innerHTML=cat.list.map(it=>`<button class="item ${it.id===state.hairStyle?'on':''}" data-id="${it.id}" aria-pressed="${it.id===state.hairStyle}">${thumbSVG('hair',it,state.hairColor)}<span class="nm">${it.name}</span></button>`).join('');
+    items.querySelectorAll('.item').forEach(b=>b.addEventListener('click',()=>{state.hairStyle=b.dataset.id;persist();click();renderStage();rerenderPanelKeepingPosition();}));
+    return;
+  }
   if(tab==='bg'){
     sw.innerHTML='';
     items.innerHTML=cat.list.map(it=>`<button class="item ${it.id===state.bg?'on':''}" data-id="${it.id}">${PrincessStudio.thumb('bg',it)}<span class="nm">${it.name}</span></button>`).join('');
@@ -1340,6 +1356,7 @@ function randomize(){
   }
   if(state.dress&&itemOf('dress',state.dress.id).tail) state.shoes=null;
   state.bg=rnd(BGS).id;
+  state.hairStyle=rnd(HAIR_STYLES).id;
   persist();tada();renderStage();renderPanel();popStage();
   sparkleAt(document.getElementById('stage'));
 }
