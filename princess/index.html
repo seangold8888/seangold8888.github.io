@@ -230,7 +230,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 </div>
 <div id="toast"></div>
 
-<script src="studio.js?v=33"></script>
+<script src="studio.js?v=34"></script>
 <script>
 'use strict';
 /* =========================================================
@@ -1072,7 +1072,7 @@ const CATS=[
   {key:'neck',label:'목걸이',ic:'📿',list:NECKS,vb:'160 185 100 100'},
   {key:'hand',label:'손',ic:'🪄',list:HANDS_ITEMS,vb:'210 180 220 260'},
   {key:'back',label:'날개',ic:'🦋',list:BACKS,vb:'30 140 360 420'},
-  {key:'pet',label:'친구',ic:'🐾',list:PETS,vb:'',petVb:true},
+  {key:'pet',label:'친구',ic:'🐾',list:PETS,vb:'',petVb:true,nocolor:true},
   {key:'bg',label:'배경',ic:'🏰',list:BGS,vb:'0 0 420 680',nocolor:true},
 ];
 const SLOTS=['dress','shoes','crown','neck','hand','back','pet'];
@@ -1088,7 +1088,7 @@ let muted=false; try{muted=localStorage.getItem(MUTE_KEY)==='1'}catch(e){}
 
 function defaultState(p){
   const s={hairStyle:p.hair,hairColor:p.hairColor,bg:p.def.bg||'plain'};
-  for(const k of SLOTS){ const d=p.def[k]; s[k]=d?{id:d[0],color:d[1]}:null; }
+  for(const k of SLOTS){ const d=p.def[k]; s[k]=d?(k==='pet'?{id:d[0]}:{id:d[0],color:d[1]}):null; }
   return s;
 }
 function loadPrincess(id){
@@ -1101,6 +1101,7 @@ function loadPrincess(id){
   for(const k of SLOTS){
     if(state[k]&&!itemOf(k,state[k].id))state[k]=base[k];
   }
+  if(state.pet)state.pet={id:state.pet.id};
   persist();
 }
 function persist(){
@@ -1324,10 +1325,11 @@ function renderPanel(){
     return;
   }
   const curSel=state[tab];
-  const curColor=curSel?curSel.color:PALETTE[0];
-  sw.innerHTML=`<span class="lbl">색깔</span>`+PALETTE.map(c=>`<button class="sw ${c===curColor?'on':''}" style="background:${c}" data-c="${c}" aria-label="색"></button>`).join('');
+  const curColor=curSel?curSel.color:null;
+  if(cat.nocolor)intro.textContent='친구들은 원래 털과 깃털 색을 간직해요.';
+  sw.innerHTML=cat.nocolor?'':`<span class="lbl">색깔</span><button class="sw ${!curColor?'on':''}" style="width:auto;min-width:76px;padding:0 8px;background:#fff" data-c="" aria-label="원래 재질 색">원래 색</button>`+PALETTE.map(c=>`<button class="sw ${c===curColor?'on':''}" style="background:${c}" data-c="${c}" aria-label="색"></button>`).join('');
   sw.querySelectorAll('.sw').forEach(b=>b.addEventListener('click',()=>{
-    const c=b.dataset.c;
+    const c=b.dataset.c||null;
     if(state[tab]) state[tab].color=c; else state[tab]={id:cat.list[0].id,color:c};
     persist();click();renderStage();rerenderPanelKeepingPosition();
   }));
@@ -1336,7 +1338,7 @@ function renderPanel(){
   items.querySelectorAll('.item').forEach(b=>b.addEventListener('click',()=>{
     const id=b.dataset.id;
     if(!id){state[tab]=null;}
-    else{state[tab]={id,color:curColor};}
+    else{state[tab]=cat.nocolor?{id}:{id,color:curColor};}
     persist();click();renderStage();renderPanel();sparkleAt(b);
   }));
 }
@@ -1352,7 +1354,7 @@ function randomize(){
   for(const k of SLOTS){
     const cat=CATS.find(c=>c.key===k);
     const chance = k==='dress'?1 : k==='shoes'?.9 : k==='pet'?.8 : .6;
-    state[k]=Math.random()<chance?{id:rnd(cat.list).id,color:rnd(PALETTE)}:null;
+    state[k]=Math.random()<chance?(cat.nocolor?{id:rnd(cat.list).id}:{id:rnd(cat.list).id,color:rnd(PALETTE)}):null;
   }
   if(state.dress&&itemOf('dress',state.dress.id).tail) state.shoes=null;
   state.bg=rnd(BGS).id;

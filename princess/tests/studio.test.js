@@ -29,7 +29,7 @@ function environment(seed = {}, options = {}) {
   vm.createContext(ctx);
   vm.runInContext(studioSource,ctx,{filename:'studio.js'});
   vm.runInContext(appSource,ctx,{filename:'index.html-inline'});
-  vm.runInContext('globalThis.QA={PRINCESSES,CATS,SLOTS,defaultState,loadPrincess,princess,dollSVG,thumbSVG,princessThumb,buildExportSvg,ensureDollBaseData,renderPanel,renderTabs,setTab:value=>tab=value,getState:()=>state,getOutfits:()=>outfits}',ctx);
+  vm.runInContext('globalThis.QA={PRINCESSES,CATS,SLOTS,defaultState,loadPrincess,princess,dollSVG,thumbSVG,princessThumb,buildExportSvg,ensureDollBaseData,renderPanel,renderTabs,randomize,setTab:value=>tab=value,getState:()=>state,getOutfits:()=>outfits}',ctx);
   return {ctx, api: ctx.QA, studio: ctx.PrincessStudio, calls, stored};
 }
 function ids(svg){return [...svg.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);}
@@ -108,7 +108,7 @@ async function main(){
   for(const cat of api.CATS.filter(c=>api.SLOTS.includes(c.key)))legacyOutfits.snow[cat.key]={id:cat.list.at(-1).id,color:'#8b5a3c'};
   legacyOutfits.snow.bg='cherry';legacyOutfits.snow.hairColor='#e9e4f5';
   const legacy=environment({'princess:outfits':JSON.stringify(legacyOutfits)});
-  for(const p of legacy.api.PRINCESSES){legacy.api.loadPrincess(p.id);assert.deepEqual(json(legacy.api.getState()),legacyOutfits[p.id]);checkSvg(legacy.api.dollSVG(legacy.api.getState(),p));}
+  for(const p of legacy.api.PRINCESSES){legacy.api.loadPrincess(p.id);const expected=json(legacyOutfits[p.id]);if(expected.pet)delete expected.pet.color;assert.deepEqual(json(legacy.api.getState()),expected);checkSvg(legacy.api.dollSVG(legacy.api.getState(),p));}
   const partial=environment({'princess:outfits':JSON.stringify({snow:{bg:'deleted-scene',dress:{id:'deleted-dress',color:'#ffffff'},shoes:null,hairColor:'#3b3f7a'}})});
   partial.api.loadPrincess('snow');assert.equal(partial.api.getState().bg,'forest');assert.equal(partial.api.getState().dress.id,'aline');assert.equal(partial.api.getState().shoes,null);assert.equal(partial.api.getState().hairColor,'#3b3f7a');
   const retryAsset=studio.path('bg','forest');
@@ -215,6 +215,45 @@ require('node:test')('hair tab controls change style and color without changing 
   node('swatches').buttons.at(-1).click();assert.equal(api.getState().hairColor,color);
   assert.equal(JSON.parse(stored.get('princess:outfits')).snow.hairStyle,'wavy');
   assert(node('stage').innerHTML.includes('data-studio-part="hair/wavy"'));
+  api.setTab('pet');api.renderPanel();assert.equal(node('swatches').innerHTML,'');
+  api.setTab('dress');api.renderPanel();
+  node('swatches').buttons.find(b=>b.dataset.c==='').click();assert.equal(api.getState().dress.color,null);
+  assert(node('stage').innerHTML.includes('data-wear-layer="fabric-lining"'));
+});
+require('node:test')('all pets retain original colors in thumbnails, exports and random outfits',async()=>{
+  const {api,studio,ctx}=environment(),p=api.PRINCESSES[0];
+  for(const pet of api.CATS.find(c=>c.key==='pet').list){
+    const a=api.thumbSVG('pet',pet,'#ff0000'),b=api.thumbSVG('pet',pet,'#0000ff');
+    assert.equal(a,b);assert(!a.includes('filter='));assert(a.includes('data-natural-color="true"'));
+    const s=json(api.defaultState(p));s.pet={id:pet.id,color:'#ff0000'};
+    const one=await api.buildExportSvg(s,p);s.pet.color='#0000ff';
+    assert.equal(one,await api.buildExportSvg(s,p));
+  }
+  ctx.setTimeout=()=>0;ctx.requestAnimationFrame=fn=>fn();
+  const node={style:{},classList:{add(){},remove(){}},querySelectorAll:()=>[],getBoundingClientRect:()=>({left:0,top:0,width:1,height:1})};
+  ctx.document={getElementById:()=>node,createElement:()=>({style:{},remove(){}}),body:{appendChild(){}}};
+  api.loadPrincess(p.id);for(let i=0;i<100;i++){api.randomize();const pet=api.getState().pet;if(pet)assert.deepEqual(Object.keys(pet),['id']);}
+  for(const q of api.PRINCESSES)if(api.defaultState(q).pet)assert(!('color' in api.defaultState(q).pet));
+});
+require('node:test')('materials use real cloth and accessories follow each body without covering the hair front',()=>{
+  const {api,studio}=environment();
+  for(const p of api.PRINCESSES){
+    for(const item of api.CATS.find(c=>c.key==='crown').list){
+      const fit=studio.accessoryPlacement('crown',item.id,p),r=studio.rects.crown[item.id];
+      assert(r[1]*fit.sy+fit.dy>=-18.001,'headwear crosses photo safe area');
+      assert(fit.sx>0&&fit.sx<1);
+    }
+    for(const item of api.CATS.find(c=>c.key==='neck').list){
+      const fit=studio.accessoryPlacement('neck',item.id,p),r=studio.rects.neck[item.id];
+      if(item.id!=='norigae')assert(Math.abs(r[1]*fit.sy+fit.dy-103)<.001);
+    }
+    const s={...json(api.defaultState(p)),neck:{id:'pearls',color:null}};
+    const svg=api.dollSVG(s,p);checkSvg(svg);
+    assert(svg.includes('data-wear-layer="fabric-lining"'));
+    assert(svg.includes('data-attachment="neck"'));
+    assert(svg.includes('data-contact-shading="true"'));
+    assert(!svg.includes('<use href="#studio-'+p.id+'-body-source" filter="url(#studio-'+p.id+'-lining)'));
+  }
 });
 require('node:test')('all 64 hairstyles attach to measured foreheads and temples, including portrait offsets',()=>{
   const {api,studio}=environment();let combinations=0;
