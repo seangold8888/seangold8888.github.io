@@ -13,7 +13,7 @@ function fn(name) {
 function setup(initial = {}, confirmed = true) {
   const stored = new Map(Object.entries(initial));
   const ctx = {
-    DAILY: 40, SET: 10, BOOK_MAX: 100, BANK_SIZES: {}, SKILL_INFO: { hidden: {} },
+    DAILY: 100, SET: 10, BOOK_MAX: 100, BANK_SIZES: {}, SKILL_INFO: { hidden: {} },
     todayKey: () => "2026-9-5", setCorrect: 0, renders: 0, prompts: 0,
     localStorage: { getItem: k => stored.get(k) ?? null, setItem: (k, v) => stored.set(k, v) },
     window: { confirm: () => { ctx.prompts++; return confirmed; } },
@@ -88,4 +88,3 @@ test("pending question callbacks cannot reopen or score a question in parent mod
   assert.doesNotThrow(() => ctx.renderProblem());
   assert.doesNotThrow(() => ctx.pick(1, {}));
 });
-

@@ -19,6 +19,7 @@ const CORE_SHELL = [
   "./index.html",
   "./assets/study/picnic-scene.jpg",
   "./assets/study/jaei.jpg",
+  "./assets/study/english-reading.js?v=1",
   "./assets/study/taeo.jpg",
   "./assets/study/mom.jpg",
   "./assets/study/dad.jpg",

@@ -918,6 +918,24 @@
   }
   @media (prefers-reduced-motion: reduce) { .study-family-art { transform: none; } }
 </style>
+<style id="english-reading-style">
+  .study-modes { display:flex; gap:8px; flex-wrap:wrap; }
+  .study-modes button { flex:1; min-height:46px; border:1px solid #65719d; border-radius:12px; background:#161e40; color:#fff; font:inherit; font-size:14px; font-weight:800; cursor:pointer; padding:10px; }
+  .study-modes button[aria-pressed="true"] { background:#c6f28a; color:#102222; border-color:#c6f28a; }
+  .study-modes button:disabled { opacity:.55; cursor:default; }
+  #study .choices.reading-practice { display:flex; flex-direction:column; align-items:stretch; width:100%; gap:12px; }
+  .reading-label, .reading-meaning, .reading-status { font-size:16px; line-height:1.5; }
+  .reading-sentence { display:flex; flex-wrap:wrap; gap:0 .22em; font-size:clamp(32px,4.5vw,48px); line-height:1.4; font-weight:900; color:#fff; text-align:left; }
+  .reading-word { border-bottom:3px solid #65719d; overflow-wrap:anywhere; }
+  .reading-word.heard { color:#c6f28a; border-color:#c6f28a; }
+  .reading-meaning, .reading-label { color:#c6cee6; }
+  .reading-actions { display:flex; flex-wrap:wrap; gap:8px; }
+  #study .reading-actions button { width:auto; min-width:0; height:auto; min-height:48px; padding:12px; flex:1; font:inherit; font-size:16px; font-weight:800; }
+  #study .reading-actions button:disabled { opacity:.5; cursor:default; }
+  .reading-privacy { font-size:13px; line-height:1.6; color:#bbc5df; text-align:left; }
+  .reading-heard { font-size:16px; color:#e0d5ff; overflow-wrap:anywhere; }
+  .study-modes button:focus-visible { outline:3px solid #66e3ff; outline-offset:3px; }
+</style>
 </head>
 <body>
 <canvas id="sky" aria-hidden="true"></canvas>
@@ -930,10 +948,10 @@
     <div class="brand-copy">
       <span class="brand-kicker">우리 가족의 모험 기지</span>
       <h1>모험 상자</h1>
-      <p class="sub" id="subline">문제 10개를 풀면 게임 티켓 한 장!</p>
+      <p class="sub" id="subline">10문제마다 게임 티켓! 오늘 100문제를 풀면 모두 자유롭게!</p>
     </div>
     <div class="player-hud" aria-label="오늘의 모험 상태">
-      <span class="hud-chip quest"><small>오늘의 공부</small><strong id="hubDailyStat">0 / 40</strong></span>
+      <span class="hud-chip quest"><small>오늘 누적 정답</small><strong id="hubDailyStat">0 / 100</strong></span>
       <span class="hud-chip ticket"><small>게임 티켓</small><strong id="hubTicketStat">준비 중</strong></span>
       <span class="hud-chip crown"><small>숙달 왕관</small><strong id="hubCrownStat">0개</strong></span>
       <span class="hud-chip offline"><small>기기 저장</small><strong id="hubOfflineStat">확인 중</strong></span>
@@ -962,6 +980,10 @@
         <div class="daily" id="daily"></div>
       </div>
       <div class="quest-ring" id="questRing" aria-hidden="true"><span id="questRingLabel">0/10</span></div>
+    </div>
+    <div id="studyModes" class="study-modes" role="group" aria-label="공부 고르기">
+      <button type="button" data-study-mode="mixed" aria-pressed="true">🔢 골고루 공부</button>
+      <button type="button" data-study-mode="reading" aria-pressed="false">🎤 영어 읽기</button>
     </div>
     <div class="progress" id="stars"></div>
     <div class="formula" id="formula"></div>
@@ -1162,6 +1184,7 @@
   </div>
 </div>
 
+<script src="assets/study/english-reading.js?v=1"></script>
 <script>
 (function () {
   'use strict';
@@ -1203,7 +1226,7 @@
 
   /* ---- 공부 시스템 v4 ----
      세트 = 10문제 → 게임 티켓 1장. 게임 한 판 쓰면 다시 10문제.
-     하루 40문제를 다 채우면 그날은 자유 이용.
+     하루 100문제를 다 채우면 그날은 자유 이용. 게임 복귀 시 누적은 유지.
      v3: 오답노트 + 적응형 난이도.
        · 틀린 문제는 오답노트(날짜가 바뀌어도 유지)에 적히고,
          몇 문제마다 "복습 문제"로 다시 나온다. 한 번에 맞히면 지워진다.
@@ -1219,7 +1242,7 @@
        · 새 과목은 문제 은행(idx) 기반이라 오답노트 복습도 같은 문제로 나온다.
        · 새 과목도 유형별 숙달·오답노트에 연결되지만,
          수학 난이도 단계(streak/missRow)는 수학 문제로만 움직인다. */
-  var SET = 10, DAILY = 40;
+  var SET = 10, DAILY = 100;
   var STREAK_UP = 3;      // 한 번에 맞히기 연속 성공 → 단계 상승
   var MISS_DOWN = 2;      // 틀린 문제 연속 → 단계 하락
   var REVIEW_GAP = 2;     // 새 문제 몇 개마다 오답노트 복습을 끼워 넣나
@@ -1272,7 +1295,8 @@
     proverb:  { name: '속담',               icon: '🗣️' },
     word:     { name: '반대말',             icon: '🔄' },
     clock:    { name: '시계 읽기',           icon: '⏰' },
-    english:  { name: '영어 낱말',           icon: '🅰️' }
+    english:  { name: '영어 낱말',           icon: '🅰️' },
+    reading:  { name: '영어 문장 읽기',       icon: '🎤' }
   };
 
   /* ---- 새 과목 문제 은행 (수학 외 과목은 idx로 같은 문제를 다시 만든다) ---- */
@@ -1309,7 +1333,7 @@
   ];
   var EXTRA_TYPES = ['proverb', 'word', 'clock', 'english'];
   var EXTRA_RATE = 0.35;   // 새 과목이 나올 확률 (나머지는 가르기 수학)
-  var BANK_SIZES = { proverb: PROVERBS.length, word: OPPOSITES.length, clock: 24, english: ENGLISH.length };
+  var BANK_SIZES = { proverb: PROVERBS.length, word: OPPOSITES.length, clock: 24, english: ENGLISH.length, reading: window.EnglishReading ? window.EnglishReading.sentences.length : 0 };
 
   function clockLabel(idx) {
     var hour = (idx % 12) + 1;
@@ -1318,6 +1342,11 @@
   /* 은행 문제 = { formula, items, question, answer, unit, choices, book }
      choices: 보기 문자열 3개(정답 포함), book: 부모 리포트용 한 줄 */
   function buildBankProblem(type, idx) {
+    if (type === 'reading' && window.EnglishReading) {
+      var sentence = window.EnglishReading.sentences[idx % BANK_SIZES.reading];
+      return { formula: '', items: '', question: '영어 문장을 소리 내어 읽어요', answer: sentence.text,
+        unit: '', reading: sentence, book: sentence.text };
+    }
     var wrongs, pool, i;
     if (type === 'proverb') {
       var pv = PROVERBS[idx % PROVERBS.length];
@@ -1457,6 +1486,23 @@
   var state = loadState();
   var setCorrect = state.solved % SET;
   var current = null;
+  var studyMode = 'mixed', readingIndex = 0, readingView = null, answerTimer = null;
+  function stopReading() {
+    clearTimeout(answerTimer);
+    if (readingView) { readingView.destroy(); readingView = null; }
+  }
+  document.querySelectorAll('[data-study-mode]').forEach(function (button) {
+    button.addEventListener('click', function () {
+      if (isFree() || hasTicket()) return;
+      stopReading();
+      studyMode = button.getAttribute('data-study-mode');
+      document.querySelectorAll('[data-study-mode]').forEach(function (item) {
+        item.setAttribute('aria-pressed', String(item === button));
+      });
+      cheerEl.textContent = '';
+      renderProblem();
+    });
+  });
   var missRow = 0;        // 틀린 문제가 연속으로 몇 개째인지
   var sinceReview = 0;    // 마지막 복습 문제 이후 새 문제 수
   var lastReviewKey = ''; // 같은 복습 문제가 연달아 나오지 않게
@@ -1495,6 +1541,25 @@
 
   function isFree() { return state.parentMode || state.solved >= DAILY; }
   function hasTicket() { return state.credit > 0; }
+
+  // Spend only the entry ticket. Daily answers and learning records survive the trip.
+  function consumeGameTicket() {
+    if (isFree()) return true;
+    if (!hasTicket()) return false;
+    stopReading();
+    state.credit = 0;
+    setCorrect = 0;
+    saveState();
+    return true;
+  }
+
+  function restoreStudyProgress() {
+    state = loadState();
+    plays = loadPlays();
+    setCorrect = state.solved % SET;
+    applyState();
+    annotatePlays();
+  }
 
   function drawSetStars() {
     var s = '';
@@ -1617,6 +1682,7 @@
     if (lobbyMain) lobbyMain.inert = false;
   }
   bookOpenBtn.addEventListener('click', function () {
+    if (readingView) readingView.stop();
     bookLastFocus = document.activeElement;
     renderBook();
     bookModal.hidden = false;
@@ -1798,21 +1864,37 @@
   function renderProblem() {
     // A pending answer timer must not reopen questions while parent mode is on.
     if (isFree() || hasTicket()) return;
+    stopReading();
+    if (studyMode === 'reading' && !window.EnglishReading) studyMode = 'mixed';
+    eyebrowEl.textContent = studyMode === 'reading' ? '영어 문장 읽기' : '오늘의 공부 · ' + currentLevel().name;
+    document.querySelectorAll('[data-study-mode]').forEach(function (button) {
+      button.setAttribute('aria-pressed', String(button.getAttribute('data-study-mode') === studyMode));
+    });
     /* 오답노트가 차 있으면 새 문제 REVIEW_GAP개마다 복습 문제를 끼워 넣는다 */
     var review = null;
-    if (state.wrong.length && sinceReview >= REVIEW_GAP) {
+    if (studyMode !== 'reading' && state.wrong.length && sinceReview >= REVIEW_GAP) {
       review = pickReview();
       sinceReview = 0;
       lastReviewKey = bookKey(review);
     } else {
       sinceReview++;
     }
-    current = makeProblem(review);
+    current = makeProblem(studyMode === 'reading' ? { type: 'reading', idx: readingIndex } : review);
     current.review = !!review;
     itemsEl.textContent = current.items;
     document.getElementById('formula').textContent = current.formula;
     questionEl.textContent = (current.review ? '📖 복습 문제! ' : '') + current.question;
 
+    if (current.reading) {
+      choicesEl.classList.remove('wordy');
+      var target = current;
+      readingView = window.EnglishReading.mount(choicesEl, current.reading, function () {
+        if (current !== target || isFree() || hasTicket() || target.answered) return;
+        readingIndex = (target.seed.idx + 1) % BANK_SIZES.reading;
+        pick(target.answer, null);
+      });
+      return;
+    }
     var answers;
     if (current.choices) {
       // 새 과목: 문제가 보기(정답 포함 문자열 3개)를 직접 준다 → 순서만 섞는다
@@ -1851,7 +1933,9 @@
 
   function pick(n, btn) {
     if (isFree() || hasTicket()) return;
+    if (!current || current.answered) return;
     if (n === current.answer) {
+      current.answered = true;
       var firstTry = !current.missed;
       state.solved++;
       setCorrect++;
@@ -1895,15 +1979,15 @@
       drawDaily();
       if (state.solved >= DAILY) {
         saveState();
-        setTimeout(applyState, 650);
+        answerTimer = setTimeout(applyState, 650);
       } else if (setCorrect >= SET) {
         state.credit = 1;
         setCorrect = 0;
         saveState();
-        setTimeout(applyState, 650);
+        answerTimer = setTimeout(applyState, 650);
       } else {
         saveState();
-        setTimeout(renderProblem, 750);
+        answerTimer = setTimeout(renderProblem, current.reading ? 1600 : 750);
       }
     } else {
       cheerEl.className = 'cheer oops';
@@ -1950,6 +2034,10 @@
   }
 
   function applyState() {
+    stopReading();
+    document.querySelectorAll('[data-study-mode]').forEach(function (button) {
+      button.disabled = isFree() || hasTicket();
+    });
     drawDaily();
     cheerEl.textContent = '';
     document.getElementById('formula').textContent = '';
@@ -1970,7 +2058,7 @@
       eyebrowEl.textContent = '오늘 공부 완료';
       starsEl.textContent = '🏆';
       itemsEl.textContent = '🎉';
-      questionEl.textContent = '40문제를 다 풀었어요! 오늘은 마음껏 놀아요!';
+      questionEl.textContent = DAILY + '문제를 다 풀었어요! 오늘은 모든 게임을 자유롭게 즐겨요!';
       choicesEl.innerHTML = '';
       subEl.textContent = '오늘은 어떤 모험을 떠날까?';
     } else if (hasTicket()) {
@@ -1979,14 +2067,14 @@
       eyebrowEl.textContent = '게임 티켓';
       starsEl.textContent = '🎫';
       itemsEl.textContent = '';
-      questionEl.textContent = '티켓 한 장이 있어요! 게임 한 판 하고 오면 문제 10개가 기다려요.';
+      questionEl.textContent = '10문제 성공! 게임을 하고 돌아오면 새로운 10문제를 시작해요.';
       choicesEl.innerHTML = '';
       subEl.textContent = '오늘은 어떤 모험을 떠날까?';
     } else {
       document.body.classList.add('locked');
       studyEl.classList.remove('done');
-      eyebrowEl.textContent = '오늘의 공부 · ' + currentLevel().name;
-      subEl.textContent = '문제 10개를 풀면 게임 티켓 한 장!';
+      eyebrowEl.textContent = studyMode === 'reading' ? '영어 문장 읽기' : '오늘의 공부 · ' + currentLevel().name;
+      subEl.textContent = '10문제마다 게임 티켓! 오늘 ' + DAILY + '문제를 풀면 모두 자유롭게!';
       drawSetStars();
       renderProblem();
     }
@@ -2079,7 +2167,7 @@
       savePlays();
     });
   });
-  /* 게임 카드: 티켓을 쓰고 입장 (하루 40문제 채우면 무료 입장) */
+  /* 게임 카드: 티켓을 쓰고 입장 (하루 100문제 채우면 무료 입장) */
   var lockNoticeTimer = 0;
   var lockNoticeClose = document.getElementById('lockNoticeClose');
   function hideLockNotice() {
@@ -2103,12 +2191,7 @@
   if (lockNoticeClose) lockNoticeClose.addEventListener('click', hideLockNotice);
   document.querySelectorAll('.card').forEach(function (card) {
     card.addEventListener('click', function (event) {
-      if (isFree()) return;
-      if (hasTicket()) {
-        state.credit = 0;
-        saveState();
-        return; // 이동은 그대로 진행
-      }
+      if (consumeGameTicket()) return; // 이동은 그대로 진행
       event.preventDefault();
       showLockNotice(card);
     });
@@ -2117,11 +2200,7 @@
   /* 뒤로가기(bfcache)로 돌아와도 상태를 새로 평가 */
   window.addEventListener('pageshow', function (e) {
     if (e.persisted) {
-      state = loadState();
-      plays = loadPlays();
-      setCorrect = state.solved % SET;
-      applyState();
-      annotatePlays();
+      restoreStudyProgress();
     }
   });
 
@@ -2130,7 +2209,8 @@
 
   // Separate access override: never forge completed questions or consume tickets.
   function toggleParentMode() {
-    if (!state.parentMode && !state.parentModeKnown && state.solved >= DAILY) {
+    if (!state.parentMode && !state.parentModeKnown && state.solved >= 40) {
+      // The old parent override wrote 40; keep that migration threshold independent of DAILY.
       // Legacy completion cannot be distinguished from a real finished day.
       if (!window.confirm('예전 부모님 모드로 완료된 기록인가요? 이전 진도는 복원할 수 없어요. 오늘 문제 수와 티켓만 0으로 되돌릴까요? 실력·오답노트·카드는 유지됩니다.')) return;
       state.solved = 0;

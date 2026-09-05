@@ -17,7 +17,7 @@ test("메인 바로가기는 티켓을 소비하지 않고 현재 상태에 맞�
     { solved: 0, correct: 0, ticket: false, free: false, href: "#study", hint: "10개 더" },
     { solved: 9, correct: 9, ticket: false, free: false, href: "#study", hint: "1개 더" },
     { solved: 10, correct: 0, ticket: true, free: false, href: "#adventureWorlds", hint: "1장 준비" },
-    { solved: 40, correct: 0, ticket: false, free: true, href: "#adventureWorlds", hint: "모두 열렸어요" },
+    { solved: 100, correct: 0, ticket: false, free: true, href: "#adventureWorlds", hint: "모두 열렸어요" },
   ]) {
     const nodes = {};
     for (const id of ["nextAdventure", "worldAccessHint"]) nodes[id] = {
@@ -25,7 +25,7 @@ test("메인 바로가기는 티켓을 소비하지 않고 현재 상태에 맞�
     };
     const state = { solved: scenario.solved, credit: scenario.ticket ? 1 : 0 };
     const context = {
-      state, DAILY: 40, SET: 10, setCorrect: scenario.correct,
+      state, DAILY: 100, SET: 10, setCorrect: scenario.correct,
       isFree: () => scenario.free, hasTicket: () => scenario.ticket, masteredCount: () => 0,
       document: { getElementById: id => nodes[id] },
       hubDailyStat: {}, hubCrownStat: {}, hubTicketStat: {}, questRingLabel: {},
