@@ -40,8 +40,31 @@
     });
   }
 
-  function mount(container, sentence, onPass, env) {
+  function cleanWordScores(input) {
+    const scores = {};
+    sentences.forEach(function (sentence) {
+      normalize(sentence.text).split(" ").forEach(function (word) {
+        const value = input && Object.prototype.hasOwnProperty.call(input, word) ? input[word] : 0;
+        if (Number.isFinite(value) && value > 0) scores[word] = Math.min(5, Math.floor(value));
+      });
+    });
+    return scores;
+  }
+  function chooseSentence(scores, ordinal, previous, random) {
+    scores = cleanWordScores(scores);
+    const base = ordinal % sentences.length;
+    if (!Object.keys(scores).length) return base === previous ? (base + 1) % sentences.length : base;
+    const weights = sentences.map(function (sentence, idx) {
+      if (idx === previous) return 0;
+      return 1 + Math.min(8, normalize(sentence.text).split(" ").reduce(function (sum, word) { return sum + (scores[word] || 0); }, 0));
+    });
+    let draw = (random || Math.random)() * weights.reduce(function (sum, value) { return sum + value; }, 0);
+    for (let i = 0; i < weights.length; i++) { draw -= weights[i]; if (draw < 0) return i; }
+    return base === previous ? (base + 1) % sentences.length : base;
+  }
+  function mount(container, sentence, onPass, env, callbacks) {
     env = env || root;
+    callbacks = callbacks || {};
     const doc = env.document;
     let disposed = false, awarded = false, active = null, serial = 0, timer = null, finalText = "";
     const Recognition = env.SpeechRecognition || env.webkitSpeechRecognition;
@@ -68,12 +91,19 @@
     [nodes.mic, nodes.stop].forEach(function (button) {
       button.type = "button"; actions.appendChild(button);
     });
+    const fallback = element("button", "", "마이크가 안 돼요 · 다른 문제 풀기");
+    fallback.type = "button"; fallback.hidden = true;
+    if (callbacks.onUnavailable) actions.appendChild(fallback);
+    fallback.addEventListener("click", function () {
+      if (disposed || awarded || fallback.hidden) return;
+      stop(); callbacks.onUnavailable();
+    });
     nodes.status = element("p", "reading-status", "잘 들리는 목소리로 읽어 주세요. 크게 외치지 않아도 돼요.");
     nodes.status.setAttribute("role", "status");
     nodes.heard = element("p", "reading-heard");
     nodes.heard.lang = "en";
     const privacy = element("p", "reading-privacy",
-      "부모님 안내: ‘읽어 보기’를 누를 때만 마이크를 켭니다. 음성은 브라우저의 인식 서비스로 전송될 수 있고 인터넷이 필요할 수 있어요. 이 사이트는 음성과 인식 문장을 저장하지 않습니다. 발음 점수가 아닌 문장 읽기를 확인해요.");
+      "부모님 안내: ‘읽어 보기’를 누를 때만 마이크를 켭니다. 음성은 브라우저의 인식 서비스로 전송될 수 있어요. 음성과 인식 문장은 저장하지 않고, 연습할 교재 단어와 복습 횟수만 이 기기에 기억해요. 발음 점수가 아닌 문장 읽기를 확인해요.");
     [label, line, meaning, actions, nodes.status, nodes.heard, privacy].forEach(function (node) { container.appendChild(node); });
 
     function controls() {
@@ -107,8 +137,11 @@
     }
     function finishAttempt() {
       if (finalText && !matches(sentence.text, finalText)) {
+        const flags = matchedWords(sentence.text, finalText);
+        const words = normalize(sentence.text).split(" ").filter(function (_, i) { return !flags[i]; });
         feedback(finalText, true);
         stop("문장이 다르게 들렸어요. 빨간색 부분을 확인하고 처음부터 다시 읽어 주세요.");
+        if (callbacks.onRetry) callbacks.onRetry(Array.from(new Set(words)));
       } else {
         stop("잘 듣지 못했어요. 읽어 보기를 눌러 다시 읽어 주세요.");
       }
@@ -121,6 +154,7 @@
       const id = serial;
       let recognizer;
       try { recognizer = new Recognition(); } catch (_) {
+        fallback.hidden = false;
         nodes.status.textContent = "이 브라우저에서 음성 인식을 시작할 수 없어요. Safari 또는 Chrome에서 다시 열어 주세요."; return;
       }
       active = recognizer;
@@ -154,6 +188,7 @@
       };
       recognizer.onerror = function (event) {
         if (!valid()) return;
+        if (event.error !== "no-speech" && event.error !== "aborted") fallback.hidden = false;
         const messages = {
           "not-allowed": "마이크 또는 음성 인식 권한을 허용해 주세요. 정답 기록은 바뀌지 않았어요.",
           "service-not-allowed": "음성 인식 서비스를 사용할 수 없어요. Safari의 Siri·받아쓰기 설정을 확인해 주세요.",
@@ -168,20 +203,20 @@
       controls();
       nodes.status.textContent = "마이크를 준비하고 있어요…";
       timer = env.setTimeout(function () { if (valid()) finishAttempt(); }, 25000);
-      try { recognizer.start(); } catch (_) { stop("마이크를 시작하지 못했어요. 잠시 후 다시 눌러 주세요."); }
+      try { recognizer.start(); } catch (_) { fallback.hidden = false; stop("마이크를 시작하지 못했어요. 잠시 후 다시 눌러 주세요."); }
     }
     nodes.mic.addEventListener("click", read);
     nodes.stop.addEventListener("click", function () { if (active) finishAttempt(); });
     const hide = function () { if (doc.hidden) stop("잠시 멈췄어요. 읽어 보기를 눌러 다시 시작해요."); };
     const leave = function () { stop(); };
-    const offline = function () { stop("인터넷 연결 후 다시 읽어 주세요. 다른 공부는 계속할 수 있어요."); };
+    const offline = function () { fallback.hidden = false; stop("인터넷 연결 후 다시 읽어 주세요. 다른 공부는 계속할 수 있어요."); };
     const online = function () { controls(); };
     doc.addEventListener("visibilitychange", hide);
     env.addEventListener("pagehide", leave);
     env.addEventListener("offline", offline);
     env.addEventListener("online", online);
     controls();
-    if (!Recognition || env.isSecureContext === false) nodes.status.textContent = "이 환경에서는 음성 인식을 쓸 수 없어요. HTTPS 모험보드를 Safari 또는 Chrome에서 열어 주세요. 다른 공부는 계속할 수 있어요.";
+    if (!Recognition || env.isSecureContext === false) { fallback.hidden = false; nodes.status.textContent = "이 환경에서는 음성 인식을 쓸 수 없어요. HTTPS 모험보드를 Safari 또는 Chrome에서 열어 주세요. 다른 공부는 계속할 수 있어요."; }
     else if (env.navigator.onLine === false) offline();
     return {
       stop: function () { stop("잠시 멈췄어요. 읽어 보기를 눌러 다시 시작해요."); },
@@ -195,7 +230,7 @@
       }
     };
   }
-  const api = { sentences: sentences, normalize: normalize, matches: matches, matchedWords: matchedWords, mount: mount };
+  const api = { sentences: sentences, normalize: normalize, matches: matches, matchedWords: matchedWords, cleanWordScores: cleanWordScores, chooseSentence: chooseSentence, mount: mount };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.EnglishReading = api;
 })(typeof window !== "undefined" ? window : globalThis);

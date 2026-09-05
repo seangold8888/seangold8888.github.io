@@ -17,7 +17,7 @@ function node() {
     toggle: (k, yes) => yes ? classes.add(k) : classes.delete(k), contains: k => classes.has(k) };
   return n;
 }
-function setup(options = {}) {
+function setup(options = {}, callbacks) {
   const instances = [], timers = new Map();
   let counter = 0, passes = 0;
   class Recognition {
@@ -34,7 +34,7 @@ function setup(options = {}) {
     setTimeout: fn => { timers.set(++counter, fn); return counter; }, clearTimeout: id => timers.delete(id)
   }, options);
   const container = node();
-  const view = reading.mount(container, reading.sentences[0], () => passes++, env);
+  const view = reading.mount(container, reading.sentences[0], () => passes++, env, callbacks);
   const actions = container.children[3].children;
   function result(parts) {
     const results = parts.map(([text, final]) => Object.assign([{ transcript: text }], { isFinal: final }));
@@ -43,6 +43,46 @@ function setup(options = {}) {
   return { env, container, view, instances, timers, result, mic: actions[0], stop: actions[1],
     status: container.children[4], passes: () => passes };
 }
+test("retry callback contains only expected missed words, not the recognized phrase", () => {
+  const retries = [];
+  const s = setup({}, {onRetry: words => retries.push(words)});
+  s.mic.fire("click");
+  s.result([["I like bananas", true]]);
+  assert.deepEqual(retries, [["apples"]]);
+  s.mic.fire("click");
+  s.instances.at(-1).onerror({error:"network"});
+  assert.equal(retries.length, 1);
+  s.mic.fire("click");
+  s.result([["I like apples", true]]);
+  assert.equal(s.passes(), 1);
+});
+test("microphone fallback appears only on errors and cannot advance progress", () => {
+  let fallbackCount = 0, retryCount = 0;
+  const s = setup({}, {onUnavailable: () => fallbackCount++, onRetry: () => retryCount++});
+  const fallback = s.container.children[3].children[2];
+  assert.equal(fallback.hidden, true);
+  fallback.fire("click"); assert.equal(fallbackCount, 0);
+  s.mic.fire("click");
+  s.instances[0].onerror({error:"not-allowed"});
+  assert.equal(fallback.hidden, false);
+  fallback.fire("click");
+  assert.equal(fallbackCount, 1);
+  assert.equal(retryCount, 0);
+  assert.equal(s.passes(), 0);
+  s.view.destroy(); fallback.fire("click");
+  assert.equal(fallbackCount, 1);
+});
+test("unsupported and offline devices offer fallback without requesting microphone access", () => {
+  for (const opts of [{SpeechRecognition:null}, {navigator:{onLine:false}}]) {
+    let count = 0;
+    const s = setup(opts, {onUnavailable:()=>count++});
+    const fallback = s.container.children[3].children[2];
+    assert.equal(fallback.hidden,false);
+    fallback.fire("click");
+    assert.equal(count,1); assert.equal(s.instances.length,0);
+  }
+});
+
 test("sixteen short sentences have unique text and meanings", () => {
   assert.equal(reading.sentences.length, 16);
   assert.equal(new Set(reading.sentences.map(s => s.text)).size, 16);
@@ -191,8 +231,8 @@ test("a reading success advances progress once and earns the tenth-answer ticket
 });
 test("reading support is cached and its script loads before the study controller", () => {
   const sw = require("../../sw.js");
-  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=2"));
-  assert.ok(html.indexOf('src="assets/study/english-reading.js?v=2"') < html.indexOf("var BANK_SIZES"));
+  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=3"));
+  assert.ok(html.indexOf('src="assets/study/english-reading.js?v=3"') < html.indexOf("var BANK_SIZES"));
   assert.match(html, /\.reading-word\.retry\s*\{[^}]*text-decoration:underline wavy/);
   assert.match(html, /if \(current !== target \|\| isFree\(\) \|\| hasTicket\(\) \|\| target\.answered\) return/);
   assert.match(html, /function stopReading\(\)[\s\S]*?clearTimeout\(answerTimer\)/);

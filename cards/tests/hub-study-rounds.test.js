@@ -13,6 +13,7 @@ function fn(name) {
 function setup(initial = {}) {
   const stored = new Map(Object.entries({hub2_date: "2026-9-6", hub2_parent_mode: "0", ...initial}));
   const ctx = {
+    window: {EnglishReading: require("../../assets/study/english-reading.js")},
     BOOK_MAX: 24, BANK_SIZES: {reading: 16}, SKILL_INFO: {reading: {name: "영어 읽기"}},
     todayKey: () => "2026-9-6", dayNum: () => 100, MASTER_AT: 9, CHEERS: ["정답"],
     localStorage: {getItem: k => stored.get(k) ?? null, setItem: (k,v) => stored.set(k,v)},
