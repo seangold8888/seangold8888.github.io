@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v29";
+const CACHE_VERSION = "v30";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -50,6 +50,19 @@ const CORE_SHELL = [
 
 // Existing games are precached as best-effort shells. A missing optional asset
 // must never prevent the hub, stories, cards and 24 card images from installing.
+const PRINCESS_STUDIO_ASSETS = Object.entries({
+  dress: "ballgown aline party mermaidline hanbok tutu tail winter star rainbow summer rose adventure",
+  hair: "bob bun braid wavy pigtails daenggi curls afro",
+  shoes: "pumps glass boots sneakers sandals ballet rain slippers kkotsin",
+  crown: "crown tiara flowers bow starclip pearls witch bunny catears hennin daenggi moon veil",
+  neck: "pearls heart gem scarf choker star norigae flowerlei",
+  hand: "wand fan bouquet umbrella bag balloon book lollipop sword mirror basket",
+  back: "fairy butterfly cape angel bat backpack",
+  pet: "cat dog rabbit bird frog unicorn deer butterfly dragon hamster mouse fish toad",
+  bg: "plain castle forest sea night cherry ballroom snow rainbow candy tower meadow hanok rosecastle",
+}).flatMap(([category, ids]) => ids.split(" ").map(id =>
+  `./princess/assets/studio-v3/${category}-${id}.${category === "bg" ? "jpg" : "png"}`
+));
 const OPTIONAL_SHELL = [
   "./avengers/",
   "./avengers/sw.js",
@@ -89,7 +102,10 @@ const OPTIONAL_SHELL = [
   "./picnic/",
   "./princess/",
   "./princess/cover.svg",
-  "./princess/cover.jpg",
+  "./princess/cover.jpg?v=30",
+  "./princess/studio.js?v=30",
+  ...PRINCESS_STUDIO_ASSETS,
+  ..."snow cinder rapunzel mermaid thumb kongjwi briar moon".split(" ").map(id => `./princess/assets/bodies-v4/body-${id}.png`),
   "./princess/assets/fashion-doll-base-v1.png",
   "./princess/assets/fabric-satin-taffeta-v1.jpg",
   "./princess/assets/fabric-chiffon-organza-v1.jpg",

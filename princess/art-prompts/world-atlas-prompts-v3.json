@@ -1,0 +1,112 @@
+{
+  "mode": "built-in image_gen",
+  "requested": {
+    "back": "1536x1024",
+    "pets": "2048x2048",
+    "backgrounds": "2048x2048"
+  },
+  "actual": {
+    "back": "1536x1024",
+    "pets": "1254x1254",
+    "backgrounds": "1254x1254"
+  },
+  "files": {
+    "back": "back-atlas-v3.png",
+    "pets": "pets-atlas-v3.png",
+    "backgrounds": "backgrounds-atlas-v3.png"
+  },
+  "ordering": {
+    "back": [
+      [
+        "delicate fairy wings",
+        "butterfly wings",
+        "royal flowing cape"
+      ],
+      [
+        "feather angel wings",
+        "bat wings",
+        "miniature backpack"
+      ]
+    ],
+    "pets": [
+      [
+        "kitten",
+        "puppy",
+        "rabbit",
+        "small songbird"
+      ],
+      [
+        "crowned frog prince",
+        "baby unicorn",
+        "fawn",
+        "butterfly"
+      ],
+      [
+        "baby dragon",
+        "hamster",
+        "little mouse",
+        "ornamental fish"
+      ],
+      [
+        "toad",
+        "EMPTY",
+        "EMPTY",
+        "EMPTY"
+      ]
+    ],
+    "backgrounds": [
+      [
+        "pink doll dressing room",
+        "fairytale castle terrace",
+        "enchanted forest clearing",
+        "underwater palace"
+      ],
+      [
+        "moonlit star terrace",
+        "cherry blossom walkway",
+        "golden ballroom",
+        "snowy garden"
+      ],
+      [
+        "rainbow hillside",
+        "candy miniature landscape",
+        "tower garden",
+        "flower meadow"
+      ],
+      [
+        "Korean hanok courtyard",
+        "rose castle garden",
+        "plain neutral ivory",
+        "plain neutral ivory"
+      ]
+    ]
+  },
+  "alpha": {
+    "back": {
+      "zero": 860170,
+      "partial": 712694,
+      "opaque": 0
+    },
+    "pets": {
+      "zero": 943699,
+      "partial": 628406,
+      "opaque": 411
+    },
+    "backgrounds": {
+      "zero": 0,
+      "partial": 0,
+      "opaque": 1572516
+    }
+  },
+  "issues": [
+    "Built-in image generation ignored 2048x2048 request for pets and backgrounds, returning 1254x1254.",
+    "Pet body materials include natural brown accents on puppy, fawn and toad; consider desaturation before tint.",
+    "All cells and requested order visually verified. Background scenes have open central foreground suitable for center portrait crop.",
+    "Actual atlas cell boundaries for 1254x1254 images must be rounded at 0,313.5,627,940.5,1254 rather than using fixed 512."
+  ],
+  "prompts": {
+    "back": "Use case: product-mockup\nAsset type: PNG sprite atlas for a realistic collectible fashion doll dress-up game.\nPrimary request: create one landscape 1536 x 1024 image containing precisely 6 separate back accessories in an invisible 3-column by 2-row grid, six equal 512 x 512 cells. Genuinely transparent background with alpha, including all space between objects.\nReading order left to right, top to bottom:\nRow 1: (1) delicate fairy wings made from organza, (2) butterfly wings, (3) royal flowing cape made from satin.\nRow 2: (4) feather angel wings, (5) bat wings made from fine leather, (6) miniature backpack.\nStyle/medium: photorealistic premium miniature doll accessories; rendered or photographed like tangible three-dimensional luxury toy products. These must match a realistic fashion doll. Detailed real organza threads, feather barbs, satin weave and flowing folds, leather grain, miniature seams, slight physically plausible surface variation.\nComposition: exactly one complete accessory centered in each cell, front-facing, symmetrical, whole silhouette visible, at least ten percent clear padding on every side within each cell. The accessories float alone in the appropriate shape to layer behind a standing doll. The wings are complete pairs. Cape is an open draping rear layer with a small empty neckline. Backpack faces the viewer symmetrically.\nLighting: consistent soft upper-left product light, gentle realistic self-shadow and dimensional highlights.\nColor palette: neutral ivory, white, pale gray and silver materials, suitable for later color tinting. No colorful backgrounds.\nConstraints: no people, skin, body parts, mannequin, heads, hands, stands, hangers, text, labels, gridlines, borders, logos, watermarks. No flat illustrations, line art, SVG shapes, clipart, PPT drawing appearance or cartoon outlines. Do not draw a checkerboard; background is actual alpha transparency. Do not overlap cells or crop the objects.",
+    "pets": "Use case: product-mockup\nAsset type: PNG sprite atlas of realistic miniature pet collectibles for a realistic fashion doll dress-up game.\nPrimary request: one square 2048 x 2048 atlas in an exact invisible 4-column by 4-row grid of equal 512 x 512 cells. Genuinely transparent background with alpha, not a background painted to resemble transparency. The first thirteen cells contain one individual pet apiece; the final three cells remain entirely transparent and empty.\nExact order left to right, top to bottom:\nRow 1: kitten; puppy; rabbit; small songbird.\nRow 2: crowned frog prince; baby unicorn; fawn; butterfly.\nRow 3: baby dragon; hamster; little mouse; ornamental fish.\nRow 4: toad; EMPTY; EMPTY; EMPTY.\nStyle/medium: photorealistic, premium, cute miniature collectible animal figures with tactile three-dimensional fur, feathers, scales and fine physical materials, softly rounded but anatomically recognizable forms, friendly expressive glossy eyes. A cohesive luxury miniature toy collection that matches realistic fashion dolls.\nComposition: each individual pet centered within its cell with generous clear padding on all sides, shown at a gentle three-quarter front angle, complete body and tail or wings visible. Butterfly complete with two spread wings. Fish is a single ornamental fish floating without a bowl or stand.\nColor palette: neutral ivory, white and gray body materials with subtle natural facial accents and a small silver crown for the frog prince, so the bodies can be color-tinted later.\nLighting: coherent soft upper-left product lighting, realistic dimensional highlights and self-shadows.\nConstraints: precisely thirteen animals, no duplicates, no extra objects or plants, no scenery, no platforms, no painted floor or cast drop-shadow rectangle. No text, labels, cell borders, gridlines, logos, watermark, people. No flat shapes, SVG, PPT clipart, outlines, cartoon drawing, flat illustration. Keep all cell gaps and three empty cells truly transparent. Do not draw a checkerboard.",
+    "backgrounds": "Use case: stylized-concept\nAsset type: game background atlas for a realistic collectible fashion doll dress-up game.\nPrimary request: one square 2048 x 2048 image divided into an exact 4-column by 4-row matrix of equal 512 x 512 cells. There are 14 full-cell miniature diorama scenes, followed by 2 plain neutral empty cells. Every image fills its cell completely and meets adjoining cells at exact straight boundaries: no gaps, no borders, no gridlines, no rounded corners.\nExact order left to right, top to bottom:\nRow 1: pink doll dressing room; fairytale castle terrace; enchanted forest clearing; underwater palace.\nRow 2: moonlit star terrace; cherry blossom walkway; golden ballroom; snowy garden.\nRow 3: rainbow hillside; candy miniature landscape; tower garden; flower meadow.\nRow 4: Korean hanok courtyard; rose castle garden; plain neutral ivory; plain neutral ivory.\nStyle/medium: photorealistic miniature dioramas, a coherent realistic three-dimensional toy world scaled for a premium collectible fashion doll. Tangible tiny stonework, detailed fabric, real miniature wood, textured grasses and flowers, glazed and satin materials, spatial depth and soft-focus scenery. Pastel fantasy colors suited to each setting, with natural coherent studio/diorama lighting, realistic shadow and material response. Underwater palace is a fantastical miniature set with turquoise water-like light and pearly architecture, not containing fish.\nComposition in EVERY scene: a complete environment with an open empty foreground in the lower third, ground near the bottom and ample uncluttered space in the middle for later compositing a full-length standing doll. Frontal eye-level stage view with receding perspective. Keep the main scene recognizable when vertically composed or centrally cropped. Scenes are evenly scaled and independent of neighbors.\nConstraints: no characters, people, dolls, mannequins, animals, fish, text, signs, lettering, logos or watermarks anywhere. No vector graphics, flat illustrations, SVG shapes, clipart, cartoon outlines or PPT drawing appearance. No labels or visible gridlines. Do not turn the atlas into one continuous landscape."
+  }
+}

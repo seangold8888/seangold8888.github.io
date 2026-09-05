@@ -230,6 +230,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 </div>
 <div id="toast"></div>
 
+<script src="studio.js?v=30"></script>
 <script>
 'use strict';
 /* =========================================================
@@ -1253,36 +1254,7 @@ function sceneFinishSVG(bgId){
   </g>`;
 }
 function dollSVG(st,p,bodyHref=dollBaseReady?DOLL_BASE_SRC:null,fabricHrefs=undefined){
-  const bg=BGS.find(b=>b.id===st.bg)||BGS[0];
-  const dress=st.dress?itemOf('dress',st.dress.id):null;
-  const tail=!!(dress&&dress.tail);
-  const hair=HAIR[p.hair];
-  const part=(key)=>{const v=st[key];if(!v)return '';const it=itemOf(key,v.id);return it?scopeSvgIds(it.svg(v.color),'stage-'+key+'-'+it.id):''};
-  const bgArt=scopeSvgIds(bg.svg(),'stage-bg');
-  const dressArt=dress?scopeSvgIds(dress.svg(st.dress.color),'stage-dress'):'';
-  const dressMaterial=dress?dressMaterialSVG(scopeSvgIds(dress.svg(st.dress.color),'stage-dress-material'),dress,'stage-dress-material-clip',fabricHrefs):'';
-  const headTx=bodyHref?HEAD_DOLL_TX:'',dressTx=bodyHref?DRESS_DOLL_TX:'',handTx=bodyHref?HAND_DOLL_TX:'';
-  const faceArt=bodyHref?'':faceSVG(p);
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 680" width="420" height="680" role="img" aria-label="${p.name} 꾸미기">
-    ${materialDefs()}
-    <g id="bg">${bgArt}</g>
-    ${backgroundDepthSVG(bg.id)}
-    ${sceneFloorSVG(tail,bg.id)}
-    <g id="doll">
-      <g id="back" filter="url(#accessoryFx)" transform="${bodyHref?'translate(0 -38)':''}">${part('back')}</g>
-      <g id="hairBack" filter="url(#hairFx)"><g transform="${headTx}">${hair.back(st.hairColor)}${hairDetailSVG(p.hair,st.hairColor,'back')}</g></g>
-      ${bodyHref?dollBaseSVG(p,bodyHref):bodySVG(p,tail)}
-      <g transform="${headTx}">${faceArt}</g>
-      <g id="dress" filter="url(#fabricFx)" transform="${dressTx}">${dressArt}${dressMaterial}</g>
-      <g id="shoes" filter="url(#accessoryFx)">${tail?'':part('shoes')}</g>
-      <g id="hairFront" filter="url(#hairFx)"><g transform="${headTx}">${hair.front(st.hairColor)}${hairDetailSVG(p.hair,st.hairColor)}</g></g>
-      <g id="neck" filter="url(#accessoryFx)" transform="${headTx}">${part('neck')}</g>
-      <g id="crown" filter="url(#accessoryFx)" transform="${headTx}">${part('crown')}</g>
-      <g id="hand" filter="url(#accessoryFx)" transform="${handTx}">${part('hand')}</g>
-      <g id="pet">${part('pet')}</g>
-    </g>
-    ${sceneFinishSVG(bg.id)}
-  </svg>`;
+  return PrincessStudio.render(st,p,bodyHref||DOLL_BASE_SRC,fabricHrefs);
 }
 function renderStage(){
   const p=princess();
@@ -1294,28 +1266,10 @@ function renderStage(){
 
 // 썸네일
 function thumbSVG(key,item,color){
-  const cat=CATS.find(c=>c.key===key);
-  let vb=item.vb||cat.vb;
-  let inner=scopeSvgIds(materialize(key,item.svg(color),item,color),'thumb-'+key+'-'+item.id);
-  if(cat.petVb){
-    // 펫은 그려지는 위치가 제각각 → transform 좌표를 읽어 주변을 자른다
-    const m=inner.match(/translate\((-?\d+\.?\d*) (-?\d+\.?\d*)\)/);
-    const x=m?+m[1]:340,y=m?+m[2]:560;
-    vb=`${x-60} ${y-62} 120 120`;
-  }
-  return `<svg viewBox="${vb}" preserveAspectRatio="xMidYMid meet">${inner}</svg>`;
+  return PrincessStudio.thumb(key,item,color);
 }
 function princessThumb(p,hairColor){
-  return `<svg viewBox="130 20 160 200" preserveAspectRatio="xMidYMid meet">
-    ${HAIR[p.hair].back(hairColor)}${hairDetailSVG(p.hair,hairColor,'back')}
-    <rect x="197" y="176" width="26" height="40" rx="9" fill="${dk(p.skin,.08)}"/>
-    <path d="M150 210 Q210 190 270 210 L280 240 L140 240Z" fill="${p.skin}"/>
-    <circle cx="156" cy="132" r="10" fill="${p.skin}"/><circle cx="264" cy="132" r="10" fill="${p.skin}"/>
-    <ellipse cx="210" cy="125" rx="54" ry="60" fill="${p.skin}" stroke="${dk(p.skin,.2)}" stroke-width="1.5"/>
-    <ellipse cx="193" cy="106" rx="25" ry="34" fill="${lt(p.skin,.35)}" opacity=".14" transform="rotate(-18 193 106)"/>
-    ${faceSVG(p)}
-    ${HAIR[p.hair].front(hairColor)}${hairDetailSVG(p.hair,hairColor)}
-  </svg>`;
+  return PrincessStudio.portrait(p,hairColor);
 }
 
 function renderTabs(){
@@ -1349,7 +1303,7 @@ function renderPanel(){
   const cat=CATS.find(c=>c.key===tab);
   if(tab==='bg'){
     sw.innerHTML='';
-    items.innerHTML=cat.list.map(it=>`<button class="item ${it.id===state.bg?'on':''}" data-id="${it.id}"><svg viewBox="0 0 420 680" preserveAspectRatio="xMidYMid slice">${scopeSvgIds(it.svg(),'thumb-bg-'+it.id)}${backgroundDepthSVG(it.id)}</svg><span class="nm">${it.name}</span></button>`).join('');
+    items.innerHTML=cat.list.map(it=>`<button class="item ${it.id===state.bg?'on':''}" data-id="${it.id}">${PrincessStudio.thumb('bg',it)}<span class="nm">${it.name}</span></button>`).join('');
     items.querySelectorAll('.item').forEach(b=>b.addEventListener('click',()=>{state.bg=b.dataset.id;persist();click();renderStage();renderPanel();}));
     return;
   }
@@ -1415,27 +1369,20 @@ function svgToPng(svgText,w,h){
     img.src=url;
   });
 }
-let lastPhoto=null,lastPhotoSvg=null;
+let lastPhoto=null,lastPhotoSvg=null,lastPhotoName='';
 async function buildExportSvg(st=JSON.parse(JSON.stringify(state)),p=princess()){
-  const dress=st.dress?itemOf('dress',st.dress.id):null;
-  const spec=dress&&dressFabricSpec(dress.id);
-  const [bodyHref,fabricHref]=await Promise.all([
-    ensureDollBaseData(),
-    spec?ensureFabricDataUrl(spec.texture):Promise.resolve(null)
-  ]);
-  const fabricHrefs={};
-  if(spec){
-    if(!fabricHref)throw new Error('fabric unavailable');
-    fabricHrefs[spec.texture]=fabricHref;
-  }
-  return dollSVG(st,p,bodyHref,fabricHrefs);
+  const assets=await PrincessStudio.exportAssets(st,p),bodyHref=assets['body/'+p.id];
+  if(!bodyHref)throw new Error('doll unavailable');
+  return PrincessStudio.render(st,p,bodyHref,assets);
 }
 async function takePhoto(){
   shutter();
   const st=document.getElementById('stage');
   st.style.filter='brightness(2)';setTimeout(()=>st.style.filter='',120);
   try{
-    lastPhotoSvg=await buildExportSvg();
+    const p=princess(),snapshot=JSON.parse(JSON.stringify(state));
+    lastPhotoSvg=await buildExportSvg(snapshot,p);
+    lastPhotoName=p.name;
     lastPhoto=await svgToPng(lastPhotoSvg,840,1360);
     document.getElementById('photoImg').src=lastPhoto;
     document.getElementById('photoOverlay').classList.add('show');
@@ -1449,7 +1396,7 @@ async function addToAlbum(){
   // 앨범용은 작게 저장(용량 절약)
   let small=lastPhoto;
   try{small=await svgToPng(lastPhotoSvg,280,453)}catch(e){}
-  list.unshift({src:small,name:princess().name,t:Date.now()});
+  list.unshift({src:small,name:lastPhotoName,t:Date.now()});
   while(list.length>12)list.pop();
   while(list.length&&!saveAlbum(list))list.pop();
   tada();toast('앨범에 넣었어요! 📚');
@@ -1480,7 +1427,6 @@ let last='snow';try{last=localStorage.getItem('princess:last')||'snow'}catch(e){
 if(!PRINCESSES.some(p=>p.id===last))last='snow';
 loadPrincess(last);
 renderTabs();renderStage();renderPanel();
-primeDollBase();
 </script>
 </body>
 </html>
