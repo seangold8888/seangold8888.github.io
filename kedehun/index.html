@@ -1075,7 +1075,7 @@ class Game {
     return {
       id: this.nextId++, kind, x, y, px: x, py: y, vx: 0,
       name: def.name ?? null, tint: def.color ?? '#9b6cff',
-      width: spec.width, height: spec.height, health: spec.health, maxHealth: spec.health,
+      width: spec.width, height: spec.height, health: Math.round(spec.health * 0.75), maxHealth: Math.round(spec.health * 0.75),
       speed: spec.speed, damage: spec.damage,
       cooldown: 0.35 + (x % 270) / 500, telegraph: 0, attackType: 0, attackFired: false,
       dash: 0, dashHit: false, stun: 0, flash: 0, spawn: 0.4, dead: false, death: 0,
@@ -1088,7 +1088,7 @@ class Game {
     const x = stage.worldWidth - 590;
     return {
       id: this.nextId++, kind: 'boss', bossKind: stage.bossKind ?? 'cloud', name: stage.boss, x, y: GROUND_Y - 18, px: x, py: GROUND_Y - 18, vx: 0,
-      width: 178, height: 182, health: stage.bossHealth, maxHealth: stage.bossHealth,
+      width: 178, height: 182, health: Math.round(stage.bossHealth * 0.75), maxHealth: Math.round(stage.bossHealth * 0.75),
       speed: 78, damage: 18,
       cooldown: 1.5, telegraph: 0, attackType: 0, attackFired: false,
       dash: 0, dashHit: false, stun: 0, flash: 0, spawn: 1.05, dead: false, death: 0,
@@ -1288,8 +1288,8 @@ class Game {
         });
       }
     }
-    const gateLocked = this.enemies.some((e) => e.kind !== 'boss' && !e.dead);
-    p.x = clamp(p.x, 70, gateLocked ? stage.bossGate - 58 : stage.worldWidth - 120);
+    // The glowing gate is a stage cue, never an invisible movement wall.
+    p.x = clamp(p.x, 70, stage.worldWidth - 120);
     if (!this.checkpointReached && stage.checkpoint && p.x >= stage.checkpoint) {
       this.checkpointReached = true;
       p.health = Math.min(p.maxHealth, p.health + 60);
@@ -1592,11 +1592,11 @@ class Game {
       return;
     }
     if (p.invulnerable > 0 || p.ultimate > 0) return;
-    p.health = Math.max(0, p.health - Math.round(damage));
+    p.health = Math.max(0, p.health - Math.max(1, Math.round(damage * 0.65)));
     p.hurt = 0.3;
-    p.invulnerable = 1.1;
-    p.vx = dir * 390;
-    p.vy = -380;
+    p.invulnerable = 1.6;
+    p.vx = dir * 250;
+    p.vy = -260;
     this.combo = 0;
     this.comboTimer = 0;
     this.damageFlash = 0.7;
@@ -1639,13 +1639,19 @@ class Game {
 
   directStage(dt) {
     const stage = STAGES[this.stageIndex];
-    if (!this.enemies.some((e) => e.kind !== 'boss' && !e.dead) && !this.gateOpen) {
+    const pathCleared = !this.enemies.some((e) => e.kind !== 'boss' && !e.dead);
+    if (!this.gateOpen && (pathCleared || this.player.x >= stage.bossGate - 240)) {
       this.gateOpen = true;
       this.audio.play('clear');
-      this.announce('HONMOON OPEN', '모든 그림자 정화 · 보스 무대로!');
+      this.announce('HONMOON OPEN', '길이 열렸어요 · 앞으로 이동해요!');
     }
     if (this.gateOpen && !this.bossSpawned && this.player.x > stage.bossGate + 90) {
       this.bossSpawned = true;
+      // Leave skipped foes behind without awarding defeat points or a surprise crossfire.
+      this.enemies = this.enemies.filter((e) => e.kind === 'boss');
+      this.projectiles = [];
+      this.player.health = this.player.maxHealth;
+      this.player.invulnerable = Math.max(this.player.invulnerable, 2);
       this.enemies.push(this.makeBoss());
       this.damageFlash = 0.4;
       this.music.setBoss(true);
@@ -2025,6 +2031,10 @@ Object.assign(Game.prototype, {
     if (!this.gateOpen) {
       ctx.save();
       ctx.translate(stage.bossGate, 0);
+      ctx.fillStyle = '#ffd166';
+      ctx.font = 'bold 16px system-ui';
+      ctx.textAlign = 'center';
+      ctx.fillText('가까이 오면 열려요 →', 0, 150);
       ctx.globalAlpha = 0.6 + Math.sin(this.ambient * 4.5) * 0.15;
       ctx.strokeStyle = '#ffd166';
       ctx.lineWidth = 4;
