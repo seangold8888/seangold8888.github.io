@@ -76,7 +76,7 @@ test("install is strict only for core and card art; optional warmup is bounded a
     assert.equal(sw.backgroundCacheName(runtime), sw.RUNTIME_CACHE, runtime);
   }
 
-  for (const game of ["picnic", "odyssey", "bori", "hogwarts", "kedehun"]) {
+  for (const game of ["odyssey", "bori", "hogwarts", "kedehun"]) {
     assert.ok(sw.OPTIONAL_SHELL.includes(`./${game}/`), game);
     assert.ok(!sw.OPTIONAL_SHELL.includes(`./${game}/index.html`), game);
   }

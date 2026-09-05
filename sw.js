@@ -17,6 +17,11 @@ const SITE_ROOT_URL = new URL("./", workerScriptUrl);
 const CORE_SHELL = [
   "./",
   "./index.html",
+  "./assets/study/picnic-scene.jpg",
+  "./assets/study/jaei.jpg",
+  "./assets/study/taeo.jpg",
+  "./assets/study/mom.jpg",
+  "./assets/study/dad.jpg",
   "./manifest.json",
   "./icon.png",
   "./icon-192.png",
@@ -87,7 +92,6 @@ const OPTIONAL_SHELL = [
   "./keycap/",
   "./keycap/stl.js",
   "./odyssey/",
-  "./picnic/",
   "./princess/",
   "./princess/cover.svg",
   "./princess/cover.jpg?v=31",
@@ -249,7 +253,7 @@ const BACKGROUND_RETRY_MS = 5 * 60 * 1000;
 const AUDIO_FETCH_TIMEOUT_MS = 45000;
 const NAVIGATION_ROUTES = [
   "cards", "story", "avengers", "bori", "hogwarts", "kart", "kart3d",
-  "kedehun", "keycap", "odyssey", "picnic", "princess", "sanguo",
+  "kedehun", "keycap", "odyssey", "princess", "sanguo",
 ];
 
 const CARD_ART_FILES = [
@@ -716,16 +720,16 @@ if (typeof self !== "undefined" && typeof self.addEventListener === "function") 
       await Promise.all(keys
         .filter((key) => key.startsWith(CACHE_PREFIX) && !current.has(key))
         .map((key) => caches.delete(key)));
-      // Retire only this game's cached files; preserve downloaded stories.
-      const retiredRoot = new URL("./starkart/", SITE_ROOT_URL);
+      // Retire removed games only; preserve family art and downloaded stories.
+      const retiredRoots = ["./starkart/", "./picnic/"].map(path => new URL(path, SITE_ROOT_URL));
       for (const name of [STATIC_CACHE, RUNTIME_CACHE]) {
         const cache = await caches.open(name);
         const requests = await cache.keys();
         await Promise.all(requests.filter((request) => {
           const url = new URL(request.url);
-          return url.origin === retiredRoot.origin &&
+          return retiredRoots.some(retiredRoot => url.origin === retiredRoot.origin &&
             (url.pathname === retiredRoot.pathname.slice(0, -1) ||
-             url.pathname.startsWith(retiredRoot.pathname));
+             url.pathname.startsWith(retiredRoot.pathname)));
         }).map((request) => cache.delete(request)));
       }
       await self.clients.claim();
