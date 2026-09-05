@@ -260,6 +260,20 @@ require('node:test')('all 64 hairstyles attach to measured foreheads and temples
   for(const p of api.PRINCESSES)for(const {id} of api.CATS.find(c=>c.key==='hair').list){
     const q={...p,hair:id},fit=studio.hairPlacement(q),anchor=studio.hairAnchors[id];
     const [top,left,right]=studio.headAnchors[p.id],dx=studio.identities[p.id].dx;
+    if(id==='bob'){
+      assert(Math.abs(fit.height/fit.width-694/640)<.000001,'bob aspect ratio distorted');
+      assert(fit.width<(right-left)*2.1,'bob still too wide');
+      assert(Math.abs(fit.y+fit.height*.292-(top+18))<.001,'bob forehead detached');
+      const portrait=studio.hairPlacement(q,0);assert(Math.abs(portrait.x+dx-fit.x)<.001);
+      const svg=api.dollSVG({...json(api.defaultState(p)),hairStyle:id},p);checkSvg(svg);
+      assert(svg.includes('data-hair-fit="natural-bob-v35"'));
+      const pieces=[...svg.matchAll(/<g data-studio-part="hair\/bob"[\s\S]*?<\/g>/g)];
+      assert.equal(pieces.length,2);
+      for(const piece of pieces){assert(!piece[0].includes('<svg '),'bob was sliced');assert.equal((piece[0].match(/<image /g)||[]).length,1);}
+      const identity=studio.identities[p.id];
+      assert(24+.96*(604-580*identity.sy+fit.y*identity.sy)>=16,'bob clipped in photo');
+      checkSvg(api.princessThumb(p,p.hairColor,id));combinations++;continue;
+    }
     assert(Math.abs(fit.x+anchor[2]*fit.width-(left+dx+2))<.001,'left temple detached');
     assert(Math.abs(fit.x+anchor[3]*fit.width-(right+dx-2))<.001,'right temple detached');
     assert.equal(fit.knots[1][1],top+18,'forehead root mismatch');
@@ -273,5 +287,5 @@ require('node:test')('all 64 hairstyles attach to measured foreheads and temples
     checkSvg(api.princessThumb(p,p.hairColor,id));combinations++;
   }
   assert.equal(combinations,64);
-  assert(studio.hairPlacement({...api.PRINCESSES[0],hair:'bob'}).knots[0][1]>12,'Snow bob is still floating above scalp');
+  assert.equal(studio.path('hair','bob'),'assets/hair-v35/hair-bob.webp');
 });

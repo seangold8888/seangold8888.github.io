@@ -76,7 +76,7 @@ globalThis.PrincessStudio=(()=>{
   };
   const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
   const key=(cat,id)=>cat+'/'+id;
-  const path=(cat,id)=>cat==='grip'?'assets/wear-v5/grip-'+id+'.webp':cat==='body'?'assets/bodies-v4/body-'+id+'.webp':ROOT+cat+'-'+id+(cat==='bg'?'.jpg':'.webp');
+  const path=(cat,id)=>cat==='hair'&&id==='bob'?'assets/hair-v35/hair-bob.webp':cat==='grip'?'assets/wear-v5/grip-'+id+'.webp':cat==='body'?'assets/bodies-v4/body-'+id+'.webp':ROOT+cat+'-'+id+(cat==='bg'?'.jpg':'.webp');
   const selectedHair=(st,p)=>Object.hasOwn(rects.hair,st.hairStyle)?st.hairStyle:p.hair;
   const href=(cat,id,embedded)=>embedded===undefined?path(cat,id):embedded[key(cat,id)];
   const fileKeys=(st,p)=>{
@@ -168,12 +168,18 @@ globalThis.PrincessStudio=(()=>{
   };
   function hairPlacement(p,bodyOffset=identities[p.id].dx){
     const [top,left,right]=headAnchors[p.id],a=hairAnchors[p.hair];
+    if(p.hair==='bob'){
+      // One undistorted image: fit its transparent face opening, not the wig's outer edge.
+      const width=(right-left)*2.06,height=width*694/640;
+      return {x:(left+right)/2+bodyOffset-width*.505,y:top+18-height*.292,width,height};
+    }
     const width=(right-left-4)/(a[3]-a[2]);
     return {x:(left+right)/2+bodyOffset-(a[2]+a[3])/2*width,width,
       knots:[[0,top-a[4]],[a[0],top+18],[a[1],57.5],[1,a[5]+top-18]]};
   }
   function hair(p,color,scope,embedded,front=false,bodyOffset=identities[p.id].dx){
     const fit=hairPlacement(p,bodyOffset),asset=scope+'-source',tid=scope+'-tone';
+    if(p.hair==='bob')return `<g data-studio-part="hair/bob" data-hair-fit="natural-bob-v35" data-contact-shading="${front}" data-wear-layer="${front?'hair-front':'hair-back'}" filter="url(#${tid})"><defs>${tone(tid,color,'hair',front)}</defs><image href="${escape(href('hair','bob',embedded))}" x="${fit.x}" y="${fit.y}" width="${fit.width}" height="${fit.height}" preserveAspectRatio="xMidYMid meet"/></g>`;
     // Three continuous sections preserve strands without thin-strip alpha seams.
     const slices=fit.knots.slice(0,-1).map((a,i)=>{
       const b=fit.knots[i+1];
