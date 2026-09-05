@@ -14,12 +14,26 @@ const sw = require(path.join(siteRoot, "sw.js"));
 
 const heroes = ["lumi", "mira", "joy"];
 
-function pngSize(filePath) {
+// WebP(RIFF) 컨테이너에서 캔버스 크기를 읽는다. VP8X(확장)·VP8L(무손실)·VP8(손실) 모두 처리.
+function webpSize(filePath) {
   const bytes = fs.readFileSync(filePath);
-  assert.deepEqual([...bytes.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
+  assert.equal(bytes.toString("ascii", 0, 4), "RIFF");
+  assert.equal(bytes.toString("ascii", 8, 12), "WEBP");
+  const chunk = bytes.toString("ascii", 12, 16);
+  if (chunk === "VP8X") {
+    return {
+      width: 1 + bytes.readUIntLE(24, 3),
+      height: 1 + bytes.readUIntLE(27, 3),
+    };
+  }
+  if (chunk === "VP8L") {
+    const b = bytes.readUInt32LE(21);
+    return { width: 1 + (b & 0x3fff), height: 1 + ((b >> 14) & 0x3fff) };
+  }
+  assert.equal(chunk, "VP8 ");
   return {
-    width: bytes.readUInt32BE(16),
-    height: bytes.readUInt32BE(20),
+    width: bytes.readUInt16LE(26) & 0x3fff,
+    height: bytes.readUInt16LE(28) & 0x3fff,
   };
 }
 
@@ -33,15 +47,15 @@ test("all inline scripts remain valid JavaScript", () => {
 
 test("the three playable heroes share one local high-resolution art set", () => {
   for (const hero of heroes) {
-    const relative = `art/characters/${hero}-v2.png?v=27`;
+    const relative = `art/characters/${hero}-v2.webp?v=28`;
     assert.ok(html.includes(relative), relative);
     assert.match(html, new RegExp(`<link rel="preload" as="image" href="${relative.replace("?", "\\?")}">`));
 
-    const filePath = path.join(gameRoot, "art", "characters", `${hero}-v2.png`);
+    const filePath = path.join(gameRoot, "art", "characters", `${hero}-v2.webp`);
     assert.ok(fs.existsSync(filePath), filePath);
-    assert.deepEqual(pngSize(filePath), { width: 1024, height: 1536 });
-    assert.ok(fs.statSync(filePath).size > 500_000, `${hero} art is unexpectedly small`);
-    assert.ok(fs.statSync(filePath).size < 8_000_000, `${hero} art is too large for an iPad game`);
+    assert.deepEqual(webpSize(filePath), { width: 1024, height: 1536 });
+    assert.ok(fs.statSync(filePath).size > 150_000, `${hero} art is unexpectedly small`);
+    assert.ok(fs.statSync(filePath).size < 600_000, `${hero} art is too large for a phone on mobile data`);
   }
 
   assert.doesNotMatch(html, /src:\s*["'](?:https?:|data:)/);
@@ -154,10 +168,10 @@ test("loading, reduced-motion and offline behavior cover the new art", () => {
   assert.match(sw.CACHE_VERSION, /^v\d+$/);
 
   for (const hero of heroes) {
-    const tagMatch = html.match(new RegExp(`art/characters/${hero}-v2\\.png\\?v=(\\d+)`));
+    const tagMatch = html.match(new RegExp(`art/characters/${hero}-v2\\.webp\\?v=(\\d+)`));
     assert.ok(tagMatch, `${hero} art must be referenced with a ?v= tag`);
     assert.ok(
-      sw.OPTIONAL_SHELL.includes(`./kedehun/art/characters/${hero}-v2.png?v=${tagMatch[1]}`),
+      sw.OPTIONAL_SHELL.includes(`./kedehun/art/characters/${hero}-v2.webp?v=${tagMatch[1]}`),
       `${hero} must be available offline`,
     );
   }
