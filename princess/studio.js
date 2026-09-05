@@ -3,7 +3,15 @@
 // independently of the retired vector figure's coordinates.
 globalThis.PrincessStudio=(()=>{
   const ROOT='assets/studio-v3/';
+  const NEW_CHARACTERS=new Set(['frost','sahara','lotus','sunny']);
   const wearGeometry={"shoes":{"pumps":[[0.01042,0.00463,0.48958,0.99074],[0.50521,0.00463,0.48958,0.99074]],"glass":[[0.00521,0.0045,0.47396,0.99099],[0.52083,0.0045,0.47396,0.99099]],"boots":[[0.00649,0.00781,0.46753,0.99219],[0.50649,0.00391,0.48701,0.99609]],"sneakers":[[0.00521,0.00478,0.49479,0.99522],[0.5,0.00478,0.49479,0.99522]],"sandals":[[0.00521,0.00926,0.48958,0.98611],[0.51042,0.00463,0.48438,0.99074]],"ballet":[[0.00521,0,0.49479,0.9919],[0.5,0,0.49479,0.9919]],"rain":[[0.00524,0,0.48691,0.99609],[0.50262,0,0.49215,0.99609]],"slippers":[[0.01042,0.01935,0.48958,0.96774],[0.5,0.0129,0.49479,0.98065]],"kkotsin":[[0.00521,0.00515,0.48438,0.98969],[0.51042,0.00515,0.48438,0.98969]]},"bodies":{"snow":{"wrist":[299.66,278],"feet":[[177.34,26.72],[213.56,27.31]]},"cinder":{"wrist":[304.41,278],"feet":[[183.28,24.34],[211.78,24.34]]},"rapunzel":{"wrist":[307.97,278],"feet":[[177.94,26.13],[214.75,26.13]]},"mermaid":{"wrist":[307.67,278],"feet":[[183.28,25.53],[214.75,26.13]]},"thumb":{"wrist":[308.86,278],"feet":[[182.09,26.13],[213.56,26.13]]},"kongjwi":{"wrist":[307.97,278],"feet":[[180.91,26.13],[217.72,26.13]]},"briar":{"wrist":[311.23,278],"feet":[[174.97,28.5],[211.78,29.09]]},"moon":{"wrist":[304.41,278],"feet":[[177.34,27.31],[211.19,27.31]]}}};
+  // Attachment points measured from the four new transparent body sprites.
+  Object.assign(wearGeometry.bodies,{
+    frost:{wrist:[303.21875,278],feet:[[183.28125,23.75],[212.375,24.34375]]},
+    sahara:{wrist:[303.515625,278],feet:[[183.28125,23.75],[211.1875,23.15625]]},
+    lotus:{wrist:[304.703125,278],feet:[[182.6875,24.34375],[211.1875,24.34375]]},
+    sunny:{wrist:[302.921875,278],feet:[[183.28125,23.75],[211.78125,23.75]]}
+  });
   const shoeWear={pumps:[533,46,.60],glass:[533,46,.60],boots:[475,104,0],sneakers:[542,37,.22],sandals:[535,44,.73],ballet:[521,58,.66],rain:[505,74,0],slippers:[549,30,.46],kkotsin:[540,39,.48]};
   const gripPoints={wand:[.5,.84],fan:[.5,.9],bouquet:[.5,.8],umbrella:[.51,.88],bag:[.5,.12],balloon:[.47,.96],book:[.16,.62],lollipop:[.5,.86],sword:[.5,.74],mirror:[.5,.86],basket:[.5,.14]};
   // Individual fictional character designs; body build is not derived from ethnicity.
@@ -11,7 +19,9 @@ globalThis.PrincessStudio=(()=>{
     snow:{sx:.97,sy:.95,fit:1.04,dx:0},cinder:{sx:.98,sy:1.01,fit:1.04,dx:0},
     rapunzel:{sx:.96,sy:1,fit:1.08,dx:-1.5},mermaid:{sx:1.04,sy:.98,fit:1.06,dx:-4.5},
     thumb:{sx:.98,sy:.87,fit:1.07,dx:-3.3},kongjwi:{sx:1,sy:.96,fit:1.06,dx:-5},
-    briar:{sx:1.05,sy:.98,fit:1.20,dx:-2.6},moon:{sx:1.05,sy:1.02,fit:1.05,dx:.7}
+    briar:{sx:1.05,sy:.98,fit:1.20,dx:-2.6},moon:{sx:1.05,sy:1.02,fit:1.05,dx:.7},
+    frost:{sx:.98,sy:.99,fit:1.10,dx:0},sahara:{sx:1,sy:1.01,fit:1.10,dx:.89},
+    lotus:{sx:.98,sy:.95,fit:1.10,dx:-.89},sunny:{sx:1.02,sy:.98,fit:1.10,dx:-.3}
   };
   const rects={
     dress:{
@@ -76,7 +86,7 @@ globalThis.PrincessStudio=(()=>{
   };
   const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
   const key=(cat,id)=>cat+'/'+id;
-  const path=(cat,id)=>cat==='hair'&&id==='bob'?'assets/hair-v35/hair-bob.webp':cat==='grip'?'assets/wear-v5/grip-'+id+'.webp':cat==='body'?'assets/bodies-v4/body-'+id+'.webp':ROOT+cat+'-'+id+(cat==='bg'?'.jpg':'.webp');
+  const path=(cat,id)=>NEW_CHARACTERS.has(id)&&['body','grip'].includes(cat)?'assets/characters-v36/'+cat+'-'+id+'.webp':cat==='hair'&&id==='bob'?'assets/hair-v35/hair-bob.webp':cat==='grip'?'assets/wear-v5/grip-'+id+'.webp':cat==='body'?'assets/bodies-v4/body-'+id+'.webp':ROOT+cat+'-'+id+(cat==='bg'?'.jpg':'.webp');
   const selectedHair=(st,p)=>Object.hasOwn(rects.hair,st.hairStyle)?st.hairStyle:p.hair;
   const href=(cat,id,embedded)=>embedded===undefined?path(cat,id):embedded[key(cat,id)];
   const fileKeys=(st,p)=>{
@@ -157,7 +167,9 @@ globalThis.PrincessStudio=(()=>{
     snow:[18.3125,183.875,239.09375],cinder:[18.90625,183.875,236.125],
     rapunzel:[14.15625,185.65625,239.09375],mermaid:[18.90625,186.25,242.0625],
     thumb:[14.75,183.875,242.65625],kongjwi:[20.6875,189.21875,241.46875],
-    briar:[16.53125,186.84375,240.28125],moon:[15.34375,183.28125,236.125]
+    briar:[16.53125,186.84375,240.28125],moon:[15.34375,183.28125,236.125],
+    frost:[18.90625,180.3125,239.6875],sahara:[18.90625,180.3125,237.90625],
+    lotus:[18.90625,182.09375,239.6875],sunny:[18.90625,181.5,239.09375]
   };
   // Normalized forehead opening, temple row/edges, crown volume and natural length.
   const hairAnchors={

@@ -67,7 +67,7 @@ async function main(){
     assert(studio.identities[p.id]);
     const gripPath=studio.path('grip',p.id);assert(fs.existsSync(path.join(dir,gripPath)));allPaths.push(gripPath);
   }
-  assert.equal(new Set(allPaths).size,111,'expected 95 wardrobe/scenery assets, 8 bodies and 8 gripping hands');
+  assert.equal(new Set(allPaths).size,95+2*api.PRINCESSES.length,'expected wardrobe/scenery plus a unique body and grip for every princess');
   const dirFiles=fs.readdirSync(path.join(dir,'assets/studio-v3'));
   assert.equal(dirFiles.filter(f=>/\.(webp|jpg)$/.test(f)).length,95,'studio image count');
   const thumbDocument=api.CATS.filter(c=>c.list).map(c=>c.list.map(i=>api.thumbSVG(c.key,i,'#ff8fc1')).join('')).join('')+api.PRINCESSES.map(p=>api.princessThumb(p,p.hairColor)).join('');
@@ -146,7 +146,7 @@ require('node:test')('wearing layers preserve shoe openings, hair occlusion and 
     }else assert.equal(at('shoe-front'),-1);
     combinations++;
   }
-  assert.equal(combinations,936);
+  assert.equal(combinations,api.PRINCESSES.length*13*9);
   const p=api.PRINCESSES[0],s=json(api.defaultState(p));s.hand=null;
   assert(!studio.fileKeys(s,p).some(k=>k.startsWith('grip/')));
 });
@@ -176,7 +176,7 @@ require('node:test')('all hair choices export and persist independently; old sav
     assert(studio.fileKeys(old,p).includes('hair/'+p.hair));
   }
 });
-require('node:test')('photo safe area contains every crown and hairstyle for all eight body heights',()=>{
+require('node:test')('photo safe area contains every crown and hairstyle for all body heights',()=>{
   const {api,studio}=environment();
   for(const p of api.PRINCESSES){
     const identity=studio.identities[p.id],offset=604-580*identity.sy;
@@ -193,7 +193,7 @@ require('node:test')('photo safe area contains every crown and hairstyle for all
 require('node:test')('hair tab controls change style and color without changing the princess or dress',()=>{
   const {api,ctx,stored}=environment(),nodes=new Map();
   function node(id){
-    if(!nodes.has(id))nodes.set(id,{innerHTML:'',scrollLeft:0,scrollTop:0,querySelectorAll(){
+    if(!nodes.has(id))nodes.set(id,{innerHTML:'',scrollLeft:0,scrollTop:0,classList:{add(){},remove(){}},querySelectorAll(){
       return [...this.innerHTML.matchAll(/<button\b([^>]*)>/g)].map(m=>({
         dataset:Object.fromEntries([...m[1].matchAll(/data-([\w]+)="([^"]*)"/g)].map(a=>[a[1],a[2]])),
         addEventListener(event,fn){this[event]=fn;},
@@ -219,6 +219,27 @@ require('node:test')('hair tab controls change style and color without changing 
   api.setTab('dress');api.renderPanel();
   node('swatches').buttons.find(b=>b.dataset.c==='').click();assert.equal(api.getState().dress.color,null);
   assert(node('stage').innerHTML.includes('data-wear-layer="fabric-lining"'));
+  // The real picker must reach all four additions without losing the old outfit.
+  const snowOutfit=json(api.getState());
+  api.setTab('princess');api.renderPanel();
+  assert.equal(node('items').buttons.length,12);
+  for(const id of ['frost','sahara','lotus','sunny']){
+    node('items').buttons.find(b=>b.dataset.id===id).click();
+    assert.equal(api.princess().id,id);
+    assert(node('stage').innerHTML.includes('data-studio-part="body/'+id+'"'));
+    const ownDress=json(api.getState().dress);
+    api.setTab('hair');api.renderPanel();
+    node('items').buttons.find(b=>b.dataset.id==='bob').click();
+    assert.deepEqual(json(api.getState().dress),ownDress);
+    api.setTab('princess');api.renderPanel();
+  }
+  node('items').buttons.find(b=>b.dataset.id==='snow').click();
+  assert.deepEqual(json(api.getState()),snowOutfit);
+  const reloaded=environment({'princess:outfits':stored.get('princess:outfits')});
+  for(const id of ['frost','sahara','lotus','sunny']){
+    reloaded.api.loadPrincess(id);assert.equal(reloaded.api.getState().hairStyle,'bob');
+    assert.deepEqual(Object.keys(reloaded.api.getState().pet),['id']);
+  }
 });
 require('node:test')('all pets retain original colors in thumbnails, exports and random outfits',async()=>{
   const {api,studio,ctx}=environment(),p=api.PRINCESSES[0];
@@ -255,7 +276,7 @@ require('node:test')('materials use real cloth and accessories follow each body 
     assert(!svg.includes('<use href="#studio-'+p.id+'-body-source" filter="url(#studio-'+p.id+'-lining)'));
   }
 });
-require('node:test')('all 64 hairstyles attach to measured foreheads and temples, including portrait offsets',()=>{
+require('node:test')('all hairstyles attach to measured foreheads and temples, including portrait offsets',()=>{
   const {api,studio}=environment();let combinations=0;
   for(const p of api.PRINCESSES)for(const {id} of api.CATS.find(c=>c.key==='hair').list){
     const q={...p,hair:id},fit=studio.hairPlacement(q),anchor=studio.hairAnchors[id];
@@ -286,6 +307,6 @@ require('node:test')('all 64 hairstyles attach to measured foreheads and temples
     const svg=api.dollSVG(st,p);checkSvg(svg);assert(svg.includes('data-hair-fit="head-anchors-v33"'));
     checkSvg(api.princessThumb(p,p.hairColor,id));combinations++;
   }
-  assert.equal(combinations,64);
+  assert.equal(combinations,api.PRINCESSES.length*8);
   assert.equal(studio.path('hair','bob'),'assets/hair-v35/hair-bob.webp');
 });
