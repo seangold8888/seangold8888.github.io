@@ -112,13 +112,16 @@ test("all story episode mp3 files match the service worker fallback list", () =>
   }
 });
 
-test("cache generation v30 preserves exact v26 card assets and canonical navigation aliases", () => {
-  assert.equal(sw.CACHE_VERSION, "v30");
-  assert.match(sw.STATIC_CACHE, /^adventure-box-v30-/);
+test("cache generation v31 preserves exact v26 card assets and canonical navigation aliases", () => {
+  assert.equal(sw.CACHE_VERSION, "v31");
+  assert.match(sw.STATIC_CACHE, /^adventure-box-v31-/);
   const studioImages = fs.readdirSync(path.join(siteRoot, "princess/assets/studio-v3")).filter(name => /\.(png|jpg)$/.test(name));
   assert.equal(studioImages.length, 95);
   for (const name of studioImages) assert.ok(sw.OPTIONAL_SHELL.includes("./princess/assets/studio-v3/" + name), name);
-  assert.ok(sw.OPTIONAL_SHELL.includes("./princess/studio.js?v=30"));
+  assert.ok(sw.OPTIONAL_SHELL.includes("./princess/studio.js?v=31"));
+  for (const id of "snow cinder rapunzel mermaid thumb kongjwi briar moon".split(" ")) {
+    assert.ok(sw.OPTIONAL_SHELL.includes("./princess/assets/wear-v5/grip-" + id + ".png"));
+  }
   for (const asset of ["styles.css", "engine.js", "audio.js", "card-view.js", "vfx-recipes.js", "story-gates.js", "app.js"]) {
     assert.ok(sw.CORE_SHELL.some(entry => entry.endsWith(asset + "?v=26")), asset);
   }
