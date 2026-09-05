@@ -87,7 +87,7 @@ test("all checked-in Sanguo PNG, OGG and WAV assets are best-effort background a
     .filter(file => /\.(?:png|ogg|wav)$/i.test(file))
     .map(file => `./${path.relative(siteRoot, file).split(path.sep).join("/")}`)
     .sort();
-  assert.equal(expected.length, 134);
+  assert.equal(expected.length, 138);
   assert.deepEqual([...sw.SANGUO_RUNTIME_ASSETS].sort(), expected);
   assert.equal(new Set(sw.SANGUO_RUNTIME_ASSETS).size, expected.length);
 });
