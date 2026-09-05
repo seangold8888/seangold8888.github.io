@@ -61,15 +61,15 @@ test("별빛 로비 공유 카드는 로컬 이미지와 절대 URL 메타데이
 
 test("기존 게임 링크·티켓 게임과 상시 개방 구분을 보존한다", () => {
   const ticketRoutes = [
-    "avengers/", "cards/", "odyssey/", "kart3d/", "kart/",
-    "sanguo/", "hogwarts/", "kedehun/", "bori/", "picnic/"
+    "avengers/", "cards/", "odyssey/", "starkart/", "kart3d/", "kart/",
+    "sanguo/", "hogwarts/", "kedehun/", "bori/", "princess/", "picnic/"
   ];
   ticketRoutes.forEach((route) => {
     assert.match(html, new RegExp('class="card [^"]*" href="' + route.replace("/", "\\/") + '"'));
   });
   assert.match(html, /class="shop story" href="story\//);
   assert.match(html, /class="shop craft" href="keycap\//);
-  assert.equal(count(/<a class="card /g), 10);
+  assert.equal(count(/<a class="card /g), 12);
   assert.equal(count(/<a class="shop /g), 2);
   assert.match(html, /class="feature-button secondary feature-shop" href="story\//);
   assert.match(html, /querySelectorAll\('\.card, \.shop, \.feature-shop'\)/);

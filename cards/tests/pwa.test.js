@@ -346,7 +346,10 @@ test("story save UI uses saved count and reports service-worker readiness timeou
 
 test("Avengers migrates the legacy child scope before its bundle and tombstones the child worker", () => {
   const index = fs.readFileSync(path.join(siteRoot, "avengers", "index.html"), "utf8");
-  const modulePosition = index.indexOf("./assets/index-DV2DyMer.js");
+  // 번들 파일명은 빌드마다 해시가 바뀌므로 고정하지 않는다.
+  const moduleMatch = index.match(/\.\/assets\/index-[A-Za-z0-9_-]+\.js/);
+  assert.ok(moduleMatch, "avengers bundle script must be referenced");
+  const modulePosition = moduleMatch.index;
   const migrationPosition = index.indexOf("migrateToRootWorker");
   assert.ok(migrationPosition >= 0 && migrationPosition < modulePosition);
   assert.match(index, /registration\.scope === childScopeUrl/);

@@ -148,11 +148,16 @@ test("loading, reduced-motion and offline behavior cover the new art", () => {
   assert.match(html, /setTimeout\(\(\) => finish\(false\), 7000\)/);
   assert.match(html, /image\.decode\(\)\.catch/);
   assert.match(html, /if \(!characterArtReadyForPlay\) return/);
-  assert.equal(sw.CACHE_VERSION, "v27");
+  // CACHE_VERSION은 사이트 전체가 공유하는 캐시 세대라 다른 게임 업데이트가 올릴 수 있다.
+  // 고정값 대신 형식만 확인하고, 캐릭터 아트는 index.html이 요청하는 ?v= 태그 그대로
+  // 오프라인 목록에 들어 있는지 본다.
+  assert.match(sw.CACHE_VERSION, /^v\d+$/);
 
   for (const hero of heroes) {
+    const tagMatch = html.match(new RegExp(`art/characters/${hero}-v2\\.png\\?v=(\\d+)`));
+    assert.ok(tagMatch, `${hero} art must be referenced with a ?v= tag`);
     assert.ok(
-      sw.OPTIONAL_SHELL.includes(`./kedehun/art/characters/${hero}-v2.png?v=27`),
+      sw.OPTIONAL_SHELL.includes(`./kedehun/art/characters/${hero}-v2.png?v=${tagMatch[1]}`),
       `${hero} must be available offline`,
     );
   }
