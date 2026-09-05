@@ -7,6 +7,46 @@ const path = require("node:path");
 
 const root = path.join(__dirname, "..", "..");
 const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
+const vm = require("node:vm");
+
+test("메인 바로가기는 티켓을 소비하지 않고 현재 상태에 맞는 영역을 안내한다", () => {
+  const start = html.indexOf("  function updateLobbyHud(crowns) {");
+  const end = html.indexOf("\n  }", start) + 4;
+  const source = html.slice(start, end);
+  for (const scenario of [
+    { solved: 0, correct: 0, ticket: false, free: false, href: "#study", hint: "10개 더" },
+    { solved: 9, correct: 9, ticket: false, free: false, href: "#study", hint: "1개 더" },
+    { solved: 10, correct: 0, ticket: true, free: false, href: "#adventureWorlds", hint: "1장 준비" },
+    { solved: 40, correct: 0, ticket: false, free: true, href: "#adventureWorlds", hint: "모두 열렸어요" },
+  ]) {
+    const nodes = {};
+    for (const id of ["nextAdventure", "worldAccessHint"]) nodes[id] = {
+      textContent: "", setAttribute(name, value) { this[name] = value; }
+    };
+    const state = { solved: scenario.solved, credit: scenario.ticket ? 1 : 0 };
+    const context = {
+      state, DAILY: 40, SET: 10, setCorrect: scenario.correct,
+      isFree: () => scenario.free, hasTicket: () => scenario.ticket, masteredCount: () => 0,
+      document: { getElementById: id => nodes[id] },
+      hubDailyStat: {}, hubCrownStat: {}, hubTicketStat: {}, questRingLabel: {},
+      studyEl: { style: { setProperty() {} } },
+    };
+    vm.runInNewContext(source + "; updateLobbyHud(0);", context);
+    assert.equal(nodes.nextAdventure.href, scenario.href);
+    assert.ok(nodes.worldAccessHint.textContent.includes(scenario.hint));
+    assert.equal(state.credit, scenario.ticket ? 1 : 0);
+    assert.equal(state.solved, scenario.solved);
+  }
+});
+
+test("컴팩트 로비는 기존 원화와 상시 개방 진입을 유지한다", () => {
+  assert.match(html, /<style id="dashboard-v4">/);
+  assert.match(html, /id="nextAdventure" href="#study"/);
+  assert.match(html, /feature-shop" href="keycap\//);
+  assert.match(html, /@media \(min-width: 761px\) and \(max-width: 980px\)/);
+  assert.match(html, /@media \(max-width: 380px\)/);
+  assert.match(html, /body\.locked \.card \{ opacity: 1; \}/);
+});
 
 function count(pattern) {
   return [...html.matchAll(pattern)].length;
@@ -61,7 +101,7 @@ test("별빛 로비 공유 카드는 로컬 이미지와 절대 URL 메타데이
 
 test("기존 게임 링크·티켓 게임과 상시 개방 구분을 보존한다", () => {
   const ticketRoutes = [
-    "avengers/", "cards/", "odyssey/", "starkart/", "kart3d/", "kart/",
+    "avengers/", "cards/", "odyssey/", "kart3d/", "kart/",
     "sanguo/", "hogwarts/", "kedehun/", "bori/", "princess/", "picnic/"
   ];
   ticketRoutes.forEach((route) => {
@@ -69,7 +109,9 @@ test("기존 게임 링크·티켓 게임과 상시 개방 구분을 보존한�
   });
   assert.match(html, /class="shop story" href="story\//);
   assert.match(html, /class="shop craft" href="keycap\//);
-  assert.equal(count(/<a class="card /g), 12);
+  assert.equal(count(/<a class="card /g), 11);
+  assert.doesNotMatch(html, /href="starkart\//);
+  assert.equal(fs.existsSync(path.join(root, "starkart", "index.html")), false);
   assert.equal(count(/<a class="shop /g), 2);
   assert.match(html, /class="feature-button secondary feature-shop" href="story\//);
   assert.match(html, /querySelectorAll\('\.card, \.shop, \.feature-shop'\)/);

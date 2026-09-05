@@ -344,7 +344,6 @@
   .war    { background: linear-gradient(135deg, #f5c78a, #e08a7a); }
   .kart   { background: linear-gradient(135deg, #ffd3e2, #ffe9a8); }
   .kart3d { background: linear-gradient(135deg, #c9b2e8, #ffd3e2); }
-  .starkart { background: linear-gradient(135deg, #ffe9a8, #9ec5ff); }
   .hero   { background: linear-gradient(135deg, #ff9a9e, #7ea9f0); }
   .battle { background: linear-gradient(135deg, #cdb7f6, #ffd36a); }
   .badge {
@@ -835,6 +834,76 @@
   }
   .brand-orb:focus-visible { outline: 3px solid var(--gold); outline-offset: 4px; }
 </style>
+<style id="dashboard-v4">
+  /* A compact, playable lobby; keep the existing art and ticket rules. */
+  .wrap { gap: 24px; }
+  .brand-kicker { font-size: 12px; letter-spacing: .06em; }
+  .brand-copy .sub, .hud-chip small { font-size: 13px; }
+  .hero-grid { grid-template-columns: minmax(0, 1.15fr) minmax(320px, 1fr); gap: 16px; }
+  .feature-stage, .feature-copy { min-height: 340px; }
+  .feature-stage { border-radius: 26px; }
+  .feature-copy { width: 65%; padding: 28px; }
+  .feature-copy h2 { font-size: clamp(36px, 4.5vw, 56px); line-height: 1.1; letter-spacing: -.055em; }
+  .feature-copy p { font-size: 15px; line-height: 1.55; margin-top: 14px; }
+  .feature-label { font-size: 12px; letter-spacing: .04em; }
+  .feature-actions { gap: 10px; margin-top: 20px; }
+  .feature-button { font-size: 14px; min-height: 48px; border-radius: 14px; padding: 0 14px; }
+  .feature-stats { display: none; }
+  .art-fan { inset: 12px -45px 12px 50%; }
+  .art-fan img { width: clamp(140px, 18vw, 210px); border-radius: 18px; }
+  #study { min-height: 340px; padding: 24px; border-radius: 26px; scroll-margin-top: 20px; }
+  #study .eyebrow { font-size: 14px; letter-spacing: .02em; }
+  #study .daily { font-size: 14px; }
+  #study .choices button { min-width: 64px; min-height: 60px; border-radius: 14px; }
+  .section-kicker { font-size: 12px; letter-spacing: .06em; }
+  .section-heading h2 { font-size: clamp(26px, 3.5vw, 34px); }
+  .section-heading p { font-size: 14px; }
+  #adventureWorlds, #alwaysOpen { scroll-margin-top: 20px; }
+  .card, .card.hero, .card.battle { grid-column: span 4; min-height: 238px; padding: 18px; border-radius: 22px; }
+  .card .name { font-size: clamp(19px, 2.1vw, 24px); line-height: 1.25; overflow-wrap: anywhere; }
+  .card .desc { font-size: 14px; }
+  .card .genre, .card .plays { font-size: 12px; }
+  .card .go, .shop .go { font-size: 14px; }
+  .card .badge { width: 40px; height: 40px; font-size: 23px; border-radius: 12px; }
+  body.locked .card { opacity: 1; }
+  body.locked .card::before { filter: saturate(.92) brightness(.9); }
+  body.locked .card::after { background: linear-gradient(180deg, rgba(8,9,29,.04) 4%, rgba(8,9,29,.34) 42%, rgba(8,9,29,.96) 100%); }
+  .shop { border-radius: 20px; }
+  .shop .desc { font-size: 14px; }
+  .shop .genre, .shop .open-sign { font-size: 12px; }
+  .lock-notice strong { font-size: 15px; }
+  .lock-notice span { font-size: 14px; }
+  .feature-button:focus-visible, .card:focus-visible, .shop:focus-visible { outline: 3px solid var(--electric); outline-offset: 4px; }
+  @media (min-width: 761px) and (max-width: 980px) {
+    .hero-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .feature-copy { width: 100%; padding: 24px; }
+    .feature-stage::after { background: linear-gradient(90deg, rgba(8,9,29,.96), rgba(8,9,29,.68)); }
+    .art-fan { opacity: .5; left: 40%; }
+    .feature-copy h2 { font-size: 40px; }
+    #study { padding: 20px; }
+  }
+  @media (max-width: 760px) {
+    .hero-grid { grid-template-columns: minmax(0, 1fr); }
+    .feature-stage, .feature-copy { min-height: 260px; }
+    .feature-copy { width: 75%; padding: 24px; justify-content: center; }
+    .feature-copy h2 { font-size: clamp(34px, 7vw, 46px); }
+    .feature-copy p { font-size: 14px; }
+    .feature-stage::after { background: linear-gradient(90deg, rgba(8,9,29,.96), rgba(8,9,29,.62) 65%, rgba(8,9,29,.18)); }
+    .art-fan { inset: 8px -20px 8px 55%; opacity: .8; }
+    .art-fan img { right: 0; width: 150px; }
+    #study { min-height: 0; padding: 22px; }
+    .card, .card.hero, .card.battle { grid-column: span 6; min-height: 210px; padding: 14px; }
+    .card .desc { display: none; }
+    .card .name { font-size: 19px; }
+    .card .badge { display: none; }
+    .section-heading { gap: 8px; }
+  }
+  @media (max-width: 380px) {
+    .feature-copy { width: 100%; }
+    .art-fan { opacity: .3; }
+    .card, .card.hero, .card.battle { grid-column: span 12; }
+  }
+</style>
 </head>
 <body>
 <canvas id="sky" aria-hidden="true"></canvas>
@@ -845,7 +914,7 @@
       <img src="icon-192.png" alt="">
     </button>
     <div class="brand-copy">
-      <span class="brand-kicker">Starlight Adventure Base</span>
+      <span class="brand-kicker">우리 가족의 모험 기지</span>
       <h1>모험 상자</h1>
       <p class="sub" id="subline">문제 10개를 풀면 게임 티켓 한 장!</p>
     </div>
@@ -861,15 +930,16 @@
   <section class="hero-grid" aria-label="오늘의 추천과 학습 퀘스트">
     <article class="feature-stage">
       <div class="feature-copy">
-        <span class="feature-label">NEW · 이야기가 힘이 되는 배틀</span>
-        <h2>듣고, 모으고,<br><em>결투하자.</em></h2>
-        <p>이야기를 끝까지 듣고 영웅을 깨워요. 이야기 속 문제를 맞히면 강력한 별빛 필살기도 사용할 수 있어요.</p>
+        <span class="feature-label">오늘의 모험</span>
+        <h2>오늘은<br><em>어디로 갈까?</em></h2>
+        <p>문제를 풀고 게임으로 출발!<br>이야기와 만들기는 티켓 없이 즐겨요.</p>
         <div class="feature-actions">
-          <a class="feature-button" href="#adventureWorlds">월드 고르기 <span aria-hidden="true">↓</span></a>
-          <a class="feature-button secondary feature-shop" href="story/">이야기 먼저 듣기</a>
+          <a class="feature-button" id="nextAdventure" href="#study">문제 풀고 티켓 받기 <span aria-hidden="true">→</span></a>
+          <a class="feature-button secondary feature-shop" href="story/">🎧 이야기 듣기</a>
+          <a class="feature-button secondary feature-shop" href="keycap/">🎨 키캡 만들기</a>
         </div>
         <div class="feature-stats" aria-label="카드 배틀 특징">
-          <span>24 영웅 카드</span><span>1:1 전략 배틀</span><span>오프라인 플레이</span>
+          <span>24장의 이야기 영웅</span><span>듣고 나면 카드가 깨어나요</span>
         </div>
       </div>
       <div class="art-fan" aria-hidden="true">
@@ -898,15 +968,15 @@
 
   <section class="world-deck" id="adventureWorlds">
     <div class="section-heading">
-      <div><div class="section-kicker">Choose your world</div><h2>어디로 떠날까?</h2></div>
-      <p>좋아하는 월드는 위로 올라와요. 티켓 한 장으로 원하는 게임 한 판!</p>
+      <div><div class="section-kicker">게임 골라 보기</div><h2>어디로 떠날까?</h2></div>
+      <p id="worldAccessHint">티켓 한 장으로 좋아하는 게임 한 판!</p>
     </div>
     <nav class="games" aria-label="게임 목록">
     <a class="card hero" href="avengers/" style="--cover:url('avengers/icons/multiverse-icon-512.png')">
       <span class="padlock">🔒</span>
       <span class="badge">🛡️</span>
       <span class="meta">
-        <span class="name">제이와 태오의 멀티버스</span>
+        <span class="name">재이와 태오의 멀티버스</span>
         <span class="tags"><span class="genre">🥊 2인 협동 액션</span></span>
         <span class="desc">둘이 함께하는 히어로 액션 · 영웅 7명 · 4개의 세계 · 합동 필살기</span>
         <span class="go">모험 떠나기 ▶</span>
@@ -929,15 +999,6 @@
         <span class="name">오디세이아: 집으로 가는 길</span>
         <span class="tags"><span class="genre">⚔️ 모험 액션</span></span>
         <span class="desc">키클롭스 동굴부터 이어지는, 지혜로 떠나는 액션 모험</span>
-        <span class="go">모험 떠나기 ▶</span>
-      </span>
-    </a>
-    <a class="card starkart" href="starkart/">
-      <span class="padlock">🔒</span>
-      <span class="badge">🌟</span>
-      <span class="meta">
-        <span class="name">별빛 카트 배틀</span>
-        <span class="desc">3D 레이싱 + 이야기 카드 · 6명 레이스 · 조약돌 던지고 유리 구두로 막기</span>
         <span class="go">모험 떠나기 ▶</span>
       </span>
     </a>
@@ -1026,7 +1087,7 @@
 
   <section class="open-deck" id="alwaysOpen">
     <div class="section-heading">
-      <div><div class="section-kicker">Always open</div><h2>티켓 없이 바로!</h2></div>
+      <div><div class="section-kicker">언제든 환영해</div><h2>티켓 없이 바로!</h2></div>
       <p>듣기와 만들기는 언제든 열려 있어요.</p>
     </div>
     <div class="open-grid">
@@ -1055,7 +1116,7 @@
   </section>
 
   <footer>
-    <span class="tip">✦ 홈 화면에 추가하면 비행기 안에서도 모험을 이어갈 수 있어요</span>
+    <span class="tip">✦ 여행 전 이야기 극장에서 듣고 싶은 이야기를 저장해 주세요</span>
     <span>우리 가족의 별빛 모험 기지 · 새로운 월드는 계속 열려요</span>
   </footer>
 </main>
@@ -1437,6 +1498,16 @@
         ? '자유 모험'
         : (hasTicket() ? '1장 준비' : Math.max(1, SET - setCorrect) + '문제 남음');
     }
+    var nextAdventure = document.getElementById('nextAdventure');
+    var worldAccessHint = document.getElementById('worldAccessHint');
+    var canPlay = isFree() || hasTicket();
+    if (nextAdventure) {
+      nextAdventure.setAttribute('href', canPlay ? '#adventureWorlds' : '#study');
+      nextAdventure.textContent = canPlay ? '게임 고르러 가기 →' : '문제 풀고 티켓 받기 →';
+    }
+    if (worldAccessHint) worldAccessHint.textContent = isFree()
+      ? '오늘은 모두 열렸어요. 마음껏 골라요!'
+      : (hasTicket() ? '티켓 1장 준비 완료! 원하는 게임을 골라요.' : '문제 ' + Math.max(1, SET - setCorrect) + '개 더 풀면 출발! 이야기와 만들기는 바로 즐겨요.');
     if (questRingLabel) {
       questRingLabel.textContent = isFree() ? '완료' : (hasTicket() ? '티켓' : setCorrect + '/' + SET);
     }

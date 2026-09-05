@@ -34,18 +34,6 @@ const CORE_SHELL = [
   "./cards/js/vfx-recipes.js?v=26",
   "./cards/js/story-gates.js?v=26",
   "./cards/js/app.js?v=26",
-  "./starkart/",
-  "./starkart/index.html",
-  "./starkart/src/main.js?v=1",
-  "./starkart/src/contracts.js",
-  "./starkart/src/race.js",
-  "./starkart/src/track.js",
-  "./starkart/src/vehicle.js",
-  "./starkart/src/ai.js",
-  "./starkart/src/cards.js",
-  "./starkart/src/hud.js",
-  "./starkart/src/vfx.js",
-  "./starkart/src/audio.js",
 ];
 
 // Existing games are precached as best-effort shells. A missing optional asset
@@ -732,6 +720,18 @@ if (typeof self !== "undefined" && typeof self.addEventListener === "function") 
       await Promise.all(keys
         .filter((key) => key.startsWith(CACHE_PREFIX) && !current.has(key))
         .map((key) => caches.delete(key)));
+      // Retire only this game's cached files; preserve downloaded stories.
+      const retiredRoot = new URL("./starkart/", SITE_ROOT_URL);
+      for (const name of [STATIC_CACHE, RUNTIME_CACHE]) {
+        const cache = await caches.open(name);
+        const requests = await cache.keys();
+        await Promise.all(requests.filter((request) => {
+          const url = new URL(request.url);
+          return url.origin === retiredRoot.origin &&
+            (url.pathname === retiredRoot.pathname.slice(0, -1) ||
+             url.pathname.startsWith(retiredRoot.pathname));
+        }).map((request) => cache.delete(request)));
+      }
       await self.clients.claim();
     })());
     // Do not hold activation open for the optional 100MB+ game library.
