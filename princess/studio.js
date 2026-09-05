@@ -87,18 +87,21 @@ globalThis.PrincessStudio=(()=>{
     }
     return list;
   };
-  function tone(id,color,type){
+  function tone(id,color,type,contact=false){
+    if(!/^#[a-f0-9]{6}$/i.test(color))return `<filter id="${id}" x="-5%" y="-5%" width="110%" height="110%"><feColorMatrix type="saturate" values="1"/>${contact?'<feDropShadow dx="0" dy=".65" stdDeviation=".45" flood-color="#291827" flood-opacity=".26"/>':''}</filter>`;
     const raw=/^#[a-f0-9]{6}$/i.test(color)?color:'#ffffff';
     const channels=[1,3,5].map(i=>parseInt(raw.slice(i,i+2),16)/255);
     const curves=channels.map(v=>{
       if(type==='hair')return [v*.07,v*.38,v*.86,Math.min(1,v*.9+.18)];
-      return [0,v*.32,v*.76,Math.min(1,v*.86+.14)];
+      // Keep deep folds and near-white silk/metal glints when fabric is recolored.
+      return [.008,v*.18,v*.52,v*.88,Math.min(1,.94+v*.06)];
     });
-    return `<filter id="${id}" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB"><feColorMatrix type="saturate" values="0"/><feComponentTransfer>${['R','G','B'].map((c,i)=>`<feFunc${c} type="table" tableValues="${curves[i].map(v=>v.toFixed(4)).join(' ')}"/>`).join('')}</feComponentTransfer></filter>`;
+    return `<filter id="${id}" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB"><feColorMatrix type="saturate" values="0"/><feComponentTransfer>${['R','G','B'].map((c,i)=>`<feFunc${c} type="table" tableValues="${curves[i].map(v=>v.toFixed(4)).join(' ')}"/>`).join('')}</feComponentTransfer>${contact?'<feDropShadow dx="0" dy=".65" stdDeviation=".45" flood-color="#291827" flood-opacity=".26"/>':''}</filter>`;
   }
   function sprite(cat,id,color,scope,embedded,override){
     const r=override||rects[cat]?.[id];if(!r)return '';
     const src=href(cat,id,embedded);if(!src)throw new Error('Missing studio asset: '+key(cat,id));
+    if(cat==='pet')return `<g data-studio-part="pet/${id}" data-natural-color="true"><image href="${escape(src)}" x="${r[0]}" y="${r[1]}" width="${r[2]}" height="${r[3]}" preserveAspectRatio="xMidYMid meet"/></g>`;
     const tid=scope+'-tone';
     if(cat==='dress'&&!override&&dressMeshes[id]){
       const knots=dressMeshes[id],asset=scope+'-source';
@@ -109,7 +112,7 @@ globalThis.PrincessStudio=(()=>{
       };
       const slices=Array.from({length:64},(_,i)=>{
         const s=i/64,e=(i+1)/64,a=at(s),b=at(e),w=at((s+e)/2)[1];
-        return `<svg x="${210-w/2}" y="${a[0]}" width="${w}" height="${b[0]-a[0]+.18}" viewBox="0 ${s} 1 ${e-s}" preserveAspectRatio="none" overflow="hidden"><use href="#${asset}"/></svg>`;
+        return `<svg x="${210-w/2}" y="${a[0]}" width="${w}" height="${b[0]-a[0]+.8}" viewBox="0 ${s} 1 ${e-s}" preserveAspectRatio="none" overflow="hidden"><use href="#${asset}"/></svg>`;
       }).join('');
       return `<g data-studio-part="dress/${id}" filter="url(#${tid})"><defs>${tone(tid,color,cat)}<image id="${asset}" href="${escape(src)}" width="1" height="1" preserveAspectRatio="none"/></defs>${slices}</g>`;
     }
@@ -119,13 +122,13 @@ globalThis.PrincessStudio=(()=>{
     const src=href('bg',id,embedded);if(!src)throw new Error('Missing background '+id);
     return `<image data-studio-background="${id}" href="${escape(src)}" width="420" height="680" preserveAspectRatio="xMidYMid slice"/>`;
   }
-  function body(p,bodyHref,scope,tail,dressColor,shoeId=null,holding=false,trousers=false){
+  function body(p,bodyHref,scope,tail,dressColor,shoeId=null,holding=false,trousers=false,liningSrc=null){
     const wx=wearGeometry.bodies[p.id].wrist[0],wear=shoeId&&shoeWear[shoeId];
     const cuts=(tail?'<rect x="140" y="250" width="140" height="430" fill="black"/>':'')+
       (trousers?`<rect x="140" y="250" width="140" height="${wear?wear[0]-250:430}" fill="black"/>`:'')+
       (wear?`<rect x="145" y="${wear[0]+wear[1]*wear[2]}" width="140" height="150" fill="black"/>`:'')+
       (holding?`<path d="M${wx-10} 278L${wx+9} 270L380 350H285Z" fill="black"/>`:'');
-    const lining=dressColor?`<defs>${tone(scope+'-lining',dressColor,'dress')}<clipPath id="${scope}-lining-clip"><path d="M169 141Q209 148 252 141L243 177Q237 201 236 215Q238 235 251 260L229 274L216 286H204L190 274L168 260Q179 236 182 215Q180 194 175 177Z"/></clipPath></defs><use href="#${scope}-body-source" filter="url(#${scope}-lining)" clip-path="url(#${scope}-lining-clip)"/>`:'';
+    const lining=liningSrc?`<defs>${tone(scope+'-lining',dressColor,'dress')}<clipPath id="${scope}-lining-clip"><path d="M169 141Q209 148 252 141L243 177Q237 201 236 215Q238 235 251 260L229 274L216 286H204L190 274L168 260Q179 236 182 215Q180 194 175 177Z"/></clipPath></defs><g data-wear-layer="fabric-lining" clip-path="url(#${scope}-lining-clip)"><image href="${escape(liningSrc)}" x="154" y="100" width="112" height="420" preserveAspectRatio="xMidYMin slice" filter="url(#${scope}-lining)"/></g>`:'';
     return `<defs><image id="${scope}-body-source" data-studio-body="true" href="${escape(bodyHref)}" x="20" y="10" width="380" height="570" preserveAspectRatio="xMidYMid meet"/><mask id="${scope}-body-visible" maskUnits="userSpaceOnUse" x="0" y="0" width="420" height="680"><rect width="420" height="680" fill="white"/>${cuts}</mask></defs><g mask="url(#${scope}-body-visible)"><use href="#${scope}-body-source"/>${lining}</g>`;
   }
   function fittedShoes(st,p,scope,embedded,front){
@@ -137,7 +140,7 @@ globalThis.PrincessStudio=(()=>{
       const hole=front&&opening>0?`<path fill="black" d="M${x+w*.26} ${y+h*.07} Q${x+w*.5} ${y-h*.03} ${x+w*.74} ${y+h*.07} L${x+w*.81} ${y+h*opening} Q${x+w*.5} ${y+h*(opening+.1)} ${x+w*.19} ${y+h*opening}Z"/>`:'';
       return `<defs><mask id="${mask}" maskUnits="userSpaceOnUse" x="${x-2}" y="${y-2}" width="${w+4}" height="${h+4}"><rect x="${x-2}" y="${y-2}" width="${w+4}" height="${h+4}" fill="white"/>${hole}</mask></defs><g mask="url(#${mask})"><svg x="${x}" y="${y}" width="${w}" height="${h}" viewBox="${box.join(' ')}" preserveAspectRatio="none" overflow="hidden"><image href="${escape(src)}" width="1" height="1" preserveAspectRatio="none"/></svg></g>`;
     }).join('');
-    return `<g data-studio-part="shoes/${id}" data-wear-layer="${front?'shoe-front':'shoe-back'}" filter="url(#${sid}-tone)"><defs>${tone(sid+'-tone',color,'shoes')}</defs>${pairs}</g>`;
+    return `<g data-studio-part="shoes/${id}" data-wear-layer="${front?'shoe-front':'shoe-back'}" filter="url(#${sid}-tone)"><defs>${tone(sid+'-tone',color,'shoes',front)}</defs>${pairs}</g>`;
   }
   function heldProp(st,p,scope,embedded){
     if(!st.hand)return '';
@@ -147,7 +150,7 @@ globalThis.PrincessStudio=(()=>{
   }
   function frontArms(st,p,scope){
     const longSleeves=['hanbok','winter','adventure'].includes(st.dress?.id),y=longSleeves?278:225;
-    return `<defs><clipPath id="${scope}-front-arms"><path d="M65 ${y}H145L158 ${y+12}L125 335H65Z M275 ${y}H360V335H294L261 ${y+12}Z"/></clipPath></defs><g data-wear-layer="arms-over-clothes" transform="translate(${identities[p.id].dx} 0)" clip-path="url(#${scope}-front-arms)" mask="url(#${scope}-body-visible)"><use href="#${scope}-body-source"/></g>`;
+    return `<defs><clipPath id="${scope}-front-arms"><path d="M65 ${y}H145L158 ${y+12}L125 335H65Z M275 ${y}H360V335H294L261 ${y+12}Z"/></clipPath></defs><g data-wear-layer="arms-over-clothes" filter="url(#${scope}-skin-contact)"><g transform="translate(${identities[p.id].dx} 0)" clip-path="url(#${scope}-front-arms)" mask="url(#${scope}-body-visible)"><use href="#${scope}-body-source"/></g></g>`;
   }
   // Measured on the actual bald doll assets: crown top and temple edges in scene units.
   const headAnchors={
@@ -176,7 +179,18 @@ globalThis.PrincessStudio=(()=>{
       const b=fit.knots[i+1];
       return `<svg x="${fit.x}" y="${a[1]}" width="${fit.width}" height="${b[1]-a[1]+.35}" viewBox="0 ${a[0]} 1 ${b[0]-a[0]}" preserveAspectRatio="none" overflow="hidden"><use href="#${asset}"/></svg>`;
     });
-    return `<g data-studio-part="hair/${p.hair}" data-hair-fit="head-anchors-v33" data-wear-layer="${front?'hair-front':'hair-back'}" filter="url(#${tid})"><defs>${tone(tid,color,'hair')}<image id="${asset}" href="${escape(href('hair',p.hair,embedded))}" width="1" height="1" preserveAspectRatio="none"/></defs>${slices.join('')}</g>`;
+    return `<g data-studio-part="hair/${p.hair}" data-hair-fit="head-anchors-v33" data-contact-shading="${front}" data-wear-layer="${front?'hair-front':'hair-back'}" filter="url(#${tid})"><defs>${tone(tid,color,'hair',front)}<image id="${asset}" href="${escape(href('hair',p.hair,embedded))}" width="1" height="1" preserveAspectRatio="none"/></defs>${slices.join('')}</g>`;
+  }
+  function accessoryPlacement(cat,id,p){
+    const [top,left,right]=headAnchors[p.id],center=(left+right)/2+identities[p.id].dx,r=rects[cat][id];
+    if(cat==='neck'){
+      if(id==='norigae')return {sx:1,sy:1,dx:0,dy:0};
+      const sx=(right-left)/55*(id==='choker'?.67:id==='scarf'?.9:id==='flowerlei'?.9:.72),sy=id==='choker'?.55:.72;
+      return {sx,sy,dx:center-210*sx,dy:103-r[1]*sy};
+    }
+    const scale=(right-left+12)/84;
+    const base=top+17;
+    return {sx:scale,sy:scale,dx:center-210*scale,dy:Math.max(-18-r[1]*scale,base-(r[1]+(id==='veil'?34:r[3]))*scale)};
   }
   function render(st,p,bodyHref='assets/fashion-doll-base-v1.png',embedded){
     p={...p,hair:selectedHair(st,p)};
@@ -189,16 +203,17 @@ globalThis.PrincessStudio=(()=>{
       return cat==='dress'?`<defs><clipPath id="${scope}-hem"><rect width="420" height="${hem}"/></clipPath></defs><g data-wear-layer="clothes" filter="url(#${scope}-contact)" clip-path="url(#${scope}-hem)"><g mask="url(#${scope}-dress-fit)"><g transform="translate(210 0) scale(${identity.fit} 1) translate(-210 0)">${art}</g></g></g>`:art;
     };
     const neck=front=>{
-      if(!st.neck)return '';const {id,color}=st.neck,sid=scope+'-neck-'+front,scale=id==='norigae'?1:id==='choker'?.78:.86;
+      if(!st.neck)return '';const {id,color}=st.neck,sid=scope+'-neck-'+front,fit=accessoryPlacement('neck',id,p);
       if(!front&&id==='norigae')return '';
-      return `<defs><clipPath id="${sid}-clip"><rect x="0" y="${front?119:0}" width="420" height="${front?561:119}"/></clipPath></defs><g data-wear-layer="neck-${front?'front':'back'}" clip-path="url(#${sid}-clip)" transform="translate(210 0) scale(${scale} 1) translate(-210 0)">${sprite('neck',id,color,sid,embedded)}</g>`;
+      return `<defs><clipPath id="${sid}-clip"><rect x="0" y="${front?119:0}" width="420" height="${front?561:119}"/></clipPath></defs><g data-wear-layer="neck-${front?'front':'back'}" data-attachment="neck" transform="matrix(${fit.sx} 0 0 ${fit.sy} ${fit.dx} ${fit.dy})" filter="url(#${scope}-skin-contact)"><g clip-path="url(#${sid}-clip)">${sprite('neck',id,color,sid,embedded)}</g></g>`;
     };
     const crown=front=>{
-      if(!st.crown)return '';const {id,color}=st.crown,sid=scope+'-crown-'+front,r=rects.crown[id];
+      if(!st.crown)return '';const {id,color}=st.crown,sid=scope+'-crown-'+front,r=rects.crown[id],fit=accessoryPlacement('crown',id,p);
       const cut=id==='veil'?42:['crown','tiara','flowers','pearls','moon'].includes(id)?r[1]+r[3]*.80:680;
-      return `<defs><clipPath id="${sid}-clip"><rect x="0" y="-30" width="420" height="${front?cut+30:710}"/></clipPath></defs><g data-wear-layer="headwear-${front?'front':'back'}" clip-path="url(#${sid}-clip)" filter="url(#${scope}-contact)">${sprite('crown',id,color,sid,embedded)}</g>`;
+      return `<defs><clipPath id="${sid}-clip"><rect x="0" y="-30" width="420" height="${front?cut+30:710}"/></clipPath></defs><g data-wear-layer="headwear-${front?'front':'back'}" data-attachment="head" transform="matrix(${fit.sx} 0 0 ${fit.sy} ${fit.dx} ${fit.dy})" filter="url(#${scope}-skin-contact)"><g clip-path="url(#${sid}-clip)">${sprite('crown',id,color,sid,embedded)}</g></g>`;
     };
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 680" width="420" height="680" role="img" aria-label="${escape(p.name)} 인형 꾸미기" data-art-version="wear-v5">
+      <defs><filter id="${scope}-skin-contact" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB"><feDropShadow dx="0" dy=".65" stdDeviation=".45" flood-color="#291827" flood-opacity=".26"/></filter></defs>
       <defs><filter id="${scope}-contact" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB"><feDropShadow dx=".5" dy="1.2" stdDeviation=".85" flood-color="#2a1823" flood-opacity=".30"/></filter><radialGradient id="${scope}-shade"><stop offset="0" stop-color="#17111f" stop-opacity=".34"/><stop offset="1" stop-color="#17111f" stop-opacity="0"/></radialGradient></defs>
       <defs><filter id="${scope}-torso-contour"><feMorphology in="SourceAlpha" operator="dilate" radius="6" result="contour"/><feFlood flood-color="white"/><feComposite in2="contour" operator="in"/></filter><mask id="${scope}-dress-fit" maskUnits="userSpaceOnUse" x="0" y="0" width="420" height="680"><use href="#${scope}-body-source" transform="translate(${identity.dx} 0)" filter="url(#${scope}-torso-contour)"/><rect y="220" width="420" height="460" fill="white"/></mask></defs>
       ${background(st.bg,embedded)}
@@ -208,7 +223,7 @@ globalThis.PrincessStudio=(()=>{
       ${part('back')}${crown(false)}
       ${hair(p,st.hairColor,scope+'-hair-back',embedded)}
       ${neck(false)}${fittedShoes(st,p,scope,embedded,false)}
-      <g data-studio-part="body/${p.id}" transform="translate(${identity.dx} 0)">${body(p,bodyHref,scope,tail,st.dress?.color,tail?null:st.shoes?.id,!!st.hand,st.dress?.id==='adventure')}</g>
+      <g data-studio-part="body/${p.id}" transform="translate(${identity.dx} 0)">${body(p,bodyHref,scope,tail,st.dress?.color,tail?null:st.shoes?.id,!!st.hand,st.dress?.id==='adventure',st.dress?href('dress',st.dress.id,embedded):null)}</g>
       ${st.dress?.id==='adventure'?'':fittedShoes(st,p,scope,embedded,true)}
       ${part('dress')}${st.dress?.id==='adventure'?fittedShoes(st,p,scope,embedded,true):''}${frontArms(st,p,scope)}
       ${neck(true)}
@@ -243,5 +258,5 @@ globalThis.PrincessStudio=(()=>{
     const values=await Promise.all(keys.map(loadFile));
     return Object.fromEntries(keys.map((k,i)=>[k,values[i]]));
   }
-  return {render,thumb,portrait,background,exportAssets,fileKeys,path,rects,identities,headAnchors,hairAnchors,hairPlacement};
+  return {render,thumb,portrait,background,exportAssets,fileKeys,path,rects,identities,headAnchors,hairAnchors,hairPlacement,accessoryPlacement};
 })();
