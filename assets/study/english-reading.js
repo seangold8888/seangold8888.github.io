@@ -43,9 +43,8 @@
   function mount(container, sentence, onPass, env) {
     env = env || root;
     const doc = env.document;
-    let disposed = false, awarded = false, active = null, serial = 0, timer = null, utterance = null;
+    let disposed = false, awarded = false, active = null, serial = 0, timer = null, finalText = "";
     const Recognition = env.SpeechRecognition || env.webkitSpeechRecognition;
-    const synth = env.speechSynthesis;
     const nodes = {};
     function element(tag, className, text) {
       const node = doc.createElement(tag);
@@ -64,10 +63,9 @@
     });
     const meaning = element("p", "reading-meaning", sentence.meaning);
     const actions = element("div", "reading-actions");
-    nodes.listen = element("button", "", "🔊 먼저 듣기");
     nodes.mic = element("button", "", "🎤 읽어 보기");
     nodes.stop = element("button", "", "그만하기");
-    [nodes.listen, nodes.mic, nodes.stop].forEach(function (button) {
+    [nodes.mic, nodes.stop].forEach(function (button) {
       button.type = "button"; actions.appendChild(button);
     });
     nodes.status = element("p", "reading-status", "잘 들리는 목소리로 읽어 주세요. 크게 외치지 않아도 돼요.");
@@ -79,9 +77,8 @@
     [label, line, meaning, actions, nodes.status, nodes.heard, privacy].forEach(function (node) { container.appendChild(node); });
 
     function controls() {
-      nodes.mic.disabled = disposed || awarded || !!active || !!utterance || !Recognition || env.isSecureContext === false || env.navigator.onLine === false;
-      nodes.listen.disabled = disposed || awarded || !!active || !!utterance || !synth || !env.SpeechSynthesisUtterance;
-      nodes.stop.disabled = !active && !utterance;
+      nodes.mic.disabled = disposed || awarded || !!active || !Recognition || env.isSecureContext === false || env.navigator.onLine === false;
+      nodes.stop.disabled = !active;
     }
     function stop(message) {
       serial++;
@@ -91,26 +88,35 @@
         previous.onresult = previous.onerror = previous.onend = previous.onstart = null;
         try { previous.abort(); } catch (_) {}
       }
-      if (utterance) {
-        utterance.onend = utterance.onerror = null;
-        utterance = null;
-        synth.cancel();
-      }
       controls();
       if (message && !disposed) nodes.status.textContent = message;
     }
-    function feedback(text) {
+    function feedback(text, retry) {
       nodes.heard.textContent = text ? "“" + text + "”" : "";
       const flags = matchedWords(sentence.text, text);
-      Array.from(line.children).forEach(function (word, i) { word.classList.toggle("heard", !!flags[i]); });
+      // If all expected words occur but extra words were spoken, flag the whole line.
+      const wholeLine = retry && flags.every(Boolean);
+      Array.from(line.children).forEach(function (word, i) {
+        const wrong = !!retry && (!flags[i] || wholeLine);
+        word.classList.toggle("heard", !!flags[i] && !wrong);
+        word.classList.toggle("retry", wrong);
+      });
+      nodes.status.classList.toggle("retry", !!retry);
+      nodes.heard.classList.toggle("retry", !!retry);
+      nodes.mic.textContent = retry ? "🎤 다시 읽기" : "🎤 읽어 보기";
+    }
+    function finishAttempt() {
+      if (finalText && !matches(sentence.text, finalText)) {
+        feedback(finalText, true);
+        stop("문장이 다르게 들렸어요. 빨간색 부분을 확인하고 처음부터 다시 읽어 주세요.");
+      } else {
+        stop("잘 듣지 못했어요. 읽어 보기를 눌러 다시 읽어 주세요.");
+      }
     }
     function read() {
       if (nodes.mic.disabled) return;
-      // Never let the model voice award a reading success.
-      if (synth && synth.speaking) {
-        synth.cancel(); nodes.status.textContent = "먼저 듣기가 멈췄어요. 읽어 보기를 다시 눌러 주세요."; return;
-      }
       stop();
+      finalText = "";
       feedback("");
       const id = serial;
       let recognizer;
@@ -133,14 +139,17 @@
           visible.push(text);
           if (result.isFinal) final.push(text);
         }
+        finalText = final.join(" ");
         feedback(visible.join(" "));
-        if (matches(sentence.text, final.join(" "))) {
+        if (matches(sentence.text, finalText)) {
           awarded = true;
           feedback(sentence.text);
           stop("문장을 끝까지 읽었어요! ⭐");
           onPass();
+        } else if (finalText && !(normalize(sentence.text) + " ").startsWith(normalize(finalText) + " ")) {
+          finishAttempt();
         } else {
-          nodes.status.textContent = final.length ? "들은 단어가 초록색이에요. 끝까지 읽거나, 그만하기 후 다시 시도해요." : "듣고 있어요…";
+          nodes.status.textContent = "듣고 있어요… 문장을 끝까지 읽어 주세요.";
         }
       };
       recognizer.onerror = function (event) {
@@ -155,31 +164,14 @@
         };
         stop(messages[event.error] || "잘 듣지 못했어요. 오답이 아니니 다시 시도해 주세요.");
       };
-      recognizer.onend = function () { if (valid()) stop("아직 문장 전체를 확인하지 못했어요. 읽어 보기를 눌러 다시 읽어요."); };
+      recognizer.onend = function () { if (valid()) finishAttempt(); };
       controls();
       nodes.status.textContent = "마이크를 준비하고 있어요…";
-      timer = env.setTimeout(function () { if (valid()) stop("듣기를 마쳤어요. 읽어 보기를 눌러 다시 시도해 주세요."); }, 25000);
+      timer = env.setTimeout(function () { if (valid()) finishAttempt(); }, 25000);
       try { recognizer.start(); } catch (_) { stop("마이크를 시작하지 못했어요. 잠시 후 다시 눌러 주세요."); }
     }
-    function listen() {
-      if (nodes.listen.disabled) return;
-      stop();
-      const id = serial;
-      const speech = new env.SpeechSynthesisUtterance(sentence.text);
-      speech.lang = "en-US"; speech.rate = 0.8;
-      const voice = synth.getVoices().find(function (v) { return /^en[-_]/i.test(v.lang); });
-      if (voice) speech.voice = voice;
-      utterance = speech;
-      speech.onend = function () { if (!disposed && id === serial) { utterance = null; env.clearTimeout(timer); controls(); nodes.status.textContent = "이제 읽어 보기를 눌러 재이 목소리로 읽어요."; } };
-      speech.onerror = function () { if (!disposed && id === serial) stop("영어 음성을 재생하지 못했어요. 문장을 보고 읽어도 괜찮아요."); };
-      controls();
-      nodes.status.textContent = "먼저 들어 보세요.";
-      timer = env.setTimeout(function () { if (!disposed && id === serial) stop("먼저 듣기를 마쳤어요. 이제 직접 읽어 보세요."); }, 15000);
-      try { synth.speak(speech); } catch (_) { stop("먼저 듣기를 재생하지 못했어요."); }
-    }
-    nodes.listen.addEventListener("click", listen);
     nodes.mic.addEventListener("click", read);
-    nodes.stop.addEventListener("click", function () { stop("멈췄어요. 준비되면 다시 읽어 주세요."); });
+    nodes.stop.addEventListener("click", function () { if (active) finishAttempt(); });
     const hide = function () { if (doc.hidden) stop("잠시 멈췄어요. 읽어 보기를 눌러 다시 시작해요."); };
     const leave = function () { stop(); };
     const offline = function () { stop("인터넷 연결 후 다시 읽어 주세요. 다른 공부는 계속할 수 있어요."); };
@@ -207,4 +199,3 @@
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.EnglishReading = api;
 })(typeof window !== "undefined" ? window : globalThis);
-

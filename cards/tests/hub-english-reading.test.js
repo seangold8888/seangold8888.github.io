@@ -40,7 +40,7 @@ function setup(options = {}) {
     const results = parts.map(([text, final]) => Object.assign([{ transcript: text }], { isFinal: final }));
     instances.at(-1).onresult({ results });
   }
-  return { env, container, view, instances, timers, result, listen: actions[0], mic: actions[1], stop: actions[2],
+  return { env, container, view, instances, timers, result, mic: actions[0], stop: actions[1],
     status: container.children[4], passes: () => passes };
 }
 test("sixteen short sentences have unique text and meanings", () => {
@@ -89,14 +89,66 @@ test("unsupported/offline environments never request recognition", () => {
     assert.equal(s.instances.length, 0); assert.equal(s.passes(), 0); assert.equal(s.mic.disabled, true);
   }
 });
-test("model voice and recognition cannot run at the same time", () => {
-  const s = setup(); s.listen.fire("click");
-  assert.equal(s.mic.disabled, true);
-  s.mic.fire("click"); assert.equal(s.instances.length, 0);
-  s.env.speechSynthesis.speaking = false; s.env.speechSynthesis.last.onend();
-  s.mic.fire("click"); assert.equal(s.instances.length, 1);
-  assert.equal(s.listen.disabled, true);
-  s.view.destroy(); assert.equal(s.instances[0].aborted, true);
+test("listen button and speech playback are removed", () => {
+  const s = setup();
+  assert.equal(s.container.children[3].children.length, 2);
+  assert.equal(s.mic.textContent, "🎤 읽어 보기");
+  const source = fs.readFileSync(path.join(__dirname, "../../assets/study/english-reading.js"), "utf8");
+  assert.doesNotMatch(source, /먼저 듣기|speechSynthesis|SpeechSynthesisUtterance/);
+});
+test("final mismatch marks the different word red, stops and permits a clean retry", () => {
+  const s = setup(); s.mic.fire("click");
+  const late = s.instances[0].onresult;
+  s.result([["I like bananas", true]]);
+  const words = s.container.children[1].children;
+  assert.equal(words[0].classList.contains("heard"), true);
+  assert.equal(words[2].classList.contains("retry"), true);
+  assert.equal(s.status.classList.contains("retry"), true);
+  assert.match(s.status.textContent, /다시 읽어 주세요/);
+  assert.equal(s.mic.textContent, "🎤 다시 읽기");
+  assert.equal(s.instances[0].aborted, true);
+  assert.equal(s.passes(), 0);
+  late({results: [Object.assign([{transcript: "I like apples"}], {isFinal: true})]});
+  assert.equal(s.passes(), 0);
+  s.mic.fire("click");
+  assert.ok(words.every(w => !w.classList.contains("retry")));
+  assert.equal(s.status.classList.contains("retry"), false);
+  s.result([["I like apples", true]]);
+  assert.equal(s.passes(), 1);
+});
+test("interim mistakes and valid final prefixes are not prematurely red", () => {
+  const s = setup(); s.mic.fire("click");
+  s.result([["I hate bananas", false]]);
+  assert.ok(s.container.children[1].children.every(w => !w.classList.contains("retry")));
+  s.result([["I like", true]]);
+  assert.equal(s.instances[0].aborted, undefined);
+  s.result([["I like", true], ["apples", true]]);
+  assert.equal(s.passes(), 1);
+});
+test("unfinished final sentence is marked for retry on end, stop or timeout", () => {
+  for (const ending of ["end", "stop", "timeout"]) {
+    const s = setup(); s.mic.fire("click"); s.result([["I like", true]]);
+    if (ending === "end") s.instances[0].onend();
+    else if (ending === "stop") s.stop.fire("click");
+    else [...s.timers.values()][0]();
+    assert.equal(s.container.children[1].children[2].classList.contains("retry"), true, ending);
+    assert.equal(s.mic.disabled, false);
+    assert.equal(s.passes(), 0);
+  }
+});
+test("extra words cannot leave an all-green failed sentence", () => {
+  const s = setup(); s.mic.fire("click"); s.result([["I like apples and milk", true]]);
+  assert.ok(s.container.children[1].children.every(w => w.classList.contains("retry")));
+  assert.equal(s.passes(), 0);
+});
+test("no speech and microphone errors never mark words red", () => {
+  for (const error of ["no-speech", "network", "not-allowed"]) {
+    const s = setup(); s.mic.fire("click");
+    s.instances[0].onerror({error});
+    assert.ok(s.container.children[1].children.every(w => !w.classList.contains("retry")));
+    assert.equal(s.status.classList.contains("retry"), false);
+    assert.equal(s.passes(), 0);
+  }
 });
 test("hidden page, page exit, offline, timeout and disposal abort recording", () => {
   for (const action of ["hidden", "pagehide", "offline", "timeout", "destroy"]) {
@@ -139,8 +191,9 @@ test("a reading success advances progress once and earns the tenth-answer ticket
 });
 test("reading support is cached and its script loads before the study controller", () => {
   const sw = require("../../sw.js");
-  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=1"));
-  assert.ok(html.indexOf('src="assets/study/english-reading.js?v=1"') < html.indexOf("var BANK_SIZES"));
+  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=2"));
+  assert.ok(html.indexOf('src="assets/study/english-reading.js?v=2"') < html.indexOf("var BANK_SIZES"));
+  assert.match(html, /\.reading-word\.retry\s*\{[^}]*text-decoration:underline wavy/);
   assert.match(html, /if \(current !== target \|\| isFree\(\) \|\| hasTicket\(\) \|\| target\.answered\) return/);
   assert.match(html, /function stopReading\(\)[\s\S]*?clearTimeout\(answerTimer\)/);
 });

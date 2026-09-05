@@ -928,6 +928,8 @@
   .reading-sentence { display:flex; flex-wrap:wrap; gap:0 .22em; font-size:clamp(32px,4.5vw,48px); line-height:1.4; font-weight:900; color:#fff; text-align:left; }
   .reading-word { border-bottom:3px solid #65719d; overflow-wrap:anywhere; }
   .reading-word.heard { color:#c6f28a; border-color:#c6f28a; }
+  .reading-word.retry { color:#ffb4b4; border-color:#ff8686; text-decoration:underline wavy; text-underline-offset:7px; }
+  .reading-status.retry, .reading-heard.retry { color:#ffb4b4; }
   .reading-meaning, .reading-label { color:#c6cee6; }
   .reading-actions { display:flex; flex-wrap:wrap; gap:8px; }
   #study .reading-actions button { width:auto; min-width:0; height:auto; min-height:48px; padding:12px; flex:1; font:inherit; font-size:16px; font-weight:800; }
@@ -1184,7 +1186,7 @@
   </div>
 </div>
 
-<script src="assets/study/english-reading.js?v=1"></script>
+<script src="assets/study/english-reading.js?v=2"></script>
 <script>
 (function () {
   'use strict';
