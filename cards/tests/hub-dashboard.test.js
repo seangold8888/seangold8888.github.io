@@ -42,7 +42,7 @@ test("메인 바로가기는 티켓을 소비하지 않고 현재 상태에 맞�
 test("컴팩트 로비는 기존 원화와 상시 개방 진입을 유지한다", () => {
   assert.match(html, /<style id="dashboard-v4">/);
   assert.match(html, /id="nextAdventure" href="#study"/);
-  assert.match(html, /feature-shop" href="keycap\//);
+  assert.doesNotMatch(html, /href="keycap\//);
   assert.match(html, /@media \(min-width: 761px\) and \(max-width: 980px\)/);
   assert.match(html, /@media \(max-width: 380px\)/);
   assert.match(html, /body\.locked \.card \{ opacity: 1; \}/);
@@ -108,11 +108,11 @@ test("기존 게임 링크·티켓 게임과 상시 개방 구분을 보존한�
     assert.match(html, new RegExp('class="card [^"]*" href="' + route.replace("/", "\\/") + '"'));
   });
   assert.match(html, /class="shop story" href="story\//);
-  assert.match(html, /class="shop craft" href="keycap\//);
+  assert.doesNotMatch(html, /키캡|href="keycap\//);
   assert.equal(count(/<a class="card /g), 10);
   assert.doesNotMatch(html, /href="starkart\//);
   assert.equal(fs.existsSync(path.join(root, "starkart", "index.html")), false);
-  assert.equal(count(/<a class="shop /g), 2);
+  assert.equal(count(/<a class="shop /g), 1);
   assert.match(html, /class="feature-button secondary feature-shop" href="story\//);
   assert.match(html, /querySelectorAll\('\.card, \.shop, \.feature-shop'\)/);
 });

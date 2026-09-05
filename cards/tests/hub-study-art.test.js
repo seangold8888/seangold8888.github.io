@@ -39,7 +39,7 @@ test("retirement purges only removed games, not family art, other games or story
   const end = workerSource.indexOf("      await self.clients.claim();", start);
   assert.ok(start > 0 && end > start);
   const origin = "https://example.test/hub/";
-  const assets = ["picnic/", "picnic/index.html", "picnic", "starkart/src/main.js?v=1", "picnic-other/", "assets/study/jaei.jpg", "story/story.mp3", "cards/index.html"];
+  const assets = ["picnic/", "picnic/index.html", "picnic", "starkart/src/main.js?v=1", "keycap/", "keycap", "keycap/stl.js?v=1", "picnic-other/", "keycap-other/", "assets/study/jaei.jpg", "story/story.mp3", "cards/index.html"];
   const deleted = [], opened = [];
   await vm.runInNewContext("(async () => {" + workerSource.slice(start, end) + "})()", {
     URL, SITE_ROOT_URL: new URL(origin), STATIC_CACHE: "static", RUNTIME_CACHE: "runtime",
@@ -49,6 +49,13 @@ test("retirement purges only removed games, not family art, other games or story
     } },
   });
   assert.deepEqual(opened, ["static", "runtime"]);
-  assert.deepEqual(deleted, [...assets.slice(0, 4), ...assets.slice(0, 4)].map(asset => origin + asset));
+  assert.deepEqual(deleted, [...assets.slice(0, 7), ...assets.slice(0, 7)].map(asset => origin + asset));
 });
 
+test("keycap is removed from the hub and offline warmup while its source is retained", () => {
+  assert.doesNotMatch(html, /keycap|키캡/);
+  assert.ok(!sw.NAVIGATION_ROUTES.includes("keycap"));
+  assert.ok(!sw.BACKGROUND_ASSETS.some(asset => asset.startsWith("./keycap/")));
+  assert.ok(!sw.APP_SHELL.some(asset => asset.startsWith("./keycap/")));
+  assert.ok(fs.existsSync(path.join(root, "keycap/index.html")));
+});

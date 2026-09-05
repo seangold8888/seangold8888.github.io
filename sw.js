@@ -90,8 +90,6 @@ const OPTIONAL_SHELL = [
   "./kedehun/art/characters/lumi-v2.webp?v=28",
   "./kedehun/art/characters/mira-v2.webp?v=28",
   "./kedehun/art/characters/joy-v2.webp?v=28",
-  "./keycap/",
-  "./keycap/stl.js",
   "./odyssey/",
   "./princess/",
   "./princess/cover.svg",
@@ -261,7 +259,7 @@ const BACKGROUND_RETRY_MS = 5 * 60 * 1000;
 const AUDIO_FETCH_TIMEOUT_MS = 45000;
 const NAVIGATION_ROUTES = [
   "cards", "story", "avengers", "bori", "hogwarts", "kart", "kart3d",
-  "kedehun", "keycap", "odyssey", "princess", "sanguo",
+  "kedehun", "odyssey", "princess", "sanguo",
 ];
 
 const CARD_ART_FILES = [
@@ -729,7 +727,7 @@ if (typeof self !== "undefined" && typeof self.addEventListener === "function") 
         .filter((key) => key.startsWith(CACHE_PREFIX) && !current.has(key))
         .map((key) => caches.delete(key)));
       // Retire removed games only; preserve family art and downloaded stories.
-      const retiredRoots = ["./starkart/", "./picnic/"].map(path => new URL(path, SITE_ROOT_URL));
+      const retiredRoots = ["./starkart/", "./picnic/", "./keycap/"].map(path => new URL(path, SITE_ROOT_URL));
       for (const name of [STATIC_CACHE, RUNTIME_CACHE]) {
         const cache = await caches.open(name);
         const requests = await cache.keys();

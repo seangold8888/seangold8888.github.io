@@ -993,11 +993,10 @@
       <div class="feature-copy">
         <span class="feature-label">오늘의 모험</span>
         <h2>오늘은<br><em>어디로 갈까?</em></h2>
-        <p>문제를 풀고 게임으로 출발!<br>이야기와 만들기는 티켓 없이 즐겨요.</p>
+        <p>문제를 풀고 게임으로 출발!<br>이야기는 티켓 없이 즐겨요.</p>
         <div class="feature-actions">
           <a class="feature-button" id="nextAdventure" href="#study">문제 풀고 티켓 받기 <span aria-hidden="true">→</span></a>
           <a class="feature-button secondary feature-shop" href="story/">🎧 이야기 듣기</a>
-          <a class="feature-button secondary feature-shop" href="keycap/">🎨 키캡 만들기</a>
         </div>
         <div class="feature-stats" aria-label="카드 배틀 특징">
           <span>24장의 이야기 영웅</span><span>듣고 나면 카드가 깨어나요</span>
@@ -1123,7 +1122,7 @@
   <section class="open-deck" id="alwaysOpen">
     <div class="section-heading">
       <div><div class="section-kicker">언제든 환영해</div><h2>티켓 없이 바로!</h2></div>
-      <p>듣기와 만들기는 언제든 열려 있어요.</p>
+      <p>이야기 극장은 언제든 열려 있어요.</p>
     </div>
     <div class="open-grid">
   <a class="shop story" href="story/" aria-label="이야기 극장 — 언제나 열려 있어요" style="--cover:url('cards/art/cinderella.webp')">
@@ -1137,16 +1136,6 @@
     </span>
   </a>
 
-  <a class="shop craft" href="keycap/" aria-label="키캡 공방 — 언제나 열려 있어요">
-    <span class="open-sign">24시간 영업 중</span>
-    <span class="badge">⌨️</span>
-    <span class="meta">
-      <span class="name">키캡 공방</span>
-        <span class="tags"><span class="genre">🎨 만들기 공방</span></span>
-      <span class="desc">나만의 키캡 디자인 — 3D 프린트 파일까지 뽑아 주는 무인 공방 · 공부 없이도 입장 OK</span>
-      <span class="go">공방 들어가기 ▶</span>
-    </span>
-  </a>
     </div>
   </section>
 
@@ -1613,7 +1602,7 @@
     }
     if (worldAccessHint) worldAccessHint.textContent = state.parentMode ? '부모님 모드 · 달을 5번 누르면 꺼져요.' : isFree()
       ? '오늘은 모두 열렸어요. 마음껏 골라요!'
-      : (hasTicket() ? '티켓 1장 준비 완료! 원하는 게임을 골라요.' : '문제 ' + Math.max(1, SET - setCorrect) + '개 더 풀면 출발! 이야기와 만들기는 바로 즐겨요.');
+      : (hasTicket() ? '티켓 1장 준비 완료! 원하는 게임을 골라요.' : '문제 ' + Math.max(1, SET - setCorrect) + '개 더 풀면 출발! 이야기는 바로 즐겨요.');
     if (questRingLabel) {
       questRingLabel.textContent = state.parentMode ? '부모님' : isFree() ? '완료' : (hasTicket() ? '티켓' : setCorrect + '/' + SET);
     }
