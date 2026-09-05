@@ -310,3 +310,32 @@ require('node:test')('all hairstyles attach to measured foreheads and temples, i
   assert.equal(combinations,api.PRINCESSES.length*8);
   assert.equal(studio.path('hair','bob'),'assets/hair-v35/hair-bob.webp');
 });
+require('node:test')('original v37 presets migrate once without changing any customized outfit',()=>{
+  const {api}=environment();
+  const before={
+    frost:{hairStyle:'braid',hairColor:'#e9e4f5',dress:{id:'winter',color:'#6fc3ff'}},
+    sahara:{hairStyle:'wavy',hairColor:'#503325',dress:{id:'mermaidline',color:'#5fd9c9'}},
+    sunny:{hairStyle:'curls',hairColor:'#b07a4a',dress:{id:'ballgown',color:'#ffd93d'}}
+  };
+  const defaults=Object.fromEntries(api.PRINCESSES.map(p=>[p.id,json(api.defaultState(p))]));
+  const old=Object.fromEntries(Object.entries(defaults).map(([id,s])=>[id,{...s,...before[id]}]));
+  const migrated=environment({'princess:outfits':JSON.stringify(old)});
+  for(const p of api.PRINCESSES){
+    migrated.api.loadPrincess(p.id);
+    assert.deepEqual(json(migrated.api.getState()),defaults[p.id]);
+  }
+  assert.equal(migrated.stored.get('princess:defaults-v37'),'1');
+  for(const id of Object.keys(before))for(const change of [{bg:'cherry'},{pet:null},{hairColor:'#ff8fc1'},{shoes:{id:'sneakers',color:'#ffffff'}}]){
+    const custom={...old[id],...change};
+    const env=environment({'princess:outfits':JSON.stringify({[id]:custom})});
+    env.api.loadPrincess(id);assert.deepEqual(json(env.api.getState()),custom,'customized '+id+' was replaced');
+  }
+  const already=environment({'princess:outfits':JSON.stringify(old),'princess:defaults-v37':'1'});
+  for(const id of Object.keys(before)){already.api.loadPrincess(id);assert.deepEqual(json(already.api.getState()),old[id]);}
+  assert.deepEqual(defaults.sunny.dress,{id:'party',color:'#ff9a4d'});
+  assert.equal(defaults.sunny.hairStyle,'pigtails');
+  assert.deepEqual(defaults.frost.dress,{id:'winter',color:'#fff5df'});
+  assert.equal(defaults.frost.hairStyle,'bun');
+  assert.deepEqual(defaults.sahara.dress,{id:'aline',color:'#8a7dff'});
+  assert.equal(defaults.sahara.hairStyle,'bob');
+});

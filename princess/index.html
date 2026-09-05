@@ -262,10 +262,10 @@ const PRINCESSES=[
   {id:'kongjwi',name:'콩쥐',      hair:'daenggi', hairColor:'#2b2230', skin:'#ffe4d6', eye:'#3a2a26', intro:'착한 마음으로 두꺼비와 참새의 도움을 받은 우리 옛이야기 주인공이에요.', def:{dress:['hanbok','#ff8fc1'],shoes:['kkotsin','#ff5a6e'],crown:['daenggi','#ff5a6e'],neck:['norigae','#7ad97a'],pet:['toad','#7ad97a'],bg:'hanok'}},
   {id:'briar',  name:'들장미 공주',hair:'curls',  hairColor:'#e0553d', skin:'#ffdfcc', eye:'#7a4a8a', intro:'장미 넝쿨에 둘러싸인 성에서 백 년 동안 잠든 공주예요.', def:{dress:['rose','#ff8fc1'],shoes:['pumps','#c98bff'],crown:['crown','#ffd93d'],neck:['heart','#ff5a6e'],pet:['cat','#ffffff'],bg:'rosecastle'}},
   {id:'moon',   name:'달빛 공주',  hair:'afro',    hairColor:'#2b2230', skin:'#8d5a3c', eye:'#2b2230', intro:'밤하늘의 별을 모아 왕관을 만든 공주예요.', def:{dress:['star','#3b3f7a'],shoes:['boots','#8a7dff'],crown:['moon','#ffd93d'],hand:['wand','#ffd93d'],pet:['dragon','#8a7dff'],bg:'night'}},
-  {id:'frost', name:'설원 공주', hair:'braid', hairColor:'#e9e4f5', skin:'#f5dbc9', eye:'#7e9da9', intro:'눈꽃을 모아 겨울 숲에 따뜻한 빛을 선물하는 공주예요.', def:{dress:['winter','#6fc3ff'],shoes:['boots','#ffffff'],crown:['tiara','#ffffff'],neck:['gem','#6fc3ff'],hand:['wand','#e9e4f5'],pet:['rabbit'],bg:'snow'}},
-  {id:'sahara',name:'사막별 공주',hair:'wavy',hairColor:'#503325',skin:'#b98259',eye:'#57362a',intro:'별자리를 따라 여행하며 사막의 숨은 샘을 찾는 공주예요.',def:{dress:['mermaidline','#5fd9c9'],shoes:['sandals','#ffd93d'],crown:['crown','#ffd93d'],neck:['gem','#5fd9c9'],hand:['fan','#ffd93d'],pet:['cat'],bg:'castle'}},
+  {id:'frost', name:'설원 공주', hair:'bun', hairColor:'#b07a4a', skin:'#f5dbc9', eye:'#7e9da9', intro:'눈꽃을 모아 겨울 숲에 따뜻한 빛을 선물하는 공주예요.', def:{dress:['winter','#fff5df'],shoes:['boots','#ffffff'],crown:['tiara','#ffffff'],neck:['gem','#6fc3ff'],hand:['wand','#e9e4f5'],pet:['rabbit'],bg:'snow'}},
+  {id:'sahara',name:'사막별 공주',hair:'bob',hairColor:'#503325',skin:'#b98259',eye:'#57362a',intro:'별자리를 따라 여행하며 사막의 숨은 샘을 찾는 공주예요.',def:{dress:['aline','#8a7dff'],shoes:['sandals','#ffd93d'],crown:['crown','#ffd93d'],neck:['gem','#5fd9c9'],hand:['fan','#ffd93d'],pet:['cat'],bg:'castle'}},
   {id:'lotus', name:'연꽃 공주',hair:'bun',hairColor:'#2b2230',skin:'#e6bd94',eye:'#44312c',intro:'연꽃 정원에서 친구들과 차를 나누고 꽃을 가꾸는 공주예요.',def:{dress:['hanbok','#ff8fc1'],shoes:['kkotsin','#7ad97a'],crown:['flowers','#ff8fc1'],neck:['norigae','#7ad97a'],hand:['bouquet','#ff8fc1'],pet:['deer'],bg:'hanok'}},
-  {id:'sunny', name:'햇살 공주',hair:'curls',hairColor:'#b07a4a',skin:'#925734',eye:'#684129',intro:'황금빛 꽃밭에서 동물 친구들과 신나는 축제를 여는 공주예요.',def:{dress:['ballgown','#ffd93d'],shoes:['pumps','#ffd93d'],crown:['flowers','#ffd93d'],neck:['heart','#ff9a4d'],hand:['basket','#b07a4a'],pet:['dog'],bg:'meadow'}},
+  {id:'sunny', name:'햇살 공주',hair:'pigtails',hairColor:'#b07a4a',skin:'#925734',eye:'#684129',intro:'황금빛 꽃밭에서 동물 친구들과 신나는 축제를 여는 공주예요.',def:{dress:['party','#ff9a4d'],shoes:['pumps','#ffd93d'],crown:['flowers','#ffd93d'],neck:['heart','#ff9a4d'],hand:['basket','#b07a4a'],pet:['dog'],bg:'meadow'}},
 ];
 
 // ---------- 머리 모양 ----------
@@ -1108,6 +1108,24 @@ function loadPrincess(id){
   if(state.pet)state.pet={id:state.pet.id};
   persist();
 }
+// Refresh only untouched launch presets once; never rewrite a customized outfit.
+function migrateV37Defaults(){
+  const marker='princess:defaults-v37';
+  try{if(localStorage.getItem(marker)==='1')return;}catch(e){}
+  const previous={
+    frost:{hairStyle:'braid',hairColor:'#e9e4f5',dress:{id:'winter',color:'#6fc3ff'}},
+    sahara:{hairStyle:'wavy',hairColor:'#503325',dress:{id:'mermaidline',color:'#5fd9c9'}},
+    sunny:{hairStyle:'curls',hairColor:'#b07a4a',dress:{id:'ballgown',color:'#ffd93d'}}
+  };
+  const equal=(a,b)=>a===b||(a&&b&&typeof a==='object'&&typeof b==='object'&&Object.keys(a).length===Object.keys(b).length&&Object.keys(b).every(k=>Object.hasOwn(a,k)&&equal(a[k],b[k])));
+  let changed=false;
+  for(const [id,old] of Object.entries(previous)){
+    const base=defaultState(PRINCESSES.find(p=>p.id===id));
+    if(equal(outfits[id],{...base,...old})){outfits[id]=base;changed=true;}
+  }
+  try{if(changed)localStorage.setItem(SAVE_KEY,JSON.stringify(outfits));localStorage.setItem(marker,'1');}catch(e){}
+}
+migrateV37Defaults();
 function persist(){
   outfits[cur]=state;
   try{localStorage.setItem(SAVE_KEY,JSON.stringify(outfits));localStorage.setItem('princess:last',cur)}catch(e){}
