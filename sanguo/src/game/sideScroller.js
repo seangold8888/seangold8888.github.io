@@ -7,6 +7,7 @@ import { createHudRoot, createEnemyHud, createPlayerHud, showBanner } from './hu
 import { showResult } from '../ui/result.js';
 import { awardBattleProgress, getCombatGrowth, weaponEnhanceText } from './progression.js';
 import { dashSkill, startDashState, collectDashHits } from './dashSkills.js';
+import { combatBounds, clampCombatX, constrainEnemy, waveSpawnX } from './combatBounds.js';
 
 const CANVAS_UI_FONT = '"Pretendard Variable", Pretendard, "Noto Sans KR", "Malgun Gothic", sans-serif';
 const CANVAS_IMPACT_FONT = CANVAS_UI_FONT;
@@ -32,6 +33,11 @@ const HERO_ART = {
   },
   caocao: { hero: 'art/side-scroller/caocao-painted-sheet-v1.png' },
   zhaoyun: { hero: 'art/side-scroller/zhaoyun-painted-sheet-v1.png' },
+  machao: { hero: 'art/side-scroller/machao-painted-sheet-v1.png' },
+  huangzhong: {
+    hero: 'art/side-scroller/huangzhong-painted-sheet-v1.png',
+    heroBow: 'art/side-scroller/huangzhong-bow-painted-sheet-v1.png',
+  },
   zhouyu: { hero: 'art/side-scroller/zhouyu-painted-sheet-v1.png' },
   huanggai: { hero: 'art/side-scroller/huanggai-painted-sheet-v1.png' },
   zhugeliang: { hero: 'art/side-scroller/zhugeliang-painted-sheet-v1.png' },
@@ -983,7 +989,20 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
     },
   };
 }
+// Explicit cuts and boot anchors keep weapon overhangs in their own pose and
+// compensate for transparent padding without modifying the original PNG pixels.
+const PAINTED_FRAME_LAYOUTS = {
+    'machao-painted-sheet-v1.png': [[0,0,620,620,320,574],[620,0,660,620,350,565],[0,620,600,660,320,536],[600,620,680,660,290,529]],
+    'huangzhong-painted-sheet-v1.png': [[0,0,640,640,320,583],[640,0,640,640,320,575],[0,640,640,640,320,544],[640,640,640,640,310,510]],
+    'huangzhong-bow-painted-sheet-v1.png': [[0,0,620,600,320,583],[620,0,660,600,350,575],[0,600,620,680,320,605],[620,600,660,680,250,605]],
+};
 function drawAtlasFrame(ctx, image, frame, x, groundY, height, facing = 1, alpha = 1) {
+  const layout = PAINTED_FRAME_LAYOUTS[image.src?.split('/').pop()]?.[frame];
+  if (layout) {
+    const [sx,sy,sw,sh,ax,ay] = layout, unit = image.width / 1280, scale = height / 576;
+    ctx.save(); ctx.globalAlpha = alpha; ctx.translate(x,groundY); ctx.scale(facing,1);
+    ctx.drawImage(image,sx*unit,sy*unit,sw*unit,sh*unit,-ax*scale,-ay*scale,sw*scale,sh*scale); ctx.restore(); return;
+  }
   const cellW = image.width / 2, cellH = image.height / 2, col = frame % 2, row = Math.floor(frame / 2), width = height * (cellW / cellH);
   ctx.save(); ctx.globalAlpha = alpha; ctx.translate(x, groundY); ctx.scale(facing, 1);
   ctx.drawImage(image, col * cellW, row * cellH, cellW, cellH, -width / 2, -height, width, height); ctx.restore();
@@ -1356,8 +1375,8 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     for (let i = 0; i < count; i++) {
       const isLead = i === count - 1 && (bossWave || miniBoss);
       const fromLeft = wave > 1 && i % 3 === 0 && player.x > 620;
-      const side = fromLeft ? -1 : 1, offset = 570 + i * 185 + Math.random() * 100;
-      const spawnX = Math.max(190, Math.min(worldWidth - 190, player.x + side * offset));
+      const side = fromLeft ? -1 : 1;
+      const spawnX = waveSpawnX(player.x, side, i, count, Math.random(), combatBounds(worldWidth, waveGate));
       // 역할을 분리해야 ‘궁수 지원대’가 실제 플레이에서도 읽힌다.
       const role = isLead ? 'captain' : plan.archer && i % 3 !== 0 ? 'archer' : wave >= 3 && i % 3 === 0 ? 'heavy' : 'soldier';
       const roleScale = { soldier: [1, 1], archer: [.82, .92], heavy: [1.42, .68], captain: [1, 1] }[role];
@@ -1657,6 +1676,9 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   }
 
   function update(dt, now) {
+    const bounds = combatBounds(worldWidth, waveGate, combatLocked);
+    // Also recover live units displaced by asynchronous counters/boss attacks.
+    for (const enemy of enemies) if (!enemy.deadAt) constrainEnemy(enemy, bounds);
     const axis = input.axis(), laneAxis = input.axisY();
     if (axis || laneAxis) {
       audio.startMusic();
@@ -1736,7 +1758,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     if (player.action === 'dash') player.x += player.facing * dashTechnique.speed * (player.mounted ? 1.15 : 1) * dt;
     player.lane = Math.max(-92, Math.min(72, player.lane));
     player.vy -= 1750 * dt; player.y = Math.max(0, player.y + player.vy * dt); if (player.y === 0) player.vy = Math.max(0, player.vy);
-    player.x = Math.max(170, Math.min(combatLocked ? waveGate : worldWidth - 240, player.x)); resolveAttack(now); if (now > player.comboUntil) { player.combo = 0; player.comboStep = 0; }
+    player.x = clampCombatX(player.x, bounds); resolveAttack(now); if (now > player.comboUntil) { player.combo = 0; player.comboStep = 0; }
     if (player.grab) { player.grab.x = player.x + player.facing * 66; player.grab.lane = player.lane; player.grab.facing = -player.facing; }
     if (player.mounted) { horse.x = player.x; horse.lane = player.lane; horse.facing = player.facing; }
 
@@ -1850,7 +1872,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
           for (let i = 0; i < 22; i++) dust.push({ x: enemy.x + waveDir * 60, y: ground() + enemy.lane - Math.random() * 26, vx: waveDir * (120 + Math.random() * 340), vy: -60 - Math.random() * 190, life: .3 + Math.random() * .4, max: .7, color: i % 3 ? bossProfile.glow : '#fff2cf', glow: true, element: 'shard', rotation: Math.random() * 6.28 });
         }, 430);
       }
-      if (enemy.grabbed) { enemy.action = 'hit'; continue; }
+      if (enemy.grabbed) { enemy.action = 'hit'; constrainEnemy(enemy, bounds); continue; }
       const dx = player.x - enemy.x, distance = Math.abs(dx), laneGap = player.lane - enemy.lane;
       enemy.facing = dx >= 0 ? 1 : -1;
       const attackRange = enemy.role === 'archer' ? 390 : enemy.boss ? bossProfile.attackRange : 150;
@@ -1897,7 +1919,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
           enemy.lane += Math.sign(apartLane || enemy.lane || 1) * enemy.speed * .18 * dt;
         }
       }
-      enemy.lane = Math.max(-92, Math.min(72, enemy.lane));
+      constrainEnemy(enemy, bounds);
     }
     if (boss) bossHud.setHp(boss.hp / boss.maxHp);
     if (!living && !ended) { combatLocked = false; waveDelay += dt; if (wave < TOTAL_WAVES && waveDelay > 1.0) spawnWave(); else if (wave >= TOTAL_WAVES && waveDelay > 1.1) finish(true); }
@@ -2856,6 +2878,15 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       ctx.save(); ctx.globalAlpha = alpha; ctx.translate(Math.round(x), Math.round(y)); ctx.scale(label.scale * (1 + t * .08), label.scale * (1 + t * .08)); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = `900 18px ${CANVAS_IMPACT_FONT}`; ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(18,7,5,.88)'; ctx.strokeText(label.label, 0, 0); ctx.fillStyle = label.color; ctx.shadowColor = label.color; ctx.shadowBlur = 10; ctx.fillText(label.label, 0, 0); ctx.restore();
     }
     if (!combatLocked && wave < TOTAL_WAVES) { const pulse = .55 + Math.sin(now * .008) * .35; ctx.save(); ctx.globalAlpha = pulse; ctx.fillStyle = '#f2d47b'; ctx.font = `800 28px ${CANVAS_IMPACT_FONT}`; ctx.textAlign = 'right'; ctx.fillText('GO  ▶▶', width - 42, height * .47); ctx.restore(); }
+    if (combatLocked && waveGate - player.x < 230) {
+      const edgeX = Math.min(width - 18, waveGate - cameraX);
+      ctx.save(); ctx.strokeStyle = 'rgba(242,212,123,.45)'; ctx.lineWidth = 2; ctx.setLineDash([7,8]);
+      ctx.beginPath(); ctx.moveTo(edgeX, floorY - 100); ctx.lineTo(edgeX, floorY + 72); ctx.stroke();
+      ctx.setLineDash([]); ctx.font = `700 13px ${CANVAS_UI_FONT}`; ctx.textAlign = 'right';
+      ctx.fillStyle = '#fff0bc'; ctx.strokeStyle = 'rgba(12,18,20,.9)'; ctx.lineWidth = 4;
+      const hint = '남은 적 ' + enemies.filter(e => !e.deadAt).length + '명 격파 후 전진';
+      ctx.strokeText(hint, edgeX - 10, floorY - 115); ctx.fillText(hint, edgeX - 10, floorY - 115); ctx.restore();
+    }
     for (const particle of dust) {
       const life = Math.max(0, particle.life / particle.max), x = particle.x - cameraX;
       ctx.save(); ctx.globalAlpha = particle.ambient ? life * .55 : life; if (particle.glow) ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = particle.color;

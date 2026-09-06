@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v42";
+const CACHE_VERSION = "v43";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -128,6 +128,7 @@ const OPTIONAL_SHELL = [
   "./sanguo/src/game/sideScroller.js",
   "./sanguo/src/game/hud.js",
   "./sanguo/src/game/dashSkills.js",
+  "./sanguo/src/game/combatBounds.js",
   "./sanguo/src/game/scenery.js",
   "./sanguo/src/game/tint.js",
   "./sanguo/src/game/difficulty.js",
@@ -226,6 +227,9 @@ const SANGUO_RUNTIME_ASSETS = [
   "./sanguo/art/side-scroller/zhangfei-bow-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/zhangfei-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/zhaoyun-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/machao-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/huangzhong-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/huangzhong-bow-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/zhouyu-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/zhugeliang-painted-sheet-v1.png",
   "./sanguo/audio/cinematic-breath/battle-inhale-deep-cc0-v1.ogg",

@@ -55,7 +55,7 @@ export function showWorkSelect(root,{onConfirm,onBack}) {
               const ready=heroesFor(work,s.key).some(heroHasArt);
               return `<button type="button" class="cm-stage ${ready?'':'coming'}" data-stage="${s.key}" aria-pressed="${s.key===stageKey}"><span class="cm-stage-number">${String(i+1).padStart(2,'0')}</span><span><b>${shortTitle(s.title)}</b><small>${ready ? s.year || '고전 속 전장' : '장수 원화 준비 중'}</small></span><span class="cm-stage-mark" aria-hidden="true">${s.key===stageKey?'✓':ready?'':'…'}</span></button>`;
             }).join('')}</div>
-            <p class="cm-map-note">번호순으로 이어지는 이야기 · 준비 중 전장도 확인할 수 있어요.</p>
+            <p class="cm-map-note">번호순으로 이어지는 이야기 · 전장을 고르면 출전 장수가 보여요.</p>
           </section>
 
           <section class="cm-panel cm-deployment" aria-labelledby="cm-hero-heading">

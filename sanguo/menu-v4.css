@@ -36,7 +36,7 @@
 .cm-heroes{display:flex;gap:10px}
 .cm-hero{position:relative;flex:1;min-width:0;max-width:260px;padding:0 0 12px;border:1px solid #3c4e55;border-radius:10px;overflow:hidden;background:#111d23;text-align:left;color:#dce6e3}
 .cm-hero[aria-pressed=true]{border-color:#e1c37d;box-shadow:0 0 0 2px #e1c37d33}
-.cm-portrait{display:block;width:100%;height:148px;background-color:#293b3e;background-size:200% 200%;background-position:left top;background-repeat:no-repeat;mask-image:linear-gradient(#000 78%,transparent)}
+.cm-portrait{display:block;width:100%;height:148px;background-color:#293b3e;background-size:200% auto;background-position:left top;background-repeat:no-repeat;mask-image:linear-gradient(#000 78%,transparent)}
 .cm-hero-check{position:absolute;top:9px;right:9px;width:21px;height:21px;display:grid;place-items:center;background:#0b111acc;border:1px solid #62756f;border-radius:50%;font-size:12px}
 .cm-hero[aria-pressed=true] .cm-hero-check{background:#e1c37d;color:#142226;border-color:#e1c37d}
 .cm-hero-name{display:flex;justify-content:space-between;align-items:baseline;margin:0 12px}

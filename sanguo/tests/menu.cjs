@@ -33,8 +33,21 @@ const {createServer}=require('../preview-server.cjs');
    assert.equal(await page.locator('[data-hero=zhangfei]').getAttribute('aria-pressed'),'true');
    if(width<=680)await page.locator('.cm-stage-toggle').click();
    await page.locator('[data-stage=dingjunshan]').click();
-   assert.ok(await page.locator('#menu-deploy').isDisabled());
-   assert.match(await page.locator('.cm-unavailable').innerText(),/원화 준비 중/);
+   assert.ok(await page.locator('#menu-deploy').isEnabled());
+   assert.equal(await page.locator('[data-hero=huangzhong]').getAttribute('aria-pressed'),'true');
+   assert.equal(await page.locator('.cm-unavailable').count(),0);
+   await page.locator('[data-hero=huangzhong] .cm-portrait').evaluate(async el=>{
+    const image=new Image();image.src=el.style.backgroundImage.slice(5,-2);await image.decode();
+   });
+   await page.screenshot({path:path.join(output,label+'-huangzhong.png'),fullPage:true});
+   if(width<=680)await page.locator('.cm-stage-toggle').click();
+   await page.locator('[data-stage=dongguan]').click();
+   assert.ok(await page.locator('#menu-deploy').isEnabled());
+   assert.equal(await page.locator('[data-hero=machao]').getAttribute('aria-pressed'),'true');
+   await page.locator('[data-hero=machao] .cm-portrait').evaluate(async el=>{
+    const image=new Image();image.src=el.style.backgroundImage.slice(5,-2);await image.decode();
+   });
+   await page.screenshot({path:path.join(output,label+'-machao.png'),fullPage:true});
    if(width<=680)await page.locator('.cm-stage-toggle').click();
    await page.locator('[data-stage=changban]').click();
    assert.ok(await page.locator('#menu-deploy').isEnabled());
@@ -56,6 +69,6 @@ const {createServer}=require('../preview-server.cjs');
    console.log(JSON.stringify({label,layout,passed:true}));
    await context.close();
   }
-  console.log('PASS: menu layout, selection, difficulty, briefing/back, unavailable stage, recovery. '+output);
+  console.log('PASS: menu layout, selection, difficulty, briefing/back, Ma Chao/Huang Zhong portraits and deployment. '+output);
  }finally{await browser?.close();server.closeAllConnections();await new Promise(r=>server.close(r));}
 })().catch(e=>{console.error(e);process.exitCode=1;});
