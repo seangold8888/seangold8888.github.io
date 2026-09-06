@@ -196,6 +196,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   .guardian-card.selected .character-portrait-art { filter: none; }
 }
 </style>
+<link rel="stylesheet" href="combat-v2.css?v=1">
 </head>
 <body>
 <main class="game-root" id="gameRoot">
@@ -255,8 +256,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     <div class="key-guide play-extra" aria-hidden="true" hidden>
       <span><kbd>A D</kbd>이동</span>
       <span><kbd>W</kbd>더블점프</span>
-      <span><kbd>X</kbd>3연타</span>
-      <span><kbd>Z</kbd>대시</span>
+      <span><kbd>J</kbd>3연타 · 꾹 강공</span>
+      <span><kbd>K</kbd>대시</span>
       <span><kbd>C</kbd>골든 혼문</span>
       <span><kbd>1–3</kbd>교체</span>
     </div>
@@ -272,7 +273,10 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       <div class="touch-actions">
         <button type="button" class="touch-button" id="touchDash" aria-label="대시">대시</button>
         <button type="button" class="touch-button ultimate" id="touchUlt" aria-label="골든 혼문 피니시" disabled>골든</button>
-        <button type="button" class="touch-button attack" id="touchAttack" aria-label="공격">공격</button>
+        <div class="attack-cluster">
+          <span class="chain-pips" id="chainPips" data-step="0" role="img" aria-label="연격 0 / 3"><i></i><i></i><i></i></span>
+          <button type="button" class="touch-button attack" id="touchAttack" aria-label="공격, 꾹 누르면 강공">공격<small>꾹 · 강공</small></button>
+        </div>
       </div>
     </div>
   </div>
@@ -308,19 +312,23 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       <header class="start-header">
         <p class="eyebrow">K-POP DEMON HUNTERS FAN GAME · 2 STAGE CAMPAIGN</p>
         <h1 class="game-title" id="game-title">케데헌<span>헌트릭스 · 혼문 사수 작전</span></h1>
-        <p class="start-copy">귀마의 그림자가 콘서트를 덮쳤어요. 헌트릭스 세 멤버를 자유롭게 교체하며 3연타 검무와 골든 혼문 피니시로 두 개의 무대를 되찾으세요.</p>
+        <p class="start-copy">서울의 밤을 되찾아! 공격은 톡톡 3연격, 꾹 누르면 강공. 악당의 바닥 예고를 피하고 초록색 빈틈에 반격하세요.</p>
         <p class="photo-hint">카드의 <b>사진</b> 버튼으로 내 기기의 캐릭터 이미지를 넣을 수 있어요 (브라우저에만 저장, 서버 전송 없음).</p>
         <p class="best-line" id="bestLine" hidden></p>
       </header>
       <div class="guardian-grid" id="guardianGrid" role="radiogroup" aria-label="가디언 선택"></div>
+      <details class="demon-dossier">
+        <summary>악당 도감 <span>9종 · 약점과 공격 패턴 보기</span></summary>
+        <div class="demon-roster" id="demonRoster"></div>
+      </details>
       <div class="start-actions">
         <button type="button" class="primary-button" id="startBtn">루미와 무대 출격</button>
         <div class="control-summary" aria-label="주요 조작법">
           <span><i class="control-dot">A D</i>달리기</span>
           <span><i class="control-dot">W</i>더블점프</span>
-          <span><i class="control-dot">X</i>3연타</span>
-          <span><i class="control-dot">Z</i>대시</span>
-          <span><i class="control-dot">C</i>피니시</span>
+          <span><i class="control-dot">J</i>3연타 · 꾹 강공</span>
+          <span><i class="control-dot">K</i>대시</span>
+          <span><i class="control-dot">L</i>피니시</span>
         </div>
       </div>
     </div>
@@ -376,8 +384,11 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     </div>
   </section>
 </main>
+<script src="combat-v2.js?v=1"></script>
+<script src="attack-motion.js?v=1"></script>
 <script>
 'use strict';
+const COMBAT = globalThis.KedehunCombat;
 /* 별빛 레스큐 DX — vanilla engine (ported + upgraded) */
 
 const GUARDIANS = [
@@ -453,6 +464,7 @@ function resolvePlayerArtState(player) {
 }
 
 function drawGeneratedPlayer(ctx, player, guardian, ambient, reduced) {
+  if (globalThis.KedehunAttackMotion?.draw(ctx, player, guardian, COMBO_STEPS, CHARACTER_ART[guardian.id])) return true;
   const image = getCharacterImage(guardian.id);
   const spec = CHARACTER_ART[guardian.id];
   if (!image || !spec) return false;
@@ -571,9 +583,9 @@ const MAX_HEALTH = 120;
 const MAX_ENERGY = 100;
 const GRAVITY = 2400;
 const COMBO_STEPS = [
-  { windup: 0.055, active: 0.085, recovery: 0.15, power: 1, knockback: 300 },
-  { windup: 0.05, active: 0.09, recovery: 0.17, power: 1.25, knockback: 380 },
-  { windup: 0.085, active: 0.12, recovery: 0.28, power: 2.15, knockback: 590 },
+  { windup: 0.105, active: 0.13, recovery: 0.16, power: 1, knockback: 300 },
+  { windup: 0.095, active: 0.14, recovery: 0.17, power: 1.25, knockback: 380 },
+  { windup: 0.16, active: 0.17, recovery: 0.24, power: 2.15, knockback: 590 },
 ];
 const BEST_KEY = 'starlight-rescue-dx-best';
 
@@ -598,23 +610,38 @@ function saveBest(best) {
 }
 
 class InputBuffer {
-  constructor() { this.heldMap = new Map(); this.queue = new Map(); }
+  constructor() { this.heldMap = new Map(); this.queue = new Map(); this.attackSources = new Map(); }
   set(action, source, down, now) {
     let set = this.heldMap.get(action);
     if (!set) { set = new Set(); this.heldMap.set(action, set); }
     if (down) {
       if (set.has(source)) return;
       set.add(source);
-      if (action !== 'left' && action !== 'right') this.queue.set(action, now + (action === 'attack' ? 0.2 : 0.16));
-    } else set.delete(source);
+      if (action === 'attack') this.attackSources.set(source, { at: now, fired: false });
+      else if (action !== 'left' && action !== 'right') this.queue.set(action, now + 0.16);
+    } else {
+      set.delete(source);
+      if (action === 'attack') {
+        const press = this.attackSources.get(source);
+        if (press && !press.fired) this.queue.set(now - press.at + 1e-9 >= .26 ? 'heavy' : 'attack', now + .2);
+        this.attackSources.delete(source);
+      }
+    }
   }
+  advance(now) {
+    for (const press of this.attackSources.values()) {
+      if (!press.fired && now - press.at + 1e-9 >= .26) { press.fired = true; this.queue.set('heavy', now + .2); }
+    }
+  }
+  cancel(action, source) { this.heldMap.get(action)?.delete(source); this.attackSources.delete(source); }
+  holdProgress(now) { return Math.max(0, ...[...this.attackSources.values()].map((press) => Math.min(1, (now - press.at) / .26))); }
   held(action) { return (this.heldMap.get(action)?.size ?? 0) > 0; }
   consume(action, now) {
     const until = this.queue.get(action) ?? -1;
     this.queue.delete(action);
     return until >= now;
   }
-  clear() { this.heldMap.clear(); this.queue.clear(); }
+  clear() { this.heldMap.clear(); this.queue.clear(); this.attackSources.clear(); }
 }
 
 class AudioEngine {
@@ -1026,7 +1053,7 @@ class Game {
       : code === 'ArrowRight' || code === 'KeyD' ? 'right'
       : code === 'ArrowUp' || code === 'KeyW' ? 'jump'
       : code === 'Space' || code === 'KeyX' || code === 'KeyJ' ? 'attack'
-      : code === 'KeyZ' || code === 'ShiftLeft' || code === 'ShiftRight' ? 'dash'
+      : code === 'KeyK' || code === 'KeyZ' || code === 'ShiftLeft' || code === 'ShiftRight' ? 'dash'
       : code === 'KeyC' || code === 'KeyL' ? 'ultimate'
       : null;
     if (!action || (repeat && action !== 'left' && action !== 'right')) return;
@@ -1077,7 +1104,7 @@ class Game {
       name: def.name ?? null, tint: def.color ?? '#9b6cff',
       width: spec.width, height: spec.height, health: Math.round(spec.health * 0.75), maxHealth: Math.round(spec.health * 0.75),
       speed: spec.speed, damage: spec.damage,
-      cooldown: 0.35 + (x % 270) / 500, telegraph: 0, attackType: 0, attackFired: false,
+      cooldown: 0.35 + (x % 270) / 500, telegraph: 0, telegraphTotal: 0, recovery: 0, attackType: 0, attackFired: false,
       dash: 0, dashHit: false, stun: 0, flash: 0, spawn: 0.4, dead: false, death: 0,
       facing: -1, lastHit: -1, phaseTwo: false, baseY: y,
     };
@@ -1090,7 +1117,7 @@ class Game {
       id: this.nextId++, kind: 'boss', bossKind: stage.bossKind ?? 'cloud', name: stage.boss, x, y: GROUND_Y - 18, px: x, py: GROUND_Y - 18, vx: 0,
       width: 178, height: 182, health: Math.round(stage.bossHealth * 0.75), maxHealth: Math.round(stage.bossHealth * 0.75),
       speed: 78, damage: 18,
-      cooldown: 1.5, telegraph: 0, attackType: 0, attackFired: false,
+      cooldown: 1.5, telegraph: 0, telegraphTotal: 0, recovery: 0, attackType: 0, attackFired: false,
       dash: 0, dashHit: false, stun: 0, flash: 0, spawn: 1.05, dead: false, death: 0,
       facing: -1, lastHit: -1, phaseTwo: false, baseY: GROUND_Y - 18,
     };
@@ -1180,8 +1207,9 @@ class Game {
     const p = this.player;
     const g = guardianOf(this.guardianId);
     const stage = STAGES[this.stageIndex];
+    this.input.advance(this.playTime);
     const move = (this.input.held('right') ? 1 : 0) - (this.input.held('left') ? 1 : 0);
-    if (move) p.facing = move > 0 ? 1 : -1;
+    if (move && p.attack <= 0) p.facing = move > 0 ? 1 : -1;
     if (p.grounded) { p.coyote = 0.11; p.airJump = 1; }
     else p.coyote = Math.max(0, p.coyote - dt);
     if (this.input.consume('dash', this.playTime) && p.dashCooldown <= 0) {
@@ -1206,16 +1234,19 @@ class Game {
       this.audio.play('ultimate');
       this.announce('GOLDEN HONMOON', g.skill + ' · 피니시!');
     }
-    if (p.dash <= 0 && p.ultimate <= 0 && p.attack <= 0 && this.input.consume('attack', this.playTime)) {
-      const step = p.chain > 0 ? (p.attackStep + 1) % 3 : 0;
+    const attackReady = p.dash <= 0 && p.ultimate <= 0 && p.attack <= 0;
+    const holdFinisher = attackReady && this.input.consume('heavy', this.playTime);
+    if (attackReady && (holdFinisher || this.input.consume('attack', this.playTime))) {
+      const step = holdFinisher ? 2 : p.chain > 0 ? (p.attackStep + 1) % 3 : 0;
       const spec = COMBO_STEPS[step];
       p.attackStep = step;
       p.attackTotal = (spec.windup + spec.active + spec.recovery) / g.attackRate;
       p.attack = p.attackTotal;
-      p.chain = g.id === 'joy' ? 0.62 : g.id === 'mira' ? 0.56 : 0.58;
+      p.chain = p.attackTotal + .32;
+      p.swingSoundPlayed = false;
       p.attackSerial += 1;
       p.vx += p.facing * (step === 2 ? 145 : 68);
-      this.audio.play('slash');
+      if (holdFinisher) this.floaters.push({ x: p.x, y: p.y - 145, life: .65, text: '강공!', color: '#ffd166', size: 20 });
     }
     if (this.input.consume('jump', this.playTime)) {
       if (p.grounded || p.coyote > 0) {
@@ -1307,10 +1338,11 @@ class Game {
       e.spawn = Math.max(0, e.spawn - dt);
       e.stun = Math.max(0, e.stun - dt);
       e.flash = Math.max(0, e.flash - dt);
-      e.cooldown = Math.max(0, e.cooldown - dt);
+      if (e.telegraph <= 0 && e.dash <= 0 && e.recovery <= 0) e.cooldown = Math.max(0, e.cooldown - dt);
+      e.recovery = Math.max(0, e.recovery - dt);
       e.telegraph = Math.max(0, e.telegraph - dt);
       e.dash = Math.max(0, e.dash - dt);
-      e.facing = p.x >= e.x ? 1 : -1;
+      if (e.telegraph <= 0 && e.dash <= 0) e.facing = p.x >= e.x ? 1 : -1;
       if (e.spawn > 0 || e.stun > 0) {
         e.vx = approach(e.vx, 0, dt * 900);
         e.x += e.vx * dt;
@@ -1318,6 +1350,11 @@ class Game {
       }
       const dx = p.x - e.x;
       const dist = Math.abs(dx);
+      if (e.recovery > 0 && e.telegraph <= 0 && e.dash <= 0) {
+        e.vx = approach(e.vx, 0, dt * 1800);
+        e.x = clamp(e.x + e.vx * dt, e.kind === 'boss' ? stage.bossGate + 70 : 80, e.kind === 'boss' ? stage.worldWidth - 100 : stage.bossGate - 92);
+        continue;
+      }
       if (dist > Math.max(820, this.viewWidth * 0.82) && e.kind !== 'boss') continue;
       if (e.kind === 'boss') this.updateBoss(e, dt, dx, dist);
       else if (e.kind === 'shade') {
@@ -1325,10 +1362,11 @@ class Game {
           e.vx = approach(e.vx, 0, dt * 2100);
           if (!e.attackFired && e.telegraph < 0.18) {
             e.attackFired = true;
+            e.recovery = .65;
             if (overlap(p.x, p.y - 47, 50, 90, e.x + e.facing * 34, e.y - 35, 105, 78)) this.hurtPlayer(e.damage, e.facing);
           }
         } else if (dist < 112 && e.cooldown <= 0) {
-          e.telegraph = 0.75;
+          e.telegraph = e.telegraphTotal = 0.75;
           e.cooldown = 1.5;
           e.attackFired = false;
         } else e.vx = approach(e.vx, Math.sign(dx) * e.speed, dt * 620);
@@ -1337,12 +1375,13 @@ class Game {
         const drift = dist < 245 ? -Math.sign(dx) * 52 : Math.sign(dx) * 46;
         e.vx = approach(e.vx, drift, dt * 350);
         if (dist < 620 && e.cooldown <= 0) {
-          e.telegraph = 0.9;
+          e.telegraph = e.telegraphTotal = 0.9;
           e.cooldown = 2.2;
           e.attackFired = false;
         }
         if (e.telegraph > 0 && !e.attackFired && e.telegraph < 0.28) {
           e.attackFired = true;
+          e.recovery = .75;
           const ax = p.x - e.x;
           const ay = p.y - 45 - e.y;
           const len = Math.max(1, Math.hypot(ax, ay));
@@ -1366,19 +1405,24 @@ class Game {
           e.vx = approach(e.vx, 0, dt * 2000);
           if (!e.attackFired && e.telegraph < 0.26) {
             e.attackFired = true;
+            e.recovery = .85;
             if (e.attackType === 1) {
               e.dash = 0.3;
               e.dashHit = false;
               e.vx = e.facing * 640;
               this.trauma = Math.min(1, this.trauma + 0.2);
+            } else if (e.attackType === 2) {
+              this.projectiles.push({ kind: 'wave', x: e.x, y: GROUND_Y - 14, vx: e.facing * 310, vy: 0, radius: 24, life: 1.4, damage: e.damage, color: e.tint, dead: false });
+              this.ring(e.x, GROUND_Y, e.tint, 95);
             } else {
-              for (const spread of [-0.32, 0, 0.32]) {
+              const volley = COMBAT.profile(e);
+              for (const spread of volley.spreads || [0]) {
                 const ax = p.x - e.x;
                 const ay = p.y - 50 - (e.y - 82);
                 const angle = Math.atan2(ay, ax) + spread;
                 this.projectiles.push({
                   kind: 'heart', x: e.x + e.facing * 30, y: e.y - 82,
-                  vx: Math.cos(angle) * 290, vy: Math.sin(angle) * 290,
+                  vx: Math.cos(angle) * volley.speed, vy: Math.sin(angle) * volley.speed,
                   radius: 16, life: 2.6, damage: e.damage * 0.8, color: e.tint, dead: false,
                 });
               }
@@ -1386,13 +1430,13 @@ class Game {
             }
           }
         } else if (dist < 150 && e.cooldown <= 0) {
-          e.attackType = 1;
-          e.telegraph = 0.8;
+          e.attackType = COMBAT.chooseSajaAttack(e, dist);
+          e.telegraph = e.telegraphTotal = 0.95;
           e.cooldown = 2.0;
           e.attackFired = false;
         } else if (dist < 520 && e.cooldown <= 0) {
-          e.attackType = 0;
-          e.telegraph = 1.0;
+          e.attackType = COMBAT.chooseSajaAttack(e, dist);
+          e.telegraph = e.telegraphTotal = 1.0;
           e.cooldown = 2.5;
           e.attackFired = false;
         } else {
@@ -1403,6 +1447,7 @@ class Game {
         e.vx = approach(e.vx, 0, dt * 1800);
         if (!e.attackFired && e.telegraph < 0.23) {
           e.attackFired = true;
+          e.recovery = 1.05;
           for (const dir of [-1, 1]) {
             this.projectiles.push({
               kind: 'wave', x: e.x, y: GROUND_Y - 12, vx: dir * 340, vy: 0,
@@ -1412,7 +1457,7 @@ class Game {
           this.trauma = Math.min(1, this.trauma + 0.25);
         }
       } else if (dist < 205 && e.cooldown <= 0) {
-        e.telegraph = 1.1;
+        e.telegraph = e.telegraphTotal = 1.1;
         e.cooldown = 2.2;
         e.attackFired = false;
       } else e.vx = approach(e.vx, Math.sign(dx) * e.speed, dt * 420);
@@ -1425,10 +1470,7 @@ class Game {
         }
       } else {
         e.x = clamp(e.x, 80, stage.bossGate - 92);
-        if (e.kind !== 'wisp' && e.kind !== 'saja' && e.telegraph <= 0 &&
-          overlap(p.x, p.y - 47, 48, 88, e.x, e.y - e.height / 2, e.width * 0.68, e.height * 0.76)) {
-          this.hurtPlayer(e.damage * 0.65, e.facing);
-        }
+        // Damage comes from the telegraphed attack, never passive body contact.
       }
     }
     this.enemies = this.enemies.filter((e) => !e.dead || e.death > 0);
@@ -1450,6 +1492,7 @@ class Game {
       e.vx = approach(e.vx, 0, dt * 1500);
       if (!e.attackFired && e.telegraph < (e.attackType === 1 ? 0.31 : 0.41)) {
         e.attackFired = true;
+        e.recovery = e.phaseTwo ? .9 : 1.15;
         if (e.attackType === 0) {
           const speed = e.phaseTwo ? 420 : 340;
           const spreads = e.phaseTwo ? [-0.28, 0, 0.28] : [0];
@@ -1482,8 +1525,8 @@ class Game {
       return;
     }
     if (e.cooldown <= 0) {
-      e.attackType = dist < 280 ? 1 : (e.attackType + 1) % 3;
-      e.telegraph = e.attackType === 1 ? 1.2 : 1.35;
+      e.attackType = (e.attackType + 1) % 3;
+      e.telegraph = e.telegraphTotal = e.attackType === 1 ? 1.2 : 1.35;
       e.cooldown = e.phaseTwo ? 1.05 : 1.6;
       e.attackFired = false;
       return;
@@ -1514,13 +1557,17 @@ class Game {
 
   resolveAttack() {
     const p = this.player;
-    if (p.attack <= 0 || p.ultimate > 0) return;
+    if (p.attack <= 0 || p.ultimate > 0 || p.dead || p.hurt > 0 || p.dash > 0) return;
     const g = guardianOf(this.guardianId);
     const spec = COMBO_STEPS[p.attackStep];
     const elapsed = p.attackTotal - p.attack;
     const windup = spec.windup / g.attackRate;
     const active = spec.active / g.attackRate;
     if (elapsed < windup || elapsed > windup + active) return;
+    if (!p.swingSoundPlayed) {
+      p.swingSoundPlayed = true;
+      this.audio.play('slash');
+    }
     const reach = g.range * (p.attackStep === 2 ? 1.34 : 1);
     const cx = p.x + p.facing * reach * 0.55;
     for (const e of this.enemies) {
@@ -1534,6 +1581,10 @@ class Game {
 
   strike(e, damage, knockback, heavy) {
     const g = guardianOf(this.guardianId);
+    if (heavy && e.kind !== 'boss' && e.telegraph > 0 && !e.attackFired) {
+      e.telegraph = 0; e.attackFired = true; e.recovery = .7;
+      this.floaters.push({ x: e.x, y: e.y - e.height - 25, life: .7, text: '공격 끊기!', color: '#70efb2', size: 18 });
+    }
     e.health -= damage;
     e.flash = 0.12;
     e.stun = e.kind === 'boss' ? 0.045 : heavy ? 0.22 : 0.12;
@@ -1797,6 +1848,8 @@ class Game {
       energy: Math.round(this.player.energy),
       score: this.score,
       combo: this.combo,
+      chainStep: this.player.chain > 0 ? this.player.attackStep + 1 : 0,
+      holdProgress: this.input.holdProgress(this.playTime),
       maxCombo: this.maxCombo,
       stage: this.stageIndex + 1,
       stageName: STAGES[this.stageIndex].title,
@@ -1854,6 +1907,7 @@ Object.assign(Game.prototype, {
   drawBackground() {
     const ctx = this.context;
     const stage = STAGES[this.stageIndex];
+    if (COMBAT.drawBackground(ctx, this.viewWidth, WORLD_H, this.camera, this.stageIndex)) return;
     const sky = ctx.createLinearGradient(0, 0, 0, WORLD_H);
     sky.addColorStop(0, stage.skyTop);
     sky.addColorStop(0.68, stage.skyBottom);
@@ -2122,36 +2176,7 @@ Object.assign(Game.prototype, {
       ctx.stroke();
     }
     if (drawGeneratedPlayer(ctx, p, g, this.ambient, this.reduced)) {
-      if (p.attack > 0) {
-        ctx.save();
-        ctx.globalCompositeOperation = 'lighter';
-        ctx.globalAlpha *= .86;
-        ctx.lineCap = 'round';
-        const finisher = p.attackStep === 2;
-        const radius = g.range * (finisher ? .98 : .74);
-        ctx.strokeStyle = g.color;
-        ctx.lineWidth = finisher ? (g.id === 'mira' ? 25 : 20) : 12;
-        ctx.shadowColor = g.color;
-        ctx.shadowBlur = finisher ? 34 : 24;
-        ctx.beginPath();
-        ctx.arc(20, -63, radius, -1.12, finisher ? 1.5 : 1.08);
-        ctx.stroke();
-        ctx.globalAlpha *= .72;
-        ctx.strokeStyle = g.accent;
-        ctx.lineWidth = finisher ? 8 : 4;
-        ctx.beginPath();
-        ctx.arc(20, -63, radius + 5, -1.08, finisher ? 1.44 : 1.02);
-        ctx.stroke();
-        if (g.id === 'joy') {
-          ctx.globalAlpha *= .8;
-          ctx.strokeStyle = '#e9ffff';
-          ctx.lineWidth = finisher ? 6 : 3;
-          ctx.beginPath();
-          ctx.arc(12, -56, radius * .78, -.58, 1.7);
-          ctx.stroke();
-        }
-        ctx.restore();
-      }
+      globalThis.KedehunAttackMotion?.trail(ctx, p, g, COMBO_STEPS, this.reduced);
       ctx.restore();
       return;
     }
@@ -2230,6 +2255,8 @@ Object.assign(Game.prototype, {
     for (const e of this.enemies) {
       const x = lerp(e.px, e.x, frameAlpha);
       const y = lerp(e.py, e.y, frameAlpha);
+      COMBAT.drawIntent(this.context, e, x, y, this.ambient, GROUND_Y);
+      if (COMBAT.drawEnemy(this.context, e, x, y, this.ambient, this.reduced)) continue;
       if (e.kind === 'boss') {
         if (e.bossKind === 'jinu') this.drawSaja(e, x, y, 1.55, true);
         else this.drawBoss(e, x, y);
@@ -3480,15 +3507,17 @@ function fileToPortraitDataUrl(file, size = 320) {
   /* Touch controls */
   function bindTouch(id, action) {
     const el = $(id);
-    const up = (ev) => game?.setAction(action, 'touch:' + ev.pointerId, false);
+    const up = (ev) => { el.classList.remove('pressed'); game?.setAction(action, 'touch:' + ev.pointerId, false); };
+    const cancel = (ev) => { el.classList.remove('pressed'); game?.input.cancel(action, 'touch:' + ev.pointerId); };
     el.addEventListener('pointerdown', (ev) => {
       ev.preventDefault();
-      el.setPointerCapture(ev.pointerId);
+      try { el.setPointerCapture(ev.pointerId); } catch { /* Continue if capture is unavailable. */ }
+      el.classList.add('pressed');
       game?.setAction(action, 'touch:' + ev.pointerId, true);
     });
     el.addEventListener('pointerup', up);
-    el.addEventListener('pointercancel', up);
-    el.addEventListener('lostpointercapture', up);
+    el.addEventListener('pointercancel', cancel);
+    el.addEventListener('lostpointercapture', cancel);
   }
   ['touchLeft:left', 'touchJump:jump', 'touchRight:right', 'touchDash:dash', 'touchUlt:ultimate', 'touchAttack:attack']
     .forEach((pair) => { const [id, action] = pair.split(':'); bindTouch(id, action); });
@@ -3502,6 +3531,9 @@ function fileToPortraitDataUrl(file, size = 320) {
   function update(next) {
     state = next;
     const g = guardianOf(next.guardianId);
+    $('touchAttack').style.setProperty('--hold', (next.holdProgress || 0) * 360 + 'deg');
+    $('chainPips').dataset.step = String(next.chainStep || 0);
+    $('chainPips').setAttribute('aria-label', '연격 ' + (next.chainStep || 0) + ' / 3');
     setGuardianVars(root, next.phase === 'select' ? guardianOf(selectedId) : g);
     const playing = next.phase !== 'select';
     refs.hud.hidden = !playing;
@@ -3613,7 +3645,8 @@ function fileToPortraitDataUrl(file, size = 320) {
     const url = await PhotoStore.get(g.id);
     if (url) photos.set(g.id, url);
   })).then(() => { hudMarkId = null; refreshPortraits(); });
-  CHARACTER_ART_READY.then(() => {
+  CHARACTER_ART_READY.then(async () => {
+    await globalThis.KedehunAttackMotion?.ready;
     characterArtReadyForPlay = true;
     characterArtSettled = true;
     refs.startBtn.disabled = false;
@@ -3629,7 +3662,7 @@ function fileToPortraitDataUrl(file, size = 320) {
   resizeObserver.observe(canvas);
 
   const gameKeys = new Set([
-    'ArrowLeft', 'ArrowRight', 'ArrowUp', 'Space', 'KeyA', 'KeyD', 'KeyW', 'KeyX', 'KeyJ', 'KeyZ', 'KeyC', 'KeyL',
+    'ArrowLeft', 'ArrowRight', 'ArrowUp', 'Space', 'KeyA', 'KeyD', 'KeyW', 'KeyX', 'KeyJ', 'KeyK', 'KeyZ', 'KeyC', 'KeyL',
     'ShiftLeft', 'ShiftRight', 'Escape', 'KeyP', 'KeyM', 'Digit1', 'Digit2', 'Digit3', 'Enter',
   ]);
   window.addEventListener('keydown', (ev) => {

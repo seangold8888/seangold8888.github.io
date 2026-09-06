@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v39";
+const CACHE_VERSION = "v40";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -96,6 +96,14 @@ const OPTIONAL_SHELL = [
   "./kart3d/src/tracks.js",
   "./kart3d/vendor/three.module.min.js",
   "./kedehun/",
+  "./kedehun/attack-motion.js?v=1",
+  "./kedehun/combat-v2.js?v=1",
+  "./kedehun/combat-v2.css?v=1",
+  "./kedehun/art/enemies/demon-roster-v1.png",
+  "./kedehun/art/enemies/seoul-rooftop-v1.png",
+  "./kedehun/art/characters/lumi-attacks-v1.png?v=1",
+  "./kedehun/art/characters/mira-attacks-v1.png?v=1",
+  "./kedehun/art/characters/joy-attacks-v1.png?v=1",
   "./kedehun/art/characters/lumi-v2.webp?v=28",
   "./kedehun/art/characters/mira-v2.webp?v=28",
   "./kedehun/art/characters/joy-v2.webp?v=28",
