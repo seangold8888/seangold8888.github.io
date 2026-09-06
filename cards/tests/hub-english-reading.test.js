@@ -232,9 +232,25 @@ test("a reading success advances progress once and earns the tenth-answer ticket
 });
 test("reading support is cached and its script loads before the study controller", () => {
   const sw = require("../../sw.js");
-  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=4"));
-  assert.ok(html.indexOf('src="assets/study/english-reading.js?v=4"') < html.indexOf("var BANK_SIZES"));
+  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=5"));
+  assert.ok(html.indexOf('src="assets/study/english-reading.js?v=5"') < html.indexOf("var BANK_SIZES"));
   assert.match(html, /\.reading-word\.retry\s*\{[^}]*text-decoration:underline wavy/);
   assert.match(html, /if \(current !== target \|\| isFree\(\) \|\| hasTicket\(\) \|\| target\.answered\) return/);
   assert.match(html, /function stopReading\(\)[\s\S]*?clearTimeout\(answerTimer\)/);
+});
+test("recognizer aliases pass a correctly read word the ASR mishears, never missing or extra words", () => {
+  for (const heard of ["the board can fly", "the boy can fry", "the bard can flight", "The bird can fly"]) {
+    assert.equal(reading.matches("The bird can fly.", heard), true, heard);
+  }
+  assert.equal(reading.matches("We can play together.", "we can play to get her"), true);
+  assert.equal(reading.matches("I like apples.", "i like apple"), true);
+  for (const heard of ["the bird can", "bird can fly the", "the bird can fly now", "the cat can fly"]) {
+    assert.equal(reading.matches("The bird can fly.", heard), false, heard);
+  }
+  assert.deepEqual(reading.matchedWords("The bird can fly.", "the cat can fly"), [true, false, true, true]);
+  assert.equal(reading.isPrefix("The bird can fly.", "the board"), true);
+  assert.equal(reading.isPrefix("The bird can fly.", "the cat"), false);
+  for (const word of Object.keys(reading.aliases)) {
+    assert.ok(reading.aliases[word].every(alias => alias !== word && alias === alias.toLowerCase()), word);
+  }
 });

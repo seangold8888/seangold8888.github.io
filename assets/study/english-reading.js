@@ -25,15 +25,79 @@
       .replace(/\bcan not\b/g, "cannot").replace(/[^a-z0-9\s]/g, " ")
       .trim().replace(/\s+/g, " ");
   }
+  // Recognizer tolerance for a Korean first grader: homophones and the
+  // near-misses Safari/Chrome actually return for a correctly read word
+  // (r/l, the "ir" vowel, final consonants). Reviewed by Claude 2026-09-06.
+  // Keep the lists tight: an alias must sound like the word when read right.
+  const PHRASES = [["to get her", "together"], ["to gather", "together"], ["o pen", "open"], ["a pples", "apples"]];
+  const ALIASES = {
+    i: ["eye", "ai"],
+    like: ["light", "lik", "liked", "lie"],
+    apples: ["apple", "apple's", "apples'", "appears"],
+    see: ["sea", "c", "si"],
+    a: ["uh", "ah", "er"],
+    cat: ["cut", "cats", "kat", "cap", "cad"],
+    this: ["these", "dis", "tis", "disc"],
+    is: ["it's", "iz", "his", "ease"],
+    my: ["mai", "ma", "mi"],
+    book: ["books", "buck", "boo", "booked"],
+    can: ["ken", "kan", "cans", "cam"],
+    run: ["ran", "rum", "lun", "wren", "runs"],
+    the: ["da", "de", "duh", "za"],
+    sun: ["son", "sung", "sum", "san", "sunny"],
+    bright: ["bride", "right", "brite", "blight", "brights", "bry", "brought"],
+    milk: ["mill", "milks", "meal", "milc", "mick"],
+    family: ["families", "family's", "femily", "fam"],
+    have: ["has", "had", "hab", "hev", "hef"],
+    dog: ["dogs", "dock", "doug", "doc", "dawg"],
+    bird: ["board", "bard", "bored", "boy", "burd", "birds", "bert", "bud", "bod", "birth", "bird's", "beard", "bad"],
+    fly: ["fry", "flies", "flai", "fli", "flight", "fright"],
+    am: ["um", "im", "em", "an"],
+    happy: ["heppy", "happi", "harpy", "hoppy", "hippie"],
+    red: ["read", "rad", "wed", "led", "lead", "reed"],
+    flower: ["flour", "flowers", "frower", "flow", "flauer", "flower's"],
+    we: ["wee", "v", "oui", "wi"],
+    play: ["pray", "played", "plays", "pley", "plate", "pay"],
+    together: ["togeder", "togather", "to-gether", "tugether"],
+    wash: ["watch", "washed", "wosh", "was", "wish"],
+    hands: ["hand", "hens", "hans", "hands'", "hand's", "heads"],
+    please: ["police", "plies", "pleas", "plis", "pleased", "prease"],
+    open: ["oven", "opened", "opens", "opan"],
+    door: ["doors", "dor", "dough", "doer", "dow"],
+    thank: ["tank", "sank", "thanks", "thang", "tanks", "sanks"],
+    you: ["u", "yu", "ewe", "yoo"],
+    very: ["berry", "bury", "vary", "belly", "vely", "beri", "ferry"],
+    much: ["march", "mush", "match", "mach", "mutch", "munch"],
+    love: ["lov", "lub", "rob", "luv", "loves", "lof", "laugh", "lav", "rove"]
+  };
+  function heardTokens(heard) {
+    let text = normalize(heard);
+    PHRASES.forEach(function (pair) { text = text.split(pair[0]).join(pair[1]); });
+    return text ? text.split(" ") : [];
+  }
+  function sameWord(expected, got) {
+    if (expected === got) return true;
+    const list = ALIASES[expected];
+    return !!list && list.indexOf(got) >= 0;
+  }
   function matches(expected, heard) {
-    return !!normalize(expected) && normalize(expected) === normalize(heard);
+    const words = normalize(expected) ? normalize(expected).split(" ") : [], got = heardTokens(heard);
+    if (!words.length || words.length !== got.length) return false;
+    return words.every(function (word, i) { return sameWord(word, got[i]); });
+  }
+  // True while the heard words are still a valid beginning of the sentence.
+  function isPrefix(expected, heard) {
+    const words = normalize(expected).split(" "), got = heardTokens(heard);
+    if (got.length > words.length) return false;
+    return got.every(function (token, i) { return sameWord(words[i], token); });
   }
   // Ordered alignment is feedback, never a partial-credit scoring rule.
   function matchedWords(expected, heard) {
-    const words = normalize(expected).split(" "), got = normalize(heard).split(" ");
+    const words = normalize(expected).split(" "), got = heardTokens(heard);
     let position = 0;
     return words.map(function (word) {
-      const index = got.indexOf(word, position);
+      let index = -1;
+      for (let i = position; i < got.length; i++) { if (sameWord(word, got[i])) { index = i; break; } }
       if (index < 0) return false;
       position = index + 1;
       return true;
@@ -325,7 +389,7 @@
           awarded = true;
           feedback(sentence.text);
           praise();
-        } else if (finalText && !(normalize(sentence.text) + " ").startsWith(normalize(finalText) + " ")) {
+        } else if (finalText && !isPrefix(sentence.text, finalText)) {
           finishAttempt();
         } else {
           nodes.status.textContent = "듣고 있어요… 문장을 끝까지 읽어 주세요.";
@@ -380,7 +444,7 @@
       }
     };
   }
-  const api = { sentences: sentences, normalize: normalize, matches: matches, matchedWords: matchedWords, cleanWordScores: cleanWordScores, chooseSentence: chooseSentence, createFeedbackSession: createFeedbackSession, choosePraise: choosePraise, retryWords: retryWords, mount: mount };
+  const api = { sentences: sentences, normalize: normalize, matches: matches, sameWord: sameWord, aliases: ALIASES, isPrefix: isPrefix, matchedWords: matchedWords, cleanWordScores: cleanWordScores, chooseSentence: chooseSentence, createFeedbackSession: createFeedbackSession, choosePraise: choosePraise, retryWords: retryWords, mount: mount };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.EnglishReading = api;
 })(typeof window !== "undefined" ? window : globalThis);

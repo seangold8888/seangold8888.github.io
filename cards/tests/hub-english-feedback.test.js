@@ -159,10 +159,10 @@ test("hidden page cancels speech/praise, destroy invalidates delayed ends and re
   }
   const s=setup(),v=s.mount();v.mic.fire("click");s.result("I like apples");const late=s.recognizers[0].onend;v.view.destroy();late();s.tick(5000);assert.equal(s.passes(),0);assert.ok(!s.events.some(e=>e.startsWith("play:")));
 });
-test("cache v39 precaches all nine MP3s and hub has no second celebration delay",()=>{
+test("cache v42 precaches all nine MP3s and hub has no second celebration delay",()=>{
   const sw=require("../../sw.js"),html=fs.readFileSync(path.join(__dirname,"../../index.html"),"utf8");
-  assert.equal(sw.CACHE_VERSION,"v39");assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=4"));
-  assert.match(html,/english-reading\.js\?v=4/);
+  assert.equal(sw.CACHE_VERSION,"v42");assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=5"));
+  assert.match(html,/english-reading\.js\?v=5/);
   const clips=sw.CORE_SHELL.filter(p=>p.includes("/praise/"));
   assert.equal(clips.length,9);
   for(const clip of clips)assert.ok(fs.statSync(path.join(__dirname,"../..",clip)).size>0);

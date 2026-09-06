@@ -112,9 +112,9 @@ test("all story episode mp3 files match the service worker fallback list", () =>
   }
 });
 
-test("cache generation v41 preserves exact v26 card assets and canonical navigation aliases", () => {
-  assert.equal(sw.CACHE_VERSION, "v41");
-  assert.match(sw.STATIC_CACHE, /^adventure-box-v41-/);
+test("cache generation v42 preserves exact v26 card assets and canonical navigation aliases", () => {
+  assert.equal(sw.CACHE_VERSION, "v42");
+  assert.match(sw.STATIC_CACHE, /^adventure-box-v42-/);
   const studioImages = fs.readdirSync(path.join(siteRoot, "princess/assets/studio-v3")).filter(name => /\.(webp|jpg)$/.test(name));
   assert.equal(studioImages.length, 95);
   for (const name of studioImages) assert.ok(sw.OPTIONAL_SHELL.includes("./princess/assets/studio-v3/" + name), name);
