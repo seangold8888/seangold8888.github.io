@@ -103,6 +103,24 @@
       return true;
     });
   }
+  // The recognizer sends up to MAX_ALTERNATIVES guesses per final result. The
+  // sentence passes when the first guesses match, or when swapping any single
+  // result for one of its other guesses matches. Display always uses the first guess.
+  const MAX_ALTERNATIVES = 5;
+  function alternativeTexts(finals) {
+    const base = finals.map(function (alts) { return alts[0] || ""; });
+    const texts = [base.join(" ")];
+    finals.forEach(function (alts, i) {
+      for (let k = 1; k < alts.length; k++) {
+        const copy = base.slice(); copy[i] = alts[k];
+        texts.push(copy.join(" "));
+      }
+    });
+    return texts;
+  }
+  function anyMatches(expected, finals) {
+    return alternativeTexts(finals).some(function (text) { return matches(expected, text); });
+  }
 
   function cleanWordScores(input) {
     const scores = {};
@@ -122,15 +140,23 @@
       if (idx === previous) return 0;
       return 1 + Math.min(8, normalize(sentence.text).split(" ").reduce(function (sum, word) { return sum + (scores[word] || 0); }, 0));
     });
-    let draw = (random || Math.random)() * weights.reduce(function (sum, value) { return sum + value; }, 0);
+    const total = weights.reduce(function (sum, weight) { return sum + weight; }, 0);
+    let draw = (random || Math.random)() * total;
     for (let i = 0; i < weights.length; i++) { draw -= weights[i]; if (draw < 0) return i; }
     return base === previous ? (base + 1) % sentences.length : base;
   }
   const FIRST_PRAISE = ["excellent", "perfect", "awesome", "wonderful"];
   const RETRY_PRAISE = ["great", "verygood", "youdidit", "super"];
   const PRAISE_TEXT = { excellent: "Excellent!", perfect: "Perfect!", awesome: "Awesome!", wonderful: "Wonderful!", great: "Great!", verygood: "Very good!", youdidit: "You did it!", super: "Super!", threeinarow: "Three in a row!" };
+  const PRAISE_PATH = "assets/study/praise/", WORD_PATH = "assets/study/words/";
+  const WORD_CLIPS = {};
+  sentences.forEach(function (sentence) { normalize(sentence.text).split(" ").forEach(function (word) { WORD_CLIPS[word] = WORD_PATH + word + ".mp3"; }); });
+  const STALL_MS = 5000, NO_AUDIO_MS = 1800, WORD_STALL_MS = 4000, WORD_GAP_MS = 400, STOP_WAIT_MS = 600;
+  const LOG_LIMIT = 40;
   const sessions = new WeakMap();
-  function createFeedbackSession() { return { streak: 0, lastClip: null }; }
+  // One session per window: praise streak, last clip, the single unlocked
+  // media element shared by praise and word clips, and a diagnostic log.
+  function createFeedbackSession() { return { streak: 0, lastClip: null, audio: null, unlocked: false, log: [] }; }
   function choosePraise(session, firstTry, random) {
     session.streak = firstTry ? session.streak + 1 : 0;
     const group = firstTry && session.streak % 3 === 0 ? ["threeinarow"] : firstTry ? FIRST_PRAISE : RETRY_PRAISE;
@@ -144,6 +170,14 @@
     if (flags.every(Boolean)) return [];
     return Array.from(new Set(normalize(expected).split(" ").filter(function (_, i) { return !flags[i]; }))).slice(0, 3);
   }
+  // Diagnostic trail (no transcripts, only event names and codes), kept in
+  // memory for the page and shown under the sentence when the URL carries
+  // readinglog=1. Nothing is written to storage.
+  function record(env, session, event) {
+    const now = env.Date ? env.Date.now() : Date.now();
+    session.log.push(Math.round(now / 1000) % 100000 + " " + event);
+    if (session.log.length > LOG_LIMIT) session.log.splice(0, session.log.length - LOG_LIMIT);
+  }
   function mount(container, sentence, onPass, env, callbacks) {
     env = env || root;
     callbacks = callbacks || {};
@@ -151,9 +185,9 @@
     if (!sessions.has(env)) sessions.set(env, createFeedbackSession());
     const session = sessions.get(env);
     let disposed = false, awarded = false, active = null, serial = 0, timer = null, finalText = "";
-    let retried = false, soundActive = false, soundTimer = null, stopTimer = null, audio = null, unlocked = false, passDone = false, stopping = null;
-    const synth = env.speechSynthesis;
+    let retried = false, soundActive = false, soundTimer = null, stopTimer = null, passDone = false, stopping = null;
     const Recognition = env.SpeechRecognition || env.webkitSpeechRecognition;
+    const showLog = !!(env.location && /(?:\?|&)readinglog=1/.test(env.location.search || ""));
     const nodes = {};
     function element(tag, className, text) {
       const node = doc.createElement(tag);
@@ -191,19 +225,35 @@
     const privacy = element("p", "reading-privacy",
       "부모님 안내: ‘읽어 보기’를 누를 때만 마이크를 켭니다. 음성은 브라우저의 인식 서비스로 전송될 수 있어요. 음성과 인식 문장은 저장하지 않고, 연습할 교재 단어와 복습 횟수만 이 기기에 기억해요. 발음 점수가 아닌 문장 읽기를 확인해요.");
     [label, line, meaning, actions, nodes.status, nodes.heard, privacy].forEach(function (node) { container.appendChild(node); });
+    const logNode = showLog ? element("pre", "reading-log") : null;
+    if (logNode) container.appendChild(logNode);
+    function log(event) {
+      record(env, session, event);
+      if (logNode && !disposed) logNode.textContent = session.log.join("\n");
+    }
+    log("mount");
 
     function controls() {
       nodes.mic.disabled = disposed || awarded || !!active || soundActive || !Recognition || env.isSecureContext === false || env.navigator.onLine === false;
       nodes.stop.disabled = disposed || awarded || !!stopping || (!active && !soundActive);
       nodes.stop.textContent = soundActive && !awarded ? "안내 멈추고 읽기" : "그만하기";
     }
+    function audioElement() { return session.audio; }
+    function detachAudio() {
+      const audio = audioElement();
+      if (!audio) return;
+      audio.onended = audio.onerror = audio.ontimeupdate = audio.onplaying = null;
+      try { audio.pause(); } catch (_) {}
+    }
     function cancelSound() {
       env.clearTimeout(soundTimer); soundTimer = null;
-      if (synth) { try { synth.cancel(); } catch (_) {} }
-      if (audio) { audio.onended = audio.onerror = audio.ontimeupdate = null; try { audio.pause(); } catch (_) {} }
+      detachAudio();
       soundActive = false;
       Array.from(line.children).forEach(function (word) { word.classList.remove("listening"); });
     }
+    // Stops the live recognizer. With `after`, waits for its end event (at most
+    // STOP_WAIT_MS) before calling after(true); speakers must never overlap a
+    // live microphone, so a missing end event calls after(false) instead.
     function stop(message, after) {
       serial++;
       env.clearTimeout(timer); timer = null;
@@ -222,13 +272,13 @@
             if (stopping === previous) stopping = null;
             previous.onend = null;
             env.clearTimeout(stopTimer); stopTimer = null;
+            log(safe ? "mic-off" : "mic-off-timeout");
             if (!disposed && id === serial) after(safe);
           };
           soundActive = true;
           stopping = previous;
           previous.onend = function () { ended(true); };
-          // No end event means no audio: speakers must never overlap a live mic.
-          stopTimer = env.setTimeout(function () { previous.onend = null; try { previous.abort(); } catch (_) {} ended(false); }, 600);
+          stopTimer = env.setTimeout(function () { previous.onend = null; try { previous.abort(); } catch (_) {} ended(false); }, STOP_WAIT_MS);
           try { previous.stop(); } catch (_) { try { previous.abort(); } catch (_) {} ended(false); }
         } else { try { previous.abort(); } catch (_) {} }
       }
@@ -237,36 +287,58 @@
       if (!previous && after) after(true);
     }
     function resetFlow() { retried = true; session.streak = 0; }
+    // iPad Safari only plays media that a tap has unlocked. One shared element
+    // is unlocked on the first microphone tap of the page and reused for every
+    // praise and word clip; nothing else (no speech synthesis) touches audio.
     function unlockAudio() {
-      if (unlocked) return;
-      unlocked = true;
-      try {
-        if (synth && env.SpeechSynthesisUtterance && synth.getVoices().some(function (v) { return /^en(?:[-_]|$)/i.test(v.lang); })) {
-          synth.speak(new env.SpeechSynthesisUtterance(""));
-          synth.cancel();
-        }
-      } catch (_) {}
+      if (session.unlocked) return;
+      session.unlocked = true;
       try {
         if (env.Audio) {
-          audio = new env.Audio("assets/study/praise/excellent.mp3");
-          audio.preload = "auto";
-          audio.load();
+          session.audio = new env.Audio(PRAISE_PATH + "excellent.mp3");
+          session.audio.preload = "auto";
+          session.audio.load();
         }
-      } catch (_) { audio = null; }
+      } catch (_) { session.audio = null; }
     }
     function completePass() {
       if (disposed || passDone) return;
       passDone = true;
       cancelSound();
+      log("next");
       onPass();
+    }
+    function armWatchdog(ms, fn) {
+      env.clearTimeout(soundTimer);
+      soundTimer = env.setTimeout(fn, ms);
+    }
+    // Plays one clip on the shared element. onDone fires once: at the ended
+    // event, at a playback error, or when progress stalls for stallMs.
+    function playClip(src, stallMs, onDone) {
+      const audio = audioElement();
+      const id = serial;
+      let done = false;
+      const finish = function (how) {
+        if (done || disposed || id !== serial) return;
+        done = true;
+        detachAudio();
+        env.clearTimeout(soundTimer); soundTimer = null;
+        onDone(how);
+      };
+      if (!audio) { finish("no-audio"); return; }
+      audio.src = src;
+      audio.onended = function () { finish("ended"); };
+      audio.onerror = function () { finish("error"); };
+      audio.onplaying = function () { armWatchdog(stallMs, function () { finish("stall"); }); };
+      audio.ontimeupdate = function () { armWatchdog(stallMs, function () { finish("stall"); }); };
+      armWatchdog(stallMs, function () { finish("stall"); });
+      try {
+        const playing = audio.play();
+        if (playing && playing.catch) playing.catch(function () { finish("blocked"); });
+      } catch (_) { finish("blocked"); }
     }
     function praise() {
       const clip = choosePraise(session, !retried);
-      const fullClip = clip === "threeinarow";
-      function waitForPlayback() {
-        env.clearTimeout(soundTimer);
-        soundTimer = env.setTimeout(completePass, fullClip ? 5000 : 1800);
-      }
       nodes.status.textContent = "";
       nodes.status.appendChild(element("span", "reading-praise", (clip === "threeinarow" ? "🌟 " : "⭐ ") + PRAISE_TEXT[clip]));
       nodes.status.appendChild(element("span", "reading-praise-detail", clip === "threeinarow" ? "세 문장 연속!" : retried ? "다시 읽어서 해냈어!" : "한 번에 읽었어!"));
@@ -274,56 +346,44 @@
         const stars = element("span", "reading-star-burst", "★ ✦ ⭐ ✦ ★");
         stars.setAttribute("aria-hidden", "true"); nodes.status.appendChild(stars);
       }
+      log("pass " + clip + (retried ? " retry" : " first"));
       stop(null, function (safe) {
-        if (!safe || !audio) { soundActive = false; controls(); return; }
-        const id = serial;
+        if (!safe || !audioElement()) { soundActive = false; controls(); return; }
         soundActive = true;
         controls();
-        audio.src = "assets/study/praise/" + clip + ".mp3";
-        audio.onended = completePass;
-        // The special clip has no duration cap; recover only if playback stops progressing.
-        if (fullClip) audio.ontimeupdate = waitForPlayback;
-        audio.onerror = function () { try { audio.pause(); } catch (_) {} };
-        try {
-          const playing = audio.play();
-          if (playing && playing.catch) playing.catch(function () { if (id === serial) { audio.pause(); } });
-        } catch (_) {}
+        // Every praise clip plays to its ended event; the watchdog only guards a
+        // stalled or blocked playback so the question can never be trapped.
+        playClip(PRAISE_PATH + clip + ".mp3", STALL_MS, function (how) {
+          log("praise-" + how);
+          if (how === "blocked" || how === "error") { armWatchdog(NO_AUDIO_MS, completePass); return; }
+          completePass();
+        });
       });
-      // Ordinary praise keeps its 1.8s cap. The special clip waits for ended;
-      // its watchdog is renewed by playback progress so the final words are never cut.
-      if (!disposed && !passDone) waitForPlayback();
+      // Visible praise without any playable audio still moves on.
+      if (!disposed && !passDone && !soundTimer) armWatchdog(NO_AUDIO_MS, completePass);
     }
+    // Reads back only the misread words, once each, from recorded clips.
     function speakWords(words, safe) {
       soundActive = false;
-      let voices = [];
-      try { voices = synth ? synth.getVoices().filter(function (v) { return /^en(?:[-_]|$)/i.test(v.lang); }) : []; } catch (_) {}
-      if (!safe || !words.length || !voices.length || !env.SpeechSynthesisUtterance) { controls(); return; }
-      const voice = voices.find(function (v) { return /^en[-_]US$/i.test(v.lang) && v.localService; }) || voices.find(function (v) { return /^en[-_]US$/i.test(v.lang); }) || voices[0];
+      const clips = words.filter(function (word) { return !!WORD_CLIPS[word]; });
+      if (!safe || !clips.length || !audioElement()) { controls(); return; }
       const id = serial;
       let index = 0;
       soundActive = true; controls();
       function next() {
         if (disposed || id !== serial) return;
         Array.from(line.children).forEach(function (word) { word.classList.remove("listening"); });
-        if (index >= words.length) { cancelSound(); controls(); return; }
-        const word = words[index++];
+        if (index >= clips.length) { cancelSound(); controls(); log("words-done"); return; }
+        const word = clips[index++];
         nodes.status.textContent = "이렇게 읽어요 👂 " + word;
         const target = Array.from(line.children).find(function (node) { return node.classList.contains("retry") && normalize(node.textContent) === word; });
         if (target) target.classList.add("listening");
-        const utterance = new env.SpeechSynthesisUtterance(word);
-        utterance.lang = "en-US"; utterance.voice = voice; utterance.rate = 0.8; utterance.pitch = 1.0;
-        let ended = false;
-        utterance.onend = function () {
-          if (ended || disposed || id !== serial) return;
-          ended = true; env.clearTimeout(soundTimer);
-          soundTimer = env.setTimeout(next, index < words.length ? 400 : 0);
-        };
-        utterance.onerror = function () {
-          if (ended || disposed || id !== serial) return;
-          ended = true; cancelSound(); controls();
-        };
-        soundTimer = env.setTimeout(utterance.onerror, 4000);
-        try { synth.speak(utterance); } catch (_) { utterance.onerror(); }
+        playClip(WORD_CLIPS[word], WORD_STALL_MS, function (how) {
+          if (how !== "ended") log("word-" + how);
+          if (how === "blocked") { cancelSound(); controls(); return; }
+          if (index < clips.length) soundTimer = env.setTimeout(next, WORD_GAP_MS);
+          else next();
+        });
       }
       next();
     }
@@ -348,9 +408,11 @@
         const words = normalize(sentence.text).split(" ").filter(function (_, i) { return !flags[i]; });
         feedback(finalText, true);
         const spoken = retryWords(sentence.text, finalText);
+        log("retry " + spoken.length);
         stop(spoken.length ? "이렇게 읽어요 👂 " + spoken[0] : "문장에 있는 말만 읽어 주세요", function (safe) { speakWords(spoken, safe); });
         if (callbacks.onRetry) callbacks.onRetry(Array.from(new Set(words)));
       } else {
+        log("empty");
         stop("잘 듣지 못했어요. 읽어 보기를 눌러 다시 읽어 주세요.");
       }
     }
@@ -363,7 +425,7 @@
       const id = serial;
       let recognizer;
       try { recognizer = new Recognition(); } catch (_) {
-        resetFlow();
+        resetFlow(); log("mic-create-fail");
         fallback.hidden = false;
         nodes.status.textContent = "이 브라우저에서 음성 인식을 시작할 수 없어요. Safari 또는 Chrome에서 다시 열어 주세요."; return;
       }
@@ -371,21 +433,25 @@
       recognizer.lang = "en-US";
       recognizer.continuous = true;
       recognizer.interimResults = true;
-      recognizer.maxAlternatives = 1;
+      recognizer.maxAlternatives = MAX_ALTERNATIVES;
       const valid = function () { return !disposed && !awarded && active === recognizer && id === serial; };
-      recognizer.onstart = function () { if (valid()) nodes.status.textContent = "듣고 있어요… 문장을 끝까지 읽어 주세요."; };
+      recognizer.onstart = function () { if (valid()) { log("mic-on"); nodes.status.textContent = "듣고 있어요… 문장을 끝까지 읽어 주세요."; } };
       recognizer.onresult = function (event) {
         if (!valid()) return;
-        const final = [], visible = [];
+        const finals = [], visible = [];
         for (let i = 0; i < event.results.length; i++) {
           const result = event.results[i];
-          const text = result[0] && result[0].transcript || "";
-          visible.push(text);
-          if (result.isFinal) final.push(text);
+          const alts = [];
+          const count = Math.min(result.length || 1, MAX_ALTERNATIVES);
+          for (let k = 0; k < count; k++) { if (result[k] && typeof result[k].transcript === "string") alts.push(result[k].transcript); }
+          if (!alts.length) alts.push("");
+          visible.push(alts[0]);
+          if (result.isFinal) finals.push(alts);
         }
-        finalText = final.join(" ");
+        finalText = finals.map(function (alts) { return alts[0]; }).join(" ");
         feedback(visible.join(" "));
-        if (matches(sentence.text, finalText)) {
+        if (finals.length) log("result " + finals.length + "/" + event.results.length);
+        if (finals.length && anyMatches(sentence.text, finals)) {
           awarded = true;
           feedback(sentence.text);
           praise();
@@ -398,6 +464,7 @@
       recognizer.onerror = function (event) {
         if (!valid()) return;
         resetFlow();
+        log("error " + (event && event.error));
         if (event.error !== "no-speech" && event.error !== "aborted") fallback.hidden = false;
         const messages = {
           "not-allowed": "마이크 또는 음성 인식 권한을 허용해 주세요. 정답 기록은 바뀌지 않았어요.",
@@ -409,11 +476,11 @@
         };
         stop(messages[event.error] || "잘 듣지 못했어요. 오답이 아니니 다시 시도해 주세요.");
       };
-      recognizer.onend = function () { if (valid()) { active = null; finishAttempt(); } };
+      recognizer.onend = function () { if (valid()) { log("end"); active = null; finishAttempt(); } };
       controls();
       nodes.status.textContent = "마이크를 준비하고 있어요…";
-      timer = env.setTimeout(function () { if (valid()) finishAttempt(); }, 25000);
-      try { recognizer.start(); } catch (_) { resetFlow(); fallback.hidden = false; stop("마이크를 시작하지 못했어요. 잠시 후 다시 눌러 주세요."); }
+      timer = env.setTimeout(function () { if (valid()) { log("timeout"); finishAttempt(); } }, 25000);
+      try { recognizer.start(); log("start"); } catch (_) { resetFlow(); log("start-fail"); fallback.hidden = false; stop("마이크를 시작하지 못했어요. 잠시 후 다시 눌러 주세요."); }
     }
     nodes.mic.addEventListener("click", read);
     nodes.stop.addEventListener("click", function () {
@@ -444,7 +511,7 @@
       }
     };
   }
-  const api = { sentences: sentences, normalize: normalize, matches: matches, sameWord: sameWord, aliases: ALIASES, isPrefix: isPrefix, matchedWords: matchedWords, cleanWordScores: cleanWordScores, chooseSentence: chooseSentence, createFeedbackSession: createFeedbackSession, choosePraise: choosePraise, retryWords: retryWords, mount: mount };
+  const api = { sentences: sentences, normalize: normalize, matches: matches, sameWord: sameWord, aliases: ALIASES, isPrefix: isPrefix, alternativeTexts: alternativeTexts, anyMatches: anyMatches, wordClips: WORD_CLIPS, matchedWords: matchedWords, cleanWordScores: cleanWordScores, chooseSentence: chooseSentence, createFeedbackSession: createFeedbackSession, choosePraise: choosePraise, retryWords: retryWords, mount: mount };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.EnglishReading = api;
 })(typeof window !== "undefined" ? window : globalThis);

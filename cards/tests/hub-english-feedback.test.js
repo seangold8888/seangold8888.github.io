@@ -81,44 +81,53 @@ test("retry list follows sentence order, deduplicates, caps three, omits wholeLi
 test("word feedback waits for stop AND end; stale recognition cannot score speaker audio",()=>{
   const s=setup(),v=s.mount();v.mic.fire("click");
   const late=s.recognizers[0].onresult;
-  assert.deepEqual(s.utterances.map(u=>u.text),[""]);
+  assert.equal(s.audios.length,1);assert.equal(s.events.filter(e=>e==="load").length,1);
+  assert.ok(!s.events.some(e=>e.startsWith("speak")));
   s.result("I like bananas");
   assert.equal(s.recognizers[0].stopped,true);
-  assert.equal(s.utterances.length,1);assert.equal(v.mic.disabled,true);
+  assert.ok(!s.events.some(e=>e.startsWith("play:")));assert.equal(v.mic.disabled,true);
   s.recognizers[0].end();
-  const speech=s.utterances.at(-1);
-  assert.equal(speech.text,"apples");assert.equal(speech.voice.name,"Samantha");
-  assert.equal(speech.rate,.8);assert.equal(speech.pitch,1);assert.equal(speech.lang,"en-US");
+  const audio=s.audios[0];
+  assert.ok(audio.src.endsWith("assets/study/words/apples.mp3"));assert.equal(audio.playing,true);
   assert.ok(v.words[2].classList.contains("listening"));
-  assert.ok(s.events.indexOf("stop")<s.events.indexOf("speak:apples"));
+  assert.equal(v.status.textContent,"이렇게 읽어요 👂 apples");
+  assert.ok(s.events.indexOf("stop")<s.events.indexOf("play:"+audio.src));
   late({results:[Object.assign([{transcript:"I like apples"}],{isFinal:true})]});
   assert.equal(s.passes(),0);assert.equal(s.retries.length,1);
-  speech.onend();s.tick(0);
-  assert.equal(v.mic.disabled,false);assert.equal(s.recognizers.length,1);
+  audio.onended();s.tick(0);
+  assert.equal(v.mic.disabled,false);assert.equal(s.recognizers.length,1);assert.equal(audio.playing,false);
   assert.ok(!v.words[2].classList.contains("listening"));
   v.mic.fire("click");assert.equal(s.recognizers.length,2);
-  assert.equal(s.events.filter(e=>e==="load").length,1);
+  assert.equal(s.events.filter(e=>e==="load").length,1);assert.equal(s.audios.length,1);
 });
-test("three words speak once with 400ms gaps; interrupt cancels before restarting mic",()=>{
+test("three words play once with 400ms gaps; interrupt pauses before restarting mic",()=>{
   const s=setup(),v=s.mount({text:"I see a red flower.",meaning:"꽃"});
   v.mic.fire("click");s.result("I hear");s.recognizers[0].end();
-  assert.equal(s.utterances.at(-1).text,"see");
-  s.utterances.at(-1).onend();s.tick(399);assert.equal(s.utterances.length,2);
-  s.tick(1);assert.equal(s.utterances.at(-1).text,"a");
-  const stale=s.utterances.at(-1).onend;
+  const audio=s.audios[0], plays=()=>s.events.filter(e=>e.startsWith("play:")).map(e=>e.split("/").pop());
+  assert.deepEqual(plays(),["see.mp3"]);
+  audio.onended();s.tick(399);assert.deepEqual(plays(),["see.mp3"]);
+  s.tick(1);assert.deepEqual(plays(),["see.mp3","a.mp3"]);assert.equal(v.status.textContent,"이렇게 읽어요 👂 a");
   v.stop.fire("click");
-  assert.equal(s.recognizers.length,2);
-  assert.ok(s.events.lastIndexOf("cancel")<s.events.lastIndexOf("start"));
-  stale();s.tick(500);assert.equal(s.utterances.length,3);
+  assert.equal(s.recognizers.length,2);assert.equal(audio.playing,false);
+  assert.ok(s.events.lastIndexOf("pause")<s.events.lastIndexOf("start"));
+  assert.equal(audio.onended,null);s.tick(5000);assert.deepEqual(plays(),["see.mp3","a.mp3"]);
   assert.equal(s.recognizers.length,2);
 });
-test("no English voice and wholeLine stay silent with neutral text",()=>{
-  const s=setup({voices:[{lang:"ko-KR"}]}),v=s.mount();
-  v.mic.fire("click");s.result("I like bananas");s.recognizers[0].end();
-  assert.equal(s.utterances.length,0);assert.equal(v.status.textContent,"이렇게 읽어요 👂 apples");assert.equal(v.mic.disabled,false);
-  const x=setup(),w=x.mount();w.mic.fire("click");x.result("I like apples and milk");x.recognizers[0].end();
-  assert.deepEqual(x.utterances.map(u=>u.text),[""]);
-  assert.equal(w.status.textContent,"문장에 있는 말만 읽어 주세요");
+test("a failed word clip, a blocked one and wholeLine all stay silent with neutral text",()=>{
+  const s=setup(),v=s.mount({text:"I see a red flower.",meaning:"꽃"});
+  v.mic.fire("click");s.result("I hear");s.recognizers[0].end();
+  const audio=s.audios[0];
+  audio.onerror();s.tick(400);
+  assert.ok(audio.src.endsWith("/a.mp3"));assert.equal(v.mic.disabled,true);
+  audio.onended();s.tick(400);assert.ok(audio.src.endsWith("/red.mp3"));
+  s.tick(4000);assert.equal(v.mic.disabled,false);assert.equal(audio.playing,false);
+  const b=setup({rejectAudio:true}),w=b.mount();w.mic.fire("click");b.result("I like bananas");b.recognizers[0].end();
+  return Promise.resolve().then(()=>{
+    assert.equal(w.mic.disabled,false);assert.equal(w.status.textContent,"이렇게 읽어요 👂 apples");
+    const x=setup(),y=x.mount();y.mic.fire("click");x.result("I like apples and milk");x.recognizers[0].end();
+    assert.ok(!x.events.some(e=>e.startsWith("play:")));
+    assert.equal(y.status.textContent,"문장에 있는 말만 읽어 주세요");assert.equal(y.mic.disabled,false);
+  });
 });
 test("three passes across mounts select dedicated clip; failure and mic error reset flow",()=>{
   const s=setup();
@@ -131,12 +140,15 @@ test("three passes across mounts select dedicated clip; failure and mic error re
   assert.match(pass(w),/\/(great|verygood|youdidit|super)\.mp3$/);
   for(let i=1;i<=3;i++){const n=s.mount();n.mic.fire("click");assert.equal(pass(n).endsWith("threeinarow.mp3"),i===3);}
 });
-test("praise ends once or at 1.8s, and never automatically opens a microphone",()=>{
+test("every praise clip plays to its ended event, and never automatically opens a microphone",()=>{
   const s=setup(),v=s.mount();v.mic.fire("click");s.result("I like apples");s.tick(100);s.recognizers[0].end();
-  const ended=s.audios[0].onended;
+  const audio=s.audios[0],ended=audio.onended;
+  assert.ok(/\/(excellent|perfect|awesome|wonderful)\.mp3$/.test(audio.src));
   assert.equal(s.passes(),0);assert.equal(v.mic.disabled,true);
-  s.tick(1699);assert.equal(s.passes(),0);s.tick(1);assert.equal(s.passes(),1);
-  assert.equal(s.audios[0].playing,false);ended();assert.equal(s.passes(),1);assert.equal(s.recognizers.length,1);
+  s.tick(1800);assert.equal(s.passes(),0);assert.equal(audio.playing,true);
+  audio.ontimeupdate();s.tick(2500);assert.equal(s.passes(),0);
+  ended();assert.equal(s.passes(),1);assert.equal(audio.playing,false);
+  ended();s.tick(9000);assert.equal(s.passes(),1);assert.equal(s.recognizers.length,1);
 });
 test("missing end event skips audio; silent failures keep visible praise until timeout",async()=>{
   for(const options of [{},{noAudio:true},{rejectAudio:true}]){
@@ -159,18 +171,20 @@ test("hidden page cancels speech/praise, destroy invalidates delayed ends and re
   }
   const s=setup(),v=s.mount();v.mic.fire("click");s.result("I like apples");const late=s.recognizers[0].onend;v.view.destroy();late();s.tick(5000);assert.equal(s.passes(),0);assert.ok(!s.events.some(e=>e.startsWith("play:")));
 });
-test("cache v42 precaches all nine MP3s and hub has no second celebration delay",()=>{
+test("cache v43 precaches nine praise and 38 word MP3s; hub has no second celebration delay",()=>{
   const sw=require("../../sw.js"),html=fs.readFileSync(path.join(__dirname,"../../index.html"),"utf8");
-  assert.equal(sw.CACHE_VERSION,"v42");assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=5"));
-  assert.match(html,/english-reading\.js\?v=5/);
+  assert.equal(sw.CACHE_VERSION,"v43");assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=6"));
+  assert.match(html,/english-reading\.js\?v=6/);
   const clips=sw.CORE_SHELL.filter(p=>p.includes("/praise/"));
   assert.equal(clips.length,9);
   for(const clip of clips)assert.ok(fs.statSync(path.join(__dirname,"../..",clip)).size>0);
+  const words=sw.CORE_SHELL.filter(p=>p.includes("/words/"));
+  assert.equal(words.length,Object.keys(reading.wordClips).length);assert.equal(words.length,38);
+  for(const word of Object.values(reading.wordClips)){assert.ok(sw.CORE_SHELL.includes("./"+word),word);assert.ok(fs.statSync(path.join(__dirname,"../..",word)).size>0,word);}
+  assert.doesNotMatch(fs.readFileSync(path.join(__dirname,"../../assets/study/english-reading.js"),"utf8"),/speechSynthesis|SpeechSynthesisUtterance/);
   assert.match(html,/setTimeout\(renderProblem, current\.reading \? 0 : 750\)/);
   assert.match(html,/setTimeout\(applyState, current\.reading \? 0 : 650\)/);
 });
-
-
 test("offline praise reads static precache for full and Safari byte-range requests",async()=>{
   const sw=require("../../sw.js"), originalCaches=global.caches, originalFetch=global.fetch;
   const bytes=fs.readFileSync(path.join(__dirname,"../../assets/study/praise/threeinarow.mp3"));
@@ -217,3 +231,15 @@ test("special praise progress renews the stall watchdog; stalled playback cannot
   s.tick(1);assert.equal(s.passes(),3);assert.equal(audio.playing,false);
 });
 
+test("recognizer alternatives can pass; display uses the first guess; session shape is stable",()=>{
+  assert.deepEqual(reading.alternativeTexts([["the board","the bird"],["can fly","can fry"]]),["the board can fly","the bird can fly","the board can fry"]);
+  assert.equal(reading.anyMatches("The bird can fly.",[["the boat","the bird"],["can fly"]]),true);
+  assert.equal(reading.anyMatches("The bird can fly.",[["the boat","the bike"],["can fly"]]),false);
+  const s=setup(),v=s.mount({text:"The bird can fly.",meaning:"새"});v.mic.fire("click");
+  assert.equal(s.recognizers[0].maxAlternatives,5);
+  s.recognizers[0].onresult({results:[Object.assign([{transcript:"the boat can fly"},{transcript:"the bird can fly"}],{isFinal:true})]});
+  assert.equal(s.recognizers[0].stopped,true);
+  assert.ok(v.status.children.some(n=>n.className==="reading-praise"));
+  const session=reading.createFeedbackSession();
+  assert.deepEqual(Object.keys(session).sort(),["audio","lastClip","log","streak","unlocked"]);
+});
