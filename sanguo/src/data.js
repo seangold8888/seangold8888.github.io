@@ -1,3 +1,5 @@
+import { SANGUO_EXPANSION_PEOPLE, SANGUO_EXPANSION_SIGNATURES, SANGUO_EXPANSION_STATS, SANGUO_REPRESENTATIVE_ROSTER, SANGUO_SPECIAL_STAGES, factionKeyFor } from './data/sanguoRoster.js';
+
 /**
  * 원본 콘텐츠 창구.
  *
@@ -19,10 +21,10 @@ export async function loadData() {
 
 export const db = () => DB;
 
-export const person = (id) => (DB?.PEOPLE?.[id]) ?? {};
+export const person = (id) => SANGUO_EXPANSION_PEOPLE[id] ?? (DB?.PEOPLE?.[id]) ?? {};
 export const personName = (id) => person(id).name ?? id;
-export const stats = (id) => (DB?.ACTION_HEROES?.[id]) ?? {};
-export const stage = (key) => (DB?.ACTION_STAGES?.[key]) ?? {};
+export const stats = (id) => SANGUO_EXPANSION_STATS[id] ?? (DB?.ACTION_HEROES?.[id]) ?? {};
+export const stage = (key) => SANGUO_SPECIAL_STAGES[key] ?? (DB?.ACTION_STAGES?.[key]) ?? {};
 export const chapters = () => DB?.CHAPTERS ?? [];
 export const scenes = () => DB?.SCENES ?? {};
 export const moves = () => DB?.MOVES ?? {};
@@ -30,12 +32,12 @@ export const counter = () => DB?.COUNTER ?? {};
 
 /** 전장 키를 연대순으로. 원본 선언 순서는 시대순이 아니다. */
 export function stageKeys() {
-  const s = DB?.ACTION_STAGES ?? {};
+  const s = { ...(DB?.ACTION_STAGES ?? {}), ...SANGUO_SPECIAL_STAGES };
   return Object.keys(s).sort((a, b) => (s[a].chapter ?? 0) - (s[b].chapter ?? 0));
 }
 
 /** 플레이어블 장수 목록 (ACTION_HEROES 에 있는 인물만) */
-export const playableIds = () => Object.keys(DB?.ACTION_HEROES ?? {});
+export const playableIds = () => [...new Set([...Object.keys(DB?.ACTION_HEROES ?? {}), ...Object.keys(SANGUO_EXPANSION_STATS)])];
 
 /** 이 전장에 나설 수 있는 장수 — 원본 heroes 를 그대로 따른다(사실 고증) */
 export function stageHeroes(key) {
@@ -93,7 +95,7 @@ export const SIGNATURE = {
 };
 
 export function signature(id) {
-  const s = SIGNATURE[id] ?? {};
+  const s = SANGUO_EXPANSION_SIGNATURES[id] ?? SIGNATURE[id] ?? {};
   return {
     name: s.name ?? '',
     len: s.len ?? 1,
@@ -102,6 +104,8 @@ export function signature(id) {
     metal: s.metal ?? 0xc3ccd4,
   };
 }
+
+export const factionKey = (id) => Object.entries(SANGUO_REPRESENTATIVE_ROSTER).find(([, ids]) => ids.includes(id))?.[0] ?? factionKeyFor(person(id).faction || '');
 
 /** 무기 사거리(m). 연출과 실제 히트 판정에 함께 쓴다. */
 export const WEAPON_REACH = {

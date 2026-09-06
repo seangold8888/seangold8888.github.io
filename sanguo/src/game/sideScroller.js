@@ -39,8 +39,16 @@ const HERO_ART = {
     hero: 'art/side-scroller/huangzhong-painted-sheet-v1.png',
     heroBow: 'art/side-scroller/huangzhong-bow-painted-sheet-v1.png',
   },
-  zhouyu: { hero: 'art/side-scroller/zhouyu-painted-sheet-v1.png' },
-  huanggai: { hero: 'art/side-scroller/huanggai-painted-sheet-v1.png' },
+  xiahoudun: { hero: 'art/side-scroller/xiahoudun-painted-sheet-v1.png', heroBow: 'art/side-scroller/xiahoudun-bow-painted-sheet-v1.png' },
+  zhangliao: { hero: 'art/side-scroller/zhangliao-painted-sheet-v1.png', heroBow: 'art/side-scroller/zhangliao-bow-painted-sheet-v1.png' },
+  xuchu: { hero: 'art/side-scroller/xuchu-painted-sheet-v1.png', heroBow: 'art/side-scroller/xuchu-bow-painted-sheet-v1.png' },
+  simayi: { hero: 'art/side-scroller/simayi-painted-sheet-v1.png', heroBow: 'art/side-scroller/simayi-bow-painted-sheet-v1.png' },
+  sunquan: { hero: 'art/side-scroller/sunquan-painted-sheet-v1.png', heroBow: 'art/side-scroller/sunquan-bow-painted-sheet-v1.png' },
+  taishici: { hero: 'art/side-scroller/taishici-painted-sheet-v1.png', heroBow: 'art/side-scroller/taishici-bow-painted-sheet-v1.png' },
+  ganning: { hero: 'art/side-scroller/ganning-painted-sheet-v1.png', heroBow: 'art/side-scroller/ganning-bow-painted-sheet-v1.png' },
+  luxun: { hero: 'art/side-scroller/luxun-painted-sheet-v1.png' },
+  zhouyu: { hero: 'art/side-scroller/zhouyu-painted-sheet-v1.png', heroBow: 'art/side-scroller/zhouyu-bow-painted-sheet-v1.png' },
+  huanggai: { hero: 'art/side-scroller/huanggai-painted-sheet-v1.png', heroBow: 'art/side-scroller/huanggai-bow-painted-sheet-v1.png' },
   zhugeliang: { hero: 'art/side-scroller/zhugeliang-painted-sheet-v1.png' },
   wukong: {
     hero: 'art/side-scroller/wukong-painted-sheet-v1.png',
@@ -202,6 +210,14 @@ const COMBAT_PROFILES = {
   machao: { attackTheme: 'storm', specialTheme: 'lightning', whirlwindTheme: 'storm', musouTheme: 'lightning', arrowColor: '#d8e6ff', hitColor: '#b9d4ff', impactStyle: 'crescent', audioStyle: 'spear', kinds: { 1: 'thrust', 2: 'sweep', 3: 'wide', heavy: 'thrust', special: 'thrust', whirlwind: 'spin', mountedThrust: 'thrust' } },
   // 황충 — 노장의 대도. 느리고 무겁게 내리찍고, 활은 이 게임에서 가장 강하다.
   huangzhong: { attackTheme: 'earth', specialTheme: 'solar', whirlwindTheme: 'earth', musouTheme: 'solar', arrowColor: '#ffd989', hitColor: '#f0b755', impactStyle: 'burst', audioStyle: 'guandao', kinds: { 1: 'overhead', 2: 'sweep', 3: 'wide', heavy: 'overhead', special: 'overhead', mountedThrust: 'sweep' } },
+  xiahoudun: { attackTheme: 'thunder', specialTheme: 'thunder', whirlwindTheme: 'storm', musouTheme: 'inferno', arrowColor: '#a9c8ff', hitColor: '#8aaaff', impactStyle: 'crescent', audioStyle: 'guandao', kinds: { 1: 'sweep', 2: 'reverse', 3: 'wide', heavy: 'overhead', special: 'wide' } },
+  zhangliao: { attackTheme: 'storm', specialTheme: 'lightning', whirlwindTheme: 'storm', musouTheme: 'thunder', arrowColor: '#c8e8ee', hitColor: '#79d4db', impactStyle: 'crescent', audioStyle: 'guandao', kinds: { 1: 'thrust', 2: 'reverse', 3: 'wide', heavy: 'thrust', special: 'thrust' } },
+  xuchu: { attackTheme: 'earth', specialTheme: 'solar', whirlwindTheme: 'earth', musouTheme: 'inferno', arrowColor: '#d6b47a', hitColor: '#d29955', impactStyle: 'burst', audioStyle: 'monkstaff', kinds: { 1: 'overhead', 2: 'overhead', 3: 'wide', heavy: 'overhead', special: 'overhead' } },
+  simayi: { attackTheme: 'thunder', specialTheme: 'storm', whirlwindTheme: 'cloud', musouTheme: 'thunder', arrowColor: '#d5defd', hitColor: '#a9b9ff', impactStyle: 'ribbon', audioStyle: 'dual', kinds: { 1: 'sweep', 2: 'reverse', 3: 'thrust', heavy: 'thrust', special: 'spin' } },
+  sunquan: { attackTheme: 'solar', specialTheme: 'solar', whirlwindTheme: 'storm', musouTheme: 'inferno', arrowColor: '#ffd18b', hitColor: '#f2a85c', impactStyle: 'ribbon', audioStyle: 'dual', kinds: { 1: 'sweep', 2: 'reverse', 3: 'wide', heavy: 'thrust', special: 'wide' } },
+  taishici: { attackTheme: 'lightning', specialTheme: 'lightning', whirlwindTheme: 'storm', musouTheme: 'solar', arrowColor: '#ffd1a4', hitColor: '#ff9474', impactStyle: 'crescent', audioStyle: 'spear', kinds: { 1: 'thrust', 2: 'thrust', 3: 'wide', heavy: 'thrust', special: 'thrust' } },
+  ganning: { attackTheme: 'water', specialTheme: 'water', whirlwindTheme: 'storm', musouTheme: 'solar', arrowColor: '#9ee6eb', hitColor: '#56c9d1', impactStyle: 'ribbon', audioStyle: 'dual', kinds: { 1: 'reverse', 2: 'sweep', 3: 'wide', heavy: 'reverse', special: 'spin' } },
+  luxun: { attackTheme: 'flame', specialTheme: 'inferno', whirlwindTheme: 'storm', musouTheme: 'inferno', arrowColor: '#d7efaf', hitColor: '#a8d978', impactStyle: 'cloud', audioStyle: 'fan', kinds: { 1: 'sweep', 2: 'wide', 3: 'spin', heavy: 'wide', special: 'spin' } },
   zhouyu: { attackTheme: 'flame', specialTheme: 'inferno', whirlwindTheme: 'storm', musouTheme: 'solar', arrowColor: '#ff9d72', hitColor: '#ff7456', impactStyle: 'ribbon', audioStyle: 'dual', kinds: { 1: 'sweep', 2: 'reverse', 3: 'spin', special: 'wide', mountedThrust: 'reverse' } },
   huanggai: { attackTheme: 'earth', specialTheme: 'flame', whirlwindTheme: 'earth', musouTheme: 'inferno', arrowColor: '#ffc271', hitColor: '#ef9d46', impactStyle: 'burst', audioStyle: 'monkstaff', kinds: { 1: 'overhead', 2: 'wide', 3: 'spin', special: 'overhead', mountedThrust: 'wide' } },
   zhugeliang: { attackTheme: 'storm', specialTheme: 'lightning', whirlwindTheme: 'cloud', musouTheme: 'thunder', arrowColor: '#e2eeff', hitColor: '#9edfff', impactStyle: 'cloud', audioStyle: 'fan', kinds: { 1: 'sweep', 2: 'wide', 3: 'spin', special: 'wide', mountedThrust: 'reverse' } },
@@ -223,6 +239,14 @@ const SPECIAL_CALLOUTS = {
   caocao: { special: { name: '패왕기습진', cry: '난세를 거머쥐는 진격' }, musou: { name: '간웅천하참', cry: '패도의 검이 적진을 가른다' } },
   machao: { special: { name: '서량질풍창', cry: '서량 기병의 속도 그대로' }, musou: { name: '신위천장군', cry: '강족이 두려워한 이름' } },
   huangzhong: { special: { name: '정군산일격', cry: '때를 기다린 노장의 한 칼' }, musou: { name: '한승백보궁', cry: '흰 수염의 활이 하늘을 덮는다' } },
+  xiahoudun: { special: { name: '독안진파', cry: '독안의 기세로 길을 연다' }, musou: { name: '하후철벽진', cry: '철벽처럼 적진을 무너뜨린다' } },
+  zhangliao: { special: { name: '소요진돌파령', cry: '번개처럼 진형을 가른다' }, musou: { name: '합비뇌격진', cry: '한 번의 결단으로 전세를 뒤집는다' } },
+  xuchu: { special: { name: '호위철벽', cry: '한 걸음도 물러서지 않는다' }, musou: { name: '맹호진압격', cry: '호치의 괴력이 대지를 울린다' } },
+  simayi: { special: { name: '위수봉쇄진', cry: '흐름을 읽고 길을 막는다' }, musou: { name: '낭고천뢰진', cry: '기다린 번개가 전장을 가른다' } },
+  sunquan: { special: { name: '강동결집령', cry: '강동의 기세를 하나로 모은다' }, musou: { name: '장강패왕진', cry: '장강의 물결처럼 밀어붙인다' } },
+  taishici: { special: { name: '동래관통시', cry: '창과 화살이 한 줄기로 꿰뚫는다' }, musou: { name: '태사연노진', cry: '연속 사격으로 길을 연다' } },
+  ganning: { special: { name: '금범급습', cry: '물결을 가르며 적진을 습격한다' }, musou: { name: '강야난무', cry: '금범의 쌍도가 밤을 가른다' } },
+  luxun: { special: { name: '연영화계', cry: '기다린 불길이 적진을 감싼다' }, musou: { name: '백리화공진', cry: '불꽃의 흐름으로 전장을 지배한다' } },
   zhaoyun: { special: { name: '용담은룡파', cry: '한 줄기 은빛 돌파' }, musou: { name: '칠진칠출격', cry: '용담의 창은 멈추지 않는다' } },
   zhouyu: { special: { name: '적벽화신계', cry: '적벽을 물들인 화공' }, musou: { name: '신화주유진', cry: '장강을 뒤덮는 불의 진' } },
   huanggai: { special: { name: '고육화공진', cry: '몸을 던져 전세를 바꾼다' }, musou: { name: '맹장화선충', cry: '결사의 화선 돌격' } },
@@ -312,6 +336,10 @@ export function preloadSideScroller(heroId = 'guanyu', stageKey = 'hulao') {
 function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
   // 브라우저 TTS와 공용 피격 비명은 사용하지 않는다. 선택한 장수의
   // 로컬 마스터링 전투 대사와 무기·원소 레이어만 재생한다.
+  // 대표 장수 확장본은 전용 한국어 음성이 준비되기 전까지 기술명 배너와
+  // 무기 효과음만 사용한다. 없는 WAV를 요청해 콘솔 404를 만들지 않는다.
+  const recordedHeroCallouts = new Set(['liubei','guanyu','zhangfei','caocao','zhaoyun','zhouyu','huanggai','zhugeliang','machao','huangzhong','sunshangxiang','wukong','bajie','wujing','tieshangongzhu','wusong','linchong','lizhishen','husanniang']);
+  const hasRecordedHeroCallouts = recordedHeroCallouts.has(heroId);
   const sampleManifest = {
     footstep: [0, 1, 2, 3].map((index) => 'audio/kenney-impact/footstep_concrete_00' + index + '.ogg'),
     // 실제 동물 녹음을 중심에 두고 절차 합성은 안장·호흡·강제이탈 보강층으로 쓴다.
@@ -321,8 +349,8 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
     // 새 전용 녹음 전까지 일반 공격·적군 비명은 비워 두고 무기음에 집중한다.
     playerGrunt: [], playerShout: [], enemyGrunt: [], enemyDeath: [],
     // v6는 피치업·더블링·소프트클립을 제거한 자연스러운 기술명 원음이다.
-    voiceSpecial: ['audio/hero-callouts-ko-v6/' + heroId + '-special-v6.wav'],
-    voiceMusou: ['audio/hero-callouts-ko-v6/' + heroId + '-musou-v6.wav'],
+    voiceSpecial: hasRecordedHeroCallouts ? ['audio/hero-callouts-ko-v6/' + heroId + '-special-v6.wav'] : [],
+    voiceMusou: hasRecordedHeroCallouts ? ['audio/hero-callouts-ko-v6/' + heroId + '-musou-v6.wav'] : [],
     waterSplashLight: [1, 2, 3].map((index) => 'audio/cinematic-water/water-splash-light-0' + index + '-cc0-v1.ogg'),
     waterSplashHeavy: [1, 2, 3].map((index) => 'audio/cinematic-water/water-splash-heavy-0' + index + '-cc0-v1.ogg'),
     breathNeutral: ['audio/cinematic-breath/battle-inhale-neutral-cc0-v1.ogg'],
@@ -1155,7 +1183,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   const mountLabel = MOUNT_LABELS[heroId] || '군마';
   const mountKind = MOUNT_KINDS[heroId] || 'horse';
   const isCloudMount = mountKind === 'cloud', isBoarMount = mountKind === 'boar', isWaterMount = mountKind === 'waterBeast';
-  const rangedStyle = ['wukong', 'tieshangongzhu'].includes(heroId) ? 'fan'
+  const rangedStyle = ['wukong', 'tieshangongzhu', 'zhugeliang', 'luxun'].includes(heroId) ? 'fan'
     : heroId === 'sunshangxiang' ? 'ring'
     : heroId === 'husanniang' ? 'lasso'
     : 'bow';
@@ -1216,12 +1244,13 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   const weaponName = workWeapon(heroId)?.name || signature(heroId).name || '전용 무기';
   const hudRoot = createHudRoot(), playerHud = createPlayerHud(hudRoot, heroName, { level: growth.level, weapon: `${weaponName} ${weaponEnhanceText(growth)}` }), bossHud = createEnemyHud(hudRoot, bossLabel);
   if (extra) {
-    const rangedControl = { fan: '파초선 공격', ring: '쌍환 투척', lasso: '홍금투삭', bow: '활쏘기' }[rangedStyle];
+    const fanName = ['zhugeliang','luxun'].includes(heroId) ? '우선' : '파초선';
+    const rangedControl = { fan: fanName + ' 공격', ring: '쌍환 투척', lasso: '홍금투삭', bow: '활쏘기' }[rangedStyle];
     const mountControl = supportsMount ? '<span>F 승마</span>' : '';
     hudRoot.querySelector('.controls').innerHTML = '<span>WASD 이동 · W 두 번 점프</span><span>J 공격 · 꾹 강공</span><span>K ' + rangedControl + '</span>' + mountControl + '<span>L 필살기</span><span>I 돌진기</span>';
   }
   playerHud.setDashSkill(dashTechnique);
-  playerHud.setCapabilities(supportsRanged, supportsMount, { fan: '파초선', ring: '쌍환', lasso: '투삭', bow: '활' }[rangedStyle]);
+  playerHud.setCapabilities(supportsRanged, supportsMount, { fan: ['zhugeliang','luxun'].includes(heroId) ? '우선' : '파초선', ring: '쌍환', lasso: '투삭', bow: '활' }[rangedStyle]);
   bossHud.show(false); bossHud.setWeapon(bossProfile.weapon); bossHud.setPhase('결전 대기'); playerHud.setObjective(stageInfo?.mission || '호로관의 적군을 돌파하라'); playerHud.setMount(false, mountLabel);
   const input = createInput(canvas), audio = makeAudio(heroId, stageKey), worldWidth = 7800;
   // 힌트 문구가 키보드 키를 가리키면 아이패드에선 헛말이 된다.
@@ -1259,9 +1288,9 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   //  - dual(유비 쌍고검): 짧고 빠른 연속 베기 — 사거리 짧고 회전 빠름
   //  - staff(손오공 여의봉): 빠른 연타 — 사거리 중간, 회전 가장 빠름
   //  - rake(저팔계 구치정파): 세 갈래 갈퀴질 — 느리지만 전방을 긁고 지면을 뒤흔듦
-  const historicalWeaponStyles = { liubei: 'dual', guanyu: 'guandao', zhangfei: 'spear', caocao: 'dual', zhaoyun: 'spear', zhouyu: 'dual', huanggai: 'monkstaff', zhugeliang: 'fan', machao: 'spear', huangzhong: 'guandao' };
+  const historicalWeaponStyles = { liubei: 'dual', guanyu: 'guandao', zhangfei: 'spear', caocao: 'dual', zhaoyun: 'spear', zhouyu: 'dual', huanggai: 'monkstaff', zhugeliang: 'fan', machao: 'spear', huangzhong: 'guandao', xiahoudun: 'halberd', zhangliao: 'halberd', xuchu: 'maul', simayi: 'sword', sunquan: 'sword', taishici: 'spear', ganning: 'dual', luxun: 'fan' };
   const weaponStyle = workWeapon(heroId)?.style || historicalWeaponStyles[heroId] || 'guandao';
-  const lightAttackMs = weaponStyle === 'staff' ? 235 : weaponStyle === 'dual' ? 265 : weaponStyle === 'fan' ? 315 : weaponStyle === 'spear' ? 320 : weaponStyle === 'rake' ? 395 : weaponStyle === 'crescent' ? 340 : weaponStyle === 'monkstaff' ? 375 : 360;
+  const lightAttackMs = weaponStyle === 'staff' ? 235 : weaponStyle === 'dual' || weaponStyle === 'sword' ? 265 : weaponStyle === 'fan' ? 315 : weaponStyle === 'spear' ? 320 : weaponStyle === 'halberd' ? 350 : weaponStyle === 'maul' ? 405 : weaponStyle === 'rake' ? 395 : weaponStyle === 'crescent' ? 340 : weaponStyle === 'monkstaff' ? 375 : 360;
   const player = { x: 330, lane: 0, y: 0, vy: 0, facing: 1, hp: maxHp, maxHp, rage: growth.startingRage, combo: 0, comboUntil: 0, comboStep: 0, attackStep: 1, ko: 0, action: 'idle', actionUntil: 0, hitDone: false, invulnerableUntil: 0, mounted: false, grab: null, grabHits: 0, weaponBoost: 0, actionStarted: 0, actionDuration: 0, afterimageAt: 0, footstepAt: 0, dashReady: 0, whirlwindReady: 0, counterReady: 0, counterUntil: 0 };
   let enemies = [], effects = [], impacts = [], afterimages = [], arrows = [], enemyArrows = [], shockwaves = [], dust = [], floatingTexts = [], cameraX = 0, cameraZoom = 1, cameraKick = 0, shake = 0, colorFlash = 0, hitstopUntil = 0, slowUntil = 0, bossIntroUntil = 0, ambientAt = 0, wave = 0, waveDelay = 0, combatLocked = true, waveGate = 1320, ended = false, lastTime = performance.now(), raf = 0;
   let paused = false;
@@ -1418,6 +1447,10 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       : type === 'heavy' ? (weaponStyle === 'spear' ? 'thrust' : 'overhead')
       : ['musou', 'special', 'whirlwind'].includes(type) ? 'spin'
       : weaponStyle === 'spear' ? (attackStep === 3 ? 'wide' : 'thrust')
+      // 장극은 긴 호로 전방을 가르고, 대부는 느리지만 바닥을 울린다.
+      : weaponStyle === 'halberd' ? (attackStep === 3 ? 'wide' : attackStep === 2 ? 'reverse' : 'sweep')
+      : weaponStyle === 'maul' ? (attackStep === 3 ? 'wide' : 'overhead')
+      : weaponStyle === 'sword' ? (attackStep === 3 ? 'thrust' : attackStep === 2 ? 'reverse' : 'sweep')
       // 봉술 — 좌우로 후려치다 3타째에 빙 돌린다.
       : weaponStyle === 'staff' ? (attackStep === 3 ? 'spin' : attackStep === 2 ? 'reverse' : 'sweep')
       : weaponStyle === 'dual' ? (attackStep === 2 ? 'reverse' : attackStep === 3 ? 'wide' : 'sweep')
@@ -1515,7 +1548,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     const anchor = bowAnchor();
     const enemyDrawH = Math.min(300, height * .47);
     if (rangedStyle === 'fan') {
-      const ironFan = heroId === 'tieshangongzhu', fanColor = ironFan ? '#ff9a55' : heroId === 'wukong' ? '#8fe6a2' : '#d8c5ff';
+      const ironFan = heroId === 'tieshangongzhu', fanColor = ironFan ? '#ff9a55' : heroId === 'wukong' ? '#8fe6a2' : heroId === 'luxun' ? '#a8d978' : '#9edfff';
       const speed = ironFan ? 1100 : 1040, launchHeight = anchor.height * .92, distance = target ? Math.max(180, Math.abs(target.x - player.x)) : 760, travel = distance / speed;
       const targetLane = target?.lane ?? player.lane, targetHeight = target ? enemyDrawH * .56 : launchHeight * .80;
       pushArrow({ kind: 'fan', x: player.x + player.facing * anchor.launch, lane: player.lane, height: launchHeight, vx: player.facing * speed, laneV: (targetLane - player.lane) / travel, vz: (targetHeight - launchHeight + 220 * travel * travel) / travel, life: 1.18, max: 1.18, hit: false, trailAt: now, phase: Math.random() * Math.PI * 2, color: fanColor, damage: ironFan ? 64 : 58, pierce: growth.pierce });
@@ -1536,7 +1569,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       return;
     }
     // 황충은 활 자체가 정체성이다 — 다른 장수보다 빠르고 강하고 한 명을 더 뚫는다.
-    const masterArcher = heroId === 'huangzhong';
+    const masterArcher = ['huangzhong','taishici'].includes(heroId);
     const speed = masterArcher ? 1400 : 1180, launchHeight = anchor.height, distance = target ? Math.max(170, Math.abs(target.x - player.x)) : 820, travel = distance / speed;
     const targetLane = target?.lane ?? player.lane, targetHeight = target ? enemyDrawH * .56 : launchHeight * .82;
     pushArrow({ x: player.x + player.facing * anchor.launch, lane: player.lane, height: launchHeight, vx: player.facing * speed, laneV: (targetLane - player.lane) / travel, vz: (targetHeight - launchHeight + (masterArcher ? 190 : 260) * travel * travel) / travel, life: 1.35, max: 1.35, hit: false, trailAt: now, phase: Math.random() * Math.PI * 2, color: combatProfile.arrowColor, damage: masterArcher ? 62 : undefined, pierce: growth.pierce + (masterArcher ? 1 : 0) });
@@ -1634,6 +1667,9 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     // 무기별 사거리·피해. 찌르기(spear)는 멀리 좁게, 쌍고검(dual)은 짧고 잦게,
     // 언월도(guandao)는 그 사이에서 가장 무겁게.
     const stepRange = weaponStyle === 'spear' ? (player.attackStep === 3 ? 280 : 295)
+      : weaponStyle === 'halberd' ? (player.attackStep === 3 ? 294 : 262)
+      : weaponStyle === 'maul' ? (player.attackStep === 3 ? 276 : 222)
+      : weaponStyle === 'sword' ? (player.attackStep === 3 ? 246 : 205)
       : weaponStyle === 'staff' ? (player.attackStep === 3 ? 275 : 230)
       : weaponStyle === 'dual' ? (player.attackStep === 3 ? 235 : 190)
       : weaponStyle === 'fan' ? (player.attackStep === 3 ? 320 : player.attackStep === 2 ? 278 : 246)
@@ -1643,6 +1679,9 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       : weaponStyle === 'monkstaff' ? (player.attackStep === 3 ? 318 : player.attackStep === 2 ? 274 : 248)
       : (player.attackStep === 3 ? 265 : player.attackStep === 2 ? 225 : 205);
     const stepDamage = weaponStyle === 'spear' ? (player.attackStep === 3 ? 44 : player.attackStep === 2 ? 36 : 30)
+      : weaponStyle === 'halberd' ? (player.attackStep === 3 ? 51 : player.attackStep === 2 ? 37 : 33)
+      : weaponStyle === 'maul' ? (player.attackStep === 3 ? 65 : 48)
+      : weaponStyle === 'sword' ? (player.attackStep === 3 ? 42 : player.attackStep === 2 ? 28 : 24)
       : weaponStyle === 'staff' ? (player.attackStep === 3 ? 38 : player.attackStep === 2 ? 24 : 20)
       : weaponStyle === 'dual' ? (player.attackStep === 3 ? 40 : player.attackStep === 2 ? 26 : 22)
       : weaponStyle === 'fan' ? (player.attackStep === 3 ? 51 : player.attackStep === 2 ? 38 : 29)
@@ -1664,6 +1703,9 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
         if (enemy.deadAt || enemy.grabbed) continue; const dx = enemy.x - player.x;
         const laneTolerance = areaAttack ? 118
           : action === 'attack' && weaponStyle === 'spear' && player.attackStep !== 3 ? 52 // 찌르기는 일직선 — 정확히 겨눠야 맞는다
+          : action === 'attack' && weaponStyle === 'halberd' ? (player.attackStep === 3 ? 126 : 96)
+          : action === 'attack' && weaponStyle === 'maul' ? 118
+          : action === 'attack' && weaponStyle === 'sword' ? 70
           : action === 'attack' && weaponStyle === 'staff' && player.attackStep === 3 ? 110 // 봉을 빙 돌리니 주변을 쓸어낸다
           : action === 'attack' && weaponStyle === 'dual' ? 74
           : action === 'attack' && weaponStyle === 'fan' ? (player.attackStep === 3 ? 128 : 102)
@@ -1676,7 +1718,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
           enemy.hp -= damage; if (enemy.hp > 0) audio.enemyVoice(false, Math.max(-.8, Math.min(.8, (enemy.x - player.x) / 600)), enemy); enemy.hitUntil = now + (['dash', 'mountedThrust'].includes(action) ? 410 : 290); floatText(enemy.boss ? `${critical ? '✦ ' : ''}◆ ${damage}` : critical ? `✦ ${damage}` : damage, enemy.x, enemy.lane, enemy.boss ? bossProfile.glow : critical ? '#fff0a6' : combatProfile.hitColor, enemy.boss ? 1.18 : critical ? 1.14 : 1);
           // 찌르기는 직선으로 강하게 밀어내고, 쌍고검은 얕게 여러 번 민다.
           const knockDirection = areaAttack ? Math.sign(dx || player.facing) : player.facing;
-          const knockPower = action === 'dash' ? 135 : action === 'mountedThrust' ? (weaponStyle === 'rake' ? 150 : weaponStyle === 'monkstaff' ? 144 : 112) : action === 'heavy' ? (weaponStyle === 'spear' ? 125 : weaponStyle === 'rake' ? 138 : weaponStyle === 'monkstaff' ? 132 : 95) : action === 'attack' && player.attackStep === 3 ? 90 : weaponStyle === 'spear' ? 80 : weaponStyle === 'dual' ? 32 : weaponStyle === 'fan' ? 68 : weaponStyle === 'staff' ? 38 : weaponStyle === 'rake' ? 76 : weaponStyle === 'monkstaff' ? 72 : weaponStyle === 'crescent' ? 62 : 48;
+          const knockPower = action === 'dash' ? 135 : action === 'mountedThrust' ? (weaponStyle === 'rake' ? 150 : weaponStyle === 'monkstaff' ? 144 : 112) : action === 'heavy' ? (weaponStyle === 'spear' ? 125 : weaponStyle === 'maul' ? 154 : weaponStyle === 'rake' ? 138 : weaponStyle === 'monkstaff' ? 132 : 95) : action === 'attack' && player.attackStep === 3 ? 90 : weaponStyle === 'spear' ? 80 : weaponStyle === 'halberd' ? 74 : weaponStyle === 'maul' ? 118 : weaponStyle === 'sword' ? 46 : weaponStyle === 'dual' ? 32 : weaponStyle === 'fan' ? 68 : weaponStyle === 'staff' ? 38 : weaponStyle === 'rake' ? 76 : weaponStyle === 'monkstaff' ? 72 : weaponStyle === 'crescent' ? 62 : 48;
           enemy.x += knockDirection * knockPower;
           hits += 1; addImpact(enemy.x, enemy.lane, action === 'attack' ? player.attackStep === 3 : action !== 'grab', enemy.hp <= 0);
           if (enemy.hp <= 0) { enemy.hp = 0; enemy.deadAt = now; player.ko += 1; rewardKoHeal(); audio.enemyVoice(true, Math.max(-.8, Math.min(.8, (enemy.x - player.x) / 600)), enemy); gainRage(16); }

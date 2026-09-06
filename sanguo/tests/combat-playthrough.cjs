@@ -18,11 +18,18 @@ const hook = `
 const marker='  function loop(now) {';
 assert.ok(source.includes(marker));
 const instrumented=source.replace(marker,hook+marker).replace('function loop(now) {','function loop(now) { return;');
+const representativeCases=[
+ ['zhaoyun','changban'],['caocao','guandu'],['machao','dongguan'],['huangzhong','dingjunshan'],
+ ['xiahoudun','trilands'],['zhangliao','trilands'],['xuchu','trilands'],['simayi','trilands'],
+ ['sunquan','trilands'],['taishici','trilands'],['ganning','trilands'],['luxun','trilands'],
+];
+const rangedHeroes=new Set(['huangzhong','xiahoudun','zhangliao','xuchu','simayi','sunquan','taishici','ganning','luxun']);
 (async()=>{
  const server=createServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));let browser;
  try{
   browser=await chromium.launch({headless:true});
-  for(const [hero,stage] of [['zhaoyun','changban'],['caocao','guandu'],['machao','dongguan'],['huangzhong','dingjunshan']]){
+  for(const [hero,stage] of representativeCases){
+   const ranged=rangedHeroes.has(hero);
    const context=await browser.newContext({viewport:{width:640,height:400}}),page=await context.newPage(),errors=[];
    page.on('pageerror',e=>errors.push(e.message));
    await page.addInitScript(()=>{let seed=20260906;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};});
@@ -38,12 +45,12 @@ const instrumented=source.replace(marker,hook+marker).replace('function loop(now
     const output=process.env.COMBAT_QA_OUTPUT;fs.mkdirSync(output,{recursive:true});
     await page.evaluate(()=>{const b=__battle,n=performance.now();b.update(.034,n);b.render(n);});
     await page.screenshot({path:path.join(output,hero+'-battle.png')});
-    if(hero==='huangzhong'){
+    if(['huangzhong','taishici','luxun'].includes(hero)){
      await page.evaluate(()=>{const b=__battle,n=performance.now()+1000;b.beginAttack('ranged',n);b.render(n+300);});
      await page.screenshot({path:path.join(output,hero+'-bow.png')});
     }
    }
-   const result=await page.evaluate(({hero})=>{
+   const result=await page.evaluate(({hero,ranged})=>{
     const b=globalThis.__battle,p=b.player; let now=performance.now()+1000,axis=0,laneAxis=0;
     b.input.axis=()=>axis;b.input.axisY=()=>laneAxis;p.invulnerableUntil=Infinity;
     const check=(ok,message)=>{if(!ok)throw Error(hero+': '+message);};
@@ -76,8 +83,8 @@ const instrumented=source.replace(marker,hook+marker).replace('function loop(now
     const endHp=endTarget.hp;now+=1000;b.beginAttack('attack',now);now+=p.actionDuration*.6;tick();
     check(endTarget.hp<endHp,'enemy at world end must take melee damage');
     let arrowDamage=null;
-    if(hero==='huangzhong'){
-     check(b.supportsRanged,'Huang Zhong must have archery art');
+    if(ranged){
+     check(b.supportsRanged,'representative must have a ranged action');
      b.prepare(1,330);const target=b.enemies[0];
      for(const e of b.enemies)if(e!==target)e.deadAt=now;
      Object.assign(target,{x:650,lane:0,hp:1000,attackAt:Infinity,hitUntil:Infinity});
@@ -109,9 +116,9 @@ const instrumented=source.replace(marker,hook+marker).replace('function loop(now
     }
     check(p.hp>0,'victory, not defeat');check(waves.length===7,'all seven waves');
     return {hero,recoveredDamage,arrowDamage,waves,attacks,moves,ko:p.ko,win:b.ended&&p.hp>0,ranged:b.supportsRanged};
-   },{hero});
+   },{hero,ranged});
    assert.ok(result.win);assert.deepEqual(result.waves,[1,2,3,4,5,6,7]);
-   if(hero==='huangzhong')assert.equal(result.ranged,true);
+   if(ranged)assert.equal(result.ranged,true);
    assert.deepEqual(errors,[]);console.log(JSON.stringify(result));
    await context.close();
   }

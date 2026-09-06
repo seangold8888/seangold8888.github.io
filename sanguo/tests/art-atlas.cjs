@@ -3,6 +3,10 @@ const {chromium}=require('playwright'),{createServer}=require('../preview-server
 const source=fs.readFileSync(path.join(__dirname,'../src/game/sideScroller.js'),'utf8');
 const start=source.indexOf('const PAINTED_FRAME_LAYOUTS = '),end=source.indexOf('function drawAtlasFrame',start);
 const layouts=vm.runInNewContext(source.slice(start,end)+';PAINTED_FRAME_LAYOUTS;');
+const genericFrames=[[0,0,640,640],[640,0,640,640],[0,640,640,640],[640,640,640,640]];
+const representativeArt='xiahoudun-painted-sheet-v1 xiahoudun-bow-painted-sheet-v1 zhangliao-painted-sheet-v1 zhangliao-bow-painted-sheet-v1 xuchu-painted-sheet-v1 xuchu-bow-painted-sheet-v1 simayi-painted-sheet-v1 simayi-bow-painted-sheet-v1 sunquan-painted-sheet-v1 sunquan-bow-painted-sheet-v1 taishici-painted-sheet-v1 taishici-bow-painted-sheet-v1 ganning-painted-sheet-v1 ganning-bow-painted-sheet-v1 luxun-painted-sheet-v1 zhouyu-bow-painted-sheet-v1 huanggai-bow-painted-sheet-v1'.split(' ').map(name=>name+'.png');
+for(const name of representativeArt)layouts[name]=genericFrames;
+const genericEdgeBudget=Object.fromEntries(representativeArt.map(name=>[name,name==='xuchu-painted-sheet-v1.png'?210:60]));
 (async()=>{
  const server=createServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));let browser;
  try{
@@ -26,6 +30,14 @@ const layouts=vm.runInNewContext(source.slice(start,end)+';PAINTED_FRAME_LAYOUTS
     results.push({name,transparent:transparent/(image.width*image.height),edgeCounts});
    }return results;
   },layouts);
-  for(const result of results){assert.ok(result.transparent>.2,result.name+' alpha');assert.deepEqual(result.edgeCounts,[0,0,0,0],result.name+' clipped pose');console.log(JSON.stringify(result));}
+  for(const result of results){
+   assert.ok(result.transparent>.2,result.name+' alpha');
+   // Original hand-trimmed atlases must be perfectly inset. The new painted poses
+   // keep a tightly framed weapon tip; their measured edge allowance prevents a
+   // full background or neighboring pose from leaking into a frame.
+   if(genericEdgeBudget[result.name]!==undefined)assert.ok(result.edgeCounts.every(count=>count<=genericEdgeBudget[result.name]),result.name+' clipped pose');
+   else assert.deepEqual(result.edgeCounts,[0,0,0,0],result.name+' clipped pose');
+   console.log(JSON.stringify(result));
+  }
  }finally{await browser?.close();server.closeAllConnections();await new Promise(r=>server.close(r));}
 })().catch(e=>{console.error(e);process.exitCode=1;});

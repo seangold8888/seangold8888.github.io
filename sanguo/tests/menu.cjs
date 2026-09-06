@@ -21,7 +21,7 @@ const {createServer}=require('../preview-server.cjs');
    assert.ok(layout.x>=0&&layout.right<=width+.5&&layout.bottom<=height+.5,JSON.stringify(layout));
    assert.ok(layout.scrollWidth<=layout.clientWidth+1,'horizontal overflow');
    if(width>=1000)assert.ok(layout.scrollHeight<=layout.clientHeight+1,'iPad initial menu must fit one screen');
-   assert.equal(await page.locator('[data-stage]').count(),10);
+   assert.equal(await page.locator('[data-stage]').count(),11);
    assert.equal(await page.locator('.cm-details').getAttribute('open'),null);
    await page.locator('[data-hero=zhangfei]').click();
    assert.equal(await page.locator('[data-hero=zhangfei]').getAttribute('aria-pressed'),'true');
@@ -52,6 +52,28 @@ const {createServer}=require('../preview-server.cjs');
    await page.locator('[data-stage=changban]').click();
    assert.ok(await page.locator('#menu-deploy').isEnabled());
    assert.equal(await page.locator('[data-hero=zhaoyun]').getAttribute('aria-pressed'),'true');
+   if(width<=680)await page.locator('.cm-stage-toggle').click();
+   await page.locator('[data-stage=trilands]').click();
+   assert.equal(await page.locator('#hero-grid[data-roster=true]').count(),1);
+   await page.locator('[data-faction=all]').click();
+   assert.equal(await page.locator('#hero-grid [data-hero]').count(),19);
+   await page.locator('[data-faction=wei]').click();
+   assert.equal(await page.locator('#hero-grid [data-hero]').count(),5);
+   for(const hero of ['caocao','xiahoudun','zhangliao','xuchu','simayi'])assert.equal(await page.locator('[data-hero='+hero+']').count(),1,hero);
+   await page.locator('[data-hero=zhangliao]').click();
+   assert.equal(await page.locator('[data-hero=zhangliao]').getAttribute('aria-pressed'),'true');
+   await page.locator('[data-faction=wu]').click();
+   assert.equal(await page.locator('#hero-grid [data-hero]').count(),7);
+   for(const hero of ['sunquan','zhouyu','huanggai','sunshangxiang','taishici','ganning','luxun'])assert.equal(await page.locator('[data-hero='+hero+']').count(),1,hero);
+   await page.locator('[data-hero=taishici]').click();
+   assert.equal(await page.locator('.cm-unavailable').count(),0);
+   await page.locator('[data-hero=taishici] .cm-portrait').evaluate(async el=>{
+    const image=new Image();image.src=el.style.backgroundImage.slice(5,-2);await image.decode();
+   });
+   await page.screenshot({path:path.join(output,label+'-representatives.png'),fullPage:true});
+   await page.locator('#menu-deploy').click();await page.waitForSelector('#story-begin');
+   assert.match(await page.locator('.story-screen').innerText(),/태사자/);
+   await page.locator('#story-back').click();await page.waitForSelector('.command-menu');
    for(const work of ['xiyou','shuihu','sanguo']){
     await page.locator('[data-work='+work+']').click();
     assert.ok(await page.locator('[data-hero]:not(:disabled)').count()>0);
@@ -69,6 +91,6 @@ const {createServer}=require('../preview-server.cjs');
    console.log(JSON.stringify({label,layout,passed:true}));
    await context.close();
   }
-  console.log('PASS: menu layout, selection, difficulty, briefing/back, Ma Chao/Huang Zhong portraits and deployment. '+output);
+  console.log('PASS: menu layout, faction-filtered 19 representative roster, selection, briefing/back, Ma Chao/Huang Zhong portraits and deployment. '+output);
  }finally{await browser?.close();server.closeAllConnections();await new Promise(r=>server.close(r));}
 })().catch(e=>{console.error(e);process.exitCode=1;});

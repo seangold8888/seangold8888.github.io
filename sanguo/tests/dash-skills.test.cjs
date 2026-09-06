@@ -4,12 +4,14 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const path = require('node:path');
 const skills = () => import('../src/game/dashSkills.js');
-test('19 unique techniques cover all main heroes and have bounded damage/cooldown', async () => {
-  const {DASH_SKILLS} = await skills();
-  assert.equal(Object.keys(DASH_SKILLS).length, 19);
-  assert.equal(new Set(Object.values(DASH_SKILLS).map(s => s.name)).size, 19);
+const roster = () => import('../src/data/sanguoRoster.js');
+test('27 unique techniques cover all main and representative heroes with bounded damage/cooldown', async () => {
+  const [{DASH_SKILLS}, {SANGUO_EXPANSION_STATS}] = await Promise.all([skills(), roster()]);
+  assert.equal(Object.keys(DASH_SKILLS).length, 27);
+  assert.equal(new Set(Object.values(DASH_SKILLS).map(s => s.name)).size, 27);
   const data = JSON.parse(fs.readFileSync(path.join(__dirname,'../data/gamedata.json')));
   for (const id of Object.keys(data.ACTION_HEROES)) assert.ok(DASH_SKILLS[id], id);
+  for (const id of Object.keys(SANGUO_EXPANSION_STATS)) assert.ok(DASH_SKILLS[id], id);
   for (const s of Object.values(DASH_SKILLS)) {
     assert.equal(s.cooldown, 2600); assert.ok(s.duration >= 400 && s.duration <= 700);
     assert.ok(s.damage * s.hits + s.shots * 62 * .42 <= 110);
@@ -43,7 +45,7 @@ test('growth cooldown multiplier retained', async () => {
 });
 test('new runtime imports and styles are present and precached', () => {
   const base=path.resolve(__dirname,'../..'),sw=fs.readFileSync(path.join(base,'sw.js'),'utf8');
-  const modules=['main.js','data.js','data/works.js','game/sideScroller.js','game/hud.js','game/dashSkills.js','game/scenery.js','game/tint.js','game/difficulty.js','game/progression.js','ui/result.js','ui/title.js','ui/storyIntro.js','ui/workSelect.js'];
+  const modules=['main.js','data.js','data/works.js','data/sanguoRoster.js','game/sideScroller.js','game/hud.js','game/dashSkills.js','game/scenery.js','game/tint.js','game/difficulty.js','game/progression.js','ui/result.js','ui/title.js','ui/storyIntro.js','ui/workSelect.js'];
   for(const file of [...modules.map(f=>'sanguo/src/'+f),'sanguo/game-controls.css','sanguo/mobile-hud.css']){
     assert.ok(fs.existsSync(path.join(base,file)),file);assert.ok(sw.includes('"./'+file+'"'),file+' cache');
   }

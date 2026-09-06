@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v45";
+const CACHE_VERSION = "v46";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -224,6 +224,7 @@ const OPTIONAL_SHELL = [
   "./sanguo/mobile-hud.css",
   "./sanguo/src/main.js",
   "./sanguo/src/data.js",
+  "./sanguo/src/data/sanguoRoster.js",
   "./sanguo/src/data/works.js",
   "./sanguo/src/game/sideScroller.js",
   "./sanguo/src/game/hud.js",
@@ -276,6 +277,8 @@ const SANGUO_RUNTIME_ASSETS = [
   "./sanguo/art/side-scroller/boss-xiahoudun-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/boss-zhangjiao-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/caocao-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/ganning-bow-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/ganning-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/enemy-action-sheet-v2.png",
   "./sanguo/art/side-scroller/enemy-painted-sheet-v4.png",
   "./sanguo/art/side-scroller/enemy-pixel-sheet-v3.png",
@@ -283,6 +286,7 @@ const SANGUO_RUNTIME_ASSETS = [
   "./sanguo/art/side-scroller/guanyu-bow-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/guanyu-painted-sheet-v4.png",
   "./sanguo/art/side-scroller/guanyu-pixel-sheet-v3.png",
+  "./sanguo/art/side-scroller/huanggai-bow-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/huanggai-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/hulao-arcade-bg-v3.png",
   "./sanguo/art/side-scroller/hulao-boss-painted-sheet-v1.png",
@@ -293,6 +297,7 @@ const SANGUO_RUNTIME_ASSETS = [
   "./sanguo/art/side-scroller/linchong-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/liubei-bow-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/liubei-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/luxun-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/lizhishen-bow-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/lizhishen-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/mount-bajie-painted-sheet-v1.png",
@@ -326,7 +331,13 @@ const SANGUO_RUNTIME_ASSETS = [
   "./sanguo/art/side-scroller/red-hare-painted-sheet-v3.png",
   "./sanguo/art/side-scroller/red-hare-pixel-sheet-v1.png",
   "./sanguo/art/side-scroller/reward-chest-painted-v1.png",
+  "./sanguo/art/side-scroller/simayi-bow-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/simayi-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/sunshangxiang-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/sunquan-bow-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/sunquan-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/taishici-bow-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/taishici-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/tieshangongzhu-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/tieshangongzhu-painted-sheet-v2.png",
   "./sanguo/art/side-scroller/wujing-bow-painted-sheet-v1.png",
@@ -335,12 +346,19 @@ const SANGUO_RUNTIME_ASSETS = [
   "./sanguo/art/side-scroller/wukong-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/wusong-bow-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/wusong-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/xiahoudun-bow-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/xiahoudun-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/xuchu-bow-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/xuchu-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/zhangfei-bow-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/zhangfei-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/zhangliao-bow-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/zhangliao-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/zhaoyun-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/machao-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/huangzhong-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/huangzhong-bow-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/zhouyu-bow-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/zhouyu-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/zhugeliang-painted-sheet-v1.png",
   "./sanguo/audio/cinematic-breath/battle-inhale-deep-cc0-v1.ogg",
