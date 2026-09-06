@@ -41,21 +41,9 @@ function wire(root, heroId, onBegin, onBack) {
     active = false;
     removeEventListener('keydown', key);
   };
-  const requestBattleImmersion = () => {
-    const target = document.documentElement;
-    if (document.fullscreenElement || typeof target.requestFullscreen !== 'function') return;
-    try {
-      const entering = target.requestFullscreen({ navigationUI: 'hide' });
-      Promise.resolve(entering).then(() => {
-        if (screen.orientation?.lock) return screen.orientation.lock('landscape').catch(() => {});
-        return undefined;
-      }).catch(() => {});
-    } catch {
-      // iPad Safari 등 전체화면 API가 없는 환경은 일반 가로 화면으로 계속한다.
-    }
-  };
-  const begin = (event) => {
-    if (event?.type === 'click') requestBattleImmersion();
+  // 전투 진입에서 전체 화면·가로 회전을 강제하면 iPad Safari가 blur/focus를
+  // 중간에 놓쳐 조작부가 사라질 수 있다. 화면 방향은 플레이어의 선택으로 둔다.
+  const begin = () => {
     cleanup();
     onBegin(heroId);
   };

@@ -1,6 +1,9 @@
 /** 전투 HUD: 체력·무쌍·콤보·격파·목표·조작 안내. */
 export function createHudRoot() {
   const root = document.createElement('div'); root.id = 'hud';
+  const touchCapable = (globalThis.navigator?.maxTouchPoints || 0) > 0
+    || !!globalThis.matchMedia?.('(any-pointer: coarse)')?.matches;
+  root.classList.toggle('touch-capable', touchCapable);
   document.getElementById('ui').appendChild(root); return root;
 }
 

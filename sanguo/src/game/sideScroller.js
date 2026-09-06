@@ -1238,7 +1238,12 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
     if (stageInfo && stageKey !== 'hulao') scenery = createScenery(stageInfo.scene, width, height);
   };
-  resize(); addEventListener('resize', resize);
+  let resizeFrame = 0;
+  const scheduleResize = () => {
+    if (resizeFrame) return;
+    resizeFrame = requestAnimationFrame(() => { resizeFrame = 0; resize(); });
+  };
+  resize();
 
   const growth = getCombatGrowth(heroId);
   const weaponName = workWeapon(heroId)?.name || signature(heroId).name || '전용 무기';
@@ -1253,8 +1258,16 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   playerHud.setCapabilities(supportsRanged, supportsMount, { fan: ['zhugeliang','luxun'].includes(heroId) ? '우선' : '파초선', ring: '쌍환', lasso: '투삭', bow: '활' }[rangedStyle]);
   bossHud.show(false); bossHud.setWeapon(bossProfile.weapon); bossHud.setPhase('결전 대기'); playerHud.setObjective(stageInfo?.mission || '호로관의 적군을 돌파하라'); playerHud.setMount(false, mountLabel);
   const input = createInput(canvas), audio = makeAudio(heroId, stageKey), worldWidth = 7800;
+  const touchCapable = (navigator.maxTouchPoints || 0) > 0 || !!globalThis.matchMedia?.('(any-pointer: coarse)')?.matches;
+  document.documentElement.classList.add('battle-viewport');
+  const preventBrowserGesture = (event) => {
+    if (event.type.startsWith('gesture') || event.touches?.length > 1) event.preventDefault();
+  };
+  for (const type of ['gesturestart', 'gesturechange', 'gestureend', 'touchstart', 'touchmove']) {
+    document.addEventListener(type, preventBrowserGesture, { passive: false });
+  }
   // 힌트 문구가 키보드 키를 가리키면 아이패드에선 헛말이 된다.
-  const touchMode = !!matchMedia?.('(pointer: coarse)').matches;
+  const touchMode = touchCapable;
   // iOS 는 사용자 제스처 콜스택 안에서만 AudioContext 를 깨울 수 있다.
   // 게임 루프에서 부르는 startMusic 은 사파리가 무시하므로 첫 터치에서 해제.
   const unlockAudio = () => audio.startMusic();
@@ -1300,11 +1313,19 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     if (paused) audio.pause();
     else { lastTime = performance.now(); audio.resume(); showBanner(hudRoot, '전투 재개', '준비되면 공격을 이어가세요', 900); }
   };
+  const onViewportChange = () => {
+    scheduleResize();
+    if (!document.hidden) setPaused(false);
+  };
   const onVisibility = () => setPaused(document.hidden);
-  const onBlur = () => setPaused(true);
+  // 전체화면·방향 전환도 blur를 내보낸다. 실제로 숨긴 탭만 멈춘다.
+  const onBlur = () => { if (document.hidden) setPaused(true); };
   const onFocus = () => { if (!document.hidden) setPaused(false); };
   document.addEventListener('visibilitychange', onVisibility);
-  addEventListener('blur', onBlur); addEventListener('focus', onFocus);
+  addEventListener('resize', onViewportChange); addEventListener('orientationchange', onViewportChange); addEventListener('blur', onBlur); addEventListener('focus', onFocus);
+  document.addEventListener('fullscreenchange', onViewportChange);
+  globalThis.visualViewport?.addEventListener('resize', onViewportChange);
+  globalThis.visualViewport?.addEventListener('scroll', onViewportChange);
   // 적응형 품질. 프레임이 밀리면 화려함을 스스로 깎는다 — 난전에서 끊기는
   // 것보다 파티클 몇 개 덜 나오는 쪽이 훨씬 낫다. 1 = 최상, 0.45 = 최소.
   let quality = 1, frameAvg = 16.7;
@@ -1734,7 +1755,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     if (hits) { const powerful = action === 'attack' ? player.attackStep === 3 : action !== 'grab'; audio.hit(powerful, action); shake = ['musou', 'special', 'whirlwind'].includes(action) ? 18 : ['heavy', 'throw', 'dash', 'mountedThrust'].includes(action) || powerful ? 12 : 6; hitstopUntil = now + (powerful ? 64 : 42); if (powerful) slowUntil = Math.max(slowUntil, now + (['musou', 'special'].includes(action) ? 310 : 190)); gainRage(hits * (action === 'whirlwind' ? 3 : 7)); }
   }
   function finish(win) {
-    if (ended) return; ended = true; cancelAnimationFrame(raf); input.destroy(); removeEventListener('pointerdown', unlockAudio, { capture: true }); removeEventListener('resize', resize); document.removeEventListener('visibilitychange', onVisibility); removeEventListener('blur', onBlur); removeEventListener('focus', onFocus); bossHud.remove(); audio.stop(); if (win) audio.win();
+    if (ended) return; ended = true; cancelAnimationFrame(raf); if (resizeFrame) cancelAnimationFrame(resizeFrame); input.destroy(); removeEventListener('pointerdown', unlockAudio, { capture: true }); removeEventListener('resize', onViewportChange); removeEventListener('orientationchange', onViewportChange); document.removeEventListener('visibilitychange', onVisibility); document.removeEventListener('fullscreenchange', onViewportChange); removeEventListener('blur', onBlur); removeEventListener('focus', onFocus); globalThis.visualViewport?.removeEventListener('resize', onViewportChange); globalThis.visualViewport?.removeEventListener('scroll', onViewportChange); for (const type of ['gesturestart', 'gesturechange', 'gestureend', 'touchstart', 'touchmove']) document.removeEventListener(type, preventBrowserGesture); document.documentElement.classList.remove('battle-viewport'); bossHud.remove(); audio.stop(); if (win) audio.win();
     const rewards = awardBattleProgress(heroId, { win, ko: player.ko, stageKey, difficultyId: diff.id });
     setTimeout(() => { document.getElementById('ui').innerHTML = ''; showResult(document.getElementById('ui'), { win, heroName, enemyName: bossLabel, weaponName, rewards, onRetry: () => startSideBattle(heroId, stageKey, { onExit }), onMenu: () => onExit?.() }); }, 450);
   }
@@ -2009,7 +2030,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     const dustCap = Math.round(460 * q());
     if (dust.length > dustCap) dust.splice(0, dust.length - dustCap);
     cameraKick *= Math.exp(-dt * 5.2);
-    const zoomTarget = now < bossIntroUntil ? 1.085 : 1 + cameraKick;
+    const zoomTarget = now < bossIntroUntil ? (touchCapable ? 1 : 1.085) : 1 + cameraKick * (touchCapable ? .35 : 1);
     cameraZoom += (zoomTarget - cameraZoom) * (1 - Math.exp(-dt * 9));
     colorFlash *= Math.exp(-dt * 15); shake *= Math.exp(-dt * 11);
     playerHud.setDashCooldown(player.dashReady - now, dashTechnique.cooldown * growth.cooldown);
