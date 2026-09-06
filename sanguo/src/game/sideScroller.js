@@ -8,6 +8,7 @@ import { showResult } from '../ui/result.js';
 import { awardBattleProgress, getCombatGrowth, weaponEnhanceText } from './progression.js';
 import { dashSkill, startDashState, collectDashHits } from './dashSkills.js';
 import { combatBounds, clampCombatX, constrainEnemy, waveSpawnX } from './combatBounds.js';
+import { MOUNT_PROFILES, drawConsistentMount } from './mountedSprites.js';
 
 const CANVAS_UI_FONT = '"Pretendard Variable", Pretendard, "Noto Sans KR", "Malgun Gothic", sans-serif';
 const CANVAS_IMPACT_FONT = CANVAS_UI_FONT;
@@ -82,6 +83,11 @@ const HERO_ART = {
   husanniang: { hero: 'art/side-scroller/husanniang-painted-sheet-v1.png' },
 };
 
+for (const [id, profile] of Object.entries(MOUNT_PROFILES)) {
+  HERO_ART[id].rider = profile.rider;
+  if (profile.bow) HERO_ART[id].heroBow = profile.bow;
+}
+
 const ART = {
   enemy: 'art/side-scroller/enemy-painted-sheet-v4.png',
   boss: 'art/side-scroller/hulao-boss-painted-sheet-v1.png',
@@ -103,6 +109,8 @@ const MOUNT_ART = {
   linchong: 'art/side-scroller/mount-linchong-painted-sheet-v1.png',
   lizhishen: 'art/side-scroller/mount-lizhishen-painted-sheet-v1.png',
 };
+
+for (const [id, profile] of Object.entries(MOUNT_PROFILES)) MOUNT_ART[id] = profile.horse;
 
 const BOSS_ART = {
 zhangjiao: 'art/side-scroller/boss-zhangjiao-painted-sheet-v1.png',
@@ -133,6 +141,8 @@ const MOUNT_LABELS = {
 
 // 화면·이동음·탑승음을 같은 분류에서 읽는다. 사오정의 수마가 말발굽
 // 소리를 내거나 저팔계의 야저가 군마처럼 처리되는 폴백을 막는다.
+for (const [id, profile] of Object.entries(MOUNT_PROFILES)) MOUNT_LABELS[id] = profile.label;
+
 const MOUNT_KINDS = {
   liubei: 'horse', guanyu: 'horse', zhangfei: 'horse',
   wukong: 'cloud', bajie: 'boar', wujing: 'waterBeast',
@@ -283,7 +293,8 @@ export function preloadSideScroller(heroId = 'guanyu', stageKey = 'hulao') {
     const hero = { hero: await loadImage(heroSources.hero) };
     for (const [key, src] of Object.entries(heroSources)) {
       if (key === 'hero') continue;
-      const image = await loadOptional(src, resolvedHeroId + '.' + key);
+      if (MOUNT_PROFILES[resolvedHeroId] && (key === 'mounted' || key === 'mountedBow')) continue;
+      const image = key === 'rider' ? await loadImage(src) : await loadOptional(src, resolvedHeroId + '.' + key);
       if (image) hero[key] = image;
     }
     const mounts = {};
@@ -992,6 +1003,12 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
 // Explicit cuts and boot anchors keep weapon overhangs in their own pose and
 // compensate for transparent padding without modifying the original PNG pixels.
 const PAINTED_FRAME_LAYOUTS = {
+    'zhaoyun-bow-painted-sheet-v1.png': [[0,0,600,608,320,600],[600,0,680,608,360,590],[0,608,600,672,320,620],[600,608,680,672,290,620]],
+    'caocao-bow-painted-sheet-v1.png': [[0,0,620,620,320,605],[620,0,660,620,320,590],[0,620,620,660,320,587],[620,620,660,660,290,600]],
+    'machao-bow-painted-sheet-v1.png': [[0,0,620,615,320,605],[620,0,660,615,320,598],[0,615,620,665,320,623],[620,615,660,665,290,623]],
+    'mount-zhaoyun-painted-sheet-v1.png': [[0,0,620,620,300,565],[620,0,660,620,350,568],[0,620,682,660,320,518],[682,620,598,660,276,562]],
+    'mount-caocao-painted-sheet-v1.png': [[0,0,620,620,300,598],[620,0,660,620,330,600],[0,620,686,660,330,555],[686,620,594,660,264,575]],
+    'mount-machao-painted-sheet-v1.png': [[0,0,630,620,300,574],[630,0,650,620,330,574],[0,620,650,660,320,500],[650,620,630,660,290,560]],
     'machao-painted-sheet-v1.png': [[0,0,620,620,320,574],[620,0,660,620,350,565],[0,620,600,660,320,536],[600,620,680,660,290,529]],
     'huangzhong-painted-sheet-v1.png': [[0,0,640,640,320,583],[640,0,640,640,320,575],[0,640,640,640,320,544],[640,640,640,640,310,510]],
     'huangzhong-bow-painted-sheet-v1.png': [[0,0,620,600,320,583],[620,0,660,600,350,575],[0,600,620,680,320,605],[620,600,660,680,250,605]],
@@ -1144,10 +1161,11 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     : 'bow';
   const rangedUsesBase = rangedStyle !== 'bow';
   const supportsRanged = rangedUsesBase || !!heroAssets.heroBow;
-  const supportsMount = !!MOUNT_ART[heroId] && !!mountAsset;
-  // 일반 군마는 예전 버전의 자연스러운 착좌 자세가 든 합성 시트를 복원한다.
-  // 근두운·야저·수마는 현재 단독 탈것과 전용 기수 레이어를 계속 사용한다.
-  const usesSeatedMountSheet = supportsMount && mountKind === 'horse' && !!heroAssets.mounted;
+  const usesConsistentMount = !!MOUNT_PROFILES[heroId] && !!heroAssets.rider;
+  const supportsMount = !!MOUNT_ART[heroId] && !!assets.mounts[heroId];
+  // New mount profiles always retain the standalone horse and change only a seated rider.
+  // Other existing heroes keep their prior composite/special-mount rendering.
+  const usesSeatedMountSheet = !usesConsistentMount && supportsMount && mountKind === 'horse' && !!heroAssets.mounted;
   const supportsMountedRanged = usesSeatedMountSheet ? !!heroAssets.mountedBow : supportsMount && supportsRanged;
   const extra = workPerson(heroId), extraStats = workStats(heroId);
   // 전장 정보. 서유기·수호지는 works.js, 삼국지는 원본 gamedata 에서 온다.
@@ -1293,6 +1311,10 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       const config = MOUNTED_BOW_ANCHORS[heroId] || MOUNTED_BOW_ANCHORS.default;
       const drawHeight = Math.min(430, height * .66) * depthScale;
       return { height: drawHeight * config.height, fx: config.fx, launch: config.launch };
+    }
+    if (usesConsistentMount) {
+      const layout = mountLayout(depthScale);
+      return { height:layout.mountHeight*.84, fx:38, launch:76 };
     }
     // 특수 탈것은 같은 단독 탈것의 안장 기준에서 손 위치를 계산한다.
     const layout = mountLayout(depthScale);
@@ -2309,6 +2331,15 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   }
 
   function drawMountedFigure(screenX, baseY, facing, frame = 0, alpha = 1, ranged = false, depthScale = 1) {
+    if (usesConsistentMount) {
+      drawConsistentMount(ctx,drawAtlasFrame,{
+        horse:mountAsset,rider:heroAssets.rider,x:screenX,y:baseY,
+        height:mountLayout(depthScale).mountHeight,facing,alpha,frame,ranged,
+        seatY:({guanyu:.53,zhaoyun:.60,caocao:.66,machao:.63})[heroId],
+        moving:player.action==='run'||player.action==='dash',now:performance.now(),
+      });
+      return;
+    }
     if (usesSeatedMountSheet) {
       const image = ranged && heroAssets.mountedBow ? heroAssets.mountedBow : heroAssets.mounted;
       drawAtlasFrame(ctx, image, frame, screenX, baseY, Math.min(430, height * .66) * depthScale, facing, alpha);
@@ -2361,8 +2392,8 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
         const flicker = now < player.invulnerableUntil && Math.floor(now / 55) % 2 ? 0.38 : 1;
         if (player.mounted) {
           // 전용 합성 시트에서는 활 반동으로 말 전체가 미끄러지지 않게 한다.
-          const mountedBowShift = usesSeatedMountSheet ? 0 : bowShift;
-          const mountedBowDip = usesSeatedMountSheet ? 0 : bowDip;
+          const mountedBowShift = usesSeatedMountSheet || usesConsistentMount ? 0 : bowShift;
+          const mountedBowDip = usesSeatedMountSheet || usesConsistentMount ? 0 : bowDip;
           drawHorse(player.x + attackLunge + mountedBowShift, baseY - strideBob + mountedBowDip, player.facing, true, heroFrame, flicker, player.action === 'ranged');
         }
         else drawAtlasFrame(ctx, player.action === 'ranged' && !rangedUsesBase ? heroAssets.heroBow : heroAssets.hero, heroFrame, player.x + attackLunge + bowShift - cameraX, baseY - player.y - strideBob + bowDip, Math.min(320, height * 0.50) * (1 + player.lane * .0014), player.facing, flicker);

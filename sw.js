@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v44";
+const CACHE_VERSION = "v45";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -229,6 +229,17 @@ const OPTIONAL_SHELL = [
   "./sanguo/src/game/hud.js",
   "./sanguo/src/game/dashSkills.js",
   "./sanguo/src/game/combatBounds.js",
+  "./sanguo/src/game/mountedSprites.js",
+  "./sanguo/art/side-scroller/zhaoyun-bow-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/caocao-bow-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/machao-bow-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/mount-zhaoyun-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/mount-caocao-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/mount-machao-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/rider-guanyu-combat-bow-v1.png",
+  "./sanguo/art/side-scroller/rider-zhaoyun-combat-bow-v1.png",
+  "./sanguo/art/side-scroller/rider-caocao-combat-bow-v1.png",
+  "./sanguo/art/side-scroller/rider-machao-combat-bow-v1.png",
   "./sanguo/src/game/scenery.js",
   "./sanguo/src/game/tint.js",
   "./sanguo/src/game/difficulty.js",
