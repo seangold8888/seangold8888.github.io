@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v40";
+const CACHE_VERSION = "v41";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -118,6 +118,24 @@ const OPTIONAL_SHELL = [
   ...PRINCESS_STUDIO_ASSETS,
   ..."snow cinder rapunzel mermaid thumb kongjwi briar moon".split(" ").map(id => `./princess/assets/bodies-v4/body-${id}.webp`),
   "./sanguo/",
+  "./sanguo/index.html",
+  "./sanguo/menu-v4.css",
+  "./sanguo/game-controls.css",
+  "./sanguo/mobile-hud.css",
+  "./sanguo/src/main.js",
+  "./sanguo/src/data.js",
+  "./sanguo/src/data/works.js",
+  "./sanguo/src/game/sideScroller.js",
+  "./sanguo/src/game/hud.js",
+  "./sanguo/src/game/dashSkills.js",
+  "./sanguo/src/game/scenery.js",
+  "./sanguo/src/game/tint.js",
+  "./sanguo/src/game/difficulty.js",
+  "./sanguo/src/game/progression.js",
+  "./sanguo/src/ui/result.js",
+  "./sanguo/src/ui/title.js",
+  "./sanguo/src/ui/storyIntro.js",
+  "./sanguo/src/ui/workSelect.js",
   "./sanguo/assets/index-DnM9zJtq.js",
   "./sanguo/assets/index-BFRqmzM-.css",
   "./sanguo/mobile-hud.css",
