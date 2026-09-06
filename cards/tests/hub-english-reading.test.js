@@ -23,16 +23,17 @@ function setup(options = {}, callbacks) {
   class Recognition {
     constructor() { instances.push(this); }
     start() { this.started = true; if (this.onstart) this.onstart(); }
+    stop() { this.aborted = true; if (this.onend) this.onend(); }
     abort() { this.aborted = true; }
   }
   const doc = Object.assign(target(), { hidden: false, createElement: node });
   const env = Object.assign(target(), { document: doc, navigator: { onLine: true }, isSecureContext: true,
-    SpeechRecognition: Recognition, SpeechSynthesisUtterance: class { constructor(text) { this.text = text; } },
+    SpeechRecognition: Recognition, Audio: class { load() {} pause() {} play() { if (this.onended) this.onended(); } }, SpeechSynthesisUtterance: class { constructor(text) { this.text = text; } },
     speechSynthesis: { speaking: false, getVoices: () => [{ lang: "en-US" }],
       speak(speech) { this.last = speech; this.speaking = true; },
       cancel() { this.speaking = false; } },
     setTimeout: fn => { timers.set(++counter, fn); return counter; }, clearTimeout: id => timers.delete(id)
-  }, options);
+  }, { speechSynthesis: null }, options);
   const container = node();
   const view = reading.mount(container, reading.sentences[0], () => passes++, env, callbacks);
   const actions = container.children[3].children;
@@ -129,12 +130,12 @@ test("unsupported/offline environments never request recognition", () => {
     assert.equal(s.instances.length, 0); assert.equal(s.passes(), 0); assert.equal(s.mic.disabled, true);
   }
 });
-test("listen button and speech playback are removed", () => {
+test("no listen button or full-sentence speech model", () => {
   const s = setup();
   assert.equal(s.container.children[3].children.length, 2);
   assert.equal(s.mic.textContent, "🎤 읽어 보기");
   const source = fs.readFileSync(path.join(__dirname, "../../assets/study/english-reading.js"), "utf8");
-  assert.doesNotMatch(source, /먼저 듣기|speechSynthesis|SpeechSynthesisUtterance/);
+  assert.doesNotMatch(source, /먼저 듣기|들어 보기|SpeechSynthesisUtterance\(sentence/);
 });
 test("final mismatch marks the different word red, stops and permits a clean retry", () => {
   const s = setup(); s.mic.fire("click");
@@ -144,7 +145,7 @@ test("final mismatch marks the different word red, stops and permits a clean ret
   assert.equal(words[0].classList.contains("heard"), true);
   assert.equal(words[2].classList.contains("retry"), true);
   assert.equal(s.status.classList.contains("retry"), true);
-  assert.match(s.status.textContent, /다시 읽어 주세요/);
+  assert.match(s.status.textContent, /이렇게 읽어요 👂 apples/);
   assert.equal(s.mic.textContent, "🎤 다시 읽기");
   assert.equal(s.instances[0].aborted, true);
   assert.equal(s.passes(), 0);
@@ -231,8 +232,8 @@ test("a reading success advances progress once and earns the tenth-answer ticket
 });
 test("reading support is cached and its script loads before the study controller", () => {
   const sw = require("../../sw.js");
-  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=3"));
-  assert.ok(html.indexOf('src="assets/study/english-reading.js?v=3"') < html.indexOf("var BANK_SIZES"));
+  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=4"));
+  assert.ok(html.indexOf('src="assets/study/english-reading.js?v=4"') < html.indexOf("var BANK_SIZES"));
   assert.match(html, /\.reading-word\.retry\s*\{[^}]*text-decoration:underline wavy/);
   assert.match(html, /if \(current !== target \|\| isFree\(\) \|\| hasTicket\(\) \|\| target\.answered\) return/);
   assert.match(html, /function stopReading\(\)[\s\S]*?clearTimeout\(answerTimer\)/);

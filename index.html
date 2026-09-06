@@ -925,6 +925,12 @@
   .reading-word { border-bottom:3px solid #65719d; overflow-wrap:anywhere; }
   .reading-word.heard { color:#c6f28a; border-color:#c6f28a; }
   .reading-word.retry { color:#ffb4b4; border-color:#ff8686; text-decoration:underline wavy; text-underline-offset:7px; }
+  .reading-word.listening { color:#342300; background:#ffe680; border-color:#ffe680; border-radius:6px; }
+  .reading-praise { display:block; font-size:clamp(28px,4vw,40px); font-weight:900; color:#ffe680; }
+  .reading-praise-detail { display:block; color:#e0d5ff; }
+  .reading-star-burst { display:block; color:#ffe680; font-size:32px; animation:reading-stars .85s ease-out both; }
+  @keyframes reading-stars { from { opacity:0; transform:scale(.35); } 55% { opacity:1; transform:scale(1.15); } to { opacity:1; transform:scale(1); } }
+  @media (prefers-reduced-motion:reduce) { .reading-star-burst { animation:none; } }
   .reading-status.retry, .reading-heard.retry { color:#ffb4b4; }
   .reading-meaning, .reading-label { color:#c6cee6; }
   .reading-actions { display:flex; flex-wrap:wrap; gap:8px; }
@@ -1169,7 +1175,7 @@
   </div>
 </div>
 
-<script src="assets/study/english-reading.js?v=3"></script>
+<script src="assets/study/english-reading.js?v=4"></script>
 <script>
 (function () {
   'use strict';
@@ -1999,15 +2005,15 @@
       drawDaily();
       if (state.solved >= DAILY) {
         saveState();
-        answerTimer = setTimeout(applyState, 650);
+        answerTimer = setTimeout(applyState, current.reading ? 0 : 650);
       } else if (setCorrect >= SET) {
         state.credit = 1;
         setCorrect = 0;
         saveState();
-        answerTimer = setTimeout(applyState, 650);
+        answerTimer = setTimeout(applyState, current.reading ? 0 : 650);
       } else {
         saveState();
-        answerTimer = setTimeout(renderProblem, current.reading ? 1600 : 750);
+        answerTimer = setTimeout(renderProblem, current.reading ? 0 : 750);
       }
     } else {
       cheerEl.className = 'cheer oops';

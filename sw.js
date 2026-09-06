@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v37";
+const CACHE_VERSION = "v39";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -19,7 +19,16 @@ const CORE_SHELL = [
   "./index.html",
   "./assets/study/picnic-scene.jpg",
   "./assets/study/jaei.jpg",
-  "./assets/study/english-reading.js?v=3",
+  "./assets/study/english-reading.js?v=4",
+  "./assets/study/praise/excellent.mp3",
+  "./assets/study/praise/perfect.mp3",
+  "./assets/study/praise/awesome.mp3",
+  "./assets/study/praise/wonderful.mp3",
+  "./assets/study/praise/great.mp3",
+  "./assets/study/praise/verygood.mp3",
+  "./assets/study/praise/youdidit.mp3",
+  "./assets/study/praise/super.mp3",
+  "./assets/study/praise/threeinarow.mp3",
   "./assets/study/taeo.jpg",
   "./assets/study/mom.jpg",
   "./assets/study/dad.jpg",
@@ -457,10 +466,10 @@ async function rangeResponse(fullResponse, rangeHeader) {
 }
 
 async function cachedAudioResponse(url) {
-  return matchCacheSafely(
-    AUDIO_CACHE,
-    new Request(url, { method: "GET", credentials: "same-origin" }),
-  );
+  const request = new Request(url, { method: "GET", credentials: "same-origin" });
+  // Praise MP3s are installed in the core static cache, including Safari ranges.
+  return await matchCacheSafely(AUDIO_CACHE, request)
+    || await matchCacheSafely(STATIC_CACHE, request);
 }
 
 async function fetchWithTimeout(request, timeoutMs = AUDIO_FETCH_TIMEOUT_MS) {
@@ -817,6 +826,7 @@ if (typeof module !== "undefined" && module.exports) {
     parseByteRange,
     rangeResponse,
     handleGenericRangeRequest,
+    handleAudioRequest,
     safeAudioList,
     runBounded,
     backgroundCacheName,
