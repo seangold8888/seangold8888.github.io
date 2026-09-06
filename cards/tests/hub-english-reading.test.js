@@ -85,8 +85,8 @@ test("unsupported and offline devices offer fallback without requesting micropho
 });
 
 test("sixteen short sentences have unique text and meanings", () => {
-  assert.equal(reading.sentences.length, 16);
-  assert.equal(new Set(reading.sentences.map(s => s.text)).size, 16);
+  assert.equal(reading.sentences.length, 68);
+  assert.equal(new Set(reading.sentences.map(s => s.text)).size, 68);
   for (const s of reading.sentences) { assert.ok(s.meaning); assert.ok(s.text.split(" ").length <= 6); }
 });
 test("matching tolerates casing, punctuation and I'm, not missing, extra or reordered words", () => {
@@ -232,8 +232,8 @@ test("a reading success advances progress once and earns the tenth-answer ticket
 });
 test("reading support is cached and its script loads before the study controller", () => {
   const sw = require("../../sw.js");
-  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=6"));
-  assert.ok(html.indexOf('src="assets/study/english-reading.js?v=6"') < html.indexOf("var BANK_SIZES"));
+  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=7"));
+  assert.ok(html.indexOf('src="assets/study/english-reading.js?v=7"') < html.indexOf("var BANK_SIZES"));
   assert.match(html, /\.reading-word\.retry\s*\{[^}]*text-decoration:underline wavy/);
   assert.match(html, /if \(current !== target \|\| isFree\(\) \|\| hasTicket\(\) \|\| target\.answered\) return/);
   assert.match(html, /function stopReading\(\)[\s\S]*?clearTimeout\(answerTimer\)/);

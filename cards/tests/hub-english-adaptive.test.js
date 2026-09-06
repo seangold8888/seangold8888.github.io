@@ -11,7 +11,7 @@ function fn(name) {
 function setup() {
   const stored = new Map();
   const ctx = {
-    window: {EnglishReading: reading}, readingFallback: false, lastReadingIndex: -1,
+    window: {EnglishReading: reading}, readingFallback: false, lastReadingIndex: -1, readingRecent: [], rememberReading() {},
     sinceReview: 0, lastReviewKey: "", REVIEW_GAP: 2, BOOK_MAX: 24,
     SET: 10, DAILY: 100, BANK_SIZES: {reading:16}, SKILL_INFO: {reading:{name:"영어"}},
     todayKey: () => "2026-9-6", dayNum: () => 100, MASTER_AT:9,
@@ -94,7 +94,7 @@ test("word trouble raises selection frequency, spans sentences, and never immedi
     const idx=reading.chooseSentence({like:5},n,-1,()=>n/1000);
     if(reading.sentences[idx].text.includes("like")) seen.add(idx);
   }
-  assert.equal(seen.size,2);
+  assert.equal(seen.size,reading.sentences.filter(s=>/\blike\b/i.test(s.text)).length);
 });
 test("review and vocabulary survive reload and date rollover with bounded, allowlisted data",()=>{
   const {ctx,stored,question}=setup();
@@ -118,4 +118,25 @@ test("fallback still permits non-reading reviews, and parent or ticket states ca
   ctx.state.parentMode=true; ctx.readingMistake(q,["apples"]);
   ctx.state.parentMode=false; ctx.state.credit=1; ctx.readingMistake(q,["apples"]);
   assert.equal(ctx.state.wrong.length,0);
+});
+test("recent sentences are skipped in order and under word weighting; the hub remembers 12 on this device only",()=>{
+  const n=reading.sentences.length;
+  assert.equal(n,68);
+  assert.equal(reading.chooseSentence({},0,-1,()=>0,[0,1,2]),3);
+  assert.equal(reading.chooseSentence({},67,-1,()=>0,[67,0]),1);
+  for(let k=0;k<200;k++){
+    const idx=reading.chooseSentence({apples:5,like:5},k,0,()=>k/200,[0,5,22,23]);
+    assert.ok(![0,5,22,23].includes(idx),String(idx));
+  }
+  const all=[...Array(n).keys()];
+  assert.equal(typeof reading.chooseSentence({},7,3,()=>0,all),"number");
+  assert.equal(reading.recentLimit,12);
+  assert.match(html,/hub2_reading_recent/);
+  assert.match(html,/rememberReading\(target\.seed\.idx\)/);
+  assert.match(html,/readingRecent\.indexOf\(entry\.idx\) >= 0/);
+  const {ctx}=setup();
+  ctx.readingRecent=[0,1,2,3];
+  ctx.state.wrong=[{type:"reading",idx:2,miss:1}];ctx.sinceReview=5;
+  const seed=ctx.nextStudySeed();
+  assert.equal(seed.type,"reading");assert.notEqual(seed.idx,2);assert.ok(![0,1,2,3].includes(seed.idx));
 });

@@ -1176,7 +1176,7 @@
   </div>
 </div>
 
-<script src="assets/study/english-reading.js?v=6"></script>
+<script src="assets/study/english-reading.js?v=7"></script>
 <script>
 (function () {
   'use strict';
@@ -1483,6 +1483,13 @@
   var setCorrect = state.solved % SET;
   var current = null;
   var lastReadingIndex = -1, readingView = null, answerTimer = null, readingFallback = false;
+  /* 최근 읽은 문장 번호(최대 12개) — 같은 문장이 금방 다시 나오지 않도록. 기기에만 저장. */
+  var readingRecent = [];
+  try { readingRecent = (JSON.parse(localStorage.getItem('hub2_reading_recent') || '[]') || []).filter(function (n) { return typeof n === 'number' && n >= 0; }).slice(-12); } catch (_) { readingRecent = []; }
+  function rememberReading(idx) {
+    readingRecent = readingRecent.filter(function (n) { return n !== idx; }).concat([idx]).slice(-12);
+    try { localStorage.setItem('hub2_reading_recent', JSON.stringify(readingRecent)); } catch (_) {}
+  }
   function stopReading() {
     clearTimeout(answerTimer);
     if (readingView) { readingView.destroy(); readingView = null; }
@@ -1545,14 +1552,17 @@
     var reading = !readingFallback && window.EnglishReading && state.solved % 5 !== 4;
     var pool = state.wrong.filter(function (entry) { return (entry.type === 'reading') === !!reading; });
     var review = null;
+    /* 읽기 복습은 최근 12문장 안에 없던 것만 — 같은 문장 연발 방지 */
     if (pool.length && sinceReview >= REVIEW_GAP) {
       pool.sort(function (a, b) { return b.miss - a.miss; });
-      review = pool.filter(function (entry) { return bookKey(entry) !== lastReviewKey; })[0] || null;
+      review = pool.filter(function (entry) {
+        return bookKey(entry) !== lastReviewKey && !(reading && readingRecent.indexOf(entry.idx) >= 0);
+      })[0] || null;
     }
     if (review) return review;
     if (!reading) return null;
     var ordinal = state.solved - Math.floor(state.solved / 5);
-    return { type: 'reading', idx: window.EnglishReading.chooseSentence(state.readingWords, ordinal, lastReadingIndex) };
+    return { type: 'reading', idx: window.EnglishReading.chooseSentence(state.readingWords, ordinal, lastReadingIndex, null, readingRecent) };
   }
 
   function isFree() { return state.parentMode || state.solved >= DAILY; }
@@ -1902,6 +1912,7 @@
       readingView = window.EnglishReading.mount(choicesEl, current.reading, function () {
         if (current !== target || isFree() || hasTicket() || target.answered) return;
         lastReadingIndex = target.seed.idx;
+        rememberReading(target.seed.idx);
         pick(target.answer, null);
       }, window, {
         onRetry: function (words) { readingMistake(target, words); },
@@ -2271,6 +2282,15 @@
     window.addEventListener("offline", function () { showOfflineState("오프라인"); });
     window.addEventListener("online", function () {
       showOfflineState(navigator.serviceWorker.controller ? "저장됨" : "연결됨");
+    });
+    /* 배포 직후 첫 방문은 옛 화면이 캐시에서 먼저 뜬다. 새 서비스 워커가 자리를
+       잡으면(controllerchange) 페이지가 아직 새것이고(8초 안) 공부를 시작하기 전일 때
+       한 번만 새로고침해 두 번 열 필요를 없앤다. 첫 설치(이전 워커 없음)는 제외. */
+    var hadController = !!navigator.serviceWorker.controller, swReloaded = false;
+    navigator.serviceWorker.addEventListener("controllerchange", function () {
+      if (swReloaded || !hadController || performance.now() > 8000) return;
+      swReloaded = true;
+      window.location.reload();
     });
     window.addEventListener("load", function () {
       navigator.serviceWorker.register(
