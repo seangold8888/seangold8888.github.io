@@ -679,6 +679,15 @@
   #study .progress { min-height: 24px; justify-content: flex-start; gap: 3px; color: var(--gold); font-size: clamp(14px, 2vw, 18px); letter-spacing: -.12em; }
   #study .formula { color: #c9b9ff; font-size: clamp(22px, 3.3vw, 30px); }
   #study .items { color: var(--text); font-size: clamp(24px, 4vw, 34px); line-height: 1.35; }
+  #study .items.clock-face {
+    display: block;
+    width: 100%;
+    font-size: clamp(160px, 28vw, 240px);
+    line-height: 1.15;
+    letter-spacing: 0;
+    text-align: center;
+    margin: 12px 0 16px;
+  }
   #study .question { color: var(--text); font-size: clamp(17px, 2.4vw, 22px); line-height: 1.38; }
   #study .choices { justify-content: flex-start; gap: 9px; }
   #study .choices button {
@@ -1903,6 +1912,7 @@
     lastReviewKey = bookKey(current.seed);
     eyebrowEl.textContent = current.reading ? '영어 문장 읽기' : '오늘의 공부 · ' + currentLevel().name;
     itemsEl.textContent = current.items;
+    itemsEl.classList.toggle('clock-face', current.seed.type === 'clock');
     document.getElementById('formula').textContent = current.formula;
     questionEl.textContent = (current.review ? '📖 복습 문제! ' : '') + current.question;
 

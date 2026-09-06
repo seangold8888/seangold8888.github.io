@@ -4,8 +4,7 @@
   window.SK = window.SK || {};
 
   const W = 960, H = 540;
-  const LAPS = 3;
-  const BEST_KEY = 'sanrio-kart:best:meadow';
+  const LAPS = 2;
 
   let canvas, ctx, dpr = 1, scale = 1, offX = 0, offY = 0;
   let trackTex = null;
@@ -19,6 +18,15 @@
   let items = [], boxes = [], hearts = [];
   let bestLap = null, lastLapStart = 0, playerBestLap = null;
   let resultOrder = [];
+  let challenge = { drift: 0, items: 0 }, cheer = '', cheerTime = 0, medals = 0;
+  const bestKey = () => 'sanrio-kart:best:' + SK.TRACKS[trackIndex].id;
+  const medalKey = () => 'sanrio-kart:medals:' + SK.TRACKS[trackIndex].id;
+  function celebrate(message) { cheer = message; cheerTime = 2.2; }
+  function readRecords() {
+    try { bestLap = Number(localStorage.getItem(bestKey())) || null; medals = Math.max(0, Math.min(3, Number(localStorage.getItem(medalKey())) || 0)); }
+    catch (_) { bestLap = null; medals = 0; }
+  }
+  function earnedMedals() { return 1 + Number(challenge.drift >= 2) + Number(challenge.items >= 2); }
   // height 를 낮추면 지면 렌더는 그대로다(행별 배율 = depth/fov 로 height 와 무관).
   // 대신 화면 아래쪽이 더 가까운 땅을 비추게 되어, 카메라 118 뒤에 있는
   // 플레이어의 실제 투영 위치가 화면 안(y≈440)으로 들어온다.
@@ -74,8 +82,8 @@
         isPlayer: slot === 0
       });
       k.progress = T.nearest(k.x, k.y).point.dist;
-      k.total = k.progress;
-      k.lap = 0;
+      k.total = k.progress - T.length;
+      k.lap = -1; // 출발선 뒤에서 첫 통과는 0바퀴, 완주로 세지 않는다.
       karts.push(k);
       if (k.isPlayer) player = k;
     });
@@ -103,10 +111,13 @@
     raceTime = 0; countdown = 3.6; lastLapStart = 0;
     playerBestLap = null;
     resultOrder = [];
+    challenge = { drift: 0, items: 0 }; cheer = ''; cheerTime = 0;
+    Object.keys(keys).forEach(key => { keys[key] = false; });
+    Object.assign(touch, { steer: 0, drift: false, item: false, leftId: null, rightId: null });
     scene = 'race';
     sfxPrev = null; lastCount = null;
     audio.startMusic(trackIndex);
-    try { bestLap = parseFloat(localStorage.getItem(BEST_KEY)) || null; } catch (_) { bestLap = null; }
+    readRecords();
   }
 
   // ---------- 입력 ----------
@@ -124,6 +135,7 @@
   // ---------- 갱신 ----------
   function update(dt) {
     time += dt;
+    cheerTime = Math.max(0, cheerTime - dt);
     if (scene !== 'race') return;
 
     if (countdown > 0) {
@@ -178,11 +190,16 @@
       if (k.finished) { k.speed *= 1 - dt * 1.6; continue; }
       const surf = SK.Track.surfaceAt(k.x, k.y).kind;
       const drive = k.isPlayer ? input : SK.driveAI(k, player.total, dt);
+      const driftBefore = k.driftCharge;
       k.update(dt, drive, surf);
+      if (k.isPlayer && driftBefore > 0.6 && k.drift === 0 && k.boost > 0) {
+        challenge.drift++; celebrate(challenge.drift === 2 ? '★ 드리프트 배지 획득!' : '멋진 드리프트! 슈우웅!');
+      }
 
       const prevLap = k.lap;
       const done = k.updateProgress(LAPS);
-      if (k.isPlayer && k.lap > prevLap) {
+      if (k.isPlayer && k.lap > prevLap && prevLap < 0) lastLapStart = raceTime;
+      if (k.isPlayer && k.lap > prevLap && prevLap >= 0) {
         const lap = raceTime - lastLapStart;
         lastLapStart = raceTime;
         if (!playerBestLap || lap < playerBestLap) playerBestLap = lap;
@@ -194,7 +211,7 @@
         if (k.isPlayer && playerBestLap) {
           if (!bestLap || playerBestLap < bestLap) {
             bestLap = playerBestLap;
-            try { localStorage.setItem(BEST_KEY, String(bestLap)); } catch (_) {}
+            try { localStorage.setItem(bestKey(), String(bestLap)); } catch (_) {}
           }
         }
       }
@@ -210,6 +227,8 @@
       if (raceTime - player.finishTime > 1.8) {
         karts.forEach(k => { if (!k.finished) { k.finished = true; k.finishTime = raceTime + 99; resultOrder.push(k); } });
         scene = 'result';
+        medals = Math.max(medals, earnedMedals());
+        try { localStorage.setItem(medalKey(), String(medals)); } catch (_) {}
         audio.stopMusic();
         audio.fanfare();
       }
@@ -256,6 +275,7 @@
   }
 
   function useItem(k) {
+    if (k.isPlayer) { challenge.items++; celebrate(challenge.items === 2 ? '★ 아이템 배지 획득!' : k.item === 'boost' ? '별빛 부스터!' : '리본 발사!'); }
     if (k.item === 'boost') {
       k.boost = Math.max(k.boost, 1.15);
     } else if (k.item === 'ribbon') {
@@ -416,7 +436,7 @@
     g.textAlign = 'left';
     g.fillText('바퀴', 44, 48);
     g.font = '900 30px "Malgun Gothic", sans-serif';
-    g.fillText(Math.min(LAPS, player.lap + 1) + ' / ' + LAPS, 96, 52);
+    g.fillText(Math.max(1, Math.min(LAPS, player.lap + 1)) + ' / ' + LAPS, 96, 52);
 
     // 등수
     panel(W - 196, 22, 168, 62);
@@ -447,6 +467,23 @@
     }
 
     // 드리프트 충전
+    panel(28, 96, 290, 55);
+    g.textAlign = 'left'; g.fillStyle = '#68476d'; g.font = '900 15px "Malgun Gothic", sans-serif';
+    g.fillText('★ 완주  ·  ★ 드리프트 2번  ·  ★ 아이템 2번', 40, 117);
+    g.fillText('드리프트 ' + Math.min(2, challenge.drift) + '/2     아이템 ' + Math.min(2, challenge.items) + '/2', 40, 139);
+    if (cheerTime > 0 && countdown <= 0) {
+      g.save(); g.globalAlpha = Math.min(1, cheerTime * 3); panel(275, 185, 410, 52);
+      g.textAlign = 'center'; g.fillStyle = '#9a3877'; g.font = '900 25px "Malgun Gothic", sans-serif';
+      g.fillText(cheer, 480, 219); g.restore();
+    }
+    if (player.boost > 0) {
+      g.save(); g.strokeStyle = 'rgba(255,247,198,.65)'; g.lineWidth = 3;
+      for (let i = 0; i < 14; i++) {
+        const a = i / 14 * Math.PI * 2, phase = (time * 2 + i * .17) % 1;
+        g.beginPath(); g.moveTo(480 + Math.cos(a) * (320 + phase * 100), 300 + Math.sin(a) * (160 + phase * 80));
+        g.lineTo(480 + Math.cos(a) * (420 + phase * 100), 300 + Math.sin(a) * (230 + phase * 80)); g.stroke();
+      } g.restore();
+    }
     if (player.drift > 0) {
       const c = Math.min(1, player.driftCharge / 1.3);
       g.fillStyle = 'rgba(74,53,80,0.35)';
@@ -648,6 +685,7 @@
         g.font = '900 12px "Malgun Gothic", sans-serif';
         g.fillStyle = '#8c7a95';
         g.fillText(def.tip, x, y + 84);
+        if (on) { g.fillStyle = '#b47a21'; g.fillText('도전 배지 ' + '★'.repeat(medals) + '☆'.repeat(3 - medals), x, y + 106); }
       });
     }
 
@@ -657,6 +695,8 @@
       ? (selStep === 0 ? '카트를 눌러 고르세요' : '코스를 눌러 출발!')
       : (selStep === 0 ? '← → 로 고르고 스페이스' : '← → 로 고르고 스페이스로 출발!'), W * 0.5, 418);
 
+    g.font = '900 15px "Malgun Gothic", sans-serif'; g.fillStyle = '#8c4a63';
+    g.fillText('2바퀴 스프린트 · 등수와 상관없이 도전 배지 3개를 모아요', 480, 155);
     // 최고 기록은 위쪽에. 아래는 조작 설명 자리다.
     if (bestLap) {
       g.font = '900 15px "Malgun Gothic", sans-serif';
@@ -730,7 +770,7 @@
     g.fillStyle = '#4a3550';
     g.fillText(player.place === 1 ? '1등! 최고예요!' : '완주했어요!', W * 0.5, 132);
 
-    resultOrder.slice(0, 4).forEach((k, i) => {
+    resultOrder.slice(0, 3).forEach((k, i) => {
       const y = 190 + i * 58;
       g.textAlign = 'left';
       g.font = '900 26px "Malgun Gothic", sans-serif';
@@ -739,16 +779,20 @@
       g.fillText(k.spec.name, W * 0.5 - 130, y);
       g.textAlign = 'right';
       g.font = '900 22px "Malgun Gothic", sans-serif';
-      g.fillText(k.finishTime > 90 ? '—' : fmt(k.finishTime), W * 0.5 + 200, y);
+      g.fillText(k.finishTime > player.finishTime + 90 ? '—' : fmt(k.finishTime), W * 0.5 + 200, y);
     });
 
     g.textAlign = 'center';
     g.font = '900 20px "Malgun Gothic", sans-serif';
     g.fillStyle = '#8c7a95';
-    if (playerBestLap) g.fillText('내 최고 바퀴 ' + fmt(playerBestLap), W * 0.5, 424);
+    g.fillStyle = '#cc8324'; g.fillText('이번 도전 ' + '★'.repeat(earnedMedals()) + '☆'.repeat(3-earnedMedals()) + '  ·  코스 최고 ' + medals + '개', 480, 365);
+    g.font = '900 16px "Malgun Gothic", sans-serif'; g.fillStyle = '#8c7a95';
+    g.fillText('완주 ✓   드리프트 ' + Math.min(2,challenge.drift) + '/2   아이템 ' + Math.min(2,challenge.items) + '/2',480,394);
+    if (playerBestLap) g.fillText('내 최고 바퀴 ' + fmt(playerBestLap), W * 0.5, 423);
     g.font = '900 24px "Malgun Gothic", sans-serif';
     g.fillStyle = '#4a3550';
-    g.fillText(E_isTouch ? '화면을 누르면 다시 해요' : '스페이스로 다시 하기', W * 0.5, 458);
+    g.font = '900 20px "Malgun Gothic", sans-serif';
+    g.fillText('↻ 바로 재도전', 355, 458); g.fillText('코스 바꾸기 →', 605, 458);
   }
 
   // ---------- 루프 ----------
@@ -834,6 +878,7 @@
     setInterval(() => { bgmBox.classList.toggle('on', scene === 'select'); }, 200);
 
     window.addEventListener('keydown', e => {
+      if (e.repeat && scene !== 'race') return;
       keys[e.code] = true;
       if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Space'].includes(e.code)) e.preventDefault();
       if (scene === 'select') {
@@ -842,13 +887,15 @@
         let next = cur;
         if (e.code === 'ArrowLeft') next = (cur + n - 1) % n;
         if (e.code === 'ArrowRight') next = (cur + 1) % n;
-        if (selStep === 0) chosen = next; else trackIndex = next;
+        if (selStep === 0) chosen = next; else { trackIndex = next; readRecords(); }
         if (e.code === 'Space' || e.code === 'Enter') {
           if (selStep === 0) selStep = 1; else startRace();
         }
         if (e.code === 'Escape' && selStep === 1) selStep = 0;
       } else if (scene === 'result' && (e.code === 'Space' || e.code === 'Enter')) {
-        scene = 'select'; selStep = 0;
+        startRace();
+      } else if (scene === 'result' && e.code === 'Escape') {
+        scene = 'select'; selStep = 1;
       }
     }, { passive: false });
     window.addEventListener('keyup', e => { keys[e.code] = false; });
@@ -856,6 +903,7 @@
     canvas.addEventListener('pointerdown', e => {
       e.preventDefault();
       const p = toLogical(e);
+      canvas.setPointerCapture?.(e.pointerId);
       if (scene === 'select') {
         if (selStep === 0) {
           const at = cardLayout(SK.CHARACTERS.length, 112);
@@ -870,7 +918,7 @@
           const at = cardLayout(SK.TRACKS.length, 196);
           for (let i = 0; i < SK.TRACKS.length; i++) {
             if (Math.abs(p.x - at(i)) < 100 && Math.abs(p.y - 288) < 118) {
-              if (trackIndex === i) startRace(); else trackIndex = i;
+              if (trackIndex === i) startRace(); else { trackIndex = i; readRecords(); }
               return;
             }
           }
@@ -879,7 +927,7 @@
         }
         return;
       }
-      if (scene === 'result') { scene = 'select'; selStep = 0; return; }
+      if (scene === 'result') { if (p.y >= 430 && p.y <= 470) { if (p.x >= 230 && p.x < 480) startRace(); else if (p.x >= 480 && p.x <= 730) { scene = 'select'; selStep = 1; } } return; }
       // 레이스 조작
       if (Math.hypot(p.x - 92, p.y - (H - 88)) < 62) { touch.steer = -1; touch.leftId = e.pointerId; return; }
       if (Math.hypot(p.x - 242, p.y - (H - 88)) < 62) { touch.steer = 1; touch.leftId = e.pointerId; return; }
@@ -894,8 +942,12 @@
     canvas.addEventListener('pointerup', release);
     canvas.addEventListener('pointercancel', release);
     canvas.addEventListener('lostpointercapture', release);
+    window.addEventListener('blur', () => {
+      Object.keys(keys).forEach(key => { keys[key] = false; });
+      Object.assign(touch, { steer: 0, drift: false, item: false, leftId: null, rightId: null });
+    });
 
-    try { bestLap = parseFloat(localStorage.getItem(BEST_KEY)) || null; } catch (_) {}
+    readRecords();
     requestAnimationFrame(frame);
   }
 
