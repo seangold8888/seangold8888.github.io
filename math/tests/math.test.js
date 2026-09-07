@@ -96,7 +96,7 @@ test("state survives a round trip and rejects garbage", () => {
   const back = S.load(storage);
   assert.equal(back.level, 11); assert.equal(back.perSession, 12); assert.equal(back.name, "재이");
   const stored = JSON.parse(mem.get(S.KEY));
-  assert.deepEqual(Object.keys(stored).sort(), ["album", "buddy", "chests", "createdAt", "grade", "hearts", "history", "level", "name", "perSession", "placed", "placement", "planDays", "planEnd", "planFrom", "planStart", "school", "sound", "stamps", "streak", "visualPolicy", "wrong"]);
+  assert.deepEqual(Object.keys(stored).sort(), ["album", "avatar", "buddy", "chests", "coinLog", "coins", "createdAt", "grade", "hearts", "history", "level", "name", "owned", "perSession", "placed", "placement", "planDays", "planEnd", "planFrom", "planStart", "school", "sound", "stamps", "streak", "visualPolicy", "wrong"]);
   mem.set(S.KEY, "{not json"); assert.equal(S.load(storage).level, 1);
 });
 
@@ -112,7 +112,7 @@ test("pages ship without games, stay text-only for numbers, and load the four sc
   const css = fs.readFileSync(path.join(__dirname, "../style.css"), "utf8");
   assert.match(css, /@media print/);
   const app = fs.readFileSync(path.join(__dirname, "../app.js"), "utf8");
-  assert.doesNotMatch(app, /innerHTML\s*=\s*(?=\S)(?!V\.render|showVisualFirst|F\.badge|\x27<div class="r\x27|\x27<span class="lid">)/, "only our own SVG goes through innerHTML");
+  assert.doesNotMatch(app, /innerHTML\s*=\s*(?=\S)(?!V.render|A.render|showVisualFirst|F\.badge|\x27<div class="r\x27|\x27<span class="lid">)/, "only our own SVG goes through innerHTML");
   assert.match(app, /V\.render\(current, true\)/, "wrong answer reveals the picture");
 });
 
@@ -181,5 +181,5 @@ test("child and parent pages wire the schedule and friends scripts", () => {
   assert.match(parent, /id="milestoneRows"/); assert.match(parent, /id="planEnd"/);
   const app = fs.readFileSync(path.join(__dirname, "../app.js"), "utf8");
   assert.match(app, /behind: !!\(before && before\.levelGap < 0\)/);
-  assert.doesNotMatch(app, /innerHTML\s*=\s*(?=\S)(?!V\.render|showVisualFirst|F\.badge|\x27<div class="r\x27|\x27<span class="lid">)/, "innerHTML only for our own SVG");
+  assert.doesNotMatch(app, /innerHTML\s*=\s*(?=\S)(?!V.render|A.render|showVisualFirst|F\.badge|\x27<div class="r\x27|\x27<span class="lid">)/, "innerHTML only for our own SVG");
 });

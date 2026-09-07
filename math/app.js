@@ -1,7 +1,7 @@
 /* 매일 수학 10분 — 아이 화면 */
 (function () {
   "use strict";
-  const C = window.Curriculum, V = window.MathVisual, S = window.MathStore, Sc = window.MathSchedule, F = window.MathFriends;
+  const C = window.Curriculum, V = window.MathVisual, S = window.MathStore, Sc = window.MathSchedule, F = window.MathFriends, A = window.MathAvatar;
   const $ = function (id) { return document.getElementById(id); };
   const storage = window.localStorage;
   let state = S.load(storage);
@@ -45,7 +45,7 @@
       setTimeout(function () { b.remove(); }, 800);
     }
   }
-  function show(id) { ["setup", "placed", "home", "quiz", "capsule", "result", "showcard"].forEach(function (v) { $(v).hidden = v !== id; }); window.scrollTo(0, 0); }
+  function show(id) { ["setup", "placed", "home", "quiz", "capsule", "result", "showcard", "pick", "wardrobe"].forEach(function (v) { $(v).hidden = v !== id; }); window.scrollTo(0, 0); }
   function collectedIds() { const ids = {}; state.album.forEach(function (a) { ids[a.id] = true; }); return Object.keys(ids); }
 
   /* ---------- 홈 ---------- */
@@ -136,12 +136,132 @@
     renderTrack(st);
     renderBuddies();
     renderAlbum();
+    renderMe();
   }
+
+  /* ---------- 내 캐릭터 · 코인 · 옷장 ---------- */
+  let earned = 0;              // 이번 세션에서 번 코인 (결과 화면용)
+  let shopCat = "dress";
+  function ensureAvatar() {
+    if (state.avatar) return true;
+    return false;
+  }
+  function renderMe() {
+    const has = ensureAvatar();
+    $("coinNum").textContent = state.coins || 0;
+    if (!has) {
+      $("homeDoll").textContent = "";
+      $("meName").textContent = "아직 캐릭터가 없어요";
+      $("meWish").textContent = "옷장을 열어 캐릭터를 고르면 시작!";
+      $("wardrobeBtn").textContent = "캐릭터 고르기";
+      return;
+    }
+    $("homeDoll").innerHTML = A.renderDoll(state.avatar);
+    $("meName").textContent = (state.name || "나") + "의 " + A.charById(state.avatar.char).name;
+    const wish = A.cheapestUnowned(state.owned);
+    $("meWish").textContent = wish ? (state.coins >= wish.price ? "「" + wish.name + "」 살 수 있어요!" : "「" + wish.name + "」까지 " + (wish.price - state.coins) + "코인") : "옷장을 다 모았어요!";
+    $("wardrobeBtn").textContent = "옷장 열기";
+  }
+  function showPick() {
+    const box = $("portraits"); box.textContent = "";
+    A.CHARS.forEach(function (c) {
+      const el = document.createElement("button"); el.type = "button"; el.className = "portrait" + (state.avatar && state.avatar.char === c.id ? " on" : "");
+      el.innerHTML = A.renderPortrait(c.id, c.hairColor);
+      const n = document.createElement("span"); n.textContent = c.name; el.appendChild(n);
+      el.addEventListener("click", function () {
+        const st = A.starter(c.id);
+        // 이미 산 옷은 그대로, 새 인형의 기본 머리·옷·신발을 추가로 가진다
+        Object.keys(st.owned).forEach(function (k) { state.owned[k] = true; });
+        state.avatar = st.avatar;
+        S.save(storage, state);
+        showWardrobe();
+      });
+      box.appendChild(el);
+    });
+    show("pick");
+  }
+  function showWardrobe() {
+    if (!state.avatar) { showPick(); return; }
+    renderWardrobe();
+    show("wardrobe");
+  }
+  function equipped(cat) {
+    const av = state.avatar;
+    if (cat === "hair") return av.hair;
+    return av[cat] && av[cat].id;
+  }
+  function renderWardrobe() {
+    $("wardrobeDoll").innerHTML = A.renderDoll(state.avatar);
+    $("coinNum2").textContent = state.coins || 0;
+    const tabs = $("wardrobeTabs"); tabs.textContent = "";
+    A.CATS.forEach(function (c) {
+      const t = document.createElement("button"); t.type = "button"; t.className = "tab" + (c.id === shopCat ? " on" : "");
+      t.textContent = c.icon + " " + c.name;
+      t.addEventListener("click", function () { shopCat = c.id; renderWardrobe(); });
+      tabs.appendChild(t);
+    });
+    const grid = $("shop"); grid.textContent = "";
+    const cur = equipped(shopCat);
+    A.CATALOG[shopCat].forEach(function (it) {
+      const own = !!state.owned[it.key], on = cur === it.id;
+      const cell = document.createElement("button"); cell.type = "button";
+      cell.className = "item" + (own ? " own" : " locked") + (on ? " on" : "") + (!own && state.coins >= it.price ? " afford" : "");
+      const color = on && shopCat !== "hair" ? state.avatar[shopCat].color : (shopCat === "hair" ? state.avatar.hairColor : it.color);
+      cell.innerHTML = A.renderThumb(shopCat, it.id, color);
+      const name = document.createElement("span"); name.textContent = it.name; cell.appendChild(name);
+      const tag = document.createElement("b"); tag.className = "price";
+      tag.textContent = own ? (on ? "입는 중" : "가졌어요") : it.price + " 코인"; cell.appendChild(tag);
+      cell.addEventListener("click", function () { tapItem(it); });
+      grid.appendChild(cell);
+    });
+    // 색 팔레트: 지금 입은 것의 색
+    const pal = $("palette"); pal.textContent = "";
+    const list = shopCat === "hair" ? A.HAIR_COLORS : A.COLORS;
+    const canColor = shopCat === "hair" || (state.avatar[shopCat] && state.avatar[shopCat].id);
+    pal.hidden = !canColor;
+    if (canColor) {
+      const lab = document.createElement("span"); lab.className = "tiny"; lab.textContent = shopCat === "hair" ? "머리 색" : "색 바꾸기"; pal.appendChild(lab);
+      list.forEach(function (col) {
+        const sw = document.createElement("button"); sw.type = "button"; sw.className = "swatch"; sw.style.background = col;
+        const curCol = shopCat === "hair" ? state.avatar.hairColor : state.avatar[shopCat].color;
+        if (curCol === col) sw.classList.add("on");
+        sw.addEventListener("click", function () {
+          if (shopCat === "hair") state.avatar.hairColor = col; else state.avatar[shopCat].color = col;
+          S.save(storage, state); renderWardrobe();
+        });
+        pal.appendChild(sw);
+      });
+    }
+    const wish = A.cheapestUnowned(state.owned);
+    $("wardrobeHint").textContent = wish ? (state.coins >= wish.price ? "지금 살 수 있는 것이 있어요!" : "문제를 풀면 코인이 쌓여요. 다음 목표: " + wish.name + " (" + wish.price + ")") : "옷장을 다 모았어요!";
+  }
+  function tapItem(it) {
+    const own = !!state.owned[it.key];
+    if (!own) {
+      if (state.coins < it.price) { $("wardrobeHint").textContent = "「" + it.name + "」은 " + (it.price - state.coins) + "코인 더 모으면 살 수 있어요. 오늘 문제 풀면 +" + (A.COIN.session + state.perSession) + "코인!"; return; }
+      if (!window.confirm("「" + it.name + "」을 " + it.price + "코인으로 살까요?")) return;
+      S.spendCoins(state, it.price); state.owned[it.key] = true;
+    }
+    // 입기 / 벗기 (같은 것 다시 누르면 벗기, 머리·옷·신발은 벗지 않음)
+    if (it.cat === "hair") state.avatar.hair = it.id;
+    else if (equipped(it.cat) === it.id && ["crown", "neck", "back", "pet"].indexOf(it.cat) >= 0) state.avatar[it.cat] = null;
+    else state.avatar[it.cat] = { id: it.id, color: (state.avatar[it.cat] && state.avatar[it.cat].id === it.id ? state.avatar[it.cat].color : it.color) || it.color || "#ff8fb4" };
+    S.save(storage, state); renderWardrobe();
+  }
+  function grantDrop(maxPrice) {
+    const it = A.randomDrop(state.owned, maxPrice, Math.random);
+    if (!it) return null;
+    state.owned[it.key] = true;
+    return it;
+  }
+  $("wardrobeBtn").addEventListener("click", showWardrobe);
+  $("wardrobeBack").addEventListener("click", function () { renderHome(); show("home"); });
+  $("pickCharBtn").addEventListener("click", showPick);
 
   /* ---------- 문제 ---------- */
   function start() {
     session = C.buildSession({ level: state.level, count: state.perSession, rng: Math.random, review: S.dueReviews(state) });
-    index = 0; results = [];
+    index = 0; results = []; earned = 0;
     show("quiz");
     next();
   }
@@ -229,6 +349,7 @@
     state.planFrom = res.level; state.planStart = S.today();
     state.placed = true;
     state.placement = { date: S.today(), level: res.level, asked: res.asked, correct: res.correct, medianMs: res.medianMs };
+    S.addCoins(state, A.COIN.placement, "실력 확인 완료");
     S.save(storage, state);
     placement = null;
     $("quitBtn").textContent = "그만하기";
@@ -236,7 +357,7 @@
     $("placedBadge").innerHTML = F.badge(g, 112);
     $("placedUnit").textContent = L.unit + " · " + res.level + "단계에서 시작해요";
     $("placedLevel").textContent = L.name;
-    $("placedText").textContent = (state.name || "친구") + (state.school ? " · " + state.school : "") + " " + state.grade + "학년 · 확인 문제 " + res.asked + "개 중 " + res.correct + "개 정답";
+    $("placedText").textContent = (state.name || "친구") + (state.school ? " · " + state.school : "") + " " + state.grade + "학년 · 확인 문제 " + res.asked + "개 중 " + res.correct + "개 정답 · 코인 +" + A.COIN.placement;
     $("placedSay").textContent = g.name + ": \"" + (state.name || "친구") + "야, 여기서부터 나랑 같이 가자! 매일 조금씩, 딱 맞는 문제만.\"";
     show("placed");
   }
@@ -253,6 +374,7 @@
       $("feedback").textContent = (firstTry ? "" : "이번엔 ") + praiseLine() + " ✓"; $("feedback").className = "feedback ok";
       ding(true); if (firstTry) burst();
       results.push({ key: current.key, level: current.level, review: !!current.review, firstTry: firstTry, ms: firstTry ? ms : 0 });
+      if (firstTry) earned += S.addCoins(state, A.COIN.correct, "정답") ? A.COIN.correct : 0;
       S.recordAnswer(state, current, firstTry); S.save(storage, state);
       $("keypad").hidden = true;
       index++;
@@ -280,9 +402,12 @@
   function finish() {
     const before = planStatus(), today = S.today(), firstToday = !state.stamps[today];
     lastEntry = S.finishSession(state, results, null, { behind: !!(before && before.levelGap < 0), cap: before ? before.plannedLevel + 1 : 11 });
-    S.save(storage, state);
     const fresh = results.filter(function (r) { return !r.review; });
     lastFresh = fresh.length; lastFirst = fresh.filter(function (r) { return r.firstTry; }).length;
+    if (firstToday) { S.addCoins(state, A.COIN.session, "오늘 공부 완료"); earned += A.COIN.session; }
+    if (lastFresh && lastFirst === lastFresh) { S.addCoins(state, A.COIN.perfect, "전부 한 번에"); earned += A.COIN.perfect; }
+    if (lastEntry.change > 0) { S.addCoins(state, A.COIN.levelUp, "단계 승급"); earned += A.COIN.levelUp; }
+    S.save(storage, state);
     lastReviews = results.filter(function (r) { return r.review; });
     if (firstToday) openCapsules("day:" + today, 0);
     else renderResult(null);
@@ -302,9 +427,14 @@
         img.src = "assets/3d/capsule_open_" + tints[i] + ".png";
         const r = F.rollRarity(Math.random, minRarity);
         state.album.push({ id: c.id, date: S.today(), r: r, key: key });
-        if (key.indexOf("week:") === 0) state.chests[key.slice(5)] = true;
+        const weekly = key.indexOf("week:") === 0;
+        if (weekly) state.chests[key.slice(5)] = true;
+        // 캡슐엔 코인도 들어 있고, 가끔 옷장 아이템이 들어 있다 (보물상자는 꼭 하나)
+        const bonus = weekly ? A.COIN.chest : A.COIN.capsule;
+        S.addCoins(state, bonus, weekly ? "보물상자" : "캡슐"); earned += bonus;
+        const drop = (weekly || Math.random() < 0.25) ? grantDrop(weekly ? 100 : 60) : null;
         S.save(storage, state);
-        setTimeout(function () { renderResult({ c: c, r: r, key: key }); }, 450);
+        setTimeout(function () { renderResult({ c: c, r: r, key: key, drop: drop, bonus: bonus }); }, 450);
       });
       box.appendChild(cap);
     });
@@ -315,7 +445,8 @@
     if (sticker) {
       $("stickerBig").innerHTML = '<div class="r' + sticker.r + '">' + F.badge(sticker.c, 112) + "</div>";
       const isNew = state.album.filter(function (a) { return a.id === sticker.c.id; }).length === 1;
-      $("stickerName").textContent = (sticker.key.indexOf("week:") === 0 ? "보물상자 스티커 · " : "오늘의 스티커 · ") + sticker.c.name + " (" + sticker.c.from + ")" + (sticker.r === 2 ? " · ✦ 금빛!" : sticker.r === 1 ? " · 반짝" : "") + (isNew ? " · 처음 만났어요!" : "");
+      $("stickerName").textContent = (sticker.key.indexOf("week:") === 0 ? "보물상자 스티커 · " : "오늘의 스티커 · ") + sticker.c.name + " (" + sticker.c.from + ")" + (sticker.r === 2 ? " · ✦ 금빛!" : sticker.r === 1 ? " · 반짝" : "") + (isNew ? " · 처음 만났어요!" : "")
+        + (sticker.drop ? " · 옷장에 「" + sticker.drop.name + "」이 들어 있었어요!" : "");
     } else {
       const g = buddy() || F.guideFor(state.level);
       $("stickerBig").innerHTML = F.badge(g, 112);
@@ -325,7 +456,7 @@
       $("resultBig").textContent = "";
       $("resultBig").appendChild(document.createTextNode(lastFirst + " "));
       const small = document.createElement("small"); small.textContent = "/ " + lastFresh + " 한 번에 맞았어요"; $("resultBig").appendChild(small);
-      $("resultText").textContent = (lastReviews.length ? "다시 만난 문제 " + lastReviews.length + "개 중 " + lastReviews.filter(function (r) { return r.firstTry; }).length + "개 성공. " : "") + (lastFirst === lastFresh && lastFresh ? "전부 한 번에!" : "");
+      $("resultText").textContent = (lastReviews.length ? "다시 만난 문제 " + lastReviews.length + "개 중 " + lastReviews.filter(function (r) { return r.firstTry; }).length + "개 성공. " : "") + (lastFirst === lastFresh && lastFresh ? "전부 한 번에! " : "") + (earned ? "코인 +" + earned + " (모두 " + state.coins + ")" : "");
       const after = planStatus();
       $("resultLevel").textContent = lastEntry.change > 0 ? "다음 단계로 올라가요: " + levelInfo().name
         : lastEntry.change < 0 ? "조금 더 쉬운 문제로 연습해요: " + levelInfo().name
@@ -369,7 +500,7 @@
   $("chestBtn").addEventListener("click", function () {
     const wk = S.weekInfo(state.stamps, S.today(), state.planDays);
     if (!wk.ready || state.chests[wk.key]) return;
-    lastEntry = null; openCapsules("week:" + wk.key, 1);
+    lastEntry = null; earned = 0; openCapsules("week:" + wk.key, 1);
   });
 
   $("startBtn").addEventListener("click", start);

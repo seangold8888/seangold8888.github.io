@@ -54,5 +54,5 @@ test("album, hearts, chests and buddy survive clean(); pages carry the motivatio
   const app = fs.readFileSync(path.join(__dirname, "../app.js"), "utf8");
   assert.match(app, /openCapsules\("week:" \+ wk\.key, 1\)/, "weekly chest guarantees a shiny sticker");
   assert.match(app, /if \(firstToday\) openCapsules/, "one capsule per day");
-  assert.doesNotMatch(app, /innerHTML\s*=\s*(?=\S)(?!V\.render|showVisualFirst|F\.badge|'<div class="r'|'<span class="lid">)/, "innerHTML only for our own markup");
+  assert.doesNotMatch(app, /innerHTML\s*=\s*(?=\S)(?!V.render|A.render|showVisualFirst|F\.badge|'<div class="r'|'<span class="lid">)/, "innerHTML only for our own markup");
 });

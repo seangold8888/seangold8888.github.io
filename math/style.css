@@ -253,3 +253,35 @@ label.field select, label.field input { display: block; width: 100%; margin-top:
 #setup label.field { color: var(--muted); font-size: 15px; }
 #setup label.field input, #setup label.field select { font-size: 20px; padding: 12px 14px; border-radius: 16px; border: 3px solid var(--line); font-family: inherit; }
 #setup .btn.big { margin-top: 14px; }
+
+/* v9: 내 캐릭터 · 코인 · 옷장 */
+.card.me { display: flex; gap: 14px; align-items: center; background: linear-gradient(135deg, #fff 0%, var(--pink-soft) 100%); }
+.doll { flex: 0 0 auto; width: 118px; height: 190px; border-radius: 18px; background: linear-gradient(180deg, #fff, #f7f1ff); box-shadow: inset 0 0 0 3px #fff, 0 6px 0 var(--line); overflow: hidden; }
+.doll svg { width: 100%; height: 100%; display: block; }
+.doll.big { width: 168px; height: 272px; }
+.me-side { flex: 1; min-width: 0; }
+.coins { display: flex; align-items: center; gap: 6px; font-size: 20px; margin: 4px 0; }
+.coins b { font-family: "Nunito", system-ui, sans-serif; font-weight: 900; font-size: 24px; }
+.coin { width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff2a8, #f2b134 60%, #c98f1c); box-shadow: 0 2px 0 #a8730f; display: inline-block; }
+.portraits { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+.portrait { border: 3px solid var(--line); background: #fff; border-radius: 18px; padding: 8px 6px; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 13px; color: var(--muted); }
+.portrait svg { width: 84px; height: 100px; display: block; }
+.portrait.on { border-color: var(--pink); background: var(--pink-soft); color: var(--pink); }
+.wardrobe-top { display: flex; gap: 14px; align-items: center; }
+.tabs { display: flex; gap: 6px; overflow-x: auto; padding: 12px 2px 6px; -webkit-overflow-scrolling: touch; }
+.tab { flex: 0 0 auto; border: 0; background: #fff; border-radius: 999px; padding: 8px 14px; font-size: 14px; color: var(--muted); box-shadow: 0 3px 0 var(--line); }
+.tab.on { background: var(--pink); color: #fff; box-shadow: 0 3px 0 #d94f7c; }
+.shop { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.item { position: relative; border: 3px solid var(--line); background: #fff; border-radius: 18px; padding: 8px 4px 6px; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 12px; color: var(--ink); }
+.item svg { width: 78px; height: 88px; display: block; }
+.item .price { font-family: "Nunito", system-ui, sans-serif; font-size: 12px; font-weight: 900; color: var(--muted); }
+.item.locked svg { filter: grayscale(.6) brightness(.85); opacity: .85; }
+.item.locked::after { content: "🔒"; position: absolute; top: 6px; right: 8px; font-size: 14px; }
+.item.locked.afford { border-color: var(--gold); }
+.item.locked.afford::after { content: "✨"; }
+.item.locked.afford .price { color: #b8860b; }
+.item.own .price { color: var(--ok); }
+.item.on { border-color: var(--pink); background: var(--pink-soft); }
+.palette { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+.swatch { width: 30px; height: 30px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 2px var(--line); }
+.swatch.on { box-shadow: 0 0 0 3px var(--pink); }

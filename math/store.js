@@ -14,7 +14,8 @@
       history: [], wrong: [], stamps: {}, createdAt: today(),
       planStart: today(), planEnd: "2027-01-29", planDays: 6, planFrom: 1,
       album: [], hearts: {}, chests: {}, buddy: null,
-      school: "", grade: 1, placed: false, placement: null };
+      school: "", grade: 1, placed: false, placement: null,
+      coins: 0, coinLog: [], owned: {}, avatar: null };
   }
   function clean(s) {
     const d = defaults();
@@ -41,6 +42,10 @@
     out.grade = Math.min(6, Math.max(1, parseInt(out.grade, 10) || 1));
     out.placed = !!out.placed;
     out.placement = out.placement && typeof out.placement === "object" && out.placement.date ? { date: out.placement.date, level: out.placement.level, asked: out.placement.asked, correct: out.placement.correct, medianMs: out.placement.medianMs } : null;
+    out.coins = Math.max(0, Math.min(99999, parseInt(out.coins, 10) || 0));
+    out.coinLog = Array.isArray(out.coinLog) ? out.coinLog.slice(-60) : [];
+    out.owned = out.owned && typeof out.owned === "object" ? out.owned : {};
+    out.avatar = out.avatar && typeof out.avatar === "object" && out.avatar.char ? out.avatar : null;
     return out;
   }
   function load(storage) {
@@ -157,7 +162,20 @@
     const need = Math.min(planDays || 6, 6);
     return { key: monday, done: done, need: need, ready: done >= need };
   }
-  const api = { streakInfo: streakInfo, weekInfo: weekInfo, KEY: KEY, REVIEW_GAPS: REVIEW_GAPS, today: today, addDays: addDays, defaults: defaults, clean: clean, load: load, save: save, dueReviews: dueReviews, recordAnswer: recordAnswer, finishSession: finishSession, stability: stability, median: median, levelSummary: levelSummary };
+  // 코인 적립 (이유와 함께 기록, 부모 화면용)
+  function addCoins(state, amount, why, now) {
+    amount = Math.max(0, Math.round(amount || 0));
+    if (!amount) return state.coins;
+    state.coins = Math.min(99999, (state.coins || 0) + amount);
+    state.coinLog = (state.coinLog || []).concat([{ date: today(now), amount: amount, why: why || "" }]).slice(-60);
+    return state.coins;
+  }
+  function spendCoins(state, amount) {
+    if ((state.coins || 0) < amount) return false;
+    state.coins -= amount;
+    return true;
+  }
+  const api = { addCoins: addCoins, spendCoins: spendCoins, streakInfo: streakInfo, weekInfo: weekInfo, KEY: KEY, REVIEW_GAPS: REVIEW_GAPS, today: today, addDays: addDays, defaults: defaults, clean: clean, load: load, save: save, dueReviews: dueReviews, recordAnswer: recordAnswer, finishSession: finishSession, stability: stability, median: median, levelSummary: levelSummary };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.MathStore = api;
 })(typeof window !== "undefined" ? window : globalThis);

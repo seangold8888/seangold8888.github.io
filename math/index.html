@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Nunito:wght@800;900&display=swap">
-<link rel="stylesheet" href="style.css?v=8">
+<link rel="stylesheet" href="style.css?v=9">
 </head>
 <body>
 <div class="sky" aria-hidden="true"><i></i><i></i><i></i><i></i><b>★</b><b>★</b><b>★</b></div>
@@ -49,6 +49,17 @@
   </section>
 
   <section id="home">
+    <div class="card me" id="meCard">
+      <div class="doll" id="homeDoll"></div>
+      <div class="me-side">
+        <p class="eyebrow">내 캐릭터</p>
+        <p class="level-name" id="meName">내 인형</p>
+        <p class="coins" id="coinsHome"><span class="coin"></span><b id="coinNum">0</b> 코인</p>
+        <p class="tiny" id="meWish"></p>
+        <button class="btn secondary" id="wardrobeBtn">옷장 열기</button>
+      </div>
+    </div>
+
     <div class="card guide">
       <div class="guide-badge" id="guideBadge"></div>
       <div>
@@ -95,6 +106,32 @@
       <p class="tiny center" id="albumNote"></p>
     </div>
     <p class="foot"><a href="parent.html">부모님 보기</a></p>
+  </section>
+
+  <section id="pick" hidden>
+    <div class="card">
+      <p class="eyebrow">내 캐릭터 고르기</p>
+      <p class="level-name">누구로 시작할까요?</p>
+      <p class="hint">언제든 옷장에서 바꿀 수 있어요. 머리 색도 마음대로.</p>
+      <div class="portraits" id="portraits"></div>
+    </div>
+  </section>
+
+  <section id="wardrobe" hidden>
+    <div class="card wardrobe-top">
+      <div class="doll big" id="wardrobeDoll"></div>
+      <div class="me-side">
+        <p class="coins"><span class="coin"></span><b id="coinNum2">0</b> 코인</p>
+        <p class="tiny" id="wardrobeHint">가진 것은 눌러서 입고, 잠긴 것은 코인으로 사요.</p>
+        <button class="btn ghost" id="pickCharBtn">캐릭터 바꾸기</button>
+      </div>
+    </div>
+    <div class="tabs" id="wardrobeTabs"></div>
+    <div class="card">
+      <div class="palette" id="palette" hidden></div>
+      <div class="shop" id="shop"></div>
+    </div>
+    <button class="btn ghost" id="wardrobeBack">돌아가기</button>
   </section>
 
   <section id="quiz" hidden>
@@ -155,12 +192,14 @@
   </section>
 </div>
 <div class="burst" id="burst" aria-hidden="true"></div>
-<script src="curriculum.js?v=8"></script>
-<script src="visual.js?v=8"></script>
-<script src="store.js?v=8"></script>
-<script src="schedule.js?v=8"></script>
-<script src="characters.js?v=8"></script>
-<script src="placement.js?v=8"></script>
-<script src="app.js?v=8"></script>
+<script src="curriculum.js?v=9"></script>
+<script src="visual.js?v=9"></script>
+<script src="store.js?v=9"></script>
+<script src="schedule.js?v=9"></script>
+<script src="characters.js?v=9"></script>
+<script src="placement.js?v=9"></script>
+<script src="../princess/studio.js?v=36"></script>
+<script src="avatar.js?v=9"></script>
+<script src="app.js?v=9"></script>
 </body>
 </html>
