@@ -96,7 +96,7 @@ test("state survives a round trip and rejects garbage", () => {
   const back = S.load(storage);
   assert.equal(back.level, 11); assert.equal(back.perSession, 12); assert.equal(back.name, "재이");
   const stored = JSON.parse(mem.get(S.KEY));
-  assert.deepEqual(Object.keys(stored).sort(), ["createdAt", "history", "level", "name", "perSession", "sound", "stamps", "streak", "visualPolicy", "wrong"]);
+  assert.deepEqual(Object.keys(stored).sort(), ["createdAt", "history", "level", "name", "perSession", "planDays", "planEnd", "planFrom", "planStart", "sound", "stamps", "streak", "visualPolicy", "wrong"]);
   mem.set(S.KEY, "{not json"); assert.equal(S.load(storage).level, 1);
 });
 
@@ -112,6 +112,72 @@ test("pages ship without games, stay text-only for numbers, and load the four sc
   const css = fs.readFileSync(path.join(__dirname, "../style.css"), "utf8");
   assert.match(css, /@media print/);
   const app = fs.readFileSync(path.join(__dirname, "../app.js"), "utf8");
-  assert.doesNotMatch(app, /innerHTML\s*=\s*(?=\S)(?!V\.render|showVisualFirst)/, "only visual SVG goes through innerHTML");
+  assert.doesNotMatch(app, /innerHTML\s*=\s*(?=\S)(?!V\.render|showVisualFirst|F\.badge)/, "only our own SVG goes through innerHTML");
   assert.match(app, /V\.render\(current, true\)/, "wrong answer reveals the picture");
+});
+
+const Sc = require("../schedule.js"), F = require("../characters.js");
+test("the plan covers every study day from start to end, keeps level order, and weights the second-semester core", () => {
+  const plan = Sc.buildPlan({ start: "2026-09-07", end: "2027-01-29", daysPerWeek: 6 });
+  assert.equal(plan[0].date, "2026-09-07"); assert.equal(plan[plan.length - 1].date, "2027-01-29");
+  assert.equal(new Set(plan.map(p => p.date)).size, plan.length);
+  assert.ok(plan.every(p => new Date(p.date + "T00:00:00").getDay() !== 0), "no Sundays with 6 days/week");
+  for (let i = 1; i < plan.length; i++) assert.ok(plan[i].level >= plan[i - 1].level && plan[i].i === plan[i - 1].i + 1);
+  const ms = Sc.milestones(plan);
+  assert.deepEqual(ms.map(m => m.level), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+  const days = Object.fromEntries(ms.map(m => [m.level, m.days]));
+  assert.ok(days[8] > days[1] && days[9] > days[5] && days[6] >= days[10]);
+  assert.equal(ms.reduce((s, m) => s + m.days, 0), plan.length);
+  const five = Sc.buildPlan({ start: "2026-09-07", end: "2026-10-02", daysPerWeek: 5, fromLevel: 4 });
+  assert.equal(five.length, 20); assert.equal(five[0].level, 4);
+  assert.ok(five.every(p => [0, 6].indexOf(new Date(p.date + "T00:00:00").getDay()) < 0));
+});
+
+test("status reports planned level, missed days and whether the child is behind or ahead", () => {
+  const plan = Sc.buildPlan({ start: "2026-09-07", end: "2027-01-29", daysPerWeek: 6 });
+  const s1 = Sc.status(plan, ["2026-09-07", "2026-09-08"], 1, "2026-09-10");
+  assert.equal(s1.plannedIndex, 4); assert.equal(s1.expected, 4); assert.equal(s1.done, 2); assert.equal(s1.dayGap, -2); assert.equal(s1.label, "계획대로");
+  const s2 = Sc.status(plan, [], 3, "2026-11-20"); assert.ok(s2.levelGap < 0); assert.match(s2.label, /뒤/);
+  const s3 = Sc.status(plan, [], 9, "2026-11-20"); assert.ok(s3.levelGap > 0); assert.match(s3.label, /앞/);
+  const s4 = Sc.status(plan, [], 11, "2027-03-01"); assert.equal(s4.finished, true);
+  const sunday = Sc.status(plan, [], 1, "2026-09-13"); assert.equal(sunday.plannedIndex, 6, "a rest day shows the last study day");
+});
+
+test("plan settings persist and promotion uses the behind/cap options", () => {
+  const st = S.defaults();
+  assert.equal(st.planEnd, "2027-01-29"); assert.equal(st.planDays, 6);
+  const bad = S.clean({ planStart: "2026-09-07", planEnd: "2026-01-01", planDays: 4, planFrom: 40 });
+  assert.ok(bad.planEnd > bad.planStart); assert.equal(bad.planDays, 6); assert.equal(bad.planFrom, 11);
+  const good = [...Array(12)].map((_, i) => ({ key: "k" + i, level: 1, review: false, firstTry: true, ms: 2000 }));
+  S.finishSession(st, good, "2026-09-07", { behind: true, cap: 3 }); assert.equal(st.level, 2, "behind: one 90% session promotes");
+  S.finishSession(st, good, "2026-09-08", { behind: true, cap: 2 }); assert.equal(st.level, 2, "never past the cap");
+  S.finishSession(st, good, "2026-09-09", { behind: false, cap: 11 }); S.finishSession(st, good, "2026-09-10", { behind: false, cap: 11 });
+  assert.equal(st.level, 3, "on time: two sessions");
+});
+
+test("friends: 22 characters across four families, every icon drawn by us, a guide per level, stable daily stickers", () => {
+  assert.equal(F.CHARACTERS.length, 22);
+  assert.deepEqual([...new Set(F.CHARACTERS.map(c => c.from))].sort(), ["디즈니 프린세스", "마블", "산리오", "티니핑"]);
+  for (const c of F.CHARACTERS) {
+    assert.ok(F.icons.includes(c.icon), c.id);
+    const svg = F.badge(c, 40);
+    assert.match(svg, /^<svg/); assert.doesNotMatch(svg, /<image|href=|<text/, "no external art, no text");
+    assert.ok(c.say.length >= 2 && c.say.every(s => !/틀렸|바보|느려/.test(s)));
+  }
+  for (let l = 1; l <= 11; l++) assert.ok(F.guideFor(l).name);
+  assert.equal(F.stickerFor("2026-09-07").id, F.stickerFor("2026-09-07").id);
+  const month = new Set(); for (let d = 1; d <= 30; d++) month.add(F.stickerFor("2026-09-" + String(d).padStart(2, "0")).id);
+  assert.ok(month.size >= 12, "a month of stickers is varied");
+  assert.doesNotMatch(F.praise(F.byId("hulk"), () => 0), /틀/);
+});
+
+test("child and parent pages wire the schedule and friends scripts", () => {
+  const html = fs.readFileSync(path.join(__dirname, "../index.html"), "utf8");
+  const parent = fs.readFileSync(path.join(__dirname, "../parent.html"), "utf8");
+  for (const h of [html, parent]) { assert.ok(h.indexOf("store.js") < h.indexOf("schedule.js") && h.indexOf("schedule.js") < h.indexOf("characters.js")); }
+  assert.match(html, /id="track"/); assert.match(html, /id="stickers"/); assert.match(html, /id="planTag"/);
+  assert.match(parent, /id="milestoneRows"/); assert.match(parent, /id="planEnd"/);
+  const app = fs.readFileSync(path.join(__dirname, "../app.js"), "utf8");
+  assert.match(app, /behind: !!\(before && before\.levelGap < 0\)/);
+  assert.doesNotMatch(app, /innerHTML\s*=\s*(?=\S)(?!V\.render|showVisualFirst|F\.badge)/, "innerHTML only for our own SVG");
 });

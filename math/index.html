@@ -9,7 +9,7 @@
 <title>매일 수학 10분</title>
 <link rel="icon" href="../icon.png">
 <link rel="apple-touch-icon" href="../icon-192.png">
-<link rel="stylesheet" href="style.css?v=1">
+<link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
 <div class="wrap" id="app">
@@ -19,18 +19,26 @@
   </header>
 
   <section id="home">
-    <div class="card">
-      <p class="eyebrow" id="homeUnit">1학년 1학기</p>
-      <p class="level-name" id="homeLevel">5까지 모으기와 가르기</p>
-      <p class="hint" id="homeHint">오늘 문제 12개. 그림을 보고 세면 돼요.</p>
+    <div class="card guide">
+      <div class="guide-badge" id="guideBadge"></div>
+      <div>
+        <p class="eyebrow" id="homeUnit">1학년 1학기 · 1단계</p>
+        <p class="level-name" id="homeLevel">5까지 모으기와 가르기</p>
+        <p class="hint" id="homeHint"></p>
+      </div>
     </div>
     <div class="card">
-      <p class="eyebrow">이번 주 도장</p>
-      <div class="week" id="week"></div>
+      <div class="plan-line"><span class="eyebrow">오늘의 진도</span><span class="plan-tag" id="planTag"></span></div>
+      <p class="plan-text" id="planText"></p>
+      <div class="track" id="track"></div>
     </div>
     <div class="card">
-      <button class="btn" id="startBtn">시작하기</button>
+      <button class="btn" id="startBtn">오늘 문제 풀기</button>
       <p class="hint center" id="homeReview"></p>
+    </div>
+    <div class="card">
+      <div class="plan-line"><span class="eyebrow">스티커북</span><span class="small" id="stickerCount"></span></div>
+      <div class="stickers" id="stickers"></div>
     </div>
     <p class="foot"><a href="parent.html">부모님 보기</a></p>
   </section>
@@ -44,7 +52,6 @@
       <p class="feedback" id="feedback"></p>
       <p class="explain" id="explain" hidden></p>
       <button class="btn secondary retry" id="retryBtn" hidden>다시 풀어 보기</button>
-      <button class="btn secondary retry" id="nextBtn" hidden>다음 문제</button>
       <div class="keypad" id="keypad">
         <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
         <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
@@ -57,7 +64,8 @@
 
   <section id="result" hidden>
     <div class="card center">
-      <div class="stamp" id="stamp">참 잘했어요</div>
+      <div class="sticker-big" id="stickerBig"></div>
+      <p class="sticker-name" id="stickerName"></p>
       <p class="result-big" id="resultBig"></p>
       <p class="small" id="resultText"></p>
       <p class="small" id="resultLevel"></p>
@@ -70,9 +78,11 @@
     </div>
   </section>
 </div>
-<script src="curriculum.js?v=1"></script>
-<script src="visual.js?v=1"></script>
-<script src="store.js?v=1"></script>
-<script src="app.js?v=1"></script>
+<script src="curriculum.js?v=2"></script>
+<script src="visual.js?v=2"></script>
+<script src="store.js?v=2"></script>
+<script src="schedule.js?v=2"></script>
+<script src="characters.js?v=2"></script>
+<script src="app.js?v=2"></script>
 </body>
 </html>

@@ -95,3 +95,34 @@ label.field select, label.field input { display: block; width: 100%; margin-top:
   #sheet .ans li { font-size: 15px; line-height: 1.9; }
   #sheet .blank { display: inline-block; width: 1.6em; border-bottom: 2px solid #000; }
 }
+
+/* v2: 길잡이·진도 지도·스티커북 */
+.guide { display: flex; gap: 14px; align-items: center; }
+.guide-badge svg { display: block; }
+.plan-line { display: flex; justify-content: space-between; align-items: center; }
+.plan-tag { font-size: 12px; font-weight: 800; padding: 3px 10px; border-radius: 999px; background: #edf2f7; color: var(--muted); }
+.plan-tag.ontime { background: var(--ok-soft); color: var(--ok); }
+.plan-tag.ahead { background: var(--accent-soft); color: var(--accent); }
+.plan-tag.behind { background: var(--no-soft); color: var(--no); }
+.plan-text { font-size: 14px; color: var(--ink); margin: 6px 0 10px; line-height: 1.5; }
+.track { display: flex; gap: 2px; overflow-x: auto; padding: 6px 0 2px; -webkit-overflow-scrolling: touch; }
+.track .stop { flex: 0 0 auto; width: 58px; display: flex; flex-direction: column; align-items: center; gap: 2px; opacity: .45; position: relative; }
+.track .stop svg { display: block; }
+.track .stop span { font-size: 11px; color: var(--muted); font-weight: 700; }
+.track .stop i { font-style: normal; font-size: 10px; font-weight: 800; color: #fff; background: var(--accent); padding: 1px 6px; border-radius: 999px; }
+.track .stop i.p { background: #cbd5e0; color: #1f2933; }
+.track .stop.done { opacity: .8; }
+.track .stop.done span::after { content: " ✓"; color: var(--ok); }
+.track .stop.here { opacity: 1; }
+.track .stop.here svg { outline: 3px solid var(--accent); border-radius: 50%; }
+.track .stop.planned { opacity: .9; }
+.stickers { display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 8px; margin-top: 8px; }
+.sticker { text-align: center; }
+.sticker svg { display: block; margin: 0 auto; }
+.sticker span { display: block; font-size: 10px; color: var(--muted); margin-top: 2px; }
+.sticker-big { width: 112px; height: 112px; margin: 6px auto 4px; animation: stampIn .5s cubic-bezier(.2,1.4,.4,1) both; }
+.sticker-big svg { display: block; }
+.sticker-name { font-size: 14px; color: var(--muted); margin: 0 0 6px; }
+.planbar { position: relative; height: 10px; background: var(--line); border-radius: 5px; margin: 10px 0 6px; }
+.planbar i { display: block; height: 100%; background: #a0aec0; border-radius: 5px; }
+.planbar b { position: absolute; top: -5px; width: 20px; height: 20px; margin-left: -10px; border-radius: 50%; background: var(--accent); border: 3px solid #fff; box-shadow: 0 0 0 1px var(--line); }

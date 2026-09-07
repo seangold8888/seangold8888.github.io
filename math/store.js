@@ -11,7 +11,8 @@
 
   function defaults() {
     return { name: "", level: 1, streak: 0, perSession: 12, visualPolicy: "auto", sound: false,
-      history: [], wrong: [], stamps: {}, createdAt: today() };
+      history: [], wrong: [], stamps: {}, createdAt: today(),
+      planStart: today(), planEnd: "2027-01-29", planDays: 6, planFrom: 1 };
   }
   function clean(s) {
     const d = defaults();
@@ -24,6 +25,12 @@
     out.wrong = Array.isArray(out.wrong) ? out.wrong.filter(function (w) { return w && w.key && w.problem; }).slice(-60) : [];
     out.stamps = out.stamps && typeof out.stamps === "object" ? out.stamps : {};
     out.name = String(out.name || "").slice(0, 12);
+    const dateOk = function (v, fallback) { return /^\d{4}-\d{2}-\d{2}$/.test(String(v || "")) ? v : fallback; };
+    out.planStart = dateOk(out.planStart, d.planStart);
+    out.planEnd = dateOk(out.planEnd, d.planEnd);
+    if (out.planEnd <= out.planStart) out.planEnd = addDays(out.planStart, 120);
+    out.planDays = [5, 6, 7].indexOf(out.planDays) >= 0 ? out.planDays : 6;
+    out.planFrom = Math.min(11, Math.max(1, parseInt(out.planFrom, 10) || 1));
     return out;
   }
   function load(storage) {
@@ -74,7 +81,9 @@
   }
 
   // 세션 종료: results = [{key, level, review, firstTry, ms}]
-  function finishSession(state, results, now) {
+  // opts.behind: 계획보다 뒤처졌으면 90% 한 번으로 승급. opts.cap: 계획 단계+1 을 넘지 않음.
+  function finishSession(state, results, now, opts) {
+    opts = opts || {};
     const t = today(now);
     const fresh = results.filter(function (r) { return !r.review; });
     const firstTry = fresh.filter(function (r) { return r.firstTry; }).length;
@@ -85,7 +94,8 @@
     state.stamps[t] = (state.stamps[t] || 0) + 1;
     let change = 0;
     if (fresh.length >= 6) {
-      if (acc >= PROMOTE_ACC) { state.streak += 1; if (state.streak >= PROMOTE_STREAK && state.level < 11) { state.level += 1; state.streak = 0; change = 1; } }
+      const need = opts.behind ? 1 : PROMOTE_STREAK, cap = opts.cap ? Math.min(11, opts.cap) : 11;
+      if (acc >= PROMOTE_ACC) { state.streak += 1; if (state.streak >= need && state.level < cap) { state.level += 1; state.streak = 0; change = 1; } }
       else if (acc < DEMOTE_ACC) { state.streak = 0; if (state.level > 1) { state.level -= 1; change = -1; } }
       else state.streak = 0;
     }

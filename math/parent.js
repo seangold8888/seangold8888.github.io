@@ -1,7 +1,7 @@
 /* 매일 수학 10분 — 부모님 화면 */
 (function () {
   "use strict";
-  const C = window.Curriculum, S = window.MathStore;
+  const C = window.Curriculum, S = window.MathStore, Sc = window.MathSchedule, F = window.MathFriends;
   const $ = function (id) { return document.getElementById(id); };
   const storage = window.localStorage;
   let state = S.load(storage);
@@ -13,6 +13,43 @@
   }
   function td(text) { const c = document.createElement("td"); c.textContent = text; return c; }
   function tdHtml(html) { const c = document.createElement("td"); c.innerHTML = html; return c; }
+  function md(d) { return d.slice(5).replace("-", "/"); }
+  function plan() { return Sc.buildPlan({ start: state.planStart, end: state.planEnd, daysPerWeek: state.planDays, fromLevel: state.planFrom }); }
+
+  function renderPlan() {
+    const p = plan(), st = Sc.status(p, Object.keys(state.stamps), state.level, S.today());
+    if (!st) { $("planHead").textContent = "계획 없음"; return; }
+    const pg = C.levelById(st.plannedLevel), cur = C.levelById(state.level);
+    $("planHead").textContent = st.finished ? "계획 기간이 끝났어요" : st.label + " · 오늘 계획 " + pg.id + "단계, 현재 " + cur.id + "단계";
+    $("planDetail").textContent = "계획 " + st.plannedIndex + "/" + st.total + "회차 (" + md(st.startDate) + " ~ " + md(st.endDate) + ", 주 " + state.planDays + "일) · 지금까지 예정 " + st.expected + "일 중 실제 공부 " + st.done + "일" + (st.dayGap < 0 ? " · 빠진 날 " + (-st.dayGap) + "일" : st.dayGap > 0 ? " · 추가로 " + st.dayGap + "일 더" : "");
+    const pct = Math.round(100 * st.plannedIndex / st.total);
+    $("planBar").style.width = pct + "%";
+    const donePct = Math.round(100 * Math.min(st.total, st.done) / st.total);
+    $("planHere").style.left = donePct + "%";
+    $("planLegend").textContent = "회색 막대 = 계획 진행률 " + pct + "%, 점 = 실제 공부한 날 기준 " + donePct + "%";
+
+    const rows = $("milestoneRows"); rows.textContent = "";
+    const today = S.today();
+    Sc.milestones(p).forEach(function (m) {
+      const L = C.levelById(m.level), g = F.guideFor(m.level);
+      const end = p.slice().reverse().find(function (x) { return x.level === m.level; }).date;
+      const tr = document.createElement("tr");
+      tr.appendChild(td(L.id + " · " + L.name + " (" + g.name + ")"));
+      tr.appendChild(td(md(m.date) + " ~ " + md(end)));
+      tr.appendChild(td(m.days + "일"));
+      const status = m.level < state.level ? '<span class="tag ok">완료</span>' : m.level === state.level ? '<span class="tag warn">지금 여기</span>' : (m.date <= today && end >= today) ? '<span class="tag muted">계획상 오늘</span>' : "";
+      tr.appendChild(tdHtml(status));
+      rows.appendChild(tr);
+    });
+    const prow = $("planRows"); prow.textContent = "";
+    p.forEach(function (e) {
+      const tr = document.createElement("tr");
+      if (e.date === today) tr.style.fontWeight = "700";
+      tr.appendChild(td(e.i)); tr.appendChild(td(e.date)); tr.appendChild(td(e.level + "단계"));
+      tr.appendChild(td(state.stamps[e.date] ? "✓" : (e.date < today ? "–" : "")));
+      prow.appendChild(tr);
+    });
+  }
 
   function render() {
     const L = C.levelById(state.level);
@@ -20,8 +57,7 @@
     const recent = state.history.slice(-3);
     $("sAcc").textContent = recent.length ? Math.round(recent.reduce(function (s, h) { return s + h.acc; }, 0) / recent.length) + "%" : "—";
     $("sLevel").textContent = L.id;
-    $("levelName").textContent = L.id + "단계 · " + L.name;
-    $("levelNote").textContent = L.unit + " · 연속 90% 달성 " + state.streak + "/2회 · 복습 대기 " + state.wrong.length + "문제";
+    renderPlan();
 
     const rows = $("levelRows"); rows.textContent = "";
     S.levelSummary(state).forEach(function (r) {
@@ -38,7 +74,7 @@
     const srows = $("sessionRows"); srows.textContent = "";
     state.history.slice(-10).reverse().forEach(function (h) {
       const tr = document.createElement("tr");
-      tr.appendChild(td(h.date.slice(5)));
+      tr.appendChild(td(md(h.date)));
       tr.appendChild(td(h.level + (h.change > 0 ? " ↑" : h.change < 0 ? " ↓" : "")));
       tr.appendChild(td(h.firstTry + "/" + h.fresh + " (" + h.acc + "%)"));
       tr.appendChild(td(sec(h.medianMs)));
@@ -53,7 +89,7 @@
       tr.appendChild(td(w.text.replace("□", "▢")));
       tr.appendChild(td(w.level));
       tr.appendChild(td(w.miss));
-      tr.appendChild(td(w.due.slice(5) + (w.stage ? " (" + (w.stage + 1) + "단계)" : "")));
+      tr.appendChild(td(md(w.due) + (w.stage ? " (" + (w.stage + 1) + "단계)" : "")));
       rrows.appendChild(tr);
     });
     if (!rrows.children.length) rrows.appendChild(document.createElement("tr")).appendChild(td("다시 나올 문제가 없어요."));
@@ -64,6 +100,8 @@
     $("visualPolicy").value = state.visualPolicy;
     $("sound").value = state.sound ? "1" : "0";
     $("sheetLevel").value = String(state.level);
+    $("planStart").value = state.planStart; $("planEnd").value = state.planEnd;
+    $("planDays").value = String(state.planDays); $("planFrom").value = String(state.planFrom);
   }
 
   function fillLevels(select) {
@@ -71,7 +109,7 @@
       const o = document.createElement("option"); o.value = String(L.id); o.textContent = L.id + "단계 · " + L.unit + " · " + L.name; select.appendChild(o);
     });
   }
-  fillLevels($("level")); fillLevels($("sheetLevel"));
+  fillLevels($("level")); fillLevels($("sheetLevel")); fillLevels($("planFrom"));
 
   $("saveBtn").addEventListener("click", function () {
     state.name = $("name").value.trim();
@@ -80,6 +118,10 @@
     state.perSession = parseInt($("perSession").value, 10);
     state.visualPolicy = $("visualPolicy").value;
     state.sound = $("sound").value === "1";
+    state.planStart = $("planStart").value || state.planStart;
+    state.planEnd = $("planEnd").value || state.planEnd;
+    state.planDays = parseInt($("planDays").value, 10);
+    state.planFrom = parseInt($("planFrom").value, 10);
     S.save(storage, state); state = S.load(storage); render();
     $("saveBtn").textContent = "저장했어요 ✓"; setTimeout(function () { $("saveBtn").textContent = "저장"; }, 1500);
   });
@@ -115,7 +157,7 @@
     } catch (_) { $("io").value = "코드를 읽지 못했어요. 내보내기 코드를 그대로 붙여 넣어 주세요."; }
   });
   $("resetBtn").addEventListener("click", function () {
-    if (!window.confirm("모든 기록(도장·단계·복습)을 지울까요? 되돌릴 수 없어요.")) return;
+    if (!window.confirm("모든 기록(스티커·단계·복습)을 지울까요? 되돌릴 수 없어요.")) return;
     state = S.defaults(); S.save(storage, state); render();
   });
 
