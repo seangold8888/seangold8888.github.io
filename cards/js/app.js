@@ -355,6 +355,8 @@
   function startBattle() {
     if (!selectedCard || !isUnlocked(selectedCard) || !isPlayableCard(selectedCard)) return;
     resetBattleFlow();
+    // 배경 무대: 마법·괴물 카드는 마법 숲, 나머지는 별빛 성 (블렌더 렌더)
+    if (dom.arena) dom.arena.classList.toggle("bg-forest", selectedCard.type === "magic" || selectedCard.type === "monster");
     window.CardAudio.prime();
     const enemy = pickEnemy();
     const fragmentPool = getUnlockedFragmentPool();

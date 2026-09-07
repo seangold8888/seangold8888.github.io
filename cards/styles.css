@@ -820,12 +820,16 @@ main {
   align-items: center;
   background:
     radial-gradient(ellipse at 50% 95%, rgba(255,216,91,.2), transparent 36%),
-    radial-gradient(ellipse at 50% 38%, rgba(129,95,196,.24), transparent 54%);
+    radial-gradient(ellipse at 50% 38%, rgba(129,95,196,.24), transparent 54%),
+    linear-gradient(180deg, rgba(23,18,47,.35), rgba(17,13,37,.6)),
+    var(--arena-bg, url("art/bg/arena-castle.webp")) center / cover no-repeat;
   border: 1px solid rgba(255,255,255,.08);
   border-radius: 38px;
   box-shadow: inset 0 -40px 90px rgba(0,0,0,.24);
   overflow: hidden;
 }
+
+.arena.bg-forest { --arena-bg: url("art/bg/arena-forest.webp"); }
 
 .arena::before {
   content: "";
