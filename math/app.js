@@ -524,6 +524,18 @@
     else if (e.key === "Enter") { if (!$("retryBtn").hidden) retry(); else key("go"); }
   });
   window.addEventListener("pageshow", function () { state = S.load(storage); if (!$("home").hidden) renderHome(); });
+  // 처음부터 다시: 부모님 확인(곱셈 한 문제) → 확인 → 이름·단계·코인·옷장 전부 삭제
+  function resetAll() {
+    const a = 6 + Math.floor(Math.random() * 4), b = 6 + Math.floor(Math.random() * 4);
+    const ans = window.prompt("부모님 확인 · " + a + " × " + b + " = ?");
+    if (ans === null) return;
+    if (parseInt(ans, 10) !== a * b) { window.alert("숫자가 달라요. 부모님이 눌러 주세요."); return; }
+    if (!window.confirm("이름·단계·스티커·코인·옷장을 모두 지우고 처음(실력 확인)부터 시작할까요?")) return;
+    try { storage.removeItem(S.KEY); } catch (_) {}
+    state = S.load(storage);
+    showSetup();
+  }
+  $("resetLink").addEventListener("click", function (e) { e.preventDefault(); resetAll(); });
   // 주소 뒤에 ?reset=1 을 붙여 열면 이 기기의 기록을 지우고 처음부터 (부모 확인 후)
   if (/[?&]reset=1/.test(window.location.search)) {
     if (window.confirm("이 기기의 수학 기록(스티커·단계·복습)을 모두 지우고 처음부터 시작할까요?")) {

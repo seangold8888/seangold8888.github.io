@@ -171,6 +171,11 @@
     $("replaceBtn").textContent = "다음에 아이 화면을 열면 실력 확인부터 해요";
   });
   $("heartToday").addEventListener("click", function () { state.hearts[S.today()] = true; S.save(storage, state); render(); });
+  $("resetAllBtn").addEventListener("click", function () {
+    if (!window.confirm("모든 기록(이름·단계·스티커·코인·옷장)을 지우고 처음부터 시작할까요? 되돌릴 수 없어요.")) return;
+    try { storage.removeItem(S.KEY); } catch (_) {}
+    window.location.href = "index.html";
+  });
   $("resetBtn").addEventListener("click", function () {
     if (!window.confirm("모든 기록(스티커·단계·복습)을 지울까요? 되돌릴 수 없어요.")) return;
     state = S.defaults(); S.save(storage, state); render();
