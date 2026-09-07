@@ -248,12 +248,6 @@
     else state.avatar[it.cat] = { id: it.id, color: (state.avatar[it.cat] && state.avatar[it.cat].id === it.id ? state.avatar[it.cat].color : it.color) || it.color || "#ff8fb4" };
     S.save(storage, state); renderWardrobe();
   }
-  function grantDrop(maxPrice) {
-    const it = A.randomDrop(state.owned, maxPrice, Math.random);
-    if (!it) return null;
-    state.owned[it.key] = true;
-    return it;
-  }
   $("wardrobeBtn").addEventListener("click", showWardrobe);
   $("wardrobeBack").addEventListener("click", function () { renderHome(); show("home"); });
   $("pickCharBtn").addEventListener("click", showPick);
@@ -425,16 +419,19 @@
         if (box.classList.contains("opened")) return;
         box.classList.add("opened"); cap.classList.add("open");
         img.src = "assets/3d/capsule_open_" + tints[i] + ".png";
-        const r = F.rollRarity(Math.random, minRarity);
-        state.album.push({ id: c.id, date: S.today(), r: r, key: key });
         const weekly = key.indexOf("week:") === 0;
         if (weekly) state.chests[key.slice(5)] = true;
-        // 캡슐엔 코인도 들어 있고, 가끔 옷장 아이템이 들어 있다 (보물상자는 꼭 하나)
-        const bonus = weekly ? A.COIN.chest : A.COIN.capsule;
-        S.addCoins(state, bonus, weekly ? "보물상자" : "캡슐"); earned += bonus;
-        const drop = (weekly || Math.random() < 0.25) ? grantDrop(weekly ? 100 : 60) : null;
+        // 캡슐 속은 열 때마다 다름: 스티커 · 옷장 아이템 · 코인 주머니 · 반짝 스티커 · 대박
+        const prize = A.rollPrize(Math.random, weekly, state.owned);
+        prize.key = key; prize.c = c;
+        if (prize.type === "sticker" || prize.type === "shiny") {
+          prize.r = prize.type === "shiny" ? Math.max(1, F.rollRarity(Math.random, minRarity)) : F.rollRarity(Math.random, minRarity);
+          state.album.push({ id: c.id, date: S.today(), r: prize.r, key: key });
+        }
+        if (prize.item) state.owned[prize.item.key] = true;
+        if (prize.coins) { S.addCoins(state, prize.coins, weekly ? "보물상자" : "캡슐"); earned += prize.coins; }
         S.save(storage, state);
-        setTimeout(function () { renderResult({ c: c, r: r, key: key, drop: drop, bonus: bonus }); }, 450);
+        setTimeout(function () { renderResult(prize); }, 450);
       });
       box.appendChild(cap);
     });
@@ -443,10 +440,18 @@
   function renderResult(sticker) {
     const today = S.today();
     if (sticker) {
-      $("stickerBig").innerHTML = '<div class="r' + sticker.r + '">' + F.badge(sticker.c, 112) + "</div>";
-      const isNew = state.album.filter(function (a) { return a.id === sticker.c.id; }).length === 1;
-      $("stickerName").textContent = (sticker.key.indexOf("week:") === 0 ? "보물상자 스티커 · " : "오늘의 스티커 · ") + sticker.c.name + " (" + sticker.c.from + ")" + (sticker.r === 2 ? " · ✦ 금빛!" : sticker.r === 1 ? " · 반짝" : "") + (isNew ? " · 처음 만났어요!" : "")
-        + (sticker.drop ? " · 옷장에 「" + sticker.drop.name + "」이 들어 있었어요!" : "");
+      const where = sticker.key.indexOf("week:") === 0 ? "보물상자" : "캡슐";
+      if (sticker.type === "sticker" || sticker.type === "shiny") {
+        $("stickerBig").innerHTML = '<div class="r' + sticker.r + '">' + F.badge(sticker.c, 112) + "</div>";
+        const isNew = state.album.filter(function (a) { return a.id === sticker.c.id; }).length === 1;
+        $("stickerName").textContent = where + " 속 스티커 · " + sticker.c.name + " (" + sticker.c.from + ")" + (sticker.r === 2 ? " · ✦ 금빛!" : sticker.r === 1 ? " · 반짝" : "") + (isNew ? " · 처음 만났어요!" : "");
+      } else if (sticker.type === "coins") {
+        $("stickerBig").innerHTML = '<div class="prize-coins"><span class="coin"></span><b>+' + sticker.coins + '</b></div>';
+        $("stickerName").textContent = where + " 속 코인 주머니 · " + sticker.coins + "코인!";
+      } else {
+        $("stickerBig").innerHTML = '<div class="prize-item">' + A.renderThumb(sticker.item.cat, sticker.item.id, sticker.item.color) + "</div>";
+        $("stickerName").textContent = (sticker.type === "jackpot" ? "✦ 대박! " : "") + where + " 속 옷장 아이템 · 「" + sticker.item.name + "」" + (sticker.coins ? " + " + sticker.coins + "코인" : "") + " · 옷장에서 입어 봐요";
+      }
     } else {
       const g = buddy() || F.guideFor(state.level);
       $("stickerBig").innerHTML = F.badge(g, 112);

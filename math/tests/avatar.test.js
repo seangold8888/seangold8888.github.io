@@ -56,6 +56,17 @@ test("pages wire the studio renderer before avatar.js and expose the wardrobe UI
   for (const id of ["meCard", "homeDoll", "coinNum", "wardrobeBtn", "wardrobe", "wardrobeDoll", "wardrobeTabs", "shop", "palette", "pick", "portraits"]) assert.match(html, new RegExp('id="' + id + '"'), id);
   const app = fs.readFileSync(path.join(__dirname, "../app.js"), "utf8");
   assert.match(app, /A\.COIN\.correct/); assert.match(app, /A\.COIN\.levelUp/); assert.match(app, /A\.COIN\.placement/);
-  assert.match(app, /grantDrop\(weekly \? 100 : 60\)/, "capsule drops an item sometimes, chest always");
+  assert.match(app, /A\.rollPrize\(Math\.random, weekly, state\.owned\)/, "every capsule rolls a random prize");
   assert.match(app, /window\.confirm\("「" \+ it\.name/, "purchase asks first");
+});
+
+test("capsule prizes: five kinds at 40/25/20/10/5, chest only big prizes, no unowned item means coins instead", () => {
+  let seed = 5; const rng = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+  const owned = A.starter("cinder").owned, counts = {};
+  for (let i = 0; i < 4000; i++) { const p = A.rollPrize(rng, false, owned); counts[p.type] = (counts[p.type] || 0) + 1; if (p.type === "coins") assert.ok([10, 15, 20, 30].includes(p.coins)); if (p.item) assert.ok(!owned[p.item.key] && p.item.price <= (p.type === "jackpot" ? 150 : 80)); if (p.type === "jackpot") assert.equal(p.coins, 20); }
+  assert.ok(counts.sticker > 1400 && counts.item > 800 && counts.coins > 600 && counts.shiny > 300 && counts.jackpot > 120, JSON.stringify(counts));
+  const chest = {}; for (let i = 0; i < 1000; i++) { const p = A.rollPrize(rng, true, owned); chest[p.type] = (chest[p.type] || 0) + 1; if (p.type === "coins") assert.ok(p.coins >= 40); }
+  assert.deepEqual(Object.keys(chest).sort(), ["coins", "item", "jackpot"]);
+  const all = {}; Object.keys(A.ITEMS).forEach(k => { all[k] = true; });
+  for (let i = 0; i < 200; i++) { const p = A.rollPrize(rng, true, all); assert.ok(p.type === "coins" && p.coins >= 20); }
 });

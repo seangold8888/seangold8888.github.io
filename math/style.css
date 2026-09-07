@@ -285,3 +285,10 @@ label.field select, label.field input { display: block; width: 100%; margin-top:
 .palette { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
 .swatch { width: 30px; height: 30px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 2px var(--line); }
 .swatch.on { box-shadow: 0 0 0 3px var(--pink); }
+
+/* v10: 캡슐 상품 표시 */
+.prize-coins { width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(180deg, #fff7d6, #ffe08a); box-shadow: 0 6px 0 #e0b84a; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+.prize-coins .coin { width: 42px; height: 42px; }
+.prize-coins b { font-family: "Nunito", system-ui, sans-serif; font-weight: 900; font-size: 26px; color: #7a5a00; }
+.prize-item { width: 120px; height: 120px; border-radius: 28px; background: #fff; box-shadow: 0 6px 0 var(--line); display: flex; align-items: center; justify-content: center; }
+.prize-item svg { width: 108px; height: 116px; }

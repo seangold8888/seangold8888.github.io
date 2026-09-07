@@ -81,11 +81,39 @@
     if (!pool.length) return null;
     return ITEMS[pool[Math.floor((rng || Math.random)() * pool.length)]];
   }
+  // 캡슐 상품표 — 열 때마다 무작위. 보물상자는 큰 것만.
+  const PRIZES = [
+    { type: "sticker", w: 40, label: "친구 스티커" },
+    { type: "item", w: 25, max: 80, label: "옷장 아이템" },
+    { type: "coins", w: 20, label: "코인 주머니" },
+    { type: "shiny", w: 10, label: "반짝 스티커" },
+    { type: "jackpot", w: 5, max: 150, coins: 20, label: "대박!" }
+  ];
+  const CHEST_PRIZES = [
+    { type: "item", w: 50, max: 150, label: "옷장 아이템" },
+    { type: "jackpot", w: 30, max: 150, coins: 30, label: "대박!" },
+    { type: "coins", w: 20, big: true, label: "코인 주머니" }
+  ];
+  function rollPrize(rng, weekly, owned) {
+    rng = rng || Math.random;
+    const table = weekly ? CHEST_PRIZES : PRIZES;
+    const total = table.reduce(function (s, p) { return s + p.w; }, 0);
+    let draw = rng() * total, pick = table[table.length - 1];
+    for (let i = 0; i < table.length; i++) { draw -= table[i].w; if (draw < 0) { pick = table[i]; break; } }
+    const out = { type: pick.type, label: pick.label };
+    if (pick.type === "coins") { const bag = pick.big ? [40, 50, 60] : [10, 15, 20, 30]; out.coins = bag[Math.floor(rng() * bag.length)]; }
+    if (pick.type === "item" || pick.type === "jackpot") {
+      out.item = randomDrop(owned || {}, pick.max, rng);
+      if (!out.item) { out.type = "coins"; out.coins = pick.type === "jackpot" ? 50 : 20; out.label = "코인 주머니"; }
+      else if (pick.type === "jackpot") out.coins = pick.coins;
+    }
+    return out;
+  }
   function cheapestUnowned(owned) {
     return Object.keys(ITEMS).filter(function (k) { return !owned[k]; }).map(function (k) { return ITEMS[k]; }).sort(function (a, b) { return a.price - b.price; })[0] || null;
   }
 
-  const api = { BASE: BASE, CHARS: CHARS, CATS: CATS, CATALOG: CATALOG, ITEMS: ITEMS, COLORS: COLORS, HAIR_COLORS: HAIR_COLORS, COIN: COIN, charById: charById, item: item, starter: starter, studioState: studioState, renderDoll: renderDoll, renderThumb: renderThumb, renderPortrait: renderPortrait, randomDrop: randomDrop, cheapestUnowned: cheapestUnowned };
+  const api = { BASE: BASE, CHARS: CHARS, CATS: CATS, CATALOG: CATALOG, ITEMS: ITEMS, COLORS: COLORS, HAIR_COLORS: HAIR_COLORS, COIN: COIN, charById: charById, item: item, starter: starter, studioState: studioState, renderDoll: renderDoll, renderThumb: renderThumb, renderPortrait: renderPortrait, randomDrop: randomDrop, cheapestUnowned: cheapestUnowned, rollPrize: rollPrize, PRIZES: PRIZES, CHEST_PRIZES: CHEST_PRIZES };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.MathAvatar = api;
 })(typeof window !== "undefined" ? window : globalThis);

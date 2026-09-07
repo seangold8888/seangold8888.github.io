@@ -112,7 +112,7 @@ test("pages ship without games, stay text-only for numbers, and load the four sc
   const css = fs.readFileSync(path.join(__dirname, "../style.css"), "utf8");
   assert.match(css, /@media print/);
   const app = fs.readFileSync(path.join(__dirname, "../app.js"), "utf8");
-  assert.doesNotMatch(app, /innerHTML\s*=\s*(?=\S)(?!V.render|A.render|showVisualFirst|F\.badge|\x27<div class="r\x27|\x27<span class="lid">)/, "only our own SVG goes through innerHTML");
+  assert.doesNotMatch(app, /innerHTML\s*=\s*(?=\S)(?!V.render|A.render|showVisualFirst|F\.badge|\x27<div class="|\x27<span class="lid">)/, "only our own SVG goes through innerHTML");
   assert.match(app, /V\.render\(current, true\)/, "wrong answer reveals the picture");
 });
 
@@ -181,5 +181,5 @@ test("child and parent pages wire the schedule and friends scripts", () => {
   assert.match(parent, /id="milestoneRows"/); assert.match(parent, /id="planEnd"/);
   const app = fs.readFileSync(path.join(__dirname, "../app.js"), "utf8");
   assert.match(app, /behind: !!\(before && before\.levelGap < 0\)/);
-  assert.doesNotMatch(app, /innerHTML\s*=\s*(?=\S)(?!V.render|A.render|showVisualFirst|F\.badge|\x27<div class="r\x27|\x27<span class="lid">)/, "innerHTML only for our own SVG");
+  assert.doesNotMatch(app, /innerHTML\s*=\s*(?=\S)(?!V.render|A.render|showVisualFirst|F\.badge|\x27<div class="|\x27<span class="lid">)/, "innerHTML only for our own SVG");
 });
