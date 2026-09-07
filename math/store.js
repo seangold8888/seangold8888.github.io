@@ -21,7 +21,7 @@
     const d = defaults();
     if (!s || typeof s !== "object") return d;
     const out = Object.assign(d, s);
-    out.level = Math.min(11, Math.max(1, parseInt(out.level, 10) || 1));
+    out.level = Math.min(12, Math.max(1, parseInt(out.level, 10) || 1));
     out.perSession = [8, 12, 16].indexOf(out.perSession) >= 0 ? out.perSession : 12;
     out.visualPolicy = ["auto", "always", "wrong"].indexOf(out.visualPolicy) >= 0 ? out.visualPolicy : "auto";
     out.history = Array.isArray(out.history) ? out.history.slice(-200) : [];
@@ -33,7 +33,7 @@
     out.planEnd = dateOk(out.planEnd, d.planEnd);
     if (out.planEnd <= out.planStart) out.planEnd = addDays(out.planStart, 120);
     out.planDays = [5, 6, 7].indexOf(out.planDays) >= 0 ? out.planDays : 6;
-    out.planFrom = Math.min(11, Math.max(1, parseInt(out.planFrom, 10) || 1));
+    out.planFrom = Math.min(12, Math.max(1, parseInt(out.planFrom, 10) || 1));
     out.album = Array.isArray(out.album) ? out.album.filter(function (a) { return a && a.id && a.date; }).slice(-400) : [];
     out.hearts = out.hearts && typeof out.hearts === "object" ? out.hearts : {};
     out.chests = out.chests && typeof out.chests === "object" ? out.chests : {};
@@ -109,7 +109,7 @@
     state.stamps[t] = (state.stamps[t] || 0) + 1;
     let change = 0;
     if (fresh.length >= 6) {
-      const need = opts.behind ? 1 : PROMOTE_STREAK, cap = opts.cap ? Math.min(11, opts.cap) : 11;
+      const need = opts.behind ? 1 : PROMOTE_STREAK, cap = opts.cap ? Math.min(12, opts.cap) : 12;
       if (acc >= PROMOTE_ACC) { state.streak += 1; if (state.streak >= need && state.level < cap) { state.level += 1; state.streak = 0; change = 1; } }
       else if (acc < DEMOTE_ACC) { state.streak = 0; if (state.level > 1) { state.level -= 1; change = -1; } }
       else state.streak = 0;

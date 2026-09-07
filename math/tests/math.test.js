@@ -5,9 +5,9 @@ const C = require("../curriculum.js"), V = require("../visual.js"), S = require(
 
 function rngFrom(seed) { let s = seed; return function () { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; }; }
 function evalText(text, answer) {
-  // 식 형태만 검산 (한글 문장은 visual 로 검산)
+  // 식 형태만 검산 (한글 문장·수 배열은 생성기 규칙과 visual 로 검산)
   const t = text.replace(/−/g, "-").replace("□", String(answer));
-  if (!/^[\d\s+\-=]+$/.test(t)) return true;
+  if (!/^[\d\s+\-=]+$/.test(t) || !t.includes("=")) return true;
   const [l, r] = t.split("=");
   return Function("return (" + l + ") === (" + r + ")")();
 }
@@ -31,9 +31,9 @@ test("every level and type generates only integer answers within the level range
 test("carry problems always need regrouping and borrow problems always cross ten", () => {
   const rng = rngFrom(5);
   for (let i = 0; i < 300; i++) {
-    const c = C.makeProblem(8, rng); assert.ok(c.visual.a + c.visual.b >= 11 && c.visual.a <= 9 && c.visual.b <= 9, c.text);
-    const b = C.makeProblem(9, rng); assert.ok(b.visual.a >= 11 && b.visual.a <= 18 && b.answer < 10 && b.visual.b > b.visual.a - 10, b.text);
-    const t = C.makeProblem(6, rng); assert.ok(t.answer >= 0 && Math.floor(t.answer / 10) === Math.floor(t.visual.a / 10), "no carry/borrow: " + t.text);
+    const c = C.makeProblem(9, rng); assert.ok(c.visual.a + c.visual.b >= 11 && c.visual.a <= 9 && c.visual.b <= 9, c.text);
+    const b = C.makeProblem(10, rng); assert.ok(b.visual.a >= 11 && b.visual.a <= 18 && b.answer < 10 && b.visual.b > b.visual.a - 10, b.text);
+    const t = C.makeProblem(7, rng); assert.ok(t.answer >= 0 && Math.floor(t.answer / 10) === Math.floor(t.visual.a / 10), "no carry/borrow: " + t.text);
   }
 });
 
@@ -94,7 +94,7 @@ test("state survives a round trip and rejects garbage", () => {
   const mem = new Map(), storage = { getItem: k => mem.get(k) ?? null, setItem: (k, v) => mem.set(k, v) };
   const st = S.load(storage); st.level = 99; st.name = "재이"; st.perSession = 7; S.save(storage, st);
   const back = S.load(storage);
-  assert.equal(back.level, 11); assert.equal(back.perSession, 12); assert.equal(back.name, "재이");
+  assert.equal(back.level, 12); assert.equal(back.perSession, 12); assert.equal(back.name, "재이");
   const stored = JSON.parse(mem.get(S.KEY));
   assert.deepEqual(Object.keys(stored).sort(), ["album", "avatar", "buddy", "chests", "coinLog", "coins", "createdAt", "grade", "hearts", "history", "level", "name", "owned", "perSession", "placed", "placement", "planDays", "planEnd", "planFrom", "planStart", "school", "sound", "stamps", "streak", "visualPolicy", "wrong"]);
   mem.set(S.KEY, "{not json"); assert.equal(S.load(storage).level, 1);
@@ -124,9 +124,9 @@ test("the plan covers every study day from start to end, keeps level order, and 
   assert.ok(plan.every(p => new Date(p.date + "T00:00:00").getDay() !== 0), "no Sundays with 6 days/week");
   for (let i = 1; i < plan.length; i++) assert.ok(plan[i].level >= plan[i - 1].level && plan[i].i === plan[i - 1].i + 1);
   const ms = Sc.milestones(plan);
-  assert.deepEqual(ms.map(m => m.level), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+  assert.deepEqual(ms.map(m => m.level), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
   const days = Object.fromEntries(ms.map(m => [m.level, m.days]));
-  assert.ok(days[8] > days[1] && days[9] > days[5] && days[6] >= days[10]);
+  assert.ok(days[5] > days[1] && days[9] > days[6] && days[10] > days[2] && days[5] >= days[12]);
   assert.equal(ms.reduce((s, m) => s + m.days, 0), plan.length);
   const five = Sc.buildPlan({ start: "2026-09-07", end: "2026-10-02", daysPerWeek: 5, fromLevel: 4 });
   assert.equal(five.length, 20); assert.equal(five[0].level, 4);
@@ -138,8 +138,8 @@ test("status reports planned level, missed days and whether the child is behind 
   const s1 = Sc.status(plan, ["2026-09-07", "2026-09-08"], 1, "2026-09-10");
   assert.equal(s1.plannedIndex, 4); assert.equal(s1.expected, 4); assert.equal(s1.done, 2); assert.equal(s1.dayGap, -2); assert.equal(s1.label, "계획대로");
   const s2 = Sc.status(plan, [], 3, "2026-11-20"); assert.ok(s2.levelGap < 0); assert.match(s2.label, /뒤/);
-  const s3 = Sc.status(plan, [], 9, "2026-11-20"); assert.ok(s3.levelGap > 0); assert.match(s3.label, /앞/);
-  const s4 = Sc.status(plan, [], 11, "2027-03-01"); assert.equal(s4.finished, true);
+  const s3 = Sc.status(plan, [], 11, "2026-11-20"); assert.ok(s3.levelGap > 0); assert.match(s3.label, /앞/);
+  const s4 = Sc.status(plan, [], 12, "2027-03-01"); assert.equal(s4.finished, true);
   const sunday = Sc.status(plan, [], 1, "2026-09-13"); assert.equal(sunday.plannedIndex, 6, "a rest day shows the last study day");
 });
 
@@ -147,7 +147,7 @@ test("plan settings persist and promotion uses the behind/cap options", () => {
   const st = S.defaults();
   assert.equal(st.planEnd, "2027-01-29"); assert.equal(st.planDays, 6);
   const bad = S.clean({ planStart: "2026-09-07", planEnd: "2026-01-01", planDays: 4, planFrom: 40 });
-  assert.ok(bad.planEnd > bad.planStart); assert.equal(bad.planDays, 6); assert.equal(bad.planFrom, 11);
+  assert.ok(bad.planEnd > bad.planStart); assert.equal(bad.planDays, 6); assert.equal(bad.planFrom, 12);
   const good = [...Array(12)].map((_, i) => ({ key: "k" + i, level: 1, review: false, firstTry: true, ms: 2000 }));
   S.finishSession(st, good, "2026-09-07", { behind: true, cap: 3 }); assert.equal(st.level, 2, "behind: one 90% session promotes");
   S.finishSession(st, good, "2026-09-08", { behind: true, cap: 2 }); assert.equal(st.level, 2, "never past the cap");
@@ -165,7 +165,7 @@ test("friends: 22 characters across three families, every icon drawn by us, a gu
     assert.ok(fs.existsSync(path.join(__dirname, "../assets/3d/badges/" + c.id + ".png")), "3d badge for " + c.id);
     assert.ok(c.say.length >= 2 && c.say.every(s => !/틀렸|바보|느려/.test(s)));
   }
-  for (let l = 1; l <= 11; l++) assert.ok(F.guideFor(l).name);
+  for (let l = 1; l <= 12; l++) assert.ok(F.guideFor(l).name);
   assert.equal(F.stickerFor("2026-09-07").id, F.stickerFor("2026-09-07").id);
   const month = new Set(); for (let d = 1; d <= 30; d++) month.add(F.stickerFor("2026-09-" + String(d).padStart(2, "0")).id);
   assert.ok(month.size >= 12, "a month of stickers is varied");

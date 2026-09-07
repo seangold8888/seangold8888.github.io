@@ -4,13 +4,13 @@
 (function (root) {
   "use strict";
   const C = root.Curriculum || (typeof require !== "undefined" ? require("./curriculum.js") : null);
-  const MAX_Q = 16, MIN_Q = 8, TOP = 11;
-  const START_BY_GRADE = { 1: 2, 2: 6, 3: 9, 4: 10, 5: 11, 6: 11 };
+  const MAX_Q = 16, MIN_Q = 8, TOP = 12;
+  const START_BY_GRADE = { 1: 2, 2: 7, 3: 10, 4: 11, 5: 12, 6: 12 };
   // 9월 이후 1학년은 2학기 → 4단계(10 만들기)부터, 3~8월 1학년은 2단계부터
   function startLevel(grade, month) {
     const g = Math.min(6, Math.max(1, parseInt(grade, 10) || 1));
     let lv = START_BY_GRADE[g];
-    if (g === 1 && month != null && (month >= 9 || month <= 2)) lv = 4;
+    if (g === 1 && month != null && (month >= 9 || month <= 2)) lv = 5;
     return lv;
   }
   function create(opts) {

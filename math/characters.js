@@ -27,7 +27,7 @@
     { id: "moana", name: "모아나", from: "디즈니 프린세스", color: "#2b6cb0", bg: "#e8f0fa", icon: "wave", say: ["파도를 넘었어!", "모아나가 응원해요!"] }
   ];
   // 단계별 길잡이 친구 (지도 정거장)
-  const LEVEL_GUIDE = { 1: "cinnamoroll", 2: "mymelody", 3: "heartsping", 4: "laraping", 5: "kitty", 6: "cinderella", 7: "rapunzel", 8: "elsa", 9: "baroping", 10: "ariel", 11: "moana" };
+  const LEVEL_GUIDE = { 1: "cinnamoroll", 2: "mymelody", 3: "heartsping", 4: "laraping", 5: "kitty", 6: "pompompurin", 7: "cinderella", 8: "rapunzel", 9: "elsa", 10: "baroping", 11: "ariel", 12: "moana" };
 
   function byId(id) { return CHARACTERS.find(function (c) { return c.id === id; }) || CHARACTERS[0]; }
   function guideFor(level) { return byId(LEVEL_GUIDE[level] || "cinnamoroll"); }
@@ -80,8 +80,9 @@
     cinnamoroll: "구름 위에서 점을 세던 시나모롤이 말했어요. \"5까지는 이제 눈 감고도 알겠지? 다음 친구가 기다려!\"",
     mymelody: "마이멜로디가 리본을 고쳐 매며 말했어요. \"9까지 모으고 가르기, 정말 예쁘게 해냈어. 하츄핑에게 가 보자!\"",
     heartsping: "하츄핑이 하트를 뿅 날렸어요. \"더하기 빼기가 이렇게 재밌을 줄이야! 이제 10을 만들러 가자, 하츄!\"",
-    laraping: "라라핑이 노래했어요. \"10을 만드는 친구는 계산의 마법사~ 헬로키티가 십몇 나라에서 기다려!\"",
-    kitty: "헬로키티가 리본을 흔들며 말했어요. \"십몇도 세 수 계산도 척척! 이제 진짜 두 자리 수 성으로 가는 거야.\"",
+    laraping: "라라핑이 노래했어요. \"10을 만드는 친구는 계산의 마법사~ 헬로키티가 100까지의 수 나라에서 기다려!\"",
+    kitty: "헬로키티가 리본을 흔들며 말했어요. \"100까지의 수를 모두 알았구나! 푸린이 다음 계단에서 기다려.\"",
+    pompompurin: "폼폼푸린이 푸딩을 내밀며 말했어요. \"십몇도 세 수 계산도 척척! 이제 진짜 두 자리 수 성으로 가는 거야.\"",
     cinderella: "신데렐라가 유리구두를 신고 말했어요. \"두 자리 수도 이제 친구네요. 라푼젤의 탑이 보여요!\"",
     rapunzel: "라푼젤이 긴 머리를 내려 주며 말했어요. \"몇십끼리, 두 자리끼리도 거뜬! 다음은 엘사의 눈꽃 나라야.\"",
     elsa: "엘사가 눈꽃을 뿌리며 말했어요. \"10을 만들어 더하기, 받아올림의 마법을 배웠구나. 바로핑이 번개처럼 기다려!\"",

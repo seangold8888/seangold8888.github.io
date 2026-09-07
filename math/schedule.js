@@ -4,7 +4,7 @@
 (function (root) {
   "use strict";
   // 단계별 비중 (학교 2학기 핵심인 6~9단계에 시간을 더 준다)
-  const WEIGHTS = { 1: 3, 2: 5, 3: 8, 4: 9, 5: 7, 6: 10, 7: 10, 8: 12, 9: 12, 10: 6, 11: 5 };
+  const WEIGHTS = { 1: 3, 2: 5, 3: 7, 4: 8, 5: 12, 6: 7, 7: 9, 8: 9, 9: 11, 10: 11, 11: 6, 12: 5 };
   const DEFAULT_END = "2027-01-29"; // 1학년 2학기 마무리(종업식 전 금요일) 기준, 부모 설정에서 변경
 
   function parse(s) { return new Date(s + "T00:00:00"); }
@@ -22,7 +22,7 @@
     const fromLevel = Math.max(1, opts.fromLevel || 1);
     const dates = [];
     for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) if (isStudyDay(d, dpw)) dates.push(fmt(d));
-    const levels = []; for (let l = fromLevel; l <= 11; l++) levels.push(l);
+    const levels = []; for (let l = fromLevel; l <= 12; l++) levels.push(l);
     const total = levels.reduce(function (s, l) { return s + WEIGHTS[l]; }, 0);
     const n = dates.length;
     // 각 단계에 최소 1일, 나머지는 비중대로

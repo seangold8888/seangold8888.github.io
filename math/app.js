@@ -52,7 +52,7 @@
   function renderTrack(st) {
     const track = $("track"); track.textContent = "";
     const from = state.planFrom || 1;
-    for (let l = from; l <= 11; l++) {
+    for (let l = from; l <= 12; l++) {
       const g = F.guideFor(l), node = document.createElement("div");
       const cls = ["stop"];
       if (l < state.level) cls.push("done");
@@ -395,7 +395,7 @@
   /* ---------- 끝: 캡슐 뽑기 → 결과 ---------- */
   function finish() {
     const before = planStatus(), today = S.today(), firstToday = !state.stamps[today];
-    lastEntry = S.finishSession(state, results, null, { behind: !!(before && before.levelGap < 0), cap: before ? before.plannedLevel + 1 : 11 });
+    lastEntry = S.finishSession(state, results, null, { behind: !!(before && before.levelGap < 0), cap: before ? before.plannedLevel + 1 : 12 });
     const fresh = results.filter(function (r) { return !r.review; });
     lastFresh = fresh.length; lastFirst = fresh.filter(function (r) { return r.firstTry; }).length;
     if (firstToday) { S.addCoins(state, A.COIN.session, "오늘 공부 완료"); earned += A.COIN.session; }

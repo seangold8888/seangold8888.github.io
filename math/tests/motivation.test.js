@@ -24,7 +24,7 @@ test("rarity odds are about 70/25/5 and the weekly chest floor holds", () => {
 });
 
 test("every guide has a kind letter for finishing its level", () => {
-  for (let l = 1; l <= 11; l++) { assert.ok(F.storyFor(l).length > 20, "story " + l); assert.doesNotMatch(F.storyFor(l), /틀|바보|느려/); }
+  for (let l = 1; l <= 12; l++) { assert.ok(F.storyFor(l).length > 20, "story " + l); assert.doesNotMatch(F.storyFor(l), /틀|바보|느려/); }
 });
 
 test("streak skips rest days, forgives one weekday miss per week, breaks on two", () => {
