@@ -13,7 +13,8 @@
     return { name: "", level: 1, streak: 0, perSession: 12, visualPolicy: "auto", sound: false,
       history: [], wrong: [], stamps: {}, createdAt: today(),
       planStart: today(), planEnd: "2027-01-29", planDays: 6, planFrom: 1,
-      album: [], hearts: {}, chests: {}, buddy: null };
+      album: [], hearts: {}, chests: {}, buddy: null,
+      school: "", grade: 1, placed: false, placement: null };
   }
   function clean(s) {
     const d = defaults();
@@ -36,6 +37,10 @@
     out.hearts = out.hearts && typeof out.hearts === "object" ? out.hearts : {};
     out.chests = out.chests && typeof out.chests === "object" ? out.chests : {};
     out.buddy = out.buddy && out.buddy.id && out.buddy.date ? { id: String(out.buddy.id), date: out.buddy.date } : null;
+    out.school = String(out.school || "").slice(0, 20);
+    out.grade = Math.min(6, Math.max(1, parseInt(out.grade, 10) || 1));
+    out.placed = !!out.placed;
+    out.placement = out.placement && typeof out.placement === "object" && out.placement.date ? { date: out.placement.date, level: out.placement.level, asked: out.placement.asked, correct: out.placement.correct, medianMs: out.placement.medianMs } : null;
     return out;
   }
   function load(storage) {

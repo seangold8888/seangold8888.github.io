@@ -45,7 +45,7 @@
       setTimeout(function () { b.remove(); }, 800);
     }
   }
-  function show(id) { ["home", "quiz", "capsule", "result", "showcard"].forEach(function (v) { $(v).hidden = v !== id; }); window.scrollTo(0, 0); }
+  function show(id) { ["setup", "placed", "home", "quiz", "capsule", "result", "showcard"].forEach(function (v) { $(v).hidden = v !== id; }); window.scrollTo(0, 0); }
   function collectedIds() { const ids = {}; state.album.forEach(function (a) { ids[a.id] = true; }); return Object.keys(ids); }
 
   /* ---------- 홈 ---------- */
@@ -102,7 +102,7 @@
   function renderHome() {
     const L = levelInfo(), g = F.guideFor(state.level), today = S.today();
     const doneToday = !!state.stamps[today];
-    $("who").textContent = state.name ? state.name + " 어린이" : "";
+    $("who").textContent = state.name ? state.name + (state.grade ? " · " + state.grade + "학년" : "") : "";
     $("guideBadge").innerHTML = F.badge(g, 64);
     $("homeUnit").textContent = L.unit + " · " + L.id + "단계 · 길잡이 " + g.name;
     $("homeLevel").textContent = L.name;
@@ -154,8 +154,10 @@
       else if (/^\d+$/.test(part)) el.appendChild(document.createTextNode(part));
       else { const w = document.createElement("span"); w.className = /^[\s+−=]+$/.test(part) ? "" : "word"; w.textContent = part; el.appendChild(w); }
     });
-    $("count").textContent = (index + 1) + " / " + session.length + (p.review ? " · 다시 만난 문제" : "");
-    $("bar").style.width = Math.round(100 * index / session.length) + "%";
+    if (session) {
+      $("count").textContent = (index + 1) + " / " + session.length + (p.review ? " · 다시 만난 문제" : "");
+      $("bar").style.width = Math.round(100 * index / session.length) + "%";
+    }
     $("feedback").textContent = ""; $("feedback").className = "feedback";
     $("explain").hidden = true; $("retryBtn").hidden = true; $("keypad").hidden = false;
     $("visual").innerHTML = showVisualFirst() ? V.render(p, false) : "";
@@ -182,9 +184,69 @@
     lastLine = line;
     return line;
   }
+  /* ---------- 처음 실력 확인 ---------- */
+  const Pl = window.MathPlacement;
+  let placement = null;
+  function showSetup() {
+    $("setupName").value = state.name || ""; $("setupSchool").value = state.school || ""; $("setupGrade").value = String(state.grade || 1);
+    show("setup");
+  }
+  function startPlacement() {
+    state.name = $("setupName").value.trim().slice(0, 12);
+    state.school = $("setupSchool").value.trim().slice(0, 20);
+    state.grade = parseInt($("setupGrade").value, 10) || 1;
+    S.save(storage, state);
+    placement = Pl.create({ grade: state.grade, month: new Date().getMonth() + 1 });
+    session = null; index = 0; results = [];
+    show("quiz");
+    $("quitBtn").textContent = "나중에 하기";
+    placementNext();
+  }
+  function placementNext() {
+    const p = placement.next();
+    if (!p) { finishPlacement(); return; }
+    current = p; firstTry = true;
+    renderProblem();
+    $("count").textContent = "실력 확인 " + placement.asked + " / " + placement.MAX_Q;
+    $("bar").style.width = Math.round(100 * (placement.asked - 1) / placement.MAX_Q) + "%";
+    $("visual").textContent = "";
+    $("feedback").textContent = placement.asked === 1 ? "몰라도 괜찮아요. 아는 만큼만!" : "";
+    shownAt = performance.now();
+  }
+  function placementAnswer(value, ms) {
+    const r = placement.answer(value, ms);
+    const box = $("answerBox");
+    box.className = "box " + (r.ok ? "ok" : "no");
+    $("feedback").textContent = r.ok ? "좋아요 ✓" : "다음 문제로 가요";
+    $("feedback").className = "feedback " + (r.ok ? "ok" : "");
+    if (r.ok) ding(true);
+    $("keypad").hidden = true;
+    setTimeout(placementNext, r.ok ? 550 : 750);
+  }
+  function finishPlacement() {
+    const res = placement.result();
+    state.level = res.level; state.streak = 0;
+    state.planFrom = res.level; state.planStart = S.today();
+    state.placed = true;
+    state.placement = { date: S.today(), level: res.level, asked: res.asked, correct: res.correct, medianMs: res.medianMs };
+    S.save(storage, state);
+    placement = null;
+    $("quitBtn").textContent = "그만하기";
+    const L = C.levelById(res.level), g = F.guideFor(res.level);
+    $("placedBadge").innerHTML = F.badge(g, 112);
+    $("placedUnit").textContent = L.unit + " · " + res.level + "단계에서 시작해요";
+    $("placedLevel").textContent = L.name;
+    $("placedText").textContent = (state.name || "친구") + (state.school ? " · " + state.school : "") + " " + state.grade + "학년 · 확인 문제 " + res.asked + "개 중 " + res.correct + "개 정답";
+    $("placedSay").textContent = g.name + ": \"" + (state.name || "친구") + "야, 여기서부터 나랑 같이 가자! 매일 조금씩, 딱 맞는 문제만.\"";
+    show("placed");
+  }
+  $("setupBtn").addEventListener("click", startPlacement);
+  $("placedGo").addEventListener("click", function () { renderHome(); show("home"); });
+
   function submit() {
     if (typed === "") return;
     const value = parseInt(typed, 10), ok = value === current.answer, ms = Math.round(performance.now() - shownAt);
+    if (placement) { placementAnswer(value, ms); return; }
     const box = $("answerBox");
     if (ok) {
       box.className = "box ok";
@@ -314,7 +376,10 @@
   $("againBtn").addEventListener("click", start);
   $("doneBtn").addEventListener("click", function () { renderHome(); show("home"); });
   $("retryBtn").addEventListener("click", retry);
-  $("quitBtn").addEventListener("click", function () { S.save(storage, state); renderHome(); show("home"); });
+  $("quitBtn").addEventListener("click", function () {
+    if (placement) { placement = null; $("quitBtn").textContent = "그만하기"; showSetup(); return; }
+    S.save(storage, state); renderHome(); show("home");
+  });
   $("keypad").addEventListener("click", function (e) { const b = e.target.closest("button"); if (b) key(b.getAttribute("data-k")); });
   document.addEventListener("keydown", function (e) {
     if ($("quiz").hidden) return;
@@ -332,5 +397,5 @@
     try { window.history.replaceState(null, "", window.location.pathname); } catch (_) {}
   }
   renderHome();
-  show("home");
+  if (!state.placed) showSetup(); else show("home");
 })();

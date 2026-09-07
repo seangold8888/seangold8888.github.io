@@ -98,6 +98,10 @@
     $("heartToday").disabled = !!state.hearts[today];
     $("heartToday").textContent = state.hearts[today] ? "♥ 오늘 칭찬 도장 완료" : "♥ 오늘 칭찬 도장 찍기";
     $("heartInfo").textContent = "지금까지 칭찬 도장 " + hearts + "개 · 친구 앨범 " + new Set(state.album.map(function (a) { return a.id; })).size + "/22명 · 반짝 이상 스티커 " + state.album.filter(function (a) { return a.r >= 1; }).length + "장";
+    $("placementInfo").textContent = state.placement
+      ? state.placement.date.replace(/-/g, ".") + " 확인 · " + state.placement.level + "단계에서 시작 · " + state.placement.asked + "문제 중 " + state.placement.correct + "개 정답" + (state.placement.medianMs ? " · 중간 " + (state.placement.medianMs / 1000).toFixed(1) + "초" : "")
+      : "아직 실력 확인을 하지 않았어요. 아이 화면을 열면 처음에 진행됩니다.";
+    $("school").value = state.school || ""; $("grade").value = String(state.grade || 1);
     $("name").value = state.name;
     $("level").value = String(state.level);
     $("perSession").value = String(state.perSession);
@@ -117,6 +121,7 @@
 
   $("saveBtn").addEventListener("click", function () {
     state.name = $("name").value.trim();
+    state.school = $("school").value.trim(); state.grade = parseInt($("grade").value, 10) || 1;
     const level = parseInt($("level").value, 10);
     if (level !== state.level) { state.level = level; state.streak = 0; }
     state.perSession = parseInt($("perSession").value, 10);
@@ -159,6 +164,11 @@
       if (!window.confirm("이 기기의 기록을 가져온 기록으로 바꿀까요?")) return;
       state = S.clean(parsed); S.save(storage, state); render(); $("io").value = "가져왔어요.";
     } catch (_) { $("io").value = "코드를 읽지 못했어요. 내보내기 코드를 그대로 붙여 넣어 주세요."; }
+  });
+  $("replaceBtn").addEventListener("click", function () {
+    if (!window.confirm("아이 화면을 열 때 실력 확인을 다시 할까요? (기록은 그대로)")) return;
+    state.placed = false; S.save(storage, state); render();
+    $("replaceBtn").textContent = "다음에 아이 화면을 열면 실력 확인부터 해요";
   });
   $("heartToday").addEventListener("click", function () { state.hearts[S.today()] = true; S.save(storage, state); render(); });
   $("resetBtn").addEventListener("click", function () {

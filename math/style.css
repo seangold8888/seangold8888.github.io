@@ -248,3 +248,8 @@ label.field select, label.field input { display: block; width: 100%; margin-top:
 .sticker-big .b3d { box-shadow: 0 6px 0 var(--line); }
 .sticker-big .r1 .b3d { box-shadow: 0 0 0 5px #9ed0ff, 0 0 18px #9ed0ff; }
 .sticker-big .r2 .b3d { box-shadow: 0 0 0 5px var(--gold), 0 0 24px #ffd85c; }
+
+/* v8: 처음 설정 */
+#setup label.field { color: var(--muted); font-size: 15px; }
+#setup label.field input, #setup label.field select { font-size: 20px; padding: 12px 14px; border-radius: 16px; border: 3px solid var(--line); font-family: inherit; }
+#setup .btn.big { margin-top: 14px; }

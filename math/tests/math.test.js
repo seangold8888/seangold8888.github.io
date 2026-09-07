@@ -96,7 +96,7 @@ test("state survives a round trip and rejects garbage", () => {
   const back = S.load(storage);
   assert.equal(back.level, 11); assert.equal(back.perSession, 12); assert.equal(back.name, "재이");
   const stored = JSON.parse(mem.get(S.KEY));
-  assert.deepEqual(Object.keys(stored).sort(), ["album", "buddy", "chests", "createdAt", "hearts", "history", "level", "name", "perSession", "planDays", "planEnd", "planFrom", "planStart", "sound", "stamps", "streak", "visualPolicy", "wrong"]);
+  assert.deepEqual(Object.keys(stored).sort(), ["album", "buddy", "chests", "createdAt", "grade", "hearts", "history", "level", "name", "perSession", "placed", "placement", "planDays", "planEnd", "planFrom", "planStart", "school", "sound", "stamps", "streak", "visualPolicy", "wrong"]);
   mem.set(S.KEY, "{not json"); assert.equal(S.load(storage).level, 1);
 });
 
@@ -107,7 +107,7 @@ test("pages ship without games, stay text-only for numbers, and load the four sc
     assert.doesNotMatch(h, /game-hub|모험 상자|starkart|cards\//);
     assert.ok(h.indexOf("curriculum.js") < h.indexOf("visual.js") && h.indexOf("visual.js") < h.indexOf("store.js"));
   }
-  assert.match(html, /id="keypad"/); assert.doesNotMatch(html, /<input[^>]*type="number"/);
+  assert.match(html, /id="keypad"/); assert.doesNotMatch(html, /<input[^>]*type="number"/); assert.ok(html.indexOf("placement.js") > html.indexOf("characters.js"));
   assert.match(parent, /window\.print|printBtn/);
   const css = fs.readFileSync(path.join(__dirname, "../style.css"), "utf8");
   assert.match(css, /@media print/);
@@ -176,6 +176,7 @@ test("child and parent pages wire the schedule and friends scripts", () => {
   const html = fs.readFileSync(path.join(__dirname, "../index.html"), "utf8");
   const parent = fs.readFileSync(path.join(__dirname, "../parent.html"), "utf8");
   for (const h of [html, parent]) { assert.ok(h.indexOf("store.js") < h.indexOf("schedule.js") && h.indexOf("schedule.js") < h.indexOf("characters.js")); }
+  assert.ok(html.indexOf("characters.js") < html.indexOf("placement.js"));
   assert.match(html, /id="track"/); assert.match(html, /id="album"/); assert.match(html, /id="planTag"/);
   assert.match(parent, /id="milestoneRows"/); assert.match(parent, /id="planEnd"/);
   const app = fs.readFileSync(path.join(__dirname, "../app.js"), "utf8");

@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Nunito:wght@800;900&display=swap">
-<link rel="stylesheet" href="style.css?v=7">
+<link rel="stylesheet" href="style.css?v=8">
 </head>
 <body>
 <div class="wrap parent" id="app">
@@ -80,6 +80,8 @@
   <div class="card">
     <h2>설정</h2>
     <label class="field">이름<input id="name" maxlength="12" placeholder="예: 재이"></label>
+    <label class="field">초등학교<input id="school" maxlength="20" placeholder="예: 신중초등학교"></label>
+    <label class="field">학년<select id="grade"><option value="1">1학년</option><option value="2">2학년</option><option value="3">3학년</option><option value="4">4학년</option><option value="5">5학년</option><option value="6">6학년</option></select></label>
     <label class="field">현재 단계 (교과서 차시 순서)<select id="level"></select></label>
     <label class="field">한 번에 푸는 문제 수<select id="perSession"><option value="8">8문제 (약 6분)</option><option value="12">12문제 (약 10분)</option><option value="16">16문제 (약 13분)</option></select></label>
     <label class="field">그림(십틀·수 모형) 보여주기<select id="visualPolicy"><option value="auto">단계별 기본 (1~5·8·9단계는 항상, 나머지는 틀렸을 때)</option><option value="always">항상</option><option value="wrong">틀렸을 때만</option></select></label>
@@ -91,6 +93,13 @@
     <label class="field">계획 시작 단계<select id="planFrom"></select></label>
     <button class="btn secondary" id="saveBtn">저장</button>
     <p class="note">승급: 한 세션 정확도 90% 이상이 2번 연속이면 다음 단계(계획보다 뒤면 1번). 60% 미만이면 한 단계 아래로. 단계는 언제든 여기서 직접 바꿀 수 있습니다.</p>
+  </div>
+
+  <div class="card">
+    <h2>처음 실력 확인</h2>
+    <p class="note" id="placementInfo"></p>
+    <button class="btn secondary" id="replaceBtn">실력 확인 다시 하기</button>
+    <p class="note">아이 화면을 열면 이름·학교·학년 확인 뒤 문제 8~16개로 단계를 다시 잡습니다. 스티커·기록은 그대로 두고 단계와 진도 시작일만 새로 잡아요.</p>
   </div>
 
   <div class="card">
@@ -115,11 +124,11 @@
 
 <section id="sheet"></section>
 
-<script src="curriculum.js?v=7"></script>
-<script src="visual.js?v=7"></script>
-<script src="store.js?v=7"></script>
-<script src="schedule.js?v=7"></script>
-<script src="characters.js?v=7"></script>
-<script src="parent.js?v=7"></script>
+<script src="curriculum.js?v=8"></script>
+<script src="visual.js?v=8"></script>
+<script src="store.js?v=8"></script>
+<script src="schedule.js?v=8"></script>
+<script src="characters.js?v=8"></script>
+<script src="parent.js?v=8"></script>
 </body>
 </html>
