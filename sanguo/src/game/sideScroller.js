@@ -2659,26 +2659,9 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
           const bowY = baseY - enemyBob - (enemy.boss ? 182 : 138);
           ctx.save(); ctx.translate(enemyX + enemy.facing * 18, bowY); ctx.scale(enemy.facing, 1); ctx.rotate(enemy.action === 'attack' ? -.12 + enemyAttackProgress * .24 : -.24); ctx.strokeStyle = '#9b5e2b'; ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(8, -28); ctx.quadraticCurveTo(34, 0, 8, 28); ctx.stroke(); ctx.strokeStyle = '#ead9b7'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(8, -28); ctx.lineTo(8 - (enemy.action === 'attack' ? enemyAttackProgress * 22 : 0), 0); ctx.lineTo(8, 28); ctx.stroke(); if (enemy.action === 'attack') { ctx.strokeStyle = '#efc889'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(8 - enemyAttackProgress * 22, 0); ctx.lineTo(54, 0); ctx.stroke(); } ctx.restore();
         }
-        if (!enemy.boss && !enemy.deadAt && enemy.role !== 'archer') {
-          const weaponY = baseY - enemyBob - (enemy.role === 'heavy' ? 154 : 134), swing = enemy.action === 'attack' ? Math.sin(Math.PI * enemyAttackProgress) : 0;
-          ctx.save(); ctx.translate(enemyX + enemy.facing * 18, weaponY); ctx.scale(enemy.facing, 1); ctx.rotate(-.18 + swing * .46);
-          ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-          const weaponColor = enemy.accent || '#e7d4ae';
-          if (enemy.weapon === 'spear' || enemy.weapon === 'halberd') {
-            ctx.strokeStyle = '#4a2b1c'; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(-8, 22); ctx.lineTo(112, -18); ctx.stroke();
-            ctx.strokeStyle = weaponColor; ctx.lineWidth = enemy.weapon === 'halberd' ? 10 : 5; ctx.beginPath(); ctx.moveTo(72, -31); ctx.lineTo(130, -18); ctx.lineTo(72, -5); ctx.stroke();
-          } else if (enemy.weapon === 'axe') {
-            ctx.strokeStyle = '#513421'; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(-6, 24); ctx.lineTo(76, -54); ctx.stroke();
-            ctx.fillStyle = weaponColor; ctx.beginPath(); ctx.moveTo(62, -68); ctx.lineTo(104, -56); ctx.lineTo(90, -20); ctx.lineTo(70, -34); ctx.closePath(); ctx.fill();
-          } else if (enemy.weapon === 'club' || enemy.weapon === 'staff') {
-            ctx.strokeStyle = enemy.weapon === 'staff' ? '#8e663e' : '#453029'; ctx.lineWidth = enemy.weapon === 'club' ? 15 : 8; ctx.beginPath(); ctx.moveTo(0, 24); ctx.lineTo(86, -48); ctx.stroke();
-            ctx.strokeStyle = weaponColor; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(70, -60); ctx.lineTo(96, -38); ctx.stroke();
-          } else {
-            ctx.strokeStyle = '#493027'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(8, 20); ctx.lineTo(72, -56); ctx.stroke();
-            ctx.strokeStyle = weaponColor; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(60, -66); ctx.lineTo(88, -48); ctx.stroke();
-          }
-          ctx.restore();
-        }
+        // 병졸 스프라이트에는 이미 창이 그려져 있다. 예전엔 무기 종류를 보이려고
+        // 그 위에 기울인 절차적 창을 한 번 더 그렸는데, 붉은 날이 머리 옆에 비스듬한
+        // 막대로 떠서 체력바처럼 오독됐다. 원화의 창만 남기고 겹그리기를 없앤다.
         if (!enemy.boss && !enemy.deadAt && enemy.role !== 'soldier') {
           const labelX = enemy.x - cameraX, labelY = baseY - Math.min(270, height * .43);
           ctx.save(); ctx.globalAlpha = enemy.role === 'archer' ? .82 : .92; ctx.font = `700 12px ${CANVAS_UI_FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
