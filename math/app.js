@@ -323,6 +323,14 @@
     else if (e.key === "Enter") { if (!$("retryBtn").hidden) retry(); else key("go"); }
   });
   window.addEventListener("pageshow", function () { state = S.load(storage); if (!$("home").hidden) renderHome(); });
+  // 주소 뒤에 ?reset=1 을 붙여 열면 이 기기의 기록을 지우고 처음부터 (부모 확인 후)
+  if (/[?&]reset=1/.test(window.location.search)) {
+    if (window.confirm("이 기기의 수학 기록(스티커·단계·복습)을 모두 지우고 처음부터 시작할까요?")) {
+      try { storage.removeItem(S.KEY); } catch (_) {}
+      state = S.load(storage);
+    }
+    try { window.history.replaceState(null, "", window.location.pathname); } catch (_) {}
+  }
   renderHome();
   show("home");
 })();
