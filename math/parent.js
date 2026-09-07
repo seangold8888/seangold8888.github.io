@@ -94,6 +94,10 @@
     });
     if (!rrows.children.length) rrows.appendChild(document.createElement("tr")).appendChild(td("다시 나올 문제가 없어요."));
 
+    const today = S.today(), hearts = Object.keys(state.hearts).length;
+    $("heartToday").disabled = !!state.hearts[today];
+    $("heartToday").textContent = state.hearts[today] ? "♥ 오늘 칭찬 도장 완료" : "♥ 오늘 칭찬 도장 찍기";
+    $("heartInfo").textContent = "지금까지 칭찬 도장 " + hearts + "개 · 친구 앨범 " + new Set(state.album.map(function (a) { return a.id; })).size + "/22명 · 반짝 이상 스티커 " + state.album.filter(function (a) { return a.r >= 1; }).length + "장";
     $("name").value = state.name;
     $("level").value = String(state.level);
     $("perSession").value = String(state.perSession);
@@ -156,6 +160,7 @@
       state = S.clean(parsed); S.save(storage, state); render(); $("io").value = "가져왔어요.";
     } catch (_) { $("io").value = "코드를 읽지 못했어요. 내보내기 코드를 그대로 붙여 넣어 주세요."; }
   });
+  $("heartToday").addEventListener("click", function () { state.hearts[S.today()] = true; S.save(storage, state); render(); });
   $("resetBtn").addEventListener("click", function () {
     if (!window.confirm("모든 기록(스티커·단계·복습)을 지울까요? 되돌릴 수 없어요.")) return;
     state = S.defaults(); S.save(storage, state); render();

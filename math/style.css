@@ -126,3 +126,45 @@ label.field select, label.field input { display: block; width: 100%; margin-top:
 .planbar { position: relative; height: 10px; background: var(--line); border-radius: 5px; margin: 10px 0 6px; }
 .planbar i { display: block; height: 100%; background: #a0aec0; border-radius: 5px; }
 .planbar b { position: absolute; top: -5px; width: 20px; height: 20px; margin-left: -10px; border-radius: 50%; background: var(--accent); border: 3px solid #fff; box-shadow: 0 0 0 1px var(--line); }
+
+/* v3: 동기 — 연속일·보물상자·친구 고르기·앨범·캡슐·편지·보여주기 카드 */
+.row.tight { gap: 10px; margin-top: 14px; }
+.card.mini { flex: 1; padding: 14px; text-align: center; }
+.card.mini b { display: block; font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.card.mini span { font-size: 12px; color: var(--muted); }
+.card.mini em { font-style: normal; }
+.tiny { font-size: 12px; color: var(--muted); margin: 4px 0 0; line-height: 1.4; }
+.chest.ready { border-color: var(--stamp); background: #fff8e1; }
+.btn.gold { background: var(--stamp); margin-top: 10px; animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
+.speech { font-style: normal; color: var(--ink); background: var(--accent-soft); border-radius: 10px; padding: 8px 10px; margin-top: 8px; font-size: 14px; }
+.buddies { display: flex; gap: 10px; margin-top: 8px; }
+.buddy { flex: 1; border: 2px solid var(--line); background: #fff; border-radius: 14px; padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 13px; font-weight: 700; color: var(--muted); }
+.buddy svg { display: block; }
+.buddy.on { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.track .stop.locked svg { filter: grayscale(1); opacity: .5; }
+.album { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 8px; margin-top: 8px; }
+.slot { text-align: center; }
+.slot svg { display: block; margin: 0 auto; border-radius: 50%; }
+.slot span { display: block; font-size: 10px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.slot.empty svg { filter: grayscale(1) contrast(.3) brightness(1.25); opacity: .6; }
+.slot.r1 svg { box-shadow: 0 0 0 3px #b3d4ff, 0 0 10px #b3d4ff; }
+.slot.r2 svg { box-shadow: 0 0 0 3px var(--stamp), 0 0 12px #f6d365; }
+.capsules { display: flex; justify-content: center; gap: 16px; margin: 18px 0 8px; }
+.cap { width: 84px; height: 110px; border: 0; background: transparent; position: relative; padding: 0; }
+.cap .lid { position: absolute; left: 0; right: 0; top: 0; height: 52px; border-radius: 42px 42px 6px 6px; background: #f28cb1; transition: transform .4s; }
+.cap.c1 .lid { background: #7db9e8; } .cap.c2 .lid { background: #f6d365; }
+.cap::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 58px; border-radius: 6px 6px 42px 42px; background: #fff; border: 3px solid var(--line); border-top: 0; }
+.cap .q { position: absolute; left: 0; right: 0; bottom: 14px; text-align: center; font-size: 30px; font-weight: 800; color: var(--muted); z-index: 1; }
+.cap:active .lid { transform: translateY(-4px); }
+.cap.open .lid { transform: translateY(-40px) rotate(-12deg); }
+.capsules.opened .cap:not(.open) { opacity: .35; }
+.sticker-big .r1 svg { border-radius: 50%; box-shadow: 0 0 0 4px #b3d4ff, 0 0 16px #b3d4ff; }
+.sticker-big .r2 svg { border-radius: 50%; box-shadow: 0 0 0 4px var(--stamp), 0 0 22px #f6d365; }
+.story { margin-top: 14px; text-align: left; background: #fffaf0; border: 1px dashed var(--stamp); border-radius: 12px; padding: 12px; }
+.story-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.story-head svg { display: block; }
+.story p { margin: 0; font-size: 14px; line-height: 1.6; }
+.showcard { border: 3px solid var(--stamp); background: #fffdf5; }
+.btn.heart { background: #e53e3e; margin-top: 10px; }
+.btn.heart[disabled] { opacity: 1; background: #fbe9e9; color: #c53030; }

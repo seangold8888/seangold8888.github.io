@@ -9,7 +9,7 @@
 <title>매일 수학 10분</title>
 <link rel="icon" href="../icon.png">
 <link rel="apple-touch-icon" href="../icon-192.png">
-<link rel="stylesheet" href="style.css?v=2">
+<link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
 <div class="wrap" id="app">
@@ -24,21 +24,43 @@
       <div>
         <p class="eyebrow" id="homeUnit">1학년 1학기 · 1단계</p>
         <p class="level-name" id="homeLevel">5까지 모으기와 가르기</p>
-        <p class="hint" id="homeHint"></p>
+        <p class="hint speech" id="guideSay"></p>
       </div>
     </div>
+
+    <div class="row tight">
+      <div class="card mini">
+        <b id="streakNum">0</b><span>연속 <em>일</em></span>
+        <p class="tiny" id="streakNote"></p>
+      </div>
+      <div class="card mini chest" id="chestCard">
+        <b id="chestNum">0/6</b><span>이번 주 보물상자</span>
+        <p class="tiny" id="chestNote"></p>
+      </div>
+    </div>
+    <button class="btn gold" id="chestBtn" hidden>보물상자 열기</button>
+
+    <div class="card">
+      <p class="eyebrow">오늘 함께할 친구</p>
+      <div class="buddies" id="buddies"></div>
+    </div>
+
+    <div class="card">
+      <button class="btn" id="startBtn">오늘 문제 풀기</button>
+      <p class="hint center" id="homeReview"></p>
+      <p class="hint center" id="teaser"></p>
+    </div>
+
     <div class="card">
       <div class="plan-line"><span class="eyebrow">오늘의 진도</span><span class="plan-tag" id="planTag"></span></div>
       <p class="plan-text" id="planText"></p>
       <div class="track" id="track"></div>
     </div>
+
     <div class="card">
-      <button class="btn" id="startBtn">오늘 문제 풀기</button>
-      <p class="hint center" id="homeReview"></p>
-    </div>
-    <div class="card">
-      <div class="plan-line"><span class="eyebrow">스티커북</span><span class="small" id="stickerCount"></span></div>
-      <div class="stickers" id="stickers"></div>
+      <div class="plan-line"><span class="eyebrow">친구 앨범</span><span class="small" id="albumCount"></span></div>
+      <div class="album" id="album"></div>
+      <p class="tiny center" id="albumNote"></p>
     </div>
     <p class="foot"><a href="parent.html">부모님 보기</a></p>
   </section>
@@ -62,6 +84,14 @@
     <button class="btn ghost" id="quitBtn">그만하기</button>
   </section>
 
+  <section id="capsule" hidden>
+    <div class="card center">
+      <p class="level-name">오늘의 스티커 뽑기</p>
+      <p class="small">캡슐 하나를 골라요. 어떤 친구가 나올까?</p>
+      <div class="capsules" id="capsules"></div>
+    </div>
+  </section>
+
   <section id="result" hidden>
     <div class="card center">
       <div class="sticker-big" id="stickerBig"></div>
@@ -69,20 +99,34 @@
       <p class="result-big" id="resultBig"></p>
       <p class="small" id="resultText"></p>
       <p class="small" id="resultLevel"></p>
+      <div class="story" id="story" hidden></div>
     </div>
     <div class="card">
-      <div class="row">
+      <button class="btn secondary" id="showBtn">엄마 아빠에게 보여주기</button>
+      <div class="row" style="margin-top:10px">
         <button class="btn secondary" id="againBtn">한 번 더</button>
         <button class="btn" id="doneBtn">끝내기</button>
       </div>
     </div>
   </section>
+
+  <section id="showcard" hidden>
+    <div class="card center showcard">
+      <p class="eyebrow" id="showDate"></p>
+      <div class="sticker-big" id="showBadge"></div>
+      <p class="level-name" id="showTitle"></p>
+      <p class="small" id="showText"></p>
+      <button class="btn heart" id="heartBtn">♥ 칭찬 도장 꾹</button>
+      <p class="tiny" id="heartNote">엄마나 아빠가 눌러 주세요</p>
+    </div>
+    <button class="btn ghost" id="showBack">돌아가기</button>
+  </section>
 </div>
-<script src="curriculum.js?v=2"></script>
-<script src="visual.js?v=2"></script>
-<script src="store.js?v=2"></script>
-<script src="schedule.js?v=2"></script>
-<script src="characters.js?v=2"></script>
-<script src="app.js?v=2"></script>
+<script src="curriculum.js?v=3"></script>
+<script src="visual.js?v=3"></script>
+<script src="store.js?v=3"></script>
+<script src="schedule.js?v=3"></script>
+<script src="characters.js?v=3"></script>
+<script src="app.js?v=3"></script>
 </body>
 </html>

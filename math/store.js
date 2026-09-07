@@ -12,7 +12,8 @@
   function defaults() {
     return { name: "", level: 1, streak: 0, perSession: 12, visualPolicy: "auto", sound: false,
       history: [], wrong: [], stamps: {}, createdAt: today(),
-      planStart: today(), planEnd: "2027-01-29", planDays: 6, planFrom: 1 };
+      planStart: today(), planEnd: "2027-01-29", planDays: 6, planFrom: 1,
+      album: [], hearts: {}, chests: {}, buddy: null };
   }
   function clean(s) {
     const d = defaults();
@@ -31,6 +32,10 @@
     if (out.planEnd <= out.planStart) out.planEnd = addDays(out.planStart, 120);
     out.planDays = [5, 6, 7].indexOf(out.planDays) >= 0 ? out.planDays : 6;
     out.planFrom = Math.min(11, Math.max(1, parseInt(out.planFrom, 10) || 1));
+    out.album = Array.isArray(out.album) ? out.album.filter(function (a) { return a && a.id && a.date; }).slice(-400) : [];
+    out.hearts = out.hearts && typeof out.hearts === "object" ? out.hearts : {};
+    out.chests = out.chests && typeof out.chests === "object" ? out.chests : {};
+    out.buddy = out.buddy && out.buddy.id && out.buddy.date ? { id: String(out.buddy.id), date: out.buddy.date } : null;
     return out;
   }
   function load(storage) {
@@ -118,7 +123,36 @@
     }).sort(function (a, b) { return a.level - b.level; });
   }
 
-  const api = { KEY: KEY, REVIEW_GAPS: REVIEW_GAPS, today: today, addDays: addDays, defaults: defaults, clean: clean, load: load, save: save, dueReviews: dueReviews, recordAnswer: recordAnswer, finishSession: finishSession, stability: stability, median: median, levelSummary: levelSummary };
+  // 연속일: 오늘부터 거꾸로 세되, 공부 요일이 아닌 날(주 5·6일 계획의 일요일 등)은 건너뛰고,
+  // 7일마다 한 번은 빠져도 이어진다(보호권). 아이가 하루 빠졌다고 0이 되지 않게.
+  function streakInfo(stamps, todayStr, planDays, isStudyDay) {
+    let days = 0, misses = 0, cursor = todayStr, guard = 0, protectedUsed = 0;
+    const startedToday = !!stamps[todayStr];
+    if (!startedToday) cursor = addDays(todayStr, -1);
+    while (guard++ < 400) {
+      const d = new Date(cursor + "T00:00:00");
+      const study = isStudyDay ? isStudyDay(d, planDays) : true;
+      if (stamps[cursor]) { days++; }
+      else if (study) {
+        misses++;
+        if (misses > Math.floor(days / 7) + 1) break;
+        protectedUsed++;
+      }
+      cursor = addDays(cursor, -1);
+      if (cursor < "2026-01-01") break;
+    }
+    return { days: days, protectedUsed: protectedUsed, doneToday: startedToday };
+  }
+  // 이번 주(월~일) 진행: 공부한 날 / 계획 요일 수. 보물상자 키 = 그 주 월요일
+  function weekInfo(stamps, todayStr, planDays) {
+    const d = new Date(todayStr + "T00:00:00"), dow = (d.getDay() + 6) % 7;
+    const monday = addDays(todayStr, -dow);
+    let done = 0;
+    for (let i = 0; i < 7; i++) if (stamps[addDays(monday, i)]) done++;
+    const need = Math.min(planDays || 6, 6);
+    return { key: monday, done: done, need: need, ready: done >= need };
+  }
+  const api = { streakInfo: streakInfo, weekInfo: weekInfo, KEY: KEY, REVIEW_GAPS: REVIEW_GAPS, today: today, addDays: addDays, defaults: defaults, clean: clean, load: load, save: save, dueReviews: dueReviews, recordAnswer: recordAnswer, finishSession: finishSession, stability: stability, median: median, levelSummary: levelSummary };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.MathStore = api;
 })(typeof window !== "undefined" ? window : globalThis);

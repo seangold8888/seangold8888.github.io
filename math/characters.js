@@ -67,7 +67,45 @@
   }
   function praise(c, rng) { const r = (rng || Math.random)(); return c.say[Math.floor(r * c.say.length)]; }
 
-  const api = { CHARACTERS: CHARACTERS, LEVEL_GUIDE: LEVEL_GUIDE, byId: byId, guideFor: guideFor, stickerFor: stickerFor, badge: badge, praise: praise, icons: Object.keys(ICONS) };
+  // 단계를 마치면 열리는 길잡이 이야기 (우리가 쓴 짧은 글)
+  const STORIES = {
+    cinnamoroll: "구름 위에서 점을 세던 시나모롤이 말했어요. \"5까지는 이제 눈 감고도 알겠지? 다음 친구가 기다려!\"",
+    mymelody: "마이멜로디가 리본을 고쳐 매며 말했어요. \"9까지 모으고 가르기, 정말 예쁘게 해냈어. 하츄핑에게 가 보자!\"",
+    heartsping: "하츄핑이 하트를 뿅 날렸어요. \"더하기 빼기가 이렇게 재밌을 줄이야! 이제 10을 만들러 가자, 하츄!\"",
+    laraping: "라라핑이 노래했어요. \"10을 만드는 친구는 계산의 마법사~ 헬로키티가 십몇 나라에서 기다려!\"",
+    kitty: "헬로키티가 리본을 흔들며 말했어요. \"십몇도 세 수 계산도 척척! 이제 진짜 두 자리 수 성으로 가는 거야.\"",
+    cinderella: "신데렐라가 유리구두를 신고 말했어요. \"두 자리 수도 이제 친구네요. 라푼젤의 탑이 보여요!\"",
+    rapunzel: "라푼젤이 긴 머리를 내려 주며 말했어요. \"몇십끼리, 두 자리끼리도 거뜬! 다음은 엘사의 눈꽃 나라야.\"",
+    elsa: "엘사가 눈꽃을 뿌리며 말했어요. \"10을 만들어 더하기, 받아올림의 마법을 배웠구나. 스파이더맨이 도시에서 기다려!\"",
+    spiderman: "스파이더맨이 거미줄을 타고 내려와 말했어요. \"받아내림까지 잡았다니! 1학년 수학은 완전히 네 거야. 아이언맨 연구소로 가자!\"",
+    ironman: "아이언맨이 계산기를 내려놓고 말했어요. \"두 자리 받아올림도 해결? 나보다 빠른데. 캡틴 마블이 마지막 별에서 기다려.\"",
+    captainmarvel: "캡틴 마블이 별처럼 빛나며 말했어요. \"2학년 수학까지 다 왔어. 너는 이제 진짜 수학 히어로야!\""
+  };
+  function storyFor(level) { const g = guideFor(level); return STORIES[g.id] || ""; }
+
+  // 오늘의 뽑기: 캡슐 3개에 서로 다른 친구. 아직 못 만난 친구가 3배 자주 들어간다.
+  function pickCapsules(collectedIds, rng) {
+    rng = rng || Math.random;
+    const have = {}; (collectedIds || []).forEach(function (id) { have[id] = true; });
+    const pool = CHARACTERS.slice(), out = [];
+    while (out.length < 3 && pool.length) {
+      const weights = pool.map(function (c) { return have[c.id] ? 1 : 3; });
+      const total = weights.reduce(function (s, w) { return s + w; }, 0);
+      let draw = rng() * total, idx = 0;
+      for (let i = 0; i < pool.length; i++) { draw -= weights[i]; if (draw < 0) { idx = i; break; } }
+      out.push(pool.splice(idx, 1)[0]);
+    }
+    return out;
+  }
+  // 희귀도: 0 보통 70% · 1 반짝 25% · 2 금빛 5%. min 으로 하한(보물상자용)
+  const RARITY = ["보통", "반짝", "금빛"];
+  function rollRarity(rng, min) {
+    const r = (rng || Math.random)();
+    const rolled = r < 0.05 ? 2 : r < 0.30 ? 1 : 0;
+    return Math.max(rolled, min || 0);
+  }
+
+  const api = { CHARACTERS: CHARACTERS, LEVEL_GUIDE: LEVEL_GUIDE, RARITY: RARITY, byId: byId, guideFor: guideFor, stickerFor: stickerFor, badge: badge, praise: praise, storyFor: storyFor, pickCapsules: pickCapsules, rollRarity: rollRarity, icons: Object.keys(ICONS) };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.MathFriends = api;
 })(typeof window !== "undefined" ? window : globalThis);

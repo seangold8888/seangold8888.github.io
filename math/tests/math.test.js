@@ -96,7 +96,7 @@ test("state survives a round trip and rejects garbage", () => {
   const back = S.load(storage);
   assert.equal(back.level, 11); assert.equal(back.perSession, 12); assert.equal(back.name, "재이");
   const stored = JSON.parse(mem.get(S.KEY));
-  assert.deepEqual(Object.keys(stored).sort(), ["createdAt", "history", "level", "name", "perSession", "planDays", "planEnd", "planFrom", "planStart", "sound", "stamps", "streak", "visualPolicy", "wrong"]);
+  assert.deepEqual(Object.keys(stored).sort(), ["album", "buddy", "chests", "createdAt", "hearts", "history", "level", "name", "perSession", "planDays", "planEnd", "planFrom", "planStart", "sound", "stamps", "streak", "visualPolicy", "wrong"]);
   mem.set(S.KEY, "{not json"); assert.equal(S.load(storage).level, 1);
 });
 
@@ -112,7 +112,7 @@ test("pages ship without games, stay text-only for numbers, and load the four sc
   const css = fs.readFileSync(path.join(__dirname, "../style.css"), "utf8");
   assert.match(css, /@media print/);
   const app = fs.readFileSync(path.join(__dirname, "../app.js"), "utf8");
-  assert.doesNotMatch(app, /innerHTML\s*=\s*(?=\S)(?!V\.render|showVisualFirst|F\.badge)/, "only our own SVG goes through innerHTML");
+  assert.doesNotMatch(app, /innerHTML\s*=\s*(?=\S)(?!V\.render|showVisualFirst|F\.badge|\x27<div class="r\x27|\x27<span class="lid">)/, "only our own SVG goes through innerHTML");
   assert.match(app, /V\.render\(current, true\)/, "wrong answer reveals the picture");
 });
 
@@ -175,9 +175,9 @@ test("child and parent pages wire the schedule and friends scripts", () => {
   const html = fs.readFileSync(path.join(__dirname, "../index.html"), "utf8");
   const parent = fs.readFileSync(path.join(__dirname, "../parent.html"), "utf8");
   for (const h of [html, parent]) { assert.ok(h.indexOf("store.js") < h.indexOf("schedule.js") && h.indexOf("schedule.js") < h.indexOf("characters.js")); }
-  assert.match(html, /id="track"/); assert.match(html, /id="stickers"/); assert.match(html, /id="planTag"/);
+  assert.match(html, /id="track"/); assert.match(html, /id="album"/); assert.match(html, /id="planTag"/);
   assert.match(parent, /id="milestoneRows"/); assert.match(parent, /id="planEnd"/);
   const app = fs.readFileSync(path.join(__dirname, "../app.js"), "utf8");
   assert.match(app, /behind: !!\(before && before\.levelGap < 0\)/);
-  assert.doesNotMatch(app, /innerHTML\s*=\s*(?=\S)(?!V\.render|showVisualFirst|F\.badge)/, "innerHTML only for our own SVG");
+  assert.doesNotMatch(app, /innerHTML\s*=\s*(?=\S)(?!V\.render|showVisualFirst|F\.badge|\x27<div class="r\x27|\x27<span class="lid">)/, "innerHTML only for our own SVG");
 });
