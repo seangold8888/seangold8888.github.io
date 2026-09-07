@@ -10,7 +10,8 @@ test("capsules hold three different friends and favor the ones not met yet", () 
   const picks = F.pickCapsules(["cinnamoroll", "elsa"], rng);
   assert.equal(picks.length, 3); assert.equal(new Set(picks.map(c => c.id)).size, 3);
   let unmet = 0;
-  for (let i = 0; i < 300; i++) { const p = F.pickCapsules(F.CHARACTERS.slice(0, 20).map(c => c.id), rng); unmet += p.filter(c => c.id === "thor" || c.id === "captainmarvel").length; }
+  const rare = F.CHARACTERS.slice(-2).map(c => c.id);
+  for (let i = 0; i < 300; i++) { const p = F.pickCapsules(F.CHARACTERS.slice(0, 20).map(c => c.id), rng); unmet += p.filter(c => rare.includes(c.id)).length; }
   assert.ok(unmet > 300 * 3 * (2 / 22) * 1.8, "unmet friends show up more often: " + unmet);
 });
 

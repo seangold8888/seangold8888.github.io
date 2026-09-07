@@ -155,9 +155,9 @@ test("plan settings persist and promotion uses the behind/cap options", () => {
   assert.equal(st.level, 3, "on time: two sessions");
 });
 
-test("friends: 22 characters across four families, every icon drawn by us, a guide per level, stable daily stickers", () => {
+test("friends: 22 characters across three families, every icon drawn by us, a guide per level, stable daily stickers", () => {
   assert.equal(F.CHARACTERS.length, 22);
-  assert.deepEqual([...new Set(F.CHARACTERS.map(c => c.from))].sort(), ["디즈니 프린세스", "마블", "산리오", "티니핑"]);
+  assert.deepEqual([...new Set(F.CHARACTERS.map(c => c.from))].sort(), ["디즈니 프린세스", "산리오", "티니핑"]);
   for (const c of F.CHARACTERS) {
     assert.ok(F.icons.includes(c.icon), c.id);
     const svg = F.badge(c, 40);
@@ -169,7 +169,7 @@ test("friends: 22 characters across four families, every icon drawn by us, a gui
   assert.equal(F.stickerFor("2026-09-07").id, F.stickerFor("2026-09-07").id);
   const month = new Set(); for (let d = 1; d <= 30; d++) month.add(F.stickerFor("2026-09-" + String(d).padStart(2, "0")).id);
   assert.ok(month.size >= 12, "a month of stickers is varied");
-  assert.doesNotMatch(F.praise(F.byId("hulk"), () => 0), /틀/);
+  assert.doesNotMatch(F.praise(F.byId("kuromi"), () => 0), /틀/);
 });
 
 test("child and parent pages wire the schedule and friends scripts", () => {

@@ -12,22 +12,22 @@
     { id: "laraping", name: "라라핑", from: "티니핑", color: "#805ad5", bg: "#f0eafb", icon: "note", say: ["라라~ 노래처럼 맞았어!", "라라핑이 춤춰요!"] },
     { id: "baroping", name: "바로핑", from: "티니핑", color: "#3182ce", bg: "#e8f1fb", icon: "bolt", say: ["바로 맞혔다!", "번쩍! 정확해요!"] },
     { id: "azaping", name: "아자핑", from: "티니핑", color: "#dd6b20", bg: "#fdeee3", icon: "fist", say: ["아자아자! 해냈어!", "힘이 넘치는 정답!"] },
+    { id: "haping", name: "해핑", from: "티니핑", color: "#f6ad55", bg: "#fff3e0", icon: "smile", say: ["해핑처럼 환하게 정답!", "웃음이 번져요!"] },
+    { id: "kikiping", name: "키키핑", from: "티니핑", color: "#ed64a6", bg: "#fde8f2", icon: "sparkle", say: ["키키! 반짝이는 정답!", "키키핑이 깜짝 놀랐어요!"] },
+    { id: "keroppi", name: "케로피", from: "산리오", color: "#48bb78", bg: "#e8f7ee", icon: "frog", say: ["개굴! 딱 맞았어!", "케로피가 폴짝 뛰어요!"] },
+    { id: "pochacco", name: "포차코", from: "산리오", color: "#4a5568", bg: "#edf2f7", icon: "paw", say: ["포차코가 달려와요!", "발자국처럼 또렷한 정답!"] },
+    { id: "gudetama", name: "구데타마", from: "산리오", color: "#ecc94b", bg: "#fdf8e1", icon: "egg", say: ["귀찮지만... 정답이네", "구데타마도 일어났어요!"] },
+    { id: "badtzmaru", name: "배드바츠마루", from: "산리오", color: "#2d3748", bg: "#e9ecf2", icon: "penguin", say: ["흥, 제법인데!", "바츠마루가 엄지 척!"] },
     { id: "cinderella", name: "신데렐라", from: "디즈니 프린세스", color: "#4299e1", bg: "#e9f2fc", icon: "slipper", say: ["유리구두처럼 딱 맞았어!", "신데렐라가 미소 지어요."] },
     { id: "rapunzel", name: "라푼젤", from: "디즈니 프린세스", color: "#d69e2e", bg: "#fdf6e3", icon: "sun", say: ["햇살처럼 반짝이는 정답!", "라푼젤이 손뼉 쳐요!"] },
     { id: "elsa", name: "엘사", from: "디즈니 프린세스", color: "#63b3ed", bg: "#eaf3fb", icon: "snow", say: ["눈꽃처럼 완벽해!", "엘사가 감탄해요!"] },
     { id: "ariel", name: "아리엘", from: "디즈니 프린세스", color: "#38b2ac", bg: "#e6f6f5", icon: "shell", say: ["바다처럼 시원한 정답!", "아리엘이 노래해요!"] },
     { id: "belle", name: "벨", from: "디즈니 프린세스", color: "#ecc94b", bg: "#fdf8e1", icon: "rose", say: ["책 읽는 벨도 감탄!", "장미처럼 근사한 정답!"] },
     { id: "snowwhite", name: "백설공주", from: "디즈니 프린세스", color: "#e53e3e", bg: "#fdeaea", icon: "apple", say: ["사과처럼 새빨간 정답!", "백설공주가 기뻐해요!"] },
-    { id: "moana", name: "모아나", from: "디즈니 프린세스", color: "#2b6cb0", bg: "#e8f0fa", icon: "wave", say: ["파도를 넘었어!", "모아나가 응원해요!"] },
-    { id: "spiderman", name: "스파이더맨", from: "마블", color: "#c53030", bg: "#fbe9e9", icon: "web", say: ["거미줄처럼 딱 잡았어!", "스파이더맨이 엄지 척!"] },
-    { id: "ironman", name: "아이언맨", from: "마블", color: "#dd6b20", bg: "#fdeee3", icon: "reactor", say: ["아이언맨 계산 완료!", "천재적인 정답!"] },
-    { id: "captain", name: "캡틴 아메리카", from: "마블", color: "#2b6cb0", bg: "#e8f0fa", icon: "shield", say: ["방패처럼 든든한 정답!", "캡틴이 경례해요!"] },
-    { id: "hulk", name: "헐크", from: "마블", color: "#38a169", bg: "#e8f5ee", icon: "fistgreen", say: ["헐크 힘으로 해결!", "우와, 강력한 정답!"] },
-    { id: "thor", name: "토르", from: "마블", color: "#718096", bg: "#eef1f4", icon: "hammer", say: ["천둥처럼 확실해!", "토르가 감탄해요!"] },
-    { id: "captainmarvel", name: "캡틴 마블", from: "마블", color: "#d69e2e", bg: "#fdf6e3", icon: "star", say: ["별처럼 빛나는 정답!", "캡틴 마블 출동 완료!"] }
+    { id: "moana", name: "모아나", from: "디즈니 프린세스", color: "#2b6cb0", bg: "#e8f0fa", icon: "wave", say: ["파도를 넘었어!", "모아나가 응원해요!"] }
   ];
   // 단계별 길잡이 친구 (지도 정거장)
-  const LEVEL_GUIDE = { 1: "cinnamoroll", 2: "mymelody", 3: "heartsping", 4: "laraping", 5: "kitty", 6: "cinderella", 7: "rapunzel", 8: "elsa", 9: "spiderman", 10: "ironman", 11: "captainmarvel" };
+  const LEVEL_GUIDE = { 1: "cinnamoroll", 2: "mymelody", 3: "heartsping", 4: "laraping", 5: "kitty", 6: "cinderella", 7: "rapunzel", 8: "elsa", 9: "baroping", 10: "ariel", 11: "moana" };
 
   function byId(id) { return CHARACTERS.find(function (c) { return c.id === id; }) || CHARACTERS[0]; }
   function guideFor(level) { return byId(LEVEL_GUIDE[level] || "cinnamoroll"); }
@@ -59,7 +59,13 @@
     reactor: '<circle cx="50" cy="50" r="22" fill="none" stroke="C" stroke-width="6"/><circle cx="50" cy="50" r="9" fill="C"/><g stroke="C" stroke-width="3"><path d="M50 22v8M50 70v8M22 50h8M70 50h8"/></g>',
     shield: '<circle cx="50" cy="50" r="28" fill="#c53030"/><circle cx="50" cy="50" r="20" fill="#fff"/><circle cx="50" cy="50" r="12" fill="C"/><path d="M50 42l3 6 6 1-4 4 1 6-6-3-6 3 1-6-4-4 6-1z" fill="#fff"/>',
     hammer: '<rect x="26" y="26" width="44" height="22" rx="4" fill="C"/><rect x="45" y="48" width="10" height="30" rx="4" fill="#8b5e14"/>',
-    star: '<path d="M50 20l9 19 21 3-15 14 4 21-19-10-19 10 4-21-15-14 21-3z" fill="C"/>'
+    star: '<path d="M50 20l9 19 21 3-15 14 4 21-19-10-19 10 4-21-15-14 21-3z" fill="C"/>',
+    smile: '<circle cx="50" cy="50" r="24" fill="C"/><circle cx="41" cy="45" r="3.5" fill="#fff"/><circle cx="59" cy="45" r="3.5" fill="#fff"/><path d="M38 56q12 12 24 0" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>',
+    sparkle: '<path d="M50 18q4 26 30 32-26 6-30 32-4-26-30-32 26-6 30-32z" fill="C"/><path d="M74 26q1.5 8 9 9.5-7.5 1.5-9 9.5-1.5-8-9-9.5 7.5-1.5 9-9.5z" fill="C" opacity=".8"/>',
+    frog: '<ellipse cx="50" cy="56" rx="26" ry="18" fill="C"/><circle cx="38" cy="38" r="9" fill="C"/><circle cx="62" cy="38" r="9" fill="C"/><circle cx="38" cy="38" r="4" fill="#fff"/><circle cx="62" cy="38" r="4" fill="#fff"/><circle cx="39" cy="38" r="2" fill="#222"/><circle cx="63" cy="38" r="2" fill="#222"/><path d="M40 60q10 6 20 0" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>',
+    paw: '<ellipse cx="50" cy="60" rx="16" ry="13" fill="C"/><circle cx="33" cy="42" r="6" fill="C"/><circle cx="45" cy="34" r="6" fill="C"/><circle cx="57" cy="34" r="6" fill="C"/><circle cx="68" cy="42" r="6" fill="C"/>',
+    egg: '<ellipse cx="50" cy="54" rx="26" ry="20" fill="#fff" stroke="C" stroke-width="3"/><circle cx="50" cy="50" r="13" fill="C"/><circle cx="46" cy="48" r="1.8" fill="#222"/><circle cx="54" cy="48" r="1.8" fill="#222"/><path d="M46 55q4 3 8 0" fill="none" stroke="#222" stroke-width="2" stroke-linecap="round"/>',
+    penguin: '<ellipse cx="50" cy="52" rx="22" ry="26" fill="C"/><ellipse cx="50" cy="58" rx="13" ry="16" fill="#fff"/><circle cx="43" cy="40" r="3" fill="#fff"/><circle cx="57" cy="40" r="3" fill="#fff"/><path d="M44 47h12l-6 6z" fill="#ffd166"/>'
   };
   // 배지 = 블렌더로 렌더한 유광 구슬(assets/3d/badges/<id>.png) 위에 우리가 그린 기호 SVG
   function badge(c, size) {
@@ -78,10 +84,10 @@
     kitty: "헬로키티가 리본을 흔들며 말했어요. \"십몇도 세 수 계산도 척척! 이제 진짜 두 자리 수 성으로 가는 거야.\"",
     cinderella: "신데렐라가 유리구두를 신고 말했어요. \"두 자리 수도 이제 친구네요. 라푼젤의 탑이 보여요!\"",
     rapunzel: "라푼젤이 긴 머리를 내려 주며 말했어요. \"몇십끼리, 두 자리끼리도 거뜬! 다음은 엘사의 눈꽃 나라야.\"",
-    elsa: "엘사가 눈꽃을 뿌리며 말했어요. \"10을 만들어 더하기, 받아올림의 마법을 배웠구나. 스파이더맨이 도시에서 기다려!\"",
-    spiderman: "스파이더맨이 거미줄을 타고 내려와 말했어요. \"받아내림까지 잡았다니! 1학년 수학은 완전히 네 거야. 아이언맨 연구소로 가자!\"",
-    ironman: "아이언맨이 계산기를 내려놓고 말했어요. \"두 자리 받아올림도 해결? 나보다 빠른데. 캡틴 마블이 마지막 별에서 기다려.\"",
-    captainmarvel: "캡틴 마블이 별처럼 빛나며 말했어요. \"2학년 수학까지 다 왔어. 너는 이제 진짜 수학 히어로야!\""
+    elsa: "엘사가 눈꽃을 뿌리며 말했어요. \"10을 만들어 더하기, 받아올림의 마법을 배웠구나. 바로핑이 번개처럼 기다려!\"",
+    baroping: "바로핑이 번쩍 나타나 말했어요. \"받아내림까지 바로바로! 1학년 수학은 완전히 네 거야. 아리엘의 바다로 가자!\"",
+    ariel: "아리엘이 파도 위에서 노래했어요. \"두 자리 받아올림도 해냈구나. 모아나가 마지막 섬에서 기다려!\"",
+    moana: "모아나가 바다 너머를 가리키며 말했어요. \"2학년 수학까지 다 왔어. 너는 이제 어디든 갈 수 있는 항해사야!\""
   };
   function storyFor(level) { const g = guideFor(level); return STORIES[g.id] || ""; }
 
