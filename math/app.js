@@ -31,6 +31,20 @@
       o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.4);
     } catch (_) {}
   }
+  // 정답 순간 작은 색종이 (CSS만, 0.7초)
+  function burst() {
+    const box = $("burst"); if (!box) return;
+    const colors = ["#ff6f9c", "#4aa8ff", "#35c8a5", "#ffcf4a", "#8c6cf5"];
+    for (let i = 0; i < 14; i++) {
+      const b = document.createElement("b");
+      const ang = (Math.PI * 2 * i) / 14 + Math.random() * 0.4, dist = 90 + Math.random() * 90;
+      b.style.background = colors[i % colors.length];
+      b.style.setProperty("--dx", Math.round(Math.cos(ang) * dist) + "px");
+      b.style.setProperty("--dy", Math.round(Math.sin(ang) * dist - 40) + "px");
+      box.appendChild(b);
+      setTimeout(function () { b.remove(); }, 800);
+    }
+  }
   function show(id) { ["home", "quiz", "capsule", "result", "showcard"].forEach(function (v) { $(v).hidden = v !== id; }); window.scrollTo(0, 0); }
   function collectedIds() { const ids = {}; state.album.forEach(function (a) { ids[a.id] = true; }); return Object.keys(ids); }
 
@@ -174,7 +188,7 @@
     if (ok) {
       box.className = "box ok";
       $("feedback").textContent = (firstTry ? "" : "이번엔 ") + praiseLine() + " ✓"; $("feedback").className = "feedback ok";
-      ding(true);
+      ding(true); if (firstTry) burst();
       results.push({ key: current.key, level: current.level, review: !!current.review, firstTry: firstTry, ms: firstTry ? ms : 0 });
       S.recordAnswer(state, current, firstTry); S.save(storage, state);
       $("keypad").hidden = true;

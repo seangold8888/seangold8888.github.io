@@ -5,13 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#f7f5f0">
+<meta name="theme-color" content="#fde7f0">
 <title>매일 수학 10분</title>
 <link rel="icon" href="../icon.png">
 <link rel="apple-touch-icon" href="../icon-192.png">
-<link rel="stylesheet" href="style.css?v=3">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Nunito:wght@800;900&display=swap">
+<link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i><i></i><b>★</b><b>★</b><b>★</b></div>
 <div class="wrap" id="app">
   <header class="top">
     <h1>매일 수학 10분</h1>
@@ -29,11 +33,13 @@
     </div>
 
     <div class="row tight">
-      <div class="card mini">
+      <div class="card mini flame">
+        <svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 4c2 8 10 11 10 22a10 10 0 0 1-20 0c0-5 3-7 4-11 2 3 3 5 3 8 3-3 3-9 3-19z" fill="#ff7a59"/><path d="M24 44a6 6 0 0 1-6-6c0-4 4-5 6-10 2 5 6 6 6 10a6 6 0 0 1-6 6z" fill="#ffd166"/></svg>
         <b id="streakNum">0</b><span>연속 <em>일</em></span>
         <p class="tiny" id="streakNote"></p>
       </div>
       <div class="card mini chest" id="chestCard">
+        <svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="20" width="36" height="22" rx="4" fill="#c98f1c"/><path d="M6 24a18 8 0 0 1 36 0v2H6z" fill="#f2b134"/><rect x="6" y="26" width="36" height="4" fill="#8b5e14"/><rect x="21" y="24" width="6" height="8" rx="2" fill="#ffe58a"/></svg>
         <b id="chestNum">0/6</b><span>이번 주 보물상자</span>
         <p class="tiny" id="chestNote"></p>
       </div>
@@ -46,7 +52,7 @@
     </div>
 
     <div class="card">
-      <button class="btn" id="startBtn">오늘 문제 풀기</button>
+      <button class="btn big" id="startBtn">오늘 문제 풀기</button>
       <p class="hint center" id="homeReview"></p>
       <p class="hint center" id="teaser"></p>
     </div>
@@ -122,11 +128,12 @@
     <button class="btn ghost" id="showBack">돌아가기</button>
   </section>
 </div>
-<script src="curriculum.js?v=3"></script>
-<script src="visual.js?v=3"></script>
-<script src="store.js?v=3"></script>
-<script src="schedule.js?v=3"></script>
-<script src="characters.js?v=3"></script>
-<script src="app.js?v=3"></script>
+<div class="burst" id="burst" aria-hidden="true"></div>
+<script src="curriculum.js?v=4"></script>
+<script src="visual.js?v=4"></script>
+<script src="store.js?v=4"></script>
+<script src="schedule.js?v=4"></script>
+<script src="characters.js?v=4"></script>
+<script src="app.js?v=4"></script>
 </body>
 </html>
