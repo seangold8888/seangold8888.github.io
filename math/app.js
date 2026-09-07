@@ -120,6 +120,7 @@
     $("chestNum").textContent = chestOpen ? "열었어요" : wk.done + "/" + wk.need;
     $("chestNote").textContent = chestOpen ? "다음 주에 또 채워요" : wk.ready ? "다 채웠어요! 열어 봐요" : (wk.need - wk.done) + "일 더 하면 열려요";
     $("chestCard").classList.toggle("ready", wk.ready && !chestOpen);
+    $("chestImg").src = "assets/3d/" + (wk.ready && !chestOpen ? "chest_open.png" : "chest_closed.png");
     $("chestBtn").hidden = !(wk.ready && !chestOpen);
     // 예고
     const tease = F.stickerFor(S.addDays(today, 1));
@@ -227,13 +228,16 @@
   function openCapsules(key, minRarity) {
     const picks = F.pickCapsules(collectedIds(), Math.random);
     const box = $("capsules"); box.textContent = "";
+    const tints = ["pink", "sky", "lemon"];
     picks.forEach(function (c, i) {
       const cap = document.createElement("button"); cap.type = "button"; cap.className = "cap c" + i;
       cap.setAttribute("aria-label", "캡슐 " + (i + 1));
-      cap.innerHTML = '<span class="lid"></span><span class="q">?</span>';
+      const img = document.createElement("img"); img.src = "assets/3d/capsule_" + tints[i] + ".png"; img.alt = ""; img.draggable = false; cap.appendChild(img);
+      const q = document.createElement("span"); q.className = "q"; q.textContent = "?"; cap.appendChild(q);
       cap.addEventListener("click", function () {
         if (box.classList.contains("opened")) return;
         box.classList.add("opened"); cap.classList.add("open");
+        img.src = "assets/3d/capsule_open_" + tints[i] + ".png";
         const r = F.rollRarity(Math.random, minRarity);
         state.album.push({ id: c.id, date: S.today(), r: r, key: key });
         if (key.indexOf("week:") === 0) state.chests[key.slice(5)] = true;
