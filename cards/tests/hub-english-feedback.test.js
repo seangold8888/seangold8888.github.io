@@ -175,9 +175,9 @@ test("hidden page cancels speech/praise, destroy invalidates delayed ends and re
   }
   const s=setup(),v=s.mount();v.mic.fire("click");s.result("I like apples");const late=s.recognizers[0].onend;v.view.destroy();late();s.tick(5000);assert.equal(s.passes(),0);assert.ok(!s.events.some(e=>e.startsWith("play:")));
 });
-test("cache v44 precaches nine praise and 38 word MP3s; hub has no second celebration delay",()=>{
+test("cache v50 precaches nine praise and 38 word MP3s; hub has no second celebration delay",()=>{
   const sw=require("../../sw.js"),html=fs.readFileSync(path.join(__dirname,"../../index.html"),"utf8");
-  assert.equal(sw.CACHE_VERSION,"v44");assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=7"));
+  assert.equal(sw.CACHE_VERSION,"v50");assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=7"));
   assert.match(html,/english-reading\.js\?v=7/);
   const clips=sw.CORE_SHELL.filter(p=>p.includes("/praise/"));
   assert.equal(clips.length,9);

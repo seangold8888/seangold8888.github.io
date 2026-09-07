@@ -61,9 +61,11 @@
     hammer: '<rect x="26" y="26" width="44" height="22" rx="4" fill="C"/><rect x="45" y="48" width="10" height="30" rx="4" fill="#8b5e14"/>',
     star: '<path d="M50 20l9 19 21 3-15 14 4 21-19-10-19 10 4-21-15-14 21-3z" fill="C"/>'
   };
+  // 배지 = 블렌더로 렌더한 유광 구슬(assets/3d/badges/<id>.png) 위에 우리가 그린 기호 SVG
   function badge(c, size) {
     const s = size || 56, body = (ICONS[c.icon] || ICONS.star).split("C").join(c.color);
-    return '<svg viewBox="0 0 100 100" width="' + s + '" height="' + s + '" role="img" aria-label="' + c.name + '"><circle cx="50" cy="50" r="48" fill="' + c.bg + '"/>' + body + "</svg>";
+    return '<span class="b3d" style="width:' + s + 'px;height:' + s + 'px;background-image:url(assets/3d/badges/' + c.id + '.png)" role="img" aria-label="' + c.name + '">' +
+      '<svg viewBox="0 0 100 100" width="' + s + '" height="' + s + '" aria-hidden="true">' + body + "</svg></span>";
   }
   function praise(c, rng) { const r = (rng || Math.random)(); return c.say[Math.floor(r * c.say.length)]; }
 

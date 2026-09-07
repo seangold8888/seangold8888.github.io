@@ -2,6 +2,7 @@
 import * as THREE from '../vendor/three.module.min.js';
 import { TRACKS, buildTrack } from './tracks.js';
 import { buildTrackMesh } from './trackmesh.js';
+import { loadProps } from './props.js';
 import { createAudio } from './music.js';
 import { CHARACTERS, buildKartModel, Kart, driveAI } from './karts.js';
 import {
@@ -18,6 +19,7 @@ export const MODES = [
 const el = id => document.getElementById(id);
 
 export function startGame() {
+  loadProps();
   const canvas = el('game');
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   // 아이패드는 화면 픽셀이 아주 많아 그대로 그리면 60fps를 못 지킨다.

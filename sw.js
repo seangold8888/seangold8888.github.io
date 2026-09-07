@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v49";
+const CACHE_VERSION = "v50";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -194,6 +194,10 @@ const OPTIONAL_SHELL = [
   "./kart3d/src/music.js",
   "./kart3d/src/trackmesh.js",
   "./kart3d/src/tracks.js",
+  "./kart3d/src/props.js",
+  "./kart3d/vendor/GLTFLoader.js",
+  "./kart3d/vendor/BufferGeometryUtils.js",
+  "./kart3d/assets/props.glb",
   "./kart3d/vendor/three.module.min.js",
   "./kedehun/",
   "./kedehun/attack-motion.js?v=1",

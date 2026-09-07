@@ -161,7 +161,8 @@ test("friends: 22 characters across four families, every icon drawn by us, a gui
   for (const c of F.CHARACTERS) {
     assert.ok(F.icons.includes(c.icon), c.id);
     const svg = F.badge(c, 40);
-    assert.match(svg, /^<svg/); assert.doesNotMatch(svg, /<image|href=|<text/, "no external art, no text");
+    assert.match(svg, /^<span class="b3d"[^>]*assets\/3d\/badges\/[a-z]+\.png[^>]*><svg/); assert.doesNotMatch(svg, /<image|href=|<text/, "no external art, no text");
+    assert.ok(fs.existsSync(path.join(__dirname, "../assets/3d/badges/" + c.id + ".png")), "3d badge for " + c.id);
     assert.ok(c.say.length >= 2 && c.say.every(s => !/틀렸|바보|느려/.test(s)));
   }
   for (let l = 1; l <= 11; l++) assert.ok(F.guideFor(l).name);

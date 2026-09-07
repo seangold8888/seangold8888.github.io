@@ -1,5 +1,6 @@
 // 산리오 카트 3D — 중심선에서 도로·난간·풍경 메시를 만든다
 import * as THREE from '../vendor/three.module.min.js';
+import { loadProps, prop, propsReady } from './props.js';
 
 const UP = new THREE.Vector3(0, 1, 0);
 
@@ -207,15 +208,46 @@ export function buildTrackMesh(track, scene) {
   ground.position.y = (def.id === 'cloud' ? 20 : 0) - 16;
   group.add(ground);
 
-  addScenery(def, track, group);
+  // 소품 glb가 아직 안 읽혔으면 기존 도형으로 먼저 그리고, 읽히는 대로 바꿔 끼운다.
+  let scenery = addScenery(def, track, group);
+  if (!propsReady()) {
+    loadProps().then(() => {
+      if (!group.parent || !propsReady()) return;
+      group.remove(scenery);
+      scenery.traverse((o) => { if (o.isMesh && o.geometry && !o.geometry.userData.shared) o.geometry.dispose(); });
+      scenery = addScenery(def, track, group);
+    });
+  }
   scene.add(group);
   return group;
 }
 
-function addScenery(def, track, group) {
+function addScenery(def, track, parent) {
   let seed = 20260819;
   const rnd = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
   const dummy = new THREE.Object3D();
+  const group = new THREE.Group();
+  group.name = 'scenery';
+  parent.add(group);
+  // 블렌더 소품(높이 1) → 게임 단위. 없으면 null 이라 기존 도형으로 떨어진다.
+  const P = (name) => (propsReady() ? prop(name) : null);
+  function instanceProp(name, placements, unit) {
+    const pr = P(name);
+    if (!pr || !placements.length) return false;
+    pr.geometry.userData.shared = true;
+    const m = new THREE.InstancedMesh(pr.geometry, pr.material, placements.length);
+    placements.forEach((p, i) => {
+      dummy.position.set(p.x, p.y, p.z);
+      dummy.rotation.set(p.rx || 0, p.ry || 0, p.rz || 0);
+      const s = (p.s || 1) * unit;
+      dummy.scale.set(s, (p.sy || p.s || 1) * unit, s);
+      dummy.updateMatrix();
+      m.setMatrixAt(i, dummy.matrix);
+    });
+    m.instanceMatrix.needsUpdate = true;
+    group.add(m);
+    return true;
+  }
 
   // 같은 모양을 여러 번 그릴 때는 인스턴싱으로 한 번에 보낸다.
   // 나무 수백 그루를 개별 메시로 두면 드로우콜이 폭증한다.
@@ -245,6 +277,24 @@ function addScenery(def, track, group) {
   };
 
   if (def.scenery === 'park') {
+    if (P('tree_round')) {
+      const round = [], blossom = [], flowers = [], rocks = [], shrooms = [], signs = [];
+      for (let i = 0; i < 110; i++) {
+        const s = away(); if (!s) continue;
+        (rnd() < 0.7 ? round : blossom).push({ x: s.x, y: s.y, z: s.z, ry: rnd() * 6.28, s: 0.85 + rnd() * 0.5 });
+      }
+      for (let i = 0; i < 40; i++) { const s = away(); if (s) flowers.push({ x: s.x, y: s.y, z: s.z, ry: rnd() * 6.28, s: 0.8 + rnd() * 0.6 }); }
+      for (let i = 0; i < 18; i++) { const s = away(); if (s) rocks.push({ x: s.x, y: s.y, z: s.z, ry: rnd() * 6.28, s: 0.7 + rnd() * 0.8 }); }
+      for (let i = 0; i < 16; i++) { const s = away(); if (s) shrooms.push({ x: s.x, y: s.y, z: s.z, ry: rnd() * 6.28, s: 0.5 + rnd() * 0.5 }); }
+      const n = track.points.length;
+      for (let k = 0; k < 6; k++) {
+        const pt = track.points[Math.floor(n * k / 6)];
+        const side = k % 2 ? 1 : -1, nx = -pt.tz, nz = pt.tx;
+        signs.push({ x: pt.x + nx * (def.roadHalf + 18) * side, y: pt.y, z: pt.z + nz * (def.roadHalf + 18) * side, ry: Math.atan2(pt.tx, pt.tz) + Math.PI / 2, s: 1 });
+      }
+      instanceProp('tree_round', round, 56); instanceProp('tree_blossom', blossom, 56);
+      instanceProp('flower_patch', flowers, 30); instanceProp('rock', rocks, 26); instanceProp('mushroom', shrooms, 18); instanceProp('sign_arrow', signs, 34);
+    } else {
     const trunks = [], leaves = [[], [], []];
     for (let i = 0; i < 110; i++) {
       const s = away(); if (!s) continue;
@@ -256,6 +306,7 @@ function addScenery(def, track, group) {
     [0x6fbe58, 0x8fd36f, 0xffb3d9].forEach((c, i) => {
       instance(new THREE.SphereGeometry(17, 8, 6), new THREE.MeshLambertMaterial({ color: c }), leaves[i]);
     });
+    }
 
     const carousel = new THREE.Group();
     carousel.add(new THREE.Mesh(new THREE.CylinderGeometry(46, 46, 4, 20),
@@ -286,8 +337,10 @@ function addScenery(def, track, group) {
         puffs.push({ x: x + (k - 1) * 16, y: y + rnd() * 5, z: z + rnd() * 6, s });
       }
     }
-    instance(new THREE.SphereGeometry(18, 8, 6),
-      new THREE.MeshLambertMaterial({ color: 0xffffff }), puffs);
+    if (!instanceProp('cloud', puffs.filter((_, i) => i % 3 === 0).map(p => ({ x: p.x, y: p.y - 10, z: p.z, ry: rnd() * 6.28, s: 1.2 + rnd() * 0.8 })), 60)) {
+      instance(new THREE.SphereGeometry(18, 8, 6),
+        new THREE.MeshLambertMaterial({ color: 0xffffff }), puffs);
+    }
 
     [0xff8fb4, 0xffd34d, 0x9be2b5, 0x8fd0ff, 0xc9b2e8].forEach((c, i) => {
       const t = new THREE.Mesh(new THREE.TorusGeometry(150 - i * 9, 4, 6, 40, Math.PI),
@@ -303,11 +356,14 @@ function addScenery(def, track, group) {
       sticks.push({ x: s.x, y: s.y + 17, z: s.z });
       candies[(rnd() * 4) | 0].push({ x: s.x, y: s.y + 42, z: s.z, s: 0.8 + rnd() * 0.5 });
     }
-    instance(new THREE.CylinderGeometry(1.6, 1.6, 34, 6),
-      new THREE.MeshLambertMaterial({ color: 0xffffff }), sticks);
-    [0xff7aa8, 0xffd34d, 0x9be2b5, 0xc9b2e8].forEach((c, i) => {
-      instance(new THREE.SphereGeometry(15, 10, 8), new THREE.MeshLambertMaterial({ color: c }), candies[i]);
-    });
+    if (!instanceProp('lollipop', sticks.map(p => ({ x: p.x, y: p.y - 17, z: p.z, ry: rnd() * 6.28, s: 0.9 + rnd() * 0.5 })), 60)) {
+      instance(new THREE.CylinderGeometry(1.6, 1.6, 34, 6),
+        new THREE.MeshLambertMaterial({ color: 0xffffff }), sticks);
+      [0xff7aa8, 0xffd34d, 0x9be2b5, 0xc9b2e8].forEach((c, i) => {
+        instance(new THREE.SphereGeometry(15, 10, 8), new THREE.MeshLambertMaterial({ color: c }), candies[i]);
+      });
+    }
+    if (P('mushroom')) { const sh = []; for (let i = 0; i < 24; i++) { const s = away(); if (s) sh.push({ x: s.x, y: s.y, z: s.z, ry: rnd() * 6.28, s: 0.6 + rnd() * 0.7 }); } instanceProp('mushroom', sh, 22); }
     for (let i = 0; i < 14; i++) {
       const s = away(); if (!s) continue;
       hills.push({ x: s.x, y: s.y - 10, z: s.z, s: (60 + rnd() * 40) / 70, sy: (60 + rnd() * 40) / 70 * 0.45 });
@@ -331,10 +387,13 @@ function addScenery(def, track, group) {
         });
       }
     }
-    instance(new THREE.CylinderGeometry(2.2, 3.2, 32, 6),
-      new THREE.MeshLambertMaterial({ color: 0xc49a63 }), trunks);
-    instance(new THREE.ConeGeometry(3.4, 22, 4),
-      new THREE.MeshLambertMaterial({ color: 0x4fbf7a }), fronds);
+    if (!instanceProp('palm', trunks.map(p => ({ x: p.x, y: p.y - 16, z: p.z, ry: p.ry, s: 0.9 + rnd() * 0.5 })), 60)) {
+      instance(new THREE.CylinderGeometry(2.2, 3.2, 32, 6),
+        new THREE.MeshLambertMaterial({ color: 0xc49a63 }), trunks);
+      instance(new THREE.ConeGeometry(3.4, 22, 4),
+        new THREE.MeshLambertMaterial({ color: 0x4fbf7a }), fronds);
+    }
+    if (P('rock')) { const rk = []; for (let i = 0; i < 20; i++) { const s = away(); if (s) rk.push({ x: s.x, y: s.y, z: s.z, ry: rnd() * 6.28, s: 0.6 + rnd() * 0.9 }); } instanceProp('rock', rk, 26); }
     for (let i = 0; i < 22; i++) {
       const s = away(); if (!s) continue;
       poles.push({ x: s.x, y: s.y + 8, z: s.z });
@@ -357,16 +416,20 @@ function addScenery(def, track, group) {
       posts.push({ x: s.x, y: s.y + 13, z: s.z });
       lamps.push({ x: s.x, y: s.y + 28, z: s.z, s: 0.85 + rnd() * 0.4 });
     }
-    instance(new THREE.CylinderGeometry(1, 1.4, 26, 5),
-      new THREE.MeshLambertMaterial({ color: 0x2b2f52 }), posts);
+    if (!instanceProp('lamp', posts.map(p => ({ x: p.x, y: p.y - 13, z: p.z, s: 1 })), 34)) {
+      instance(new THREE.CylinderGeometry(1, 1.4, 26, 5),
+        new THREE.MeshLambertMaterial({ color: 0x2b2f52 }), posts);
+    }
     instance(new THREE.SphereGeometry(4.4, 10, 8),
       new THREE.MeshBasicMaterial({ color: 0xffe9a8 }), lamps);
     for (let i = 0; i < 80; i++) {
       const s = away(); if (!s) continue;
       trees.push({ x: s.x, y: s.y + 24, z: s.z, s: 0.8 + rnd() * 0.5, ry: rnd() * 3 });
     }
-    instance(new THREE.ConeGeometry(13, 46, 7),
-      new THREE.MeshLambertMaterial({ color: 0x24305c }), trees);
+    if (!instanceProp('tree_pine', trees.map(p => ({ x: p.x, y: p.y - 24, z: p.z, ry: p.ry, s: p.s })), 52)) {
+      instance(new THREE.ConeGeometry(13, 46, 7),
+        new THREE.MeshLambertMaterial({ color: 0x24305c }), trees);
+    }
     for (let i = 0; i < 150; i++) {
       const a = rnd() * Math.PI * 2, r = 700 + rnd() * 1500;
       stars.push({ x: Math.cos(a) * r, y: 240 + rnd() * 620, z: Math.sin(a) * r, s: 0.6 + rnd() * 1.1 });
@@ -405,5 +468,7 @@ function addScenery(def, track, group) {
       new THREE.MeshLambertMaterial({ color: 0xc9b2e8 }), isles);
     instance(new THREE.SphereGeometry(24, 10, 8),
       new THREE.MeshLambertMaterial({ color: 0xffd9f0 }), tops);
+    if (P('balloon')) { const bl = []; for (let i = 0; i < 40; i++) { const s = away(); if (s) bl.push({ x: s.x, y: s.y, z: s.z, s: 0.8 + rnd() * 0.8 }); } instanceProp('balloon', bl, 40); }
   }
+  return group;
 }
