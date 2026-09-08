@@ -42,4 +42,6 @@
 - `node --test math/tests/*.test.js`: 순수 모듈 회귀 테스트
 - `node math/tests/browser-smoke.cjs`: 별도 임시 브라우저에서 전체 학습 흐름 및 모바일 화면 확인. Playwright 경로는 `PLAYWRIGHT_PATH`로 지정 가능. `TEST_BASE`는 공개 사이트 검증용.
 
-로그인 없이 이 기기의 브라우저에만 저장한다. 내보내기·가져오기는 부모 화면에 있다. 새 파일은 v22 URL로 갱신되며 기존 서비스 워커의 HTML/JS/CSS 네트워크 우선 정책을 따른다.
+- `node math/tests/browser-responsive.cjs`: 아이패드 가로·세로·분할 화면, 휴대폰, 데스크톱 9개 화면의 전체 그림 표시·터치·회전·이어하기 확인. Chromium 터치 에뮬레이션이며 실기기 Safari 검증은 별도다.
+
+로그인 없이 이 기기의 브라우저에만 저장한다. 내보내기·가져오기는 부모 화면에 있다. 화면 CSS는 v23 URL로 갱신되며 기존 서비스 워커의 HTML/JS/CSS 네트워크 우선 정책을 따른다.

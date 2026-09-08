@@ -8,13 +8,9 @@ header.top h1 { font-size:23px; color:#24464f; text-shadow:none; letter-spacing:
 .brand-mark { color:#bb614b; margin-right:7px; }
 header.top .who { color:#526a73; font-size:14px; background:#fff9; box-shadow:none; padding:7px 13px; white-space:nowrap; }
 h2,h3 { font-weight:400; }
-.playground-hero { position:relative; height:360px; border-radius:30px; overflow:hidden; background:#dceff8 url('assets/playground-monkey-bars.webp') center 62%/cover; box-shadow:0 14px 35px #244f6418; }
-.playground-hero:before { content:''; position:absolute; inset:0; background:linear-gradient(90deg,#edf8ffed 0%,#edf8ff99 34%,#edf8ff00 64%); }
-.hero-copy { position:relative; color:#24464f; padding:30px 36px; max-width:440px; }
 .hero-kicker { font-size:14px; margin:0 0 14px; color:#315b64; }
 .hero-copy h2 { font-size:36px; line-height:1.28; margin:0; letter-spacing:-.04em; max-width:300px; }
-.hero-copy p:last-child { font-size:16px; max-width:245px; line-height:1.6; margin-top:13px; }
-.playground-total { position:absolute; bottom:21px; left:28px; padding:8px 14px; border:1px solid #ffffff42; border-radius:99px; background:#fffdf6ed; backdrop-filter:blur(12px); color:#315b64; font-size:13px; }
+#playgroundStory { font-size:16px; max-width:245px; line-height:1.6; margin-top:13px; }
 .playground-total span { color:#27647e; }
 .mission-panel { position:relative; margin:-12px 20px 0; background:#fffdf6; padding:24px 28px; border-radius:23px; border:1px solid #fff; box-shadow:0 8px 30px #244f6410; }
 .mission-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:17px; }
@@ -92,11 +88,9 @@ h2,h3 { font-weight:400; }
 .math-block.filled {border-style:solid;}
 .math-block:disabled {opacity:1;cursor:default;}
 .math-play .help-btn { font-size:13px; }
-.welcome-art { height:190px;background:url('assets/playground-monkey-bars.webp') center 66%/cover;border-radius:16px;margin:-8px -8px 22px; }
 #setup .field { margin-top:18px; }
 #quickSetupBtn { margin-top:22px; }
 .result-card { overflow:hidden; }
-.result-playground { height:135px;background:url('assets/playground-monkey-bars.webp') center 78%/cover;margin:-22px -22px 20px; }
 .result-big { font-size:29px;line-height:1.4; }
 .result-big small { font-size:20px; }
 .result-card .sticker-big { margin-top:12px; }
@@ -112,15 +106,11 @@ h2,h3 { font-weight:400; }
 @media(min-width:760px) { #home>.me { float:left;width:49%;min-height:210px; } #home>.guide { width:49%;margin-left:51%;min-height:210px;margin-top:0; } #home>.row.tight { clear:both;padding-top:14px; } }
 @media(max-width:600px) {
  .wrap { padding:15px 14px 35px; } header.top { padding-bottom:16px; } header.top h1 { font-size:19px; } header.top .who { font-size:12px; }
- .playground-hero { height:300px;border-radius:24px;background-position:58% center; }
- .hero-copy { padding:25px 23px; } .hero-copy h2 { font-size:31px;max-width:225px; } .hero-kicker {font-size:12px;margin-bottom:9px; } .hero-copy p:last-child {font-size:14px;max-width:185px; }
- .playground-total { left:22px;bottom:23px; }
  .mission-panel { margin:-10px 7px 0;padding:19px 17px;border-radius:20px; } .mission-heading {gap:6px;margin-bottom:14px; } .mission-heading h3 {font-size:22px; } .chapter-pill {font-size:10px;padding:6px; }
  .start-actions {gap:9px;grid-template-columns:1.4fr 1fr; } .start-actions .btn {font-size:16px;padding:16px 7px;border-radius:13px; }
  .section-label {margin-top:20px; } .section-label h3 {font-size:18px; } .card {padding:18px; } .level-name {font-size:22px; }
  .card.mini {padding:13px 10px;grid-template-columns:36px 1fr;gap:3px 6px; } .card.mini .ico,.card.mini .ico3d {width:34px;height:34px; } .card.mini b {font-size:22px; }
  .problem {font-size:34px; } .problem .word {font-size:22px; } .quiz-playground {min-height:95px;padding:18px; } .quiz-playground>span {font-size:17px; }
- .result-playground {margin:-18px -18px 18px; } .skill-list {grid-template-columns:1fr; }
 }
 @media(prefers-reduced-motion:reduce) { *,*:before,*:after { animation:none!important;transition:none!important;scroll-behavior:auto!important; } }
 @media print { .playground-hero,.mission-panel,.playground-map,.section-label {display:none;} }
@@ -149,14 +139,48 @@ header.top .who {min-height:44px;display:flex;align-items:center;}
 @media(max-width:600px) {
  .playground-map {grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 8px;}
  .play-spot {min-height:104px;border-radius:17px;}
- .hero-copy {padding:22px;}
  .hero-copy h2 {font-size:29px;max-width:200px;}
- .playground-hero {background-position:58% center;}
- .playground-hero:before {background:linear-gradient(90deg,#edf8ffeb 0%,#edf8ff80 42%,#edf8ff00 82%);}
  .quiz-playground {padding:16px;}
  .quest-rungs {gap:5px;padding-left:5px;padding-right:5px;}
  .rung.done:after {font-size:12px;top:8px;}
  .spot-heading span {font-size:11px;}
 }
 @media(max-width:350px) {.hero-copy h2 {font-size:26px;max-width:180px;}.mission-heading h3 {font-size:20px;}.start-actions .btn {font-size:14px;}.ten-frame {gap:3px;}.math-play {padding:10px;}.section-label {gap:8px;}}
+
+/* Keep the complete illustration visible at every viewport, including iPad split view. */
+.playground-hero {display:grid;grid-template-columns:minmax(235px,.9fr) minmax(0,1.8fr);align-items:center;overflow:hidden;border-radius:30px;background:#e6f3fa;box-shadow:0 14px 35px #244f6418;}
+.hero-copy {min-width:0;padding:28px;color:#24464f;}
+.hero-scene {display:block;width:100%;height:auto;min-width:0;object-fit:contain;}
+.playground-total {display:inline-block;margin-top:10px;padding:8px 12px;border-radius:99px;background:#fffdf6;color:#315b64;font-size:13px;}
+.hero-copy h2 {font-size:32px;}
+#playgroundStory {max-width:245px;}
+.mission-panel {margin:16px 0 0;}
+.welcome-art,.result-playground {display:block;width:100%;height:auto;max-height:260px;object-fit:contain;background:#e6f3fa;border-radius:16px;margin:0 0 22px;}
+.result-playground {max-height:220px;}
+.quiz-content {min-width:0;}
+.wrap {padding-left:max(24px,env(safe-area-inset-left));padding-right:max(24px,env(safe-area-inset-right));padding-bottom:max(50px,env(safe-area-inset-bottom));}
+@media(max-width:700px) {
+ .playground-hero {grid-template-columns:minmax(0,1fr);border-radius:24px;}
+ .hero-copy {padding:20px 22px 12px;}
+ .hero-copy h2 {max-width:none;white-space:normal;font-size:27px;}
+ #playgroundStory {max-width:none;font-size:15px;margin:8px 0;}
+ .hero-kicker {margin-bottom:8px;}
+ .playground-total {margin-top:2px;font-size:12px;padding:6px 10px;}
+ .hero-scene {width:100%;}
+ .playground-map {grid-template-columns:repeat(3,minmax(0,1fr));}
+}
+@media(max-width:600px) {
+ .wrap {padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right));padding-bottom:max(35px,env(safe-area-inset-bottom));}
+ .mission-panel {margin:14px 0 0;}
+ .skill-list {grid-template-columns:1fr;}
+}
+@media(min-width:900px) and (orientation:landscape) {
+ #quiz {max-width:1000px;}
+ #quiz>.card {display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,.8fr);gap:24px;align-items:start;}
+ #quiz .keypad {width:100%;max-width:360px;margin:0 auto;position:sticky;top:20px;}
+ #quiz .keypad button {height:64px;}
+ #quiz .quiz-playground {padding:14px 20px;gap:10px;}
+ #quiz .count {margin-top:12px;}
+}
+@media(hover:none) {.play-spot:hover {transform:none;}}
 
