@@ -402,17 +402,35 @@ function bakeLayer(layer, w, h, seed) {
  * 스테이지 배경 한 벌을 만든다. 반환된 draw(ctx, cameraX, w, h) 를 매 프레임
  * 호출하면 된다 — 내부는 구운 타일을 붙이기만 하므로 값이 싸다.
  */
-export function createScenery(sceneKey, width, height) {
+export function createScenery(sceneKey, width, height, { painted = false } = {}) {
   const scene = SCENES[sceneKey] || SCENES.hulao;
   const tileW = Math.max(1024, Math.round(width * 1.35));
   const seedBase = [...sceneKey].reduce((a, c) => a + c.charCodeAt(0), 0);
-  const baked = scene.layers.map((layer, i) => ({
+  const baked = painted ? [] : scene.layers.map((layer, i) => ({
     layer,
     canvas: bakeLayer(layer, tileW, Math.round(height * .92), seedBase * 31 + i * 977),
   }));
 
+  const drawParticles = (ctx, cameraX, w, h, now = 0, quality = 1) => {
+    // 테마 고유 입자 — 화염산 불티, 설야 눈발, 사타령 금빛 깃털.
+    // 그림 배경을 쓰는 전장도 이 효과만 재사용한다.
+    if (quality <= .6 || (!scene.ember && !scene.snow)) return;
+    const count = scene.snow ? 46 : 30;
+    ctx.save(); ctx.globalCompositeOperation = scene.snow ? 'source-over' : 'lighter';
+    for (let i = 0; i < count; i++) {
+      const px = ((i * 137.5 + now * (scene.snow ? .03 : .05) - cameraX * .2) % (w + 80)) - 40;
+      const yy = scene.snow ? (now * .04 + i * 97) % (h * .95) : h * .9 - ((now * .06 + i * 83) % (h * .85));
+      ctx.globalAlpha = scene.snow ? .5 : .42;
+      ctx.fillStyle = scene.snow ? '#e8f0fb' : scene.ember;
+      const size = scene.snow ? 1.6 + (i % 3) : 1.4 + (i % 3) * .8;
+      ctx.beginPath(); ctx.arc(px, yy, size, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  };
+
   return {
     scene,
+    drawParticles,
     draw(ctx, cameraX, w, h, now = 0, quality = 1) {
       // 하늘
       const sky = ctx.createLinearGradient(0, 0, 0, h * .9);
@@ -435,22 +453,7 @@ export function createScenery(sceneKey, width, height) {
       ctx.fillStyle = scene.haze;
       ctx.fillRect(0, h * .2, w, h * .7);
 
-      // 테마 고유 입자 — 화염산 불티, 설야 눈발
-      if (quality > .6 && (scene.ember || scene.snow)) {
-        const count = scene.snow ? 46 : 30;
-        ctx.save(); ctx.globalCompositeOperation = scene.snow ? 'source-over' : 'lighter';
-        for (let i = 0; i < count; i++) {
-          const sp = scene.snow ? .05 : -.09;
-          const px = ((i * 137.5 + now * (scene.snow ? .03 : .05) - cameraX * .2) % (w + 80)) - 40;
-          const py = ((i * 211.3 + now * sp * (scene.snow ? -1 : 1)) % (h * .9));
-          const yy = scene.snow ? (now * .04 + i * 97) % (h * .95) : h * .9 - ((now * .06 + i * 83) % (h * .85));
-          ctx.globalAlpha = scene.snow ? .5 : .42;
-          ctx.fillStyle = scene.snow ? '#e8f0fb' : scene.ember;
-          const size = scene.snow ? 1.6 + (i % 3) : 1.4 + (i % 3) * .8;
-          ctx.beginPath(); ctx.arc(px, yy, size, 0, Math.PI * 2); ctx.fill();
-        }
-        ctx.restore();
-      }
+      drawParticles(ctx, cameraX, w, h, now, quality);
     },
   };
 }

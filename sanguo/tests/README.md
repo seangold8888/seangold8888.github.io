@@ -14,10 +14,22 @@ node sanguo/tests/mobile-viewport.cjs
 node sanguo/tests/xiyou-x1.cjs
 node sanguo/tests/xiyou-x2.cjs
 node sanguo/tests/xiyou-x3.cjs
+node sanguo/tests/xiyou-x4.cjs
 ```
 
 Set MENU_QA_OUTPUT / COMBAT_QA_OUTPUT / MOUNT_QA_OUTPUT to an external directory for screenshots.
 Set XIYOU_QA_OUTPUT for the X1/X2/X3 menu, battle and victory-lesson screenshots.
+Set XIYOU_QA_OUTPUT for X4's eight rendered battlefield screenshots as well.
+
+
+## Xiyou X4 coverage
+
+- All eight Journey to the West battlefields load distinct far, transparent middle and opaque ground paintings.
+- Production rendering uses 0.06 / 0.30 / 1.0 parallax, keeps themed particles, and falls back to procedural scenery if any layer is unavailable.
+- Browser instrumentation records exactly the three expected painted layers per stage at 640x400 with no failed requests or console errors.
+- Battle completion releases stage paintings from both the bundle and image cache.
+- Set `XIYOU_QA_OUTPUT` to an external directory to save one rendered battle screenshot per stage.
+
 
 ## Xiyou X3 coverage
 

@@ -134,11 +134,18 @@ export const WORK_WEAPONS = {
   monkstaff: { name: '수마선장', style: 'monkstaff', len: 1.18, width: 1.25 },
 };
 
+const paintedBattlefield = (stageKey) => Object.freeze({
+  far: `art/battlefield/${stageKey}-far-v1.png`,
+  mid: `art/battlefield/${stageKey}-mid-v1.png`,
+  ground: `art/battlefield/${stageKey}-ground-v1.png`,
+});
+
 export const WORK_STAGES = {
   // ── 서유기 ──────────────────────────────────────────────
   // 원작 순서대로 여덟 전장. 화과산에서 시작해 사타령에서 끝난다.
   huaguoshan: {
     work: 'xiyou', scene: 'huaguoshan', chapter: 1,
+    background: paintedBattlefield('huaguoshan'),
     year: '아주 먼 옛날', title: '화과산 · 돌에서 태어난 원숭이 왕',
     mission: '수렴동을 노리는 혼세마왕의 무리를 몰아내요.',
     bossName: '혼세마왕', bossId: 'hunshimowang', heroes: ['wukong'],
@@ -149,6 +156,7 @@ export const WORK_STAGES = {
   },
   donghai: {
     work: 'xiyou', scene: 'donghai', chapter: 2,
+    background: paintedBattlefield('donghai'),
     year: '아주 먼 옛날', title: '동해 용궁 · 여의봉을 얻다',
     mission: '수궁의 하병해장을 헤치고 바다 밑 보물창고에 닿아요.',
     bossName: '동해용왕 오광', bossId: 'aoguang', heroes: ['wukong'],
@@ -159,6 +167,7 @@ export const WORK_STAGES = {
   },
   heavenpalace: {
     work: 'xiyou', scene: 'heavenpalace', chapter: 3,
+    background: paintedBattlefield('heavenpalace'),
     year: '천계', title: '천궁 대소동 · 제천대성',
     mission: '하늘 병사들을 물리치고 천궁을 가로질러요.',
     bossName: '이랑진군', bossId: 'erlangshen', heroes: ['wukong', 'nezha', 'erlangshen'],
@@ -169,6 +178,7 @@ export const WORK_STAGES = {
   },
   baihuling: {
     work: 'xiyou', scene: 'baihuling', chapter: 4,
+    background: paintedBattlefield('baihuling'),
     year: '당 정관 연간', title: '백호령 · 세 번 모습을 바꾼 요괴',
     mission: '모습을 바꿔 다가오는 요괴를 알아보고 물리쳐요.',
     bossName: '백골정', bossId: 'baigujing', heroes: ['wukong', 'bajie', 'wujing'],
@@ -179,6 +189,7 @@ export const WORK_STAGES = {
   },
   lianhuadong: {
     work: 'xiyou', scene: 'lianhuadong', chapter: 5,
+    background: paintedBattlefield('lianhuadong'),
     year: '당 정관 연간', title: '평정산 연화동 · 금각과 은각',
     mission: '호리병에 빨려들지 않게 요괴 형제의 부하들을 흩어요.',
     bossName: '은각대왕', bossId: 'yinjiao', heroes: ['wukong', 'bajie', 'wujing'],
@@ -189,6 +200,7 @@ export const WORK_STAGES = {
   },
   huoyundong: {
     work: 'xiyou', scene: 'huoyundong', chapter: 6,
+    background: paintedBattlefield('huoyundong'),
     year: '당 정관 연간', title: '호산 화운동 · 붉은 아이 홍해아',
     mission: '삼매진화의 불길을 피해 어린 요괴 왕을 막아요.',
     bossName: '홍해아', bossId: 'honghaier', heroes: ['wukong', 'bajie', 'wujing', 'tieshangongzhu'],
@@ -199,6 +211,7 @@ export const WORK_STAGES = {
   },
   flamemountain: {
     work: 'xiyou', scene: 'flamemountain', chapter: 7,
+    background: paintedBattlefield('flamemountain'),
     year: '당 정관 연간', title: '화염산 · 파초선을 찾아서',
     mission: '불길을 뚫고 우마왕의 군세를 돌파해요.',
     bossName: '우마왕', bossId: 'wumawang', heroes: ['wukong', 'bajie', 'wujing', 'tieshangongzhu', 'honghaier'],
@@ -209,6 +222,7 @@ export const WORK_STAGES = {
   },
   shituoling: {
     work: 'xiyou', scene: 'shituoling', chapter: 8,
+    background: paintedBattlefield('shituoling'),
     year: '당 정관 연간', title: '사타령 · 하늘을 덮은 날개',
     mission: '세 마왕의 군세를 뚫고 마지막 관문을 넘어요.',
     bossName: '대붕금시조', bossId: 'dapeng', heroes: ['wukong', 'bajie', 'wujing', 'nezha', 'erlangshen'],

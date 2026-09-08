@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v62";
+const CACHE_VERSION = "v63";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -272,6 +272,30 @@ const APP_SHELL = [...CORE_SHELL, ...OPTIONAL_SHELL];
 // Filled from the checked-in files. These large assets never participate in
 // install or activation; they warm in the background with bounded concurrency.
 const SANGUO_RUNTIME_ASSETS = [
+  "./sanguo/art/battlefield/baihuling-far-v1.png",
+  "./sanguo/art/battlefield/baihuling-ground-v1.png",
+  "./sanguo/art/battlefield/baihuling-mid-v1.png",
+  "./sanguo/art/battlefield/donghai-far-v1.png",
+  "./sanguo/art/battlefield/donghai-ground-v1.png",
+  "./sanguo/art/battlefield/donghai-mid-v1.png",
+  "./sanguo/art/battlefield/flamemountain-far-v1.png",
+  "./sanguo/art/battlefield/flamemountain-ground-v1.png",
+  "./sanguo/art/battlefield/flamemountain-mid-v1.png",
+  "./sanguo/art/battlefield/heavenpalace-far-v1.png",
+  "./sanguo/art/battlefield/heavenpalace-ground-v1.png",
+  "./sanguo/art/battlefield/heavenpalace-mid-v1.png",
+  "./sanguo/art/battlefield/huaguoshan-far-v1.png",
+  "./sanguo/art/battlefield/huaguoshan-ground-v1.png",
+  "./sanguo/art/battlefield/huaguoshan-mid-v1.png",
+  "./sanguo/art/battlefield/huoyundong-far-v1.png",
+  "./sanguo/art/battlefield/huoyundong-ground-v1.png",
+  "./sanguo/art/battlefield/huoyundong-mid-v1.png",
+  "./sanguo/art/battlefield/lianhuadong-far-v1.png",
+  "./sanguo/art/battlefield/lianhuadong-ground-v1.png",
+  "./sanguo/art/battlefield/lianhuadong-mid-v1.png",
+  "./sanguo/art/battlefield/shituoling-far-v1.png",
+  "./sanguo/art/battlefield/shituoling-ground-v1.png",
+  "./sanguo/art/battlefield/shituoling-mid-v1.png",
   "./sanguo/art/side-scroller/bajie-bow-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/bajie-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/boss-caimao-painted-sheet-v1.png",

@@ -346,7 +346,7 @@ export function preloadSideScroller(heroId = 'guanyu', stageKey = 'hulao') {
   const resolvedHeroId = HERO_ART[heroId] ? heroId : 'guanyu';
   const selectedStage = workStage(stageKey) || stage(stageKey);
   const bossId = selectedStage?.bossId || 'default';
-  const cacheKey = resolvedHeroId + ':' + bossId;
+  const cacheKey = resolvedHeroId + ':' + bossId + ':' + stageKey;
   if (assetBundleCache.has(cacheKey)) return assetBundleCache.get(cacheKey);
   const pending = (async () => {
     const common = Object.fromEntries(await Promise.all(Object.entries(ART).map(async ([key, src]) => [key, await loadImage(src)])));
@@ -364,7 +364,20 @@ export function preloadSideScroller(heroId = 'guanyu', stageKey = 'hulao') {
     const bosses = {};
     const boss = await loadOptional(BOSS_ART[bossId], 'boss.' + bossId);
     if (boss) bosses[bossId] = boss;
-    return { ...common, heroes: { [resolvedHeroId]: hero }, mounts, bosses };
+    const backgroundSources = selectedStage?.background ? Object.values(selectedStage.background) : [];
+    const backgroundEntries = selectedStage?.background
+      ? await Promise.all(Object.entries(selectedStage.background).map(async ([key, src]) => [key, await loadOptional(src, stageKey + '.background.' + key)]))
+      : [];
+    const loadedBackground = Object.fromEntries(backgroundEntries.filter(([, image]) => !!image));
+    const backgroundLayers = backgroundEntries.length === 3 && Object.keys(loadedBackground).length === 3 ? loadedBackground : null;
+    if (backgroundEntries.length && !backgroundLayers) console.warn('그림 배경 일부를 읽지 못해 절차 배경으로 전환합니다:', stageKey);
+    const bundle = { ...common, heroes: { [resolvedHeroId]: hero }, mounts, bosses, backgroundLayers };
+    bundle.releaseStageBackground = () => {
+      backgroundSources.forEach((src) => imageCache.delete(src));
+      bundle.backgroundLayers = null;
+      assetBundleCache.delete(cacheKey);
+    };
+    return bundle;
   })().catch((error) => { assetBundleCache.delete(cacheKey); throw error; });
   assetBundleCache.set(cacheKey, pending);
   return pending;
@@ -1259,7 +1272,6 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   const supportsMountedRanged = usesSeatedMountSheet ? !!heroAssets.mountedBow : supportsMount && supportsRanged;
   const extra = workPerson(heroId), extraStats = workStats(heroId);
   // 전장 정보. 서유기·수호지는 works.js, 삼국지는 원본 gamedata 에서 온다.
-  // 호로관만 그려둔 배경이 있고 나머지는 절차 생성 배경을 쓴다.
   const stageInfo = workStage(stageKey) || (() => {
     const s = stage(stageKey);
     if (!s || !s.title) return null;
@@ -1293,8 +1305,23 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   const bossSheet = dedicatedBossArt || tintSheet(assets.boss, 'boss:' + bossId, bossProfile.tint ? [bossProfile.tint] : BOSS_TINT[troop]);
   ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
   let width = innerWidth, height = innerHeight, dpr = Math.min(devicePixelRatio || 1, 1.75);
-  // 절차 배경은 화면 크기에 맞춰 구우므로 리사이즈 때 다시 만들어야 한다.
-  let scenery = stageInfo && stageKey !== 'hulao' ? createScenery(stageInfo.scene, innerWidth, innerHeight) : null;
+  let paintedBackground = assets.backgroundLayers || null;
+  let paintedGroundLayer = null;
+  if (paintedBackground) {
+    // 원경과 지면이 맞닿는 선을 숨기도록 지면 원화의 위쪽만 투명하게 만든다.
+    // 전투 중에는 이 버퍼를 1~2회 blit하므로 매 프레임 마스크를 만들지 않는다.
+    paintedGroundLayer = document.createElement('canvas');
+    paintedGroundLayer.width = paintedBackground.ground.width; paintedGroundLayer.height = paintedBackground.ground.height;
+    const groundCtx = paintedGroundLayer.getContext('2d');
+    groundCtx.drawImage(paintedBackground.ground, 0, 0);
+    groundCtx.globalCompositeOperation = 'destination-in';
+    const groundFade = groundCtx.createLinearGradient(0, 0, 0, paintedGroundLayer.height * .18);
+    groundFade.addColorStop(0, 'rgba(255,255,255,0)'); groundFade.addColorStop(1, 'rgba(255,255,255,1)');
+    groundCtx.fillStyle = groundFade; groundCtx.fillRect(0, 0, paintedGroundLayer.width, paintedGroundLayer.height);
+    paintedGroundLayer.__sourceUrl = paintedBackground.ground.src;
+  }
+  // 그림이 없으면 전체 절차 배경을, 그림이 있으면 가벼운 테마 입자만 준비한다.
+  let scenery = stageInfo && stageKey !== 'hulao' ? createScenery(stageInfo.scene, innerWidth, innerHeight, { painted: !!paintedBackground }) : null;
   // 숨겨진 창의 0×0만 안전 크기로 대체한다. 실제 모바일 뷰포트를 640px로
   // 강제하면 캔버스와 DOM HUD의 중심이 달라지고 오른쪽 화면이 잘린다.
   const resize = () => {
@@ -1305,7 +1332,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr);
     canvas.style.width = `${width}px`; canvas.style.height = `${height}px`;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
-    if (stageInfo && stageKey !== 'hulao') scenery = createScenery(stageInfo.scene, width, height);
+    if (stageInfo && stageKey !== 'hulao') scenery = createScenery(stageInfo.scene, width, height, { painted: !!paintedBackground });
   };
   let resizeFrame = 0;
   const scheduleResize = () => {
@@ -1859,7 +1886,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     if (hits) { const powerful = action === 'attack' ? player.attackStep === 3 : action !== 'grab'; audio.hit(powerful, action); shake = ['musou', 'special', 'whirlwind'].includes(action) ? 18 : ['heavy', 'throw', 'dash', 'mountedThrust'].includes(action) || powerful ? 12 : 6; hitstopUntil = now + (powerful ? 64 : 42); if (powerful) slowUntil = Math.max(slowUntil, now + (['musou', 'special'].includes(action) ? 310 : 190)); gainRage(hits * (action === 'whirlwind' ? 3 : 7)); }
   }
   function finish(win) {
-    if (ended) return; ended = true; cancelAnimationFrame(raf); if (resizeFrame) cancelAnimationFrame(resizeFrame); input.destroy(); removeEventListener('pointerdown', unlockAudio, { capture: true }); removeEventListener('resize', onViewportChange); removeEventListener('orientationchange', onViewportChange); document.removeEventListener('visibilitychange', onVisibility); document.removeEventListener('fullscreenchange', onViewportChange); removeEventListener('blur', onBlur); removeEventListener('focus', onFocus); globalThis.visualViewport?.removeEventListener('resize', onViewportChange); globalThis.visualViewport?.removeEventListener('scroll', onViewportChange); for (const type of ['gesturestart', 'gesturechange', 'gestureend', 'touchstart', 'touchmove']) document.removeEventListener(type, preventBrowserGesture); document.documentElement.classList.remove('battle-viewport'); bossHud.remove(); audio.stop(); if (win) audio.win();
+    if (ended) return; ended = true; cancelAnimationFrame(raf); if (resizeFrame) cancelAnimationFrame(resizeFrame); input.destroy(); removeEventListener('pointerdown', unlockAudio, { capture: true }); removeEventListener('resize', onViewportChange); removeEventListener('orientationchange', onViewportChange); document.removeEventListener('visibilitychange', onVisibility); document.removeEventListener('fullscreenchange', onViewportChange); removeEventListener('blur', onBlur); removeEventListener('focus', onFocus); globalThis.visualViewport?.removeEventListener('resize', onViewportChange); globalThis.visualViewport?.removeEventListener('scroll', onViewportChange); for (const type of ['gesturestart', 'gesturechange', 'gestureend', 'touchstart', 'touchmove']) document.removeEventListener(type, preventBrowserGesture); document.documentElement.classList.remove('battle-viewport'); bossHud.remove(); audio.stop(); if (win) audio.win(); assets.releaseStageBackground?.(); paintedBackground = null; if (paintedGroundLayer) { paintedGroundLayer.width = paintedGroundLayer.height = 1; paintedGroundLayer = null; }
     const rewards = awardBattleProgress(heroId, { win, ko: player.ko, stageKey, difficultyId: diff.id });
     setTimeout(() => { document.getElementById('ui').innerHTML = ''; showResult(document.getElementById('ui'), { win, heroName, enemyName: bossLabel, weaponName, rewards, story: stageInfo?.work === 'xiyou' ? stageInfo : null, onRetry: () => startSideBattle(heroId, stageKey, { onExit }), onMenu: () => onExit?.() }); }, 450);
   }
@@ -2144,7 +2171,30 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     playerHud.setHp(player.hp / player.maxHp); playerHud.setRage(player.rage / 100); playerHud.setCombo(player.combo); playerHud.setKo(player.ko); playerHud.setStage(wave, TOTAL_WAVES); playerHud.setMount(player.mounted, mountLabel);
   }
   function drawBackground() {
-    // 호로관 외 스테이지는 그려둔 배경 이미지가 없다 — 절차 생성 배경을 쓴다.
+    if (paintedBackground) {
+      ctx.fillStyle = '#111217'; ctx.fillRect(0, 0, width, height);
+      const drawLayer = (image, depth, y, targetH, alpha = 1) => {
+        const scale = Math.max(width / image.width, targetH / image.height);
+        const drawW = image.width * scale, drawH = image.height * scale;
+        const parallax = ((cameraX * depth) % drawW + drawW) % drawW;
+        const drawY = y + (targetH - drawH) * .5;
+        ctx.save(); ctx.globalAlpha = alpha; ctx.beginPath(); ctx.rect(0, y, width, targetH); ctx.clip();
+        for (let i = -1; i <= 1; i++) {
+          const tileX = i * drawW - parallax;
+          if (tileX > width || tileX + drawW < 0) continue;
+          if (i % 2) { ctx.save(); ctx.translate((i + 1) * drawW - parallax, 0); ctx.scale(-1, 1); ctx.drawImage(image, 0, drawY, drawW, drawH); ctx.restore(); }
+          else ctx.drawImage(image, tileX, drawY, drawW, drawH);
+        }
+        ctx.restore();
+      };
+      drawLayer(paintedBackground.far, .06, 0, height);
+      drawLayer(paintedBackground.mid, .30, 0, height, .88);
+      drawLayer(paintedGroundLayer || paintedBackground.ground, 1, height * .54, height * .46);
+      const shade = ctx.createLinearGradient(0, 0, 0, height); shade.addColorStop(0, 'rgba(7,10,15,.02)'); shade.addColorStop(.6, 'rgba(11,8,8,.04)'); shade.addColorStop(1, 'rgba(5,3,3,.35)'); ctx.fillStyle = shade; ctx.fillRect(0, 0, width, height);
+      scenery?.drawParticles(ctx, cameraX, width, height, performance.now(), q());
+      return;
+    }
+    // 그림 한 장이라도 로드에 실패하면 기존 절차 배경이 안전한 폴백이다.
     if (scenery) { scenery.draw(ctx, cameraX, width, height, performance.now(), q()); return; }
     const image = assets.background, scale = Math.max(width / image.width, height / image.height), drawW = image.width * scale, drawH = image.height * scale, parallax = (cameraX * 0.10) % drawW;
     ctx.fillStyle = '#171716'; ctx.fillRect(0, 0, width, height);
