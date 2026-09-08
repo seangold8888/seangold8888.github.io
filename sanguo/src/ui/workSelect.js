@@ -6,7 +6,7 @@ import { getCombatGrowth, getHeroProgress, nextPerk, weaponEnhanceText } from '.
 import { heroHasArt } from '../game/sideScroller.js';
 import { dashSkill } from '../game/dashSkills.js';
 
-const sheets = {guanyu:'guanyu-painted-sheet-v4',tieshangongzhu:'tieshangongzhu-painted-sheet-v2'};
+const sheets = {guanyu:'guanyu-painted-sheet-v4',tieshangongzhu:'tieshangongzhu-painted-sheet-v2',erlangshen:'erlangshen-hero-painted-sheet-v1'};
 const portraitFor = id => 'art/side-scroller/' + (sheets[id] || id + '-painted-sheet-v1') + '.png';
 const infoFor = id => WORK_PEOPLE[id]
   ? {p:WORK_PEOPLE[id],s:WORK_STATS[id],w:WORK_WEAPONS[WORK_PEOPLE[id].weapon]?.name}

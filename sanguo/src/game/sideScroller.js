@@ -14,6 +14,7 @@ const CANVAS_UI_FONT = '"Pretendard Variable", Pretendard, "Noto Sans KR", "Malg
 const CANVAS_IMPACT_FONT = CANVAS_UI_FONT;
 
 const HERO_ART = {
+  erlangshen: { hero: 'art/side-scroller/erlangshen-hero-painted-sheet-v1.png', heroBow: 'art/side-scroller/erlangshen-hero-bow-painted-sheet-v1.png' },
   nezha: { hero: 'art/side-scroller/nezha-painted-sheet-v1.png', heroBow: 'art/side-scroller/nezha-bow-painted-sheet-v1.png' },
   liubei: {
     hero: 'art/side-scroller/liubei-painted-sheet-v1.png',
@@ -122,6 +123,9 @@ const MOUNT_ART = {
 for (const [id, profile] of Object.entries(MOUNT_PROFILES)) MOUNT_ART[id] = profile.horse;
 
 const BOSS_ART = {
+  yinjiao: 'art/side-scroller/boss-yinjiao-painted-sheet-v1.png',
+  honghaier: 'art/side-scroller/boss-honghaier-painted-sheet-v1.png',
+  dapeng: 'art/side-scroller/boss-dapeng-painted-sheet-v1.png',
   hunshimowang: 'art/side-scroller/boss-hunshimowang-painted-sheet-v1.png',
   aoguang: 'art/side-scroller/boss-aoguang-painted-sheet-v1.png',
   baigujing: 'art/side-scroller/boss-baigujing-painted-sheet-v1.png',
@@ -1056,6 +1060,10 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
 // Explicit cuts and boot anchors keep weapon overhangs in their own pose and
 // compensate for transparent padding without modifying the original PNG pixels.
 const PAINTED_FRAME_LAYOUTS = {
+    // Erlang's bow poses use a measured transparent divider at y=619px,
+    // not the geometric midpoint; keep the lower bow tip out of the idle frame.
+    'erlangshen-hero-painted-sheet-v1.png': [[0,0,640,640,310,634,555],[640,0,640,640,320,634,555],[0,640,640,640,320,582,555],[640,640,640,640,320,582,555]],
+    'erlangshen-hero-bow-painted-sheet-v1.png': [[0,0,620,632,320,628,608],[620,0,660,632,340,614,608],[0,632,620,648,320,608,608],[620,632,660,648,340,608,608]],
     // Different generated padding must not make Nezha grow when throwing a ring.
     // Seventh field is the standing figure height in the atlas's 1280-unit space.
     'nezha-painted-sheet-v1.png': [[0,0,640,640,300,606,490],[640,0,640,640,310,604,490],[0,640,640,640,310,530,490],[640,640,640,640,310,524,490]],
@@ -1286,12 +1294,12 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   const hudRoot = createHudRoot(), playerHud = createPlayerHud(hudRoot, heroName, { level: growth.level, weapon: `${weaponName} ${weaponEnhanceText(growth)}` }), bossHud = createEnemyHud(hudRoot, bossLabel);
   if (extra) {
     const fanName = ['zhugeliang','luxun'].includes(heroId) ? '우선' : '파초선';
-    const rangedControl = { fan: fanName + ' 공격', ring: heroId === 'nezha' ? '건곤권 투척' : '쌍환 투척', lasso: '홍금투삭', bow: '활쏘기' }[rangedStyle];
+    const rangedControl = { fan: fanName + ' 공격', ring: heroId === 'nezha' ? '건곤권 투척' : '쌍환 투척', lasso: '홍금투삭', bow: heroId === 'erlangshen' ? '탄궁 발사' : '활쏘기' }[rangedStyle];
     const mountControl = supportsMount ? '<span>F 승마</span>' : '';
     hudRoot.querySelector('.controls').innerHTML = '<span>WASD 이동 · W 두 번 점프</span><span>J 공격 · 꾹 강공</span><span>K ' + rangedControl + '</span>' + mountControl + '<span>L 필살기</span><span>I 돌진기</span>';
   }
   playerHud.setDashSkill(dashTechnique);
-  playerHud.setCapabilities(supportsRanged, supportsMount, { fan: ['zhugeliang','luxun'].includes(heroId) ? '우선' : '파초선', ring: heroId === 'nezha' ? '건곤권' : '쌍환', lasso: '투삭', bow: '활' }[rangedStyle]);
+  playerHud.setCapabilities(supportsRanged, supportsMount, { fan: ['zhugeliang','luxun'].includes(heroId) ? '우선' : '파초선', ring: heroId === 'nezha' ? '건곤권' : '쌍환', lasso: '투삭', bow: heroId === 'erlangshen' ? '탄궁' : '활' }[rangedStyle]);
   bossHud.show(false); bossHud.setWeapon(bossProfile.weapon); bossHud.setPhase('결전 대기'); playerHud.setObjective(stageInfo?.mission || '호로관의 적군을 돌파하라'); playerHud.setMount(false, mountLabel);
   const input = createInput(canvas), audio = makeAudio(heroId, stageKey), worldWidth = 7800;
   const touchCapable = (navigator.maxTouchPoints || 0) > 0 || !!globalThis.matchMedia?.('(any-pointer: coarse)')?.matches;
@@ -1323,7 +1331,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   const fromTable = (source) => ({
     power: clamp(source.power / 20, .68, 1.30),
     speed: clamp(source.speed / 3.2, .85, heroId === 'nezha' ? 4.5 / 3.2 : 1.35),
-    reach: clamp(source.range / 90, .74, 1.22),
+    reach: clamp(source.range / 90, .74, heroId === 'erlangshen' ? 118 / 90 : 1.22),
     arrow: 1,
   });
   // 유비·장비는 표 환산 이전에 손으로 맞춰 둔 값이 있다. 표대로 바꾸면
@@ -1604,6 +1612,15 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     // 화면에 그리는 활 효과와 똑같은 손 앵커에서 화살을 생성한다.
     const anchor = bowAnchor();
     const enemyDrawH = Math.min(300, height * .47);
+    if (heroId === 'erlangshen') {
+      // 탄궁은 화살이 아닌 빛 탄환. 기존 차지·관통·성장 계산은 그대로 쓴다.
+      const speed = 1180, launchHeight = anchor.height;
+      const travel = (target ? Math.max(170, Math.abs(target.x - player.x)) : 820) / speed;
+      const targetLane = target?.lane ?? player.lane, targetHeight = target ? enemyDrawH * .56 : launchHeight * .82;
+      pushArrow({ kind: 'pellet', x: player.x + player.facing * anchor.launch, lane: player.lane, height: launchHeight, vx: player.facing * speed, laneV: (targetLane - player.lane) / travel, vz: (targetHeight - launchHeight + 260 * travel * travel) / travel, life: 1.35, max: 1.35, hit: false, trailAt: now, phase: Math.random() * Math.PI * 2, color: combatProfile.arrowColor, pierce: growth.pierce });
+      audio.bow();
+      return;
+    }
     if (rangedStyle === 'fan') {
       const ironFan = heroId === 'tieshangongzhu', fanColor = ironFan ? '#ff9a55' : heroId === 'wukong' ? '#8fe6a2' : heroId === 'luxun' ? '#a8d978' : '#9edfff';
       const speed = ironFan ? 1100 : 1040, launchHeight = anchor.height * .92, distance = target ? Math.max(180, Math.abs(target.x - player.x)) : 760, travel = distance / speed;
@@ -2738,6 +2755,15 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       const x = arrow.x - cameraX, y = floorY + arrow.lane - arrow.height, angle = Math.atan2(-arrow.vz, Math.abs(arrow.vx)), dir = Math.sign(arrow.vx);
       ctx.save(); ctx.translate(x, y); ctx.scale(dir, 1); ctx.rotate(angle); ctx.lineCap = 'round';
       ctx.globalCompositeOperation = 'lighter'; ctx.shadowColor = arrow.color; ctx.shadowBlur = 14;
+      if (arrow.kind === 'pellet') {
+        const radius = arrow.charged ? 10 : 7;
+        ctx.globalAlpha = .35; ctx.strokeStyle = arrow.color; ctx.lineWidth = radius;
+        ctx.beginPath(); ctx.moveTo(-62, 0); ctx.lineTo(-8, 0); ctx.stroke();
+        ctx.globalAlpha = 1; ctx.fillStyle = arrow.color;
+        ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(-2, -2, radius * .44, 0, Math.PI * 2); ctx.fill();
+        ctx.restore(); continue;
+      }
       if (arrow.kind === 'fan') {
         const gustPhase = now * .014 + arrow.phase;
         ctx.globalAlpha = .16; ctx.strokeStyle = arrow.color; ctx.lineWidth = 30; ctx.shadowBlur = 28;

@@ -89,7 +89,7 @@ test("all checked-in Sanguo PNG, OGG and WAV assets are best-effort background a
     .sort();
   const shellAssets = sw.OPTIONAL_SHELL.filter(asset => /^\.\/sanguo\/.*\.(?:png|ogg|wav)(?:[?#].*)?$/i.test(asset));
   const declared = [...new Set([...sw.SANGUO_RUNTIME_ASSETS, ...shellAssets])].sort();
-  assert.equal(expected.length, 173);
+  assert.equal(expected.length, 178);
   assert.deepEqual(declared, expected);
   assert.equal(new Set(sw.SANGUO_RUNTIME_ASSETS).size, sw.SANGUO_RUNTIME_ASSETS.length);
 });
@@ -114,9 +114,9 @@ test("all story episode mp3 files match the service worker fallback list", () =>
   }
 });
 
-test("cache generation v59 preserves exact v28 card assets and canonical navigation aliases", () => {
-  assert.equal(sw.CACHE_VERSION, "v59");
-  assert.match(sw.STATIC_CACHE, /^adventure-box-v59-/);
+test("cache generation v60 preserves exact v28 card assets and canonical navigation aliases", () => {
+  assert.equal(sw.CACHE_VERSION, "v60");
+  assert.match(sw.STATIC_CACHE, /^adventure-box-v60-/);
   const studioImages = fs.readdirSync(path.join(siteRoot, "princess/assets/studio-v3")).filter(name => /\.(webp|jpg)$/.test(name));
   assert.equal(studioImages.length, 95);
   for (const name of studioImages) assert.ok(sw.OPTIONAL_SHELL.includes("./princess/assets/studio-v3/" + name), name);

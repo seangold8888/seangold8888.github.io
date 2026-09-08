@@ -9,6 +9,7 @@ for(const name of representativeArt)layouts[name]=genericFrames;
 const genericEdgeBudget=Object.fromEntries(representativeArt.map(name=>[name,name==='xuchu-painted-sheet-v1.png'?210:60]));
 // X1 atlases use their actual dimensions (Ao Guang is not square).
 const xiyouArt=['nezha','nezha-bow','boss-hunshimowang','boss-aoguang','boss-baigujing'].map(n=>n+'-painted-sheet-v1.png');
+for(const n of ['erlangshen-hero','erlangshen-hero-bow','boss-yinjiao','boss-honghaier','boss-dapeng'])xiyouArt.push(n+'-painted-sheet-v1.png');
 for(const name of xiyouArt)if(!layouts[name])layouts[name]=null;
 (async()=>{
  const server=createServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));let browser;

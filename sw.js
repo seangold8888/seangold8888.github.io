@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v59";
+const CACHE_VERSION = "v60";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -289,6 +289,11 @@ const SANGUO_RUNTIME_ASSETS = [
   "./sanguo/art/side-scroller/boss-baigujing-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/nezha-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/nezha-bow-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/erlangshen-hero-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/erlangshen-hero-bow-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/boss-yinjiao-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/boss-honghaier-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/boss-dapeng-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/boss-xiahoudun-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/boss-zhangjiao-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/caocao-painted-sheet-v1.png",

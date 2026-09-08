@@ -19,6 +19,7 @@ const marker='  function loop(now) {';
 assert.ok(source.includes(marker));
 const instrumented=source.replace(marker,hook+marker).replace('function loop(now) {','function loop(now) { return;');
 const representativeCases=[
+ ['erlangshen','heavenpalace'],['erlangshen','shituoling'],
  ['zhaoyun','changban'],['caocao','guandu'],['machao','dongguan'],['huangzhong','dingjunshan'],
  ['xiahoudun','trilands'],['zhangliao','trilands'],['xuchu','trilands'],['simayi','trilands'],
  ['sunquan','trilands'],['taishici','trilands'],['ganning','trilands'],['luxun','trilands'],
@@ -27,7 +28,7 @@ const representativeCases=[
  ['nezha','heavenpalace'],['wukong','donghai'],['wukong','flamemountain'],
  ['wukong','lianhuadong'],['wukong','huoyundong'],['wusong','liangshan'],['linchong','snowshrine'],
 ];
-const rangedHeroes=new Set(['huangzhong','xiahoudun','zhangliao','xuchu','simayi','sunquan','taishici','ganning','luxun','nezha']);
+const rangedHeroes=new Set(['huangzhong','xiahoudun','zhangliao','xuchu','simayi','sunquan','taishici','ganning','luxun','nezha','erlangshen']);
 (async()=>{
  const server=createServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));let browser;
  try{
