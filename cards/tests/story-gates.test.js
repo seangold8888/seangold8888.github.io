@@ -28,7 +28,11 @@ const PLAYABLE_CARD_IDS = [
   "wolf",
   "medusa",
   "midas",
-  "tiger"
+  "tiger",
+  "zeus",
+  "poseidon",
+  "hades",
+  "apollo"
 ];
 
 function loadStoryGates() {
@@ -50,7 +54,7 @@ test("exports one story gate for every playable card", function () {
     function (question) { return question.cardId; }
   ).sort();
 
-  assert.ok(gates.all.length >= 24 * 5, "카드당 5문항 이상이어야 한다");
+  assert.ok(gates.all.length >= 28 * 5, "카드당 5문항 이상이어야 한다");
   assert.equal(
     new Set(Array.from(gates.all, function (question) {
       return question.id;

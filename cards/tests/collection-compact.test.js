@@ -59,9 +59,9 @@ function loadCardView() {
   return sandbox.window.CardView;
 }
 
-test("24장 모두 공격력·방어력·정신력 1~5 별점을 가진다", () => {
-  assert.equal(data.cards.length, 24);
-  assert.equal(data.collection.length, 24);
+test("G1 28장 모두 공격력·방어력·정신력 1~5 별점을 가진다", () => {
+  assert.equal(data.cards.length, 28);
+  assert.equal(data.collection.length, 28);
   data.cards.forEach((card) => {
     assert.deepEqual(Object.keys(card.stats).sort(), ["attack", "defense", "spirit"]);
     Object.values(card.stats).forEach((value) => {
@@ -144,12 +144,12 @@ test("열린 카드는 상세에서만 출전 선택하고 잠긴 카드는 기�
   assert.match(app, /origin && origin\.isConnected[\s\S]*?origin\.focus/);
 });
 
-test("양쪽 전투 카드가 같은 3줄 별점 렌더러를 사용하고 카드 자산은 v26이다", () => {
+test("양쪽 전투 카드가 같은 3줄 별점 렌더러를 사용하고 카드 자산은 v28이다", () => {
   assert.match(app, /syncBattleCard\(dom\.playerCardSlot/);
   assert.match(app, /syncBattleCard\(dom\.enemyCardSlot/);
   assert.match(app, /CardView\.create\(side\.card, \{[\s\S]*?compact: true/);
   assert.match(viewSource, /else if \(options\.compact\) \{[\s\S]*?crown, stats, art/);
-  assert.equal((html.match(/\?v=27/g) || []).length, 7);
+  assert.equal((html.match(/\?v=28/g) || []).length, 7);
   assert.doesNotMatch(html, /\?v=(?:25|26)/);
-  assert.equal((sw.match(/\.\/cards\/[^"\n]+\?v=27/g) || []).length, 7);
+  assert.equal((sw.match(/\.\/cards\/[^"\n]+\?v=28/g) || []).length, 7);
 });

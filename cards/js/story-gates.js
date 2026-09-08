@@ -26,7 +26,11 @@
     bremen: "bremen",
     witch: "witch",
     beanstalkgiant: "jack_story",
-    sunwukong: "sunwukong"
+    sunwukong: "sunwukong",
+    zeus: "heracles",
+    poseidon: "odyssey_cyclops",
+    hades: "heracles",
+    apollo: "midas"
   });
 
   function question(id, cardId, prompt, choices, correctChoiceId, refs) {
@@ -607,6 +611,26 @@
       [["mountain", "산 아래 오백 년 동안 갇혔어요"], ["jail", "감옥에서 하루를 보냈어요"], ["nothing", "아무 벌도 받지 않았어요"]], "mountain",
       ["audio: sunwukong 오행산"])
   ];
+
+  // G1: 기존 검수 문항을 재사용한다. 새 음원을 검증한 것처럼 출처를 만들지 않는다.
+  // 문항 id와 최근 출제 기록은 카드별로 독립; 복수 해금 카드는 첫 이야기에서 출제.
+  const greekQuestionSources = {
+    zeus: ["heracles-twelve-labors", "heracles-torch-helper", "heracles-stable-river", "heracles-sky-giant", "heracles-labor-count"],
+    poseidon: ["polyphemus-father", "polyphemus-sheep", "polyphemus-eye-count", "polyphemus-door", "odysseus-cyclops-name"],
+    hades: ["heracles-twelve-labors", "heracles-hydra-heads", "heracles-torch-helper", "heracles-stable-river", "heracles-labor-count"],
+    apollo: ["midas-golden-touch", "midas-spirit", "midas-daughter", "midas-river", "midas-first-gold"]
+  };
+  Object.keys(greekQuestionSources).forEach(function (cardId) {
+    greekQuestionSources[cardId].forEach(function (sourceId) {
+      const original = all.find(function (item) { return item.id === sourceId; });
+      if (!original || original.storyId !== cardStories[cardId]) {
+        throw new Error("G1 question story mismatch: " + sourceId);
+      }
+      all.push(question(cardId + "-" + sourceId, cardId, original.prompt,
+        original.choices.map(function (choice) { return [choice.id, choice.text]; }),
+        original.correctChoiceId, ["cards/js/story-gates.js#" + sourceId]));
+    });
+  });
 
   function deepFreeze(value) {
     if (!value || typeof value !== "object" || Object.isFrozen(value)) {

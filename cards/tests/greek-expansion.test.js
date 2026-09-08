@@ -1,0 +1,165 @@
+"use strict";
+const test = require("node:test");
+const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
+const vm = require("node:vm");
+const crypto = require("node:crypto");
+const Engine = require("../js/engine.js");
+const root = path.join(__dirname, "..");
+const data = JSON.parse(fs.readFileSync(path.join(root, "cards.json"), "utf8"));
+const ids = ["zeus", "poseidon", "hades", "apollo"];
+const get = id => data.cards.find(card => card.id === id);
+function appRuntime(hostname = "seangold8888.github.io", search = "") {
+  const store = new Map();
+  const dom = Object.fromEntries(["lockedArt", "lockedTitle", "lockedDescription", "lockedDialog"].map(id => [id, {style: {}, textContent: "", showModal() { this.open = true; }}]));
+  const sandbox = {window: {CardEngine: Engine, CardView: {artPosition: {}}}, document: {addEventListener() {}, getElementById(id) { return dom[id]; }}, location: {hostname, search}, URLSearchParams, localStorage: {getItem(key) { return store.get(key) || null; }}};
+  const source = fs.readFileSync(path.join(root, "js/app.js"), "utf8").replace('document.addEventListener("DOMContentLoaded", init);', 'window.GreekQa = {isUnlocked, unlockStoryLabel, openLockedDialog, cacheDom, getUnlockSnapshot, setCards(value) { cards = value; }};');
+  vm.runInNewContext(source, sandbox);
+  const api = sandbox.window.GreekQa;
+  api.cacheDom(); api.setCards(data.cards);
+  return {api, store, dom, sandbox};
+}
+function gatesRuntime() {
+  const sandbox = {window: {}};
+  vm.runInNewContext(fs.readFileSync(path.join(root, "js/story-gates.js"), "utf8"), sandbox);
+  return sandbox.window.CardStoryGates;
+}
+test("G1 adds exactly four magic cards, preserving every original card byte-for-byte as JSON data", () => {
+  assert.equal(data.cards.length, 28);
+  assert.deepEqual(data.collection.slice(-4), ids);
+  assert.equal(new Set(data.collection).size, 28);
+  const old = data.cards.filter(card => !ids.includes(card.id));
+  assert.equal(old.length, 24);
+  assert.equal(crypto.createHash("sha256").update(JSON.stringify(old)).digest("hex"), "88c6913741d59ffea6b2631e6ddf047539557d1536a090b01de265ce38f733a7");
+  assert.deepEqual(data.cards.reduce((counts, card) => { counts[card.type] = (counts[card.type] || 0) + 1; return counts; }, {}), {brave: 6, wise: 6, magic: 10, monster: 6});
+  for (const id of ids) {
+    const card = get(id);
+    assert.equal(Engine.isBattleCard(card), true, id);
+    assert.equal(card.type, "magic");
+    assert.ok(!["coin_evade", "heal_40"].includes(card.passive?.fx));
+    for (const attack of card.attacks) {
+      assert.equal(attack.dmg % 10, 0);
+      assert.notEqual(attack.fx, "heal_40");
+      if (attack.fx === "skip_next_enemy") assert.ok(attack.dmg > 0);
+    }
+    const max = Math.max(...card.attacks.map(a => a.dmg));
+    const attack = (max <= 20 ? 1 : max === 30 ? 2 : max === 40 ? 3 : max <= 60 ? 4 : 5) + (card.passive?.fx === "boost_20_below_half" ? 1 : 0);
+    const defense = (card.hp <= 40 ? 1 : card.hp <= 60 ? 2 : card.hp === 70 ? 3 : card.hp <= 100 ? 4 : 5) + (["reduce_dmg_10", "first_hit_zero"].includes(card.passive?.fx) ? 1 : 0);
+    const spirit = 2 + card.attacks.filter(a => ["steal_star_1", "weaken_next_20"].includes(a.fx)).length;
+    assert.deepEqual(card.stats, {attack: Math.min(5, attack), defense: Math.min(5, defense), spirit: Math.min(5, spirit)});
+  }
+});
+test("all 16 completion combinations honor AND unlocks, not OR, without changing saved progress", () => {
+  const {api, store} = appRuntime();
+  const stories = ["heracles", "perseus", "odyssey_cyclops", "midas"];
+  for (let mask = 0; mask < 16; mask++) {
+    store.clear();
+    stories.forEach((story, index) => { if (mask & (1 << index)) store.set("story_done_" + story, "1"); });
+    const before = [...store];
+    assert.equal(api.isUnlocked(get("zeus")), (mask & 3) === 3);
+    assert.equal(api.isUnlocked(get("hades")), (mask & 5) === 5);
+    assert.equal(api.isUnlocked(get("poseidon")), !!(mask & 4));
+    assert.equal(api.isUnlocked(get("apollo")), !!(mask & 8));
+    assert.equal(api.isUnlocked(get("redhood")), true);
+    assert.equal(api.isUnlocked(get("heracles")), !!(mask & 1));
+    assert.deepEqual([...store], before);
+  }
+  store.clear(); store.set("story_done_heracles", "true"); store.set("story_done_perseus", "1");
+  assert.equal(api.isUnlocked(get("zeus")), false, "only the existing exact value 1 counts");
+});
+test("local preview can unlock G1, but a public preview query cannot bypass listening", () => {
+  for (const id of ids) {
+    assert.equal(appRuntime("127.0.0.1", "?preview=all").api.isUnlocked(get(id)), true);
+    assert.equal(appRuntime("seangold8888.github.io", "?preview=all").api.isUnlocked(get(id)), false);
+  }
+  const {api, sandbox} = appRuntime();
+  sandbox.localStorage.getItem = () => { throw Error("storage unavailable"); };
+  assert.equal(api.isUnlocked(get("zeus")), false);
+  assert.equal(api.isUnlocked(get("redhood")), true);
+});
+test("locked dialog names every required story and refresh snapshot sees the final completion", () => {
+  const {api, store, dom} = appRuntime();
+  api.openLockedDialog(get("zeus"));
+  assert.equal(dom.lockedDialog.open, true);
+  assert.match(dom.lockedDescription.textContent, /영웅 헤라클레스/);
+  assert.match(dom.lockedDescription.textContent, /페르세우스와 메두사/);
+  assert.match(dom.lockedDescription.textContent, /모두 끝까지/);
+  api.openLockedDialog(get("hades"));
+  assert.match(dom.lockedDescription.textContent, /영웅 헤라클레스/);
+  assert.match(dom.lockedDescription.textContent, /오디세이 1화/);
+  api.openLockedDialog(get("apollo"));
+  assert.match(dom.lockedDescription.textContent, /미다스 왕의 황금 손/);
+  assert.doesNotMatch(dom.lockedDescription.textContent, /모두/);
+  assert.equal(api.unlockStoryLabel({unlockAll: ["heracles", "perseus", "midas"]}).split(", ").length, 3);
+  store.set("story_done_heracles", "1");
+  const before = api.getUnlockSnapshot();
+  store.set("story_done_perseus", "1");
+  assert.notEqual(api.getUnlockSnapshot(), before);
+  assert.match(api.getUnlockSnapshot(), /zeus:1/);
+});
+test("G1 has 20 independent questions, all traceable to the accepted matching-story bank", () => {
+  const gates = gatesRuntime();
+  for (const id of ids) {
+    const card = get(id);
+    assert.equal(gates.countForCard(id), 5);
+    assert.equal(gates.storyIdForCard(id), card.unlockAll ? card.unlockAll[0] : card.unlock);
+    for (const question of gates.all.filter(q => q.cardId === id)) {
+      const ref = question.source.refs[0];
+      assert.match(ref, /^cards\/js\/story-gates.js#/);
+      const source = gates.all.find(q => q.id === ref.split("#")[1]);
+      assert.ok(source);
+      assert.equal(source.storyId, question.storyId);
+      assert.equal(source.prompt, question.prompt);
+      assert.equal(source.correctChoiceId, question.correctChoiceId);
+      assert.notStrictEqual(source.choices, question.choices);
+      assert.notEqual(source.id, question.id);
+    }
+  }
+});
+test("Zeus saves for a large attack against recovery only when the waiting turns are survivable", () => {
+  const make = () => {
+    const state = Engine.createGame(get("zeus"), get("fairygodmother"));
+    state.sides.enemy.hp = 70;
+    return state;
+  };
+  const healthy = make();
+  assert.deepEqual(Engine.chooseAiAction(healthy, () => 0.49), {type: "rest"});
+  const fragile = make(); fragile.sides.player.hp = 10;
+  assert.notDeepEqual(Engine.chooseAiAction(fragile, () => 0.49), {type: "rest"});
+  const ordinary = Engine.createGame(get("zeus"), get("apollo"));
+  assert.deepEqual(Engine.chooseAiAction(ordinary, () => 0.49), {type: "attack", attackIndex: 0});
+});
+
+
+test("the four gods vs Greek heroes finish in 480 seeded, alternating-first-player AI matches", () => {
+  let matches = 0;
+  for (const id of ids) {
+    for (const heroId of ["heracles", "perseus", "odysseus"]) {
+      for (let seed = 1; seed <= 20; seed++) {
+        for (const godFirst of [true, false]) {
+          let value = seed;
+          const rng = () => { value = (Math.imul(value, 1664525) + 1013904223) >>> 0; return value / 4294967296; };
+          let state = Engine.createGame(get(godFirst ? id : heroId), get(godFirst ? heroId : id));
+          let actions = 0;
+          while (!state.winner && actions < 120) {
+            state = Engine.performAction(state, Engine.chooseAiAction(state, rng) || {type: "rest"}, rng);
+            assert.equal(state.events.some(event => event.type === "invalid_action"), false);
+            actions++;
+          }
+          assert.ok(state.winner, id + " vs " + heroId + " seed " + seed);
+          matches++;
+        }
+      }
+    }
+  }
+  assert.equal(matches, 480);
+});
+
+test("G1 28장의 PNG·WebP 56개 배포 원화는 검증된 매니페스트와 일치한다", () => {
+  const files = data.collection.flatMap(id => [id + ".png", id + ".webp"]).sort();
+  const sha = value => crypto.createHash("sha256").update(value).digest("hex");
+  const manifest = files.map(name => name + ":" + sha(fs.readFileSync(path.join(root, "art", name)))).join("\n");
+  assert.equal(files.length, 56);
+  assert.equal(sha(manifest), "31d27832c5eda556ec7011287920127f54c360d86f7a5375f60d1bae9f93ee5c");
+});

@@ -38,7 +38,11 @@
     beanstalkgiant: "50% 40%",
     medusa: "50% 40%",
     midas: "50% 40%",
-    tiger: "50% 40%"
+    tiger: "50% 40%",
+    zeus: "50% 10%",
+    poseidon: "50% 0%",
+    hades: "50% 12%",
+    apollo: "50% 15%"
   };
 
   function el(tag, className, text) {

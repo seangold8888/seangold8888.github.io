@@ -163,7 +163,7 @@ test("이야기 조각 데이터는 9종 효과·완청 키·초기 3장 풀 계
   );
 });
 
-test("손패 UI와 캐시 버전 26이 함께 배포되도록 묶여 있다", () => {
+test("손패 UI와 캐시 버전 28이 함께 배포되도록 묶여 있다", () => {
   const html = read("index.html");
   const css = read("styles.css");
   const app = read(path.join("js", "app.js"));
@@ -171,9 +171,9 @@ test("손패 UI와 캐시 버전 26이 함께 배포되도록 묶여 있다", ()
   ["fragmentTray", "fragmentHand", "fragmentPreview"].forEach((id) => {
     assert.match(html, new RegExp('id="' + id + '"'));
   });
-  assert.match(html, /styles\.css\?v=27/);
+  assert.match(html, /styles\.css\?v=28/);
   ["engine", "audio", "card-view", "vfx-recipes", "story-gates", "app"].forEach((file) => {
-    assert.match(html, new RegExp("js/" + file + "\\.js\\?v=27"));
+    assert.match(html, new RegExp("js/" + file + "\\.js\\?v=28"));
   });
   assert.doesNotMatch(html, /\?v=(?:19|20|21|22|23|24|25|26)/);
 
@@ -558,7 +558,7 @@ test("miss·evade는 충돌음을 만들지 않고 날아가는 시작음만 낸
   });
 });
 
-test("51개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가진다", () => {
+test("G1 60개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가진다", () => {
   const data = JSON.parse(read("cards.json"));
   const attacks = data.cards.flatMap((card) =>
     card.attacks.map((attack) => ({
@@ -572,7 +572,7 @@ test("51개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가진다", () => {
   const materialCounts = {};
   const signatures = new Set();
 
-  assert.equal(attacks.length, 51);
+  assert.equal(attacks.length, 60);
   attacks.forEach(({ card, cardType, attack }) => {
     assert.ok(attack.vfx, card + " / " + attack.name);
     assert.ok(attack.vfx.emoji, card + " / " + attack.name);
@@ -605,30 +605,30 @@ test("51개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가진다", () => {
     materialCounts[soundPlan.material] = (materialCounts[soundPlan.material] || 0) + 1;
     assert.ok(["brave", "wise", "magic", "monster"].includes(soundPlan.type));
   });
-  assert.equal(signatures.size, 51, "51개 기술은 각각 고유한 안정 음색 서명을 가져야 한다");
+  assert.equal(signatures.size, 60, "60개 기술은 각각 고유한 안정 음색 서명을 가져야 한다");
   assert.deepEqual(materialCounts, {
     body: 8,
     fire: 3,
-    air: 10,
-    wood: 3,
+    air: 11,
+    wood: 4,
     metal: 8,
     stone: 4,
     paper: 2,
     hollow: 3,
     glass: 2,
-    crystal: 6,
+    crystal: 13,
     earth: 2
   });
 
   assert.deepEqual(counts, {
-    strike: 15,
-    burst: 9,
-    debuff: 8,
-    projectile: 9,
+    strike: 16,
+    burst: 13,
+    debuff: 10,
+    projectile: 11,
     aura: 4,
     summon: 6
   });
-  assert.equal(attacks.filter(({ attack }) => attack.vfx.big).length, 15);
+  assert.equal(attacks.filter(({ attack }) => attack.vfx.big).length, 18);
 
   const redhood = data.cards.find((card) => card.id === "redhood");
   assert.deepEqual(redhood.attacks[0].vfx, {

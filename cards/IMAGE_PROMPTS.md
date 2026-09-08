@@ -40,6 +40,10 @@ Constraints: original public-domain interpretation; character and scene art only
 - `midas.png`: 난감한 미다스 왕이 황금으로 변한 오른손과 정확히 절반만 금이 된 붉은 사과를 번갈아 바라본다.
 - `tiger.png`: 조선 민화의 익살을 입체적인 별빛 서사화로 재해석한 호랑이. 떡 하나를 물고 초승달 아래 까치를 올려다보며 낙관·한자는 넣지 않는다.
 
+- `zeus.png`: 은발의 온화한 하늘 왕이 남색·상아색 로브를 입고 금빛 번개를 다스린다. 몸을 충분히 가리고 슈퍼히어로·특정 영화 디자인은 배제.
+- `poseidon.png`: 청록색 로브를 입은 바다 왕이 세 갈래 청동 삼지창을 잡고 거대한 청록 파도를 이끈다. 상체 노출·물고기 꼬리 없이 또렷한 얼굴과 창끝.
+- `hades.png`: 차분한 눈빛과 자주색 로브의 저승 왕이 투명한 빛으로 흩어지는 청동 투구를 든다. 고요한 강과 희미한 빛, 해골·뼈·불꽃 머리·공포 표정 없음.
+- `apollo.png`: 젊고 밝은 태양신이 호박색 튜닉과 망토를 입고 황금 리라를 연주한다. 어깨 옆에 별개의 활을 두고, 따뜻한 새벽빛으로 얼굴과 악기를 강조.
 ## 카드 크롭
 
 | id | object-position |
@@ -68,7 +72,51 @@ Constraints: original public-domain interpretation; character and scene art only
 | medusa | `50% 40%` |
 | midas | `50% 40%` |
 | tiger | `50% 40%` |
+| zeus | `50% 10%` |
+| poseidon | `50% 0%` |
+| hades | `50% 12%` |
+| apollo | `50% 15%` |
 
 두 번째 묶음(요정 대모·빨간 모자·잭)은 첫 묶음(신데렐라·오디세우스·폴리페모스)을 스타일·조명·재질 참고 이미지로 사용했고, 인물과 구도는 복제하지 않도록 명시했다. 6단계 전 검수에서 신데렐라와 폴리페모스는 위 장면으로 새로 생성해 PNG·WebP를 모두 교체했다.
 
 2026-08-30 확장에서는 Codex 내장 ImageGen으로 누락 18장을 카드별 1회 생성하고, 아기돼지 삼형제는 소품 배분만 정밀 편집했다. 피노키오의 코 길이·참새 착지 편집은 출력 안전 필터가 반복 차단해, 동일 화풍의 안전한 목각 인형+비행 중 참새 원화를 최종 선택했다. 전체 24장은 PNG·WebP 1024×1536 RGB이며 실제 5:4 카드 프레임에서 위 크롭 값으로 검수했다.
+
+## 그리스 G1 최종 프롬프트 (2026-09-08)
+
+Codex 내장 ImageGen으로 카드마다 별도 생성. 기존 헤라클레스·페르세우스의 메모리 썸네일 두 장을 화풍 참조로 사용했으며, 기존 24장은 수정하지 않았다. 아래 네 원본은 1024×1536 RGB PNG이고 같은 그림을 WebP 품질 90으로 인코딩했다. 각 카드의 5:4 미리보기 크롭을 위 좌표로 확인했다.
+
+### zeus
+
+- 원본: `art/zeus.png`
+- 게임용: `art/zeus.webp`
+
+```text
+Use case: stylized-concept. Asset type: premium collectible card-game character art only. Make a NEW original vertical 1024x1536 RGB portrait painting. Input images 1 and 2 are STYLE references ONLY: match their richly layered hand-painted cinematic storybook fantasy paint, convincing classical fabric/bronze/stone textures, sculpted warm light, deep indigo atmosphere, natural expressive faces. Do not copy either reference character or composition. Character fills 65-80% of height with expressive face in upper third; face, action and key prop in central 72%, instantly readable when cropped to a landscape 5:4 card image focused at 50% 40%. Strong foreground/middle/background depth, restrained softly painted environment. Appropriate for ages 5-8. Fully clothed costume covering torso. No text, letters, numerals, frame, border, UI, icons, decorative star symbols or constellation symbols, logos or watermark. No blood, wounds, gore, skulls, exposed bones, horror, nudity. No existing movie/game/brand or artist imitation. Subject: ZEUS, a dignified kindly older storm king with thick silver curls and a neatly flowing silver beard, intelligent warm eyes, distinctive square face. He stands in a strong broad triangular silhouette on an Olympian cloud terrace, calmly guiding a single controlled branching spear of golden lightning across his raised right hand. His composed smiling face, hand and lightning are close enough to read clearly in the upper central image. Rich midnight-blue long-sleeved tunic and ivory/gold fully draped layered robes with fine woven edges and a modest bronze-gold laurel circlet. Wind catches one substantial robe fold. Distant marble columns dissolve into blue-violet clouds below a midnight sky with tiny natural pinprick starlight, warm champagne lightning illuminates beard and fabric. Generous gold/ivory against deepest sapphire-indigo. A benevolent sky ruler, no rage or threatening victim. NO hammer, superhero suit, winged helmet, red superhero cape, Thor likeness, Disney Hercules likeness. Use the two displayed in-memory painting thumbnails as style reference inputs.
+```
+
+### poseidon
+
+- 원본: `art/poseidon.png`
+- 게임용: `art/poseidon.webp`
+
+```text
+Use case: stylized-concept. Asset type: premium collectible card-game character art only. Make a NEW original vertical 1024x1536 RGB portrait painting. Input images 1 and 2 are STYLE references ONLY: match their richly layered hand-painted cinematic storybook fantasy paint, convincing classical fabric/bronze/stone textures, sculpted warm light, deep indigo atmosphere, natural expressive faces. Do not copy either reference character or composition. Character fills 65-80% of height with expressive face in upper third; face, action and key prop in central 72%, instantly readable when cropped to a landscape 5:4 card image focused at 50% 40%. Strong foreground/middle/background depth, restrained softly painted environment. Appropriate for ages 5-8. Fully clothed costume covering torso. No text, letters, numerals, frame, border, UI, icons, decorative star symbols or constellation symbols, logos or watermark. No blood, wounds, gore, skulls, exposed bones, horror, nudity. No existing movie/game/brand or artist imitation. Subject: POSEIDON, a warm but formidable mature sea king with windswept dark wavy hair silvered at the temples and a short dark-silver beard, olive skin, bright watchful eyes, clearly unlike Zeus. One tall elegantly simple bronze trident with exactly THREE prongs is held upright close beside his shoulder with all three prongs at face-height in the central image. His other open palm sweeps outward to command a single magnificent turquoise ocean wave curling behind and around his covered body. Strong angled pose braced against a coastal stone ledge; long seafoam teal tunic, bronze scale-pattern shoulder mantle, layered deep teal cloak, fully covered torso, practical bracers. Luminous aquamarine water foam and salt spray, midnight indigo sea and faint classical port in the distance, warm amber rim light on face and bronze. One distinctive diagonal wave and one clear trident silhouette, no crowd. Friendly confidence, not angry or frightening. NO shirtless body, no fish tail, no Aquaman suit/likeness, no Disney Triton likeness. Use the two most recently displayed in-memory paintings as style references only.
+```
+
+### hades
+
+- 원본: `art/hades.png`
+- 게임용: `art/hades.webp`
+
+```text
+Use case: stylized-concept. Asset type: premium collectible card-game character art only. Make a NEW original vertical 1024x1536 RGB portrait painting. Input images 1 and 2 are STYLE references ONLY: match their richly layered hand-painted cinematic storybook fantasy paint, convincing classical fabric/bronze/stone textures, sculpted warm light, deep indigo atmosphere, natural expressive faces. Do not copy either reference character or composition. Character fills 65-80% of height with expressive face in upper third; face, action and key prop in central 72%, instantly readable when cropped to a landscape 5:4 card image focused at 50% 40%. Strong foreground/middle/background depth, restrained softly painted environment. Appropriate for ages 5-8. Fully clothed costume covering torso. No text, letters, numerals, frame, border, UI, icons, decorative star symbols or constellation symbols, logos or watermark. No blood, wounds, gore, skulls, exposed bones, horror, nudity. No existing movie/game/brand or artist imitation. Subject: HADES, a dignified quiet ruler and thoughtful guardian of the peaceful underworld, a slender middle-aged man with a long narrow thoughtful face, straight raven-black hair swept behind the ears, neatly trimmed black beard and gentle intelligent dark eyes. Completely distinct from Zeus and Poseidon's broad faces. He stands calmly on a shadowed riverside marble landing, wrapped in refined long plum and indigo robes that completely cover his torso and arms; subtle old-gold geometric woven trim, no symbols or lettering. He holds an elegant plain dark bronze invisibility helm at chest height; its upper edge softly dissolves into translucent violet-blue light, one clearly readable prop. His other hand gently guides a pale turquoise ghostly river current spiraling peacefully before him; soft candlelike amber lights reflect on his fingertips. A quiet celestial cavern with a deep indigo luminous river and distant blurred classical arches, thin mist without ghost faces or bodies. Plum-amethyst shadows, a lavender-silver river glow and narrow champagne-gold edge light, calm protective mood suitable for small children. NO villain expression, no scowl, no demonic features, no skulls, no bones, no fire hair, no black spiked armor, no horror, no crowds. Use the two most recently displayed in-memory paintings as style references only.
+```
+
+### apollo
+
+- 원본: `art/apollo.png`
+- 게임용: `art/apollo.webp`
+
+```text
+Use case: stylized-concept. Asset type: premium collectible card-game character art only. Make a NEW original vertical 1024x1536 RGB portrait painting. Input images 1 and 2 are STYLE references ONLY: match their richly layered hand-painted cinematic storybook fantasy paint, convincing classical fabric/bronze/stone textures, sculpted warm light, deep indigo atmosphere, natural expressive faces. Do not copy either reference character or composition. Character fills 65-80% of height with expressive face in upper third; face, action and key prop in central 72%, instantly readable when cropped to a landscape 5:4 card image focused at 50% 40%. Strong foreground/middle/background depth, restrained softly painted environment. Appropriate for ages 5-8. Fully clothed costume covering torso. No text, letters, numerals, frame, border, UI, icons, decorative star symbols or constellation symbols, logos or watermark. No blood, wounds, gore, skulls, exposed bones, horror, nudity. No existing movie/game/brand or artist imitation. Subject: APOLLO, a youthful radiant sun archer and musician, a friendly clean-shaven young adult man with short tousled honey-brown curls and a narrow warm smiling face, bright clear eyes. His graceful lithe silhouette and amber/terracotta palette must distinguish him from older broad kings. Standing on a classical terrace at the moment the first solar radiance breaks through an indigo sky. Completely clothed in a finely woven long-sleeved amber tunic, deep rust-ochre cloak, bronze-gold belt and modest gold laurel. He gently holds a small golden lyre prominently at chest height with one hand poised on its strings, while ONE tall simple elegant golden bow is slung diagonally at the opposite shoulder, its outline clearly recognizable beside him without crossing the lyre or his face. Lyre and bow are both real distinct objects, NO hybrid instrument, NO extra hands. The face and lyre fill the upper central area. Warm solar amber light wraps around his curls and translucent cloak folds against rich deep indigo; soft misty marble columns and far-off dawn hills, subtle natural pinpricks in the retreating night. One lyrical rising arc of pure light, no musical note symbols. Calm joyful inspiration, no combat target, no weapon aiming at viewer. No nudity, no modern superhero costume or existing film likeness. Use the two most recently displayed in-memory paintings as style references only.
+```

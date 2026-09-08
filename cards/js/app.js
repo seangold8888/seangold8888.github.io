@@ -122,7 +122,18 @@
   }
 
   function isUnlocked(card) {
+    if (Array.isArray(card.unlockAll) && card.unlockAll.length) {
+      return card.unlockAll.every(isStoryDone);
+    }
     return !card.unlock || isStoryDone(card.unlock);
+  }
+
+  function unlockStoryLabel(card) {
+    const stories = Array.isArray(card.unlockAll) && card.unlockAll.length
+      ? card.unlockAll : [card.unlock];
+    return stories.map(function (id) {
+      return "「" + (STORY_NAMES[id] || "새로운 이야기") + "」";
+    }).join(stories.length === 2 ? "와 " : ", ");
   }
 
   function artUrl(card) {
@@ -282,13 +293,15 @@
   }
 
   function openLockedDialog(card) {
-    const storyName = STORY_NAMES[card.unlock] || "새로운 이야기";
+    const storyLabel = unlockStoryLabel(card);
+    const listening = Array.isArray(card.unlockAll) && card.unlockAll.length > 1
+      ? " 이야기를 모두 끝까지 들으면 " : " 이야기를 끝까지 들으면 ";
     dom.lockedArt.style.backgroundImage = 'linear-gradient(rgba(17,13,37,.22), rgba(17,13,37,.42)), url("' + artUrl(card) + '")';
     dom.lockedArt.style.backgroundPosition = window.CardView.artPosition[card.id] || "50% 40%";
     dom.lockedTitle.textContent = card.name + " 카드가 잠들어 있어요";
     dom.lockedDescription.textContent = isPlayableCard(card)
-      ? "「" + storyName + "」를 끝까지 들으면 이 영웅과 함께 대결할 수 있어요."
-      : "「" + storyName + "」를 끝까지 들으면 컬렉션에 깨어나요. 대전 기술은 다음 확장에서 준비됩니다.";
+      ? storyLabel + listening + "이 영웅과 함께 대결할 수 있어요."
+      : storyLabel + listening + "컬렉션에 깨어나요. 대전 기술은 다음 확장에서 준비됩니다.";
     dom.lockedDialog.showModal();
   }
 

@@ -1534,6 +1534,19 @@
       var bestFuture = future[0];
       var nowScore = bestNow ? bestNow.estimate.score : 0;
       var savingThreshold = nowScore * (bestFuture.waitTurns + 1);
+      // 회복 40에 작은 공격이 지워지는 매치업은 단순 피해/턴 비교로 교착된다.
+      // 회복을 넘는 큰 기술이 있고 저금 중 반격을 버틸 때만 준비한다.
+      var targetCanHeal = !wishExhausted(state, other(actor)) &&
+        target.card.attacks.some(function (attack) {
+          return attack.fx === "heal_40" && isAttackSupported(attack);
+        });
+      var breaksRecovery = targetCanHeal && bestNow &&
+        bestNow.estimate.damage > 0 && bestNow.estimate.damage <= 40 &&
+        bestFuture.candidate.estimate.damage > 40;
+      if (breaksRecovery && actorSide.hp >
+          estimateIncomingThreat(state, actor).rawDamage * bestFuture.waitTurns) {
+        return { type: "rest" };
+      }
       if (
         bestFuture.candidate.estimate.score > 0 &&
         bestFuture.candidate.estimate.score >= savingThreshold
