@@ -51,7 +51,16 @@
     });
   }
 
+  function renderParty() {
+    const E=window.PartyEngine;
+    if (!E || !storage.getItem(E.KEY)) return;
+    const party=E.load(storage), labels=["불빛","선물","풍선"];
+    const current=E.completed(party).filter(Boolean).length;
+    const detail=party.history.slice(-3).map(function(e){return labels[e.stage]+(e.help?" (함께 해요 사용)":"")+(e.mistakes?" · 다시 시도 "+e.mistakes+"회":"");}).join(" / ");
+    $("partyPracticeSummary").textContent="현재 파티 준비 "+current+"/3 · "+(party.stage===3?"완성한 파티에서 자유놀이 중":"준비 중")+" · 저장된 활동 "+party.history.length+"개"+(detail?" — 최근: "+detail:"");
+  }
   function render() {
+    renderParty();
     const L = C.levelById(state.level);
     $("sDays").textContent = Object.keys(state.stamps).length;
     const recent = state.history.slice(-3);

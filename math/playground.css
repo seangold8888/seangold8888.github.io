@@ -227,3 +227,7 @@ header.top .who {min-height:44px;display:flex;align-items:center;}
 @media(max-width:600px) {.drawing-cast {grid-template-columns:1fr;gap:18px;}.drawing-cast figure:last-child {max-width:240px;width:70%;margin:auto;}}
 
 .level-ladder:before,.level-ladder:after {min-width:614px;}
+
+/* Direct, ticket-free level 4 manipulative adventure. */
+.party-cta{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:10px 14px;margin:10px 0 2px;border-radius:15px;background:#b83f68;color:#fff;text-decoration:none;font-size:15px;box-shadow:0 3px 0 #89334f;line-height:1.35}
+.party-cta:hover{background:#9c3157}.party-cta:focus-visible{outline:3px solid #355eab;outline-offset:4px}

@@ -951,6 +951,11 @@
   .reading-actions button:focus-visible { outline:3px solid #66e3ff; outline-offset:3px; }
   #study .reading-actions button[hidden] { display:none; }
 </style>
+<style>
+.party-launch{display:grid;grid-template-columns:minmax(0,1fr) 230px;align-items:center;gap:20px;background:linear-gradient(120deg,#fff2e6,#f9e1e9);border:1px solid #f5d5cb;border-radius:26px;padding:24px 30px;margin:0 0 20px;color:#4f354b;text-decoration:none;overflow:hidden;box-shadow:0 12px 35px #0002}
+.party-launch:hover{filter:brightness(1.03)}.party-launch:focus-visible{outline:3px solid #66e3ff;outline-offset:4px}.party-launch small{color:#aa3e64;font-weight:800;letter-spacing:.03em}.party-launch h2{margin:6px 0;font-size:clamp(23px,3vw,32px);color:#4f354b}.party-launch p{margin:0;color:#735b6a;line-height:1.6}.party-launch strong{display:inline-block;background:#b83f68;color:white;border-radius:14px;padding:12px 18px;margin-top:14px}.party-launch img{width:100%;height:auto;object-fit:contain;mix-blend-mode:multiply}
+@media(max-width:600px){.party-launch{padding:20px;gap:8px;grid-template-columns:minmax(0,1fr) 90px}.party-launch h2{font-size:23px}.party-launch p{font-size:13px}.party-launch img{align-self:center}.party-launch small{font-size:11px}}
+</style>
 </head>
 <body>
 <canvas id="sky" aria-hidden="true"></canvas>
@@ -974,6 +979,10 @@
     </div>
   </header>
 
+  <a class="party-launch" id="partyAdventure" href="math/party/">
+    <div><small>재이에게 도착한 초대 · 티켓 없이 바로 놀기</small><h2>우리 가족 생일파티를 열자!</h2><p>반짝 불빛, 쿠키 선물, 둥실 풍선.<br>재이가 준비한 파티에서 가족과 신나게 놀자.</p><strong>내 파티 만들러 가기 →</strong></div>
+    <img src="math/assets/jaei-family-v4.webp" width="1024" height="683" alt="아빠, 태오, 재이, 엄마가 기다리는 생일파티">
+  </a>
   <section class="hero-grid" aria-label="오늘의 공부와 모험">
   <section id="study" aria-live="polite" aria-labelledby="studyTitle">
     <div class="study-welcome">
