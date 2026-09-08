@@ -3,6 +3,7 @@
 (function (root) {
   "use strict";
   const KEY = "math10_state";
+  const Learn = root.MathLearning || (typeof require !== "undefined" ? require("./learning.js") : null);
   const REVIEW_GAPS = [1, 3, 7, 14]; // stage 0..3 → 다음 출제까지 일수, 4 = 졸업
   const PROMOTE_ACC = 0.9, PROMOTE_STREAK = 2, DEMOTE_ACC = 0.6;
 
@@ -15,6 +16,7 @@
       planStart: today(), planEnd: "2027-01-29", planDays: 6, planFrom: 1,
       album: [], hearts: {}, chests: {}, buddy: null,
       school: "", grade: 1, placed: false, placement: null,
+      skills: {}, pending: null, garden: 0, wish: null, growthRewards: {},
       coins: 0, coinLog: [], owned: {}, avatar: null };
   }
   function clean(s) {
@@ -45,6 +47,12 @@
     out.coins = Math.max(0, Math.min(99999, parseInt(out.coins, 10) || 0));
     out.coinLog = Array.isArray(out.coinLog) ? out.coinLog.slice(-60) : [];
     out.owned = out.owned && typeof out.owned === "object" ? out.owned : {};
+    out.skills = out.skills && typeof out.skills === "object" && !Array.isArray(out.skills) ? out.skills : {};
+    Object.keys(out.skills).forEach(function(k) { out.skills[k] = Array.isArray(out.skills[k]) ? out.skills[k].filter(function(e) { return e && typeof e.date === "string" && typeof e.key === "string" && typeof e.ok === "boolean"; }).slice(-12) : []; });
+    out.pending = out.pending && Array.isArray(out.pending.problems) && out.pending.problems.length <= 40 && out.pending.problems.every(function(p) { return p && Number.isInteger(p.answer) && typeof p.text === "string" && typeof p.key === "string" && p.level >= 1 && p.level <= 12; }) && Number.isInteger(out.pending.index) && out.pending.index >= 0 && out.pending.index < out.pending.problems.length && Array.isArray(out.pending.results) && out.pending.results.length === out.pending.index ? out.pending : null;
+    out.garden = Math.max(0, Math.min(99999, parseInt(out.garden, 10) || 0));
+    out.growthRewards = out.growthRewards && typeof out.growthRewards === "object" ? out.growthRewards : {};
+    out.wish = typeof out.wish === "string" ? out.wish : null;
     out.avatar = out.avatar && typeof out.avatar === "object" && out.avatar.char ? out.avatar : null;
     return out;
   }
@@ -65,7 +73,8 @@
   // 한 문제 결과 반영. firstTry: 첫 답이 맞았나. ms: 첫 답까지 걸린 시간
   function recordAnswer(state, problem, firstTry, now) {
     const t = today(now);
-    const idx = state.wrong.findIndex(function (w) { return w.key === problem.key; });
+    Learn.record(state, problem, firstTry, t);
+    const idx = state.wrong.findIndex(function (w) { return w.key === (problem.reviewKey || problem.key); });
     if (firstTry) {
       if (idx >= 0) {
         const w = state.wrong[idx];
@@ -96,24 +105,23 @@
   }
 
   // 세션 종료: results = [{key, level, review, firstTry, ms}]
-  // opts.behind: 계획보다 뒤처졌으면 90% 한 번으로 승급. opts.cap: 계획 단계+1 을 넘지 않음.
+  // 개념별 독립 풀이를 서로 다른 날에 확인한 뒤 승급. 자동 강등 없음.
   function finishSession(state, results, now, opts) {
     opts = opts || {};
     const t = today(now);
-    const fresh = results.filter(function (r) { return !r.review; });
+    const fresh = results.filter(function (r) { return !r.review && r.level === state.level; });
     const firstTry = fresh.filter(function (r) { return r.firstTry; }).length;
     const acc = fresh.length ? firstTry / fresh.length : 0;
     const times = fresh.filter(function (r) { return r.firstTry && r.ms > 0; }).map(function (r) { return r.ms; });
-    const entry = { date: t, level: state.level, count: results.length, fresh: fresh.length, firstTry: firstTry, acc: Math.round(acc * 100), medianMs: Math.round(median(times) || 0), cv: stability(times), reviews: results.length - fresh.length, reviewOk: results.filter(function (r) { return r.review && r.firstTry; }).length };
+    const entry = { date: t, level: state.level, count: results.length, fresh: fresh.length, firstTry: firstTry, acc: Math.round(acc * 100), medianMs: Math.round(median(times) || 0), cv: stability(times), reviews: results.filter(function(r) { return r.review; }).length, reviewOk: results.filter(function (r) { return r.review && r.firstTry; }).length };
     state.history.push(entry);
     state.stamps[t] = (state.stamps[t] || 0) + 1;
     let change = 0;
-    if (fresh.length >= 6) {
-      const need = opts.behind ? 1 : PROMOTE_STREAK, cap = opts.cap ? Math.min(12, opts.cap) : 12;
-      if (acc >= PROMOTE_ACC) { state.streak += 1; if (state.streak >= need && state.level < cap) { state.level += 1; state.streak = 0; change = 1; } }
-      else if (acc < DEMOTE_ACC) { state.streak = 0; if (state.level > 1) { state.level -= 1; change = -1; } }
-      else state.streak = 0;
+    // Calendar plans never loosen mastery or cap a child who is ready.
+    if (fresh.length && Learn.ready(state, state.level) && state.level < 12) {
+      state.level++; state.streak = 0; change = 1;
     }
+    state.garden = (state.garden || 0) + results.length;
     entry.change = change;
     return entry;
   }

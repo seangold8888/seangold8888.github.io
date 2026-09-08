@@ -58,6 +58,16 @@
     $("sAcc").textContent = recent.length ? Math.round(recent.reduce(function (s, h) { return s + h.acc; }, 0) / recent.length) + "%" : "—";
     $("sLevel").textContent = L.id;
     renderPlan();
+    const skills=window.MathLearning.summary(state,state.level), mastered=skills.filter(function(x) { return x.mastered; });
+    $("learningNote").textContent=skills.length+"개 개념 중 "+mastered.length+"개를 다른 날에도 혼자 해결했어요. 정원에는 발견 "+(state.garden || 0)+"개가 쌓였어요.";
+    const skillList=$("skillList"); skillList.textContent="";
+    skills.forEach(function(skill) {
+      const cell=document.createElement("div");cell.className="skill-item"+(skill.mastered?" mastered":"");
+      const title=document.createElement("span");title.textContent=(skill.mastered?"✿ ":"✧ ")+skill.label;
+      const detail=document.createElement("small"); detail.textContent=skill.count ? "최근 독립 해결 "+skill.correct+"/"+skill.count+" · 성공한 날 "+skill.days+"일 · "+(skill.mastered?"다른 날에도 해냈어요":"더 살펴보는 중") : "아직 만나지 않은 개념";
+      cell.append(title,detail);skillList.appendChild(cell);
+    });
+    $("familyPlay").textContent=state.level <= 4 ? "오늘 함께할 놀이: 블록을 10개 놓고 일부를 가려 주세요. 보이는 수와 가려진 수를 어떻게 알았는지 들어 주세요." : state.level === 5 ? "오늘 함께할 놀이: 빨대를 10개씩 묶고 낱개를 더해 수를 만들어 보세요. 십과 일을 나눠 설명하는지 살펴보세요." : "오늘 함께할 놀이: 간식 가게를 열어 더하거나 남기는 상황을 만들어 보세요. 답을 구한 방법을 재이의 말로 들어 주세요.";
 
     const rows = $("levelRows"); rows.textContent = "";
     S.levelSummary(state).forEach(function (r) {
@@ -123,7 +133,7 @@
     state.name = $("name").value.trim();
     state.school = $("school").value.trim(); state.grade = parseInt($("grade").value, 10) || 1;
     const level = parseInt($("level").value, 10);
-    if (level !== state.level) { state.level = level; state.streak = 0; }
+    if (level !== state.level) { state.level = level; state.streak = 0; state.pending = null; }
     state.perSession = parseInt($("perSession").value, 10);
     state.visualPolicy = $("visualPolicy").value;
     state.sound = $("sound").value === "1";
@@ -167,7 +177,7 @@
   });
   $("replaceBtn").addEventListener("click", function () {
     if (!window.confirm("아이 화면을 열 때 실력 확인을 다시 할까요? (기록은 그대로)")) return;
-    state.placed = false; S.save(storage, state); render();
+    state.placed = false; state.pending = null; S.save(storage, state); render();
     $("replaceBtn").textContent = "다음에 아이 화면을 열면 실력 확인부터 해요";
   });
   $("heartToday").addEventListener("click", function () { state.hearts[S.today()] = true; S.save(storage, state); render(); });

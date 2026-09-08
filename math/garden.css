@@ -1,0 +1,128 @@
+/* A calm, tactile storybook garden. The maths stays high-contrast and uncluttered. */
+:root { --ink:#34334a; --muted:#706d84; --lav:#7564b8; --pink:#b36b88; --line:#e9e3ed; --shadow:0 8px 30px #45345f09; }
+body { background:#f6f3ee; background-image:radial-gradient(ellipse at 10% 0%,#e6e2f5 0,transparent 55%); }
+.sky { display:none; }
+.wrap { max-width:920px; padding:20px 24px 50px; }
+header.top { padding:4px 0 22px; gap:12px; }
+header.top h1 { font-size:23px; color:#48435d; text-shadow:none; letter-spacing:-.03em; }
+.brand-star { color:#b28c4c; margin-right:7px; }
+header.top .who { color:#726286; font-size:14px; background:#fff9; box-shadow:none; padding:7px 13px; white-space:nowrap; }
+h2,h3 { font-weight:400; }
+.garden-hero { position:relative; height:360px; border-radius:30px; overflow:hidden; background:#5b6294 url('assets/garden-hero.webp') center 62%/cover; box-shadow:0 14px 35px #45345f18; }
+.garden-hero:before { content:''; position:absolute; inset:0; background:linear-gradient(90deg,#2629519c,transparent 78%); }
+.hero-copy { position:relative; color:#fffdf2; padding:36px; max-width:470px; text-shadow:0 2px 12px #20284944; }
+.hero-kicker { font-size:14px; margin:0 0 14px; color:#f4e0b5; }
+.hero-copy h2 { font-size:39px; line-height:1.28; margin:0; letter-spacing:-.04em; max-width:300px; }
+.hero-copy p:last-child { font-size:16px; max-width:245px; line-height:1.6; margin-top:13px; }
+.garden-total { position:absolute; bottom:21px; left:28px; padding:8px 14px; border:1px solid #ffffff42; border-radius:99px; background:#24284155; backdrop-filter:blur(12px); color:#fff8df; font-size:13px; }
+.garden-total span { color:#ffe3a4; }
+.mission-panel { position:relative; margin:-12px 20px 0; background:#fffcf7; padding:24px 28px; border-radius:23px; border:1px solid #fff; box-shadow:0 8px 30px #45345f10; }
+.mission-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:17px; }
+.mission-heading h3 { margin:5px 0 0; font-size:25px; letter-spacing:-.03em; }
+.chapter-pill { font-size:12px; padding:7px 10px; border-radius:9px; background:#efebf6; color:#75638d; white-space:nowrap; }
+.start-actions { display:grid; grid-template-columns:1.6fr 1fr; gap:12px; margin-bottom:15px; }
+.btn { border-radius:15px; padding:15px 18px; background:linear-gradient(#8473c4,#7160ad); box-shadow:0 4px 0 #584885; font-size:19px; }
+.btn:active { box-shadow:0 1px 0 #584885; transform:translateY(3px); }
+.btn.big { animation:none; font-size:21px; padding:18px; }
+.btn.secondary { color:#6c5d88; background:#f1ebf4; box-shadow:0 4px 0 #ded4e5; }
+.btn.ghost { box-shadow:none; }
+.btn:focus-visible,button:focus-visible,a:focus-visible,select:focus-visible { outline:3px solid #367c99; outline-offset:4px; }
+.card { border:1px solid #ece7ee; border-radius:22px; box-shadow:var(--shadow); padding:22px; }
+.section-label { display:flex; justify-content:space-between; align-items:center; margin:27px 2px 14px; }
+.section-label h3 { font-size:20px; margin:0; }
+.section-label span { font-size:12px; color:var(--muted); }
+.garden-bed { display:flex; gap:14px; align-items:center; justify-content:center; min-height:80px; margin:16px 0 0; padding:13px 18px; border-bottom:1px solid #e1dce6; }
+.garden-bed .plot { display:flex; flex-direction:column; align-items:center; gap:4px; }
+.garden-bed .plot small { font-size:11px; color:#80758e; }
+.bloom { display:inline-block; width:38px; height:38px; border-radius:45% 55% 48% 52%; background:#ead2cf; position:relative; transform:rotate(-12deg); box-shadow:inset -5px -5px 9px #9d5f801c,0 3px 5px #8960840a; }
+.bloom:before { content:'✿'; position:absolute; inset:-6px 0 0; font-size:39px; color:#cb8093; text-align:center; }
+.bloom:after { content:''; position:absolute; width:9px; height:9px; border-radius:50%; background:#f7d798; left:15px; top:14px; }
+.bloom.closed { background:#e5e7df; transform:scale(.65); }
+.bloom.closed:before { color:#afbba1; }
+.bloom.closed:after { background:#d0d6c1; }
+.me { background:linear-gradient(115deg,#fff,#faf1ed); }
+.guide { background:#f0eef7; margin-top:14px; }
+.guide:before { display:none; }
+.guide-badge { animation:none; }
+.guide-badge svg { width:66px;height:66px;filter:none; }
+.speech { box-shadow:none; border:0; background:#ffffffa8; }
+.row.tight .card { margin-top:0; }
+.card.mini { display:grid; grid-template-columns:46px 1fr; gap:4px 10px; text-align:left; padding:18px; }
+.card.mini .ico,.card.mini .ico3d { grid-row:1 / 4; width:44px;height:44px;align-self:center;margin:0; }
+.card.mini b { font-size:24px; }
+.card.mini p { margin:0; }
+.buddies { max-width:420px; }
+.buddy { flex-direction:row; padding:9px 14px; border-width:2px; border-radius:16px; }
+.buddy svg { width:43px;height:43px; }
+.buddy.on { transform:none;box-shadow:none;border-color:#9d8abd;background:#f0eafa;color:#655181; }
+.learning-track { background:#fcfbf8; }
+.plan-text { color:var(--muted); }
+.track { overflow-x:auto; padding-bottom:14px; }
+.stop { flex-shrink:0; }
+#quiz,#capsule,#result,#showcard,#placed,#setup { max-width:620px; margin:auto; }
+.quiz-garden { position:relative; background:linear-gradient(90deg,#464777d9,#46477720),url('assets/garden-hero.webp') center 75%/cover; min-height:116px; color:#fff4dc; border-radius:22px; padding:22px; display:flex; justify-content:space-between; align-items:center; gap:16px; }
+.quiz-garden>span { max-width:220px; line-height:1.5; font-size:20px; }
+.quest-blooms { display:flex; gap:7px; }
+.quest-blooms .bloom { width:25px;height:25px; }
+.quest-blooms .bloom:before {font-size:29px;top:-6px; }
+.quest-blooms .bloom:after {width:7px;height:7px;left:10px;top:9px; }
+.count { color:#7a6b8e; font-size:14px; margin:18px 0 9px; }
+.progress { background:#e8e2ed; height:7px; margin-bottom:18px; }
+.progress i { background:linear-gradient(90deg,#b4a1d9,#8074b9); }
+.problem { font-size:40px; line-height:1.5; margin:12px 0; }
+.problem .word { font-size:25px; }
+.box { border-color:#d5cce5; border-radius:12px; background:#f8f5fc; }
+.visual { max-width:390px; margin:0 auto; }
+.visual svg { max-height:180px; }
+.feedback { min-height:26px; font-size:17px; }
+.keypad { gap:9px; max-width:400px; margin:16px auto 0; }
+.keypad button { min-height:58px; border-radius:14px; font-size:29px; box-shadow:0 3px 0 #e3dce9; background:#f5f1f8; color:#504561; }
+.keypad button.go { background:#8170b7;color:#fff;box-shadow:0 3px 0 #63518e; }
+.keypad button.back { background:#eaf0ec;color:#5b7669; }
+.help-actions { display:flex; gap:10px; justify-content:center; margin:12px 0; flex-wrap:wrap; }
+.help-btn { background:#f5f1e9; border:1px solid #e5dcc8; border-radius:99px; padding:10px 14px; font-size:14px; color:#76644b; min-height:42px; }
+.explain { color:#665879; background:#f3eff9; border-radius:12px; padding:14px; line-height:1.65; }
+.math-play { background:#f5f5ee; border-radius:17px; padding:16px; text-align:center; margin:12px 0; }
+.math-play p { margin:0 0 12px;font-size:15px;line-height:1.5; }
+.ten-frame { display:grid;grid-template-columns:repeat(5,1fr);gap:5px;max-width:285px;margin:0 auto 12px; }
+.seed { width:100%;aspect-ratio:1;min-height:39px; border:1px solid #d9ddd0;border-radius:9px;background:#fff;position:relative;padding:0; }
+.seed.filled:before { content:'';position:absolute;inset:7px;border-radius:50%;background:#a7bda0;box-shadow:inset -3px -3px 3px #738c7525; }
+.seed.added:before { background:#dca5b2; }
+.seed.filled { cursor:default; }
+.math-play .help-btn { font-size:13px; }
+.welcome-art { height:190px;background:url('assets/garden-hero.webp') center 66%/cover;border-radius:16px;margin:-8px -8px 22px; }
+#setup .field { margin-top:18px; }
+#quickSetupBtn { margin-top:22px; }
+.result-card { overflow:hidden; }
+.result-garden { height:135px;background:url('assets/garden-hero.webp') center 78%/cover;margin:-22px -22px 20px; }
+.result-big { font-size:29px;line-height:1.4; }
+.result-big small { font-size:20px; }
+.result-card .sticker-big { margin-top:12px; }
+.wish-field { margin:14px 0; }
+.skill-list { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px; }
+.skill-item { padding:13px;border-radius:12px;background:#f4f1f7;font-size:14px; }
+.skill-item small { display:block;color:#716879;margin-top:6px;line-height:1.5; }
+.skill-item.mastered { background:#e9f1e7; }
+.parent { max-width:1000px;user-select:text; }
+.parent .card { overflow-x:auto; }
+.parent table { min-width:440px; }
+.parent h2 { font-size:22px; }
+@media(min-width:760px) { #home>.me { float:left;width:49%;min-height:210px; } #home>.guide { width:49%;margin-left:51%;min-height:210px;margin-top:0; } #home>.row.tight { clear:both;padding-top:14px; } }
+@media(max-width:600px) {
+ .wrap { padding:15px 14px 35px; } header.top { padding-bottom:16px; } header.top h1 { font-size:19px; } header.top .who { font-size:12px; }
+ .garden-hero { height:300px;border-radius:24px;background-position:58% center; }
+ .hero-copy { padding:25px 23px; } .hero-copy h2 { font-size:31px;max-width:225px; } .hero-kicker {font-size:12px;margin-bottom:9px; } .hero-copy p:last-child {font-size:14px;max-width:185px; }
+ .garden-total { left:22px;bottom:23px; }
+ .mission-panel { margin:-10px 7px 0;padding:19px 17px;border-radius:20px; } .mission-heading {gap:6px;margin-bottom:14px; } .mission-heading h3 {font-size:22px; } .chapter-pill {font-size:10px;padding:6px; }
+ .start-actions {gap:9px;grid-template-columns:1.4fr 1fr; } .start-actions .btn {font-size:16px;padding:16px 7px;border-radius:13px; }
+ .garden-bed {gap:12px;min-height:75px;margin-top:10px; } .bloom {width:30px;height:30px; } .bloom:before {font-size:33px; } .bloom:after {left:12px;top:11px;width:8px;height:8px; }
+ .section-label {margin-top:20px; } .section-label h3 {font-size:18px; } .card {padding:18px; } .level-name {font-size:22px; }
+ .card.mini {padding:13px 10px;grid-template-columns:36px 1fr;gap:3px 6px; } .card.mini .ico,.card.mini .ico3d {width:34px;height:34px; } .card.mini b {font-size:22px; }
+ .problem {font-size:34px; } .problem .word {font-size:22px; } .quiz-garden {min-height:95px;padding:18px; } .quiz-garden>span {font-size:17px; }
+ .quest-blooms {gap:4px; } .quest-blooms .bloom:nth-child(n+4) {display:none; } .keypad button {min-height:51px;font-size:27px; }
+ .result-garden {margin:-18px -18px 18px; } .skill-list {grid-template-columns:1fr; }
+}
+@media(prefers-reduced-motion:reduce) { *,*:before,*:after { animation:none!important;transition:none!important;scroll-behavior:auto!important; } }
+@media print { .garden-hero,.mission-panel,.garden-bed,.section-label {display:none;} }
+
+.cap,.chest.ready,.btn.gold { animation:none; }

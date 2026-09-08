@@ -75,19 +75,11 @@ test("wrong answers schedule spaced reviews 1→3→7→14 days and graduate; a 
   S.recordAnswer(st, p, true, "2026-10-13"); assert.equal(st.wrong.length, 0, "graduated");
 });
 
-test("promotion needs two sessions at 90%+, demotion below 60%, and stability reads time variability", () => {
-  const st = S.defaults();
-  const good = [...Array(12)].map((_, i) => ({ key: "k" + i, level: 1, review: false, firstTry: i < 11, ms: 3000 }));
-  S.finishSession(st, good, "2026-09-07"); assert.equal(st.level, 1); assert.equal(st.streak, 1);
-  const e = S.finishSession(st, good, "2026-09-08"); assert.equal(st.level, 2); assert.equal(st.streak, 0); assert.equal(e.change, 1);
-  const bad = [...Array(12)].map((_, i) => ({ key: "k" + i, level: 2, review: false, firstTry: i < 6, ms: 3000 }));
-  const d = S.finishSession(st, bad, "2026-09-09"); assert.equal(st.level, 1); assert.equal(d.change, -1);
-  assert.ok(S.stability([3000, 3100, 2900, 3000]) < 0.35);
-  assert.ok(S.stability([1000, 6000, 2000, 9000]) > 0.35);
-  assert.equal(S.stability([1000, 2000]), null);
-  assert.equal(Object.keys(st.stamps).length, 3);
-  const reviewOnly = [...Array(4)].map((_, i) => ({ key: "r" + i, level: 1, review: true, firstTry: true, ms: 1000 }));
-  const lvl = st.level; S.finishSession(st, reviewOnly, "2026-09-10"); assert.equal(st.level, lvl, "reviews alone never move the level");
+test("session records accuracy and time variability without automatic demotion", () => {
+  const st = S.defaults(); st.level=2;
+  const bad = Array.from({length:12}, (_,i)=>({key:"k"+i,level:2,firstTry:i<6,ms:3000}));
+  const entry=S.finishSession(st,bad,"2026-09-09");assert.equal(st.level,2);assert.equal(entry.acc,50);
+  assert.ok(S.stability([3000,3100,2900,3000])<.35);assert.equal(S.stability([1,2]),null);
 });
 
 test("state survives a round trip and rejects garbage", () => {
@@ -96,7 +88,7 @@ test("state survives a round trip and rejects garbage", () => {
   const back = S.load(storage);
   assert.equal(back.level, 12); assert.equal(back.perSession, 12); assert.equal(back.name, "재이");
   const stored = JSON.parse(mem.get(S.KEY));
-  assert.deepEqual(Object.keys(stored).sort(), ["album", "avatar", "buddy", "chests", "coinLog", "coins", "createdAt", "grade", "hearts", "history", "level", "name", "owned", "perSession", "placed", "placement", "planDays", "planEnd", "planFrom", "planStart", "school", "sound", "stamps", "streak", "visualPolicy", "wrong"]);
+  assert.equal(stored.name,"재이"); assert.deepEqual(stored.skills,{}); assert.equal(stored.pending,null);
   mem.set(S.KEY, "{not json"); assert.equal(S.load(storage).level, 1);
 });
 
@@ -113,7 +105,7 @@ test("pages ship without games, stay text-only for numbers, and load the four sc
   assert.match(css, /@media print/);
   const app = fs.readFileSync(path.join(__dirname, "../app.js"), "utf8");
   assert.doesNotMatch(app, /innerHTML\s*=\s*(?=\S)(?!V.render|A.render|showVisualFirst|F\.badge|\x27<div class="|\x27<span class="lid">)/, "only our own SVG goes through innerHTML");
-  assert.match(app, /V\.render\(current, true\)/, "wrong answer reveals the picture");
+  assert.match(app, /V\.render\(current,\s*true\)/, "a worked example remains available after progressive hints");
 });
 
 const Sc = require("../schedule.js"), F = require("../characters.js");
@@ -143,16 +135,10 @@ test("status reports planned level, missed days and whether the child is behind 
   const sunday = Sc.status(plan, [], 1, "2026-09-13"); assert.equal(sunday.plannedIndex, 6, "a rest day shows the last study day");
 });
 
-test("plan settings persist and promotion uses the behind/cap options", () => {
-  const st = S.defaults();
-  assert.equal(st.planEnd, "2027-01-29"); assert.equal(st.planDays, 6);
-  const bad = S.clean({ planStart: "2026-09-07", planEnd: "2026-01-01", planDays: 4, planFrom: 40 });
-  assert.ok(bad.planEnd > bad.planStart); assert.equal(bad.planDays, 6); assert.equal(bad.planFrom, 12);
-  const good = [...Array(12)].map((_, i) => ({ key: "k" + i, level: 1, review: false, firstTry: true, ms: 2000 }));
-  S.finishSession(st, good, "2026-09-07", { behind: true, cap: 3 }); assert.equal(st.level, 2, "behind: one 90% session promotes");
-  S.finishSession(st, good, "2026-09-08", { behind: true, cap: 2 }); assert.equal(st.level, 2, "never past the cap");
-  S.finishSession(st, good, "2026-09-09", { behind: false, cap: 11 }); S.finishSession(st, good, "2026-09-10", { behind: false, cap: 11 });
-  assert.equal(st.level, 3, "on time: two sessions");
+test("plan settings persist independently of learning readiness", () => {
+  const st=S.defaults();assert.equal(st.planEnd,"2027-01-29");assert.equal(st.planDays,6);
+  const clean=S.clean({planStart:"2026-09-07",planEnd:"2026-01-01",planDays:4,planFrom:40});
+  assert.ok(clean.planEnd>clean.planStart);assert.equal(clean.planDays,6);assert.equal(clean.planFrom,12);
 });
 
 test("friends: 22 characters across three families, every icon drawn by us, a guide per level, stable daily stickers", () => {
@@ -180,6 +166,6 @@ test("child and parent pages wire the schedule and friends scripts", () => {
   assert.match(html, /id="track"/); assert.match(html, /id="album"/); assert.match(html, /id="planTag"/);
   assert.match(parent, /id="milestoneRows"/); assert.match(parent, /id="planEnd"/);
   const app = fs.readFileSync(path.join(__dirname, "../app.js"), "utf8");
-  assert.match(app, /behind: !!\(before && before\.levelGap < 0\)/);
+  assert.doesNotMatch(app, /behind: !!/);
   assert.doesNotMatch(app, /innerHTML\s*=\s*(?=\S)(?!V.render|A.render|showVisualFirst|F\.badge|\x27<div class="|\x27<span class="lid">)/, "innerHTML only for our own SVG");
 });

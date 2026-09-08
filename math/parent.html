@@ -9,7 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Nunito:wght@800;900&display=swap">
-<link rel="stylesheet" href="style.css?v=8">
+<link rel="stylesheet" href="style.css?v=20">
+<link rel="stylesheet" href="garden.css?v=20">
 </head>
 <body>
 <div class="wrap parent" id="app">
@@ -44,7 +45,7 @@
       <thead><tr><th>단계</th><th>기간</th><th>일수</th><th>상태</th></tr></thead>
       <tbody id="milestoneRows"></tbody>
     </table>
-    <p class="note">하루 한 회차. 계획은 기대 위치이고 실제 출제는 아이의 숙달 단계로 나갑니다. 계획보다 뒤처지면 90% 한 번으로 승급하고, 계획 단계+1을 넘어서는 앞서가지 않습니다.</p>
+    <p class="note">하루 한 회차. 계획은 기대 위치이고 실제 출제는 아이의 숙달 단계로 나갑니다. 날짜별 계획은 참고용입니다. 실제 승급은 개념별로 서로 다른 날의 독립 풀이를 확인한 뒤 이루어집니다.</p>
     <details style="margin-top:8px"><summary class="small">날짜별 전체 보기</summary>
       <table style="margin-top:8px"><thead><tr><th>회차</th><th>날짜</th><th>단계</th><th>완료</th></tr></thead><tbody id="planRows"></tbody></table>
     </details>
@@ -58,12 +59,19 @@
   </div>
 
   <div class="card">
+    <h2>지금 자라는 개념</h2>
+    <p class="note" id="learningNote"></p>
+    <div class="skill-list" id="skillList"></div>
+    <p class="note" id="familyPlay"></p>
+    <p class="note">기존 기록은 유지됩니다. 개념별 기록은 이번 업데이트 이후의 풀이부터 쌓입니다. 힌트·풀이 도움을 쓴 문제는 독립 해결로 세지 않습니다.</p>
+  </div>
+  <div class="card">
     <h2>단계별 기록</h2>
     <table>
       <thead><tr><th>단계</th><th>세션</th><th>정확도</th><th>중간 시간</th><th>안정도</th></tr></thead>
       <tbody id="levelRows"></tbody>
     </table>
-    <p class="note">정확도 = 첫 시도에 맞힌 비율(복습 문제 제외). 안정도 = 맞힌 문제의 시간 흔들림. 정확도가 높아도 "흔들림"이면 아직 손가락으로 세는 단계이고, "안정"이 되어야 자동화된 것입니다. 아이에게는 시간을 보여주지 않습니다.</p>
+    <p class="note">정확도 = 첫 시도에 맞힌 비율(복습 문제 제외). 안정도 = 맞힌 문제의 시간 흔들림. 반응시간에는 읽기·입력·주의 전환도 영향을 줍니다. 시간 변동만으로 손가락 사용이나 계산의 자동화를 판단하지 않습니다. 아이에게는 시간을 보여주지 않습니다.</p>
   </div>
 
   <div class="card">
@@ -80,7 +88,7 @@
       <thead><tr><th>문제</th><th>단계</th><th>틀린 횟수</th><th>다음</th></tr></thead>
       <tbody id="reviewRows"></tbody>
     </table>
-    <p class="note">틀린 문제는 다음 날 다시 나오고, 맞힐 때마다 3일 → 7일 → 14일 뒤로 밀립니다. 14일 뒤에도 맞히면 졸업. 한 세션의 30%까지만 복습에 씁니다.</p>
+    <p class="note">틀린 문제는 다음 날 다시 나오고, 맞힐 때마다 3일 → 7일 → 14일 뒤로 밀립니다. 14일 뒤에도 맞히면 졸업. 복습은 같은 개념의 숫자가 바뀐 문제로 확인합니다. 일반 모험의 30%까지, 짧은 모험에서는 최대 1문제를 복습합니다.</p>
   </div>
 
   <div class="card">
@@ -90,15 +98,15 @@
     <label class="field">학년<select id="grade"><option value="1">1학년</option><option value="2">2학년</option><option value="3">3학년</option><option value="4">4학년</option><option value="5">5학년</option><option value="6">6학년</option></select></label>
     <label class="field">현재 단계 (교과서 차시 순서)<select id="level"></select></label>
     <label class="field">한 번에 푸는 문제 수<select id="perSession"><option value="8">8문제 (약 6분)</option><option value="12">12문제 (약 10분)</option><option value="16">16문제 (약 13분)</option></select></label>
-    <label class="field">그림(십틀·수 모형) 보여주기<select id="visualPolicy"><option value="auto">단계별 기본 (1~5·8·9단계는 항상, 나머지는 틀렸을 때)</option><option value="always">항상</option><option value="wrong">틀렸을 때만</option></select></label>
-    <label class="field">소리<select id="sound"><option value="0">없음</option><option value="1">정답에 짧은 소리</option></select></label>
+    <label class="field">그림(십틀·수 모형) 보여주기<select id="visualPolicy"><option value="auto">단계별 기본 (개념 이해를 돕는 그림)</option><option value="always">항상</option><option value="wrong">틀렸을 때만</option></select></label>
+    <label class="field">소리<select id="sound"><option value="0">없음</option><option value="1">문제를 해결하면 짧은 소리</option></select></label>
     <h2 style="margin-top:16px">진도 계획</h2>
     <label class="field">시작일<input id="planStart" type="date"></label>
     <label class="field">목표일 (1학년 2학기 마무리)<input id="planEnd" type="date"></label>
     <label class="field">일주일에 공부하는 날<select id="planDays"><option value="5">5일 (월~금)</option><option value="6">6일 (월~토)</option><option value="7">7일 (매일)</option></select></label>
     <label class="field">계획 시작 단계<select id="planFrom"></select></label>
     <button class="btn secondary" id="saveBtn">저장</button>
-    <p class="note">승급: 한 세션 정확도 90% 이상이 2번 연속이면 다음 단계(계획보다 뒤면 1번). 60% 미만이면 한 단계 아래로. 단계는 언제든 여기서 직접 바꿀 수 있습니다.</p>
+    <p class="note">승급: 현재 단계의 모든 개념에서 최근 최대 6문제 중 80% 이상 독립 해결, 최소 4개 기록·서로 다른 정답 3개·성공한 날 2일을 확인합니다. 자동 강등은 없으며 필요하면 여기서 단계를 바꿀 수 있습니다.</p>
   </div>
 
   <div class="card">
@@ -130,11 +138,12 @@
 
 <section id="sheet"></section>
 
-<script src="curriculum.js?v=8"></script>
-<script src="visual.js?v=8"></script>
-<script src="store.js?v=8"></script>
-<script src="schedule.js?v=8"></script>
-<script src="characters.js?v=8"></script>
-<script src="parent.js?v=8"></script>
+<script src="curriculum.js?v=20"></script>
+<script src="visual.js?v=20"></script>
+<script src="learning.js?v=20"></script>
+<script src="store.js?v=20"></script>
+<script src="schedule.js?v=20"></script>
+<script src="characters.js?v=20"></script>
+<script src="parent.js?v=20"></script>
 </body>
 </html>
