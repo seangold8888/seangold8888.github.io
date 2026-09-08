@@ -279,10 +279,19 @@
   const WORD_CLIPS = {};
   sentences.forEach(function (sentence) { normalize(sentence.text).split(" ").forEach(function (word) { WORD_CLIPS[word] = WORD_PATH + word + ".mp3"; }); });
   const STALL_MS = 5000, NO_AUDIO_MS = 1800, WORD_STALL_MS = 4000, WORD_GAP_MS = 400, STOP_WAIT_MS = 600;
+  // 칭찬·단어 소리는 Web Audio 로만 낸다. <audio> 재생 뒤 iOS Safari 가 음성 인식을
+  // 조용히 멈추는 문제(WebKit 321436)를 피하려고, 재생이 끝나면 AudioContext 를
+  // 즉시 close 해서 오디오 장치를 완전히 놓아 준다.
+  function loadClip(env, url) {
+    return env.fetch(url).then(function (res) {
+      if (!res || !res.ok) throw new Error("clip " + url);
+      return res.arrayBuffer();
+    });
+  }
   const LOG_LIMIT = 40;
   const sessions = new WeakMap();
   // One session per window: praise streak, last clip and a diagnostic log.
-  function createFeedbackSession() { return { streak: 0, lastClip: null, log: [] }; }
+  function createFeedbackSession() { return { streak: 0, lastClip: null, log: [], silent: false, autoRetries: 0 }; }
   function choosePraise(session, firstTry, random) {
     session.streak = firstTry ? session.streak + 1 : 0;
     const group = firstTry && session.streak % 3 === 0 ? ["threeinarow"] : firstTry ? FIRST_PRAISE : RETRY_PRAISE;
@@ -310,9 +319,10 @@
     const doc = env.document;
     if (!sessions.has(env)) sessions.set(env, createFeedbackSession());
     const session = sessions.get(env);
+    if (callbacks.silent) session.silent = true;
     let disposed = false, awarded = false, active = null, serial = 0, timer = null, finalText = "";
     let retried = false, soundActive = false, soundTimer = null, stopTimer = null, passDone = false, stopping = null;
-    let audio = null, unlocked = false, healthTimer = null, recovering = false;
+    let audioCtx = null, playing = null, unlocked = false, healthTimer = null, recovering = false;
     let recoveryButton = null;
     const Recognition = env.SpeechRecognition || env.webkitSpeechRecognition;
     const showLog = !!(env.location && /(?:\?|&)readinglog=1/.test(env.location.search || ""));
@@ -367,20 +377,15 @@
       nodes.stop.disabled = disposed || awarded || !!stopping || (!active && !soundActive);
       nodes.stop.textContent = soundActive && !awarded ? "안내 멈추고 읽기" : "그만하기";
     }
-    function audioElement() { return audio; }
+    // 소리를 낼 수 있는 상태인가 (무음 모드가 아니고 Web Audio 를 쓸 수 있을 때)
+    function canPlay() {
+      return !session.silent && !!(env.AudioContext || env.webkitAudioContext) && !!env.fetch;
+    }
+    // 재생 중이던 소리를 끊고 오디오 장치를 반납한다. 마이크를 켜기 전에 반드시 호출.
     function detachAudio() {
-      const audio = audioElement();
-      if (!audio) return;
-      audio.onended = audio.onerror = audio.ontimeupdate = audio.onplaying = null;
-      audio.onwaiting = audio.onstalled = null;
-      // Calling pause() even on an ended element immediately before start()
-      // can disturb Safari's media/capture route. Release only loaded media.
-      try { if (audio.paused !== true && audio.ended !== true) audio.pause(); } catch (_) {}
-      try {
-        if (audio.getAttribute && audio.getAttribute("src")) {
-          audio.removeAttribute("src"); audio.load();
-        }
-      } catch (_) {}
+      if (playing) { try { playing.onended = null; playing.stop(0); } catch (_) {} playing = null; }
+      const ctx = audioCtx; audioCtx = null;
+      if (ctx && ctx.close) { try { ctx.close(); } catch (_) {} }
     }
     function cancelSound() {
       env.clearTimeout(soundTimer); soundTimer = null;
@@ -430,15 +435,11 @@
     // tap as recognition.start() needlessly changes the audio route on iOS.
     // This does not assume constructor/load unlocks autoplay; blocked playback
     // still has a bounded text-only fallback.
+    // 첫 탭에서 클립 데이터만 미리 받아 둔다. 오디오 장치는 재생할 때만 잠깐 연다.
     function unlockAudio() {
       if (unlocked) return;
       unlocked = true;
-      try {
-        if (env.Audio) {
-          audio = new env.Audio();
-          audio.preload = "none";
-        }
-      } catch (_) { audio = null; }
+      if (!canPlay()) return;
     }
     function completePass() {
       if (disposed || passDone) return;
@@ -454,7 +455,6 @@
     // Plays one clip on the shared element. onDone fires once: at the ended
     // event, at a playback error, or when progress stalls for stallMs.
     function playClip(src, stallMs, onDone) {
-      const audio = audioElement();
       const id = serial;
       let done = false;
       const finish = function (how) {
@@ -464,20 +464,28 @@
         env.clearTimeout(soundTimer); soundTimer = null;
         onDone(how);
       };
-      if (!audio) { finish("no-audio"); return; }
-      audio.src = src;
-      audio.onended = function () { finish("ended"); };
-      audio.onerror = function () { finish("error"); };
-      const progress = function () { if (!done && !disposed && id === serial) armWatchdog(stallMs, function () { finish("stall"); }); };
-      audio.onplaying = progress;
-      audio.ontimeupdate = progress;
-      audio.onwaiting = function () { if (!done && !disposed && id === serial) log("audio-wait"); };
-      audio.onstalled = function () { if (!done && !disposed && id === serial) log("audio-stalled"); };
+      if (!canPlay()) { finish("no-audio"); return; }
       armWatchdog(stallMs, function () { finish("stall"); });
-      try {
-        const playing = audio.play();
-        if (playing && playing.catch) playing.catch(function () { finish("blocked"); });
-      } catch (_) { finish("blocked"); }
+      const AC = env.AudioContext || env.webkitAudioContext;
+      loadClip(env, src).then(function (buf) {
+        if (done || disposed || id !== serial) return;
+        const ctx = new AC();
+        audioCtx = ctx;
+        const decoded = ctx.decodeAudioData(buf.slice(0));
+        return (decoded && decoded.then ? decoded : Promise.resolve(decoded)).then(function (sound) {
+          if (done || disposed || id !== serial || audioCtx !== ctx) { if (ctx.close) try { ctx.close(); } catch (_) {} return; }
+          const node = ctx.createBufferSource();
+          node.buffer = sound;
+          node.connect(ctx.destination);
+          node.onended = function () { finish("ended"); };
+          playing = node;
+          // 클립 길이만큼은 기다린다. 끝 이벤트가 안 오면 그때 정리.
+          armWatchdog(Math.max(stallMs, Math.round((sound.duration || 1) * 1000) + 1500), function () { finish("stall"); });
+          const go = function () { try { node.start(0); } catch (_) { finish("blocked"); } };
+          if (ctx.state === "suspended" && ctx.resume) ctx.resume().then(go, function () { finish("blocked"); });
+          else go();
+        });
+      }).catch(function () { finish("error"); });
     }
     function praise() {
       const clip = choosePraise(session, !retried);
@@ -490,7 +498,7 @@
       }
       log("pass " + clip + (retried ? " retry" : " first"));
       stop(null, function (safe) {
-        if (!safe || !audioElement() || session.silent) { soundActive = false; controls(); if (!soundTimer) armWatchdog(NO_AUDIO_MS, completePass); return; }
+        if (!safe || !canPlay()) { soundActive = false; controls(); if (!soundTimer) armWatchdog(NO_AUDIO_MS, completePass); return; }
         soundActive = true;
         controls();
         // Every praise clip plays to its ended event; the watchdog only guards a
@@ -508,7 +516,7 @@
     function speakWords(words, safe) {
       soundActive = false;
       const clips = words.filter(function (word) { return !!WORD_CLIPS[word]; });
-      if (!safe || !clips.length || !audioElement() || session.silent) { controls(); return; }
+      if (!safe || !clips.length || !canPlay()) { controls(); return; }
       const id = serial;
       let index = 0;
       soundActive = true; controls();
@@ -559,17 +567,37 @@
       }
     }
     function offerRecovery(reason) {
-      stop("마이크가 응답하지 않아요. 아래 ‘소리 끄고 마이크 복구’를 눌러 주세요. 오답으로 세지 않아요.");
+      if (disposed || awarded || recovering) return;
       log(reason);
+      resetFlow();
+      // 소리를 낸 뒤 마이크가 먹통이 되는 기기(iOS WebKit 321436)가 있다.
+      // 처음 막히면 묻지 않고 소리를 끈 뒤 마이크를 새로 켠다. 오답으로 세지 않는다.
+      if (!session.silent) {
+        session.silent = true;
+        session.autoRetries = 0;
+        detachAudio();
+        if (callbacks.onSilent) { try { callbacks.onSilent(); } catch (_) {} }
+        log("auto-silent");
+        stop("소리를 잠깐 끄고 마이크를 다시 켰어요. 한 번 더 읽어 주세요.");
+        env.setTimeout(function () { if (!disposed && !awarded && !nodes.mic.disabled) read(); }, 500);
+        return;
+      }
+      if (session.autoRetries < 2) {
+        session.autoRetries++;
+        detachAudio();
+        log("auto-retry " + session.autoRetries);
+        stop("마이크를 다시 켰어요. 한 번 더 읽어 주세요.");
+        env.setTimeout(function () { if (!disposed && !awarded && !nodes.mic.disabled) read(); }, 500);
+        return;
+      }
+      stop("마이크가 응답하지 않아요. 아래 ‘마이크 다시 켜기’를 눌러 주세요. 오답으로 세지 않아요.");
       if (!recoveryButton) {
-        recoveryButton = element("button", "reading-recovery", "🔇 소리 끄고 마이크 복구");
+        recoveryButton = element("button", "reading-recovery", "🎤 마이크 다시 켜기");
         recoveryButton.type = "button";
         actions.appendChild(recoveryButton);
         recoveryButton.addEventListener("click", recoverMicrophone);
       }
       recoveryButton.hidden = false;
-      fallback.hidden = false;
-      controls();
     }
     function recoverMicrophone() {
       if (disposed || awarded || recovering || active || soundActive) return;
@@ -584,11 +612,13 @@
       // Capture is requested only by this explicit button, never automatically.
       // No recording, upload or saved audio; even a late permission result is closed.
       healthTimer = env.setTimeout(function () {
-        if (!disposed && serial === id) offerRecovery("recovery-timeout");
+        if (disposed || serial !== id) return;
+        recovering = false;
+        offerRecovery("recovery-timeout");
       }, 8000);
       let request;
       try { request = devices.getUserMedia({audio: true, video: false}); }
-      catch (_) { offerRecovery("recovery-failed"); return; }
+      catch (_) { recovering = false; offerRecovery("recovery-failed"); return; }
       Promise.resolve(request).then(function (stream) {
         stream.getTracks().forEach(function (track) { track.stop(); });
         if (disposed || id !== serial) return;
@@ -599,6 +629,9 @@
         }, 350);
       }, function () {
         if (disposed || id !== serial) return;
+        // 권한 거부도 버튼을 다시 쓸 수 있어야 한다. recovering 을 먼저 내려야
+        // offerRecovery 가 조기 반환하지 않고 컨트롤이 되살아난다.
+        recovering = false;
         offerRecovery("recovery-denied");
         nodes.status.textContent = "마이크 권한을 확인한 뒤 다시 눌러 주세요. 정답 기록은 그대로예요.";
       });
@@ -673,7 +706,7 @@
       controls();
       nodes.status.textContent = "마이크를 준비하고 있어요…";
       timer = env.setTimeout(function () { if (valid()) { log("timeout"); finishAttempt(); } }, 25000);
-      healthTimer = env.setTimeout(function () { if (valid()) offerRecovery("start-timeout"); }, session.lastClip ? 4000 : 12000);
+      healthTimer = env.setTimeout(function () { if (valid()) offerRecovery("start-timeout"); }, (session.lastClip || session.silent) ? 4000 : 12000);
       try { recognizer.start(); log("start"); } catch (_) { resetFlow(); log("start-fail"); fallback.hidden = false; stop("마이크를 시작하지 못했어요. 잠시 후 다시 눌러 주세요."); }
     }
     nodes.mic.addEventListener("click", read);
@@ -697,7 +730,7 @@
       stop: function () { stop("잠시 멈췄어요. 읽어 보기를 눌러 다시 시작해요."); },
       destroy: function () {
         disposed = true; stop();
-        audio = null;
+        detachAudio();
         doc.removeEventListener("visibilitychange", hide);
         env.removeEventListener("pagehide", leave);
         env.removeEventListener("offline", offline);

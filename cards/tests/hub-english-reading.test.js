@@ -17,6 +17,19 @@ function node() {
     toggle: (k, yes) => yes ? classes.add(k) : classes.delete(k), contains: k => classes.has(k) };
   return n;
 }
+// 소리는 Web Audio 로만 난다. 동기 thenable 목이라 클립은 시작하자마자 끝난다.
+const settled = value => ({ then(fn) { const out = fn ? fn(value) : value; return out && out.then ? out : settled(out); }, catch() { return this; } });
+class Ctx {
+  constructor() { this.state = "running"; this.destination = {}; }
+  resume() { this.state = "running"; return settled(); }
+  decodeAudioData() { return settled({ duration: 1 }); }
+  createBufferSource() {
+    return { buffer: null, connect() {}, onended: null,
+      start() { const done = this.onended; if (done) done(); }, stop() {} };
+  }
+  close() { this.closed = true; return settled(); }
+}
+function fetchClip() { return settled({ ok: true, arrayBuffer: () => settled({ slice: () => ({}) }) }); }
 function setup(options = {}, callbacks) {
   const instances = [], timers = new Map();
   let counter = 0, passes = 0;
@@ -28,7 +41,7 @@ function setup(options = {}, callbacks) {
   }
   const doc = Object.assign(target(), { hidden: false, createElement: node });
   const env = Object.assign(target(), { document: doc, navigator: { onLine: true }, isSecureContext: true,
-    SpeechRecognition: Recognition, Audio: class { load() {} pause() {} play() { if (this.onended) this.onended(); } }, SpeechSynthesisUtterance: class { constructor(text) { this.text = text; } },
+    SpeechRecognition: Recognition, AudioContext: Ctx, fetch: fetchClip, SpeechSynthesisUtterance: class { constructor(text) { this.text = text; } },
     speechSynthesis: { speaking: false, getVoices: () => [{ lang: "en-US" }],
       speak(speech) { this.last = speech; this.speaking = true; },
       cancel() { this.speaking = false; } },
@@ -210,7 +223,10 @@ test("hidden page, page exit, offline, timeout and disposal abort recording", ()
 });
 test("speech text stays textContent and audio/transcripts have no storage API", () => {
   const source = fs.readFileSync(path.join(__dirname, "../../assets/study/english-reading.js"), "utf8");
-  assert.doesNotMatch(source, /innerHTML|localStorage|sessionStorage|MediaRecorder|fetch\(/);
+  assert.doesNotMatch(source, /innerHTML|localStorage|sessionStorage|MediaRecorder/);
+  // 네트워크는 녹음된 mp3 클립을 받아 오는 한 곳뿐이다. 인식 결과는 어디에도 보내지 않는다.
+  assert.deepEqual(source.match(/fetch\(/g), ["fetch("]);
+  assert.match(source, /return env\.fetch\(url\)/);
 });
 const html = fs.readFileSync(path.join(__dirname, "../../index.html"), "utf8").replace(/\r/g, "");
 function fn(name) {
@@ -232,8 +248,8 @@ test("a reading success advances progress once and earns the tenth-answer ticket
 });
 test("reading support is cached and its script loads before the study controller", () => {
   const sw = require("../../sw.js");
-  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=7"));
-  assert.ok(html.indexOf('src="assets/study/english-reading.js?v=7"') < html.indexOf("var BANK_SIZES"));
+  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=8"));
+  assert.ok(html.indexOf('src="assets/study/english-reading.js?v=8"') < html.indexOf("var BANK_SIZES"));
   assert.match(html, /\.reading-word\.retry\s*\{[^}]*text-decoration:underline wavy/);
   assert.match(html, /if \(current !== target \|\| isFree\(\) \|\| hasTicket\(\) \|\| target\.answered\) return/);
   assert.match(html, /function stopReading\(\)[\s\S]*?clearTimeout\(answerTimer\)/);

@@ -1185,7 +1185,7 @@
   </div>
 </div>
 
-<script src="assets/study/english-reading.js?v=7"></script>
+<script src="assets/study/english-reading.js?v=8"></script>
 <script>
 (function () {
   'use strict';
@@ -1493,6 +1493,8 @@
   var current = null;
   var lastReadingIndex = -1, readingView = null, answerTimer = null, readingFallback = false;
   /* 최근 읽은 문장 번호(최대 12개) — 같은 문장이 금방 다시 나오지 않도록. 기기에만 저장. */
+  var readingSilent = false;
+  try { readingSilent = localStorage.getItem('hub2_reading_silent') === '1'; } catch (_) {}
   var readingRecent = [];
   try { readingRecent = (JSON.parse(localStorage.getItem('hub2_reading_recent') || '[]') || []).filter(function (n) { return typeof n === 'number' && n >= 0; }).slice(-12); } catch (_) { readingRecent = []; }
   function rememberReading(idx) {
@@ -1925,6 +1927,12 @@
         rememberReading(target.seed.idx);
         pick(target.answer, null);
       }, window, {
+        silent: readingSilent,
+        onSilent: function () {
+          // 소리 뒤 마이크가 막히는 기기 → 이 기기는 다음부터 소리 없이 읽기만
+          readingSilent = true;
+          try { localStorage.setItem('hub2_reading_silent', '1'); } catch (_) {}
+        },
         onRetry: function (words) { readingMistake(target, words); },
         onUnavailable: function () {
           if (current !== target || target.answered || isFree() || hasTicket()) return;
