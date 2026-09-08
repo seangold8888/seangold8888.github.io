@@ -539,6 +539,12 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     const notes = [69, 74, 81]; lyre(notes[Math.min(2, step || 0)], undefined, 0.09, sfxBus, 'sfx');
   };
   S.whoosh = function () { noise({ dur: 0.18, vol: 0.06, filterType: 'bandpass', filter: 1800, q: 0.9 }); };
+  // Only the hard Cyclops chase calls this quiet, low-register warning.
+  S.chaseRoar = function () {
+    if (muted) return;
+    noise({dur:0.25,vol:0.04,filter:260,brown:true});
+    tone({f:82,f2:52,dur:0.3,type:'triangle',vol:0.07,filter:360});
+  };
   S.nearMiss = function () { tone({ f: 690, f2: 970, dur: 0.11, type: 'sine', vol: 0.065, filter: 4200 }); };
   S.click = function () { tone({ f: 530, f2: 760, dur: 0.07, type: 'sine', vol: 0.09, filter: 5000 }); };
   S.page = function () {
@@ -2604,6 +2610,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
           ctx.font = '900 22px "Malgun Gothic", sans-serif';
           ctx.textAlign = 'center'; ctx.fillStyle = '#fff8de';
           ctx.fillText(rewardText, W * 0.5, 203);
+          if (options.detail) {ctx.font='800 17px "Malgun Gothic", sans-serif';ctx.fillText(options.detail,W*0.5,226);}
           ctx.globalAlpha = 1;
         }
 
@@ -3307,7 +3314,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     }
   }
 
-  function build() {
+  function build(options) {
+    const HARD = !!(options && options.hard);
     const hazards = [
       // 소개 뒤 첫 연습: 한 번에 하나씩, 넉넉한 간격
       { x: 3300, type: 'small', w: 28, h: 38, group: '첫 바위' },
@@ -3359,6 +3367,15 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     starArc(stars, 11870, { count: 8, span: 560, height: 132 });
     starLine(stars, 12430, 6, 62, GROUND - 58);
 
+    if (HARD) {
+      // 9980 is inside a rest zone; preserve the respite.
+      const hands = [{x:3720,w:46,demo:true},{x:5020,w:44},{x:6650,w:48},{x:8420,w:46},{x:10660,w:44},{x:11530,w:50},{x:12250,w:46}];
+      for (const hand of hands) {
+        hazards.push(Object.assign({type:'hang',clear:58,group:'거인의 손'},hand));
+        starLine(stars,hand.x-300,4,60,GROUND-30);
+      }
+      for (const drop of drops) drop.warn *= 0.72;
+    }
     return {
       ground: GROUND,
       total: TOTAL,
@@ -3366,7 +3383,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       hazards: hazards.map(h => Object.assign({ hit: false, near: false, dead: false }, h)),
       drops: drops.map(d => Object.assign({}, d)),
       stars,
-      safeUntil: 3150,
+      safeUntil: HARD ? 2200 : 3150,
       restZones: [
         { from: 5200, to: 5850 },
         { from: 9600, to: 10200 }
@@ -3395,6 +3412,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         releaseGravity: 4800,
         fallGravity: 2700
       }, options);
+      this.hard = !!o.hard;
+      this.onSlide = null;
       this.baseX = o.x;
       this.ground = o.ground;
       this.jumpVelocity = o.jumpVelocity;
@@ -3409,6 +3428,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     }
 
     reset() {
+      if (this.hard) { this.sliding = false; this.slideTime = 0; this.slideCooldown = 0; }
       this.x = this.baseX;
       this.xOffset = 0;
       this.xKick = 0;
@@ -3430,6 +3450,13 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       this.sq.vy = 0;
     }
 
+    startSlide() {
+      if (!this.hard || !this.grounded || this.sliding || this.slideCooldown > 0) return;
+      this.sliding = true; this.slideTime = 0.55;
+      ODY.E.input.consume('down');
+      if (this.onSlide) this.onSlide();
+    }
+
     hurt() {
       this.invin = 1.45;
       this.hurtTime = 0.52;
@@ -3445,6 +3472,14 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       this.invin = Math.max(0, this.invin - dt);
       this.hurtTime = Math.max(0, this.hurtTime - dt);
       this.landTime = Math.max(0, this.landTime - dt);
+      if (this.hard) {
+        this.slideCooldown = Math.max(0, this.slideCooldown - dt);
+        if (this.sliding) {
+          this.slideTime = Math.max(0, this.slideTime - dt);
+          if (!this.slideTime) { this.sliding = false; this.slideCooldown = 0.12; }
+        }
+        if (canControl && E.input.buffered('down', 0.16)) this.startSlide();
+      }
 
       // 좌우는 필수가 아닌 작은 위치 보정이다. 누르자마자 반응하고 놓으면 돌아온다.
       let targetOffset = 0;
@@ -3464,6 +3499,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 
       if (canControl && E.input.buffered('jump', 0.16) && this.coyote > 0) {
         E.input.consume('jump');
+        if (this.hard && this.sliding) { this.sliding = false; this.slideTime = 0; this.slideCooldown = 0.12; }
         this.vy = this.jumpVelocity;
         this.grounded = false;
         this.coyote = 0;
@@ -3491,6 +3527,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
           this.landTime = 0.13;
           F.squash(this.sq, 1.27, 0.73);
           if (this.onLand) this.onLand(strength);
+          if (this.hard && canControl && E.input.held('down')) this.startSlide();
         }
         this.grounded = true;
       }
@@ -3500,7 +3537,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         const stepIndex = Math.floor(this.runPhase / Math.PI);
         if (stepIndex !== this.lastStep) {
           this.lastStep = stepIndex;
-          if (this.onStep) this.onStep(stepIndex & 1);
+          if (this.onStep && !(this.hard && this.sliding)) this.onStep(stepIndex & 1);
         }
       }
 
@@ -3675,15 +3712,17 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 
   A.drawCyclops = function (ctx, view) {
     const climax = ODY.Feel.clamp01((view.dist - 10150) / 1700);
-    const x = 30 - view.dist * 0.002 + climax * 22;
+    const hard = view.lead !== undefined;
+    const near = hard ? 1 - ODY.Feel.clamp(view.lead,0,100)/100 : 0;
+    const x = hard ? -170 + near*340 : 30 - view.dist * 0.002 + climax * 22;
     const y = view.ground + 18;
-    const scale = 0.83 + climax * 0.1;
-    const wind = view.windup || 0;
+    const scale = hard ? 0.83 + near*0.30 : 0.83 + climax * 0.1;
+    const wind = hard ? Math.max(0.65,view.windup || 0) : view.windup || 0;
     const t = view.time;
     ctx.save();
     ctx.translate(x, y);
     ctx.scale(scale, scale);
-    ctx.globalAlpha = 0.72 + climax * 0.13;
+    ctx.globalAlpha = hard ? 0.62 + near*0.30 : 0.72 + climax * 0.13;
     // 그림자
     ctx.fillStyle = 'rgba(19,12,33,0.34)';
     ctx.beginPath(); ctx.ellipse(0, 2, 105, 18, 0, 0, TAU); ctx.fill();
@@ -3699,7 +3738,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 
     // 뒤쪽 팔과 바위
     const armAngle = 0.82 - wind * 2.15;
-    const handX = 63 + Math.cos(armAngle) * 86;
+    const handX = 63 + Math.cos(armAngle) * 86 + (hard && view.lead < 15 ? (15-view.lead)*7 : 0);
     const handY = -144 + Math.sin(armAngle) * 86;
     ctx.lineCap = 'round';
     ctx.strokeStyle = INK; ctx.lineWidth = 36;
@@ -3805,7 +3844,21 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     ctx.globalAlpha = 1;
   };
 
+  A.drawHang = function (ctx, sx, hazard, time) {
+    if (hazard.dead) return;
+    const bottom=ODY.Levels.cyclops.GROUND-hazard.clear;
+    const motion=window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const wobble=motion ? 0 : Math.sin(time*17)*(hazard.wobble||0)*4;
+    ctx.save();ctx.translate(sx+wobble,0);ctx.lineCap='round';
+    ctx.strokeStyle=INK;ctx.lineWidth=hazard.w*1.65;
+    ctx.beginPath();ctx.moveTo(0,-30);ctx.lineTo(0,bottom-42);ctx.stroke();
+    ctx.strokeStyle='#8977a8';ctx.lineWidth=hazard.w*1.48;ctx.stroke();
+    for(let i=-1;i<=1;i++){ctx.strokeStyle=INK;ctx.lineWidth=hazard.w*.48;ctx.beginPath();ctx.moveTo(i*hazard.w*.49,bottom-58);ctx.lineTo(i*hazard.w*.49,bottom-11);ctx.stroke();ctx.strokeStyle='#ad98c9';ctx.lineWidth=hazard.w*.36;ctx.stroke();}
+    ctx.fillStyle='#fff2a5';ctx.font='900 26px sans-serif';ctx.textAlign='center';ctx.fillText('↓',0,bottom-79);ctx.restore();
+  };
+
   A.drawHazard = function (ctx, hazard, sx, ground, time) {
+    if (hazard.type === 'hang') { A.drawHang(ctx,sx,hazard,time); return; }
     if (hazard.dead) return;
     const pulse = hazard.near && !hazard.hit ? 1 + Math.sin(time * 9) * 0.025 : 1;
     const wobble = hazard.wobble || 0;
@@ -3919,6 +3972,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     const hurt = player.hurtTime > 0;
     let poseScaleX = player.sq.sx;
     let poseScaleY = player.sq.sy;
+    if (player.hard && player.sliding) { poseScaleX *= 1.22; poseScaleY *= 0.62; }
     if (!player.grounded) {
       const stretch = F.clamp(Math.abs(player.vy) / 900, 0, 1) * 0.07;
       poseScaleX *= 1 - stretch * 0.55;
@@ -3928,6 +3982,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     ctx.save();
     ctx.translate(player.x, player.y + bob);
     ctx.scale(poseScaleX, poseScaleY);
+    if (player.hard && player.sliding) ctx.rotate(1.05);
     if (hurt) ctx.rotate(-0.16);
     else if (!player.grounded) ctx.rotate(player.vy < -80 ? -0.08 : 0.08);
     else ctx.rotate(0.035 + push * 0.018);
@@ -4052,8 +4107,12 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     const UI = ODY.UI;
     const Art = ODY.Art.cyclops;
     const W = E.W, H = E.H;
-    const level = ODY.Levels.cyclops.build();
-    const player = new ODY.RunnerController({ x: 245, ground: level.ground });
+    const HARD = !!(options && options.hard);
+    const reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    const level = ODY.Levels.cyclops.build({hard:HARD});
+    const player = new ODY.RunnerController({ x: 245, ground: level.ground, hard:HARD });
+    const LEAD = HARD ? {max:100,start:62,regen:6.5,hit:26,star:1.2,combo:4,rest:1.6,checkpoint:70,slowPenalty:60} : null;
+    let lead = HARD ? LEAD.start : undefined, roarTime = 0, lowLeadAnnounced = false, slideHintShown = false;
 
     let simTime = 0;
     let uiTime = 0;
@@ -4125,23 +4184,24 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 
     const jumpButton = {
       x: W - 88, y: H - 86, r: 58,
+      action: 'jump', label: '점프', arrow: '↑',
       pointerId: null,
       down: false,
       contains(x, y) {
         return (x - this.x) ** 2 + (y - this.y) ** 2 <= (this.r + 10) ** 2;
       },
       pointer(type, x, y, pointerId) {
-        if (type === 'down' && this.contains(x, y)) {
+        if (type === 'down' && this.pointerId === null && this.contains(x, y)) {
           this.pointerId = pointerId;
           this.down = true;
-          E.input.setHeld('jump', true);
+          E.input.setHeld(this.action, true);
           return true;
         }
         if ((type === 'up' || type === 'cancel') &&
-            (this.pointerId === pointerId || this.pointerId === null)) {
+            this.pointerId !== null && this.pointerId === pointerId) {
           this.pointerId = null;
           this.down = false;
-          E.input.setHeld('jump', false);
+          E.input.setHeld(this.action, false);
           return true;
         }
         return false;
@@ -4149,7 +4209,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       release() {
         this.pointerId = null;
         this.down = false;
-        E.input.setHeld('jump', false);
+        E.input.setHeld(this.action, false);
       },
       draw(ctx) {
         const pulse = this.down ? 0.91 : 1 + Math.sin(uiTime * 3) * 0.018;
@@ -4167,16 +4227,19 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         ctx.strokeStyle = '#49304d'; ctx.lineWidth = 4; ctx.stroke();
         ctx.fillStyle = '#3a2945';
         ctx.font = '900 31px "Malgun Gothic", sans-serif';
-        ctx.textAlign = 'center'; ctx.fillText('↑', 0, -5);
+        ctx.textAlign = 'center'; ctx.fillText(this.arrow, 0, -5);
         ctx.font = '900 17px "Malgun Gothic", sans-serif';
-        ctx.fillText('점프', 0, 24);
+        ctx.fillText(this.label, 0, 24);
         ctx.restore();
       }
     };
 
+    const slideButton = HARD ? Object.assign({}, jumpButton, {x:W-214,r:52,action:'down',label:'숙여',arrow:'↓',pointerId:null,down:false}) : null;
+    function releaseControls() { jumpButton.release(); if (slideButton) { slideButton.release(); E.input.consume('down'); } }
+
     function targetSpeed() {
       const ramp = F.ease.inOutSine(F.clamp01(dist / level.total));
-      return (268 + ramp * 78) * assist * hitSlow;
+      return (HARD ? 292 + ramp * 104 : 268 + ramp * 78) * assist * hitSlow;
     }
 
     function updateMusic(force) {
@@ -4203,8 +4266,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       failures[group] = (failures[group] || 0) + 1;
       if (failures[group] >= 3 && !warnedGroups[group]) {
         warnedGroups[group] = true;
-        assistTarget = Math.max(0.78, assistTarget - 0.08);
-        showHint(group === '낙하 바위'
+        assistTarget = Math.max(HARD ? 0.90 : 0.78, assistTarget - 0.08);
+        showHint(HARD && group === '거인의 손' ? '손이 내려오면 ↓를 눌러 숙여!' : group === '낙하 바위'
           ? '빛나는 원을 보면 조금 일찍 점프해!'
           : '별이 그린 둥근 길을 따라가 봐!');
       }
@@ -4213,7 +4276,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     function hit(hazard) {
       if (player.invin > 0 || state !== 'run' || hazard.hit) return;
       hazard.hit = true;
-      hearts--;
+      if (HARD) lead = F.clamp(lead - LEAD.hit, 0, LEAD.max);
+      else hearts--;
       hitSlow = 0.7;
       player.hurt();
       registerFailure(hazard.group || '바위');
@@ -4223,8 +4287,13 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       F.debris(player.x + 14, player.y - 45, '#d99a91', 9, -1);
       F.pop(player.x, player.y - 118, '괜찮아!', '#fff0a4', 24);
       S.hit();
-      if (hearts <= 0) {
-        jumpButton.release();
+      if (HARD ? lead <= 0 : hearts <= 0) enterRescue();
+    }
+
+    function enterRescue() {
+      if (state === 'rescue') return;
+      {
+        releaseControls();
         state = 'rescue';
         stateTime = 0;
         F.pulseSlowmo(0.28, 0.12, 0.25);
@@ -4237,19 +4306,20 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     function resumeFromRescue() {
       rescues++;
       if (rescues >= 3) {
-        assistTarget = Math.min(assistTarget, 0.8);
+        assistTarget = Math.min(assistTarget, HARD ? 0.92 : 0.8);
         showHint('서두르지 않아도 돼. 별길만 바라봐!');
       }
       let checkpoint = level.checkpoints[checkpointIndex] || 0;
       if (checkpoint > dist) checkpoint = 0;
       dist = checkpoint;
       hearts = 5;
+      if (HARD) { lead = LEAD.start; roarTime = 0; lowLeadAnnounced = false; }
       currentSpeed = 120;
       hitSlow = 1;
       player.reset();
       player.invin = 2;
-      UI.announce('하트 다섯 개로 다시 출발해요.');
-      jumpButton.release();
+      UI.announce(HARD ? '거인과 거리를 벌렸어요. 다시 출발해요!' : '하트 다섯 개로 다시 출발해요.');
+      releaseControls();
 
       for (let i = level.hazards.length - 1; i >= 0; i--) {
         const hazard = level.hazards[i];
@@ -4260,6 +4330,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
           hazard.dead = false;
           hazard.near = false;
           hazard.wobble = 0;
+          if (HARD) hazard.warnTick = -1;
         }
       }
       for (const drop of level.drops) {
@@ -4282,7 +4353,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       if (state === 'paused' || state === 'rescue' || state === 'clear') return;
       stateBeforePause = state;
       state = 'paused';
-      jumpButton.release();
+      releaseControls();
       E.input.consume('jump');
       E.input.consume('ok');
       pauseInputLock = 0.2;
@@ -4303,7 +4374,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       state = 'clear';
       stateTime = 0;
       clearBurst = false;
-      jumpButton.release();
+      releaseControls();
       S.startBgm('reward', { intensity: 0.36, fade: 0.48 });
       S.clear();
       F.pulseSlowmo(0.3, 0.22, 0.48);
@@ -4368,7 +4439,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     function updateHazards(dt) {
       const pLeft = player.x - 15;
       const pRight = player.x + 16;
-      const pTop = player.y - 91;
+      const pTop = player.y - (HARD && player.sliding ? 44 : 91);
       const pBottom = player.y - 5;
 
       for (const hazard of level.hazards) {
@@ -4387,6 +4458,18 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         if (sx < -100 || sx > W + 130) continue;
         hazard.wobble = Math.max(hazard.wobble || 0, F.clamp01((360 - (sx - player.x)) / 280) * 0.2);
 
+        if (HARD && hazard.type === 'hang') {
+          const gap = sx - player.x;
+          if (gap < 700 && gap > -hazard.w) {
+            const tick = Math.min(2, Math.max(0, Math.floor((700-gap)/220)));
+            if (tick > (hazard.warnTick ?? -1)) { hazard.warnTick=tick; S.warning(tick); }
+          }
+          const overlaps = pRight > sx-hazard.w+10 && pLeft < sx+hazard.w-10 && pTop < level.ground-hazard.clear;
+          if (overlaps && hazard.demo) { hazard.dead=true; F.debris(sx,level.ground-58,'#ad98c9',8); showHint('거인의 손이 내려와! ↓ 를 눌러 숙여!'); }
+          else if (overlaps && player.invin <= 0) hit(hazard);
+          if (!hazard.near && !hazard.hit && sx < player.x-hazard.w-18) { hazard.near=true; failures[hazard.group]=0; F.pop(player.x,player.y-70,'잘 숙였어!','#bff6dc',20); }
+          continue;
+        }
         if (hazard.solid !== false && player.invin <= 0 &&
             pRight > sx - hazard.w + 10 &&
             pLeft < sx + hazard.w - 10 &&
@@ -4410,7 +4493,9 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     function collectStar(star) {
       star.got = true;
       starsGot++;
-      combo = comboTime > 0 ? Math.min(3, combo + 1) : 0;
+      const previousCombo = combo;
+      combo = comboTime > 0 ? Math.min(3, combo + 1) : (HARD ? 1 : 0);
+      if (HARD) lead = F.clamp(lead + LEAD.star + (combo === 3 && previousCombo !== 3 ? LEAD.combo : 0), 0, LEAD.max);
       comboTime = 0.78;
       F.sparkle(star.drawX, star.drawY, '#ffe06b', 11);
       F.ring(star.drawX, star.drawY, '#fff4ae', 11, 0.24);
@@ -4426,7 +4511,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         const dx = sx - player.x;
         const dy = star.y - targetY;
         // 처음에는 별이 점프 길을 또렷하게 가르치고, 한 번 뛴 뒤에만 살짝 돕는다.
-        const magnetRadius = hasJumped ? 66 : 0;
+        const magnetRadius = hasJumped ? (HARD ? 44 : 66) : 0;
         if (!star.magnet && magnetRadius > 0 && dx * dx + dy * dy < magnetRadius * magnetRadius) {
           star.magnet = true;
           star.drawX = sx;
@@ -4452,7 +4537,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       const next = checkpointIndex + 1;
       if (next < level.checkpoints.length && dist >= level.checkpoints[next]) {
         checkpointIndex = next;
-        hearts = Math.min(5, hearts + 1);
+        if (HARD) lead = Math.max(lead, LEAD.checkpoint);
+        else hearts = Math.min(5, hearts + 1);
         F.pop(player.x + 15, player.y - 122, '숨 돌리자!', '#bff6dc', 21);
         F.sparkle(player.x, player.y - 65, '#bcefdc', 13);
         S.athena();
@@ -4460,18 +4546,36 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     }
 
     function updateWorld(dt) {
+      if (HARD && lead <= 0) { enterRescue(); return; }
       assist = F.damp(assist, assistTarget, 1.8, dt);
       hitSlow = F.damp(hitSlow, 1, 4.2, dt);
       currentSpeed = F.damp(currentSpeed, targetSpeed(), 2.8, dt);
       dist += currentSpeed * dt;
       updateDrops(dt);
       updateHazards(dt);
+      if (HARD && state !== 'run') return;
       updateStars(dt);
       updateCheckpoints();
       updateMusic(false);
 
+      if (HARD && state === 'run') {
+        const resting = level.restZones.some(z => dist >= z.from && dist <= z.to);
+        lead = F.clamp(lead + (LEAD.regen * (resting ? LEAD.rest : 1) - LEAD.slowPenalty * (1-hitSlow)) * dt, 0, LEAD.max);
+        if (!slideHintShown && dist > 1400) { slideHintShown=true; showHint('거인의 손이 내려와! ↓ 를 눌러 숙여!'); }
+        if (lead < 30) {
+          if (!lowLeadAnnounced) { lowLeadAnnounced=true; UI.announce('거인이 가까워졌어요! 별을 주우면 다시 멀어져요.'); }
+          roarTime -= dt;
+          if (roarTime <= 0) { roarTime=3.5; if (!S.muted()) S.chaseRoar(); if (!reducedMotion) F.addShake(0.14,-1,0); }
+        } else roarTime=0;
+        if (lead <= 0) { enterRescue(); return; }
+      }
       if (dist > level.total) triggerClear();
     }
+
+    if (HARD) player.onSlide = function () {
+      F.dust(player.x-16,level.ground+1,5,'rgba(211,188,211,0.56)',currentSpeed);
+      F.speedLine(player.x+28,player.y-20,'#fff1a3',360); S.whoosh();
+    };
 
     player.onJump = function () {
       hasJumped = true;
@@ -4502,6 +4606,9 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 
     function update(dt, dtReal) {
       uiTime += dtReal;
+      if (HARD) for (const button of [jumpButton,slideButton]) {
+        if (button.down && !E.input.held(button.action)) { button.pointerId=null; button.down=false; }
+      }
       pauseInputLock = Math.max(0, pauseInputLock - dtReal);
       mute.update(dtReal);
       pauseButton.update(dtReal);
@@ -4567,7 +4674,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         }
         if (stateTime > 1.78 && !finishSent) {
           finishSent = true;
-          options.onClear({ stars: starsGot });
+          options.onClear(HARD ? {stars:starsGot,lead} : { stars: starsGot });
         }
       }
 
@@ -4592,12 +4699,20 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         ground: level.ground,
         total: level.total,
         windup,
-        hasJumped
+        hasJumped,
+        ...(HARD ? {lead} : {})
       };
     }
 
     function drawHUD(ctx) {
-      UI.drawHearts(ctx, 39, 40, hearts, 5);
+      if (HARD) {
+        ctx.fillStyle='rgba(28,18,49,.76)';UI.rr(ctx,28,30,210,22,11);ctx.fill();
+        ctx.fillStyle=lead>55?'#7ed9aa':lead>=30?'#ffcf5e':'#ff8f86';UI.rr(ctx,28,30,210*lead/100,22,11);ctx.fill();
+        UI.drawCyclopsPortrait(ctx,38,39,.13,0);
+        ctx.save();ctx.translate(58+lead*1.6,47);ctx.scale(.25,.25);
+        Art.drawHero(ctx,{x:0,y:0,ground:0,runPhase:0,grounded:true,hurtTime:0,invin:0,blink:0,sq:{sx:1,sy:1}},0);ctx.restore();
+        ctx.fillStyle='#fff8df';ctx.font='900 14px sans-serif';ctx.textAlign='left';ctx.fillText('거인과 거리 '+Math.round(lead),28,23);
+      } else UI.drawHearts(ctx, 39, 40, hearts, 5);
       ctx.fillStyle = 'rgba(28,18,49,0.58)';
       UI.rr(ctx, 28, 69, 120, 44, 22); ctx.fill();
       UI.drawStar(ctx, 54, 91, 13, simTime * 1.3, '#ffe06b');
@@ -4608,7 +4723,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       UI.drawProgress(ctx, W * 0.5 - 160, 27, 320, dist / level.total);
       pauseButton.draw(ctx);
       mute.draw(ctx);
-      if (E.isTouch && state !== 'paused' && state !== 'rescue') jumpButton.draw(ctx);
+      if (E.isTouch && state !== 'paused' && state !== 'rescue') { jumpButton.draw(ctx); if (slideButton) slideButton.draw(ctx); }
     }
 
     function drawIntro(ctx) {
@@ -4623,7 +4738,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       ctx.textAlign = 'center';
       ctx.fillStyle = '#a45850';
       ctx.font = '900 18px "Malgun Gothic", sans-serif';
-      ctx.fillText('첫 번째 모험', 0, -15);
+      ctx.fillText(HARD ? '어려운 길 · 점프 ↑  숙여 ↓' : '첫 번째 모험', 0, -15);
       ctx.fillStyle = '#342442';
       ctx.font = '900 31px "Malgun Gothic", sans-serif';
       ctx.fillText('외눈 거인의 동굴', 0, 27);
@@ -4735,6 +4850,10 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       vignette.addColorStop(1, 'rgba(16,10,29,0.34)');
       ctx.fillStyle = vignette; ctx.fillRect(0, 0, W, H);
 
+      if (HARD && lead < 45) {
+        const pulse=reducedMotion?1:0.86+Math.sin(uiTime*(lead<15?8:4))*.14;
+        const edge=ctx.createLinearGradient(0,0,300,0);edge.addColorStop(0,'rgba(125,59,165,'+((45-lead)/45*.35*pulse)+')');edge.addColorStop(1,'rgba(125,59,165,0)');ctx.fillStyle=edge;ctx.fillRect(0,0,300,H);
+      }
       drawHUD(ctx);
       drawIntro(ctx);
       drawHint(ctx);
@@ -4763,7 +4882,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         updateMusic(true);
       },
       exit() {
-        jumpButton.release();
+      releaseControls();
         if (state !== 'clear') S.stopBgm();
       },
       update,
@@ -4781,7 +4900,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
           resumeButton.pointer(type, x, y);
           return;
         }
-        if (E.isTouch) jumpButton.pointer(type, x, y, pointerId);
+        if (E.isTouch) { jumpButton.pointer(type,x,y,pointerId); if (slideButton) slideButton.pointer(type,x,y,pointerId); }
       },
       draw
     };
@@ -14262,16 +14381,18 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   }
 
   function normalizeProgress(value) {
-    const clean = { version: 2, wisdom: 0, stages: {} };
+    const clean = { version: 3, wisdom: 0, stages: {} };
     if (!value || typeof value !== 'object' || Array.isArray(value)) return clean;
     clean.wisdom = Number.isFinite(Number(value.wisdom)) ? Math.max(0, Number(value.wisdom) | 0) : 0;
     if (value.stages && typeof value.stages === 'object' && !Array.isArray(value.stages)) {
       for (const id of STAGE_IDS) {
         const stage = value.stages[id];
-        if (!stage || typeof stage !== 'object') continue;
+        if (!stage || typeof stage !== 'object' || Array.isArray(stage)) continue;
         clean.stages[id] = {
           cleared: !!stage.cleared,
-          bestStars: Number.isFinite(Number(stage.bestStars)) ? Math.max(0, Number(stage.bestStars) | 0) : 0
+          bestStars: Number.isFinite(Number(stage.bestStars)) ? Math.max(0, Math.floor(Number(stage.bestStars))) : 0,
+          hardCleared: !!stage.cleared && !!stage.hardCleared,
+          bestLead: Number.isFinite(Number(stage.bestLead)) ? Math.max(0, Math.min(100, Math.floor(Number(stage.bestLead)))) : 0
         };
       }
     }
@@ -14282,7 +14403,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   }
 
   function loadProgress() {
-    try { return normalizeProgress(JSON.parse(localStorage.getItem('ody_progress') || '{}')); }
+    try { const raw=JSON.parse(localStorage.getItem('ody_progress') || '{}');const clean=normalizeProgress(raw);if (!raw || raw.version!==3) storeProgress(clean);return clean; }
     catch (_) { return normalizeProgress(null); }
   }
 
@@ -14293,14 +14414,19 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     } catch (_) {}
   }
 
-  function applyStageResult(value, id, smallStars) {
+  function applyStageResult(value, id, smallStars, opts) {
     const progress = normalizeProgress(value);
     if (!STAGE_IDS.includes(id)) return progress;
     const previous = progress.stages[id] || { cleared: false, bestStars: 0 };
-    if (!previous.cleared) progress.wisdom++;
+    const hard = !!(opts && opts.hard);
+    if (hard && (id !== 'cyclops' || !previous.cleared)) return progress;
+    if (!hard && !previous.cleared) progress.wisdom++;
+    const resultLead = opts && Number.isFinite(Number(opts.lead)) ? Math.max(0,Math.min(100,Math.round(Number(opts.lead)))) : 0;
     progress.stages[id] = {
       cleared: true,
-      bestStars: Math.max(previous.bestStars || 0, Math.max(0, Number(smallStars) | 0))
+      bestStars: Math.max(previous.bestStars || 0, Number.isFinite(Number(smallStars)) ? Math.max(0,Math.floor(Number(smallStars))) : 0),
+      hardCleared: !!previous.hardCleared || hard,
+      bestLead: Math.max(previous.bestLead || 0,hard ? resultLead : 0)
     };
     return progress;
   }
@@ -14341,12 +14467,13 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       : { screen: 'story', stage: 'cyclops' };
   }
 
-  function saveStageResult(id, smallStars) {
+  function saveStageResult(id, smallStars, opts) {
     const previous = loadProgress();
     const firstClear = !(previous.stages[id] && previous.stages[id].cleared);
-    const progress = applyStageResult(previous, id, smallStars);
+    const firstHardClear = !!(opts && opts.hard) && !(previous.stages[id] && previous.stages[id].hardCleared);
+    const progress = applyStageResult(previous, id, smallStars, opts);
     storeProgress(progress);
-    return { progress, firstClear };
+    return { progress, firstClear, firstHardClear };
   }
 
   function setCanvasLabel(text) {
@@ -14385,14 +14512,21 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     ODY.E.setScene(ODY.Story.Cutscene(pages, startCyclops, { music: 'storyCave', intensity: 0.2 }));
   }
 
-  function startCyclops() {
-    setCanvasLabel('오디세우스가 키클롭스 동굴에서 별길을 따라 달리는 게임');
-    announce('키클롭스 동굴. 스페이스바나 위쪽 화살표로 점프해요.');
-    ODY.E.setScene(ODY.Stages.cyclops({ onClear: onCyclopsClear }));
+  function startCyclops(opts) {
+    const hard = !!(opts && opts.hard);
+    if (hard && !loadProgress().stages.cyclops?.cleared) return;
+    setCanvasLabel(hard ? '오디세우스가 폴리페모스에게 쫓기며 동굴을 달리는 어려운 길' : '오디세우스가 키클롭스 동굴에서 별길을 따라 달리는 게임');
+    announce(hard ? '어려운 길. 위쪽 화살표로 점프, 아래쪽 화살표로 숙여요. 거인이 쫓아와요.' : '키클롭스 동굴. 스페이스바나 위쪽 화살표로 점프해요.');
+    ODY.E.setScene(ODY.Stages.cyclops({ onClear: r => onCyclopsClear(r,hard), hard }));
   }
 
-  function onCyclopsClear(result) {
-    const saved = saveStageResult('cyclops', result.stars);
+  function onCyclopsClear(result, hard) {
+    const saved = saveStageResult('cyclops', result.stars, {hard,lead:result.lead});
+    if (hard) {
+      const rewardText=saved.firstHardClear?'어려운 길을 처음 끝냈어요!':'다시 거인을 따돌렸어요!';
+      const detail='거인을 '+Math.round(result.lead)+'만큼 따돌렸어요!';announce(rewardText+' '+detail);
+      ODY.E.setScene(ODY.UI.ClearScene({title:'어려운 길 성공!',starsGained:result.stars,rewardText,detail},()=>showAdventureSelect('cyclops')));return;
+    }
     const rewardText = saved.firstClear ? '첫 지혜의 별을 찾았어요!' : '지혜의 별은 이미 빛나고 있어요!';
     announce('동굴 탈출 성공! ' + rewardText);
     ODY.E.setScene(ODY.UI.ClearScene({ starsGained: result.stars, rewardText }, () => showJourneyMap('cyclops')));
@@ -14710,6 +14844,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     };
     // 잠긴 장도 함께 보여 준다. 열린 것만 띄우면 처음에는 카드가 하나뿐이라
     // "장 고르기"라는 말이 무색해지고, 앞으로 무엇이 남았는지도 알 수 없다.
+    const hardUnlocked = !!progress.stages.cyclops?.cleared;
     const slots = [
       [176, 190], [480, 190], [784, 190],
       [176, 286], [480, 286], [784, 286],
@@ -14737,6 +14872,10 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         }
       });
     });
+    if (hardUnlocked) stageButtons.forEach((button,i)=>{button.y=i<3?184:i<6?318:414;});
+    stageButtons.forEach((button,i)=>{button.description=unlocked.includes(STAGE_IDS[i])?definitions[STAGE_IDS[i]].description:'앞의 장을 먼저 끝내면 열려요.';});
+    const hardButton = hardUnlocked ? new ODY.UI.Button({x:176,y:250,w:132,h:44,size:13,color:'#ff9a6b',label:'🔥 어려운 길'+(progress.stages.cyclops.hardCleared?' ✓':''),onTap(){if(done)return;done=true;startCyclops({hard:true});}}) : null;
+    if (hardButton) hardButton.description='점프와 숙이기로 거인을 따돌려요.';
     const fromTitle = !returnStage;
     const backButton = new ODY.UI.Button({
       x: W * 0.5, y: 484, w: 245, h: 58,
@@ -14748,17 +14887,14 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         else showJourneyMap(returnStage);
       }
     });
-    const buttons = stageButtons.concat(backButton);
+    backButton.description=returnStage?'바닷길 지도로 돌아가요.':'처음 화면으로 돌아가요.';
+    const buttons = hardButton ? [stageButtons[0],hardButton,...stageButtons.slice(1),backButton] : stageButtons.concat(backButton);
     const mute = ODY.UI.makeMuteBtn();
 
     setCanvasLabel('일곱 개의 장을 고르는 화면. 아직 열리지 않은 장은 자물쇠로 표시돼요.');
     function announceChoice() {
       const button = buttons[choice];
-      const description = choice < STAGE_IDS.length
-        ? (unlocked.includes(STAGE_IDS[choice])
-            ? definitions[STAGE_IDS[choice]].description + ' '
-            : '앞의 장을 먼저 끝내면 열려요. ')
-        : '';
+      const description = button.description || '';
       announce('현재 선택: ' + button.label + '. ' + description + '화면을 누르거나 엔터로 시작해요.');
     }
     announce('장을 골라요. 열린 장은 ' + unlocked.length + '개예요. 지나온 장은 언제든 다시 할 수 있어요.');
@@ -14813,11 +14949,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         ctx.textAlign = 'center'; ctx.fillStyle = '#342442';
         ctx.font = '900 34px "Malgun Gothic", sans-serif'; ctx.fillText('어느 모험으로 갈까요?', 0, -7);
         ctx.fillStyle = '#8e5c68'; ctx.font = '800 18px "Malgun Gothic", sans-serif';
-        ctx.fillText(choice < STAGE_IDS.length
-          ? (unlocked.includes(STAGE_IDS[choice])
-              ? definitions[STAGE_IDS[choice]].description
-              : '앞의 장을 먼저 끝내면 열려요.')
-          : (returnStage ? '바닷길 지도로 돌아가요.' : '처음 화면으로 돌아가요.'), 0, 29);
+        ctx.fillText(buttons[choice].description || '', 0, 29);
         ctx.restore();
 
         buttons.forEach((button, index) => button.draw(ctx, choice === index));
