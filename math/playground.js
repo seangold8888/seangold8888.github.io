@@ -23,6 +23,16 @@
     svg.setAttribute("viewBox","0 0 64 64");svg.setAttribute("aria-hidden","true");svg.setAttribute("fill","none");svg.setAttribute("stroke","currentColor");svg.setAttribute("stroke-width","4");svg.setAttribute("stroke-linecap","round");svg.setAttribute("stroke-linejoin","round");
     svg.innerHTML=PATHS[byId(id).id];return svg;
   }
-  const api={SPOTS,byId,icon};
+  function renderLadder(box,total,completed,label) {
+    box.textContent="";
+    box.setAttribute("role","progressbar");box.setAttribute("aria-label",label);
+    box.setAttribute("aria-valuemin","0");box.setAttribute("aria-valuemax",String(total));box.setAttribute("aria-valuenow",String(completed));
+    box.setAttribute("aria-valuetext",total+"문제 중 "+completed+"문제 해결");
+    for(let i=0;i<total;i++) { const el=document.createElement("span");el.className="rung"+(i<completed?" done":i===completed?" current":"");el.setAttribute("aria-hidden","true");box.appendChild(el); }
+    const puppy=document.createElement("img");puppy.src="assets/jaei-progress-friends.webp";puppy.alt="";puppy.className="progress-friend";puppy.width=64;puppy.height=64;
+    const position=total>1?Math.min(completed,total-1)/(total-1)*100:0;
+    puppy.style.left="clamp(28px,"+position+"%,calc(100% - 28px))";box.appendChild(puppy);
+  }
+  const api={SPOTS,byId,icon,renderLadder};
   if(typeof module!=="undefined" && module.exports) module.exports=api;else root.MathPlayground=api;
 })(typeof window!=="undefined"?window:globalThis);

@@ -22,7 +22,7 @@ const server=http.createServer((req,res)=>{
   await page.locator('#quiz:not([hidden])').waitFor();
   const state=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('math10_state')));
   async function answer(value) {for(const n of String(value))await page.locator('[data-k="'+n+'"]').click();await page.locator('[data-k="go"]').click();}
-  let st=await state();assert.equal(st.pending.problems.length,3);
+  let st=await state();assert.equal(st.pending.problems.length,3);assert.equal(await page.locator("#questRungs").getAttribute("aria-valuenow"),"0");
   assert.match(await page.locator("#quizMission").innerText(),/구름사다리/);
   const completed=await page.locator(".rung.done").count();
   await answer(99);
@@ -35,7 +35,7 @@ const server=http.createServer((req,res)=>{
   await page.reload();await page.locator('#startBtn').click();
   assert.equal((await state()).pending.firstTry,false,'reload cannot erase assistance');
   st=await state();await answer(st.pending.problems[st.pending.index].answer);
-  await page.waitForTimeout(1000);st=await state();assert.equal(st.pending.index,1);
+  await page.waitForTimeout(1000);st=await state();assert.equal(st.pending.index,1);assert.equal(await page.locator("#questRungs").getAttribute("aria-valuenow"),"1");
   assert.equal(await page.locator(".rung.done").count(),1);
   const coins=st.coins;await page.locator('#quitBtn').click();await page.locator('#startBtn').click();
   assert.equal((await state()).coins,coins,'resume must not duplicate coins');
@@ -46,6 +46,9 @@ const server=http.createServer((req,res)=>{
   await page.screenshot({path:path.join(out,'result-mobile.png')});
   await page.locator('#doneBtn').click();await page.screenshot({path:path.join(out,'home-mobile.png'),fullPage:true});
   assert.equal(await page.locator('[data-spot="bars"]').getAttribute('aria-pressed'),'true');
+  assert.equal(await page.locator("#homeRungs").getAttribute("aria-valuenow"),"3");
+  assert.equal(await page.locator("#homeRungs").getAttribute("aria-valuemax"),"3");
+  assert.match(await page.locator("#drawingFriendsTitle").innerText(),/그림/);
   assert.doesNotMatch(await page.locator('#home').innerText(),/정원|꽃씨|새싹|꽃밭/);
   await page.locator('[data-spot="slide"]').click();assert.match(await page.locator('#startBtn').innerText(),/미끄럼틀/);
   await page.reload();assert.equal((await state()).playgroundSpot,'slide');
@@ -66,7 +69,7 @@ const server=http.createServer((req,res)=>{
   await page.screenshot({path:path.join(out,'parent-desktop.png'),fullPage:true});
   // Existing-device migration and a scaffold followed by a delayed new example.
   await page.evaluate(()=>{const s=MathStore.defaults();s.name='재이';s.level=9;s.placed=true;s.perSession=8;s.coins=123;s.garden=27;delete s.playgroundSpot;s.owned={'dress/party':true};s.album=[{id:'elsa',date:'2026-09-07',r:1}];localStorage.setItem(MathStore.KEY,JSON.stringify(s));});
-  await page.goto(base+'/math/');assert.equal((await state()).coins,123);assert.ok((await state()).owned['dress/party']);assert.equal((await state()).garden,27);assert.equal(await page.locator('[data-spot="bars"]').getAttribute('aria-pressed'),'true');
+  await page.goto(base+'/math/');assert.equal((await state()).coins,123);assert.ok((await state()).owned['dress/party']);assert.equal((await state()).garden,27);assert.equal(await page.locator('.level-rung.mastered').count(),0);assert.equal(await page.locator('.level-rung[aria-current="step"]>span').innerText(),'9');assert.equal(await page.locator('[data-spot="bars"]').getAttribute('aria-pressed'),'true');
   await page.locator('#startBtn').click();st=await state();await answer(st.pending.problems[0].answer);await page.waitForTimeout(950);
   await page.locator('#togetherBtn').click();assert.ok(await page.locator('.ten-frame').isVisible());
   await page.screenshot({path:path.join(out,'carry-desktop.png')});

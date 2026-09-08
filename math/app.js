@@ -53,20 +53,15 @@
 
   /* ---------- 홈 ---------- */
   function renderTrack(st) {
-    const track = $("track"); track.textContent = "";
-    const from = state.planFrom || 1;
-    for (let l = from; l <= 12; l++) {
-      const g = F.guideFor(l), node = document.createElement("div");
-      const cls = ["stop"];
-      if (l < state.level) cls.push("done");
-      if (l === state.level) cls.push("here");
-
-      if (l > state.level) cls.push("locked");
-      node.className = cls.join(" ");
-      node.innerHTML = F.badge(g, 40);
-      const label = document.createElement("span"); label.textContent = l > state.level ? "?" : String(l); node.appendChild(label);
-      if (l === state.level) { const me = document.createElement("i"); me.textContent = "지금"; node.appendChild(me); }
-
+    const track=$("track");track.textContent="";track.setAttribute("role","list");track.setAttribute("aria-label","배움의 구름사다리, 현재 "+state.level+"단계");
+    for(let l=1;l<=12;l++) {
+      const node=document.createElement("div"),summary=Learn.summary(state,l);
+      const mastered=summary.length>0 && summary.every(function(item) {return item.mastered;});
+      node.className="level-rung"+(mastered?" mastered":"")+(l===state.level?" here":"");node.setAttribute("role","listitem");
+      const number=document.createElement("span");number.textContent=String(l);node.appendChild(number);
+      const label=document.createElement("small");label.textContent=l===state.level?"지금":mastered?"익혔어요":"단계";node.appendChild(label);
+      node.setAttribute("aria-label",l+"단계, "+C.levelById(l).name+(l===state.level?", 현재 위치":mastered?", 익힌 단계":""));
+      if(l===state.level) {node.setAttribute("aria-current","step");const puppy=document.createElement("img");puppy.src="assets/jaei-progress-friends.webp";puppy.alt="";node.appendChild(puppy);}
       track.appendChild(node);
     }
   }
@@ -603,11 +598,10 @@
     const spot=Play.byId(state.playgroundSpot), total=state.garden || 0;
     $("missionTitle").textContent=spot.mission;
     $("playgroundChapter").textContent=(Math.floor(total/24)+1)+"번째 탐험";
-    $("playgroundGreeting").textContent=spot.name+"\n타러 가자!";
-    if(spot.id === "blocks") $("playgroundGreeting").textContent="블록으로 무엇을 만들까?";
-    if(spot.id === "steps") $("playgroundGreeting").textContent="징검다리 건너러 가자!";
+    $("playgroundGreeting").textContent="재이의 놀이터에\n놀러 와!";
     $("playgroundStory").textContent=state.stamps[S.today()] ? "오늘도 신나게 놀았어. 내일 다시 만나!" : spot.id === "bars" ? "문제 하나, 구름사다리 한 칸. 천천히 같이 가요." : "작은 문제를 풀며 함께 놀아요. 내 속도로, 한 걸음씩!";
     $("playgroundTotal").textContent=total;
+    renderHomeProgress();
     const map=$("playgroundMap"); map.textContent="";
     Play.SPOTS.forEach(function(item) {
       const button=document.createElement("button"); button.type="button"; button.className="play-spot";
@@ -625,12 +619,21 @@
     $("teaser").textContent=state.stamps[S.today()] ? "오늘은 여기까지 해도 좋아요. 놀이터는 내일도 기다려요." : "도움이 필요하면 힌트를 눌러요. 천천히 해도 괜찮아.";
     $("guideSay").textContent=(buddy() || F.guideFor(state.level)).name+": "+(pending?"다시 만나서 반가워! 이어서 해볼까?":"네 속도로 해도 좋아. 내가 함께할게!");
   }
+  function renderHomeProgress() {
+    const pending=state.pending && state.pending.level===state.level ? state.pending : null;
+    const recent=state.history.filter(function(h) {return h.date===S.today();}).slice(-1)[0];
+    const total=pending?pending.problems.length:recent?recent.count:state.perSession;
+    const done=pending?pending.index:recent?recent.count:0;
+    $("homeProgressLabel").textContent=(pending?"이어갈 탐험":recent?"마친 탐험":"다음 탐험")+" · "+done+" / "+total;
+    Play.renderLadder($("homeRungs"),total,done,"나의 구름사다리");
+    $("homeProgressDetail").textContent=state.level+"단계 · "+levelInfo().name+" · 틀려도 건넌 칸은 그대로예요.";
+  }
   function renderQuest() {
-    const spot=Play.byId(state.playgroundSpot);
-    $("quizMission").textContent=placement?"어디서 시작할지 함께 찾아요":spot.name+" · 한 칸씩, 내 속도로";
-    const box=$("questRungs"); box.textContent=""; box.hidden=!!placement;
+    $("quizMission").textContent=placement?"어디서 시작할지 함께 찾아요":"구름사다리 · 친구들과 한 칸씩";
+    const box=$("questRungs");box.hidden=!!placement;$("questStatus").hidden=!!placement;
     if(placement || !session) return;
-    for(let i=0;i<session.length;i++) { const el=document.createElement("span"); el.className="rung"+(i<index?" done":i===index?" current":""); box.appendChild(el); }
+    Play.renderLadder(box,session.length,index,"이번 탐험 진도");
+    $("questStatus").textContent=index+" / "+session.length+"문제 해결";
   }
   function renderMathPlay() {
     const p=current,v=p.visual || {},supported=["carry","make10","split10","missing","add","join","split"];

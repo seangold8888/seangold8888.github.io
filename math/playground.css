@@ -184,3 +184,46 @@ header.top .who {min-height:44px;display:flex;align-items:center;}
 }
 @media(hover:none) {.play-spot:hover {transform:none;}}
 
+
+/* Jaei's own drawing becomes a companion; monkey bars communicate real progress. */
+.home-progress {margin-top:22px;padding-bottom:16px;}
+.progress-heading {display:flex;justify-content:space-between;align-items:center;gap:12px;}
+.progress-heading h3 {font-size:23px;margin:0;}
+.quest-rungs {height:104px;padding-bottom:64px;margin-top:8px;overflow:visible;}
+.quest-rungs:after {top:34px;bottom:auto;}
+.rung {height:36px;flex-shrink:1;}
+.progress-friend {position:absolute;top:39px;width:64px;height:64px;object-fit:contain;transform:translateX(-50%);z-index:2;}
+.quiz-playground {gap:4px;}
+.quiz-playground .quest-status {font-size:13px;color:#526a73;align-self:flex-end;line-height:1.2;}
+.drawing-friends {margin-top:26px;display:grid;grid-template-columns:1.2fr 1fr;gap:24px;align-items:center;background:#fff9ee;}
+.drawing-friends>img {width:100%;height:auto;min-width:0;object-fit:contain;}
+.drawing-friends h3 {font-size:26px;margin:8px 0;word-break:keep-all;}
+.drawing-friends p {line-height:1.6;word-break:keep-all;}
+.level-ladder {gap:10px;padding:14px 4px 76px;position:relative;}
+.level-ladder:before {top:19px;left:4px;right:4px;height:6px;background:#327797;}
+.level-ladder:after {content:'';position:absolute;top:65px;left:4px;right:4px;height:6px;background:#327797;}
+.level-rung {position:relative;z-index:1;flex:1;min-width:42px;height:58px;background:#e6eef0;border:2px solid #9eb9c3;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.level-rung>span {font-family:"Nunito",sans-serif;font-size:19px;font-weight:900;}
+.level-rung>small {font-size:10px;white-space:nowrap;}
+.level-rung.here {border-color:#946a23;background:#ffe5a0;}
+.level-rung.mastered {background:#f3cfba;border-color:#ae6c50;}
+.level-rung>img {position:absolute;top:59px;left:50%;transform:translateX(-50%);width:60px;height:60px;object-fit:contain;}
+@media(max-width:700px) {
+ .drawing-friends {grid-template-columns:1fr;gap:4px;text-align:center;}
+ .drawing-friends>img {max-width:420px;margin:auto;}
+ .drawing-friends h3 {font-size:23px;}
+ .progress-heading h3 {font-size:20px;}
+ .home-progress .chapter-pill {font-size:11px;}
+}
+
+.drawing-friends {grid-template-columns:1fr;gap:10px;text-align:center;}
+.drawing-friends p {margin:8px 0;}
+.drawing-cast {display:grid;grid-template-columns:3fr 2fr;align-items:end;gap:18px;}
+.drawing-cast figure {min-width:0;margin:0;}
+.drawing-cast img {display:block;width:100%;height:auto;object-fit:contain;}
+.drawing-cast figcaption {font-size:14px;color:var(--muted);margin-top:10px;}
+.progress-friend {width:78px;height:64px;}
+.level-rung>img {width:64px;}
+@media(max-width:600px) {.drawing-cast {grid-template-columns:1fr;gap:18px;}.drawing-cast figure:last-child {max-width:240px;width:70%;margin:auto;}}
+
+.level-ladder:before,.level-ladder:after {min-width:614px;}

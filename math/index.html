@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Nunito:wght@800;900&display=swap">
 <link rel="stylesheet" href="style.css?v=20">
-<link rel="stylesheet" href="playground.css?v=23">
+<link rel="stylesheet" href="playground.css?v=24">
 </head>
 <body>
 <div class="sky" aria-hidden="true"><i></i><i></i><i></i><i></i><b>★</b><b>★</b><b>★</b></div>
@@ -25,7 +25,7 @@
 
   <section id="setup" hidden>
     <div class="card">
-      <img class="welcome-art" src="assets/playground-monkey-bars.webp" width="1536" height="1024" alt="" decoding="async"><p class="eyebrow">매일 만나고 싶은 나의 놀이터</p>
+      <img class="welcome-art" src="assets/playground-scene.webp" width="1536" height="1024" alt="" decoding="async"><p class="eyebrow">매일 만나고 싶은 나의 놀이터</p>
       <p class="level-name">반가워! 구름사다리 타러 가자.</p>
       <label class="field">이름<input id="setupName" maxlength="12" placeholder="예: 재이" autocomplete="off"></label>
       <input id="setupSchool" type="hidden">
@@ -53,7 +53,7 @@
     <div class="playground-hero">
       <div class="hero-copy"><p class="hero-kicker">오늘도 신나게, 내 속도로</p><h2 id="playgroundGreeting">구름사다리 타러 가자!</h2><p id="playgroundStory">문제 하나, 구름사다리 한 칸. 천천히 같이 가요.</p>
       <div class="playground-total"><span aria-hidden="true">✓</span> <b id="playgroundTotal">0</b>개의 탐험 도장</div></div>
-      <img class="hero-scene" src="assets/playground-monkey-bars.webp" width="1536" height="1024" alt="파란 구름사다리와 그네, 미끄럼틀이 있는 재이의 놀이터" fetchpriority="high">
+      <img class="hero-scene" src="assets/playground-scene.webp" width="1536" height="1024" alt="미끄럼틀과 그네, 시소가 있는 재이의 놀이터" fetchpriority="high">
     </div>
     <div class="mission-panel">
       <div class="mission-heading"><div><p class="eyebrow">오늘의 초대</p><h3 id="missionTitle">구름사다리로 출발!</h3></div><span class="chapter-pill" id="playgroundChapter">첫 번째 탐험</span></div>
@@ -61,7 +61,15 @@
       <div class="start-actions"><button class="btn big" id="startBtn">구름사다리 출발 →</button><button class="btn secondary" id="quickBtn">가볍게 3문제</button></div>
       <p class="tiny" id="homeReview"></p><p class="tiny" id="teaser"></p>
     </div>
+    <section class="card home-progress" aria-labelledby="homeProgressTitle">
+      <div class="progress-heading"><div><p class="eyebrow">친구들과 한 칸씩</p><h3 id="homeProgressTitle">나의 구름사다리</h3></div><span id="homeProgressLabel" class="chapter-pill"></span></div>
+      <div id="homeRungs" class="quest-rungs"></div><p id="homeProgressDetail" class="tiny"></p>
+    </section>
     <div class="section-label spot-heading"><h3>어디서 놀까?</h3><span>구름사다리는 재이의 최애</span></div><div class="playground-map" id="playgroundMap" aria-label="탐험할 놀이기구 선택"></div>
+    <section class="card drawing-friends" aria-labelledby="drawingFriendsTitle">
+      <div><p class="eyebrow">재이가 그린 우리 가족과 친구들</p><h3 id="drawingFriendsTitle">그림 속에서 놀러 왔어!</h3><p>우리 가족 네 명, 폼폼푸린과 헬로키티가<br>재이의 수학놀이를 함께 응원해요.</p></div>
+      <div class="drawing-cast"><figure><img src="assets/jaei-family.webp" width="1536" height="1024" alt="재이의 그림을 입체화한, 초록 생일모자를 쓴 가족 네 명" loading="lazy"><figcaption>재이가 그린 우리 가족</figcaption></figure><figure><img src="assets/jaei-sanrio-friends.webp" width="1536" height="1024" alt="폼폼푸린과 헬로키티 입체 인형" loading="lazy"><figcaption>폼폼푸린 · 헬로키티</figcaption></figure></div>
+    </section>
     <div class="section-label"><h3>나와 함께하는 친구들</h3><span>오늘도 반가워</span></div>
 
     <div class="card me" id="meCard">
@@ -106,9 +114,9 @@
 
 
     <div class="card learning-track">
-      <div class="plan-line"><span class="eyebrow">나의 배움 지도</span><span class="plan-tag" id="planTag"></span></div>
+      <div class="plan-line"><span class="eyebrow">배움의 구름사다리 · 현재 단계</span><span class="plan-tag" id="planTag"></span></div>
       <p class="plan-text" id="planText"></p>
-      <div class="track" id="track"></div>
+      <div class="track level-ladder" id="track"></div>
     </div>
 
     <div class="card">
@@ -146,7 +154,7 @@
   </section>
 
   <section id="quiz" hidden>
-    <div class="quiz-playground"><span id="quizMission">구름사다리를 한 칸씩 건너요</span><div id="questRungs" class="quest-rungs" aria-hidden="true"></div></div><p class="count" id="count"></p>
+    <div class="quiz-playground"><span id="quizMission">구름사다리를 한 칸씩 건너요</span><div id="questRungs" class="quest-rungs"></div><span id="questStatus" class="quest-status"></span></div><p class="count" id="count"></p>
     <div class="progress"><i id="bar"></i></div>
     <div class="card">
       <div class="quiz-content"><p class="eyebrow" id="skillLabel"></p><p class="problem" id="problem"></p>
@@ -174,7 +182,7 @@
 
   <section id="result" hidden>
     <div class="card center result-card">
-      <img class="result-playground" src="assets/playground-monkey-bars.webp" width="1536" height="1024" alt="" decoding="async"><p class="eyebrow">오늘의 놀이터 탐험 완료!</p><div class="sticker-big" id="stickerBig"></div>
+      <img class="result-playground" src="assets/jaei-family.webp" width="1536" height="1024" alt="" decoding="async"><p class="eyebrow">오늘의 놀이터 탐험 완료!</p><div class="sticker-big" id="stickerBig"></div>
       <p class="sticker-name" id="stickerName"></p>
       <p class="result-big" id="resultBig"></p>
       <p class="small" id="resultText"></p>
@@ -212,7 +220,7 @@
 <script src="placement.js?v=20"></script>
 <script src="../princess/studio.js?v=36"></script>
 <script src="avatar.js?v=20"></script>
-<script src="playground.js?v=22"></script>
-<script src="app.js?v=22"></script>
+<script src="playground.js?v=24"></script>
+<script src="app.js?v=24"></script>
 </body>
 </html>
