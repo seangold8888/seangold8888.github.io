@@ -28,7 +28,11 @@
     "zeus",
     "poseidon",
     "hades",
-    "apollo"
+    "apollo",
+    "minotaur",
+    "cerberus",
+    "hydra",
+    "sphinx"
   ],
   "types": {
     "brave": {
@@ -1447,6 +1451,204 @@
         "attack": 3,
         "defense": 3,
         "spirit": 3
+      }
+    },
+    {
+      "id": "minotaur",
+      "name": "미노타우로스",
+      "emoji": "🐂",
+      "type": "monster",
+      "rarity": 3,
+      "summonCost": 5,
+      "hp": 130,
+      "passive": {
+        "name": "미궁의 주인",
+        "desc": "받는 피해가 10 줄어요",
+        "fx": "reduce_dmg_10"
+      },
+      "attacks": [
+        {
+          "name": "뿔 돌진",
+          "cost": 2,
+          "dmg": 40,
+          "fx": null,
+          "desc": "",
+          "vfx": {
+            "kind": "strike",
+            "emoji": "🐂"
+          }
+        },
+        {
+          "name": "미궁의 포효",
+          "cost": 3,
+          "dmg": 50,
+          "fx": null,
+          "desc": "",
+          "vfx": {
+            "kind": "burst",
+            "emoji": "🌀",
+            "big": true
+          }
+        }
+      ],
+      "unlock": "heracles",
+      "unlockAll": [
+        "heracles",
+        "odyssey_cyclops"
+      ],
+      "art": "art/minotaur.png",
+      "stats": {
+        "attack": 4,
+        "defense": 5,
+        "spirit": 1
+      }
+    },
+    {
+      "id": "cerberus",
+      "name": "케르베로스",
+      "emoji": "🐕",
+      "type": "monster",
+      "rarity": 3,
+      "summonCost": 5,
+      "hp": 120,
+      "passive": {
+        "name": "머리가 셋",
+        "desc": "HP가 절반 아래면 공격 피해 +20",
+        "fx": "boost_20_below_half"
+      },
+      "attacks": [
+        {
+          "name": "세 갈래 물기",
+          "cost": 1,
+          "dmg": 10,
+          "fx": "dmg_stack_10",
+          "desc": "쓸 때마다 피해 +10",
+          "vfx": {
+            "kind": "strike",
+            "emoji": "🐾"
+          }
+        },
+        {
+          "name": "저승문 지키기",
+          "cost": 3,
+          "dmg": 50,
+          "fx": null,
+          "desc": "",
+          "vfx": {
+            "kind": "burst",
+            "emoji": "🚪",
+            "big": true
+          }
+        }
+      ],
+      "unlock": "heracles",
+      "art": "art/cerberus.png",
+      "stats": {
+        "attack": 5,
+        "defense": 5,
+        "spirit": 2
+      }
+    },
+    {
+      "id": "hydra",
+      "name": "히드라",
+      "emoji": "🐍",
+      "type": "monster",
+      "rarity": 3,
+      "summonCost": 5,
+      "hp": 100,
+      "passive": {
+        "name": "다시 자라는 머리",
+        "desc": "처음 기절하면 HP 절반으로 한 번 되살아나요",
+        "fx": "revive_half_once"
+      },
+      "attacks": [
+        {
+          "name": "아홉 머리 물기",
+          "cost": 1,
+          "dmg": 10,
+          "fx": "dmg_stack_10",
+          "desc": "쓸 때마다 피해 +10",
+          "vfx": {
+            "kind": "strike",
+            "emoji": "🐍"
+          }
+        },
+        {
+          "name": "독 안개",
+          "cost": 2,
+          "dmg": 30,
+          "fx": null,
+          "desc": "",
+          "vfx": {
+            "kind": "burst",
+            "emoji": "🌫️"
+          }
+        }
+      ],
+      "unlock": "heracles",
+      "art": "art/hydra.png",
+      "stats": {
+        "attack": 3,
+        "defense": 5,
+        "spirit": 2
+      }
+    },
+    {
+      "id": "sphinx",
+      "name": "스핑크스",
+      "emoji": "🪽",
+      "type": "monster",
+      "rarity": 2,
+      "summonCost": 3,
+      "hp": 70,
+      "passive": null,
+      "attacks": [
+        {
+          "name": "수수께끼",
+          "cost": 1,
+          "dmg": 0,
+          "fx": "steal_star_1",
+          "desc": "상대 별사탕 1개 훔치기",
+          "vfx": {
+            "kind": "debuff",
+            "emoji": "❓"
+          }
+        },
+        {
+          "name": "사자의 발톱",
+          "cost": 2,
+          "dmg": 30,
+          "fx": null,
+          "desc": "",
+          "vfx": {
+            "kind": "strike",
+            "emoji": "🐾"
+          }
+        },
+        {
+          "name": "날개 급습",
+          "cost": 3,
+          "dmg": 40,
+          "fx": null,
+          "desc": "",
+          "vfx": {
+            "kind": "projectile",
+            "emoji": "🪽",
+            "big": true
+          }
+        }
+      ],
+      "unlock": "perseus",
+      "unlockAll": [
+        "perseus",
+        "odyssey_cyclops"
+      ],
+      "art": "art/sphinx.png",
+      "stats": {
+        "attack": 3,
+        "defense": 3,
+        "spirit": 2
       }
     }
   ]

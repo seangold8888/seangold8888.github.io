@@ -422,7 +422,7 @@ test("기존 대표 6장은 v1 기술과 PNG·WebP 원화를 모두 갖춘다", 
   });
 });
 
-test("G1 28장 전체 원화·프롬프트·크롭 매핑이 완전하고 1024×1536이다", () => {
+test("G2 32장 전체 원화·프롬프트·크롭 매핑이 완전하고 1024×1536이다", () => {
   const cardsRoot = path.join(__dirname, "..");
   const data = JSON.parse(
     fs.readFileSync(path.join(cardsRoot, "cards.json"), "utf8")
@@ -460,21 +460,21 @@ test("G1 28장 전체 원화·프롬프트·크롭 매핑이 완전하고 1024×
     );
   });
 
-  assert.deepEqual(cropRows, ids, "프롬프트 문서의 크롭 행은 28장과 일치해야 한다");
+  assert.deepEqual(cropRows, ids, "프롬프트 문서의 크롭 행은 32장과 일치해야 한다");
   assert.deepEqual(
     Object.keys(context.window.CardView.artPosition).sort(),
     ids,
-    "렌더러의 크롭 매핑은 28장과 일치해야 한다"
+    "렌더러의 크롭 매핑은 32장과 일치해야 한다"
   );
 });
 
-test("컬렉션 해금 경제는 G1 28장 전체를 노출하고 이야기 극장과 짝이 맞는다", () => {
+test("컬렉션 해금 경제는 G2 32장 전체를 노출하고 이야기 극장과 짝이 맞는다", () => {
   const data = JSON.parse(
     fs.readFileSync(path.join(__dirname, "..", "cards.json"), "utf8")
   );
   const byId = new Map(data.cards.map((item) => [item.id, item]));
 
-  assert.equal(new Set(data.collection).size, 28);
+  assert.equal(new Set(data.collection).size, 32);
   assert.deepEqual(
     [...data.collection].sort(),
     data.cards.map((item) => item.id).sort(),
@@ -512,7 +512,7 @@ test("페르세우스 설명과 실제 v1 대전 상대 풀이 레어도 ±1 계
   const featuredCards = data.collection
     .map((id) => data.cards.find((entry) => entry.id === id))
     .filter(Engine.isBattleCard);
-  assert.equal(featuredCards.length, 28, "컬렉션 전원이 대전 가능해야 한다");
+  assert.equal(featuredCards.length, 32, "컬렉션 전원이 대전 가능해야 한다");
 
   featuredCards.forEach((player) => {
     const balancedOpponents = Engine.getBalancedEnemyPool(featuredCards, player);
@@ -1110,9 +1110,12 @@ test("검수 완료된 24장 PNG·WebP 원화는 바뀌지 않는다", () => {
     fs.readFileSync(path.join(__dirname, "..", "cards.json"), "utf8")
   );
   const artRoot = path.join(__dirname, "..", "art");
-  // 기존 검수 해시는 재계산하지 않는다. G1 파일은 별도 검사한다.
+  // 기존 검수 해시는 재계산하지 않는다. G1·G2 파일은 별도 검사한다.
   const files = data.collection
-    .filter((id) => !["zeus", "poseidon", "hades", "apollo"].includes(id))
+    .filter((id) => ![
+      "zeus", "poseidon", "hades", "apollo",
+      "minotaur", "cerberus", "hydra", "sphinx",
+    ].includes(id))
     .flatMap((id) => [id + ".png", id + ".webp"])
     .sort();
   const manifest = files

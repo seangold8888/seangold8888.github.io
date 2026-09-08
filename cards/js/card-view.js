@@ -42,7 +42,11 @@
     zeus: "50% 10%",
     poseidon: "50% 0%",
     hades: "50% 12%",
-    apollo: "50% 15%"
+    apollo: "50% 15%",
+    minotaur: "50% 6%",
+    cerberus: "50% 18%",
+    hydra: "50% 14%",
+    sphinx: "50% 55%"
   };
 
   function el(tag, className, text) {

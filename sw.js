@@ -141,18 +141,18 @@ const CORE_SHELL = [
   "./story/index.html",
   "./cards/",
   "./cards/index.html",
-  "./cards/styles.css?v=28",
+  "./cards/styles.css?v=29",
   "./cards/cards.json",
-  "./cards/js/engine.js?v=28",
-  "./cards/js/audio.js?v=28",
-  "./cards/js/card-view.js?v=28",
-  "./cards/js/vfx-recipes.js?v=28",
-  "./cards/js/story-gates.js?v=28",
-  "./cards/js/app.js?v=28",
+  "./cards/js/engine.js?v=29",
+  "./cards/js/audio.js?v=29",
+  "./cards/js/card-view.js?v=29",
+  "./cards/js/vfx-recipes.js?v=29",
+  "./cards/js/story-gates.js?v=29",
+  "./cards/js/app.js?v=29",
 ];
 
 // Existing games are precached as best-effort shells. A missing optional asset
-// must never prevent the hub, stories, cards and 28 card images from installing.
+// must never prevent the hub, stories, cards and 32 card images from installing.
 const PRINCESS_STUDIO_ASSETS = Object.entries({
   dress: "ballgown aline party mermaidline hanbok tutu tail winter star rainbow summer rose adventure",
   hair: "bob bun braid wavy pigtails daenggi curls afro",
@@ -455,6 +455,7 @@ const CARD_ART_FILES = [
   "heracles", "honggildong", "jack", "medusa", "mermaid", "midas", "odysseus",
   "perseus", "pinocchio", "polyphemus", "redhood", "snowqueen", "sunwukong",
   "threepigs", "tiger", "tortoisehare", "witch", "wolf", "zeus", "poseidon", "hades", "apollo",
+  "minotaur", "cerberus", "hydra", "sphinx",
 ].map((id) => `./cards/art/${id}.webp`);
 
 const VFX_ART_FILES = [

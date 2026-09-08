@@ -94,11 +94,11 @@ test("all checked-in Sanguo PNG, OGG and WAV assets are best-effort background a
   assert.equal(new Set(sw.SANGUO_RUNTIME_ASSETS).size, sw.SANGUO_RUNTIME_ASSETS.length);
 });
 
-test("all 28 collection cards have an install-time webp", () => {
+test("all 32 collection cards have an install-time webp", () => {
   const data = JSON.parse(fs.readFileSync(path.join(siteRoot, "cards", "cards.json"), "utf8"));
-  assert.equal(data.collection.length, 28);
-  assert.equal(sw.CARD_ART_FILES.length, 28);
-  assert.equal(new Set(sw.CARD_ART_FILES).size, 28);
+  assert.equal(data.collection.length, 32);
+  assert.equal(sw.CARD_ART_FILES.length, 32);
+  assert.equal(new Set(sw.CARD_ART_FILES).size, 32);
   for (const id of data.collection) {
     assert.ok(sw.CARD_ART_FILES.includes(`./cards/art/${id}.webp`), id);
   }
@@ -114,7 +114,7 @@ test("all story episode mp3 files match the service worker fallback list", () =>
   }
 });
 
-test("cache generation v60 preserves exact v28 card assets and canonical navigation aliases", () => {
+test("cache generation v60 preserves exact v29 card assets and canonical navigation aliases", () => {
   assert.equal(sw.CACHE_VERSION, "v60");
   assert.match(sw.STATIC_CACHE, /^adventure-box-v60-/);
   const studioImages = fs.readdirSync(path.join(siteRoot, "princess/assets/studio-v3")).filter(name => /\.(webp|jpg)$/.test(name));
@@ -132,7 +132,7 @@ test("cache generation v60 preserves exact v28 card assets and canonical navigat
     assert.ok(sw.OPTIONAL_SHELL.includes("./princess/assets/bodies-v4/body-" + id + ".webp"));
   }
   for (const asset of ["styles.css", "engine.js", "audio.js", "card-view.js", "vfx-recipes.js", "story-gates.js", "app.js"]) {
-    assert.ok(sw.CORE_SHELL.some(entry => entry.endsWith(asset + "?v=28")), asset);
+    assert.ok(sw.CORE_SHELL.some(entry => entry.endsWith(asset + "?v=29")), asset);
   }
   assert.doesNotMatch(swSource, /\?v=(?:19|20|21|22|23|24|25|26)|adventure-box-v(?:19|2\d|3\d|4\d|5[0-3])-/);
   assert.deepEqual(sw.VFX_ART_FILES, [

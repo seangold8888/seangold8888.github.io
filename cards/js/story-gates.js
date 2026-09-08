@@ -30,7 +30,11 @@
     zeus: "heracles",
     poseidon: "odyssey_cyclops",
     hades: "heracles",
-    apollo: "midas"
+    apollo: "midas",
+    minotaur: "heracles",
+    cerberus: "heracles",
+    hydra: "heracles",
+    sphinx: "perseus"
   });
 
   function question(id, cardId, prompt, choices, correctChoiceId, refs) {
@@ -612,19 +616,23 @@
       ["audio: sunwukong 오행산"])
   ];
 
-  // G1: 기존 검수 문항을 재사용한다. 새 음원을 검증한 것처럼 출처를 만들지 않는다.
+  // G1~G2: 기존 검수 문항을 재사용한다. 새 음원을 검증한 것처럼 출처를 만들지 않는다.
   // 문항 id와 최근 출제 기록은 카드별로 독립; 복수 해금 카드는 첫 이야기에서 출제.
   const greekQuestionSources = {
     zeus: ["heracles-twelve-labors", "heracles-torch-helper", "heracles-stable-river", "heracles-sky-giant", "heracles-labor-count"],
     poseidon: ["polyphemus-father", "polyphemus-sheep", "polyphemus-eye-count", "polyphemus-door", "odysseus-cyclops-name"],
     hades: ["heracles-twelve-labors", "heracles-hydra-heads", "heracles-torch-helper", "heracles-stable-river", "heracles-labor-count"],
-    apollo: ["midas-golden-touch", "midas-spirit", "midas-daughter", "midas-river", "midas-first-gold"]
+    apollo: ["midas-golden-touch", "midas-spirit", "midas-daughter", "midas-river", "midas-first-gold"],
+    minotaur: ["heracles-twelve-labors", "heracles-hydra-heads", "heracles-torch-helper", "heracles-stable-river", "heracles-sky-giant"],
+    cerberus: ["heracles-labor-count", "heracles-twelve-labors", "heracles-hydra-heads", "heracles-stable-river", "heracles-sky-giant"],
+    hydra: ["heracles-hydra-heads", "heracles-torch-helper", "heracles-twelve-labors", "heracles-stable-river", "heracles-labor-count"],
+    sphinx: ["perseus-mirror-shield", "perseus-winged-sandals", "perseus-three-hags", "perseus-princess", "perseus-sea-monster"]
   };
   Object.keys(greekQuestionSources).forEach(function (cardId) {
     greekQuestionSources[cardId].forEach(function (sourceId) {
       const original = all.find(function (item) { return item.id === sourceId; });
       if (!original || original.storyId !== cardStories[cardId]) {
-        throw new Error("G1 question story mismatch: " + sourceId);
+        throw new Error("Greek question story mismatch: " + sourceId);
       }
       all.push(question(cardId + "-" + sourceId, cardId, original.prompt,
         original.choices.map(function (choice) { return [choice.id, choice.text]; }),
