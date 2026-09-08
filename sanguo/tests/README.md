@@ -12,10 +12,19 @@ node sanguo/tests/combat-playthrough.cjs
 node sanguo/tests/mount-browser.cjs
 node sanguo/tests/mobile-viewport.cjs
 node sanguo/tests/xiyou-x1.cjs
+node sanguo/tests/xiyou-x2.cjs
 ```
 
 Set MENU_QA_OUTPUT / COMBAT_QA_OUTPUT / MOUNT_QA_OUTPUT to an external directory for screenshots.
-Set XIYOU_QA_OUTPUT for the X1 menu, boss and victory-lesson screenshots.
+Set XIYOU_QA_OUTPUT for the X1/X2 menu, boss and victory-lesson screenshots.
+
+## Xiyou X2 coverage
+
+- Erlang selection/portrait/launch at three viewport sizes, long-reach tuning and dedicated pellet-bow animation.
+- Actual dash/special/musou damage; pellet tap/charge state and combat-playthrough hit damage.
+- Three dedicated final bosses, stage education text and scrollable victory UI.
+- Five transparent atlases, 178 cached game media, existing card assets preserved.
+- Combat playthrough now covers 24 combinations, including Erlang at Heaven Palace and Lion-Camel Ridge.
 
 ## Xiyou X1 coverage
 
