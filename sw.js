@@ -141,14 +141,14 @@ const CORE_SHELL = [
   "./story/index.html",
   "./cards/",
   "./cards/index.html",
-  "./cards/styles.css?v=26",
+  "./cards/styles.css?v=27",
   "./cards/cards.json",
-  "./cards/js/engine.js?v=26",
-  "./cards/js/audio.js?v=26",
-  "./cards/js/card-view.js?v=26",
-  "./cards/js/vfx-recipes.js?v=26",
-  "./cards/js/story-gates.js?v=26",
-  "./cards/js/app.js?v=26",
+  "./cards/js/engine.js?v=27",
+  "./cards/js/audio.js?v=27",
+  "./cards/js/card-view.js?v=27",
+  "./cards/js/vfx-recipes.js?v=27",
+  "./cards/js/story-gates.js?v=27",
+  "./cards/js/app.js?v=27",
 ];
 
 // Existing games are precached as best-effort shells. A missing optional asset

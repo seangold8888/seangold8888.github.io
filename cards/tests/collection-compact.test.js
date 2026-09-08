@@ -149,7 +149,7 @@ test("양쪽 전투 카드가 같은 3줄 별점 렌더러를 사용하고 카�
   assert.match(app, /syncBattleCard\(dom\.enemyCardSlot/);
   assert.match(app, /CardView\.create\(side\.card, \{[\s\S]*?compact: true/);
   assert.match(viewSource, /else if \(options\.compact\) \{[\s\S]*?crown, stats, art/);
-  assert.equal((html.match(/\?v=26/g) || []).length, 7);
-  assert.doesNotMatch(html, /\?v=(?:24|25)/);
-  assert.equal((sw.match(/\.\/cards\/[^"\n]+\?v=26/g) || []).length, 7);
+  assert.equal((html.match(/\?v=27/g) || []).length, 7);
+  assert.doesNotMatch(html, /\?v=(?:25|26)/);
+  assert.equal((sw.match(/\.\/cards\/[^"\n]+\?v=27/g) || []).length, 7);
 });

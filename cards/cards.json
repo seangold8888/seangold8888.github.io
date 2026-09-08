@@ -392,10 +392,21 @@
       "hp": 80,
       "passive": {
         "name": "원탁의 기사",
-        "desc": "대기석의 내 용기 타입 HP +10 (v2)",
-        "fx": "v2_bench_buff"
+        "desc": "원탁의 기사들이 지켜 줘요. 받는 피해가 10 줄어요",
+        "fx": "reduce_dmg_10"
       },
       "attacks": [
+        {
+          "name": "바위에서 뽑은 검",
+          "cost": 1,
+          "dmg": 20,
+          "fx": null,
+          "desc": "",
+          "vfx": {
+            "kind": "strike",
+            "emoji": "⚔️"
+          }
+        },
         {
           "name": "엑스칼리버",
           "cost": 3,
@@ -411,10 +422,9 @@
       ],
       "unlock": "arthur",
       "art": "art/arthur.png",
-      "v1": false,
       "stats": {
         "attack": 4,
-        "defense": 4,
+        "defense": 5,
         "spirit": 1
       }
     },
@@ -615,8 +625,8 @@
           "name": "합동 연주",
           "cost": 2,
           "dmg": 0,
-          "fx": "v2_team_heal_10",
-          "desc": "내 카드 전원 HP +10 (v2)",
+          "fx": "gain_star_1",
+          "desc": "넷이 소리를 모아 별사탕을 하나 더 얻어요",
           "vfx": {
             "kind": "aura",
             "emoji": "🎵"
@@ -637,7 +647,6 @@
       ],
       "unlock": "bremen",
       "art": "art/bremen.png",
-      "v1": false,
       "stats": {
         "attack": 3,
         "defense": 3,
@@ -694,17 +703,28 @@
       "summonCost": 4,
       "hp": 90,
       "passive": {
-        "name": "근두운",
-        "desc": "교체를 턴마다 2번까지 (v2)",
-        "fx": "v2_double_switch"
+        "name": "칠십이변",
+        "desc": "처음 받는 공격은 다른 모습으로 바뀌어 흘려보내요",
+        "fx": "first_hit_zero"
       },
       "attacks": [
         {
+          "name": "여의봉 연타",
+          "cost": 1,
+          "dmg": 10,
+          "fx": null,
+          "desc": "",
+          "vfx": {
+            "kind": "strike",
+            "emoji": "🪄"
+          }
+        },
+        {
           "name": "분신술",
           "cost": 2,
-          "dmg": 0,
-          "fx": "v2_summon_clone",
-          "desc": "대기석에 분신 소환 (v2)",
+          "dmg": 10,
+          "fx": "skip_next_enemy",
+          "desc": "분신들이 에워싸 상대는 다음 턴에 기술을 못 써요",
           "vfx": {
             "kind": "summon",
             "emoji": "🐒"
@@ -725,10 +745,9 @@
       ],
       "unlock": "sunwukong",
       "art": "art/sunwukong.png",
-      "v1": false,
       "stats": {
         "attack": 4,
-        "defense": 4,
+        "defense": 5,
         "spirit": 3
       }
     },
@@ -898,8 +917,8 @@
           "name": "과자집 유혹",
           "cost": 1,
           "dmg": 0,
-          "fx": "v2_force_switch",
-          "desc": "상대 대기석 강제 교체 (v2)",
+          "fx": "weaken_next_20",
+          "desc": "다음 기술 피해를 최대 20 줄여요 (최소 10)",
           "vfx": {
             "kind": "debuff",
             "emoji": "🍭"
@@ -919,7 +938,6 @@
       ],
       "unlock": "witch",
       "art": "art/witch.png",
-      "v1": false,
       "stats": {
         "attack": 3,
         "defense": 2,
@@ -1069,11 +1087,22 @@
       "passive": null,
       "attacks": [
         {
+          "name": "거인의 손아귀",
+          "cost": 1,
+          "dmg": 20,
+          "fx": null,
+          "desc": "",
+          "vfx": {
+            "kind": "strike",
+            "emoji": "✋"
+          }
+        },
+        {
           "name": "쿵쿵 발구르기",
           "cost": 3,
           "dmg": 50,
-          "fx": "v2_splash_10",
-          "desc": "상대 대기석에도 10씩 (v2)",
+          "fx": null,
+          "desc": "",
           "vfx": {
             "kind": "burst",
             "emoji": "🦶",
@@ -1083,11 +1112,10 @@
       ],
       "unlock": "jack_story",
       "art": "art/beanstalkgiant.png",
-      "v1": false,
       "stats": {
         "attack": 4,
         "defense": 5,
-        "spirit": 2
+        "spirit": 1
       }
     },
     {

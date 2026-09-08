@@ -171,11 +171,11 @@ test("손패 UI와 캐시 버전 26이 함께 배포되도록 묶여 있다", ()
   ["fragmentTray", "fragmentHand", "fragmentPreview"].forEach((id) => {
     assert.match(html, new RegExp('id="' + id + '"'));
   });
-  assert.match(html, /styles\.css\?v=26/);
+  assert.match(html, /styles\.css\?v=27/);
   ["engine", "audio", "card-view", "vfx-recipes", "story-gates", "app"].forEach((file) => {
-    assert.match(html, new RegExp("js/" + file + "\\.js\\?v=26"));
+    assert.match(html, new RegExp("js/" + file + "\\.js\\?v=27"));
   });
-  assert.doesNotMatch(html, /\?v=(?:19|20|21|22|23|24|25)/);
+  assert.doesNotMatch(html, /\?v=(?:19|20|21|22|23|24|25|26)/);
 
   assert.match(css, /\.fragment-chip[\s\S]*?min-height: 68px/);
   assert.match(
@@ -558,7 +558,7 @@ test("miss·evade는 충돌음을 만들지 않고 날아가는 시작음만 낸
   });
 });
 
-test("48개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가진다", () => {
+test("51개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가진다", () => {
   const data = JSON.parse(read("cards.json"));
   const attacks = data.cards.flatMap((card) =>
     card.attacks.map((attack) => ({
@@ -572,7 +572,7 @@ test("48개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가진다", () => {
   const materialCounts = {};
   const signatures = new Set();
 
-  assert.equal(attacks.length, 48);
+  assert.equal(attacks.length, 51);
   attacks.forEach(({ card, cardType, attack }) => {
     assert.ok(attack.vfx, card + " / " + attack.name);
     assert.ok(attack.vfx.emoji, card + " / " + attack.name);
@@ -605,23 +605,23 @@ test("48개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가진다", () => {
     materialCounts[soundPlan.material] = (materialCounts[soundPlan.material] || 0) + 1;
     assert.ok(["brave", "wise", "magic", "monster"].includes(soundPlan.type));
   });
-  assert.equal(signatures.size, 48, "48개 기술은 각각 고유한 안정 음색 서명을 가져야 한다");
+  assert.equal(signatures.size, 51, "51개 기술은 각각 고유한 안정 음색 서명을 가져야 한다");
   assert.deepEqual(materialCounts, {
     body: 8,
     fire: 3,
     air: 10,
     wood: 3,
-    metal: 7,
+    metal: 8,
     stone: 4,
     paper: 2,
     hollow: 3,
     glass: 2,
-    crystal: 5,
-    earth: 1
+    crystal: 6,
+    earth: 2
   });
 
   assert.deepEqual(counts, {
-    strike: 12,
+    strike: 15,
     burst: 9,
     debuff: 8,
     projectile: 9,

@@ -497,8 +497,8 @@ test("컬렉션 해금 경제는 24장 전체를 노출하고 이야기 극장�
 
   const giant = byId.get("beanstalkgiant");
   assert.equal(giant.unlock, "jack_story");
-  assert.equal(giant.v1, false, "콩나무 거인은 해금·수집만 가능해야 한다");
-  assert.equal(Engine.isBattleCard(giant), false);
+  assert.notEqual(giant.v1, false, "콩나무 거인도 v1 풀에 들어가야 한다");
+  assert.equal(Engine.isBattleCard(giant), true);
 });
 
 test("페르세우스 설명과 실제 v1 대전 상대 풀이 레어도 ±1 계약을 지킨다", () => {
@@ -512,8 +512,7 @@ test("페르세우스 설명과 실제 v1 대전 상대 풀이 레어도 ±1 계
   const featuredCards = data.collection
     .map((id) => data.cards.find((entry) => entry.id === id))
     .filter(Engine.isBattleCard);
-  assert.equal(featuredCards.length, 19, "v1:false 5장을 뺀 전원이 대전 가능해야 한다");
-  assert.ok(!featuredCards.some((item) => item.id === "beanstalkgiant"));
+  assert.equal(featuredCards.length, 24, "컬렉션 전원이 대전 가능해야 한다");
 
   featuredCards.forEach((player) => {
     const balancedOpponents = Engine.getBalancedEnemyPool(featuredCards, player);

@@ -114,7 +114,7 @@ test("all story episode mp3 files match the service worker fallback list", () =>
   }
 });
 
-test("cache generation v54 preserves exact v26 card assets and canonical navigation aliases", () => {
+test("cache generation v54 preserves exact v27 card assets and canonical navigation aliases", () => {
   assert.equal(sw.CACHE_VERSION, "v54");
   assert.match(sw.STATIC_CACHE, /^adventure-box-v54-/);
   const studioImages = fs.readdirSync(path.join(siteRoot, "princess/assets/studio-v3")).filter(name => /\.(webp|jpg)$/.test(name));
@@ -132,9 +132,9 @@ test("cache generation v54 preserves exact v26 card assets and canonical navigat
     assert.ok(sw.OPTIONAL_SHELL.includes("./princess/assets/bodies-v4/body-" + id + ".webp"));
   }
   for (const asset of ["styles.css", "engine.js", "audio.js", "card-view.js", "vfx-recipes.js", "story-gates.js", "app.js"]) {
-    assert.ok(sw.CORE_SHELL.some(entry => entry.endsWith(asset + "?v=26")), asset);
+    assert.ok(sw.CORE_SHELL.some(entry => entry.endsWith(asset + "?v=27")), asset);
   }
-  assert.doesNotMatch(swSource, /\?v=(?:19|20|21|22|23|24|25)|adventure-box-v(?:19|20|21|22|23|24|25|26)-/);
+  assert.doesNotMatch(swSource, /\?v=(?:19|20|21|22|23|24|25|26)|adventure-box-v(?:19|2\d|3\d|4\d|5[0-3])-/);
   assert.deepEqual(sw.VFX_ART_FILES, [
     "./cards/art/vfx/frost-needle.webp",
     "./cards/art/vfx/gold-blade.webp",
