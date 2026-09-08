@@ -69,7 +69,7 @@ function instrument(html){
     q=start();h=q.level.hazards.find(h=>h.type==='hang'&&!h.demo);q.setDist(h.x-q.player.x);q.player.y-=160;q.player.grounded=false;q.updateHazards(0);check(q.lead===36,'jump cannot avoid hand');
     q=start();h=q.level.hazards.find(h=>h.demo);q.setDist(h.x-q.player.x);q.updateHazards(0);check(q.lead===62&&h.dead,'demo harmless');
     q=start();q.setLead(0);q.updateWorld(1/60);check(q.state==='rescue','zero lead rescues');q.resumeFromRescue();check(q.lead===62&&q.state==='return','rescue resets lead');
-    q=start();let prev=q.lead;for(let i=0;i<4;i++)q.collectStar({drawX:200,drawY:300});check(Math.abs(q.lead-prev-8.8)<.001,'combo bonus exactly once at third');
+    q=start();q.setLead(20);let prev=q.lead;for(let i=0;i<4;i++)q.collectStar({drawX:200,drawY:300});check(Math.abs(q.lead-prev-8.8)<.001,'combo bonus exactly once at third');
     q=start();q.setLead(40);q.setDist(q.level.checkpoints[1]);q.updateCheckpoints();check(q.lead===70,'checkpoint restores lead');
     q=start();q.setup({state:'intro'});prev=q.lead;tick(30);check(q.lead===prev,'no lead regen in intro');
     q=start();q.pauseGame();prev=q.lead;tick(30);check(q.lead===prev,'pause freezes lead');q.resumeFromPause();

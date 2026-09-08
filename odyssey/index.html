@@ -3714,7 +3714,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     const climax = ODY.Feel.clamp01((view.dist - 10150) / 1700);
     const hard = view.lead !== undefined;
     const near = hard ? 1 - ODY.Feel.clamp(view.lead,0,100)/100 : 0;
-    const x = hard ? -170 + near*340 : 30 - view.dist * 0.002 + climax * 22;
+    // 하드: 거리가 최대여도 왼쪽에 어깨가 걸치고(-40), 잡히기 직전에 화면 안까지 들어온다(170).
+    const x = hard ? -40 + near*210 : 30 - view.dist * 0.002 + climax * 22;
     const y = view.ground + 18;
     const scale = hard ? 0.83 + near*0.30 : 0.83 + climax * 0.1;
     const wind = hard ? Math.max(0.65,view.windup || 0) : view.windup || 0;
@@ -3972,7 +3973,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     const hurt = player.hurtTime > 0;
     let poseScaleX = player.sq.sx;
     let poseScaleY = player.sq.sy;
-    if (player.hard && player.sliding) { poseScaleX *= 1.22; poseScaleY *= 0.62; }
+    const sliding = !!(player.hard && player.sliding);
+    if (sliding) { poseScaleX *= 1.28; poseScaleY *= 0.54; }
     if (!player.grounded) {
       const stretch = F.clamp(Math.abs(player.vy) / 900, 0, 1) * 0.07;
       poseScaleX *= 1 - stretch * 0.55;
@@ -3982,8 +3984,9 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     ctx.save();
     ctx.translate(player.x, player.y + bob);
     ctx.scale(poseScaleX, poseScaleY);
-    if (player.hard && player.sliding) ctx.rotate(1.05);
-    if (hurt) ctx.rotate(-0.16);
+    // 숙이기는 기울이지 않고 바닥에 납작하게 눌린 모습으로만 보여 준다.
+    if (sliding) { /* no tilt */ }
+    else if (hurt) ctx.rotate(-0.16);
     else if (!player.grounded) ctx.rotate(player.vy < -80 ? -0.08 : 0.08);
     else ctx.rotate(0.035 + push * 0.018);
 
@@ -4111,7 +4114,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     const reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     const level = ODY.Levels.cyclops.build({hard:HARD});
     const player = new ODY.RunnerController({ x: 245, ground: level.ground, hard:HARD });
-    const LEAD = HARD ? {max:100,start:62,regen:6.5,hit:26,star:1.2,combo:4,rest:1.6,checkpoint:70,slowPenalty:60} : null;
+    const LEAD = HARD ? {max:100,start:62,regen:6.5,hit:26,star:1.2,combo:4,rest:1.6,checkpoint:70,slowPenalty:60,soft:62,softRest:78} : null;
     let lead = HARD ? LEAD.start : undefined, roarTime = 0, lowLeadAnnounced = false, slideHintShown = false;
 
     let simTime = 0;
@@ -4495,7 +4498,13 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       starsGot++;
       const previousCombo = combo;
       combo = comboTime > 0 ? Math.min(3, combo + 1) : (HARD ? 1 : 0);
-      if (HARD) lead = F.clamp(lead + LEAD.star + (combo === 3 && previousCombo !== 3 ? LEAD.combo : 0), 0, LEAD.max);
+      if (HARD) {
+        // 여유 거리가 클수록 별 한 개의 값이 줄어든다. 그래야 별을 아무리 주워도
+        // 거인이 화면 밖으로 사라지지 않고, 거리 막대도 100 에 붙어 멈추지 않는다.
+        const room = lead <= LEAD.soft ? 1 : Math.max(0, 1 - (lead - LEAD.soft) / (LEAD.max - LEAD.soft));
+        const gain = LEAD.star + (combo === 3 && previousCombo !== 3 ? LEAD.combo : 0);
+        lead = F.clamp(lead + gain * room, 0, LEAD.max);
+      }
       comboTime = 0.78;
       F.sparkle(star.drawX, star.drawY, '#ffe06b', 11);
       F.ring(star.drawX, star.drawY, '#fff4ae', 11, 0.24);
@@ -4560,7 +4569,15 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 
       if (HARD && state === 'run') {
         const resting = level.restZones.some(z => dist >= z.from && dist <= z.to);
-        lead = F.clamp(lead + (LEAD.regen * (resting ? LEAD.rest : 1) - LEAD.slowPenalty * (1-hitSlow)) * dt, 0, LEAD.max);
+        // 자동 회복은 거인이 화면 왼쪽에 어깨만큼 걸치는 거리까지만 올려 준다.
+        // 여기서 100까지 채우면 거인이 화면 밖(x -170)에 머물러 추격이 보이지 않는다.
+        // 그 위로 밀어내는 것은 별·연속 별·체크포인트뿐이라, "별을 주우면 멀어진다"가
+        // 화면에서 실제로 확인된다.
+        const cap = resting ? LEAD.softRest : LEAD.soft;
+        const drain = LEAD.slowPenalty * (1 - hitSlow);
+        const regen = lead < cap ? LEAD.regen * (resting ? LEAD.rest : 1) : 0;
+        lead = F.clamp(lead + (regen - drain) * dt, 0, LEAD.max);
+        if (regen > 0 && lead > cap) lead = cap;
         if (!slideHintShown && dist > 1400) { slideHintShown=true; showHint('거인의 손이 내려와! ↓ 를 눌러 숙여!'); }
         if (lead < 30) {
           if (!lowLeadAnnounced) { lowLeadAnnounced=true; UI.announce('거인이 가까워졌어요! 별을 주우면 다시 멀어져요.'); }
