@@ -51,3 +51,9 @@ test('warmups do not inflate the current-level accuracy',()=>{
  const entry=S.finishSession(st,[{level:4,firstTry:true},{level:5,firstTry:false},{level:5,firstTry:true,review:true}],'2026-09-07');
  assert.equal(entry.fresh,1);assert.equal(entry.acc,0);assert.equal(entry.reviews,1);
 });
+
+test('playground preference is validated without losing accumulated discoveries',()=>{
+ const old=S.clean({garden:27,coins:123});assert.equal(old.playgroundSpot,'bars');assert.equal(old.garden,27);assert.equal(old.coins,123);
+ assert.equal(S.clean({...old,playgroundSpot:'slide'}).playgroundSpot,'slide');
+ assert.equal(S.clean({...old,playgroundSpot:'invalid'}).playgroundSpot,'bars');
+});

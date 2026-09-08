@@ -1,4 +1,4 @@
-/* Starlight Garden: small, testable learning rules, separate from the view. */
+/* Math Playground: small, testable learning rules, separate from the view. */
 (function(root) {
   'use strict';
   const C = root.Curriculum || (typeof require !== 'undefined' ? require('./curriculum.js') : null);

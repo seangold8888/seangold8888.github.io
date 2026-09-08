@@ -59,7 +59,7 @@
     $("sLevel").textContent = L.id;
     renderPlan();
     const skills=window.MathLearning.summary(state,state.level), mastered=skills.filter(function(x) { return x.mastered; });
-    $("learningNote").textContent=skills.length+"개 개념 중 "+mastered.length+"개를 다른 날에도 혼자 해결했어요. 정원에는 발견 "+(state.garden || 0)+"개가 쌓였어요.";
+    $("learningNote").textContent=skills.length+"개 개념 중 "+mastered.length+"개를 다른 날에도 혼자 해결했어요. 놀이터에는 탐험 도장 "+(state.garden || 0)+"개가 쌓였어요.";
     const skillList=$("skillList"); skillList.textContent="";
     skills.forEach(function(skill) {
       const cell=document.createElement("div");cell.className="skill-item"+(skill.mastered?" mastered":"");

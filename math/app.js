@@ -5,6 +5,7 @@
   const $ = function (id) { return document.getElementById(id); };
   const storage = window.localStorage;
   const Learn = window.MathLearning;
+  const Play = window.MathPlayground;
   let hintStep = 0, sessionMode = "adventure", recovered = 0, nextTimer = null;
   let state = S.load(storage);
   const PRAISE = ["맞았어요", "정확해요", "잘했어요", "좋아요", "그렇지!", "딩동댕"];
@@ -131,12 +132,12 @@
     const progress=Learn.summary(state,state.level), mastered=progress.filter(function(x) { return x.mastered; }).length;
     $("planTag").textContent=mastered+" / "+progress.length+"개념";
     $("planTag").className="plan-tag";
-    $("planText").textContent="다른 날에도 혼자 풀 수 있으면 다음 정원으로 가요.";
+    $("planText").textContent="다른 날에도 혼자 풀 수 있으면 다음 단계로 가요.";
     renderTrack(st);
     renderBuddies();
     renderAlbum();
     renderMe();
-    renderGarden();
+    renderPlayground();
   }
 
   /* ---------- 내 캐릭터 · 코인 · 옷장 ---------- */
@@ -281,11 +282,11 @@
   }
   function renderProblem() {
     const p = current, el = $("problem");
-    $("skillLabel").textContent = Learn.LABELS[p.type] || "오늘의 발견";
+    $("skillLabel").textContent = Learn.LABELS[p.type] || "오늘의 수학놀이";
     const v=p.visual || {};
-    if(!placement && ["add","join"].includes(p.type)) $("skillLabel").textContent="꽃씨 "+v.a+"개와 "+(v.total-v.a)+"개를 모아 심어요";
-    if(!placement && ["sub","from10"].includes(p.type)) $("skillLabel").textContent="꽃 "+v.total+"송이 중 "+v.cross+"송이를 친구에게 선물해요";
-    if(!placement && p.type === "carry") $("skillLabel").textContent="꽃씨 "+v.a+"개와 "+v.b+"개를 10칸 화분에 나눠 담아요";
+    if(!placement && ["add","join"].includes(p.type)) $("skillLabel").textContent="블록 "+v.a+"개와 "+(v.total-v.a)+"개를 모아 놀아요";
+    if(!placement && ["sub","from10"].includes(p.type)) $("skillLabel").textContent="공 "+v.total+"개 중 "+v.cross+"개를 친구에게 건네줘요";
+    if(!placement && p.type === "carry") $("skillLabel").textContent="블록 "+v.a+"개와 "+v.b+"개를 10칸 상자에 나눠 담아요";
     $("mathPlay").hidden = true; $("mathPlay").textContent = "";
     $("hintBtn").hidden = !!placement; $("togetherBtn").hidden = !!placement;
     $("hintBtn").textContent = "✧ 힌트 보기";
@@ -398,7 +399,7 @@
       const growth = firstTry && (current.review || old.some(function(e) { return !e.ok; }));
       const rewardKey = S.today()+":"+Learn.skillKey(current);
       const growthBonus = growth && !state.growthRewards[rewardKey];
-      $("feedback").textContent = growthBonus ? "어려웠던 걸 혼자 해결했어요! 꽃이 활짝 ✿" : firstTry ? praiseLine()+" · 꽃에 물을 주었어요 ✿" : "끝까지 생각했어요. 한 뼘 자랐어요 ✿";
+      $("feedback").textContent = growthBonus ? "어려웠던 걸 혼자 해결했어요! ✓" : firstTry ? Play.byId(state.playgroundSpot).move+" ✓" : "끝까지 생각했어요. 한 칸 더 나아갔어요 ✓";
       $("feedback").className="feedback ok"; ding(true); burst();
       results.push({key:current.key,type:current.type,level:current.level,review:!!current.review,firstTry:firstTry,ms:firstTry?ms:0});
       S.addCoins(state,A.COIN.correct,"문제 끝까지 해결"); earned+=A.COIN.correct;
@@ -410,7 +411,7 @@
         if(follow) { follow.transfer=true; session.splice(Math.min(session.length,index+3),0,follow); }
       }
       $("keypad").hidden=true; $("hintBtn").hidden=true; $("togetherBtn").hidden=true;
-      index++; firstTry=true; hintStep=0; checkpoint();
+      index++; renderQuest(); firstTry=true; hintStep=0; checkpoint();
       if(index >= session.length) { finish(); return; }
       nextTimer=setTimeout(next,850);
       return;
@@ -512,9 +513,9 @@
     }
     if (lastEntry) {
       $("resultBig").textContent = "";
-      $("resultBig").appendChild(document.createTextNode(results.length + "개의 발견, "));
-      const small = document.createElement("small"); small.textContent = "정원이 자랐어요!"; $("resultBig").appendChild(small);
-      $("resultText").textContent = (recovered ? "어려웠던 것을 혼자 해결한 순간 "+recovered+"번. " : "오늘도 끝까지 생각했어요. ") + "코인 +"+earned+" · 내 정원에 발견 "+state.garden+"개";
+      $("resultBig").appendChild(document.createTextNode(results.length + "개의 탐험 도장, "));
+      const small = document.createElement("small"); small.textContent = "오늘도 해냈어요!"; $("resultBig").appendChild(small);
+      $("resultText").textContent = (recovered ? "어려웠던 것을 혼자 해결한 순간 "+recovered+"번. " : "오늘도 끝까지 생각했어요. ") + "코인 +"+earned+" · 모은 탐험 도장 "+state.garden+"개";
       const after = planStatus();
       $("resultLevel").textContent = lastEntry.change > 0 ? "다음 단계로 올라가요: " + levelInfo().name
         : lastEntry.change < 0 ? "조금 더 쉬운 문제로 연습해요: " + levelInfo().name
@@ -541,7 +542,7 @@
     const c = last ? F.byId(last.id) : (buddy() || F.guideFor(state.level));
     $("showDate").textContent = today.replace(/-/g, ". ") + " · " + levelInfo().name;
     $("showBadge").innerHTML = F.badge(c, 112);
-    $("showTitle").textContent = (state.name || "우리 아이") + ", 오늘 " + (results.length ? results.length + "개의 발견으로 정원을 가꿨어요" : "오늘의 정원 완성!");
+    $("showTitle").textContent = (state.name || "우리 아이") + ", 오늘 " + (results.length ? results.length + "문제를 풀며 놀이터를 탐험했어요" : "놀이터 탐험 완료!");
     const sk = S.streakInfo(state.stamps, today, state.planDays, Sc.isStudyDay);
     $("showText").textContent = "연속 " + sk.days + "일째 · 친구 앨범 " + collectedIds().length + "/" + F.CHARACTERS.length + "명";
     const hearted = !!state.hearts[today];
@@ -598,27 +599,38 @@
     }
     try { window.history.replaceState(null, "", window.location.pathname); } catch (_) {}
   }
-  function renderGarden() {
-    const chapters=["꽃을 피워요","분홍 꽃밭을 가꿔요","반짝 화분을 채워요","친구에게 꽃을 선물해요"];
-    const chapter=Math.floor((state.garden || 0)/24)%chapters.length;
-    $("missionTitle").textContent=chapters[chapter]; $("gardenChapter").textContent=(Math.floor((state.garden || 0)/24)+1)+"번째 정원";
-    $("gardenGreeting").textContent=state.name ? state.name+"의 작은 발견이 자라는 곳" : "오늘은 어떤 꽃이 필까?";
-    $("gardenStory").textContent=state.stamps[S.today()] ? "오늘도 정원이 자랐어. 내일 다시 만나!" : "작은 문제를 해결하며 토끼의 정원을 가꿔요.";
-    $("gardenTotal").textContent=state.garden || 0;
-    const bed=$("gardenBed"); bed.textContent="";
-    const flowers=Math.min(6,Math.floor((state.garden || 0)/3));
-    for(let i=0;i<6;i++) { const plot=document.createElement("div"); plot.className="plot"; const bloom=document.createElement("span"); bloom.className="bloom"+(i<flowers?"":" closed"); bloom.setAttribute("aria-hidden","true"); const label=document.createElement("small"); label.textContent=i<flowers?"활짝":"새싹"; plot.append(bloom,label); bed.appendChild(plot); }
+  function renderPlayground() {
+    const spot=Play.byId(state.playgroundSpot), total=state.garden || 0;
+    $("missionTitle").textContent=spot.mission;
+    $("playgroundChapter").textContent=(Math.floor(total/24)+1)+"번째 탐험";
+    $("playgroundGreeting").textContent=spot.name+"\n타러 가자!";
+    if(spot.id === "blocks") $("playgroundGreeting").textContent="블록으로 무엇을 만들까?";
+    if(spot.id === "steps") $("playgroundGreeting").textContent="징검다리 건너러 가자!";
+    $("playgroundStory").textContent=state.stamps[S.today()] ? "오늘도 신나게 놀았어. 내일 다시 만나!" : spot.id === "bars" ? "문제 하나, 구름사다리 한 칸. 천천히 같이 가요." : "작은 문제를 풀며 함께 놀아요. 내 속도로, 한 걸음씩!";
+    $("playgroundTotal").textContent=total;
+    const map=$("playgroundMap"); map.textContent="";
+    Play.SPOTS.forEach(function(item) {
+      const button=document.createElement("button"); button.type="button"; button.className="play-spot";
+      button.dataset.spot=item.id; button.setAttribute("aria-pressed",String(item.id===spot.id));
+      button.setAttribute("aria-label",item.description+" 선택"); button.appendChild(Play.icon(item.id));
+      const label=document.createElement("span"); label.textContent=item.name; button.appendChild(label);
+      if(item.id === "bars") { const badge=document.createElement("small"); badge.className="favorite"; badge.textContent="최애"; button.appendChild(badge); }
+      button.addEventListener("click",function() { state.playgroundSpot=item.id; S.save(storage,state); renderPlayground(); $("playgroundMap").querySelector('[data-spot="'+item.id+'"]').focus({preventScroll:true}); });
+      map.appendChild(button);
+    });
     const pending=state.pending && state.pending.level === state.level;
-    $("startBtn").textContent=pending?"하던 모험 이어하기 →":"오늘의 모험 시작 →";
+    $("startBtn").textContent=pending?"하던 탐험 이어하기 →":spot.name+" 출발 →";
     $("quickBtn").hidden=!!pending; $("resumeNote").hidden=!pending;
     if(pending) $("resumeNote").textContent=state.pending.index+"문제까지 했어요. 이어서 가볼까요?";
-    $("teaser").textContent=state.stamps[S.today()] ? "오늘은 여기까지 해도 좋아요. 정원은 내일도 기다려요." : "도움이 필요하면 힌트를 눌러요. 천천히 해도 괜찮아.";
+    $("teaser").textContent=state.stamps[S.today()] ? "오늘은 여기까지 해도 좋아요. 놀이터는 내일도 기다려요." : "도움이 필요하면 힌트를 눌러요. 천천히 해도 괜찮아.";
     $("guideSay").textContent=(buddy() || F.guideFor(state.level)).name+": "+(pending?"다시 만나서 반가워! 이어서 해볼까?":"네 속도로 해도 좋아. 내가 함께할게!");
   }
   function renderQuest() {
-    $("quizMission").textContent=placement?"어디서 시작할지 함께 찾아요":sessionMode === "quick"?"작은 발견 3개로 꽃을 깨워요":"발견 하나마다 꽃이 피어나요";
-    const box=$("questBlooms"); box.textContent="";
-    for(let i=0;i<5;i++) { const el=document.createElement("span"); el.className="bloom"+(session && i<Math.round(5*index/session.length)?"":" closed"); box.appendChild(el); }
+    const spot=Play.byId(state.playgroundSpot);
+    $("quizMission").textContent=placement?"어디서 시작할지 함께 찾아요":spot.name+" · 한 칸씩, 내 속도로";
+    const box=$("questRungs"); box.textContent=""; box.hidden=!!placement;
+    if(placement || !session) return;
+    for(let i=0;i<session.length;i++) { const el=document.createElement("span"); el.className="rung"+(i<index?" done":i===index?" current":""); box.appendChild(el); }
   }
   function renderMathPlay() {
     const p=current,v=p.visual || {},supported=["carry","make10","split10","missing","add","join","split"];
@@ -626,14 +638,14 @@
     const target=p.type === "carry" ? 10 : v.total;
     if(!target || target>10) return;
     const box=$("mathPlay"); box.hidden=false; box.textContent=""; $("visual").textContent="";
-    const label=document.createElement("p"); label.textContent="빈자리를 눌러 씨앗을 놓아 봐요. "+v.a+"개에서 "+target+"개를 만들어요."; box.appendChild(label);
+    const label=document.createElement("p"); label.textContent="빈자리를 눌러 블록을 놓아 봐요. "+v.a+"개에서 "+target+"개를 만들어요."; box.appendChild(label);
     const frame=document.createElement("div"); frame.className="ten-frame"; let added=0;
     for(let i=0;i<target;i++) {
-      const seed=document.createElement("button"); seed.type="button"; seed.className="seed"+(i<v.a?" filled":""); seed.disabled=i<v.a;
-      seed.setAttribute("aria-label",i<v.a?"이미 놓인 씨앗":"씨앗 놓기"); seed.setAttribute("aria-pressed",String(i<v.a));
-      seed.addEventListener("click",function() { const on=seed.classList.toggle("filled");seed.classList.toggle("added",on);seed.setAttribute("aria-pressed",String(on));seed.setAttribute("aria-label",on?"씨앗 빼기":"씨앗 놓기");added+=on?1:-1;
+      const block=document.createElement("button"); block.type="button"; block.className="math-block"+(i<v.a?" filled":""); block.disabled=i<v.a;
+      block.setAttribute("aria-label",i<v.a?"이미 놓인 블록":"블록 놓기"); block.setAttribute("aria-pressed",String(i<v.a));
+      block.addEventListener("click",function() { const on=block.classList.toggle("filled");block.classList.toggle("added",on);block.setAttribute("aria-pressed",String(on));block.setAttribute("aria-label",on?"블록 빼기":"블록 놓기");added+=on?1:-1;
         label.textContent=v.a+"개에 "+added+"개를 더 놓았어요."+(v.a+added===target?(p.type === "carry"?" 10을 만들었네! 옮기고 남은 것도 더해 볼까요?":" 모두 채웠어요. 식과 연결해 볼까요?"):" 남은 자리를 살펴봐요.");
-      }); frame.appendChild(seed);
+      }); frame.appendChild(block);
     }
     box.appendChild(frame);
   }

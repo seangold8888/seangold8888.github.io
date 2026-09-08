@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#fde7f0">
+<meta name="theme-color" content="#f6f7ed">
 <title>재이의 수학놀이터 · 매일 수학 10분</title>
 <link rel="icon" href="../icon.png">
 <link rel="apple-touch-icon" href="../icon-192.png">
@@ -13,24 +13,24 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Nunito:wght@800;900&display=swap">
 <link rel="stylesheet" href="style.css?v=20">
-<link rel="stylesheet" href="garden.css?v=20">
+<link rel="stylesheet" href="playground.css?v=22">
 </head>
 <body>
 <div class="sky" aria-hidden="true"><i></i><i></i><i></i><i></i><b>★</b><b>★</b><b>★</b></div>
 <div class="wrap" id="app">
   <header class="top">
-    <h1><span class="brand-star">✦</span> 재이의 수학놀이터</h1>
+    <h1><span class="brand-mark" aria-hidden="true">▤</span> 재이의 수학놀이터</h1>
     <span class="who" id="who"></span>
   </header>
 
   <section id="setup" hidden>
     <div class="card">
-      <div class="welcome-art" aria-hidden="true"></div><p class="eyebrow">작은 발견이 자라는 곳</p>
-      <p class="level-name">반가워! 함께 정원을 가꿔요.</p>
+      <div class="welcome-art" aria-hidden="true"></div><p class="eyebrow">매일 만나고 싶은 나의 놀이터</p>
+      <p class="level-name">반가워! 구름사다리 타러 가자.</p>
       <label class="field">이름<input id="setupName" maxlength="12" placeholder="예: 재이" autocomplete="off"></label>
       <input id="setupSchool" type="hidden">
       <label class="field">학년<select id="setupGrade"><option value="1">1학년</option><option value="2">2학년</option><option value="3">3학년</option><option value="4">4학년</option><option value="5">5학년</option><option value="6">6학년</option></select></label>
-      <p class="hint">이름은 나중에 알려 줘도 좋아요. 쉬운 문제 3개로 만나볼까요?</p><button class="btn big" id="quickSetupBtn">정원에 놀러 가기 →</button>
+      <p class="hint">이름은 나중에 알려 줘도 좋아요. 쉬운 문제 3개로 만나볼까요?</p><button class="btn big" id="quickSetupBtn">놀이터에 들어가기 →</button>
       <button class="btn ghost" id="setupBtn">실력 확인부터 할래요</button>
     </div>
   </section>
@@ -50,17 +50,17 @@
   </section>
 
   <section id="home">
-    <div class="garden-hero">
-      <div class="hero-copy"><p class="hero-kicker">매일 조금씩, 나만의 발견</p><h2 id="gardenGreeting">오늘은 어떤 꽃이 필까?</h2><p id="gardenStory">토끼와 함께 수학으로 정원을 가꿔요.</p></div>
-      <div class="garden-total"><span>✦</span> <b id="gardenTotal">0</b>개의 발견</div>
+    <div class="playground-hero">
+      <div class="hero-copy"><p class="hero-kicker">오늘도 신나게, 내 속도로</p><h2 id="playgroundGreeting">구름사다리 타러 가자!</h2><p id="playgroundStory">문제 하나, 구름사다리 한 칸. 천천히 같이 가요.</p></div>
+      <div class="playground-total"><span aria-hidden="true">✓</span> <b id="playgroundTotal">0</b>개의 탐험 도장</div>
     </div>
     <div class="mission-panel">
-      <div class="mission-heading"><div><p class="eyebrow">오늘의 초대</p><h3 id="missionTitle">꽃을 피워요</h3></div><span class="chapter-pill" id="gardenChapter">첫 번째 정원</span></div>
+      <div class="mission-heading"><div><p class="eyebrow">오늘의 초대</p><h3 id="missionTitle">구름사다리로 출발!</h3></div><span class="chapter-pill" id="playgroundChapter">첫 번째 탐험</span></div>
       <p class="hint" id="resumeNote" hidden></p>
-      <div class="start-actions"><button class="btn big" id="startBtn">오늘의 모험 시작 →</button><button class="btn secondary" id="quickBtn">가볍게 3문제</button></div>
+      <div class="start-actions"><button class="btn big" id="startBtn">구름사다리 출발 →</button><button class="btn secondary" id="quickBtn">가볍게 3문제</button></div>
       <p class="tiny" id="homeReview"></p><p class="tiny" id="teaser"></p>
     </div>
-    <div class="garden-bed" id="gardenBed" aria-label="내가 키운 정원"></div>
+    <div class="section-label spot-heading"><h3>어디서 놀까?</h3><span>구름사다리는 재이의 최애</span></div><div class="playground-map" id="playgroundMap" aria-label="탐험할 놀이기구 선택"></div>
     <div class="section-label"><h3>나와 함께하는 친구들</h3><span>오늘도 반가워</span></div>
 
     <div class="card me" id="meCard">
@@ -145,7 +145,7 @@
   </section>
 
   <section id="quiz" hidden>
-    <div class="quiz-garden"><span id="quizMission">꽃에 물을 주어요</span><div id="questBlooms" class="quest-blooms" aria-hidden="true"></div></div><p class="count" id="count"></p>
+    <div class="quiz-playground"><span id="quizMission">구름사다리를 한 칸씩 건너요</span><div id="questRungs" class="quest-rungs" aria-hidden="true"></div></div><p class="count" id="count"></p>
     <div class="progress"><i id="bar"></i></div>
     <div class="card">
       <p class="eyebrow" id="skillLabel"></p><p class="problem" id="problem"></p>
@@ -173,7 +173,7 @@
 
   <section id="result" hidden>
     <div class="card center result-card">
-      <div class="result-garden" aria-hidden="true"></div><p class="eyebrow">오늘도 한 뼘 자랐어요</p><div class="sticker-big" id="stickerBig"></div>
+      <div class="result-playground" aria-hidden="true"></div><p class="eyebrow">오늘의 놀이터 탐험 완료!</p><div class="sticker-big" id="stickerBig"></div>
       <p class="sticker-name" id="stickerName"></p>
       <p class="result-big" id="resultBig"></p>
       <p class="small" id="resultText"></p>
@@ -205,12 +205,13 @@
 <script src="curriculum.js?v=20"></script>
 <script src="visual.js?v=20"></script>
 <script src="learning.js?v=20"></script>
-<script src="store.js?v=20"></script>
+<script src="store.js?v=22"></script>
 <script src="schedule.js?v=20"></script>
 <script src="characters.js?v=20"></script>
 <script src="placement.js?v=20"></script>
 <script src="../princess/studio.js?v=36"></script>
 <script src="avatar.js?v=20"></script>
-<script src="app.js?v=21"></script>
+<script src="playground.js?v=22"></script>
+<script src="app.js?v=22"></script>
 </body>
 </html>

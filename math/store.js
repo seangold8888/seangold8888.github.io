@@ -16,7 +16,7 @@
       planStart: today(), planEnd: "2027-01-29", planDays: 6, planFrom: 1,
       album: [], hearts: {}, chests: {}, buddy: null,
       school: "", grade: 1, placed: false, placement: null,
-      skills: {}, pending: null, garden: 0, wish: null, growthRewards: {},
+      playgroundSpot: "bars", skills: {}, pending: null, garden: 0, wish: null, growthRewards: {},
       coins: 0, coinLog: [], owned: {}, avatar: null };
   }
   function clean(s) {
@@ -52,6 +52,7 @@
     out.pending = out.pending && Array.isArray(out.pending.problems) && out.pending.problems.length <= 40 && out.pending.problems.every(function(p) { return p && Number.isInteger(p.answer) && typeof p.text === "string" && typeof p.key === "string" && p.level >= 1 && p.level <= 12; }) && Number.isInteger(out.pending.index) && out.pending.index >= 0 && out.pending.index < out.pending.problems.length && Array.isArray(out.pending.results) && out.pending.results.length === out.pending.index ? out.pending : null;
     out.garden = Math.max(0, Math.min(99999, parseInt(out.garden, 10) || 0));
     out.growthRewards = out.growthRewards && typeof out.growthRewards === "object" ? out.growthRewards : {};
+    out.playgroundSpot = ["bars","slide","swing","seesaw","blocks","steps"].indexOf(out.playgroundSpot) >= 0 ? out.playgroundSpot : "bars";
     out.wish = typeof out.wish === "string" ? out.wish : null;
     out.avatar = out.avatar && typeof out.avatar === "object" && out.avatar.char ? out.avatar : null;
     return out;
