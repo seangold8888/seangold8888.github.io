@@ -151,7 +151,7 @@
     let guard = 0;
     while (list.length < n && guard++ < 1000) { const p = C.makeProblem(level); if (seen[p.key]) continue; seen[p.key] = true; list.push(p); }
     const sheet = $("sheet"); sheet.textContent = "";
-    const h = document.createElement("h1"); h.textContent = "매일 수학 10분 · " + L.id + "단계 " + L.name; sheet.appendChild(h);
+    const h = document.createElement("h1"); h.textContent = "재이의 수학놀이터 · " + L.id + "단계 " + L.name; sheet.appendChild(h);
     const meta = document.createElement("p"); meta.className = "meta"; meta.textContent = "이름: " + (state.name || "________") + "    날짜: " + S.today() + "    " + L.unit; sheet.appendChild(meta);
     const ol = document.createElement("ol");
     list.forEach(function (p) { const li = document.createElement("li"); li.innerHTML = p.text.replace("□", '<span class="blank"></span>'); ol.appendChild(li); });

@@ -599,7 +599,7 @@
     try { window.history.replaceState(null, "", window.location.pathname); } catch (_) {}
   }
   function renderGarden() {
-    const chapters=["별빛 꽃을 피워요","분홍 꽃밭을 가꿔요","반짝 화분을 채워요","친구에게 꽃을 선물해요"];
+    const chapters=["꽃을 피워요","분홍 꽃밭을 가꿔요","반짝 화분을 채워요","친구에게 꽃을 선물해요"];
     const chapter=Math.floor((state.garden || 0)/24)%chapters.length;
     $("missionTitle").textContent=chapters[chapter]; $("gardenChapter").textContent=(Math.floor((state.garden || 0)/24)+1)+"번째 정원";
     $("gardenGreeting").textContent=state.name ? state.name+"의 작은 발견이 자라는 곳" : "오늘은 어떤 꽃이 필까?";
