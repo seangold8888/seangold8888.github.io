@@ -16,6 +16,8 @@
 - 서비스워커에 게임 미디어 178개 등록. 최신 카드 28장·카드 자산 v28 보존, 공유 캐시 v60.
 - X2 전투 브라우저 페이지 오류 0, HTTP 400 이상 0.
 
+전체 허브 PWA 검사는 부분 체크아웃에 없는 루트·카드·스토리·어벤져스 파일 때문에 7건이 누락 오류였다(10건 통과). 서유기 미디어·캐시 세대에 해당하는 2건을 별도 실행해 2/2 통과했다. 전체 허브 통과로 주장하지 않는다.
+
 ## 재현
 
 ```sh
@@ -25,10 +27,9 @@ node sanguo/tests/combat-playthrough.cjs
 node sanguo/tests/art-atlas.cjs
 node sanguo/tests/mobile-viewport.cjs
 node --test sanguo/tests/dash-skills.test.cjs sanguo/tests/combat-bounds.test.cjs sanguo/tests/mounted-sprites.test.cjs
-node --test cards/tests/pwa.test.js
+node --test --test-name-pattern="checked-in Sanguo|cache generation" cards/tests/pwa.test.js
 ```
 
 Node와 Playwright/Chromium, sharp가 필요하다. 이번 검증은 OneDrive가 아닌 Codex 번들 런타임을 NODE_PATH로 사용했다. XIYOU_QA_OUTPUT을 지정하면 메뉴·보스·승리 화면을 외부 폴더에 저장한다.
 
 전투 자동 검증은 테스트 응답에만 내부 접근을 주입하고 적 피해를 차단해 진행·명중을 검증한다. 실제 아이패드 성능, 아이의 난이도와 홀드 감각 검증을 대신하지 않는다. 홍해아 플레이와 풍화륜은 X3, 페인팅 배경은 X4로 남는다.
-
