@@ -49,6 +49,14 @@ Constraints: original public-domain interpretation; character and scene art only
 - `cerberus.png`: 몸 하나·머리 정확히 셋·다리 넷인 큰 수호견. 세 얼굴은 경계·호기심·졸림으로 구분되고 입을 다물어 이빨이 없다. 보랏빛 강과 밀폐형 금빛 등불의 저승문, 불꽃·사슬·해골 없음.
 - `hydra.png`: 한 몸에서 이어진 목과 머리 정확히 아홉 개의 청록 물뱀. 중앙 하나와 양쪽 네 개씩을 부채꼴로 펼치고 모든 입은 다문다. 잘린 목·재생 상처·피·독 침·전투 장면 없음.
 - `sphinx.png`: 친근하고 영리한 젊은 여성 얼굴, 황금 사자 몸, 보랏빛 독수리 날개가 한 존재로 이어진 그리스 스핑크스. 사자 앞발로 자갈 정확히 세 개를 배열한다. 사람 손·노출 몸·이집트 머리장식·문자 없음.
+- `achilles.png`: 붉은 튜닉과 청동 갑옷의 젊은 영웅이 둥근 방패와 긴 창을 들고 별빛 해안 절벽에 선다. 상처나 화살 없이 한쪽 샌들의 발뒤꿈치만 은은한 금빛으로 강조한다.
+- `theseus.png`: 청록 튜닉의 젊은 영웅이 달빛 미궁 출구에서 붉은 금빛 실타래 공을 높이 들고, 다른 손의 짧은 청동 검은 아래로 향한다. 괴물·전투 장면 없음.
+- `artemis.png`: 짙은 초록 튜닉과 은빛 망토의 사냥 여신이 달빛 숲에서 은활과 화살을 느슨하게 들고 길을 지킨다. 활은 관객을 겨누지 않고 노출 복식·전투 장면 없음.
+- `atalanta.png`: 황금색 튜닉과 자주색 바지의 젊은 달리기 영웅이 사냥 창을 몸과 나란히 들고 달빛 숲길을 질주한다. 길에는 황금 사과가 정확히 세 개 굴러간다.
+- `athena.png`: 청록 옷과 청동 갑옷의 지혜 여신이 전략 돌을 살피고, 문양 없는 둥근 방패 위에는 올빼미가 앉아 있다. 창은 세워 들고 전투·메두사 얼굴 문양 없음.
+- `hermes.png`: 하늘색 튜닉과 황금 망토의 젊은 전령이 구름다리를 가볍게 걷는다. 양쪽 신발의 날개, 두 뱀이 감긴 전령 지팡이, 닫힌 가죽 가방이 또렷하다.
+- `orpheus.png`: 자주색 튜닉과 청록 망토의 젊은 음악가가 고요한 달빛 강가에서 황금 리라를 연주한다. 음표 기호·유령·해골 없이 따뜻한 빛의 물결만 퍼진다.
+- `prometheus.png`: 남색 튜닉과 녹슨 붉은 망토의 온화한 거인이 산등성이에서 작은 불이 든 흙 등잔을 두 손으로 보호한다. 독수리는 멀리 날고 사슬·상처·처벌 장면 없음.
 ## 카드 크롭
 
 | id | object-position |
@@ -85,6 +93,14 @@ Constraints: original public-domain interpretation; character and scene art only
 | cerberus | `50% 18%` |
 | hydra | `50% 14%` |
 | sphinx | `50% 55%` |
+| achilles | `50% 20%` |
+| theseus | `50% 22%` |
+| artemis | `50% 24%` |
+| atalanta | `50% 30%` |
+| athena | `50% 18%` |
+| hermes | `50% 28%` |
+| orpheus | `50% 24%` |
+| prometheus | `50% 20%` |
 
 두 번째 묶음(요정 대모·빨간 모자·잭)은 첫 묶음(신데렐라·오디세우스·폴리페모스)을 스타일·조명·재질 참고 이미지로 사용했고, 인물과 구도는 복제하지 않도록 명시했다. 6단계 전 검수에서 신데렐라와 폴리페모스는 위 장면으로 새로 생성해 PNG·WebP를 모두 교체했다.
 
@@ -180,4 +196,62 @@ Use case: stylized-concept. Create a NEW original premium collectible card chara
 
 ```text
 Use case: precise-object-edit. Recompose this SAME friendly Greek sphinx painting for a horizontal card crop within a 1024x1536 vertical canvas. Preserve the exact warm intelligent youthful feminine face, short dark curly hair, simple golden headband, golden lion fur, purple eagle-feather wings, four lion paws, one tail, rich painterly detail, colors and gentle mood. Change ONLY the creature's pose and framing: it now reclines LOW on the stone ledge, its chest and bent lion front legs comfortably lowered, holding its head above its forepaws. Bring the THREE smooth plain pebbles up beside the forepaws close beneath its face. CRITICAL COMPOSITION: arrange the ENTIRE head, recognizable spread purple wing shoulders, both LION forepaws and THREE pebbles within the rectangle x=100..924 and y=210..980 pixels. Face center around y=390, lion paws and three pebbles around y=860. Lower third may show the ledge, recumbent lion flank and softly lit architecture. It must immediately read as a human-faced winged LION in a 5:4 crop spanning y=180..999; not a winged human portrait. Do not add any human hands/arms or human torso. Four lion legs total. No text, symbols, UI, border, watermarks. A modest 5-8-year-old-friendly mythological guardian. Output 1024x1536 RGB.
+```
+
+## 그리스 G3~G4 최종 프롬프트 (2026-09-09)
+
+Codex 내장 ImageGen으로 카드마다 한 번씩 별도 생성했다. 여덟 원본은 중앙 cover 방식으로 1024×1536 RGB PNG에 정규화하고 같은 그림을 WebP 품질 90으로 인코딩했다. 실제 호출 프롬프트는 아래 공통부와 카드별 Subject 문장을 이어 붙인 것이다.
+
+공통부:
+
+```text
+Use case: stylized-concept. Asset type: premium collectible card-game character art only. Create a NEW original vertical 1024x1536 RGB portrait painting in the established "starlit epic storybook" world: richly layered hand-painted cinematic fantasy, luminous jewel tones, convincing classical cloth/bronze/stone/wood textures, sculpted warm painterly light, deep indigo night and champagne-gold rim light, natural expressive face, animated-feature concept-art finish without imitating any existing artist, film, game, or trading-card brand. Character fills 65-80% of image height, expressive face in upper third; face, action, and signature props grouped in central 72% and clearly readable in a landscape 5:4 card crop. Strong foreground/middle/background depth and restrained softly painted environment. Appropriate for ages 5-8: wondrous, clever, friendly, never violent or frightening. Fully clothed with torso and legs modestly covered. Character and scene art only. No text, letters, numerals, runes, emblems, decorative symbols, card frame, border, UI, icons, logo, watermark, blood, wounds, gore, skulls, bones, severed body parts, horror, nudity, threatening teeth, victims, or weapon aimed at viewer.
+```
+
+### achilles
+
+```text
+Subject: ACHILLES, a brave youthful Greek hero with sun-warmed olive skin, short tousled chestnut curls, bright determined but kind eyes, and a distinct youthful face. He stands in a strong three-quarter pose on a windswept starlit coastal ridge. Fully clothed in a deep crimson long-sleeved tunic beneath practical polished bronze scale armor, bronze greaves, and a deep sapphire cloak. In one hand he holds ONE long plain bronze-tipped spear diagonally upward; in the other, ONE large round polished bronze shield at his side. A subtle warm golden glow circles only the heel area of one sandal as a visual hint, with no wound and no arrow. Face, shield, spear hand, and glowing heel all remain readable in the central crop. Ancient ships are tiny soft silhouettes far below, no battle or soldiers. Palette bronze, crimson, sapphire, warm gold. Confident protective hero, not angry. No helmet covering face, no exposed chest, no arrows in body, no Hollywood Troy or existing game likeness.
+```
+
+### theseus
+
+```text
+Subject: THESEUS, an clever friendly young Greek labyrinth hero with short dark curls, olive skin, alert warm brown eyes, and a slim agile build. He has just found the moonlit exit of an ancient stone maze. Fully clothed in a teal long-sleeved tunic, fitted dark trousers, modest bronze chest guard and warm rust cloak. In his raised left hand he holds a clearly visible glowing BALL OF RED-GOLD THREAD at chest height; the thread traces one elegant continuous line back through the maze. In his other lowered hand is ONE simple bronze short sword, safely angled down and away. Face, thread ball, line, and sword hilt cluster in the central crop. Warm lantern glow reveals branching corridors behind, with no Minotaur, no fight, no victims. Palette teal, rust, bronze, ruby thread, indigo stone. Expression delighted and thoughtful, solving a puzzle. No exposed muscles, no severed parts, no copied movie hero.
+```
+
+### artemis
+
+```text
+Subject: ARTEMIS, an original youthful Greek moonlit huntress and guardian of the forest, with a calm warm face, olive skin, dark wavy hair tied in a practical high braid, clear silver-gray eyes. Fully clothed in a forest-green long-sleeved knee-length tunic over fitted dark leggings, silver-gray shoulder mantle, practical bronze bracers and boots; no exposed chest or thigh. She stands on a moonlit woodland ledge holding ONE elegant silver bow across her body, with ONE silver-tipped arrow resting loosely but not drawn and never aimed at viewer. A real crescent moon glows in the sky behind her, not a graphic logo. Face, bow curve, arrow, and protective open-hand gesture remain in the central crop. A small peaceful deer silhouette is far in the mist, secondary and unobtrusive. Silver moonbeams, emerald leaves, deep indigo forest and warm gold edge light. Gentle watchful smile, protector rather than attacker. No modern superhero, no Hunger Games likeness, no oversized antlers, no violent hunt.
+```
+
+### atalanta
+
+```text
+Subject: ATALANTA, a fast joyful young Greek runner and huntress with warm brown skin, long dark auburn hair streaming in a practical tied ponytail, lively focused eyes and a distinct athletic youthful face. Fully clothed in a saffron-gold long-sleeved tunic over fitted plum leggings, short forest-green cloak, bronze belt, bracers and boots. Capture a decisive side-three-quarter sprint along a moonlit woodland race path: one foot just touching the ground, one knee lifting, cloak and hair sweeping back in a clean diagonal. She carries ONE light hunting spear safely parallel to her stride, not aimed at anyone. Exactly THREE gleaming golden apples roll along the path beside and slightly ahead of her, all three visible and countable in the central crop. Face, spear, running pose, and three apples readable at small size. Indigo forest, amber path, emerald and plum accents, sparkling dust only as natural light. She looks delighted by the race, no opponent, no fight. No modern sportswear, no Wonder Woman likeness, no exposed torso, no extra limbs or extra apples.
+```
+
+### athena
+
+```text
+Subject: ATHENA, a wise protective young adult Greek strategist with warm olive skin, large calm gray eyes, and dark chestnut hair gathered into a braided crown; a confident thoughtful face distinct from Artemis. Fully clothed in a long-sleeved deep teal tunic beneath refined practical bronze armor, ankle-length indigo skirt panels, and a cream-gold cloak. She stands on a quiet moonlit marble terrace studying a miniature arrangement of smooth strategy stones on a low table. ONE tall plain bronze spear rests upright beside her, safely vertical. ONE large round bronze AEGIS shield is angled near her shoulder, polished and completely free of faces, snakes, writing, or graphic emblems. A real small tawny OWL perches gently on the top edge of the shield, both eyes open. Face, owl, shield, spear grip, and strategy stones form one readable central cluster. Warm gold light on bronze against indigo and teal. Gentle knowing smile, defender and planner, no battle. No Medusa head, no modern superhero or Wonder Woman likeness, no helmet covering face, no exposed skin beyond face and hands.
+```
+
+### hermes
+
+```text
+Subject: HERMES, a cheerful clever young Greek messenger with warm brown skin, short windswept dark curls, bright mischievous eyes and a slender agile build. Fully clothed in a sky-blue long-sleeved travel tunic, fitted cream trousers, short saffron cloak, bronze belt and boots. Capture him lightly stepping across a moonlit cloud bridge as if just arriving with good news. BOTH boots have small elegant white feathered WINGS attached at the ankles, clearly visible and symmetrical. He holds ONE simple bronze messenger staff upright with exactly TWO gentle intertwined decorative serpents and small wings at the top, no medical cross and no glowing symbols. A small closed leather message satchel hangs at his hip, no letters visible. Face, staff top, both winged boots and satchel stay within the central crop. Indigo sky, pale turquoise clouds, golden dawn edge light. Friendly playful grin, no theft victim, no combat. No winged helmet, no Flash or superhero costume, no nudity, no extra arms, no floating text.
+```
+
+### orpheus
+
+```text
+Subject: ORPHEUS, a gentle youthful Greek musician and storyteller with warm olive skin, shoulder-length soft black curls, kind thoughtful eyes and a calm narrow face. Fully clothed in a long-sleeved plum tunic, deep teal draped cloak, dark trousers and simple bronze sandals. He sits upright on a moonlit marble step beside a peaceful indigo river, holding ONE beautiful golden wooden LYRE prominently at chest height with both natural hands; exactly seven plain strings, no written markings. One hand plucks while the other supports the instrument. Face, hands and full lyre are tightly grouped in the upper-central card crop. Rings of warm amber light ripple naturally from the strings without musical-note symbols. A deer and two small birds listen from the distant mist, tiny secondary silhouettes. Violet-blue underworld arches remain peaceful and softly blurred, no ghosts, skulls, bones or grief. Expression hopeful and absorbed in music. No modern guitar, no extra instruments, no singing mouth, no exposed torso.
+```
+
+### prometheus
+
+```text
+Subject: PROMETHEUS, a compassionate strong but gentle Greek titan and teacher with sun-warmed bronze skin, thick dark hair streaked with copper, a short neat beard and intelligent caring eyes; mature, distinct from Zeus. Fully clothed in a charcoal-blue long-sleeved tunic, layered rust-red wool cloak and sturdy bronze bracers, torso and legs covered. He kneels on one knee at a high starlit mountain ledge and protects ONE small bright living FLAME inside a shallow plain clay lamp cupped carefully between both hands at chest height. The fire illuminates his face, hands and cloth with warm amber light; flame remains small, safe and clearly readable. In the far upper sky, ONE peaceful eagle glides as a small silhouette, not attacking. Below, distant tiny warm village lights suggest the gift reaching people, with no visible crowd. Face and clay lamp form the central focus; deep indigo rock and sky, copper-rust cloak, golden fire. Expression brave, generous and hopeful. No chains, punishment, wounds, exposed chest, giant muscles, torches, forest fire, lightning, superhero likeness, or threatening bird.
 ```

@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v61";
+const CACHE_VERSION = "v62";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -141,18 +141,18 @@ const CORE_SHELL = [
   "./story/index.html",
   "./cards/",
   "./cards/index.html",
-  "./cards/styles.css?v=29",
+  "./cards/styles.css?v=30",
   "./cards/cards.json",
-  "./cards/js/engine.js?v=29",
-  "./cards/js/audio.js?v=29",
-  "./cards/js/card-view.js?v=29",
-  "./cards/js/vfx-recipes.js?v=29",
-  "./cards/js/story-gates.js?v=29",
-  "./cards/js/app.js?v=29",
+  "./cards/js/engine.js?v=30",
+  "./cards/js/audio.js?v=30",
+  "./cards/js/card-view.js?v=30",
+  "./cards/js/vfx-recipes.js?v=30",
+  "./cards/js/story-gates.js?v=30",
+  "./cards/js/app.js?v=30",
 ];
 
 // Existing games are precached as best-effort shells. A missing optional asset
-// must never prevent the hub, stories, cards and 32 card images from installing.
+// must never prevent the hub, stories, cards and 40 card images from installing.
 const PRINCESS_STUDIO_ASSETS = Object.entries({
   dress: "ballgown aline party mermaidline hanbok tutu tail winter star rainbow summer rose adventure",
   hair: "bob bun braid wavy pigtails daenggi curls afro",
@@ -461,6 +461,8 @@ const CARD_ART_FILES = [
   "perseus", "pinocchio", "polyphemus", "redhood", "snowqueen", "sunwukong",
   "threepigs", "tiger", "tortoisehare", "witch", "wolf", "zeus", "poseidon", "hades", "apollo",
   "minotaur", "cerberus", "hydra", "sphinx",
+  "achilles", "theseus", "artemis", "atalanta",
+  "athena", "hermes", "orpheus", "prometheus",
 ].map((id) => `./cards/art/${id}.webp`);
 
 const VFX_ART_FILES = [

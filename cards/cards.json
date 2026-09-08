@@ -32,7 +32,15 @@
     "minotaur",
     "cerberus",
     "hydra",
-    "sphinx"
+    "sphinx",
+    "achilles",
+    "theseus",
+    "artemis",
+    "atalanta",
+    "athena",
+    "hermes",
+    "orpheus",
+    "prometheus"
   ],
   "types": {
     "brave": {
@@ -1649,6 +1657,436 @@
         "attack": 3,
         "defense": 3,
         "spirit": 2
+      }
+    },
+    {
+      "id": "achilles",
+      "name": "아킬레우스",
+      "emoji": "🛡️",
+      "type": "brave",
+      "rarity": 3,
+      "summonCost": 5,
+      "hp": 110,
+      "passive": {
+        "name": "불사의 몸",
+        "desc": "받는 피해가 10 줄어요",
+        "fx": "reduce_dmg_10"
+      },
+      "attacks": [
+        {
+          "name": "청동 창",
+          "cost": 1,
+          "dmg": 20,
+          "fx": null,
+          "desc": "",
+          "vfx": {
+            "kind": "strike",
+            "emoji": "🔱"
+          }
+        },
+        {
+          "name": "분노의 돌격",
+          "cost": 3,
+          "dmg": 60,
+          "fx": null,
+          "desc": "",
+          "vfx": {
+            "kind": "burst",
+            "emoji": "🛡️",
+            "big": true
+          }
+        }
+      ],
+      "unlock": "heracles",
+      "unlockAll": [
+        "heracles",
+        "perseus",
+        "odyssey_cyclops"
+      ],
+      "art": "art/achilles.png",
+      "stats": {
+        "attack": 4,
+        "defense": 5,
+        "spirit": 1
+      }
+    },
+    {
+      "id": "theseus",
+      "name": "테세우스",
+      "emoji": "🧵",
+      "type": "brave",
+      "rarity": 2,
+      "summonCost": 3,
+      "hp": 80,
+      "passive": null,
+      "attacks": [
+        {
+          "name": "미궁의 실타래",
+          "cost": 1,
+          "dmg": 0,
+          "fx": "gain_star_1",
+          "desc": "별사탕 1개 얻기",
+          "vfx": {
+            "kind": "aura",
+            "emoji": "🧵"
+          }
+        },
+        {
+          "name": "영웅의 검",
+          "cost": 2,
+          "dmg": 30,
+          "fx": null,
+          "desc": "",
+          "vfx": {
+            "kind": "strike",
+            "emoji": "⚔️"
+          }
+        },
+        {
+          "name": "미궁 돌파",
+          "cost": 3,
+          "dmg": 50,
+          "fx": null,
+          "desc": "",
+          "vfx": {
+            "kind": "burst",
+            "emoji": "🌀",
+            "big": true
+          }
+        }
+      ],
+      "unlock": "heracles",
+      "unlockAll": [
+        "heracles",
+        "perseus"
+      ],
+      "art": "art/theseus.png",
+      "stats": {
+        "attack": 4,
+        "defense": 4,
+        "spirit": 2
+      }
+    },
+    {
+      "id": "artemis",
+      "name": "아르테미스",
+      "emoji": "🏹",
+      "type": "brave",
+      "rarity": 3,
+      "summonCost": 5,
+      "hp": 80,
+      "passive": null,
+      "attacks": [
+        {
+          "name": "은화살",
+          "cost": 1,
+          "dmg": 20,
+          "fx": null,
+          "desc": "",
+          "vfx": {
+            "kind": "projectile",
+            "emoji": "🏹"
+          }
+        },
+        {
+          "name": "달빛 사냥",
+          "cost": 2,
+          "dmg": 20,
+          "fx": "weaken_next_20",
+          "desc": "상대 다음 공격 피해 -20",
+          "vfx": {
+            "kind": "debuff",
+            "emoji": "🌙"
+          }
+        },
+        {
+          "name": "사냥의 여신",
+          "cost": 3,
+          "dmg": 50,
+          "fx": null,
+          "desc": "",
+          "vfx": {
+            "kind": "burst",
+            "emoji": "🌙",
+            "big": true
+          }
+        }
+      ],
+      "unlock": "perseus",
+      "unlockAll": [
+        "perseus",
+        "midas"
+      ],
+      "art": "art/artemis.png",
+      "stats": {
+        "attack": 4,
+        "defense": 4,
+        "spirit": 2
+      }
+    },
+    {
+      "id": "atalanta",
+      "name": "아탈란테",
+      "emoji": "🍎",
+      "type": "brave",
+      "rarity": 2,
+      "summonCost": 3,
+      "hp": 70,
+      "passive": {
+        "name": "누구보다 빠른 발",
+        "desc": "HP가 절반 아래면 공격 피해 +20",
+        "fx": "boost_20_below_half"
+      },
+      "attacks": [
+        {
+          "name": "달리기 겨루기",
+          "cost": 1,
+          "dmg": 10,
+          "fx": "steal_star_1",
+          "desc": "상대 별사탕 1개 훔치기",
+          "vfx": {
+            "kind": "debuff",
+            "emoji": "💨"
+          }
+        },
+        {
+          "name": "사냥 창",
+          "cost": 2,
+          "dmg": 30,
+          "fx": null,
+          "desc": "",
+          "vfx": {
+            "kind": "strike",
+            "emoji": "🔱"
+          }
+        }
+      ],
+      "unlock": "heracles",
+      "unlockAll": [
+        "heracles",
+        "midas"
+      ],
+      "art": "art/atalanta.png",
+      "stats": {
+        "attack": 3,
+        "defense": 3,
+        "spirit": 2
+      }
+    },
+    {
+      "id": "athena",
+      "name": "아테나",
+      "emoji": "🦉",
+      "type": "wise",
+      "rarity": 3,
+      "summonCost": 5,
+      "hp": 80,
+      "passive": {
+        "name": "지혜의 방패",
+        "desc": "받는 피해가 10 줄어요",
+        "fx": "reduce_dmg_10"
+      },
+      "attacks": [
+        {
+          "name": "올빼미의 눈",
+          "cost": 1,
+          "dmg": 0,
+          "fx": "weaken_next_20",
+          "desc": "상대 다음 공격 피해 -20",
+          "vfx": {
+            "kind": "debuff",
+            "emoji": "🦉"
+          }
+        },
+        {
+          "name": "아이기스 반격",
+          "cost": 2,
+          "dmg": 30,
+          "fx": null,
+          "desc": "",
+          "vfx": {
+            "kind": "strike",
+            "emoji": "🛡️"
+          }
+        },
+        {
+          "name": "전략의 창",
+          "cost": 3,
+          "dmg": 50,
+          "fx": null,
+          "desc": "",
+          "vfx": {
+            "kind": "projectile",
+            "emoji": "🔱",
+            "big": true
+          }
+        }
+      ],
+      "unlock": "perseus",
+      "art": "art/athena.png",
+      "stats": {
+        "attack": 4,
+        "defense": 5,
+        "spirit": 3
+      }
+    },
+    {
+      "id": "hermes",
+      "name": "헤르메스",
+      "emoji": "🪽",
+      "type": "wise",
+      "rarity": 2,
+      "summonCost": 3,
+      "hp": 60,
+      "passive": null,
+      "attacks": [
+        {
+          "name": "날개 신발",
+          "cost": 1,
+          "dmg": 0,
+          "fx": "gain_star_1",
+          "desc": "별사탕 1개 얻기",
+          "vfx": {
+            "kind": "aura",
+            "emoji": "🪽"
+          }
+        },
+        {
+          "name": "도둑의 손",
+          "cost": 1,
+          "dmg": 10,
+          "fx": "steal_star_1",
+          "desc": "상대 별사탕 1개 훔치기",
+          "vfx": {
+            "kind": "debuff",
+            "emoji": "🤲"
+          }
+        },
+        {
+          "name": "전령의 지팡이",
+          "cost": 2,
+          "dmg": 30,
+          "fx": null,
+          "desc": "",
+          "vfx": {
+            "kind": "strike",
+            "emoji": "🪽"
+          }
+        }
+      ],
+      "unlock": "perseus",
+      "art": "art/hermes.png",
+      "stats": {
+        "attack": 2,
+        "defense": 2,
+        "spirit": 4
+      }
+    },
+    {
+      "id": "orpheus",
+      "name": "오르페우스",
+      "emoji": "🎵",
+      "type": "wise",
+      "rarity": 2,
+      "summonCost": 3,
+      "hp": 60,
+      "passive": null,
+      "attacks": [
+        {
+          "name": "리라의 노래",
+          "cost": 2,
+          "dmg": 10,
+          "fx": "skip_next_enemy",
+          "desc": "상대 다음 턴 건너뛰기",
+          "vfx": {
+            "kind": "aura",
+            "emoji": "🎵"
+          }
+        },
+        {
+          "name": "저승의 노래",
+          "cost": 3,
+          "dmg": 40,
+          "fx": null,
+          "desc": "",
+          "vfx": {
+            "kind": "burst",
+            "emoji": "🎼",
+            "big": true
+          }
+        }
+      ],
+      "unlock": "perseus",
+      "unlockAll": [
+        "perseus",
+        "midas"
+      ],
+      "art": "art/orpheus.png",
+      "stats": {
+        "attack": 3,
+        "defense": 2,
+        "spirit": 3
+      }
+    },
+    {
+      "id": "prometheus",
+      "name": "프로메테우스",
+      "emoji": "🔥",
+      "type": "wise",
+      "rarity": 3,
+      "summonCost": 5,
+      "hp": 100,
+      "passive": {
+        "name": "꺼지지 않는 불",
+        "desc": "HP가 절반 아래면 공격 피해 +20",
+        "fx": "boost_20_below_half"
+      },
+      "attacks": [
+        {
+          "name": "훔친 불꽃",
+          "cost": 1,
+          "dmg": 20,
+          "fx": null,
+          "desc": "",
+          "vfx": {
+            "kind": "projectile",
+            "emoji": "🔥"
+          }
+        },
+        {
+          "name": "독수리의 시련",
+          "cost": 2,
+          "dmg": 30,
+          "fx": "dmg_stack_10",
+          "desc": "쓸 때마다 피해 +10",
+          "vfx": {
+            "kind": "strike",
+            "emoji": "🦅"
+          }
+        },
+        {
+          "name": "인류의 불",
+          "cost": 3,
+          "dmg": 50,
+          "fx": null,
+          "desc": "",
+          "vfx": {
+            "kind": "burst",
+            "emoji": "🔥",
+            "big": true
+          }
+        }
+      ],
+      "unlock": "heracles",
+      "unlockAll": [
+        "heracles",
+        "midas"
+      ],
+      "art": "art/prometheus.png",
+      "stats": {
+        "attack": 5,
+        "defense": 4,
+        "spirit": 3
       }
     }
   ]

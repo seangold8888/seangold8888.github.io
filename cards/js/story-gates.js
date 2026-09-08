@@ -34,7 +34,15 @@
     minotaur: "heracles",
     cerberus: "heracles",
     hydra: "heracles",
-    sphinx: "perseus"
+    sphinx: "perseus",
+    achilles: "heracles",
+    theseus: "heracles",
+    artemis: "perseus",
+    atalanta: "heracles",
+    athena: "perseus",
+    hermes: "perseus",
+    orpheus: "perseus",
+    prometheus: "heracles"
   });
 
   function question(id, cardId, prompt, choices, correctChoiceId, refs) {
@@ -616,7 +624,7 @@
       ["audio: sunwukong 오행산"])
   ];
 
-  // G1~G2: 기존 검수 문항을 재사용한다. 새 음원을 검증한 것처럼 출처를 만들지 않는다.
+  // G1~G4: 기존 검수 문항을 재사용한다. 새 음원을 검증한 것처럼 출처를 만들지 않는다.
   // 문항 id와 최근 출제 기록은 카드별로 독립; 복수 해금 카드는 첫 이야기에서 출제.
   const greekQuestionSources = {
     zeus: ["heracles-twelve-labors", "heracles-torch-helper", "heracles-stable-river", "heracles-sky-giant", "heracles-labor-count"],
@@ -626,7 +634,15 @@
     minotaur: ["heracles-twelve-labors", "heracles-hydra-heads", "heracles-torch-helper", "heracles-stable-river", "heracles-sky-giant"],
     cerberus: ["heracles-labor-count", "heracles-twelve-labors", "heracles-hydra-heads", "heracles-stable-river", "heracles-sky-giant"],
     hydra: ["heracles-hydra-heads", "heracles-torch-helper", "heracles-twelve-labors", "heracles-stable-river", "heracles-labor-count"],
-    sphinx: ["perseus-mirror-shield", "perseus-winged-sandals", "perseus-three-hags", "perseus-princess", "perseus-sea-monster"]
+    sphinx: ["perseus-mirror-shield", "perseus-winged-sandals", "perseus-three-hags", "perseus-princess", "perseus-sea-monster"],
+    achilles: ["heracles-twelve-labors", "heracles-hydra-heads", "heracles-torch-helper", "heracles-sky-giant", "heracles-labor-count"],
+    theseus: ["heracles-twelve-labors", "heracles-hydra-heads", "heracles-stable-river", "heracles-sky-giant", "heracles-labor-count"],
+    artemis: ["perseus-mirror-shield", "perseus-winged-sandals", "perseus-three-hags", "perseus-princess", "perseus-sea-monster"],
+    atalanta: ["heracles-twelve-labors", "heracles-torch-helper", "heracles-stable-river", "heracles-sky-giant", "heracles-labor-count"],
+    athena: ["perseus-mirror-shield", "perseus-winged-sandals", "perseus-three-hags", "perseus-princess", "perseus-sea-monster"],
+    hermes: ["perseus-winged-sandals", "perseus-mirror-shield", "perseus-three-hags", "perseus-princess", "perseus-sea-monster"],
+    orpheus: ["perseus-princess", "perseus-sea-monster", "perseus-mirror-shield", "perseus-winged-sandals", "perseus-three-hags"],
+    prometheus: ["heracles-twelve-labors", "heracles-hydra-heads", "heracles-torch-helper", "heracles-stable-river", "heracles-labor-count"]
   };
   Object.keys(greekQuestionSources).forEach(function (cardId) {
     greekQuestionSources[cardId].forEach(function (sourceId) {

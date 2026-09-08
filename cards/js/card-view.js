@@ -46,7 +46,15 @@
     minotaur: "50% 6%",
     cerberus: "50% 18%",
     hydra: "50% 14%",
-    sphinx: "50% 55%"
+    sphinx: "50% 55%",
+    achilles: "50% 20%",
+    theseus: "50% 22%",
+    artemis: "50% 24%",
+    atalanta: "50% 30%",
+    athena: "50% 18%",
+    hermes: "50% 28%",
+    orpheus: "50% 24%",
+    prometheus: "50% 20%"
   };
 
   function el(tag, className, text) {
