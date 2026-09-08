@@ -6,7 +6,7 @@ const marker='  function loop(now) {';
 assert.ok(source.includes(marker));
 const hook=[
  'globalThis.__x1={player,input,beginAttack,resolveAttack,update,render,finish,heroTuning,',
- 'supportsMount,supportsRanged,rangedStyle,rangedUsesBase,heroAssets,',
+ 'supportsMount,supportsRanged,rangedStyle,rangedUsesBase,heroAssets,mountKind,',
  'bossId,bossLabel,bossProfile,bossSheet,enemyRoster,weaponStyle,',
  'get arrows(){return arrows;},get enemies(){return enemies;},',
  "prepare(n=1){enemies=[];arrows=[];enemyArrows=[];shockwaves=[];wave=n-1;player.x=330;player.lane=0;player.facing=1;player.action='idle';player.actionUntil=0;player.invulnerableUntil=Infinity;spawnWave();}};",
@@ -81,7 +81,8 @@ const expected=[['huaguoshan',1],['donghai',2],['heavenpalace',3],['baihuling',4
     check(b.bossSheet.src.includes('boss-'+boss+'-painted'),'dedicated boss sheet');
     b.prepare(7);check(b.enemies.some(e=>e.trueBoss&&e.bossId===boss),'final wave boss spawn');
     if(hero==='nezha'){
-     check(!b.supportsMount,'wind fire wheels deferred to X3');
+     check(b.supportsMount&&b.mountKind==='wheels','wind fire wheels available from X3');
+     check(b.heroAssets.mounted.src.includes('mounted-nezha-painted')&&b.heroAssets.mountedBow.src.includes('mounted-nezha-bow-painted'),'dedicated wheel-riding sheets');
      check(b.supportsRanged&&b.rangedStyle==='ring'&&!b.rangedUsesBase,'dedicated ring animation');
      check(b.heroAssets.heroBow.src.includes('nezha-bow-'),'ring sheet');
      check(b.weaponStyle==='spear','firespear grammar');

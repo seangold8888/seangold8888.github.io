@@ -10,7 +10,17 @@ const genericEdgeBudget=Object.fromEntries(representativeArt.map(name=>[name,nam
 // X1 atlases use their actual dimensions (Ao Guang is not square).
 const xiyouArt=['nezha','nezha-bow','boss-hunshimowang','boss-aoguang','boss-baigujing'].map(n=>n+'-painted-sheet-v1.png');
 for(const n of ['erlangshen-hero','erlangshen-hero-bow','boss-yinjiao','boss-honghaier','boss-dapeng'])xiyouArt.push(n+'-painted-sheet-v1.png');
+for(const n of ['honghaier','honghaier-bow','mount-fenghuolun','mounted-nezha','mounted-nezha-bow'])xiyouArt.push(n+'-painted-sheet-v1.png');
 for(const name of xiyouArt)if(!layouts[name])layouts[name]=null;
+// X3 fire and wheel sheets intentionally paint motion trails to the cell edge.
+// Keep the allowance tight enough to reject backgrounds or neighboring poses.
+Object.assign(genericEdgeBudget,{
+ 'honghaier-painted-sheet-v1.png':210,
+ 'honghaier-bow-painted-sheet-v1.png':210,
+ 'mount-fenghuolun-painted-sheet-v1.png':210,
+ 'mounted-nezha-painted-sheet-v1.png':210,
+ 'mounted-nezha-bow-painted-sheet-v1.png':260,
+});
 (async()=>{
  const server=createServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));let browser;
  try{

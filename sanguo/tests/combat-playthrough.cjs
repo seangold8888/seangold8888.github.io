@@ -19,6 +19,7 @@ const marker='  function loop(now) {';
 assert.ok(source.includes(marker));
 const instrumented=source.replace(marker,hook+marker).replace('function loop(now) {','function loop(now) { return;');
 const representativeCases=[
+ ['honghaier','flamemountain'],['nezha','shituoling'],
  ['erlangshen','heavenpalace'],['erlangshen','shituoling'],
  ['zhaoyun','changban'],['caocao','guandu'],['machao','dongguan'],['huangzhong','dingjunshan'],
  ['xiahoudun','trilands'],['zhangliao','trilands'],['xuchu','trilands'],['simayi','trilands'],
@@ -28,7 +29,7 @@ const representativeCases=[
  ['nezha','heavenpalace'],['wukong','donghai'],['wukong','flamemountain'],
  ['wukong','lianhuadong'],['wukong','huoyundong'],['wusong','liangshan'],['linchong','snowshrine'],
 ];
-const rangedHeroes=new Set(['huangzhong','xiahoudun','zhangliao','xuchu','simayi','sunquan','taishici','ganning','luxun','nezha','erlangshen']);
+const rangedHeroes=new Set(['huangzhong','xiahoudun','zhangliao','xuchu','simayi','sunquan','taishici','ganning','luxun','nezha','erlangshen','honghaier']);
 (async()=>{
  const server=createServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));let browser;
  try{
@@ -50,7 +51,7 @@ const rangedHeroes=new Set(['huangzhong','xiahoudun','zhangliao','xuchu','simayi
     const output=process.env.COMBAT_QA_OUTPUT;fs.mkdirSync(output,{recursive:true});
     await page.evaluate(()=>{const b=__battle,n=performance.now();b.update(.034,n);b.render(n);});
     await page.screenshot({path:path.join(output,hero+'-battle.png')});
-    if(['huangzhong','taishici','luxun','nezha'].includes(hero)){
+    if(['huangzhong','taishici','luxun','nezha','honghaier'].includes(hero)){
      await page.evaluate(()=>{const b=__battle,n=performance.now()+1000;b.beginAttack('ranged',n);b.render(n+300);});
      await page.screenshot({path:path.join(output,hero+'-bow.png')});
     }

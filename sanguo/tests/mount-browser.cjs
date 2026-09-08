@@ -20,7 +20,7 @@ const hook=`
 const instrumented=source.replace('  function loop(now) {',hook+'  function loop(now) { return;');
 (async()=>{
  const server=createServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));let browser;
- const output=process.env.MOUNT_QA_OUTPUT||path.resolve(__dirname,'../qa-mount');fs.mkdirSync(output,{recursive:true});
+ const output=process.env.MOUNT_QA_OUTPUT;if(output)fs.mkdirSync(output,{recursive:true});
  try{
   browser=await chromium.launch({headless:true});
   for(const [hero,stage]of [['guanyu','hulao'],['zhaoyun','changban'],['caocao','guandu'],['machao','dongguan']]){
@@ -42,11 +42,11 @@ const instrumented=source.replace('  function loop(now) {',hook+'  function loop
    const foot={tap:await shoot(false),hold:await shoot(true)};assert.ok(foot.hold>foot.tap);
    await page.evaluate(()=>__mountQA.resetPose());
    const standing=await page.evaluate(()=>__mountQA.render());
-   await page.screenshot({path:path.join(output,hero+'-standing.png')});
+   if(output)await page.screenshot({path:path.join(output,hero+'-standing.png')});
    await page.keyboard.press('f');await page.evaluate(()=>__mountQA.step(.001));
    assert.equal(await page.evaluate(()=>__mountQA.player.mounted),true);
    const riding=await page.evaluate(()=>__mountQA.render());
-   await page.screenshot({path:path.join(output,hero+'-mounted.png')});
+   if(output)await page.screenshot({path:path.join(output,hero+'-mounted.png')});
    const mounted={tap:await shoot(false),hold:await shoot(true)};assert.ok(mounted.hold>mounted.tap);
    const meleeHp=await page.evaluate(()=>__mountQA.target(180));
    await page.keyboard.press('j');await page.evaluate(()=>__mountQA.step(.001));
@@ -60,7 +60,7 @@ const instrumented=source.replace('  function loop(now) {',hook+'  function loop
    await advance();
    await page.evaluate(()=>{__mountQA.resetPose();__mountQA.pose('ranged');});
    const archery=await page.evaluate(()=>__mountQA.render());
-   await page.screenshot({path:path.join(output,hero+'-mounted-bow.png')});
+   if(output)await page.screenshot({path:path.join(output,hero+'-mounted-bow.png')});
    for(const draws of [standing,riding,archery]){
     assert.equal(draws.length,1,hero+' one horse only');
     assert.ok(draws[0].src.endsWith('/mount-'+hero+'-painted-sheet-v1.png'));

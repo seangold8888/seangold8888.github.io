@@ -13,10 +13,20 @@ node sanguo/tests/mount-browser.cjs
 node sanguo/tests/mobile-viewport.cjs
 node sanguo/tests/xiyou-x1.cjs
 node sanguo/tests/xiyou-x2.cjs
+node sanguo/tests/xiyou-x3.cjs
 ```
 
 Set MENU_QA_OUTPUT / COMBAT_QA_OUTPUT / MOUNT_QA_OUTPUT to an external directory for screenshots.
-Set XIYOU_QA_OUTPUT for the X1/X2 menu, boss and victory-lesson screenshots.
+Set XIYOU_QA_OUTPUT for the X1/X2/X3 menu, battle and victory-lesson screenshots.
+
+## Xiyou X3 coverage
+
+- Playable Honghaier selection and portrait at three viewport sizes; dedicated hero art remains distinct from the boss sheet.
+- Actual Samadhi fire tap/charge, dash, special and musou damage plus child-friendly flame-cone effects.
+- Nezha uses a dedicated paired Fenghuolun mount, mounted melee/ring sheets and a `풍화륜` HUD label instead of horse fallback.
+- Wukong special/musou create four/six translucent clone afterimages.
+- Five transparent atlases are frame-edge checked; combat playthrough now covers 26 combinations.
+- Browser checks inject hooks into locally served responses only. Production exports no debug API.
 
 ## Xiyou X2 coverage
 

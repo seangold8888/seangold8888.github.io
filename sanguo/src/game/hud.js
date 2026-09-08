@@ -65,8 +65,8 @@ export function createPlayerHud(hudRoot, name, progress = null) {
       const text = cooling ? (remaining / 1000).toFixed(1) + '초' : '돌진기 · 준비 완료';
       if (text !== dashText) { dashButton.querySelector('.key-sub').textContent = text; dashText = text; }
     },
-    setCapabilities(ranged, mounted, rangedLabel = '활') {
-      for (const [action, enabled, label] of [['ranged', ranged, rangedLabel], ['mount', mounted, '승마']]) {
+    setCapabilities(ranged, mounted, rangedLabel = '활', mountLabel = '승마') {
+      for (const [action, enabled, label] of [['ranged', ranged, rangedLabel], ['mount', mounted, mountLabel]]) {
         const button = el.querySelector('[data-touch-action=' + action + ']');
         button.classList.toggle('unavailable', !enabled);
         button.querySelector('.key-label').textContent = label;

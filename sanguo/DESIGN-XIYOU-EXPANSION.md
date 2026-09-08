@@ -358,9 +358,9 @@
 7. 콘솔 에러 0.
 8. `node --test sanguo/tests/dash-skills.test.cjs`, `node --test sanguo/tests/combat-bounds.test.cjs` 통과. `sanguo/tests/combat-playthrough.cjs`의 `representativeCases`에 서유기 신규 조합 2건(`['nezha','huaguoshan']`, `['wukong','shituoling']`)을 추가하고 통과.
 
-## 11-A. 구현 현황 (2026-09-08 갱신)
+## 11-A. 구현 현황 (2026-09-09 갱신)
 
-**데이터·엔진은 전부 들어갔다.** 남은 것은 원화뿐이다.
+**X1~X3 데이터·원화·전용 동작은 전부 들어갔다.** 남은 것은 X4의 8전장 그림 배경이다.
 
 | 항목 | 상태 |
 |---|---|
@@ -370,7 +370,7 @@
 | 보스 6종 프로필 | 완료 |
 | 적 진영 6종 + `WORK_TROOP` 매핑 | 완료 |
 | 절차 배경 6종 | 완료 |
-| 신규 장수 **원화** | X1 나타 기본·건곤권, X2 이랑진군 기본·탄궁 완료 및 출전 가능. 홍해아 플레이 원화는 X3 잠금 유지 |
+| 신규 장수 **원화** | X1 나타 기본·건곤권, X2 이랑진군 기본·탄궁, X3 홍해아 기본·삼매진화 완료. 7명 모두 출전 가능 |
 | 보스 6종 **원화** | X1 혼세마왕·동해용왕 오광·백골정, X2 은각대왕·홍해아·대붕금시조 전용 원화 완료 |
 
 §6 주의 2에서 예고한 대로, 백골 진영의 창백한 흰빛을 위해 `hues` 값이 숫자뿐 아니라
@@ -389,7 +389,13 @@
 추가 X2 통합: 이랑진군 천궁·사타령 출전, 탄궁 탭/차지와 전용 보스 3종 완료.
 24개 전투 조합 7파도 완주, 원화 5장 경계 검사 통과. 공유 캐시 v60,
 최신 카드 v28 보존. 상세 재현은 `VERIFY-XIYOU-X2.md`, 제작 프롬프트는
-`ART-XIYOU-X2.md`. X3 플레이 홍해아·풍화륜과 X4 그림 배경은 남아 있다.
+`ART-XIYOU-X2.md`.
+
+추가 X3 통합: 홍해아 플레이 원화와 삼매진화 탭/차지, 나타의 말 폴백 없는
+풍화륜 탑승·탑승 건곤권, 손오공 필살/무쌍 분신 연출 완료. 26개 전투 조합이
+7파도·40KO·승리까지 완주했고, 원화 5장 투명도·프레임 경계 검사 통과.
+공유 캐시 v61, 게임 미디어 183개 등록, 최신 카드 v29 보존. 상세 재현은 `VERIFY-XIYOU-X3.md`,
+제작 프롬프트는 `ART-XIYOU-X3.md`. 이제 X4 그림 배경만 남아 있다.
 
 ## 12. 마일스톤
 
@@ -404,6 +410,6 @@ X1이 끝나면 아이패드로 아이들 실플레이 한 번. 화과산 난이
 
 ## 13. 검증 방법 (헤드리스)
 
-`sanguo/tests/combat-playthrough.cjs`가 쓰는 방식이 가장 빠르다. `preview-server.cjs`로 서빙하고, `sideScroller.js`를 라우트 가로채기로 계측본(`__battle` 훅 주입, `loop` 무력화)으로 바꾼 뒤 `startSideBattle(hero, stage)`를 직접 호출한다. `NODE_PATH`는 `C:\Users\김시현\OneDrive\문서\jay-teo-multiverse\node_modules`.
+`sanguo/tests/combat-playthrough.cjs`가 쓰는 방식이 가장 빠르다. `preview-server.cjs`로 서빙하고, `sideScroller.js`를 라우트 가로채기로 계측본(`__battle` 훅 주입, `loop` 무력화)으로 바꾼 뒤 `startSideBattle(hero, stage)`를 직접 호출한다. 이번 검증은 OneDrive가 아닌 Codex 번들 런타임을 `NODE_PATH`로 사용했다.
 
 입력 타이밍을 보는 검사라면 **20fps 이상을 확보**해야 한다. 640×400 뷰포트 + `--disable-gpu-vsync --disable-frame-rate-limit`. 8fps에서는 `BUFFER_MS 240` 만료로 정상 입력도 유실되어 결과가 무효다.
