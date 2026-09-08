@@ -12,6 +12,8 @@ test('30 unique techniques cover all main and representative heroes with bounded
   const data = JSON.parse(fs.readFileSync(path.join(__dirname,'../data/gamedata.json')));
   for (const id of Object.keys(data.ACTION_HEROES)) assert.ok(DASH_SKILLS[id], id);
   for (const id of Object.keys(SANGUO_EXPANSION_STATS)) assert.ok(DASH_SKILLS[id], id);
+  const {WORK_STATS}=await import('../src/data/works.js');
+  for (const id of Object.keys(WORK_STATS)) assert.ok(DASH_SKILLS[id], id);
   for (const s of Object.values(DASH_SKILLS)) {
     assert.equal(s.cooldown, 2600); assert.ok(s.duration >= 400 && s.duration <= 700);
     assert.ok(s.damage * s.hits + s.shots * 62 * .42 <= 110);

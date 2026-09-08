@@ -14,6 +14,7 @@ const CANVAS_UI_FONT = '"Pretendard Variable", Pretendard, "Noto Sans KR", "Malg
 const CANVAS_IMPACT_FONT = CANVAS_UI_FONT;
 
 const HERO_ART = {
+  nezha: { hero: 'art/side-scroller/nezha-painted-sheet-v1.png', heroBow: 'art/side-scroller/nezha-bow-painted-sheet-v1.png' },
   liubei: {
     hero: 'art/side-scroller/liubei-painted-sheet-v1.png',
     heroBow: 'art/side-scroller/liubei-bow-painted-sheet-v1.png',
@@ -121,6 +122,9 @@ const MOUNT_ART = {
 for (const [id, profile] of Object.entries(MOUNT_PROFILES)) MOUNT_ART[id] = profile.horse;
 
 const BOSS_ART = {
+  hunshimowang: 'art/side-scroller/boss-hunshimowang-painted-sheet-v1.png',
+  aoguang: 'art/side-scroller/boss-aoguang-painted-sheet-v1.png',
+  baigujing: 'art/side-scroller/boss-baigujing-painted-sheet-v1.png',
 zhangjiao: 'art/side-scroller/boss-zhangjiao-painted-sheet-v1.png',
   huaxiong: 'art/side-scroller/boss-huaxiong-painted-sheet-v1.png',
   chunyuqiong: 'art/side-scroller/boss-chunyuqiong-painted-sheet-v1.png',
@@ -1052,6 +1056,10 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
 // Explicit cuts and boot anchors keep weapon overhangs in their own pose and
 // compensate for transparent padding without modifying the original PNG pixels.
 const PAINTED_FRAME_LAYOUTS = {
+    // Different generated padding must not make Nezha grow when throwing a ring.
+    // Seventh field is the standing figure height in the atlas's 1280-unit space.
+    'nezha-painted-sheet-v1.png': [[0,0,640,640,300,606,490],[640,0,640,640,310,604,490],[0,640,640,640,310,530,490],[640,640,640,640,310,524,490]],
+    'nezha-bow-painted-sheet-v1.png': [[0,0,640,640,320,636,598],[640,0,640,640,320,636,598],[0,640,640,640,340,586,598],[640,640,640,640,320,586,598]],
     'zhaoyun-bow-painted-sheet-v1.png': [[0,0,600,608,320,600],[600,0,680,608,360,590],[0,608,600,672,320,620],[600,608,680,672,290,620]],
     'caocao-bow-painted-sheet-v1.png': [[0,0,620,620,320,605],[620,0,660,620,320,590],[0,620,620,660,320,587],[620,620,660,660,290,600]],
     'machao-bow-painted-sheet-v1.png': [[0,0,620,615,320,605],[620,0,660,615,320,598],[0,615,620,665,320,623],[620,615,660,665,290,623]],
@@ -1065,7 +1073,7 @@ const PAINTED_FRAME_LAYOUTS = {
 function drawAtlasFrame(ctx, image, frame, x, groundY, height, facing = 1, alpha = 1) {
   const layout = PAINTED_FRAME_LAYOUTS[image.src?.split('/').pop()]?.[frame];
   if (layout) {
-    const [sx,sy,sw,sh,ax,ay] = layout, unit = image.width / 1280, scale = height / 576;
+    const [sx,sy,sw,sh,ax,ay,referenceHeight=576] = layout, unit = image.width / 1280, scale = height / referenceHeight;
     ctx.save(); ctx.globalAlpha = alpha; ctx.translate(x,groundY); ctx.scale(facing,1);
     ctx.drawImage(image,sx*unit,sy*unit,sw*unit,sh*unit,-ax*scale,-ay*scale,sw*scale,sh*scale); ctx.restore(); return;
   }
@@ -1205,10 +1213,10 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   const mountKind = MOUNT_KINDS[heroId] || 'horse';
   const isCloudMount = mountKind === 'cloud', isBoarMount = mountKind === 'boar', isWaterMount = mountKind === 'waterBeast';
   const rangedStyle = ['wukong', 'tieshangongzhu', 'zhugeliang', 'luxun'].includes(heroId) ? 'fan'
-    : heroId === 'sunshangxiang' ? 'ring'
+    : ['sunshangxiang', 'nezha'].includes(heroId) ? 'ring'
     : heroId === 'husanniang' ? 'lasso'
     : 'bow';
-  const rangedUsesBase = rangedStyle !== 'bow';
+  const rangedUsesBase = rangedStyle !== 'bow' && !(heroId === 'nezha' && heroAssets.heroBow);
   const supportsRanged = rangedUsesBase || !!heroAssets.heroBow;
   const usesConsistentMount = !!MOUNT_PROFILES[heroId] && !!heroAssets.rider;
   const supportsMount = !!MOUNT_ART[heroId] && !!assets.mounts[heroId];
@@ -1278,12 +1286,12 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   const hudRoot = createHudRoot(), playerHud = createPlayerHud(hudRoot, heroName, { level: growth.level, weapon: `${weaponName} ${weaponEnhanceText(growth)}` }), bossHud = createEnemyHud(hudRoot, bossLabel);
   if (extra) {
     const fanName = ['zhugeliang','luxun'].includes(heroId) ? '우선' : '파초선';
-    const rangedControl = { fan: fanName + ' 공격', ring: '쌍환 투척', lasso: '홍금투삭', bow: '활쏘기' }[rangedStyle];
+    const rangedControl = { fan: fanName + ' 공격', ring: heroId === 'nezha' ? '건곤권 투척' : '쌍환 투척', lasso: '홍금투삭', bow: '활쏘기' }[rangedStyle];
     const mountControl = supportsMount ? '<span>F 승마</span>' : '';
     hudRoot.querySelector('.controls').innerHTML = '<span>WASD 이동 · W 두 번 점프</span><span>J 공격 · 꾹 강공</span><span>K ' + rangedControl + '</span>' + mountControl + '<span>L 필살기</span><span>I 돌진기</span>';
   }
   playerHud.setDashSkill(dashTechnique);
-  playerHud.setCapabilities(supportsRanged, supportsMount, { fan: ['zhugeliang','luxun'].includes(heroId) ? '우선' : '파초선', ring: '쌍환', lasso: '투삭', bow: '활' }[rangedStyle]);
+  playerHud.setCapabilities(supportsRanged, supportsMount, { fan: ['zhugeliang','luxun'].includes(heroId) ? '우선' : '파초선', ring: heroId === 'nezha' ? '건곤권' : '쌍환', lasso: '투삭', bow: '활' }[rangedStyle]);
   bossHud.show(false); bossHud.setWeapon(bossProfile.weapon); bossHud.setPhase('결전 대기'); playerHud.setObjective(stageInfo?.mission || '호로관의 적군을 돌파하라'); playerHud.setMount(false, mountLabel);
   const input = createInput(canvas), audio = makeAudio(heroId, stageKey), worldWidth = 7800;
   const touchCapable = (navigator.maxTouchPoints || 0) > 0 || !!globalThis.matchMedia?.('(any-pointer: coarse)')?.matches;
@@ -1314,7 +1322,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   const clamp = (value, low, high) => Math.max(low, Math.min(high, value));
   const fromTable = (source) => ({
     power: clamp(source.power / 20, .68, 1.30),
-    speed: clamp(source.speed / 3.2, .85, 1.35),
+    speed: clamp(source.speed / 3.2, .85, heroId === 'nezha' ? 4.5 / 3.2 : 1.35),
     reach: clamp(source.range / 90, .74, 1.22),
     arrow: 1,
   });
@@ -1785,7 +1793,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   function finish(win) {
     if (ended) return; ended = true; cancelAnimationFrame(raf); if (resizeFrame) cancelAnimationFrame(resizeFrame); input.destroy(); removeEventListener('pointerdown', unlockAudio, { capture: true }); removeEventListener('resize', onViewportChange); removeEventListener('orientationchange', onViewportChange); document.removeEventListener('visibilitychange', onVisibility); document.removeEventListener('fullscreenchange', onViewportChange); removeEventListener('blur', onBlur); removeEventListener('focus', onFocus); globalThis.visualViewport?.removeEventListener('resize', onViewportChange); globalThis.visualViewport?.removeEventListener('scroll', onViewportChange); for (const type of ['gesturestart', 'gesturechange', 'gestureend', 'touchstart', 'touchmove']) document.removeEventListener(type, preventBrowserGesture); document.documentElement.classList.remove('battle-viewport'); bossHud.remove(); audio.stop(); if (win) audio.win();
     const rewards = awardBattleProgress(heroId, { win, ko: player.ko, stageKey, difficultyId: diff.id });
-    setTimeout(() => { document.getElementById('ui').innerHTML = ''; showResult(document.getElementById('ui'), { win, heroName, enemyName: bossLabel, weaponName, rewards, onRetry: () => startSideBattle(heroId, stageKey, { onExit }), onMenu: () => onExit?.() }); }, 450);
+    setTimeout(() => { document.getElementById('ui').innerHTML = ''; showResult(document.getElementById('ui'), { win, heroName, enemyName: bossLabel, weaponName, rewards, story: stageInfo?.work === 'xiyou' ? stageInfo : null, onRetry: () => startSideBattle(heroId, stageKey, { onExit }), onMenu: () => onExit?.() }); }, 450);
   }
 
   function update(dt, now) {
@@ -2539,7 +2547,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
           } else if (rangedStyle === 'ring') {
             const charge = Math.min(1, actionProgress / .47), release = actionProgress < .47 ? 0 : Math.min(1, (actionProgress - .47) / .28);
             ctx.shadowColor = effectTint; ctx.shadowBlur = 18 + charge * 22; ctx.strokeStyle = effectTint; ctx.lineWidth = 4;
-            for (let ring = 0; ring < 2; ring++) {
+            for (let ring = 0; ring < (heroId === 'nezha' ? 1 : 2); ring++) {
               ctx.save(); ctx.translate(14 + ring * 12 + release * 86, (ring * 2 - 1) * (10 + release * 12)); ctx.rotate((now * .02 + ring * 1.7) * (ring ? -1 : 1));
               ctx.globalAlpha = actionProgress < .47 ? .38 + charge * .52 : Math.max(0, 1 - release) * .86;
               ctx.beginPath(); ctx.arc(0, 0, 15 + charge * 7, 0, Math.PI * 2); ctx.stroke();

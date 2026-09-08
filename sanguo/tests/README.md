@@ -10,9 +10,23 @@ node sanguo/tests/menu.cjs
 node sanguo/tests/art-atlas.cjs
 node sanguo/tests/combat-playthrough.cjs
 node sanguo/tests/mount-browser.cjs
+node sanguo/tests/mobile-viewport.cjs
+node sanguo/tests/xiyou-x1.cjs
 ```
 
 Set MENU_QA_OUTPUT / COMBAT_QA_OUTPUT / MOUNT_QA_OUTPUT to an external directory for screenshots.
+Set XIYOU_QA_OUTPUT for the X1 menu, boss and victory-lesson screenshots.
+
+## Xiyou X1 coverage
+
+- Preserves the concurrently merged 8-stage expansion and locks unpainted heroes.
+- Nezha selection at 1180x820, 768x1024 and 390x844; real portrait decoding.
+- Dedicated fire spear/ring sheets, no horse fallback, fastest baseline walk speed.
+- Dash, special and musou actual damage; the combat playthrough checks ring tap/charge.
+- Three dedicated boss sprites and matching final-wave identities.
+- Victory lesson/real/fiction match the design text; expanded content and buttons
+  remain reachable on a 640x400 viewport.
+- Five new transparent atlases have zero opaque pixels on every frame boundary.
 
 ## 2026-09-06 verification
 

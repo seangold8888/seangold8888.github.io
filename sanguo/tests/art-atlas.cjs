@@ -7,6 +7,9 @@ const genericFrames=[[0,0,640,640],[640,0,640,640],[0,640,640,640],[640,640,640,
 const representativeArt='xiahoudun-painted-sheet-v1 xiahoudun-bow-painted-sheet-v1 zhangliao-painted-sheet-v1 zhangliao-bow-painted-sheet-v1 xuchu-painted-sheet-v1 xuchu-bow-painted-sheet-v1 simayi-painted-sheet-v1 simayi-bow-painted-sheet-v1 sunquan-painted-sheet-v1 sunquan-bow-painted-sheet-v1 taishici-painted-sheet-v1 taishici-bow-painted-sheet-v1 ganning-painted-sheet-v1 ganning-bow-painted-sheet-v1 luxun-painted-sheet-v1 zhouyu-bow-painted-sheet-v1 huanggai-bow-painted-sheet-v1'.split(' ').map(name=>name+'.png');
 for(const name of representativeArt)layouts[name]=genericFrames;
 const genericEdgeBudget=Object.fromEntries(representativeArt.map(name=>[name,name==='xuchu-painted-sheet-v1.png'?210:60]));
+// X1 atlases use their actual dimensions (Ao Guang is not square).
+const xiyouArt=['nezha','nezha-bow','boss-hunshimowang','boss-aoguang','boss-baigujing'].map(n=>n+'-painted-sheet-v1.png');
+for(const name of xiyouArt)if(!layouts[name])layouts[name]=null;
 (async()=>{
  const server=createServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));let browser;
  try{
@@ -20,7 +23,8 @@ const genericEdgeBudget=Object.fromEntries(representativeArt.map(name=>[name,nam
     const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(image,0,0);
     const rgba=ctx.getImageData(0,0,canvas.width,canvas.height).data,unit=image.width/1280;
     let transparent=0;for(let i=3;i<rgba.length;i+=4)if(rgba[i]===0)transparent++;
-    const edgeCounts=frames.map(([sx,sy,sw,sh])=>{
+    const cuts=frames || [[0,0,640,image.height/unit/2],[640,0,640,image.height/unit/2],[0,image.height/unit/2,640,image.height/unit/2],[640,image.height/unit/2,640,image.height/unit/2]];
+    const edgeCounts=cuts.map(([sx,sy,sw,sh])=>{
      [sx,sy,sw,sh]=[sx,sy,sw,sh].map(v=>Math.round(v*unit));let count=0;
      const solid=(x,y)=>rgba[(y*canvas.width+x)*4+3]>127;
      for(let x=sx;x<sx+sw;x++)count+=solid(x,sy)+solid(x,sy+sh-1);

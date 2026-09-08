@@ -26,3 +26,8 @@ html.battle-viewport #stage,html.battle-viewport #hud{touch-action:none}
 @media(max-width:560px){#hud .touch-actions{grid-template-columns:repeat(3,61px);gap:6px}#hud .touch-actions button{height:61px;font-size:12px;border-radius:8px;padding:5px 3px}#hud .touch-actions [data-touch-action=dash],#hud .touch-actions [data-touch-action=attack]{height:69px;font-size:14px}#hud .touch-actions .key-sub{font-size:9px}#hud .touch-stick{width:106px;height:106px}#hud .touch-stick-nub{width:48px;height:48px;margin:-24px 0 0 -24px}#hud .dash-readout{bottom:158px;max-width:205px;font-size:10px}}
 @media(max-height:560px){#hud .touch-actions{grid-template-columns:repeat(3,66px);gap:6px}#hud .touch-actions button{height:53px;font-size:12px}#hud .touch-actions [data-touch-action=dash],#hud .touch-actions [data-touch-action=attack]{height:61px;font-size:14px}#hud .touch-actions .key-icon{font-size:13px}#hud .dash-readout{bottom:139px;font-size:10px}#hud .touch-stick{width:106px;height:106px}#hud .touch-stick-nub{width:48px;height:48px;margin:-24px 0 0 -24px}}
 @media(prefers-reduced-motion:reduce){#hud .touch-actions button{transition:none}#hud .touch-actions .ready{animation:none}}
+.result-story{width:min(100%,560px);box-sizing:border-box;padding:16px 20px;border:1px solid #ccb77a55;border-radius:12px;background:#142023;color:#dce7e8;text-align:left;overflow-wrap:anywhere}
+.result-story summary{cursor:pointer;color:#ead290;font-weight:700;line-height:1.5}
+.result-story p{font-size:14px;line-height:1.8;margin:12px 0}
+.result-story h3{font-size:13px;color:#a4d5dd;margin:18px 0 4px}
+.result-screen .result-layout{flex:0 0 auto;overflow:visible}
