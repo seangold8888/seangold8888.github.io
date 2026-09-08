@@ -22,6 +22,8 @@ const representativeCases=[
  ['zhaoyun','changban'],['caocao','guandu'],['machao','dongguan'],['huangzhong','dingjunshan'],
  ['xiahoudun','trilands'],['zhangliao','trilands'],['xuchu','trilands'],['simayi','trilands'],
  ['sunquan','trilands'],['taishici','trilands'],['ganning','trilands'],['luxun','trilands'],
+ // 서유기 확장 — 새 적 진영·보스·절차 배경이 실제로 7파도를 돌 수 있는지 본다.
+ ['wukong','huaguoshan'],['wukong','baihuling'],['wukong','shituoling'],
 ];
 const rangedHeroes=new Set(['huangzhong','xiahoudun','zhangliao','xuchu','simayi','sunquan','taishici','ganning','luxun']);
 (async()=>{

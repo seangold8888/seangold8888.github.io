@@ -175,6 +175,14 @@ const BOSS_PROFILES = {
   // 서유기
   wumawang: { kind: 'bull', tint: { from: 0, to: 340, width: 68, sat: 1.18, val: .88 }, glow: '#ff7a38', weapon: '혼철곤', attackRange: 285, hitRange: 255, damage: 28, actionDuration: 590, cooldownScale: .82, hpScale: 1.18 },
   erlangshen: { kind: 'celestial', tint: { from: 0, to: 212, width: 64, sat: .72, val: 1.08 }, glow: '#a8d7ff', weapon: '삼첨양인도', attackRange: 300, hitRange: 245, damage: 26, actionDuration: 720, cooldownScale: .90, hpScale: .94 },
+  // 서유기 확장 — 난이도는 화과산(damage 18)에서 사타령(30)까지 오른다.
+  hunshimowang: { kind: 'axe', tint: { from: 0, to: 20, width: 60, sat: 1.00, val: .86 }, glow: '#c8763a', weapon: '대감도', attackRange: 235, hitRange: 220, damage: 18, actionDuration: 620, cooldownScale: 1.10, hpScale: .82 },
+  aoguang: { kind: 'staff', tint: { from: 0, to: 186, width: 62, sat: .90, val: 1.04 }, glow: '#5fd8e8', weapon: '용왕 절편', attackRange: 250, hitRange: 232, damage: 21, actionDuration: 560, cooldownScale: 1.00, hpScale: .95 },
+  baigujing: { kind: 'betrayer', tint: { from: 0, to: 278, width: 58, sat: .48, val: 1.14 }, glow: '#e6e0f4', weapon: '백골 쌍검', attackRange: 225, hitRange: 212, damage: 23, actionDuration: 400, cooldownScale: .68, hpScale: .86 },
+  yinjiao: { kind: 'marshal', tint: { from: 0, to: 266, width: 60, sat: .80, val: 1.00 }, glow: '#c3b2ff', weapon: '칠성검', attackRange: 245, hitRange: 228, damage: 25, actionDuration: 540, cooldownScale: .92, hpScale: 1.06 },
+  // 보스 홍해아와 플레이 장수 홍해아는 표가 달라 충돌하지 않는다. 시트 파일은 반드시 다르다.
+  honghaier: { kind: 'spear', tint: { from: 0, to: 8, width: 64, sat: 1.20, val: 1.06 }, glow: '#ff6a2c', weapon: '화첨창', attackRange: 260, hitRange: 236, damage: 26, actionDuration: 460, cooldownScale: .74, hpScale: .94 },
+  dapeng: { kind: 'celestial', tint: { from: 0, to: 44, width: 66, sat: 1.05, val: 1.10 }, glow: '#f5c542', weapon: '금시조 날개', attackRange: 310, hitRange: 262, damage: 30, actionDuration: 640, cooldownScale: .80, hpScale: 1.32 },
   // 수호지
   gaoqiu: { kind: 'marshal', tint: { from: 0, to: 98, width: 64, sat: .82, val: .92 }, glow: '#e6bc62', weapon: '군령창', attackRange: 250, hitRange: 230, damage: 25, actionDuration: 560, cooldownScale: .88, hpScale: 1.04 },
   luqian: { kind: 'betrayer', tint: { from: 0, to: 225, width: 62, sat: .92, val: .86 }, glow: '#b6c8ff', weapon: '쌍단도', attackRange: 230, hitRange: 220, damage: 24, actionDuration: 430, cooldownScale: .72, hpScale: .88 },
@@ -195,6 +203,13 @@ const ENEMY_ROSTERS = {
   dingjunshan: { faction: '한중 수비군', baseHue: 250, names: { soldier: '한중 보병', archer: '산등성 궁수', heavy: '녹각 방패병', captain: '하후연 친위' }, hues: { soldier: 250, archer: 236, heavy: 264, captain: 280 }, weapons: { soldier: 'blade', archer: 'bow', heavy: 'club', captain: 'halberd' }, accent: '#a99adf' },
   flamemountain: { faction: '우마왕군', baseHue: 46, names: { soldier: '화염산 요괴', archer: '화염 궁귀', heavy: '철우 전위', captain: '우마왕 철위' }, hues: { soldier: 12, archer: 28, heavy: 0, captain: 345 }, weapons: { soldier: 'club', archer: 'bow', heavy: 'axe', captain: 'halberd' }, accent: '#ff8842' },
   heavenpalace: { faction: '천궁', baseHue: 205, names: { soldier: '천병', archer: '천궁 궁수', heavy: '천장 거인', captain: '이랑진군 친위' }, hues: { soldier: 226, archer: 248, heavy: 210, captain: 278 }, weapons: { soldier: 'spear', archer: 'bow', heavy: 'club', captain: 'halberd' }, accent: '#9fc5ff' },
+  huaguoshan: { faction: '혼세마왕군', baseHue: 46, names: { soldier: '마왕 졸개', archer: '돌팔매 요괴', heavy: '곰바위 요괴', captain: '혼세 전위' }, hues: { soldier: 40, archer: 28, heavy: 18, captain: 8 }, weapons: { soldier: 'club', archer: 'bow', heavy: 'club', captain: 'axe' }, accent: '#c8763a' },
+  donghai: { faction: '동해 수궁군', baseHue: 172, names: { soldier: '새우 병사', archer: '조개 궁수', heavy: '게 장수', captain: '수궁 순찰대' }, hues: { soldier: 186, archer: 200, heavy: 168, captain: 210 }, weapons: { soldier: 'spear', archer: 'bow', heavy: 'club', captain: 'halberd' }, accent: '#5fd8e8' },
+  // 백골 진영의 창백한 흰빛은 색상 회전만으로는 안 나온다. 채도를 따로 낮춘다.
+  baihuling: { faction: '백골 요괴', baseHue: 205, names: { soldier: '백호령 졸개', archer: '회분 궁귀', heavy: '무덤지기', captain: '백골 시녀' }, hues: { soldier: { to: 272, sat: .34, val: 1.16 }, archer: { to: 258, sat: .30, val: 1.18 }, heavy: { to: 290, sat: .38, val: 1.02 }, captain: { to: 246, sat: .42, val: 1.12 } }, weapons: { soldier: 'blade', archer: 'bow', heavy: 'club', captain: 'blade' }, accent: '#e6e0f4' },
+  lianhuadong: { faction: '연화동 요괴', baseHue: 226, names: { soldier: '연화동 졸개', archer: '호리병 궁수', heavy: '금로 역사', captain: '금각 친위' }, hues: { soldier: 266, archer: 250, heavy: 284, captain: 300 }, weapons: { soldier: 'spear', archer: 'bow', heavy: 'axe', captain: 'halberd' }, accent: '#c3b2ff' },
+  huoyundong: { faction: '화운동 화귀', baseHue: 0, names: { soldier: '화운동 불귀', archer: '화전 궁귀', heavy: '화차 역사', captain: '성영 친위' }, hues: { soldier: 8, archer: 22, heavy: 0, captain: 34 }, weapons: { soldier: 'spear', archer: 'bow', heavy: 'club', captain: 'halberd' }, accent: '#ff6a2c' },
+  shituoling: { faction: '사타령 마군', baseHue: 96, names: { soldier: '사타령 마졸', archer: '금시조 궁귀', heavy: '코끼리 역사', captain: '사자마왕 친위' }, hues: { soldier: 44, archer: 30, heavy: 56, captain: 20 }, weapons: { soldier: 'halberd', archer: 'bow', heavy: 'axe', captain: 'halberd' }, accent: '#f5c542' },
   liangshan: { faction: '관군', baseHue: 96, names: { soldier: '포위 관군', archer: '관군 궁수', heavy: '도통제 중군', captain: '관군 친위' }, hues: { soldier: 0, archer: 14, heavy: 28, captain: 345 }, weapons: { soldier: 'spear', archer: 'bow', heavy: 'axe', captain: 'halberd' }, accent: '#d78557' },
   snowshrine: { faction: '추격 관군', baseHue: 226, names: { soldier: '추격 관군', archer: '산신묘 자객', heavy: '무장 추격대', captain: '육겸 친위' }, hues: { soldier: 0, archer: 18, heavy: 34, captain: 350 }, weapons: { soldier: 'blade', archer: 'bow', heavy: 'axe', captain: 'halberd' }, accent: '#c7d4e6' },
 };
@@ -228,6 +243,9 @@ const COMBAT_PROFILES = {
   linchong: { attackTheme: 'storm', specialTheme: 'water', whirlwindTheme: 'storm', musouTheme: 'storm', arrowColor: '#9fe7ff', hitColor: '#7ae0ef', impactStyle: 'crescent', audioStyle: 'spear', kinds: { 1: 'thrust', 2: 'wide', 3: 'thrust', special: 'thrust', mountedThrust: 'thrust' } },
   lizhishen: { attackTheme: 'thunder', specialTheme: 'solar', whirlwindTheme: 'thunder', musouTheme: 'inferno', arrowColor: '#ffcf6a', hitColor: '#ffc05c', impactStyle: 'burst', audioStyle: 'monkstaff', kinds: { 1: 'overhead', 2: 'wide', 3: 'spin', heavy: 'overhead', mountedThrust: 'spin' } },
   sunshangxiang: { attackTheme: 'flame', specialTheme: 'solar', whirlwindTheme: 'storm', musouTheme: 'solar', arrowColor: '#ffc76d', hitColor: '#ffb65f', impactStyle: 'crescent', audioStyle: 'dual', kinds: { 1: 'sweep', 2: 'reverse', 3: 'wide', special: 'spin', whirlwind: 'spin' } },
+  nezha: { attackTheme: 'flame', specialTheme: 'solar', whirlwindTheme: 'storm', musouTheme: 'inferno', arrowColor: '#ffb877', hitColor: '#ff9a5c', impactStyle: 'burst', audioStyle: 'spear', kinds: { 1: 'thrust', 2: 'spin', 3: 'wide', special: 'spin', whirlwind: 'spin', mountedThrust: 'thrust' } },
+  erlangshen: { attackTheme: 'cloud', specialTheme: 'lightning', whirlwindTheme: 'storm', musouTheme: 'thunder', arrowColor: '#cfe3ff', hitColor: '#a8d7ff', impactStyle: 'crescent', audioStyle: 'spear', kinds: { 1: 'sweep', 2: 'overhead', 3: 'wide', heavy: 'overhead', special: 'wide', mountedThrust: 'thrust' } },
+  honghaier: { attackTheme: 'inferno', specialTheme: 'flame', whirlwindTheme: 'inferno', musouTheme: 'solar', arrowColor: '#ff8a4a', hitColor: '#ff6a2c', impactStyle: 'burst', audioStyle: 'spear', kinds: { 1: 'thrust', 2: 'sweep', 3: 'overhead', special: 'overhead', whirlwind: 'spin' } },
   tieshangongzhu: { attackTheme: 'storm', specialTheme: 'inferno', whirlwindTheme: 'flame', musouTheme: 'inferno', arrowColor: '#ffb062', hitColor: '#ff8a55', impactStyle: 'cloud', audioStyle: 'fan', kinds: { 1: 'sweep', 2: 'wide', 3: 'spin', special: 'wide', whirlwind: 'spin' } },
   husanniang: { attackTheme: 'water', specialTheme: 'jade', whirlwindTheme: 'storm', musouTheme: 'solar', arrowColor: '#ff667f', hitColor: '#ff8da5', impactStyle: 'ribbon', audioStyle: 'dual', kinds: { 1: 'reverse', 2: 'sweep', 3: 'spin', special: 'wide', whirlwind: 'spin' } },
 };
@@ -255,6 +273,9 @@ const SPECIAL_CALLOUTS = {
   wukong: { special: { name: '제천분신격', cry: '여의봉과 분신의 연격' }, musou: { name: '대성천궁파', cry: '천궁을 뒤흔드는 대성의 힘' } },
   bajie: { special: { name: '천봉구치진', cry: '아홉 갈퀴의 대지 강타' }, musou: { name: '구치붕산격', cry: '천봉원수의 괴력' } },
   wujing: { special: { name: '유사항요참', cry: '유사하의 물결을 두른 참격' }, musou: { name: '창해항요진', cry: '창해가 요기를 삼킨다' } },
+  nezha: { special: { name: '건곤환 연격', cry: '불바퀴를 딛고 내리꽂는 창' }, musou: { name: '삼단해회진', cry: '연꽃으로 다시 태어난 몸이 하늘을 달린다' } },
+  erlangshen: { special: { name: '천안 관통참', cry: '어떤 변신도 꿰뚫어 본다' }, musou: { name: '현성이랑진', cry: '삼첨양인도가 구름을 가른다' } },
+  honghaier: { special: { name: '삼매진화포', cry: '물로도 꺼지지 않는 불' }, musou: { name: '성영화운진', cry: '화운동의 불길이 하늘을 태운다' } },
   tieshangongzhu: { special: { name: '파초열풍진', cry: '거대한 바람의 벽' }, musou: { name: '화염파초풍', cry: '화염산의 열풍이 폭발한다' } },
   wusong: { special: { name: '경양취호격', cry: '취기가 실린 연환격' }, musou: { name: '타호천강진', cry: '맨주먹으로 맹호를 꺾는다' } },
   linchong: { special: { name: '표자두빙창진', cry: '눈보라를 가르는 장창' }, musou: { name: '설풍백련창', cry: '백 번 이어지는 빙설의 찌르기' } },
@@ -1213,11 +1234,18 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   // 진영별 군복. gamedata 에 troop 이 6종 있는데 여태 쓰지 않아 12개 전장이
   // 전부 같은 병사·같은 적장으로 보였다. 서유기·수호지는 대응 진영이 없어
   // 전장 분위기에 맞는 것을 골라 준다.
-  const WORK_TROOP = { flamemountain: 'yellow', heavenpalace: 'yuan', liangshan: 'wu', snowshrine: 'wei' };
+  const WORK_TROOP = {
+    flamemountain: 'yellow', heavenpalace: 'yuan', liangshan: 'wu', snowshrine: 'wei',
+    huaguoshan: 'yellow', donghai: 'ship', baihuling: 'yuan', lianhuadong: 'wei', huoyundong: 'dong', shituoling: 'wu',
+  };
   const troop = stage(stageKey)?.troop || WORK_TROOP[stageKey] || 'dong';
   const enemyRoster = ENEMY_ROSTERS[stageKey] || ENEMY_ROSTERS.default;
   const enemySheet = tintSheet(assets.enemy, 'troop:' + troop, TROOP_TINT[troop]);
-  const enemySheets = Object.fromEntries(Object.entries(enemyRoster.hues).map(([role, hue]) => [role, tintSheet(enemySheet, 'enemy:' + stageKey + ':' + role, [{ from: enemyRoster.baseHue, to: hue, width: 52, sat: .92, val: role === 'heavy' ? .88 : 1.04 }])]));
+  const enemySheets = Object.fromEntries(Object.entries(enemyRoster.hues).map(([role, hue]) => {
+    const shift = typeof hue === 'object' && hue ? hue : { to: hue };
+    const tint = { from: enemyRoster.baseHue, to: shift.to, width: shift.width ?? 52, sat: shift.sat ?? .92, val: shift.val ?? (role === 'heavy' ? .88 : 1.04) };
+    return [role, tintSheet(enemySheet, 'enemy:' + stageKey + ':' + role, [tint])];
+  }));
   const bossId = stageInfo?.bossId || stage(stageKey)?.bossId || 'default';
   const bossProfile = BOSS_PROFILES[bossId] || BOSS_PROFILES.default;
   const dedicatedBossArt = assets.bosses?.[bossId];

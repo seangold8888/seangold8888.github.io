@@ -358,6 +358,29 @@
 7. 콘솔 에러 0.
 8. `node --test sanguo/tests/dash-skills.test.cjs`, `node --test sanguo/tests/combat-bounds.test.cjs` 통과. `sanguo/tests/combat-playthrough.cjs`의 `representativeCases`에 서유기 신규 조합 2건(`['nezha','huaguoshan']`, `['wukong','shituoling']`)을 추가하고 통과.
 
+## 11-A. 구현 현황 (2026-09-08 갱신)
+
+**데이터·엔진은 전부 들어갔다.** 남은 것은 원화뿐이다.
+
+| 항목 | 상태 |
+|---|---|
+| 전장 8개(챕터 1~8) | 완료. `stagesOfWork`가 챕터 순으로 정렬하도록 고쳤다 |
+| 교육 텍스트(`lesson`·`real`·`fiction`) | 완료. 이 문서 3-1 그대로 |
+| 신규 장수 3명 데이터(인물·스탯·무기·돌진기·전투 프로필·기술명) | 완료 |
+| 보스 6종 프로필 | 완료 |
+| 적 진영 6종 + `WORK_TROOP` 매핑 | 완료 |
+| 절차 배경 6종 | 완료 |
+| 신규 장수 **원화** | **미완** — 그래서 나타·이랑진군·홍해아는 메뉴에서 "전용 원화 준비 중"으로 잠겨 있다 |
+| 보스 6종 **원화** | **미완** — 화웅 시트를 프로필 색으로 틴트해서 임시 표시 중 |
+
+§6 주의 2에서 예고한 대로, 백골 진영의 창백한 흰빛을 위해 `hues` 값이 숫자뿐 아니라
+`{ to, sat, val, width }` 객체도 받도록 `enemySheets` 생성부를 넓혔다. 숫자를 넘기면
+예전과 완전히 같은 틴트가 나온다.
+
+검증: `dash-skills`(30종) · `combat-bounds` · `mounted-sprites` 통과,
+`combat-playthrough`에 `wukong × 화과산/백호령/사타령` 3건을 추가해 7파도 클리어 확인,
+`menu`·`art-atlas`·`mount-browser` 회귀 없음. 서비스 워커 `v53`.
+
 ## 12. 마일스톤
 
 | M | 내용 | 산출물 |

@@ -34,6 +34,80 @@ export const SCENES = {
     ],
     ground: ['#4b3421', '#2a1c12'],
   },
+  // 서유기 — 화과산: 폭포와 이끼 낀 봉우리, 원숭이 왕의 고향
+  huaguoshan: {
+    sky: ['#123526', '#3f7a4e', '#c6e6a8'],
+    haze: 'rgba(150,220,160,.16)',
+    layers: [
+      { kind: 'ridge', depth: .06, color: '#123024', height: .50, rough: .8 },
+      { kind: 'ridge', depth: .16, color: '#1d4630', height: .38, rough: 1.0 },
+      { kind: 'water', depth: .34, color: 'rgba(180,235,225,.42)' },
+      { kind: 'reeds', depth: .52, color: '#2c5c34' },
+    ],
+    ground: ['#3f6b3c', '#1b3220'],
+  },
+  // 서유기 — 동해 용궁: 바다 밑 푸른 어둠, 산호 기둥
+  donghai: {
+    sky: ['#04202e', '#0a4a63', '#2f9fb8'],
+    haze: 'rgba(80,200,220,.24)',
+    layers: [
+      { kind: 'water', depth: .05, color: 'rgba(120,220,235,.22)' },
+      { kind: 'pagoda', depth: .20, color: '#0b3546', accent: '#7fe3d6' },
+      { kind: 'crags', depth: .38, color: '#08293a' },
+      { kind: 'water', depth: .56, color: 'rgba(150,235,245,.30)' },
+    ],
+    ground: ['#0d3b4a', '#04202b'],
+  },
+  // 서유기 — 백호령: 잿빛 언덕, 마른 나무, 낡은 사당
+  baihuling: {
+    sky: ['#2a2733', '#5a5566', '#cbc6d4'],
+    haze: 'rgba(220,215,235,.26)',
+    layers: [
+      { kind: 'ridge', depth: .07, color: '#2b2833', height: .46, rough: 1.0 },
+      { kind: 'deadtrees', depth: .22, color: '#3b3644' },
+      { kind: 'shrine', depth: .40, color: '#443e50', accent: '#b9b2c6' },
+      { kind: 'crags', depth: .58, color: '#332f3c' },
+    ],
+    ground: ['#4a4553', '#22202a'],
+  },
+  // 서유기 — 연화동: 자줏빛 동굴, 호리병 깃발
+  lianhuadong: {
+    sky: ['#1a0f26', '#3d1f52', '#7b4b96'],
+    haze: 'rgba(190,150,230,.20)',
+    layers: [
+      { kind: 'crags', depth: .06, color: '#1d1029' },
+      { kind: 'pagoda', depth: .22, color: '#2a1740', accent: '#c8a6ff' },
+      { kind: 'crags', depth: .44, color: '#2f1c44' },
+      { kind: 'banners', depth: .60, color: '#5a2f7a', accent: '#e0c2ff' },
+    ],
+    ground: ['#3a2448', '#170e20'],
+  },
+  // 서유기 — 화운동: 삼매진화의 붉은 열기
+  huoyundong: {
+    sky: ['#2b0a06', '#7c1f0d', '#e8632a'],
+    haze: 'rgba(255,120,50,.28)',
+    ember: '#ff7a2c',
+    layers: [
+      { kind: 'ridge', depth: .06, color: '#2a0c07', height: .54, rough: 1.1 },
+      { kind: 'crags', depth: .20, color: '#45140a' },
+      { kind: 'deadtrees', depth: .40, color: '#361008' },
+      { kind: 'crags', depth: .58, color: '#5c2010' },
+    ],
+    ground: ['#5e2410', '#2a0f07'],
+  },
+  // 서유기 — 사타령: 어두운 마지막 고개. 불티는 금시조의 금빛 깃털로 읽힌다.
+  shituoling: {
+    sky: ['#141118', '#332b38', '#6d5f52'],
+    haze: 'rgba(160,150,140,.26)',
+    ember: '#f5c542',
+    layers: [
+      { kind: 'ridge', depth: .05, color: '#17141a', height: .58, rough: 1.2 },
+      { kind: 'ridge', depth: .15, color: '#241f27', height: .42, rough: 1.4 },
+      { kind: 'deadtrees', depth: .34, color: '#2c2429' },
+      { kind: 'crags', depth: .56, color: '#1d181d' },
+    ],
+    ground: ['#2e2a28', '#141212'],
+  },
   // 서유기 — 화염산: 붉은 바위, 열기, 불티
   flamemountain: {
     sky: ['#2b0d08', '#8c2410', '#f0793a'],

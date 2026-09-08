@@ -5,10 +5,10 @@ const vm = require('node:vm');
 const path = require('node:path');
 const skills = () => import('../src/game/dashSkills.js');
 const roster = () => import('../src/data/sanguoRoster.js');
-test('27 unique techniques cover all main and representative heroes with bounded damage/cooldown', async () => {
+test('30 unique techniques cover all main and representative heroes with bounded damage/cooldown', async () => {
   const [{DASH_SKILLS}, {SANGUO_EXPANSION_STATS}] = await Promise.all([skills(), roster()]);
-  assert.equal(Object.keys(DASH_SKILLS).length, 27);
-  assert.equal(new Set(Object.values(DASH_SKILLS).map(s => s.name)).size, 27);
+  assert.equal(Object.keys(DASH_SKILLS).length, 30);
+  assert.equal(new Set(Object.values(DASH_SKILLS).map(s => s.name)).size, 30);
   const data = JSON.parse(fs.readFileSync(path.join(__dirname,'../data/gamedata.json')));
   for (const id of Object.keys(data.ACTION_HEROES)) assert.ok(DASH_SKILLS[id], id);
   for (const id of Object.keys(SANGUO_EXPANSION_STATS)) assert.ok(DASH_SKILLS[id], id);
