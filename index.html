@@ -232,6 +232,21 @@
   }
   .book-hint { font-size: clamp(13px, 3vw, 15px); font-weight: 700; color: #7a5a2e; line-height: 1.5; }
   .book-sub { font-size: clamp(15px, 3.4vw, 17px); font-weight: 900; color: var(--ink); margin-top: 4px; }
+  .study-settings {
+    padding: 12px 14px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px 12px;
+    align-items: center;
+    border: 2px solid rgba(122, 90, 46, 0.3);
+    border-radius: 16px;
+    background: rgba(255,255,255,.72);
+  }
+  .study-settings label { font-size: 15px; font-weight: 950; }
+  .study-settings select { min-width: 116px; min-height: 46px; padding: 7px 10px; border: 2px solid #8566a7; border-radius: 12px; background: #fff; color: var(--ink); font: inherit; font-size: 16px; font-weight: 900; }
+  .study-settings strong, .study-settings p { grid-column: 1 / -1; }
+  .study-settings strong { color: #674586; font-size: 15px; }
+  .study-settings p { color: #7a5a2e; font-size: 13px; font-weight: 700; line-height: 1.45; }
   #skillList { list-style: none; display: flex; flex-direction: column; gap: 8px; }
   #skillList li {
     display: grid;
@@ -1005,7 +1020,7 @@
       </div>
       <div class="quest-ring" id="questRing" aria-hidden="true"><span id="questRingLabel">0/10</span></div>
     </div>
-    <p class="reading-label">영어 읽기 중심 · 어려웠던 문장은 다시 만나요</p>
+    <p class="reading-label">영어 읽기 중심 · 다섯 번째는 재이의 수학놀이터</p>
     <div class="progress" id="stars"></div>
     <div class="formula" id="formula"></div>
     <div class="items" id="items"></div>
@@ -1182,6 +1197,15 @@
       <b id="bookModalTitle">📖 학습 리포트</b>
       <button id="bookClose" type="button" aria-label="닫기">✕</button>
     </div>
+    <section class="study-settings" aria-labelledby="studySettingTitle">
+      <label id="studySettingTitle" for="studyAge">수학 문제 나이</label>
+      <select id="studyAge">
+        <option value="5">5세</option><option value="6">6세</option><option value="7">7세</option>
+        <option value="8">8세</option><option value="9">9세 이상</option>
+      </select>
+      <strong id="mathStage">수학 단계 불러오는 중</strong>
+      <p>나이에 맞는 범위에서 시작하고, 여러 문제를 정확히 풀면 다음 단계로 성장해요. 수학놀이터와 진도를 함께 써요.</p>
+    </section>
     <h3 class="book-sub">실력 지도</h3>
     <p class="book-hint">문제 유형별 실력이에요. 약한 유형이 더 자주 나오고, 👑 숙달한 유형도 며칠 지나면 잊기 전에 다시 나와요.</p>
     <ul id="skillList"></ul>
@@ -1194,6 +1218,10 @@
   </div>
 </div>
 
+<script src="math/curriculum.js?v=20"></script>
+<script src="math/learning.js?v=29"></script>
+<script src="math/store.js?v=30"></script>
+<script src="assets/study/math-bridge.js?v=1"></script>
 <script src="assets/study/english-reading.js?v=8"></script>
 <script>
 (function () {
@@ -1498,6 +1526,10 @@
   }
 
   var state = loadState();
+  var mathProfile = window.HubMath ? window.HubMath.load(localStorage) : null;
+  var mathState = mathProfile ? mathProfile.state : null;
+  var studyAge = mathProfile ? mathProfile.age : 7;
+  var lastMathKey = '';
   var setCorrect = state.solved % SET;
   var current = null;
   var lastReadingIndex = -1, readingView = null, answerTimer = null, readingFallback = false;
@@ -1585,6 +1617,13 @@
     return { type: 'reading', idx: window.EnglishReading.chooseSentence(state.readingWords, ordinal, lastReadingIndex, null, readingRecent) };
   }
 
+  function makePlaygroundProblem() {
+    if (!window.HubMath || !mathState) return null;
+    var problem = window.HubMath.next(mathState, studyAge, Math.random, lastMathKey);
+    lastMathKey = problem.reviewKey || problem.key;
+    return window.HubMath.dashboardProblem(problem, Math.random);
+  }
+
   function isFree() { return state.parentMode || state.solved >= DAILY; }
   function hasTicket() { return state.credit > 0; }
 
@@ -1601,6 +1640,9 @@
 
   function restoreStudyProgress() {
     state = loadState();
+    mathProfile = window.HubMath ? window.HubMath.load(localStorage) : null;
+    mathState = mathProfile ? mathProfile.state : mathState;
+    studyAge = mathProfile ? mathProfile.age : studyAge;
     plays = loadPlays();
     setCorrect = state.solved % SET;
     applyState();
@@ -1616,7 +1658,8 @@
     var crowns = masteredCount();
     dailyEl.textContent = '오늘 푼 문제 ' + Math.min(state.solved, DAILY) + ' / ' + DAILY +
       (state.wrong.length ? ' · 오답노트 ' + state.wrong.length + '개' : '') +
-      (crowns ? ' · 왕관 👑 ' + crowns + '개' : '');
+      (crowns ? ' · 왕관 👑 ' + crowns + '개' : '') +
+      (mathState ? ' · 수학 ' + mathState.level + '단계' : '');
     updateLobbyHud(crowns);
   }
   function updateLobbyHud(crowns) {
@@ -1650,6 +1693,8 @@
   var bookOpenBtn = document.getElementById('bookOpen');
   var bookModal = document.getElementById('bookModal');
   var bookListEl = document.getElementById('bookList');
+  var studyAgeEl = document.getElementById('studyAge');
+  var mathStageEl = document.getElementById('mathStage');
   var lobbyMain = document.querySelector('main');
   /* 오답노트 항목을 부모가 읽기 쉬운 한 줄로 */
   function bookLine(e) {
@@ -1667,6 +1712,12 @@
     return { f: e.total + ' = ' + e.left + ' + ❓', a: right };
   }
   var skillListEl = document.getElementById('skillList');
+  function renderStudySettings() {
+    if (!window.HubMath || !mathState) return;
+    var info = window.HubMath.status(mathState, studyAge);
+    studyAgeEl.value = String(info.age);
+    mathStageEl.textContent = info.level + '단계 · ' + info.levelName + ' · 익힌 유형 ' + info.mastered + '/' + info.total;
+  }
   function renderSkills() {
     skillListEl.innerHTML = '';
     for (var t in SKILL_INFO) {
@@ -1693,10 +1744,12 @@
     }
   }
   function renderBook() {
+    renderStudySettings();
     renderSkills();
     renderGames();
     bookListEl.innerHTML = '';
-    if (!state.wrong.length) {
+    var mathWrong = mathState && Array.isArray(mathState.wrong) ? mathState.wrong : [];
+    if (!state.wrong.length && !mathWrong.length) {
       var empty = document.createElement('li');
       empty.className = 'empty';
       empty.textContent = '오답노트가 비어 있어요! 참 잘했어요 🎉';
@@ -1723,6 +1776,19 @@
       li.appendChild(f); li.appendChild(tname); li.appendChild(meta);
       bookListEl.appendChild(li);
     });
+    mathWrong.slice().sort(function (a, b) { return (b.miss || 1) - (a.miss || 1); }).forEach(function (entry) {
+      var li = document.createElement('li');
+      var f = document.createElement('b');
+      f.textContent = entry.text;
+      var tname = document.createElement('span');
+      tname.className = 'tname';
+      tname.textContent = '🛝 재이의 수학놀이터 · ' + entry.level + '단계';
+      var meta = document.createElement('span');
+      meta.className = 'meta2';
+      meta.textContent = '정답 ' + entry.problem.answer + ' · 다음 복습 ' + entry.due;
+      li.appendChild(f); li.appendChild(tname); li.appendChild(meta);
+      bookListEl.appendChild(li);
+    });
   }
   var bookCloseBtn = document.getElementById('bookClose');
   var bookLastFocus = null;
@@ -1731,6 +1797,7 @@
     bookModal.hidden = true;
     if (bookLastFocus && bookLastFocus.focus) bookLastFocus.focus();
     if (lobbyMain) lobbyMain.inert = false;
+    if (!isFree() && !hasTicket()) renderProblem();
   }
   bookOpenBtn.addEventListener('click', function () {
     if (readingView) readingView.stop();
@@ -1741,6 +1808,12 @@
     bookCloseBtn.focus();
   });
   bookCloseBtn.addEventListener('click', closeBookModal);
+  studyAgeEl.addEventListener('change', function () {
+    studyAge = window.HubMath.setAge(localStorage, mathState, studyAgeEl.value);
+    lastMathKey = '';
+    renderStudySettings();
+    drawDaily();
+  });
   bookModal.addEventListener('click', function (e) {
     if (e.target === bookModal) closeBookModal();
   });
@@ -1821,6 +1894,10 @@
   /* 문제 하나 = { formula, items, question, answer, unit, seed }
      seed(type·total·left)가 있으면 그 문제를 그대로 다시 만든다 → 오답노트 복습용 */
   function makeProblem(seed) {
+    if (!seed) {
+      var playground = makePlaygroundProblem();
+      if (playground) return playground;
+    }
     var lv = currentLevel();
     var type = seed ? seed.type
       : (Math.random() < EXTRA_RATE ? pickWeightedType(EXTRA_TYPES) : pickWeightedType(lv.types));
@@ -1918,10 +1995,12 @@
     stopReading();
     var seed = nextStudySeed();
     current = makeProblem(seed);
-    current.review = state.wrong.some(function (entry) { return bookKey(entry) === bookKey(current.seed); });
+    if (!current.mathProblem) current.review = state.wrong.some(function (entry) { return bookKey(entry) === bookKey(current.seed); });
     sinceReview = current.review ? 0 : sinceReview + 1;
     lastReviewKey = bookKey(current.seed);
-    eyebrowEl.textContent = current.reading ? '영어 문장 읽기' : '오늘의 공부 · ' + currentLevel().name;
+    eyebrowEl.textContent = current.reading ? '영어 문장 읽기'
+      : current.mathProblem ? '재이의 수학놀이터 · ' + mathState.level + '단계'
+      : '오늘의 공부 · ' + currentLevel().name;
     itemsEl.textContent = current.items;
     itemsEl.classList.toggle('clock-face', current.seed.type === 'clock');
     document.getElementById('formula').textContent = current.formula;
@@ -2009,10 +2088,19 @@
 
       /* 유형별 실력: 한 번에 맞히면 +1, 틀렸던 문제면 그대로.
          수학 난이도 단계(streak/missRow)는 수학 문제로만 움직인다. */
-      var isMath = !BANK_SIZES[current.seed.type];
-      var sk = skillOf(current.seed.type);
-      sk.d = dayNum();
-      if (firstTry) {
+      var isPlaygroundMath = !!current.mathProblem;
+      var isMath = isPlaygroundMath || !BANK_SIZES[current.seed.type];
+      if (isPlaygroundMath) {
+        if (firstTry) {
+          var growth = window.HubMath.record(localStorage, mathState, current.mathProblem, true, studyAge);
+          msg = growth.promoted
+            ? '🎉 수학 실력이 자라서 ' + growth.level + '단계로 올라갔어요!'
+            : (current.review ? '수학놀이터 복습 성공! 실력이 단단해졌어요 🌱' : '수학놀이터 정답! 실력이 자라고 있어요 🌱');
+        }
+      } else {
+        var sk = skillOf(current.seed.type);
+        sk.d = dayNum();
+        if (firstTry) {
         var wasMaster = sk.s >= MASTER_AT;
         sk.s = Math.min(10, sk.s + 1);
         if (current.review) {
@@ -2035,8 +2123,9 @@
         if (!wasMaster && sk.s >= MASTER_AT) {
           msg = '👑 「' + SKILL_INFO[current.seed.type].name + '」 숙달! 왕관을 얻었어요!';
         }
-      } else if (isMath) {
-        state.streak = 0;
+        } else if (isMath) {
+          state.streak = 0;
+        }
       }
 
       cheerEl.textContent = msg;
@@ -2060,21 +2149,26 @@
       /* 이 문제에서 처음 틀렸을 때만 오답노트에 적고 난이도를 판단한다 */
       if (!current.missed) {
         current.missed = true;
-        addToBook(current.seed);
-        var wsk = skillOf(current.seed.type);
-        wsk.s = Math.max(0, wsk.s - 2);
-        wsk.d = dayNum();
-        if (!BANK_SIZES[current.seed.type]) {
-          state.streak = 0;
-          missRow++;
-        }
-        if (missRow >= MISS_DOWN && state.level > 0) {
-          state.level--;
-          missRow = 0;
-          oops = '괜찮아요! 「' + currentLevel().name + '」 문제로 다시 연습해요 💪';
-          eyebrowEl.textContent = '오늘의 공부 · ' + currentLevel().name;
+        if (current.mathProblem) {
+          window.HubMath.record(localStorage, mathState, current.mathProblem, false, studyAge);
+          oops = '괜찮아요! 수학놀이터 오답노트에서 다시 만나 연습해요 📖';
         } else {
-          oops += ' (오답노트에 적어 둘게요 📖)';
+          addToBook(current.seed);
+          var wsk = skillOf(current.seed.type);
+          wsk.s = Math.max(0, wsk.s - 2);
+          wsk.d = dayNum();
+          if (!BANK_SIZES[current.seed.type]) {
+            state.streak = 0;
+            missRow++;
+          }
+          if (missRow >= MISS_DOWN && state.level > 0) {
+            state.level--;
+            missRow = 0;
+            oops = '괜찮아요! 「' + currentLevel().name + '」 문제로 다시 연습해요 💪';
+            eyebrowEl.textContent = '오늘의 공부 · ' + currentLevel().name;
+          } else {
+            oops += ' (오답노트에 적어 둘게요 📖)';
+          }
         }
         drawDaily();
         saveState();

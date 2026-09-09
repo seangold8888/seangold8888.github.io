@@ -19,6 +19,7 @@ function setup(initial = {}) {
     localStorage: {getItem: k => stored.get(k) ?? null, setItem: (k,v) => stored.set(k,v)},
     cheerEl: {}, drawSetStars() {}, drawDaily() {}, applyState() {}, renderProblem() {},
     stopReading() {}, annotatePlays() {}, setTimeout: () => 1,
+    mathProfile: null, mathState: null, studyAge: 7,
   };
   vm.createContext(ctx);
   vm.runInContext(html.match(/var SET = \d+, DAILY = \d+;/)[0] + "\n" +
