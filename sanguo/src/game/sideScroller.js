@@ -10,6 +10,7 @@ import { dashSkill, startDashState, collectDashHits } from './dashSkills.js';
 import { combatBounds, clampCombatX, constrainEnemy, waveSpawnX } from './combatBounds.js';
 import { MOUNT_PROFILES, drawConsistentMount } from './mountedSprites.js';
 import { BATTLE_CRY_PACKS, FEMALE_BATTLE_CRY_SEGMENTS, battleCryProfile } from './battleCries.js';
+import { heroRenderScale } from './heroRenderScale.js';
 
 const CANVAS_UI_FONT = '"Pretendard Variable", Pretendard, "Noto Sans KR", "Malgun Gothic", sans-serif';
 const CANVAS_IMPACT_FONT = CANVAS_UI_FONT;
@@ -1288,6 +1289,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   const assets = await preloadSideScroller(heroId, stageKey), canvas = document.getElementById('stage'), ctx = canvas.getContext('2d', { alpha: false });
   const heroAssets = assets.heroes[heroId] || assets.heroes.guanyu;
   const combatProfile = COMBAT_PROFILES[heroId] || COMBAT_PROFILES.guanyu;
+  const heroVisualScale = heroRenderScale(heroId);
   const dashTechnique = dashSkill(heroId);
   const callouts = SPECIAL_CALLOUTS[heroId] || DEFAULT_CALLOUT;
   const mountAsset = assets.mounts[heroId] || assets.horse;
@@ -1487,8 +1489,8 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   function bowAnchor() {
     const depthScale = 1 + player.lane * .0014;
     if (!player.mounted) {
-      const drawHeight = Math.min(320, height * .50) * depthScale;
-      return { height: drawHeight * .64, fx: 26, launch: 58 };
+      const drawHeight = standingHeroHeight(depthScale);
+      return { height: drawHeight * .64, fx: 26 * heroVisualScale, launch: 58 * heroVisualScale };
     }
     if (usesSeatedMountSheet) {
       const config = MOUNTED_BOW_ANCHORS[heroId] || MOUNTED_BOW_ANCHORS.default;
@@ -1506,6 +1508,12 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       fx: isBoarMount ? 31 : isWaterMount ? 33 : 34,
       launch: isBoarMount ? 64 : isWaterMount ? 65 : 66,
     };
+  }
+
+  // Keep every unmounted pose, afterimage and projectile anchor on one scale.
+  // Mounted composite sheets already share a horse-sized coordinate system.
+  function standingHeroHeight(depthScale = 1) {
+    return Math.min(320, height * .50) * depthScale * heroVisualScale;
   }
   function mountTransition(phase, x = player.x, lane = player.lane, facing = player.facing) {
     audio.mountEvent(mountKind, phase);
@@ -2622,7 +2630,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       const alpha = Math.max(0, ghost.life / ghost.max) * (ghost.clone ? .52 : .32), ghostY = floorY + ghost.lane - ghost.y;
       ctx.save(); ctx.globalCompositeOperation = 'screen';
       if (ghost.mounted) drawMountedFigure(ghost.x - cameraX, ghostY, ghost.facing, ghost.frame, alpha, ghost.ranged, 1 + ghost.lane * .0014);
-      else drawAtlasFrame(ctx, heroAssets.hero, ghost.frame, ghost.x - cameraX, ghostY, Math.min(320, height * .50) * (1 + ghost.lane * .0014), ghost.facing, alpha);
+      else drawAtlasFrame(ctx, heroAssets.hero, ghost.frame, ghost.x - cameraX, ghostY, standingHeroHeight(1 + ghost.lane * .0014), ghost.facing, alpha);
       ctx.restore();
     }
     const actors = enemies.map((enemy) => ({ kind: 'enemy', lane: enemy.lane, enemy }));
@@ -2632,7 +2640,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     for (const actor of actors) {
       if (actor.kind === 'player') {
         const baseY = floorY + player.lane;
-        drawShadow(player.x, baseY + 4, player.mounted ? (isCloudMount ? .98 : isFireWheelMount ? 1.18 : isBoarMount ? 1.45 : 1.5) : 1.15, player.y ? 0.22 : (player.mounted ? (isCloudMount ? .24 : isFireWheelMount ? .28 : isBoarMount ? .40 : .48) : .48));
+        drawShadow(player.x, baseY + 4, player.mounted ? (isCloudMount ? .98 : isFireWheelMount ? 1.18 : isBoarMount ? 1.45 : 1.5) : 1.15 * heroVisualScale, player.y ? 0.22 : (player.mounted ? (isCloudMount ? .24 : isFireWheelMount ? .28 : isBoarMount ? .40 : .48) : .48));
         const attacking = ['attack', 'heavy', 'musou', 'special', 'throw', 'grab', 'dash', 'whirlwind', 'counter', 'ranged', 'mountedThrust'].includes(player.action);
         const actionProgress = attacking ? Math.max(0, Math.min(1, (now - player.actionStarted) / Math.max(1, player.actionDuration))) : 0;
         let heroFrame = 0;
@@ -2656,10 +2664,10 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
           const mountedBowDip = usesSeatedMountSheet || usesConsistentMount ? 0 : bowDip;
           drawHorse(player.x + attackLunge + mountedBowShift, baseY - strideBob + mountedBowDip, player.facing, true, heroFrame, flicker, player.action === 'ranged');
         }
-        else drawAtlasFrame(ctx, player.action === 'ranged' && !rangedUsesBase ? heroAssets.heroBow : heroAssets.hero, heroFrame, player.x + attackLunge + bowShift - cameraX, baseY - player.y - strideBob + bowDip, Math.min(320, height * 0.50) * (1 + player.lane * .0014), player.facing, flicker);
+        else drawAtlasFrame(ctx, player.action === 'ranged' && !rangedUsesBase ? heroAssets.heroBow : heroAssets.hero, heroFrame, player.x + attackLunge + bowShift - cameraX, baseY - player.y - strideBob + bowDip, standingHeroHeight(1 + player.lane * .0014), player.facing, flicker);
         if (growth.weaponLevel >= 4) {
           const tier = growth.weaponLevel >= 16 ? 3 : growth.weaponLevel >= 10 ? 2 : 1;
-          const pulse = .5 + Math.sin(now * .009) * .16, auraX = player.x - cameraX + player.facing * (player.mounted ? 76 : 54), auraY = baseY - player.y - (player.mounted ? 188 : 128);
+          const pulse = .5 + Math.sin(now * .009) * .16, auraX = player.x - cameraX + player.facing * (player.mounted ? 76 : 54 * heroVisualScale), auraY = baseY - player.y - (player.mounted ? 188 : 128 * heroVisualScale);
           ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = combatProfile.hitColor; ctx.shadowColor = combatProfile.hitColor; ctx.shadowBlur = 12 + tier * 7;
           ctx.globalAlpha = (.10 + tier * .055) * pulse; ctx.lineWidth = 2 + tier;
           ctx.beginPath(); ctx.ellipse(auraX, auraY, 24 + tier * 7, 34 + tier * 9, now * .0015, 0, Math.PI * 2); ctx.stroke();

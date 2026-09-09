@@ -4,7 +4,7 @@ Run from the site repository root with Node.js and Playwright/Chromium installed
 (or point NODE_PATH at an existing Playwright installation).
 
 ```sh
-node --test sanguo/tests/combat-bounds.test.cjs sanguo/tests/dash-skills.test.cjs sanguo/tests/mounted-sprites.test.cjs sanguo/tests/battle-cries.test.cjs
+node --test sanguo/tests/combat-bounds.test.cjs sanguo/tests/dash-skills.test.cjs sanguo/tests/mounted-sprites.test.cjs sanguo/tests/battle-cries.test.cjs sanguo/tests/hero-render-scale.test.cjs
 node --test --test-name-pattern="cache generation" cards/tests/pwa.test.js
 node sanguo/tests/menu.cjs
 node sanguo/tests/art-atlas.cjs
@@ -16,7 +16,10 @@ node sanguo/tests/xiyou-x2.cjs
 node sanguo/tests/xiyou-x3.cjs
 node sanguo/tests/xiyou-x4.cjs
 node sanguo/tests/battle-cries-browser.cjs
+node sanguo/tests/hero-render-scale-browser.cjs
 ```
+
+Set `HERO_SCALE_QA_OUTPUT` to save the 13 corrected 640x400 battle renders.
 
 ## Battle cry coverage
 

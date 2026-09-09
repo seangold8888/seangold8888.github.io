@@ -296,7 +296,7 @@ test("recognizer alternatives can pass; display uses the first guess; session sh
 
 test("the hub remembers a silent device and the worker precaches every clip", () => {
   const sw = require("../../sw.js"), html = fs.readFileSync(path.join(__dirname, "../../index.html"), "utf8");
-  assert.equal(sw.CACHE_VERSION, "v70");
+  assert.equal(sw.CACHE_VERSION, "v71");
   assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=8"));
   assert.match(html, /english-reading\.js\?v=8/);
   assert.match(html, /hub2_reading_silent/);

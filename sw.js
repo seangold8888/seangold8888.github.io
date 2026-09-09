@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v70";
+const CACHE_VERSION = "v71";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -240,6 +240,7 @@ const OPTIONAL_SHELL = [
   "./sanguo/src/game/hud.js",
   "./sanguo/src/game/dashSkills.js",
   "./sanguo/src/game/battleCries.js",
+  "./sanguo/src/game/heroRenderScale.js",
   "./sanguo/src/game/combatBounds.js",
   "./sanguo/src/game/mountedSprites.js",
   "./sanguo/art/side-scroller/zhaoyun-bow-painted-sheet-v1.png",
