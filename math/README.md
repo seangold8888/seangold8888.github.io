@@ -48,7 +48,7 @@
 
 - `node math/tests/browser-responsive.cjs`: 아이패드 가로·세로·분할 화면, 휴대폰, 데스크톱 9개 화면의 전체 그림 표시·터치·회전·이어하기 확인. Chromium 터치 에뮬레이션이며 실기기 Safari 검증은 별도다.
 
-로그인 없이 이 기기의 브라우저에만 저장한다. 내보내기·가져오기는 부모 화면에 있다. 메인 화면 CSS·app.js·playground.js·store.js는 v30, learning.js는 v29 URL로 갱신되며 기존 서비스 워커의 HTML/JS/CSS 네트워크 우선 정책을 따른다.
+로그인 없이 이 기기의 브라우저에만 저장한다. 내보내기·가져오기는 부모 화면에 있다. 메인 화면 app.js·store.js·focus-music.js는 v31, playground.js는 v30, learning.js는 v29 URL로 갱신되며 기존 서비스 워커의 HTML/JS/CSS 네트워크 우선 정책을 따른다.
 
 
 ## 생일파티 모험
@@ -105,3 +105,13 @@ pending에 spot·focusTitle과 생성한 문제를 보관한다. 중단한 놀�
 전체 문제 수+출발 봉으로 장면을 구성하고 내부 가로 스크롤로 긴 사다리를 따라간다. 재개 시 저장된 해결 수의 봉에 바로 놓고 회전/화면 크기 변경에도 캐릭터가 보이도록 한다. 마지막 정답은 즉시 학습 완료와 보상을 저장한 뒤 짧은 도착 장면을 보여 준다. 움직임 최소화 설정에서는 도착 대기를 생략한다.
 
 검증: node math/tests/browser-hanging.cjs. 실제 이미지 로드, 친구 선택 저장, 정답 이동/오답 유지, 중단 후 위치, 도착 연출 전 완료 기록, 320px 끝 봉, reduced-motion을 확인한다. 생성 자산과 최종 프롬프트는 assets/hanging-characters-art.md에 기록한다.
+
+## 선택형 집중 음악 (v31)
+
+메인의 ‘집중 음악 켜기’는 외부 음원 없이 브라우저에서 만드는 66BPM 무가사 음악을 시작한다. 홈보다 문제 풀이 중의 음 수와 음량이 낮고, 정답에는 두 음의 작은 신호만 더한다. 집중을 보장하는 기능이 아니며 기본은 꺼짐이다. music 선택은 기존 math10_state 안에 보관하고 부모 설정에서도 바꿀 수 있다.
+
+브라우저 자동재생 정책을 지켜 버튼 또는 저장값 이후의 첫 사용자 동작에서만 시작한다. 보상·옷장·설정 화면과 백그라운드 탭에서는 무음이며 오디오가 중단되면 다음 동작에서 복구한다. 끄기는 즉시 예약을 멈추고 음량을 짧게 줄인다. 외부 요청, 광고, 가사, 음원 라이선스 의존성이 없다.
+
+설계 참고: Quan et al. (2023), “Slow tempo music preserves attentional efficiency in young children”; Koolidge & Holmes (2018), “Piecing It Together”; Lehmann & Seufert (2017), “The Influence of Background Music on Learning…”. 서로 다른 과제의 제한된 연구이므로 제품은 교육 효과를 주장하지 않고 선택권·무음 비교를 유지한다.
+
+검증: node --test math/tests/focus-music.test.js 및 node math/tests/browser-music.cjs.

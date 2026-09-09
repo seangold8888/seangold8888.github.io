@@ -272,13 +272,17 @@ body[data-screen="home"] header.top{padding-bottom:22px}
 .shortcut-arrow{font:18px system-ui;margin-left:auto;color:#849a8c}
 .home-utilities{display:flex;align-items:flex-start;gap:18px}
 .home-utilities>.home-disclosure{flex:1;min-width:0}
+.home-tool-buttons{display:flex;gap:18px}
 .home-disclosure{border:0;border-top:1px solid #dfe6db;background:transparent}
 .home-disclosure>summary{display:flex;justify-content:space-between;align-items:center;gap:15px;min-height:57px;padding:12px 3px;cursor:pointer;list-style:none;color:#49675e;font-size:15px}
 .home-disclosure>summary::-webkit-details-marker{display:none}
 .home-disclosure[open]>summary{color:#2d5653}
-.home-disclosure>summary:focus-visible,.home-wardrobe:focus-visible{outline:3px solid #245b78;outline-offset:3px;border-radius:7px}
+.home-disclosure>summary:focus-visible,.home-wardrobe:focus-visible,.home-music:focus-visible{outline:3px solid #245b78;outline-offset:3px;border-radius:7px}
 .home-disclosure .playground-map{padding:14px 0 24px}
 .home-wardrobe{font:15px Jua,system-ui;color:#49675e;min-height:57px;min-width:115px;border:0;border-top:1px solid #dfe6db;background:transparent;padding:12px 3px;display:flex;align-items:center;justify-content:space-between;gap:20px;cursor:pointer}
+.home-music{font:14px Jua,system-ui;color:#60776c;min-height:57px;min-width:134px;border:0;border-top:1px solid #dfe6db;background:transparent;padding:12px 3px;cursor:pointer;white-space:nowrap}
+.home-music>span{display:inline-grid;place-items:center;width:26px;height:26px;margin-right:5px;border-radius:50%;background:#e8efeb;color:#55766c}
+.home-music.on{color:#2d625b}.home-music.on>span{background:#dff0e8;color:#28685d}
 .collection-total{font-size:12px;color:#7b8a7a}.collection-total b{font-weight:400}.collection-total>span{margin-left:16px;font-size:17px}
 .collection-content{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:10px 0 20px}
 .collection-content>*{grid-column:1/-1;min-width:0}
@@ -316,10 +320,11 @@ body[data-screen="home"] header.top{padding-bottom:22px}
  .home-shortcut strong{font-size:15px}
  .home-shortcut small{font-size:11px;line-height:1.4}
  .shortcut-icon{width:28px;height:28px;flex-basis:28px}.shortcut-icon svg{width:27px;height:27px}
- .home-utilities{gap:15px}.home-wardrobe{min-width:94px}
+ .home-utilities{gap:15px}.home-tool-buttons{gap:15px}.home-wardrobe{min-width:94px}.home-music{min-width:124px}
  .collection-content{grid-template-columns:1fr}.collection-content>.me,.collection-content>.guide{grid-column:1}
  .home-disclosure>summary{font-size:14px}
 }
+@media(max-width:520px){.home-utilities{flex-wrap:wrap}.home-utilities>.home-disclosure{flex-basis:100%}.home-tool-buttons{width:100%}.home-tool-buttons>*{flex:1}}
 @media(prefers-reduced-motion:reduce){.home-shortcut{transition:none}}
 
 /* Equipment choices explain their actual question focus without another home card. */

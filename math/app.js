@@ -6,6 +6,7 @@
   const storage = window.localStorage;
   const Learn = window.MathLearning;
   const Play = window.MathPlayground;
+  const Music = window.MathFocusMusic.create();
   let hintStep = 0, sessionMode = "adventure", recovered = 0, nextTimer = null, sessionSpot = null, sessionFocus = "";
   let state = S.load(storage);
   const PRAISE = ["맞았어요", "정확해요", "잘했어요", "좋아요", "그렇지!", "딩동댕"];
@@ -48,7 +49,12 @@
       setTimeout(function () { b.remove(); }, 800);
     }
   }
-  function show(id) { document.body.dataset.screen=id; ["setup", "placed", "home", "quiz", "capsule", "result", "showcard", "pick", "wardrobe"].forEach(function (v) { $(v).hidden = v !== id; }); window.scrollTo(0, 0); }
+  function show(id) {
+    document.body.dataset.screen=id;
+    ["setup", "placed", "home", "quiz", "capsule", "result", "showcard", "pick", "wardrobe"].forEach(function (v) { $(v).hidden = v !== id; });
+    Music.setScene(id === "quiz" ? "quiz" : id === "home" ? "home" : "rest");
+    window.scrollTo(0, 0);
+  }
   function collectedIds() { const ids = {}; state.album.forEach(function (a) { ids[a.id] = true; }); return Object.keys(ids); }
 
   /* ---------- 홈 ---------- */
@@ -397,7 +403,7 @@
       const rewardKey = S.today()+":"+Learn.skillKey(current);
       const growthBonus = growth && !state.growthRewards[rewardKey];
       $("feedback").textContent = growthBonus ? "어려웠던 걸 혼자 해결했어요! ✓" : firstTry ? Play.byId(sessionSpot || state.playgroundSpot).move+" ✓" : "끝까지 생각했어요. 한 칸 더 나아갔어요 ✓";
-      $("feedback").className="feedback ok"; ding(true); burst();
+      $("feedback").className="feedback ok"; ding(true); Music.celebrate(); burst();
       results.push({key:current.key,type:current.type,level:current.level,review:!!current.review,firstTry:firstTry,ms:firstTry?ms:0});
       S.addCoins(state,A.COIN.correct,"문제 끝까지 해결"); earned+=A.COIN.correct;
       if(growthBonus) { S.addCoins(state,2,"다시 만나 혼자 해결"); earned+=2; recovered++; state.growthRewards[rewardKey]=true; }
@@ -676,6 +682,32 @@
   document.querySelectorAll("[data-climber]").forEach(function(button) {
     button.addEventListener("click",function() {state.climber=button.dataset.climber;S.save(storage,state);renderPlayground();});
   });
+  function paintMusicButton() {
+    $("musicBtn").setAttribute("aria-pressed",String(state.music));
+    $("musicBtn").classList.toggle("on",state.music);
+    $("musicBtn").textContent="";
+    const icon=document.createElement("span");icon.setAttribute("aria-hidden","true");icon.textContent=state.music?"♫":"♪";
+    $("musicBtn").appendChild(icon);
+    $("musicBtn").appendChild(document.createTextNode(state.music?" 집중 음악 켜짐":" 집중 음악 켜기"));
+  }
+  $("musicBtn").addEventListener("click",function() {
+    state.music=!state.music;
+    if(state.music && !Music.enable(document.body.dataset.screen === "quiz" ? "quiz" : "home")) state.music=false;
+    if(!state.music) Music.disable();
+    S.save(storage,state);paintMusicButton();
+  });
+  document.addEventListener("pointerdown",function keepMusicReady(event) {
+    if(!state.music || (event.target.closest && event.target.closest("#musicBtn"))) return;
+    const status=Music.status();
+    if(!status.enabled || status.audioState === "suspended") {
+      Music.enable(document.body.dataset.screen === "quiz" ? "quiz" : document.body.dataset.screen === "home" ? "home" : "rest");
+    }
+  },{capture:true});
+  document.addEventListener("visibilitychange",function() {
+    if(document.hidden) Music.setScene("rest");
+    else if(state.music) Music.setScene(document.body.dataset.screen === "quiz" ? "quiz" : document.body.dataset.screen === "home" ? "home" : "rest");
+  });
+  paintMusicButton();
   $("quickBtn").addEventListener("click",function() { start("quick"); });
   $("hintBtn").addEventListener("click",function() { offerHelp(false); });
   $("togetherBtn").addEventListener("click",function() { offerHelp(true); });
