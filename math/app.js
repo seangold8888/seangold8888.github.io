@@ -48,7 +48,7 @@
       setTimeout(function () { b.remove(); }, 800);
     }
   }
-  function show(id) { ["setup", "placed", "home", "quiz", "capsule", "result", "showcard", "pick", "wardrobe"].forEach(function (v) { $(v).hidden = v !== id; }); window.scrollTo(0, 0); }
+  function show(id) { document.body.dataset.screen=id; ["setup", "placed", "home", "quiz", "capsule", "result", "showcard", "pick", "wardrobe"].forEach(function (v) { $(v).hidden = v !== id; }); window.scrollTo(0, 0); }
   function collectedIds() { const ids = {}; state.album.forEach(function (a) { ids[a.id] = true; }); return Object.keys(ids); }
 
   /* ---------- 홈 ---------- */
@@ -599,7 +599,7 @@
     $("missionTitle").textContent=spot.mission;
     $("playgroundChapter").textContent=(Math.floor(total/24)+1)+"번째 탐험";
     $("playgroundGreeting").textContent="재이의 놀이터에\n놀러 와!";
-    $("playgroundStory").textContent=state.stamps[S.today()] ? "오늘도 신나게 놀았어. 내일 다시 만나!" : spot.id === "bars" ? "문제 하나, 구름사다리 한 칸. 천천히 같이 가요." : "작은 문제를 풀며 함께 놀아요. 내 속도로, 한 걸음씩!";
+    $("playgroundStory").textContent=state.stamps[S.today()] ? "오늘도 신나게 놀았어. 내일 다시 만나!" : spot.id === "bars" ? "천천히 한 칸씩, 같이 가요." : "내 속도로, 한 걸음씩 같이 가요.";
     $("playgroundTotal").textContent=total;
     renderHomeProgress();
     const map=$("playgroundMap"); map.textContent="";

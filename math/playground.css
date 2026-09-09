@@ -235,3 +235,89 @@ header.top .who {min-height:44px;display:flex;align-items:center;}
 .school-invite{background:#fff9e9}.school-invite h3{margin:7px 0}.school-link{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:12px 16px;border-radius:15px;background:#327797;color:#fff;text-decoration:none;margin-top:12px;line-height:1.4;font-size:16px}.school-link:focus-visible{outline:3px solid #245b78;outline-offset:4px}
 
 .weekly-link{background:#4d7a63}.school-invite .school-link{margin-right:6px}
+
+/* Home v3: one starting point, one progress strip, three quiet shortcuts. */
+body[data-screen="home"],body[data-screen="setup"]{background:#f7f8f3;background-image:none}
+body[data-screen="home"] .wrap{max-width:1060px;padding-top:24px;padding-bottom:25px}
+body[data-screen="home"] header.top{padding-bottom:22px}
+#home .playground-hero{grid-template-columns:minmax(0,1fr) minmax(0,1.22fr);background:#eaf3f3;box-shadow:none;border:1px solid #e0e9e5;border-radius:28px}
+#home .hero-copy{padding:30px 32px}
+#home .hero-kicker{font-size:13px;color:#5e7978;margin:0 0 12px;letter-spacing:.01em}
+#home .hero-copy h2{max-width:360px;font-size:34px;line-height:1.35;letter-spacing:-.035em}
+#home #playgroundStory{max-width:none;color:#58716f;margin:13px 0 0;font-size:16px;line-height:1.65}
+#home .mission-panel{margin:22px 0 0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
+#home .start-actions{display:flex;flex-direction:column;align-items:flex-start;gap:7px;margin:0}
+#home #startBtn{width:100%;max-width:310px;font-size:19px;min-height:56px;padding:15px 18px;background:#356c70;box-shadow:0 3px 0 #295359;border-radius:14px}
+#home #quickBtn{width:auto;min-height:44px;padding:8px 0;font-size:15px;background:transparent;box-shadow:none;color:#476b6d;text-decoration:underline;text-underline-offset:5px}
+#home #homeReview:empty{display:none}
+#home #homeReview{font-size:12px;line-height:1.6;margin:7px 0 0}
+#home #resumeNote{font-size:13px;margin:0 0 12px;line-height:1.6}
+#home .hero-scene{width:100%;height:auto;object-fit:contain;align-self:center}
+#home .home-progress{margin:24px 4px 18px;padding:0;border:0;background:transparent;box-shadow:none}
+#home .progress-heading h3{font-size:17px;color:#456460}
+#home #homeProgressLabel{font-size:12px;color:#6a7b73}
+#home .quest-rungs{height:70px;margin-top:10px;padding-bottom:35px}
+#home .rung{height:27px;border-width:2px;background:#edf1e6}
+#home .quest-rungs:after{top:25px}
+#home .rung.done{background:#dcbf9f}
+#home .progress-friend{top:28px;width:52px;height:42px}
+.home-shortcuts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:4px 0 18px}
+.home-shortcut{display:flex;align-items:center;gap:12px;min-width:0;min-height:94px;padding:16px;background:#fff;border:1px solid #e1e7df;border-radius:18px;color:#2f514f;text-decoration:none;transition:border-color .15s,background .15s}
+.home-shortcut:hover{background:#fdfefa;border-color:#aac6bf}
+.home-shortcut strong{display:block;font-size:17px;font-weight:400;line-height:1.4}
+.home-shortcut small{display:block;color:#78877c;font-size:12px;line-height:1.5;margin-top:4px}
+.shortcut-icon{display:flex;align-items:center;justify-content:center;flex:0 0 39px;width:39px;height:43px;color:#507f83}
+.shortcut-icon svg{width:31px;height:31px}
+.party-icon{color:#b77b74}.exam-icon{color:#81835b}
+.shortcut-arrow{font:18px system-ui;margin-left:auto;color:#849a8c}
+.home-utilities{display:flex;align-items:flex-start;gap:18px}
+.home-utilities>.home-disclosure{flex:1;min-width:0}
+.home-disclosure{border:0;border-top:1px solid #dfe6db;background:transparent}
+.home-disclosure>summary{display:flex;justify-content:space-between;align-items:center;gap:15px;min-height:57px;padding:12px 3px;cursor:pointer;list-style:none;color:#49675e;font-size:15px}
+.home-disclosure>summary::-webkit-details-marker{display:none}
+.home-disclosure[open]>summary{color:#2d5653}
+.home-disclosure>summary:focus-visible,.home-wardrobe:focus-visible{outline:3px solid #245b78;outline-offset:3px;border-radius:7px}
+.home-disclosure .playground-map{padding:14px 0 24px}
+.home-wardrobe{font:15px Jua,system-ui;color:#49675e;min-height:57px;min-width:115px;border:0;border-top:1px solid #dfe6db;background:transparent;padding:12px 3px;display:flex;align-items:center;justify-content:space-between;gap:20px;cursor:pointer}
+.collection-total{font-size:12px;color:#7b8a7a}.collection-total b{font-weight:400}.collection-total>span{margin-left:16px;font-size:17px}
+.collection-content{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:10px 0 20px}
+.collection-content>*{grid-column:1/-1;min-width:0}
+.collection-content>.me,.collection-content>.guide{grid-column:auto;width:auto;float:none;min-height:0;margin:0}
+.collection-content>.card,.collection-content>.section-label{margin:0}
+.collection-content .card{box-shadow:none}
+.collection-context{padding:4px 4px 12px;color:#5d7467}
+.collection-context h3{font-size:19px;margin:0 0 6px}
+.collection-context #playgroundChapter{font-size:13px}
+.collection-context p{line-height:1.6;margin:6px 0}
+.collection-reset{font-size:12px;margin:0 0 18px}
+.collection-reset a{display:inline-flex;align-items:center;min-height:44px;color:#7b8a7a}
+.home-footer{display:flex;justify-content:space-between;gap:20px;border-top:1px solid #dfe6db;padding:6px 0 0;margin:0;font-size:13px}
+.home-footer a{display:inline-flex;align-items:center;min-height:44px;color:#6d8175}
+#setup>.card{box-shadow:none;background:#fff;border-color:#e1e7df}
+#setup .party-cta,#setup .school-link{background:transparent;box-shadow:none;color:#57716d;font-size:14px;padding:5px 0;margin:2px 0 12px;min-height:44px;text-decoration:underline;text-underline-offset:4px}
+#setup .welcome-art{max-height:200px;background:#eaf3f3}
+@media(max-width:900px){
+ #home .hero-copy{padding:24px}#home .hero-copy h2{font-size:29px}
+ .home-shortcut{gap:8px;padding:13px}.shortcut-arrow{display:none}.home-shortcut strong{font-size:16px}
+}
+@media(max-width:700px){
+ body[data-screen="home"] .wrap{padding-top:14px}
+ body[data-screen="home"] header.top{padding-bottom:16px}
+ #home .playground-hero{grid-template-columns:1fr;border-radius:22px}
+ #home .hero-copy{padding:22px 23px 10px}
+ #home .hero-copy h2{max-width:none;font-size:28px}
+ #home #playgroundStory{font-size:15px;margin-top:8px}
+ #home .mission-panel{margin-top:16px}
+ #home #startBtn{max-width:none;font-size:18px}
+ #home .hero-scene{width:min(100%,430px);justify-self:center}
+ #home .home-progress{margin:20px 2px 15px}
+ .home-shortcuts{gap:8px;margin-bottom:14px}
+ .home-shortcut{flex-direction:column;align-items:flex-start;gap:8px;min-height:113px;padding:13px 11px;border-radius:15px}
+ .home-shortcut strong{font-size:15px}
+ .home-shortcut small{font-size:11px;line-height:1.4}
+ .shortcut-icon{width:28px;height:28px;flex-basis:28px}.shortcut-icon svg{width:27px;height:27px}
+ .home-utilities{gap:15px}.home-wardrobe{min-width:94px}
+ .collection-content{grid-template-columns:1fr}.collection-content>.me,.collection-content>.guide{grid-column:1}
+ .home-disclosure>summary{font-size:14px}
+}
+@media(prefers-reduced-motion:reduce){.home-shortcut{transition:none}}

@@ -48,11 +48,14 @@ const server=http.createServer((req,res)=>{
   assert.equal(await page.locator('[data-spot="bars"]').getAttribute('aria-pressed'),'true');
   assert.equal(await page.locator("#homeRungs").getAttribute("aria-valuenow"),"3");
   assert.equal(await page.locator("#homeRungs").getAttribute("aria-valuemax"),"3");
+  await page.locator('#homeCollection > summary').click();
   assert.match(await page.locator("#drawingFriendsTitle").innerText(),/그림/);
+  assert.ok(await page.locator('#coinsHome').isVisible());
+  await page.locator('#homeCollection > summary').click();
   assert.doesNotMatch(await page.locator('#home').innerText(),/정원|꽃씨|새싹|꽃밭/);
-  await page.locator('[data-spot="slide"]').click();assert.match(await page.locator('#startBtn').innerText(),/미끄럼틀/);
+  await page.locator('#homePlaces > summary').click();await page.locator('[data-spot="slide"]').click();assert.match(await page.locator('#startBtn').innerText(),/미끄럼틀/);
   await page.reload();assert.equal((await state()).playgroundSpot,'slide');
-  await page.locator('[data-spot="bars"]').click();
+  await page.locator('#homePlaces > summary').click();await page.locator('[data-spot="bars"]').click();await page.locator('#homePlaces > summary').click();
   await page.setViewportSize({width:320,height:740});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'no 320px overflow');
   await page.screenshot({path:path.join(out,'home-small.png')});
@@ -69,7 +72,7 @@ const server=http.createServer((req,res)=>{
   await page.screenshot({path:path.join(out,'parent-desktop.png'),fullPage:true});
   // Existing-device migration and a scaffold followed by a delayed new example.
   await page.evaluate(()=>{const s=MathStore.defaults();s.name='재이';s.level=9;s.placed=true;s.perSession=8;s.coins=123;s.garden=27;delete s.playgroundSpot;s.owned={'dress/party':true};s.album=[{id:'elsa',date:'2026-09-07',r:1}];localStorage.setItem(MathStore.KEY,JSON.stringify(s));});
-  await page.goto(base+'/math/');assert.equal((await state()).coins,123);assert.ok((await state()).owned['dress/party']);assert.equal((await state()).garden,27);assert.equal(await page.locator('.level-rung.mastered').count(),0);assert.equal(await page.locator('.level-rung[aria-current="step"]>span').innerText(),'9');assert.equal(await page.locator('[data-spot="bars"]').getAttribute('aria-pressed'),'true');
+  await page.goto(base+'/math/');assert.equal((await state()).coins,123);assert.ok((await state()).owned['dress/party']);assert.equal((await state()).garden,27);assert.equal(await page.locator('.level-rung.mastered').count(),0);await page.locator('#homeCollection > summary').click();assert.equal(await page.locator('.level-rung[aria-current="step"]>span').innerText(),'9');await page.locator('#homeCollection > summary').click();assert.equal(await page.locator('[data-spot="bars"]').getAttribute('aria-pressed'),'true');
   await page.locator('#startBtn').click();st=await state();await answer(st.pending.problems[0].answer);await page.waitForTimeout(950);
   await page.locator('#togetherBtn').click();assert.ok(await page.locator('.ten-frame').isVisible());
   await page.screenshot({path:path.join(out,'carry-desktop.png')});

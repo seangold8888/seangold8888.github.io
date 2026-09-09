@@ -28,8 +28,13 @@ const server=http.createServer((req,res)=>{
    assert.ok(copy.x+copy.width<=art.x+1 || copy.y+copy.height<=art.y+1,name+': text does not cover illustration');
    const start=await page.locator('#startBtn').boundingBox();assert.ok(start.y+start.height<height,name+': start visible without scrolling');
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,name+': home overflow');
-   await page.screenshot({path:path.join(out,name+'-home.png')});
-   if(name!=='desktop') {await page.locator('[data-spot="slide"]').tap();await page.locator('[data-spot="bars"]').tap();await page.locator('#quickBtn').tap();}
+   assert.equal(await page.locator('#homeCollection').getAttribute('open'),null,name+': records collapsed initially');
+   assert.equal(await page.locator('#homePlaces').getAttribute('open'),null,name+': equipment collapsed initially');
+   assert.equal(await page.locator('.home-shortcuts a').count(),3);
+   const ids=await page.locator('[id]').evaluateAll(els=>els.map(e=>e.id));
+   assert.equal(new Set(ids).size,ids.length,name+': unique IDs');
+   await page.screenshot({path:path.join(out,name+'-home.png'),fullPage:true});
+   if(name!=='desktop') {await page.locator('#homePlaces > summary').tap();await page.locator('[data-spot="slide"]').tap();await page.locator('[data-spot="bars"]').tap();await page.locator('#homePlaces > summary').tap();await page.locator('#quickBtn').tap();}
    else await page.locator('#quickBtn').click();
    await page.locator('#togetherBtn').click();
    const before=await page.evaluate(()=>JSON.parse(localStorage.getItem('math10_state')).pending);
