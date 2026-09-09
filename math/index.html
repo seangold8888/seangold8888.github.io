@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Nunito:wght@800;900&display=swap">
 <link rel="stylesheet" href="style.css?v=20">
-<link rel="stylesheet" href="playground.css?v=25">
+<link rel="stylesheet" href="playground.css?v=26">
 </head>
 <body>
 <div class="sky" aria-hidden="true"><i></i><i></i><i></i><i></i><b>★</b><b>★</b><b>★</b></div>
@@ -31,7 +31,7 @@
       <input id="setupSchool" type="hidden">
       <label class="field">학년<select id="setupGrade"><option value="1">1학년</option><option value="2">2학년</option><option value="3">3학년</option><option value="4">4학년</option><option value="5">5학년</option><option value="6">6학년</option></select></label>
       <p class="hint">이름은 나중에 알려 줘도 좋아요. 쉬운 문제 3개로 만나볼까요?</p><button class="btn big" id="quickSetupBtn">놀이터에 들어가기 →</button>
-      <button class="btn ghost" id="setupBtn">실력 확인부터 할래요</button>
+      <button class="btn ghost" id="setupBtn">실력 확인부터 할래요</button><a class="school-link" href="school/">학교 시험 유형부터 연습할래요 →</a>
     </div>
   </section>
 
@@ -61,6 +61,7 @@
       <div class="start-actions"><button class="btn big" id="startBtn">구름사다리 출발 →</button><button class="btn secondary" id="quickBtn">가볍게 3문제</button></div>
       <p class="tiny" id="homeReview"></p><p class="tiny" id="teaser"></p>
     </div>
+    <section class="card school-invite"><p class="eyebrow">학교에서 만난 문제도 놀이터에서</p><h3>100까지의 수 · 학교 유형 연습</h3><p class="tiny">묶음·수 읽기·순서·비교·짝수와 홀수</p><a class="school-link" href="school/">학교 유형 5문제 만나기 →</a></section>
     <section class="card home-progress" aria-labelledby="homeProgressTitle">
       <div class="progress-heading"><div><p class="eyebrow">친구들과 한 칸씩</p><h3 id="homeProgressTitle">나의 구름사다리</h3></div><span id="homeProgressLabel" class="chapter-pill"></span></div>
       <div id="homeRungs" class="quest-rungs"></div><p id="homeProgressDetail" class="tiny"></p>

@@ -59,7 +59,18 @@
     const detail=party.history.slice(-3).map(function(e){return labels[e.stage]+(e.help?" (함께 해요 사용)":"")+(e.mistakes?" · 다시 시도 "+e.mistakes+"회":"");}).join(" / ");
     $("partyPracticeSummary").textContent="현재 파티 준비 "+current+"/3 · "+(party.stage===3?"완성한 파티에서 자유놀이 중":"준비 중")+" · 저장된 활동 "+party.history.length+"개"+(detail?" — 최근: "+detail:"");
   }
+  function renderSchool() {
+    try {
+      const raw=JSON.parse(storage.getItem("math10_school_v1")||"null");
+      if(!raw||raw.version!==1)return;
+      const history=Array.isArray(raw.history)?raw.history:[];
+      const last=history[history.length-1],s=raw.session;
+      const pending=s&&!s.archived&&Array.isArray(s.order)&&s.index<s.order.length?" · 이어할 연습 "+s.index+"/"+s.order.length:"";
+      $("schoolPracticeSummary").textContent="마친 연습 "+history.length+"회"+(last?" · 최근 "+last.total+"문항 중 도움 없이 해결 "+last.independent+"개, 함께 연습 "+last.helped+"개":"")+pending;
+    } catch (_) { $("schoolPracticeSummary").textContent="학교 연습 기록을 읽을 수 없어요."; }
+  }
   function render() {
+    renderSchool();
     renderParty();
     const L = C.levelById(state.level);
     $("sDays").textContent = Object.keys(state.stamps).length;
