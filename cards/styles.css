@@ -2960,6 +2960,9 @@ dialog p:not(.kicker) {
   --shine-y: 0px;
   --card-lift: 0px;
   --card-scale: 1;
+  --element: #b9afd2;
+  --element-dark: #403650;
+  --element-soft: rgba(185,175,210,.22);
   padding: 15px;
   border: 5px solid transparent;
   border-radius: 25px;
@@ -2980,6 +2983,12 @@ dialog p:not(.kicker) {
   transform-style: preserve-3d;
   transition: transform .18s ease-out, box-shadow .22s ease, filter .22s ease;
 }
+
+.story-card.element-wood  { --element: #74e09a; --element-dark: #17492b; --element-soft: rgba(65,190,111,.25); }
+.story-card.element-fire  { --element: #ff8a65; --element-dark: #6b241a; --element-soft: rgba(255,101,70,.25); }
+.story-card.element-earth { --element: #e4bd73; --element-dark: #5e401b; --element-soft: rgba(207,157,75,.26); }
+.story-card.element-metal { --element: #dce9f2; --element-dark: #44545f; --element-soft: rgba(196,220,235,.24); }
+.story-card.element-water { --element: #70cfff; --element-dark: #174d6b; --element-soft: rgba(66,175,235,.25); }
 
 .story-card.rarity-1 {
   --frame-metal: #c78b4f;
@@ -3140,7 +3149,29 @@ dialog p:not(.kicker) {
   box-shadow:
     0 0 0 2px var(--frame-metal),
     0 6px 0 #0c1328,
-    inset 0 0 0 2px rgba(255,255,255,.18);
+    inset 0 0 0 2px rgba(255,255,255,.18),
+    0 0 20px var(--element-soft);
+}
+
+.element-rune {
+  position: absolute;
+  left: 9px;
+  bottom: 9px;
+  z-index: 6;
+  min-height: 28px;
+  padding: 4px 9px 4px 7px;
+  display: inline-flex;
+  align-items: center;
+  color: #fff;
+  background: color-mix(in srgb, var(--element-dark) 88%, transparent);
+  border: 1px solid color-mix(in srgb, var(--element) 78%, white);
+  border-radius: 999px;
+  box-shadow: 0 3px 10px rgba(0,0,0,.42), inset 0 1px rgba(255,255,255,.16);
+  font-size: 11px;
+  font-weight: 950;
+  line-height: 1;
+  text-shadow: 0 1px 2px rgba(0,0,0,.7);
+  pointer-events: none;
 }
 
 .type-brave .card-art {
@@ -3179,10 +3210,10 @@ dialog p:not(.kicker) {
   place-items: center;
   color: #fff8c2;
   background:
-    radial-gradient(circle at 36% 28%, #fff5bc, var(--frame-metal) 27%, var(--frame-shadow) 72%);
+    radial-gradient(circle at 36% 28%, #fff, var(--element) 30%, var(--element-dark) 76%);
   border: 3px solid var(--frame-night);
   border-radius: 50%;
-  box-shadow: 0 0 0 2px var(--frame-metal), 0 5px 10px rgba(0,0,0,.35);
+  box-shadow: 0 0 0 2px var(--frame-metal), 0 5px 10px rgba(0,0,0,.35), 0 0 18px var(--element-soft);
   font-size: 20px;
   transform: translate(-50%, -50%);
 }
@@ -4483,7 +4514,9 @@ dialog p:not(.kicker) {
   margin: 6px;
   padding: 8px;
   border-radius: 10px;
-  background: #141225;
+  background:
+    linear-gradient(105deg, var(--element-soft), transparent 48%),
+    #141225;
   color: #fff5dd;
 }
 .combat-fact { display: grid; gap: 1px; line-height: 1.25; }
@@ -4493,6 +4526,13 @@ dialog p:not(.kicker) {
 .combat-weakness > strong { color: #ffbcb2; }
 .combat-trait > strong { color: #aee6ee; }
 .story-card.is-collection-compact .combat-facts { margin: 2px; padding: 5px 6px; gap: 4px; }
+.story-card.is-collection-compact .element-rune {
+  left: 5px;
+  bottom: 5px;
+  min-height: 22px;
+  padding: 3px 6px;
+  font-size: 9px;
+}
 .card-reference { margin-top: 10px; font-size: 14px; }
 .card-reference summary { min-height: 44px; padding: 12px 4px; cursor: pointer; }
 .card-reference p { font-size: 14px; line-height: 1.5; }

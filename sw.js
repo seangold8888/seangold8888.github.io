@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v71";
+const CACHE_VERSION = "v72";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -141,14 +141,14 @@ const CORE_SHELL = [
   "./story/index.html",
   "./cards/",
   "./cards/index.html",
-  "./cards/styles.css?v=36",
+  "./cards/styles.css?v=37",
   "./cards/cards.json",
-  "./cards/js/engine.js?v=36",
-  "./cards/js/audio.js?v=36",
-  "./cards/js/card-view.js?v=36",
-  "./cards/js/vfx-recipes.js?v=36",
-  "./cards/js/story-gates.js?v=36",
-  "./cards/js/app.js?v=36",
+  "./cards/js/engine.js?v=37",
+  "./cards/js/audio.js?v=37",
+  "./cards/js/card-view.js?v=37",
+  "./cards/js/vfx-recipes.js?v=37",
+  "./cards/js/story-gates.js?v=37",
+  "./cards/js/app.js?v=37",
 ];
 
 // Existing games are precached as best-effort shells. A missing optional asset

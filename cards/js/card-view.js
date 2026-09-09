@@ -152,7 +152,7 @@
       attackNote: best ? best.name + " — 기본 피해이며 약점·특성·누적으로 달라져요." : "기술을 확인해 주세요.",
       weakness: card.passive && card.passive.fx === "no_weakness"
         ? "🛡 상성 방어" : weak && chart[weak]
-          ? chart[weak].icon + " " + chart[weak].label + "에게 +10" : "약점 없음",
+          ? chart[weak].icon + " " + chart[weak].label + "에게 피해 +10" : "약점 없음",
       passive: card.passive ? ({
         reduce_dmg_10: "피해 −10",
         reduce_dmg_20_monster: "괴물 피해 −20",
@@ -218,6 +218,11 @@
     picture.append(source, img);
     frame.append(picture, fallback);
 
+    const element = combatInfo(card).element;
+    const rune = el("span", "element-rune", element);
+    rune.setAttribute("aria-hidden", "true");
+    frame.appendChild(rune);
+
     const glow = el("span", "art-glow");
     glow.setAttribute("aria-hidden", "true");
     frame.appendChild(glow);
@@ -241,8 +246,10 @@
     const rarity = Math.max(1, Math.min(3, Number(card.rarity) || 1));
     cardEl.dataset.cardId = card.id;
     cardEl.dataset.type = card.type;
+    cardEl.dataset.element = card.element || "none";
     cardEl.dataset.rarity = String(rarity);
     cardEl.classList.add("rarity-" + rarity);
+    if (card.element) cardEl.classList.add("element-" + card.element);
     cardEl.setAttribute("role", options.interactive ? "button" : "group");
     const stateLabel = options.locked
       ? "잠긴 카드"
@@ -251,7 +258,7 @@
         : options.interactive ? "선택 가능한 카드" : "대전 카드";
     cardEl.setAttribute(
       "aria-label",
-      card.name + ", " + type.label + " 타입, 희귀도 별 " + rarity +
+      card.name + ", " + type.label + " 타입, " + combatInfo(card).element + ", 희귀도 별 " + rarity +
         "개" +
         ", 체력 " + Math.max(0, currentHp) +
         ", " + combatInfo(card).attack + ", " + combatInfo(card).weakness +

@@ -22,12 +22,15 @@ const server=http.createServer((req,res)=>{
    const report=await page.evaluate(()=>{
     const rect=id=>{const r=document.getElementById(id).getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,bottom:r.bottom,right:r.right}};
     return {viewport:innerHeight,scroll:document.documentElement.scrollHeight,screen:rect('battleScreen'),arena:rect('arena'),actions:rect('actionList'),player:rect('playerCardSlot'),enemy:rect('enemyCardSlot'),
+     runes:[...document.querySelectorAll('.battle-card-slot .element-rune')].map(e=>{const r=e.getBoundingClientRect();return {text:e.textContent,bottom:r.bottom,right:r.right,w:r.width,h:r.height,visible:getComputedStyle(e).display!=='none'}}),
      buttons:[...document.querySelectorAll('#actionList button,#storyGateButton,#fragmentHand button')].map(e=>{const r=e.getBoundingClientRect();return {text:e.textContent.slice(0,30),bottom:r.bottom,right:r.right,h:r.height,w:r.width}})};
    });
    console.log(width+'x'+height+' scroll='+report.scroll+' buttons='+report.buttons.length+' last='+report.actions.bottom);
    assert.deepEqual(errors,[]);
    assert.ok(report.scroll<=height+2,'page scroll at '+width+'x'+height);
    for(const b of report.buttons){assert.ok(b.bottom<=height && b.right<=width,'button offscreen '+b.text);assert.ok(b.h>=59,'small target '+b.text);}
+   assert.equal(report.runes.length,2,'both cards need an element badge');
+   for(const rune of report.runes){assert.ok(rune.visible && rune.w>=40 && rune.h>=22,'element badge not readable');assert.ok(rune.bottom<=height && rune.right<=width,'element badge offscreen');}
    for(const id of ['player','enemy'])assert.ok(report[id].bottom<=report.arena.bottom+1,'card exceeds arena');
    await page.locator('.rest-button').click();
    await page.waitForTimeout(2200);

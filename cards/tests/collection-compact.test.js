@@ -86,9 +86,9 @@ test("작은 카드는 실제 피해·비용·약점·특성을 표시하고 별
   const info = view.combatInfo(card);
   const best = card.attacks.slice().sort((a,b) => b.dmg-a.dmg || a.cost-b.cost)[0];
   assert.equal(info.attack, best.dmg + " 피해 · ⭐" + best.cost);
-  assert.match(info.weakness, /물에게 \+10/);
+  assert.match(info.weakness, /물에게 피해 \+10/);
   assert.equal(view.combatInfo(data.cards.find(c => c.id === "perseus")).weakness, "🛡 상성 방어");
-  assert.equal(view.combatInfo(data.cards.find(c => c.id === "polyphemus")).weakness, "🌳 나무에게 +10");
+  assert.equal(view.combatInfo(data.cards.find(c => c.id === "polyphemus")).weakness, "🌳 나무에게 피해 +10");
   const detailed = walk(view.create(card, {}));
   assert.ok(detailed.some(n => n.tagName === "DETAILS" && hasClass(n, "card-reference")));
   assert.ok(detailed.some(n => hasClass(n, "card-stats")));
@@ -128,12 +128,25 @@ test("열린 카드는 상세에서만 출전 선택하고 잠긴 카드는 기�
   assert.match(app, /origin && origin\.isConnected[\s\S]*?origin\.focus/);
 });
 
-test("양쪽 전투 카드가 같은 전투 정보 렌더러를 사용하고 카드 자산은 v36이다", () => {
+test("양쪽 전투 카드가 같은 전투 정보 렌더러를 사용하고 카드 자산은 v37이다", () => {
   assert.match(app, /syncBattleCard\(dom\.playerCardSlot/);
   assert.match(app, /syncBattleCard\(dom\.enemyCardSlot/);
   assert.match(app, /CardView\.create\(side\.card, \{[\s\S]*?compact: true/);
   assert.match(viewSource, /else if \(options\.compact\) \{[\s\S]*?crown, facts, art/);
-  assert.equal((html.match(/\?v=36/g) || []).length, 7);
+  assert.equal((html.match(/\?v=37/g) || []).length, 7);
   assert.doesNotMatch(html, /\?v=(?:25|26|27|28|29|30|31)/);
-  assert.equal((sw.match(/\.\/cards\/[^"\n]+\?v=36/g) || []).length, 7);
+  assert.equal((sw.match(/\.\/cards\/[^"\n]+\?v=37/g) || []).length, 7);
+});
+
+test("오행 속성이 카드 클래스, 원화 배지와 접근성 이름에 함께 드러난다", () => {
+  const view = loadCardView();
+  const card = data.cards.find(entry => entry.id === "redhood");
+  const rendered = view.create(card, {compact: true});
+  const nodes = walk(rendered);
+  assert.equal(rendered.dataset.element, "wood");
+  assert.ok(rendered.classList.contains("element-wood"));
+  assert.match(rendered.getAttribute("aria-label"), /🌳 나무/);
+  assert.ok(nodes.some(node => hasClass(node, "element-rune") && node.textContent === "🌳 나무"));
+  assert.match(css, /\.story-card\.element-wood/);
+  assert.match(css, /\.element-rune/);
 });
