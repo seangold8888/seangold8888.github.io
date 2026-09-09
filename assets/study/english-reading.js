@@ -276,6 +276,8 @@
   const RETRY_PRAISE = ["great", "verygood", "youdidit", "super"];
   const PRAISE_TEXT = { excellent: "Excellent!", perfect: "Perfect!", awesome: "Awesome!", wonderful: "Wonderful!", great: "Great!", verygood: "Very good!", youdidit: "You did it!", super: "Super!", threeinarow: "Three in a row!" };
   const PRAISE_PATH = "assets/study/praise/", WORD_PATH = "assets/study/words/";
+  const PRAISE_FILES = { perfect: PRAISE_PATH + "perfect-v2.wav" };
+  function praiseFile(clip) { return PRAISE_FILES[clip] || PRAISE_PATH + clip + ".mp3"; }
   const WORD_CLIPS = {};
   sentences.forEach(function (sentence) { normalize(sentence.text).split(" ").forEach(function (word) { WORD_CLIPS[word] = WORD_PATH + word + ".mp3"; }); });
   const STALL_MS = 5000, NO_AUDIO_MS = 1800, WORD_STALL_MS = 4000, WORD_GAP_MS = 400, STOP_WAIT_MS = 600;
@@ -535,7 +537,7 @@
         controls();
         // Every praise clip plays to its ended event; the watchdog only guards a
         // stalled or blocked playback so the question can never be trapped.
-        playClip(PRAISE_PATH + clip + ".mp3", STALL_MS, function (how) {
+        playClip(praiseFile(clip), STALL_MS, function (how) {
           log("praise-" + how);
           if (how === "blocked" || how === "error") { armWatchdog(NO_AUDIO_MS, completePass); return; }
           completePass();
@@ -771,7 +773,7 @@
       }
     };
   }
-  const api = { sentences: sentences, normalize: normalize, matches: matches, sameWord: sameWord, aliases: ALIASES, isPrefix: isPrefix, alternativeTexts: alternativeTexts, anyMatches: anyMatches, wordClips: WORD_CLIPS, matchedWords: matchedWords, cleanWordScores: cleanWordScores, chooseSentence: chooseSentence, recentLimit: RECENT_LIMIT, createFeedbackSession: createFeedbackSession, choosePraise: choosePraise, retryWords: retryWords, mount: mount };
+  const api = { sentences: sentences, normalize: normalize, matches: matches, sameWord: sameWord, aliases: ALIASES, isPrefix: isPrefix, alternativeTexts: alternativeTexts, anyMatches: anyMatches, wordClips: WORD_CLIPS, praiseFile: praiseFile, matchedWords: matchedWords, cleanWordScores: cleanWordScores, chooseSentence: chooseSentence, recentLimit: RECENT_LIMIT, createFeedbackSession: createFeedbackSession, choosePraise: choosePraise, retryWords: retryWords, mount: mount };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.EnglishReading = api;
 })(typeof window !== "undefined" ? window : globalThis);

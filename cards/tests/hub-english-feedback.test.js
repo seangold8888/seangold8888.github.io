@@ -88,6 +88,10 @@ test("first/retry praise pools, every third first-attempt pass and 100 nonrepeat
     assert.ok(retry.includes(clip));assert.notEqual(clip,previous);assert.equal(session.streak,0);
   }
 });
+test("Perfect uses the energetic replacement recording", () => {
+  assert.equal(reading.praiseFile("perfect"), "assets/study/praise/perfect-v2.wav");
+  assert.equal(reading.praiseFile("awesome"), "assets/study/praise/awesome.mp3");
+});
 test("retry list follows sentence order, deduplicates, caps three, omits wholeLine",()=>{
   assert.deepEqual(reading.retryWords("I see a red flower.", "I"),["see","a","red"]);
   assert.deepEqual(reading.retryWords("Go go red red blue.", "green"),["go","red","blue"]);
@@ -113,7 +117,7 @@ test("praise waits for stop AND end, then releases the audio device before the n
   assert.ok(!s.events.some(e => e.startsWith("play:")), "nothing plays while the recognizer is still ending");
   s.recognizers[0].end();
   const clip = s.audios[0];
-  assert.match(clip.src, /assets\/study\/praise\/[a-z]+\.mp3$/);
+  assert.match(clip.src, /assets\/study\/praise\/(?:[a-z]+\.mp3|perfect-v2\.wav)$/);
   assert.equal(clip.playing, true);
   assert.ok(s.gains.some(g => g.gain.value === 1.28), "praise voice gets a clear volume lift");
   assert.equal(s.events.filter(e => e === "chime").length, 3, "a three-note victory chime starts with the voice");
@@ -302,9 +306,10 @@ test("recognizer alternatives can pass; display uses the first guess; session sh
 
 test("the hub clears stale permanent silence and the worker precaches every clip", () => {
   const sw = require("../../sw.js"), html = fs.readFileSync(path.join(__dirname, "../../index.html"), "utf8");
-  assert.equal(sw.CACHE_VERSION, "v74");
-  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=9"));
-  assert.match(html, /english-reading\.js\?v=9/);
+  assert.equal(sw.CACHE_VERSION, "v75");
+  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=10"));
+  assert.ok(sw.CORE_SHELL.includes("./assets/study/praise/perfect-v2.wav"));
+  assert.match(html, /english-reading\.js\?v=10/);
   assert.match(html, /removeItem\('hub2_reading_silent'\)/);
   assert.doesNotMatch(html, /setItem\('hub2_reading_silent'/);
   assert.match(html, /silent: readingSilent/);

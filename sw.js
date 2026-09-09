@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v74";
+const CACHE_VERSION = "v75";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -23,9 +23,9 @@ const CORE_SHELL = [
   "./math/learning.js?v=29",
   "./math/store.js?v=30",
   "./assets/study/math-bridge.js?v=1",
-  "./assets/study/english-reading.js?v=9",
+  "./assets/study/english-reading.js?v=10",
   "./assets/study/praise/excellent.mp3",
-  "./assets/study/praise/perfect.mp3",
+  "./assets/study/praise/perfect-v2.wav",
   "./assets/study/praise/awesome.mp3",
   "./assets/study/praise/wonderful.mp3",
   "./assets/study/praise/great.mp3",
