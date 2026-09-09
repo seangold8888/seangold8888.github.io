@@ -69,7 +69,14 @@
       $("schoolPracticeSummary").textContent="마친 연습 "+history.length+"회"+(last?" · 최근 "+last.total+"문항 중 도움 없이 해결 "+last.independent+"개, 함께 연습 "+last.helped+"개":"")+pending;
     } catch (_) { $("schoolPracticeSummary").textContent="학교 연습 기록을 읽을 수 없어요."; }
   }
+  function renderWeekly() {
+    const W=window.WeeklyExam;
+    if(!W)return;
+    const data=W.load(storage),status=W.status(data),last=data.exams.filter(e=>e.submittedAt).slice(-1)[0];
+    $("weeklySummary").textContent="매주 "+"일월화수목금토"[data.settings.weekday]+"요일 · 최대 "+data.settings.count+"문제"+(status.active?" · 이어할 시험 있음":status.exam?" · 이번 주 제출 완료":" · 이번 주 "+status.due+"부터")+(last?" · 최근 시험 "+W.result(last).score+"점":"");
+  }
   function render() {
+    renderWeekly();
     renderSchool();
     renderParty();
     const L = C.levelById(state.level);
