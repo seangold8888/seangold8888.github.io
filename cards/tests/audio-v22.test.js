@@ -167,3 +167,27 @@ test("impact remains immediate and every new cue stays internally synthesized", 
   assert.match(audioSource, /const MAX_ACTIVE_ONE_SHOTS = 24/);
   assert.doesNotMatch(audioSource, /\bfetch\s*\(|new\s+Audio\s*\(|\.(mp3|ogg|wav)\b/i);
 });
+
+test("가족 전용 네 재질은 활성 AudioContext에서 각각 합성되고 wobble도 안전하게 예약된다", () => {
+  const runtime = loadActiveAudioRuntime();
+  runtime.Audio.prime();
+  const cases = [
+    ["🤧", "flick", "projectile"],
+    ["😤", "belch", "burst"],
+    ["🫧", "gas", "burst"],
+    ["🧦", "stink", "aura"]
+  ];
+  cases.forEach(([emoji, material, kind], index) => {
+    const before = runtime.started.length;
+    const plan = {
+      type: index % 2 ? "monster" : "wise",
+      attack: "가족 소리 " + index,
+      kind,
+      emoji,
+      outcome: "hit"
+    };
+    assert.equal(runtime.Audio.soundPlanForTechnique(plan).material, material);
+    assert.equal(runtime.Audio.techniqueImpact(plan).material, material);
+    assert.ok(runtime.started.length > before, material + " must schedule synthesis");
+  });
+});

@@ -4813,11 +4813,13 @@ dialog p:not(.kicker) {
 }
 
 @media (max-width: 680px) and (orientation: portrait) {
-  .in-battle .action-list {
+  .in-battle .action-list.is-scrollable {
     display: grid;
     grid-auto-flow: column;
     grid-auto-columns: minmax(138px, 46vw);
     grid-template-columns: none;
+    grid-template-rows: 76px;
+    align-items: start;
     overflow-x: auto;
     overscroll-behavior-inline: contain;
     scroll-snap-type: inline proximity;

@@ -2295,6 +2295,7 @@
 
   function renderActions() {
     dom.actionList.replaceChildren();
+    dom.actionList.classList.remove("is-scrollable");
     if (!game) return;
     const side = game.sides.player;
     const actions = window.CardEngine.getAvailableActions(game);
@@ -2396,6 +2397,7 @@
     rest.innerHTML = "<strong>별사탕 모으기</strong><small>이번 턴은 쉬고 강한 기술을 준비해요</small><span class=\"action-cost\">+⭐</span>";
     rest.addEventListener("click", function () { performPlayerAction({ type: "rest" }); });
     dom.actionList.appendChild(rest);
+    dom.actionList.classList.toggle("is-scrollable", dom.actionList.children.length > 6);
   }
 
   function setEffect(text) {

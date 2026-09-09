@@ -180,7 +180,7 @@ test("수학 연속일 해금과 폰 세로 7버튼 가로 스크롤 계약이 �
   assert.match(app, /localStorage\.getItem\("math10_state"\)/);
   assert.match(app, /\^streak\(3\|7\)\$/);
   assert.match(app, /수학을 " \+ days \+ "일 이어서 하면 만날 수 있어!/);
-  assert.match(css, /@media \(max-width: 680px\) and \(orientation: portrait\)[\s\S]*?\.in-battle \.action-list[\s\S]*?overflow-x: auto/);
+  assert.match(app, /classList\.toggle\("is-scrollable", dom\.actionList\.children\.length > 6\)/);
+  assert.match(css, /@media \(max-width: 680px\) and \(orientation: portrait\)[\s\S]*?\.in-battle \.action-list\.is-scrollable[\s\S]*?overflow-x: auto/);
   assert.equal(byId.get("taeo").attacks.length + 3, 7);
 });
-
