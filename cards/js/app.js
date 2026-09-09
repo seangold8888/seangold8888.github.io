@@ -112,12 +112,56 @@
     if (slash < 0) return false;
     const game = token.slice(0, slash);
     const stage = token.slice(slash + 1);
-    if (game !== "sanguo" || !/^[a-z0-9_-]+$/.test(stage)) return false;
+    if (!/^[a-z0-9_-]+$/.test(stage)) return false;
     try {
+      if (game === "math") {
+        const match = /^streak(3|7)$/.exec(stage);
+        if (!match) return false;
+        const raw = localStorage.getItem("math10_state");
+        const state = raw ? JSON.parse(raw) : {};
+        const stamps = state.stamps && typeof state.stamps === "object" ? state.stamps : {};
+        const planDays = [5, 6, 7].includes(state.planDays) ? state.planDays : 6;
+        const now = new Date();
+        const today = [
+          now.getFullYear(),
+          String(now.getMonth() + 1).padStart(2, "0"),
+          String(now.getDate()).padStart(2, "0")
+        ].join("-");
+        let cursor = stamps[today] ? today : addCalendarDays(today, -1);
+        let days = 0;
+        let misses = 0;
+        let guard = 0;
+        while (guard++ < 400) {
+          const date = new Date(cursor + "T00:00:00");
+          const weekday = date.getDay();
+          const studyDay = planDays >= 7 ||
+            (planDays === 6 ? weekday !== 0 : weekday !== 0 && weekday !== 6);
+          if (stamps[cursor]) {
+            days += 1;
+          } else if (studyDay) {
+            misses += 1;
+            if (misses > Math.floor(days / 7) + 1) break;
+          }
+          cursor = addCalendarDays(cursor, -1);
+          if (cursor < "2026-01-01") break;
+        }
+        return days >= Number(match[1]);
+      }
+      if (game !== "sanguo") return false;
       return localStorage.getItem("sanguo_clear_" + stage) === "1";
     } catch (error) {
       return false;
     }
+  }
+
+  function addCalendarDays(dateString, amount) {
+    const date = new Date(dateString + "T00:00:00");
+    date.setDate(date.getDate() + amount);
+    return [
+      date.getFullYear(),
+      String(date.getMonth() + 1).padStart(2, "0"),
+      String(date.getDate()).padStart(2, "0")
+    ].join("-");
   }
 
   function isUnlockDone(token) {
@@ -159,6 +203,13 @@
   function unlockStoryLabel(card) {
     const stories = Array.isArray(card.unlockAll) && card.unlockAll.length
       ? card.unlockAll : [card.unlock];
+    const mathToken = stories.find(function (id) {
+      return typeof id === "string" && /^game:math\/streak(?:3|7)$/.test(id);
+    });
+    if (mathToken) {
+      const days = mathToken.endsWith("streak3") ? 3 : 7;
+      return "수학을 " + days + "일 이어서 하면 만날 수 있어!";
+    }
     return stories.map(function (id) {
       return "「" + (STORY_NAMES[id] || "새로운 이야기") + "」";
     }).join(stories.length === 2 ? "와 " : ", ");

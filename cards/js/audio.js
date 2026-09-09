@@ -639,6 +639,33 @@
       bodyFrom: 186, bodyTo: 82, bodyLevel: 0.083,
       baseHz: 164, modes: [1, 2.31, 3.72], levels: [1, 0.38, 0.14],
       qs: [5.2, 7.1, 8.8], decay: 0.28, room: 0.085, spread: 0.14
+    }),
+    gas: Object.freeze({
+      noise: 3, transientHz: 340, transientQ: 0.5, transientDuration: 0.055,
+      bodyFrom: 170, bodyTo: 55, bodyLevel: 0.11,
+      baseHz: 88, modes: [1, 1.37, 2.11], levels: [1, 0.44, 0.18],
+      qs: [3.2, 4.1, 5], decay: 0.34, room: 0.05, spread: 0.1,
+      wobbleHz: 17, wobbleCents: 140
+    }),
+    belch: Object.freeze({
+      noise: 2, transientHz: 520, transientQ: 0.7, transientDuration: 0.04,
+      bodyFrom: 400, bodyTo: 130, bodyLevel: 0.09,
+      baseHz: 120, modes: [1, 2.4, 4.1], levels: [1, 0.5, 0.2],
+      qs: [4.5, 6, 7], decay: 0.26, room: 0.06, spread: 0.12,
+      wobbleHz: 9, wobbleCents: 90
+    }),
+    flick: Object.freeze({
+      noise: 1, transientHz: 3900, transientQ: 1.2, transientDuration: 0.016,
+      bodyFrom: 900, bodyTo: 300, bodyLevel: 0.03,
+      baseHz: 780, modes: [1, 2.7], levels: [1, 0.2],
+      qs: [9, 12], decay: 0.15, room: 0.04, spread: 0.08
+    }),
+    stink: Object.freeze({
+      noise: 2, transientHz: 260, transientQ: 0.4, transientDuration: 0.07,
+      bodyFrom: 150, bodyTo: 70, bodyLevel: 0.05,
+      baseHz: 70, modes: [1, 1.19, 1.94], levels: [1, 0.35, 0.22],
+      qs: [2.8, 3.4, 4.2], decay: 0.46, room: 0.1, spread: 0.16,
+      wobbleHz: 4, wobbleCents: 60
     })
   });
   const MATERIAL_BY_EMOJI = Object.freeze({
@@ -659,7 +686,9 @@
     "🔥": "fire", "💥": "fire", "🪔": "fire",
     "🦶": "earth",
     "🐴": "hollow", "🎃": "hollow", "🎼": "hollow", "🚪": "hollow", "🏯": "hollow",
-    "🤲": "body", "♟️": "stone"
+    "🤲": "body", "♟️": "stone",
+    "🫧": "gas", "🌋": "gas", "😤": "belch", "🤧": "flick", "🧦": "stink",
+    "🦖": "body", "🎈": "air", "🤣": "body", "🧹": "wood", "💬": "air", "🖐️": "body"
   });
   const DEFAULT_MATERIAL_BY_TYPE = Object.freeze({
     brave: "body",
@@ -960,6 +989,23 @@
     )) return;
     source.connect(colourFilter).connect(excitation);
 
+    let wobble = null;
+    let wobbleDepth = null;
+    if (profile.wobbleHz && profile.wobbleCents) {
+      wobble = audio.createOscillator();
+      wobbleDepth = audio.createGain();
+      wobble.type = "sine";
+      wobble.frequency.value = profile.wobbleHz;
+      wobbleDepth.gain.value = profile.wobbleCents;
+      if (trackOneShot(audio, wobble, start, start + duration + 0.014, 1)) {
+        wobble.connect(wobbleDepth);
+        wobble.start(start);
+        wobble.stop(start + duration + 0.014);
+      } else {
+        wobble = null;
+      }
+    }
+
     profile.modes.forEach(function (ratio, index) {
       const resonator = audio.createBiquadFilter();
       const modeGain = audio.createGain();
@@ -971,6 +1017,7 @@
         profile.baseHz * ratio * variationRatio * Math.pow(2, humanDetune(7) / 1200)
       );
       resonator.Q.value = profile.qs[index] || profile.qs[profile.qs.length - 1];
+      if (wobble) wobbleDepth.connect(resonator.detune);
       modeGain.gain.value = profile.levels[index] || 0.05;
       roomSend.gain.value = Math.max(0.001, profile.room * (strong ? 0.24 : 0.17));
       excitation.connect(resonator).connect(modeGain);

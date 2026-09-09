@@ -1398,6 +1398,10 @@ main {
 
 .action-button {
   position: relative;
+  /* 한글이 단어 중간에서 끊기지 않게 한다. 좁은 폰에서 기술 이름이
+     "연속 방 / 귀"처럼 갈라져 아이가 읽기 어려웠다. */
+  word-break: keep-all;
+  overflow-wrap: break-word;
   min-height: 74px;
   padding: 10px 12px;
   display: grid;
@@ -4806,6 +4810,24 @@ dialog p:not(.kicker) {
   .in-battle .action-button small { grid-column: 1 / -1; font-size: 12px; line-height: 1.2; }
   .in-battle .action-button .action-cost { grid-row: 1; min-width: 38px; padding: 3px 4px; }
   .in-battle .action-button.ultimate-button { grid-column: auto; }
+}
+
+@media (max-width: 680px) and (orientation: portrait) {
+  .in-battle .action-list {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(138px, 46vw);
+    grid-template-columns: none;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: inline proximity;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+    padding: 1px 2px 8px;
+  }
+  .in-battle .action-button {
+    scroll-snap-align: start;
+  }
 }
 @media (min-width: 960px) and (min-height: 600px) and (orientation: landscape) {
   body.in-battle .battle-screen:not([hidden]) {

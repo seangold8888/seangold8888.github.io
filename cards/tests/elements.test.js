@@ -5,13 +5,13 @@ const E = require("../js/engine.js");
 const cards = require("../cards.json").cards;
 const make = (element, extras = {}) => ({id: element || "neutral", name: "시험", type: "magic", element, hp: 200, passive: null, attacks: [{name: "공격", cost: 1, dmg: 20}], ...extras});
 const hit = (a, b) => E.performAction(E.createGame(a, b), {type: "attack", attackIndex: 0}, () => 0.9);
-test("all 51 cards have exactly one valid element; all 25 element pairs use +10, never x2", () => {
+test("all 55 cards have exactly one valid element; all 25 element pairs use +10, never x2", () => {
   const counts = {};
   for (const card of cards) {
     assert.ok(E.ELEMENT_CHART[card.element], card.id);
     counts[card.element] = (counts[card.element] || 0) + 1;
   }
-  assert.deepEqual(counts, {fire:10,water:11,metal:10,wood:10,earth:10});
+  assert.deepEqual(counts, {fire:11,water:12,metal:10,wood:11,earth:11});
   const counters = {wood:"metal", fire:"water", earth:"wood", metal:"fire", water:"earth"};
   for (const a of Object.keys(counters)) for (const b of Object.keys(counters)) {
     const state = hit(make(a), make(b));

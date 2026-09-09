@@ -7,7 +7,7 @@ const data = JSON.parse(fs.readFileSync(root + "cards.json", "utf8"));
 const A = (name, cost, dmg, fx, desc, kind, emoji, big) => ({
   name, cost, dmg, fx, desc, vfx: big ? { kind, emoji, big: true } : { kind, emoji },
 });
-const FAMILY = [
+const FAMILY_FALLBACK = [
   {
     id: "jaei", name: "재이", emoji: "🎀", type: "wise", element: "water", rarity: 3,
     summonCost: 3, hp: 90,
@@ -53,8 +53,15 @@ const FAMILY = [
     stats: { attack: 3, defense: 5, spirit: 4 },
   },
 ];
+const familyIds = ["jaei", "taeo", "appa", "eomma"];
+const FAMILY = familyIds.every((id) => data.cards.some((card) => card.id === id))
+  ? familyIds.map((id) => data.cards.find((card) => card.id === id))
+  : FAMILY_FALLBACK;
 
-const all = data.collection.map((id) => data.cards.find((c) => c.id === id)).concat(FAMILY).filter(Engine.isBattleCard);
+const implemented = familyIds.every((id) => data.collection.includes(id));
+const all = data.collection.map((id) => data.cards.find((c) => c.id === id))
+  .concat(implemented ? [] : FAMILY)
+  .filter(Engine.isBattleCard);
 const rngOf = (s) => { let x = s >>> 0; return () => { x = (Math.imul(x, 1664525) + 1013904223) >>> 0; return x / 4294967296; }; };
 function play(a, b, seed) {
   const r = rngOf(seed);

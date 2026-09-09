@@ -69,7 +69,11 @@
     erlangshen: "50% 20%",
     wumawang: "50% 18%",
     honghaier: "50% 24%",
-    baigujing: "50% 20%"
+    baigujing: "50% 20%",
+    jaei: "50% 24%",
+    taeo: "50% 22%",
+    appa: "50% 20%",
+    eomma: "50% 22%"
   };
 
   function el(tag, className, text) {

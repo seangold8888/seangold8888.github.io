@@ -23,18 +23,18 @@ function loadGates() {
   return sandbox.window.CardStoryGates;
 }
 
-test("동양 확장은 기존 손오공을 활성화하고 신규 11장을 더해 51장을 만든다", () => {
-  assert.equal(data.cards.length, 51);
-  assert.equal(data.collection.length, 51);
-  assert.equal(new Set(data.collection).size, 51);
-  assert.deepEqual(data.collection.slice(-11), newIds);
+test("동양 확장 11장은 가족 4장이 붙은 뒤에도 그대로다", () => {
+  assert.equal(data.cards.length, 55);
+  assert.equal(data.collection.length, 55);
+  assert.equal(new Set(data.collection).size, 55);
+  assert.deepEqual(data.collection.slice(-15, -4), newIds, "동양 11장 뒤에 가족 4장이 붙었다");
   assert.deepEqual(
     data.cards.reduce((counts, card) => {
       counts[card.type] = (counts[card.type] || 0) + 1;
       return counts;
     }, {}),
-    { brave: 13, wise: 13, magic: 12, monster: 13 },
-    "설계서의 12명에는 기존 손오공이 포함되므로 신규 객체는 11장이고 마법만 한 장 적다"
+    { brave: 14, wise: 14, magic: 13, monster: 14 },
+    "동양 11장에 가족 4장이 더해져 네 타입이 14·14·13·14가 된다"
   );
   eastIds.forEach(id => assert.equal(Engine.isBattleCard(get(id)), true, id));
 });
