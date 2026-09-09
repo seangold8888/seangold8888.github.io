@@ -328,3 +328,57 @@ body[data-screen="home"] header.top{padding-bottom:22px}
 #home .play-spot{min-height:138px;gap:5px}
 #home .play-spot:disabled{opacity:.65;cursor:default;transform:none}
 #home #spotChangeNote{margin:0 3px 8px;line-height:1.6}
+
+/* A dimensional monkey-bar scene: the hands grip the rail, the body hangs below it. */
+.climber-picker{display:flex;align-items:center;gap:6px;margin:9px 0 4px;flex-wrap:wrap}
+.climber-picker button{font:13px Jua,system-ui;min-height:44px;padding:8px 13px;border:1px solid transparent;border-radius:99px;background:transparent;color:#687d71;cursor:pointer}
+.climber-picker button[aria-pressed="true"]{background:#fff4d3;border-color:#e9d89e;color:#705225}
+.climber-picker button[data-climber="kitty"][aria-pressed="true"]{background:#fff0f0;border-color:#e9c3c5;color:#8b4556}
+.climber-picker>span{font-size:12px;color:#6b8275;margin-left:auto}
+.quest-rungs.monkey-stage,#home .quest-rungs.monkey-stage{display:block;height:190px;padding:0;margin:6px 0 0;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;border:1px solid #dae7df;border-radius:18px;background:linear-gradient(180deg,#edf7f8 0%,#f6fbf8 69%,#e9eddb 70%,#f4f4e8 100%);scrollbar-width:thin;scrollbar-color:#c9d7c8 transparent;isolation:isolate}
+#home .quest-rungs.monkey-stage{height:228px}
+.quest-rungs.monkey-stage:before,.quest-rungs.monkey-stage:after{display:none}
+.monkey-world{position:relative;width:100%;height:100%;--body-size:148px;--grip-y:43px}
+#home .monkey-world{--body-size:180px;--grip-y:48px}
+.monkey-frame{position:absolute;inset:0;pointer-events:none}
+.monkey-rail{position:absolute;left:23px;right:23px;height:11px;border-radius:8px;background:linear-gradient(#8fc8c5,#4a9293 45%,#397678);box-shadow:0 3px 0 #306467}
+.monkey-rail.back{top:13px;left:43px;background:linear-gradient(#abd2c6,#82afa7);box-shadow:0 2px 0 #71938d}
+.monkey-rail.front{top:var(--grip-y);z-index:3}
+.monkey-post{position:absolute;top:17px;bottom:26px;width:12px;border-radius:8px;background:linear-gradient(90deg,#47878a,#8fc6c0 45%,#52938e);box-shadow:3px 1px 0 #316c6822}
+.monkey-post.left{left:26px}.monkey-post.right{right:26px}
+.monkey-post:after{content:"";position:absolute;bottom:-3px;left:-8px;width:29px;height:9px;border-radius:50%;background:#afc2a8;box-shadow:0 3px 6px #55764b22}
+.monkey-start,.monkey-finish{position:absolute;bottom:6px;color:#79917a;font-size:11px}
+.monkey-start{left:24px}.monkey-finish{right:22px}
+.monkey-stage .rung,#home .monkey-stage .rung,.monkey-start-bar{position:absolute;top:19px;display:block;max-width:none;width:8px;height:calc(var(--grip-y) - 8px);border:0;border-radius:5px;background:linear-gradient(90deg,#9cae9f,#d9e7d5 50%,#90a994);box-shadow:2px 2px 0 #30646722;transform:rotate(29deg);transform-origin:bottom center;z-index:2;outline:0}
+.monkey-start-bar{left:92px;background:#edc975}
+.monkey-stage .rung b{position:absolute;bottom:calc(100% + 3px);left:50%;font:11px Nunito,system-ui;color:#6d8c83;transform:translateX(-50%) rotate(-29deg)}
+.monkey-stage .rung.done,#home .monkey-stage .rung.done{background:linear-gradient(90deg,#cba454,#f9e3a3 48%,#d6b469)}
+.monkey-stage .rung.current,#home .monkey-stage .rung.current{outline:0;background:linear-gradient(90deg,#80b7af,#e2f4e6 48%,#8bbbab)}
+.monkey-stage .rung.done:after{content:"";inset:auto;left:2px;top:4px;width:3px;height:70%;border-radius:3px;background:#fff5cc80}
+.monkey-climber{position:absolute;top:0;width:var(--body-size);height:100%;margin-left:calc(var(--body-size) / -2);z-index:4;transition:none}
+.monkey-climber.is-moving{transition:left 650ms cubic-bezier(.35,0,.25,1)}
+.hanging-body{position:absolute;top:calc(var(--grip-y) - var(--body-size) * .075);left:0;width:100%;height:auto;max-width:none;transform-origin:var(--hand-origin,50% 8%);filter:drop-shadow(0 3px 2px #42554c14);user-select:none}
+.climber-grip{position:absolute;top:var(--grip-y);left:19%;width:62%;height:10px;border-radius:7px;background:linear-gradient(#f9df95,#d5ac53 65%,#ba9044);box-shadow:0 2px 0 #98753a;z-index:-1}
+.climber-shadow{position:absolute;bottom:22px;left:23%;width:54%;height:10px;border-radius:50%;background:#64815626;filter:blur(3px)}
+.climber-cheer{position:absolute;top:89px;left:83%;font-size:13px;white-space:nowrap;background:#fffdf1;border:1px solid #e4d7a8;border-radius:12px;padding:6px 9px;opacity:0;transform:translateY(5px)}
+.monkey-climber.arrived .climber-cheer{left:auto;right:80%;opacity:1;transform:none;transition:opacity .2s .65s}
+.monkey-climber.is-moving .hanging-body{animation:monkey-cross 650ms ease-in-out}
+.monkey-climber.is-moving .climber-shadow{animation:monkey-shadow 650ms ease-in-out}
+@keyframes monkey-cross{0%,100%{transform:rotate(0)}28%{transform:rotate(calc(-11deg * var(--swing-direction)))}65%{transform:rotate(calc(7deg * var(--swing-direction)))}85%{transform:rotate(calc(-2deg * var(--swing-direction)))}}
+@keyframes monkey-shadow{50%{transform:scaleX(.7);opacity:.55}}
+@media(min-width:900px) and (orientation:landscape){
+ #quiz .quest-rungs.monkey-stage{height:148px}
+ #quiz .monkey-world{--body-size:112px;--grip-y:35px}
+ #quiz .climber-cheer{top:67px}
+}
+@media(max-width:600px){
+ .climber-picker>span{width:100%;margin:0 0 4px 5px;font-size:11px}
+ #home .quest-rungs.monkey-stage{height:208px}
+ #home .monkey-world{--body-size:160px;--grip-y:43px}
+ .monkey-stage .rung b{font-size:12px}
+ .climber-cheer{left:70%;font-size:12px}
+}
+@media(prefers-reduced-motion:reduce){
+ .monkey-climber,.monkey-climber.arrived .climber-cheer{transition:none!important}
+ .monkey-climber.is-moving .hanging-body,.monkey-climber.is-moving .climber-shadow{animation:none!important}
+}

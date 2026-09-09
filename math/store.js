@@ -16,7 +16,7 @@
       planStart: today(), planEnd: "2027-01-29", planDays: 6, planFrom: 1,
       album: [], hearts: {}, chests: {}, buddy: null,
       school: "", grade: 1, placed: false, placement: null,
-      playgroundSpot: "bars", skills: {}, pending: null, garden: 0, wish: null, growthRewards: {},
+      playgroundSpot: "bars", climber: "purin", skills: {}, pending: null, garden: 0, wish: null, growthRewards: {},
       coins: 0, coinLog: [], owned: {}, avatar: null };
   }
   function clean(s) {
@@ -53,6 +53,7 @@
     out.garden = Math.max(0, Math.min(99999, parseInt(out.garden, 10) || 0));
     out.growthRewards = out.growthRewards && typeof out.growthRewards === "object" ? out.growthRewards : {};
     out.playgroundSpot = ["bars","slide","swing","seesaw","blocks","steps"].indexOf(out.playgroundSpot) >= 0 ? out.playgroundSpot : "bars";
+    out.climber = out.climber === "kitty" ? "kitty" : "purin";
     out.wish = typeof out.wish === "string" ? out.wish : null;
     out.avatar = out.avatar && typeof out.avatar === "object" && out.avatar.char ? out.avatar : null;
     return out;

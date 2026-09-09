@@ -409,7 +409,7 @@
       }
       $("keypad").hidden=true; $("hintBtn").hidden=true; $("togetherBtn").hidden=true;
       index++; renderQuest(); firstTry=true; hintStep=0; checkpoint();
-      if(index >= session.length) { finish(); return; }
+      if(index >= session.length) { finish(true); return; }
       nextTimer=setTimeout(next,850);
       return;
     }
@@ -443,7 +443,7 @@
   }
 
   /* ---------- 끝: 캡슐 뽑기 → 결과 ---------- */
-  function finish() {
+  function finish(animate) {
     const today = S.today(), firstToday = !state.stamps[today];
     state.pending=null;
     lastEntry = S.finishSession(state, results);
@@ -454,8 +454,14 @@
     if (lastEntry.change > 0) { S.addCoins(state, A.COIN.levelUp, "단계 승급"); earned += A.COIN.levelUp; }
     S.save(storage, state);
     lastReviews = results.filter(function (r) { return r.review; });
-    if (firstToday) openCapsules("day:" + today, 0);
-    else renderResult(null);
+    const reveal=function() {
+      $("quitBtn").disabled=false;
+      if (firstToday) openCapsules("day:" + today, 0);
+      else renderResult(null);
+    };
+    if(animate && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      $("quitBtn").disabled=true;nextTimer=setTimeout(reveal,850);
+    } else reveal();
   }
   function openCapsules(key, minRarity) {
     const picks = F.pickCapsules(collectedIds(), Math.random);
@@ -605,6 +611,7 @@
     $("playgroundStory").textContent=focus.title+(spot.id==="steps"?"":" 중심")+(focus.review?" · "+focus.level+"단계 복습":"")+" · 골고루 복습도 조금";
     if(spot.id==="steps" && state.level!==5) $("playgroundStory").textContent="이번 단계의 여러 문제를 골고루 풀어요.";
     $("playgroundTotal").textContent=total;
+    document.querySelectorAll("[data-climber]").forEach(function(button) {button.setAttribute("aria-pressed",String(button.dataset.climber===state.climber));});
     renderHomeProgress();
     const map=$("playgroundMap"); map.textContent="";
     Play.SPOTS.forEach(function(item) {
@@ -639,14 +646,14 @@
     const total=pending?pending.problems.length:recent?recent.count:state.perSession;
     const done=pending?pending.index:recent?recent.count:0;
     $("homeProgressLabel").textContent=(pending?"이어갈 탐험":recent?"마친 탐험":"다음 탐험")+" · "+done+" / "+total;
-    Play.renderLadder($("homeRungs"),total,done,"나의 구름사다리");
+    Play.renderLadder($("homeRungs"),total,done,"나의 구름사다리",state.climber);
     $("homeProgressDetail").textContent=state.level+"단계 · "+levelInfo().name+" · 틀려도 건넌 칸은 그대로예요.";
   }
   function renderQuest() {
     $("quizMission").textContent=placement?"어디서 시작할지 함께 찾아요":(sessionSpot ? Play.byId(sessionSpot).name+" · "+sessionFocus : "구름사다리 · 친구들과 한 칸씩");
     const box=$("questRungs");box.hidden=!!placement;$("questStatus").hidden=!!placement;
     if(placement || !session) return;
-    Play.renderLadder(box,session.length,index,"이번 탐험 진도");
+    Play.renderLadder(box,session.length,index,"이번 탐험 진도",state.climber);
     $("questStatus").textContent=index+" / "+session.length+"문제 해결";
   }
   function renderMathPlay() {
@@ -666,6 +673,9 @@
     }
     box.appendChild(frame);
   }
+  document.querySelectorAll("[data-climber]").forEach(function(button) {
+    button.addEventListener("click",function() {state.climber=button.dataset.climber;S.save(storage,state);renderPlayground();});
+  });
   $("quickBtn").addEventListener("click",function() { start("quick"); });
   $("hintBtn").addEventListener("click",function() { offerHelp(false); });
   $("togetherBtn").addEventListener("click",function() { offerHelp(true); });

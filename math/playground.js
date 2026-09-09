@@ -52,15 +52,63 @@
     svg.setAttribute("viewBox","0 0 64 64");svg.setAttribute("aria-hidden","true");svg.setAttribute("fill","none");svg.setAttribute("stroke","currentColor");svg.setAttribute("stroke-width","4");svg.setAttribute("stroke-linecap","round");svg.setAttribute("stroke-linejoin","round");
     svg.innerHTML=PATHS[byId(id).id];return svg;
   }
-  function renderLadder(box,total,completed,label) {
-    box.textContent="";
+  function renderLadder(box,total,completed,label,character) {
+    total=Math.max(1,Math.round(total));completed=Math.max(0,Math.min(total,Math.round(completed)));
+    character=character==="kitty"?"kitty":"purin";
+    const hadScene=!!box.dataset.total,previous=Number(box.dataset.completed),same=box.dataset.total===String(total);
+    box.classList.add("monkey-stage");
     box.setAttribute("role","progressbar");box.setAttribute("aria-label",label);
     box.setAttribute("aria-valuemin","0");box.setAttribute("aria-valuemax",String(total));box.setAttribute("aria-valuenow",String(completed));
     box.setAttribute("aria-valuetext",total+"문제 중 "+completed+"문제 해결");
-    for(let i=0;i<total;i++) { const el=document.createElement("span");el.className="rung"+(i<completed?" done":i===completed?" current":"");el.setAttribute("aria-hidden","true");box.appendChild(el); }
-    const puppy=document.createElement("img");puppy.src="assets/jaei-progress-friends.webp";puppy.alt="";puppy.className="progress-friend";puppy.width=64;puppy.height=64;
-    const position=total>1?Math.min(completed,total-1)/(total-1)*100:0;
-    puppy.style.left="clamp(28px,"+position+"%,calc(100% - 28px))";box.appendChild(puppy);
+    if(!same) {
+      box.textContent="";
+      const world=document.createElement("div");world.className="monkey-world";world.setAttribute("aria-hidden","true");
+      world.style.minWidth=Math.max(380,(total+1)*54+100)+"px";
+      const scenery=document.createElement("div");scenery.className="monkey-frame";
+      scenery.innerHTML='<i class="monkey-post left"></i><i class="monkey-post right"></i><i class="monkey-rail back"></i><i class="monkey-rail front"></i><span class="monkey-start">출발</span><span class="monkey-finish">도착</span>';
+      world.appendChild(scenery);
+      const start=document.createElement("i");start.className="monkey-start-bar";world.appendChild(start);
+      for(let i=0;i<total;i++) {
+        const el=document.createElement("span");el.className="rung";el.style.left="calc(92px + (100% - 184px) * "+((i+1)/total)+")";
+        const number=document.createElement("b");number.textContent=i+1;el.appendChild(number);world.appendChild(el);
+      }
+      const climber=document.createElement("div");climber.className="monkey-climber";
+      climber.innerHTML='<i class="climber-shadow"></i><i class="climber-grip"></i><img class="hanging-body" alt="" draggable="false" width="1254" height="1254"><span class="climber-cheer">도착!</span>';
+      world.appendChild(climber);box.appendChild(world);
+    }
+    const climber=box.querySelector(".monkey-climber"),img=climber.querySelector("img");
+    if(climber.dataset.character!==character) {img.src="assets/"+character+"-hanging-v1.png";climber.dataset.character=character;}
+    const moving=hadScene && completed>previous;
+    if(!same && moving) {
+      climber.style.left="calc(92px + (100% - 184px) * "+(previous/total)+")";
+      void climber.offsetWidth;
+    }
+    climber.classList.toggle("is-moving",moving);
+    climber.classList.toggle("arrived",completed===total);
+    climber.style.setProperty("--swing-direction",completed%2?"1":"-1");
+    climber.style.setProperty("--hand-origin",completed%2?"30% 8%":"70% 8%");
+    climber.style.left="calc(92px + (100% - 184px) * "+(completed/total)+")";
+    box.querySelectorAll(".rung").forEach(function(el,i) {
+      el.classList.toggle("done",i<completed);el.classList.toggle("current",i===completed);
+    });
+    box.dataset.total=total;box.dataset.completed=completed;box.dataset.character=character;
+    function follow() {
+      if(!box.clientWidth) return;
+      const destination=Math.max(0,climber.offsetLeft-box.clientWidth/2);
+      box.scrollTo({left:destination,behavior:moving && !root.matchMedia("(prefers-reduced-motion: reduce)").matches?"smooth":"instant"});
+    }
+    if(!box._monkeyResize && typeof ResizeObserver!=="undefined") {
+      box._monkeyResize=new ResizeObserver(()=> {
+        const el=box.querySelector(".monkey-climber");
+        if(el && box.clientWidth) box.scrollLeft=Math.max(0,el.offsetLeft-box.clientWidth/2);
+      });
+      box._monkeyResize.observe(box);
+    }
+    // On a new scene render, position immediately. During a crossing follow the destination.
+    if(moving) {
+      const width=box.querySelector(".monkey-world").clientWidth;
+      box.scrollTo({left:Math.max(0,92+(width-184)*completed/total-box.clientWidth/2),behavior:root.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"});
+    } else requestAnimationFrame(follow);
   }
   const api={SPOTS,byId,focus,icon,renderLadder};
   if(typeof module!=="undefined" && module.exports) module.exports=api;else root.MathPlayground=api;
