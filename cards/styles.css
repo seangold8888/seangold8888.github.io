@@ -4702,3 +4702,80 @@ dialog p:not(.kicker) {
 
   .collection-screen .card-gallery { grid-template-columns: repeat(2, minmax(0, 138px)); }
 }
+
+/* Tablet battle: budget the actual visible viewport, including Safari chrome. */
+@media (min-width: 681px) and (min-height: 600px) {
+  body.in-battle { --topbar-h: 60px; }
+  body.in-battle .topbar { padding-block: 0; }
+  body.in-battle main { max-width: none; }
+  body.in-battle .battle-screen:not([hidden]) {
+    box-sizing: border-box;
+    height: calc(100dvh - 60px - env(safe-area-inset-top));
+    min-height: 0;
+    padding: 6px max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom));
+    display: grid;
+    grid-template-rows: 60px minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+  .in-battle .battle-header { width: 100%; max-width: none; margin: 0; }
+  .in-battle .arena {
+    width: 100%; max-width: none; min-height: 0; height: 100%;
+    padding: 6px 10px; gap: 8px;
+    grid-template-columns: minmax(0,1fr) 70px minmax(0,1fr);
+    border-radius: 24px;
+  }
+  .in-battle .combatant { min-height: 0; height: 100%; grid-template-rows: 24px minmax(0,1fr); gap: 4px; }
+  .in-battle .combat-label { margin: 0; padding: 3px 8px; }
+  .in-battle .battle-card-slot { width: min(100%, 230px); height: 100%; min-height: 0; }
+  .in-battle .battle-card-slot .story-card {
+    box-sizing: border-box; height: 100%; min-height: 0; width: 100%; max-width: none;
+    display: flex; flex-direction: column; padding: 5px;
+  }
+  .in-battle .battle-card-slot .card-crown { min-height: 40px; flex: 0 0 auto; padding: 0; }
+  .in-battle .battle-card-slot .card-name { font-size: 17px; }
+  .in-battle .battle-card-slot .card-art { order: 1; flex: 1 1 80px; min-height: 60px; height: auto; aspect-ratio: auto; width: 100%; margin: 0; }
+  .in-battle .battle-card-slot .card-art picture,
+  .in-battle .battle-card-slot .card-art img { height: 100%; width: 100%; }
+  .in-battle .battle-card-slot .combat-facts { order: 2; margin: 3px 0 0; padding: 5px; gap: 3px; flex: 0 0 auto; }
+  .in-battle .combat-fact { grid-template-columns: auto minmax(0,1fr); align-items: center; gap: 4px; }
+  .in-battle .combat-fact strong { text-align: right; font-size: 14px; }
+  .in-battle .battle-card-slot .hp-track { order: 3; flex-shrink: 0; height: 5px; margin: 4px 0 0; }
+  .in-battle .battle-card-slot .card-meta,
+  .in-battle .battle-card-slot .card-details,
+  .in-battle .battle-card-slot .rarity { display: none; }
+  .in-battle .battle-center { min-height: 0; }
+  .in-battle .versus { width: 48px; height: 48px; font-size: 20px; border-width: 3px; }
+  .in-battle .battle-message { font-size: 14px; padding: 6px; max-width: 100%; }
+  .in-battle .action-panel { position: static; width: 100%; max-width: none; margin: 0; padding: 8px; gap: 6px; }
+  .in-battle .enemy-intent, .in-battle .story-gate { min-height: 60px; padding: 5px 7px; gap: 6px; grid-template-columns: 28px minmax(0,1fr) auto; }
+  .in-battle .enemy-intent-icon, .in-battle .story-gate-orb { width: 28px; height: 28px; font-size: 20px; }
+  .in-battle .enemy-intent-copy small, .in-battle .story-gate-copy small,
+  .in-battle .fragment-title small, .in-battle .action-title { display: none; }
+  .in-battle .enemy-intent-copy strong, .in-battle .story-gate-copy strong { font-size: 14px; }
+  .in-battle .story-gate-button { min-height: 60px; }
+  .in-battle .fragment-tray { padding: 4px 6px; margin: 0; }
+  .in-battle .fragment-title { margin: 0 0 3px; font-size: 12px; }
+  .in-battle .fragment-chip, .in-battle .fragment-chip-inner { min-height: 60px; }
+  .in-battle .fragment-face { padding: 4px; gap: 4px; grid-template-columns: 24px minmax(0,1fr); }
+  .in-battle .fragment-emoji { width: 24px; height: 24px; font-size: 20px; }
+  .in-battle .fragment-name { font-size: 14px; }
+  .in-battle .fragment-preview { min-height: 0; margin: 3px 0 0; font-size: 12px; line-height: 1.25; }
+  .in-battle .action-list { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 6px; }
+  .in-battle .action-button { min-height: 60px; padding: 7px; }
+  .in-battle .action-button strong { font-size: 14px; }
+  .in-battle .action-button small { grid-column: 1 / -1; font-size: 12px; line-height: 1.2; }
+  .in-battle .action-button .action-cost { grid-row: 1; min-width: 38px; padding: 3px 4px; }
+  .in-battle .action-button.ultimate-button { grid-column: auto; }
+}
+@media (min-width: 960px) and (min-height: 600px) and (orientation: landscape) {
+  body.in-battle .battle-screen:not([hidden]) {
+    grid-template-columns: minmax(0,1fr) 360px;
+    grid-template-rows: 60px minmax(0,1fr);
+  }
+  .in-battle .battle-header { grid-column: 1 / -1; }
+  .in-battle .arena { grid-column: 1; grid-row: 2; }
+  .in-battle .action-panel { grid-column: 2; grid-row: 2; grid-template-columns: minmax(0,1fr); align-content: center; }
+  .in-battle .enemy-intent, .in-battle .story-gate { grid-column: 1; }
+  .in-battle .action-list { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .in-battle .battle-card-slot { max-height: 490px; align-self: center; }
+}
