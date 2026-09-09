@@ -57,7 +57,23 @@
     jaei: "family:jaei",
     taeo: "family:taeo",
     appa: "family:appa",
-    eomma: "family:eomma"
+    eomma: "family:eomma",
+    yisunshin: "legend:yisunshin",
+    euljimundeok: "legend:euljimundeok",
+    ganggamchan: "legend:ganggamchan",
+    kwonyul: "legend:kwonyul",
+    sherlockholmes: "legend:sherlockholmes",
+    doctorwatson: "legend:doctorwatson",
+    arsenelupin: "legend:arsenelupin",
+    moriarty: "legend:moriarty",
+    gearwing: "legend:gearwing",
+    starshield: "legend:starshield",
+    thunderguard: "legend:thunderguard",
+    redknot: "legend:redknot",
+    walllizard: "legend:walllizard",
+    neonjumper: "legend:neonjumper",
+    moonmoth: "legend:moonmoth",
+    ppungdetective: "legend:ppungdetective"
   });
 
   function question(id, cardId, prompt, choices, correctChoiceId, refs) {
@@ -843,6 +859,43 @@
       [["magic", "마법"], ["monster", "괴물"], ["brave", "용기"]], "magic",
       ["카드: 엄마"])
   ].forEach(function (item) { all.push(item); });
+
+  // 전설 확장 문항은 음원이 없는 카드 자체의 공개 정보만 묻는다.
+  // 실제 카드 데이터와 동일한 다섯 항목을 고정해, 보지 않은 역사 사실을 추측하게 하지 않는다.
+  const legendFacts = {
+    yisunshin: ["이순신", "용기", "물", "오행 상성 추가 피해를 받지 않아요", "학익진", "거북선 돌진"],
+    euljimundeok: ["을지문덕", "지혜", "물", "처음 받는 공격을 피해요", "살수의 물길", "유인 작전"],
+    ganggamchan: ["강감찬", "지혜", "땅", "오행 상성 추가 피해를 받지 않아요", "별을 읽는 눈", "귀주대첩"],
+    kwonyul: ["권율", "용기", "불", "체력이 절반 아래면 공격 피해가 늘어요", "행주 돌팔매", "화차 일제사격"],
+    sherlockholmes: ["셜록 홈즈", "지혜", "금속", "상대의 특성을 무효로 만들어요", "단서 찾기", "완벽한 추리"],
+    doctorwatson: ["왓슨 박사", "용기", "땅", "오행 상성 추가 피해를 받지 않아요", "의사의 진단", "믿음직한 동행"],
+    arsenelupin: ["아르센 뤼팽", "마법", "나무", "처음 받는 공격을 막아요", "변장술", "달빛 탈출"],
+    moriarty: ["모리어티", "괴물", "불", "체력이 절반 아래면 공격 피해가 늘어요", "함정 설계", "최후의 수"],
+    gearwing: ["기어윙", "마법", "금속", "처음 받는 공격을 막아요", "톱니깃 발사", "기어 폭풍"],
+    starshield: ["별방패 대장", "용기", "땅", "받는 피해가 10 줄어요", "빛방패 밀기", "모두를 지켜"],
+    thunderguard: ["천둥북 수호자", "마법", "불", "체력이 절반 아래면 공격 피해가 늘어요", "구름북 울림", "천둥 장단"],
+    redknot: ["붉은매듭 첩보원", "지혜", "금속", "동전 앞면이면 공격을 피해요", "매듭 표창", "그림자 포획"],
+    walllizard: ["벽달림 도마뱀", "괴물", "나무", "받는 피해가 10 줄어요", "붙착 손바닥", "꼬리 회전"],
+    neonjumper: ["네온도약자", "마법", "금속", "처음 받는 공격을 막아요", "네온 도약", "차원 발차기"],
+    moonmoth: ["달빛 나방수호자", "괴물", "물", "오행 상성 추가 피해를 받지 않아요", "은빛 가루", "초승 날개"],
+    ppungdetective: ["뿡경감", "괴물", "나무", "오행 상성 추가 피해를 받지 않아요", "냄새 단서", "범인은 너야"]
+  };
+  Object.keys(legendFacts).forEach(function (cardId) {
+    const fact = legendFacts[cardId];
+    const ref = ["카드: " + fact[0]];
+    [
+      question(cardId + "-type", cardId, fact[0] + " 카드는 무슨 타입인가요?",
+        [["correct", fact[1]], ["other1", fact[1] === "마법" ? "용기" : "마법"], ["other2", fact[1] === "지혜" ? "괴물" : "지혜"]], "correct", ref),
+      question(cardId + "-element", cardId, fact[0] + " 카드의 오행 속성은 무엇인가요?",
+        [["correct", fact[2]], ["other1", fact[2] === "물" ? "불" : "물"], ["other2", fact[2] === "금속" ? "나무" : "금속"]], "correct", ref),
+      question(cardId + "-passive", cardId, fact[0] + " 카드의 특성은 무엇을 하나요?",
+        [["correct", fact[3]], ["other1", "매턴 체력을 모두 회복해요"], ["other2", "언제나 공격이 두 배가 돼요"]], "correct", ref),
+      question(cardId + "-first", cardId, fact[0] + " 카드가 별사탕 1개로 쓰는 기술은 무엇인가요?",
+        [["correct", fact[4]], ["other1", fact[5]], ["other2", "방어하기"]], "correct", ref),
+      question(cardId + "-strong", cardId, fact[0] + " 카드의 대표 기술은 무엇인가요?",
+        [["correct", fact[5]], ["other1", fact[4]], ["other2", "별사탕 모으기"]], "correct", ref)
+    ].forEach(function (item) { all.push(item); });
+  });
 
   function deepFreeze(value) {
     if (!value || typeof value !== "object" || Object.isFrozen(value)) {

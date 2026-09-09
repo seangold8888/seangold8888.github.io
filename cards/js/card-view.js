@@ -73,7 +73,23 @@
     jaei: "50% 24%",
     taeo: "50% 22%",
     appa: "50% 20%",
-    eomma: "50% 22%"
+    eomma: "50% 22%",
+    yisunshin: "50% 20%",
+    euljimundeok: "50% 20%",
+    ganggamchan: "50% 20%",
+    kwonyul: "50% 22%",
+    sherlockholmes: "50% 20%",
+    doctorwatson: "50% 22%",
+    arsenelupin: "50% 20%",
+    moriarty: "50% 20%",
+    gearwing: "50% 18%",
+    starshield: "50% 18%",
+    thunderguard: "50% 18%",
+    redknot: "50% 20%",
+    walllizard: "50% 18%",
+    neonjumper: "50% 18%",
+    moonmoth: "50% 18%",
+    ppungdetective: "50% 20%"
   };
 
   function el(tag, className, text) {

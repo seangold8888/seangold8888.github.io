@@ -163,7 +163,7 @@ test("이야기 조각 데이터는 9종 효과·완청 키·초기 3장 풀 계
   );
 });
 
-test("손패 UI와 캐시 버전 39가 함께 배포되도록 묶여 있다", () => {
+test("손패 UI와 캐시 버전 40이 함께 배포되도록 묶여 있다", () => {
   const html = read("index.html");
   const css = read("styles.css");
   const app = read(path.join("js", "app.js"));
@@ -171,9 +171,9 @@ test("손패 UI와 캐시 버전 39가 함께 배포되도록 묶여 있다", ()
   ["fragmentTray", "fragmentHand", "fragmentPreview"].forEach((id) => {
     assert.match(html, new RegExp('id="' + id + '"'));
   });
-  assert.match(html, /styles\.css\?v=39/);
+  assert.match(html, /styles\.css\?v=40/);
   ["engine", "audio", "card-view", "vfx-recipes", "story-gates", "app"].forEach((file) => {
-    assert.match(html, new RegExp("js/" + file + "\\.js\\?v=39"));
+    assert.match(html, new RegExp("js/" + file + "\\.js\\?v=40"));
   });
   assert.doesNotMatch(html, /\?v=(?:19|20|21|22|23|24|25|26|27|28|29|30|31)/);
 
@@ -558,7 +558,7 @@ test("miss·evade는 충돌음을 만들지 않고 날아가는 시작음만 낸
   });
 });
 
-test("가족 확장 129개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가진다", () => {
+test("전설 확장 162개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가진다", () => {
   const data = JSON.parse(read("cards.json"));
   const attacks = data.cards.flatMap((card) =>
     card.attacks.map((attack) => ({
@@ -572,7 +572,7 @@ test("가족 확장 129개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가�
   const materialCounts = {};
   const signatures = new Set();
 
-  assert.equal(attacks.length, 129);
+  assert.equal(attacks.length, 162);
   attacks.forEach(({ card, cardType, attack }) => {
     assert.ok(attack.vfx, card + " / " + attack.name);
     assert.ok(attack.vfx.emoji, card + " / " + attack.name);
@@ -606,19 +606,19 @@ test("가족 확장 129개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가�
     materialCounts[soundPlan.material] = (materialCounts[soundPlan.material] || 0) + 1;
     assert.ok(["brave", "wise", "magic", "monster"].includes(soundPlan.type));
   });
-  assert.equal(signatures.size, 129, "129개 기술은 각각 고유한 안정 음색 서명을 가져야 한다");
+  assert.equal(signatures.size, 162, "162개 기술은 각각 고유한 안정 음색 서명을 가져야 한다");
   assert.deepEqual(materialCounts, {
-    body: 16,
+    body: 24,
     fire: 8,
     air: 28,
     wood: 7,
     metal: 21,
-    stone: 5,
-    paper: 5,
+    stone: 6,
+    paper: 13,
     hollow: 7,
     glass: 2,
-    crystal: 17,
-    earth: 7,
+    crystal: 26,
+    earth: 14,
     flick: 1,
     belch: 1,
     gas: 3,
@@ -626,14 +626,14 @@ test("가족 확장 129개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가�
   });
 
   assert.deepEqual(counts, {
-    strike: 38,
-    burst: 30,
-    debuff: 21,
-    projectile: 22,
-    aura: 12,
-    summon: 6
+    strike: 42,
+    burst: 37,
+    debuff: 26,
+    projectile: 29,
+    aura: 20,
+    summon: 8
   });
-  assert.equal(attacks.filter(({ attack }) => attack.vfx.big).length, 39);
+  assert.equal(attacks.filter(({ attack }) => attack.vfx.big).length, 55);
 
   const redhood = data.cards.find((card) => card.id === "redhood");
   assert.deepEqual(redhood.attacks[0].vfx, {

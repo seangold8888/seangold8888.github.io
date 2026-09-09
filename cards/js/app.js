@@ -1863,7 +1863,14 @@
   }
 
   function storyGateHasListeningProof() {
-    return Boolean(storyChallenge && isStoryDone(storyChallenge.storyId));
+    if (!storyChallenge) return false;
+    if (/^(?:family|legend):/.test(storyChallenge.storyId || "")) {
+      const challengeCard = cards.find(function (card) {
+        return card.id === storyChallenge.cardId;
+      });
+      return Boolean(challengeCard && isUnlocked(challengeCard));
+    }
+    return isStoryDone(storyChallenge.storyId);
   }
 
   function prepareEnemyIntent(force) {

@@ -59,7 +59,11 @@ const PLAYABLE_CARD_IDS = [
   "erlangshen",
   "wumawang",
   "honghaier",
-  "baigujing"
+  "baigujing",
+  "yisunshin", "euljimundeok", "ganggamchan", "kwonyul",
+  "sherlockholmes", "doctorwatson", "arsenelupin", "moriarty",
+  "gearwing", "starshield", "thunderguard", "redknot",
+  "walllizard", "neonjumper", "moonmoth", "ppungdetective"
 ];
 
 function loadStoryGates() {
@@ -81,7 +85,7 @@ test("exports one story gate for every playable card", function () {
     function (question) { return question.cardId; }
   ).sort();
 
-  assert.ok(gates.all.length >= 55 * 5, "카드당 5문항 이상이어야 한다");
+  assert.ok(gates.all.length >= 71 * 5, "카드당 5문항 이상이어야 한다");
   assert.equal(
     new Set(Array.from(gates.all, function (question) {
       return question.id;

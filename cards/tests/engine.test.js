@@ -449,7 +449,7 @@ test("기존 대표 6장은 v1 기술과 PNG·WebP 원화를 모두 갖춘다", 
   });
 });
 
-test("가족 확장 55장 전체 원화·프롬프트·크롭 매핑이 완전하고 1024×1536이다", () => {
+test("전설 확장 71장 전체 원화·프롬프트·크롭 매핑이 완전하고 1024×1536이다", () => {
   const cardsRoot = path.join(__dirname, "..");
   const data = JSON.parse(
     fs.readFileSync(path.join(cardsRoot, "cards.json"), "utf8")
@@ -487,21 +487,21 @@ test("가족 확장 55장 전체 원화·프롬프트·크롭 매핑이 완전�
     );
   });
 
-  assert.deepEqual(cropRows, ids, "프롬프트 문서의 크롭 행은 55장과 일치해야 한다");
+  assert.deepEqual(cropRows, ids, "프롬프트 문서의 크롭 행은 71장과 일치해야 한다");
   assert.deepEqual(
     Object.keys(context.window.CardView.artPosition).sort(),
     ids,
-    "렌더러의 크롭 매핑은 55장과 일치해야 한다"
+    "렌더러의 크롭 매핑은 71장과 일치해야 한다"
   );
 });
 
-test("컬렉션 해금 경제는 가족 확장 55장 전체를 노출한다", () => {
+test("컬렉션 해금 경제는 전설 확장 71장 전체를 노출한다", () => {
   const data = JSON.parse(
     fs.readFileSync(path.join(__dirname, "..", "cards.json"), "utf8")
   );
   const byId = new Map(data.cards.map((item) => [item.id, item]));
 
-  assert.equal(new Set(data.collection).size, 55);
+  assert.equal(new Set(data.collection).size, 71);
   assert.deepEqual(
     [...data.collection].sort(),
     data.cards.map((item) => item.id).sort(),
@@ -509,8 +509,8 @@ test("컬렉션 해금 경제는 가족 확장 55장 전체를 노출한다", ()
   );
   assert.deepEqual(
     data.collection.filter((id) => byId.get(id).unlock === null).sort(),
-    ["jack", "redhood"],
-    "기존 기본 지급 2장은 그대로 유지한다"
+    ["gearwing", "jack", "ppungdetective", "redhood", "sherlockholmes", "yisunshin"],
+    "기존 기본 지급 2장과 새 세력 대표 4장을 지급한다"
   );
 
   ["threepigs", "tortoisehare", "wolf"].forEach((id) => {
@@ -539,7 +539,7 @@ test("페르세우스 설명과 실제 v1 대전 상대 풀이 레어도 ±1 계
   const featuredCards = data.collection
     .map((id) => data.cards.find((entry) => entry.id === id))
     .filter(Engine.isBattleCard);
-  assert.equal(featuredCards.length, 55, "컬렉션 전원이 대전 가능해야 한다");
+  assert.equal(featuredCards.length, 71, "컬렉션 전원이 대전 가능해야 한다");
 
   featuredCards.forEach((player) => {
     const balancedOpponents = Engine.getBalancedEnemyPool(featuredCards, player);
@@ -1149,6 +1149,10 @@ test("검수 완료된 24장 PNG·WebP 원화는 바뀌지 않는다", () => {
       "guanyu", "zhangfei", "zhaoyun", "zhugeliang", "caocao", "simayi",
       "nezha", "erlangshen", "wumawang", "honghaier", "baigujing",
       "jaei", "taeo", "appa", "eomma",
+      "yisunshin", "euljimundeok", "ganggamchan", "kwonyul",
+      "sherlockholmes", "doctorwatson", "arsenelupin", "moriarty",
+      "gearwing", "starshield", "thunderguard", "redknot",
+      "walllizard", "neonjumper", "moonmoth", "ppungdetective",
     ].includes(id))
     .flatMap((id) => [id + ".png", id + ".webp"])
     .sort();

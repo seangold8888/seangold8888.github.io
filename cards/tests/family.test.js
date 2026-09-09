@@ -49,11 +49,11 @@ test("기존 51장 데이터와 컬렉션 순서는 바이트 의미상 고정�
     sha(JSON.stringify(data.collection.slice(0, 51))),
     "87615c645cfda730f1d7bb5d783c0cd25dffff2222a2c04085083674679c51d3"
   );
-  assert.deepEqual(data.collection.slice(-4), familyIds);
+  assert.deepEqual(data.collection.slice(51, 55), familyIds);
 });
 
 test("가족 4장 수치·기술·해금은 확정 설계와 일치한다", () => {
-  assert.equal(data.cards.length, 55);
+  assert.equal(data.cards.length, 71);
   assert.deepEqual(
     familyIds.map((id) => {
       const card = byId.get(id);
@@ -80,7 +80,7 @@ test("가족 4장 수치·기술·해금은 확정 설계와 일치한다", () =
 test("가족 기술 이모지는 옛 51장과 겹치지 않고 새 소리 재질만 선택한다", () => {
   const oldEmojis = new Set(data.cards.slice(0, 51)
     .flatMap((card) => card.attacks.map((attack) => attack.vfx.emoji)));
-  const familyAttacks = data.cards.slice(51).flatMap((card) =>
+  const familyAttacks = data.cards.slice(51, 55).flatMap((card) =>
     card.attacks.map((attack) => ({ card, attack }))
   );
   familyAttacks.forEach(({ card, attack }) => {

@@ -76,6 +76,22 @@ Constraints: original public-domain interpretation; character and scene art only
 - `taeo.png`: 짧은 갈색 머리의 어린 태오가 어두운 남색 태권도장에서 흰 태권도복과 또렷한 검은띠를 매고 메가랩터 옆차기를 한다. 맨발·전신, 검은띠 양끝이 보이며 폭력 장면 없음.
 - `appa.png`: 짧은 갈색 머리의 키 큰 아빠가 노란색 칼라 셔츠·회색 바지·갈색 벨트를 입고 달빛 놀이터에서 목말을 태워 줄 듯 양손을 든다. 친근하고 든든한 표정.
 - `eomma.png`: 낮은 옆 묶음 갈색 머리의 엄마가 큰 점이 성기게 놓인 베이지 치타무늬 롱 원피스와 실내화를 입고 따뜻한 거실에서 한 손을 차분히 든다. 고양이 귀·꼬리 없음.
+- `yisunshin.png`: 남색·고금빛 조선 수군 갑옷의 이순신이 활을 내리고 지휘 갑판에 선다. 뒤에는 달빛 바다와 거북선. 영화 배우 닮은꼴·현대 국기 없음.
+- `euljimundeok.png`: 물빛 포인트의 고구려 찰갑을 입은 을지문덕이 얕은 강가에서 돌로 물길 작전을 짠다. 특정 드라마 디자인 없음.
+- `ganggamchan.png`: 은빛 수염의 노장 강감찬이 고려 갑옷과 도포를 입고 글자 없는 청동 천문 고리를 든다. 먼 산성의 새벽빛.
+- `kwonyul.png`: 남색·적갈색 조선 갑옷의 권율이 행주산성 위에서 돌을 들고 신호한다. 적군·부상 없이 먼 화차 연기만 보인다.
+- `sherlockholmes.png`: 평범하게 빗은 검은 머리와 짙은 프록코트의 셜록 홈즈가 런던 골목에서 돋보기로 발자국 셋을 살핀다. 사냥모·파이프·배우 닮은꼴 없음.
+- `doctorwatson.png`: 콧수염과 밤색 외투의 왓슨 박사가 의료 가방과 닫힌 수첩을 들고 가스등 아래 선다. 총·배우 닮은꼴 없음.
+- `arsenelupin.png`: 검은 이브닝 코트와 버건디 장갑의 아르센 뤼팽이 모자를 옆으로 들고 파리 저택 발코니에 선다. 애니메이션·영상물 디자인 없음.
+- `moriarty.png`: 은빛 머리와 자주색 정장의 모리어티가 평범한 검은 체스 말을 옮긴다. 뒤에는 글자 없는 금빛 기하 실선. 공포 악당 표정 없음.
+- `gearwing.png`: 짧은 곱슬머리의 어린 발명가 기어윙이 청록·구리 작업복과 둥근 금속 깃털 날개로 시계탑 위를 난다. 원형 가슴 장치 없음.
+- `starshield.png`: 남색·상아·비취 탐험복의 어린 대장이 문양 없는 나뭇잎 모양 오로라 방패를 들고 친구를 지킨다. 국기색·별 문양 없음.
+- `thunderguard.png`: 청록·호박색 판타지 공연복의 천둥북 수호자가 허리의 구름북을 친다. 망치·날개 투구·붉은 망토 없음.
+- `redknot.png`: 버건디 긴 코트와 넉넉한 바지의 붉은매듭 첩보원이 부드러운 매듭 도구로 떨어지는 보석을 낚아챈다. 검은 전신복·총 없음.
+- `walllizard.png`: 둥근 초록 얼굴과 넓은 손가락 패드의 도마뱀 아이가 주황·초록 파쿠르 재킷으로 도서관 탑 벽을 달린다. 가면·거미줄 없음.
+- `neonjumper.png`: 짧은 곱슬머리의 검은 피부 소녀가 청록·자홍 재킷과 빛나는 바퀴 신발로 타원형 차원문을 넘는다. 거미 문양·가면 없음.
+- `moonmoth.png`: 은라벤더 땋은 머리와 크림·라일락 나방 날개의 수호자가 닫힌 등불을 들고 달빛 갈대 위를 난다. 흰 후드·거미 문양 없음.
+- `ppungdetective.png`: 둥근 보통 개 코의 비글 뿡경감이 베이지 트렌치코트와 돋보기로 진주빛 냄새 한 줄을 좇는다. 엉덩이 모양 얼굴·배설물 없음.
 ## 카드 크롭
 
 | id | object-position |
@@ -135,6 +151,22 @@ Constraints: original public-domain interpretation; character and scene art only
 | taeo | `50% 22%` |
 | appa | `50% 20%` |
 | eomma | `50% 22%` |
+| yisunshin | `50% 20%` |
+| euljimundeok | `50% 20%` |
+| ganggamchan | `50% 20%` |
+| kwonyul | `50% 22%` |
+| sherlockholmes | `50% 20%` |
+| doctorwatson | `50% 22%` |
+| arsenelupin | `50% 20%` |
+| moriarty | `50% 20%` |
+| gearwing | `50% 18%` |
+| starshield | `50% 18%` |
+| thunderguard | `50% 18%` |
+| redknot | `50% 20%` |
+| walllizard | `50% 18%` |
+| neonjumper | `50% 18%` |
+| moonmoth | `50% 18%` |
+| ppungdetective | `50% 20%` |
 
 두 번째 묶음(요정 대모·빨간 모자·잭)은 첫 묶음(신데렐라·오디세우스·폴리페모스)을 스타일·조명·재질 참고 이미지로 사용했고, 인물과 구도는 복제하지 않도록 명시했다. 6단계 전 검수에서 신데렐라와 폴리페모스는 위 장면으로 새로 생성해 PNG·WebP를 모두 교체했다.
 
@@ -345,3 +377,26 @@ Avoid: photorealism, chibi proportions, horror, aggressive snarling, sharp expos
 - `wumawang`: Storybook-friendly Bull Demon King with rounded horns, closed mouth, dark-brown fur, charcoal-oxblood mountain armor, black iron staff and warm Flaming Mountains, sturdy rather than menacing.
 - `honghaier`: Mischievous child Red Boy in fully clothed crimson-gold tunic, tiny fire-wheeled cart, short fire-tipped spear and controlled orange-coral-gold flame spiral, cheeky smile.
 - `baigujing`: Safe White Bone Spirit interpretation: elegant woman in pearl-white and silver robes, smooth silver half-mask, flower basket and exactly three harmless mist disguises; no skeleton, skull, bones, empty sockets, corpse imagery or claws.
+
+## 전설과 멀티버스 최종 생성본 (2026-09-10)
+
+카드마다 내장 ImageGen을 한 번씩 별도로 실행했다. 생성 원본은 보존하고, 중앙 cover 방식으로 1024×1536 RGB PNG와 WebP 품질 90으로 정규화했다.
+
+| id | ImageGen 원본 |
+|---|---|
+| yisunshin | `exec-fa9d3bb1-5476-4ae5-9328-19cb3eff4cf8.png` |
+| euljimundeok | `exec-43abe9f5-d016-4433-ba50-c9d83644337e.png` |
+| ganggamchan | `exec-752cbb51-ede6-4232-99d7-3886c0d5e206.png` |
+| kwonyul | `exec-838f6727-a970-4221-a7dd-b6fa0ee7513e.png` |
+| sherlockholmes | `exec-1457399a-42be-4f83-9f32-2ee0d15bcb78.png` |
+| doctorwatson | `exec-70eacc00-118a-46e2-9072-31b9ef8105de.png` |
+| arsenelupin | `exec-a78ef892-6b9c-4821-8e06-eaf8c004e1f9.png` |
+| moriarty | `exec-b5ec64b3-508b-40d5-8e05-f712bc0c0529.png` |
+| gearwing | `exec-891d987c-767f-42e8-8511-28d39895c3dd.png` |
+| starshield | `exec-43428e4d-99d6-4137-9a56-f1548644012d.png` |
+| thunderguard | `exec-b1fb9bcd-e16e-421b-b7cf-b209d996c3fe.png` |
+| redknot | `exec-aaef218c-dffc-4216-b9e1-faaf6cfaef9e.png` |
+| walllizard | `exec-88544d0b-f3f1-4610-8593-9233cccff3fa.png` |
+| neonjumper | `exec-e9abd399-f567-464d-9635-ac499be8388c.png` |
+| moonmoth | `exec-67e3c28e-db3d-4eca-a074-7904c2ee05bb.png` |
+| ppungdetective | `exec-b833f0fc-3b4f-486b-9311-b8d53a9d130d.png` |

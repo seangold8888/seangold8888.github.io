@@ -59,7 +59,8 @@ const FAMILY = familyIds.every((id) => data.cards.some((card) => card.id === id)
   : FAMILY_FALLBACK;
 
 const implemented = familyIds.every((id) => data.collection.includes(id));
-const all = data.collection.map((id) => data.cards.find((c) => c.id === id))
+// 가족 확정 당시의 상대 풀 55장을 고정해 뒤 확장이 가족 순서를 흔들지 않게 한다.
+const all = data.collection.slice(0, 55).map((id) => data.cards.find((c) => c.id === id))
   .concat(implemented ? [] : FAMILY)
   .filter(Engine.isBattleCard);
 const rngOf = (s) => { let x = s >>> 0; return () => { x = (Math.imul(x, 1664525) + 1013904223) >>> 0; return x / 4294967296; }; };

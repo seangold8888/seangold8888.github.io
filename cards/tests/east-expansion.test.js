@@ -24,17 +24,17 @@ function loadGates() {
 }
 
 test("동양 확장 11장은 가족 4장이 붙은 뒤에도 그대로다", () => {
-  assert.equal(data.cards.length, 55);
-  assert.equal(data.collection.length, 55);
-  assert.equal(new Set(data.collection).size, 55);
-  assert.deepEqual(data.collection.slice(-15, -4), newIds, "동양 11장 뒤에 가족 4장이 붙었다");
+  assert.equal(data.cards.length, 71);
+  assert.equal(data.collection.length, 71);
+  assert.equal(new Set(data.collection).size, 71);
+  assert.deepEqual(data.collection.slice(40, 51), newIds, "동양 11장 순서는 새 확장 뒤에도 고정된다");
   assert.deepEqual(
-    data.cards.reduce((counts, card) => {
+    data.cards.slice(0, 55).reduce((counts, card) => {
       counts[card.type] = (counts[card.type] || 0) + 1;
       return counts;
     }, {}),
     { brave: 14, wise: 14, magic: 13, monster: 14 },
-    "동양 11장에 가족 4장이 더해져 네 타입이 14·14·13·14가 된다"
+    "첫 55장의 타입 분포는 새 확장 뒤에도 고정된다"
   );
   eastIds.forEach(id => assert.equal(Engine.isBattleCard(get(id)), true, id));
 });
