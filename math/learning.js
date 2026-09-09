@@ -27,7 +27,40 @@
     for (let i=0;i<80;i++) { next = C.makeProblem(p.level,rng,p.type); if (next.key !== p.key && !(seen || []).includes(next.key)) return next; }
     return null;
   }
+  // Focus takes roughly two thirds; remaining slots keep other concepts and due reviews alive.
+  function buildFocusedSession(opts) {
+    const rng=opts.rng || Math.random,n=opts.count || 8,level=opts.level || 1,focus=opts.focus;
+    const out=[],used=new Set(),target=Math.ceil(n*2/3);
+    const allowed=C.levelById(focus.level).types.filter(t=>focus.types.includes(t));
+    if(!allowed.length || focus.level>level || focus.level<1) return buildSession(Object.assign({},opts,{focus:null}));
+    const weak=(at,types)=>summary(opts.state || {},at).filter(s=>types.includes(s.type))
+      .sort((a,b)=>Number(a.mastered)-Number(b.mastered)||a.count-b.count);
+    function add(p,focused) {
+      if(!p || used.has(p.key)) return false;
+      used.add(p.key);out.push(Object.assign({},p,{focused:!!focused}));return true;
+    }
+    const focusSkills=weak(focus.level,allowed);
+    let guard=0;
+    while(out.length<target && guard<400) add(C.makeProblem(focus.level,rng,focusSkills[guard++%focusSkills.length].type),true);
+    const due=(opts.review || []).filter(r=>r.problem && r.problem.level<=level).slice(0,n===3?1:Math.floor(n*.2));
+    for(const r of due) {
+      if(out.length>=n) break;
+      const p=variant(r.problem,rng,Array.from(used)) || r.problem;
+      add(Object.assign({},p,{review:true,reviewKey:r.key}),false);
+    }
+    const all=C.levelById(level).types;
+    const other=focus.level===level ? all.filter(t=>!allowed.includes(t)) : all;
+    const mixed=weak(level,other.length?other:all);
+    guard=0;
+    while(out.length<n && guard<400) add(C.makeProblem(level,rng,mixed[guard++%mixed.length].type),false);
+    // Small concepts such as 10-making contain only nine unique facts.
+    // Fill from the current curriculum instead of repeating a fact or introducing a future level.
+    const remaining=weak(level,all);guard=0;
+    while(out.length<n && guard<400) add(C.makeProblem(level,rng,remaining[guard++%remaining.length].type),false);
+    return out;
+  }
   function buildSession(opts) {
+    if(opts.focus) return buildFocusedSession(opts);
     const rng = opts.rng || Math.random, n = opts.count || 8, level = opts.level || 1;
     const out = [], used = new Set();
     function add(p) { if (p && !used.has(p.key)) { used.add(p.key); out.push(p); return true; } return false; }

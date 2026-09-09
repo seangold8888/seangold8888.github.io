@@ -321,3 +321,10 @@ body[data-screen="home"] header.top{padding-bottom:22px}
  .home-disclosure>summary{font-size:14px}
 }
 @media(prefers-reduced-motion:reduce){.home-shortcut{transition:none}}
+
+/* Equipment choices explain their actual question focus without another home card. */
+#home .play-spot .spot-topic{font-size:12px;line-height:1.4;color:#466961;white-space:normal}
+#home .play-spot .spot-scope{font-size:11px;color:#657c70;line-height:1.4}
+#home .play-spot{min-height:138px;gap:5px}
+#home .play-spot:disabled{opacity:.65;cursor:default;transform:none}
+#home #spotChangeNote{margin:0 3px 8px;line-height:1.6}

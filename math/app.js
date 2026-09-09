@@ -6,7 +6,7 @@
   const storage = window.localStorage;
   const Learn = window.MathLearning;
   const Play = window.MathPlayground;
-  let hintStep = 0, sessionMode = "adventure", recovered = 0, nextTimer = null;
+  let hintStep = 0, sessionMode = "adventure", recovered = 0, nextTimer = null, sessionSpot = null, sessionFocus = "";
   let state = S.load(storage);
   const PRAISE = ["맞았어요", "정확해요", "잘했어요", "좋아요", "그렇지!", "딩동댕"];
   let session = null, index = 0, current = null, typed = "", shownAt = 0, firstTry = true, results = [], lastLine = "";
@@ -257,21 +257,23 @@
   /* ---------- 문제 ---------- */
   function checkpoint() {
     if (!session || placement) return;
-    state.pending = index < session.length ? { problems:session, index:index, results:results, earned:earned, mode:sessionMode, firstTry:firstTry, hintStep:hintStep, recovered:recovered, level:state.level } : null;
+    state.pending = index < session.length ? { problems:session, index:index, results:results, earned:earned, mode:sessionMode, firstTry:firstTry, hintStep:hintStep, recovered:recovered, level:state.level, spot:sessionSpot, focusTitle:sessionFocus } : null;
     S.save(storage,state);
   }
   function start(mode) {
     clearTimeout(nextTimer);
     if (state.pending && state.pending.level === state.level) {
       const p=state.pending; session=p.problems; index=p.index; results=p.results; earned=Number(p.earned)||0;
-      sessionMode=p.mode || "adventure"; recovered=Number(p.recovered)||0;
+      sessionSpot=p.spot || null; sessionFocus=p.focusTitle || ""; sessionMode=p.mode || "adventure"; recovered=Number(p.recovered)||0;
       current=session[index]; firstTry=p.firstTry !== false; hintStep=Number(p.hintStep)||0;
       show("quiz"); renderProblem(); shownAt=performance.now();
       if (!firstTry) { $("explain").textContent=Learn.hint(current); $("explain").hidden=false; }
       return;
     }
     sessionMode = mode === "quick" ? "quick" : "adventure";
-    session = Learn.buildSession({level:state.level,count:sessionMode === "quick" ? 3 : state.perSession,rng:Math.random,review:S.dueReviews(state),state:state});
+    sessionSpot=Play.byId(state.playgroundSpot).id;
+    const focus=Play.focus(sessionSpot,state.level); sessionFocus=focus.title;
+    session = Learn.buildSession({focus:focus,level:state.level,count:sessionMode === "quick" ? 3 : state.perSession,rng:Math.random,review:S.dueReviews(state),state:state});
     index=0; results=[]; earned=0; recovered=0;
     show("quiz"); next();
   }
@@ -294,7 +296,7 @@
       else { const w = document.createElement("span"); w.className = /^[\s+−=]+$/.test(part) ? "" : "word"; w.textContent = part; el.appendChild(w); }
     });
     if (session) {
-      $("count").textContent = (index + 1) + " / " + session.length + (p.review ? " · 다시 만난 문제" : "");
+      $("count").textContent = (index + 1) + " / " + session.length + (p.review ? " · 다시 만난 문제" : p.focused===false ? " · 골고루 복습" : p.level<state.level ? " · 배운 내용 복습" : "");
       $("bar").style.width = Math.round(100 * index / session.length) + "%";
     }
     $("feedback").textContent = ""; $("feedback").className = "feedback";
@@ -394,7 +396,7 @@
       const growth = firstTry && (current.review || old.some(function(e) { return !e.ok; }));
       const rewardKey = S.today()+":"+Learn.skillKey(current);
       const growthBonus = growth && !state.growthRewards[rewardKey];
-      $("feedback").textContent = growthBonus ? "어려웠던 걸 혼자 해결했어요! ✓" : firstTry ? Play.byId(state.playgroundSpot).move+" ✓" : "끝까지 생각했어요. 한 칸 더 나아갔어요 ✓";
+      $("feedback").textContent = growthBonus ? "어려웠던 걸 혼자 해결했어요! ✓" : firstTry ? Play.byId(sessionSpot || state.playgroundSpot).move+" ✓" : "끝까지 생각했어요. 한 칸 더 나아갔어요 ✓";
       $("feedback").className="feedback ok"; ding(true); burst();
       results.push({key:current.key,type:current.type,level:current.level,review:!!current.review,firstTry:firstTry,ms:firstTry?ms:0});
       S.addCoins(state,A.COIN.correct,"문제 끝까지 해결"); earned+=A.COIN.correct;
@@ -599,15 +601,22 @@
     $("missionTitle").textContent=spot.mission;
     $("playgroundChapter").textContent=(Math.floor(total/24)+1)+"번째 탐험";
     $("playgroundGreeting").textContent="재이의 놀이터에\n놀러 와!";
-    $("playgroundStory").textContent=state.stamps[S.today()] ? "오늘도 신나게 놀았어. 내일 다시 만나!" : spot.id === "bars" ? "천천히 한 칸씩, 같이 가요." : "내 속도로, 한 걸음씩 같이 가요.";
+    const focus=Play.focus(spot.id,state.level);
+    $("playgroundStory").textContent=focus.title+(spot.id==="steps"?"":" 중심")+(focus.review?" · "+focus.level+"단계 복습":"")+" · 골고루 복습도 조금";
+    if(spot.id==="steps" && state.level!==5) $("playgroundStory").textContent="이번 단계의 여러 문제를 골고루 풀어요.";
     $("playgroundTotal").textContent=total;
     renderHomeProgress();
     const map=$("playgroundMap"); map.textContent="";
     Play.SPOTS.forEach(function(item) {
       const button=document.createElement("button"); button.type="button"; button.className="play-spot";
       button.dataset.spot=item.id; button.setAttribute("aria-pressed",String(item.id===spot.id));
-      button.setAttribute("aria-label",item.description+" 선택"); button.appendChild(Play.icon(item.id));
+      const plan=Play.focus(item.id,state.level);
+      const busy=!!(state.pending && state.pending.level===state.level);
+      button.disabled=busy;
+      button.setAttribute("aria-label",item.name+" · "+plan.title+(plan.review?" · "+plan.level+"단계 복습":"")+" 선택"); button.appendChild(Play.icon(item.id));
       const label=document.createElement("span"); label.textContent=item.name; button.appendChild(label);
+      const topic=document.createElement("span"); topic.className="spot-topic"; topic.textContent=plan.title;button.appendChild(topic);
+      const scope=document.createElement("span");scope.className="spot-scope";scope.textContent=plan.level+"단계"+(plan.review?" 복습":"");button.appendChild(scope);
       if(item.id === "bars") { const badge=document.createElement("small"); badge.className="favorite"; badge.textContent="최애"; button.appendChild(badge); }
       button.addEventListener("click",function() { state.playgroundSpot=item.id; S.save(storage,state); renderPlayground(); $("playgroundMap").querySelector('[data-spot="'+item.id+'"]').focus({preventScroll:true}); });
       map.appendChild(button);
@@ -615,7 +624,12 @@
     const pending=state.pending && state.pending.level === state.level;
     $("startBtn").textContent=pending?"하던 탐험 이어하기 →":spot.name+" 출발 →";
     $("quickBtn").hidden=!!pending; $("resumeNote").hidden=!pending;
-    if(pending) $("resumeNote").textContent=state.pending.index+"문제까지 했어요. 이어서 가볼까요?";
+    $("spotChangeNote").hidden=!pending;
+    if(pending) {
+      const p=state.pending;
+      $("resumeNote").textContent=p.index+"문제까지 했어요. 이어서 가볼까요?";
+      $("playgroundStory").textContent=p.spot ? Play.byId(p.spot).name+" · "+(p.focusTitle || "하던 놀이") : "하던 탐험의 문제를 그대로 이어가요.";
+    }
     $("teaser").textContent=state.stamps[S.today()] ? "오늘은 여기까지 해도 좋아요. 놀이터는 내일도 기다려요." : "도움이 필요하면 힌트를 눌러요. 천천히 해도 괜찮아.";
     $("guideSay").textContent=(buddy() || F.guideFor(state.level)).name+": "+(pending?"다시 만나서 반가워! 이어서 해볼까?":"네 속도로 해도 좋아. 내가 함께할게!");
   }
@@ -629,7 +643,7 @@
     $("homeProgressDetail").textContent=state.level+"단계 · "+levelInfo().name+" · 틀려도 건넌 칸은 그대로예요.";
   }
   function renderQuest() {
-    $("quizMission").textContent=placement?"어디서 시작할지 함께 찾아요":"구름사다리 · 친구들과 한 칸씩";
+    $("quizMission").textContent=placement?"어디서 시작할지 함께 찾아요":(sessionSpot ? Play.byId(sessionSpot).name+" · "+sessionFocus : "구름사다리 · 친구들과 한 칸씩");
     const box=$("questRungs");box.hidden=!!placement;$("questStatus").hidden=!!placement;
     if(placement || !session) return;
     Play.renderLadder(box,session.length,index,"이번 탐험 진도");
