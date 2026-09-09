@@ -327,7 +327,7 @@
     session.silent = callbacks.silent === true;
     let disposed = false, awarded = false, active = null, serial = 0, timer = null, finalText = "";
     let retried = false, soundActive = false, soundTimer = null, stopTimer = null, passDone = false, stopping = null;
-    let audioCtx = null, playing = null, unlocked = false, healthTimer = null, recovering = false;
+    let audioCtx = null, primedCtx = null, playing = null, healthTimer = null, recovering = false;
     let recoveryButton = null;
     const Recognition = env.SpeechRecognition || env.webkitSpeechRecognition;
     const showLog = !!(env.location && /(?:\?|&)readinglog=1/.test(env.location.search || ""));
@@ -392,6 +392,10 @@
       const ctx = audioCtx; audioCtx = null;
       if (ctx && ctx.close) { try { ctx.close(); } catch (_) {} }
     }
+    function releasePrimedAudio() {
+      const ctx = primedCtx; primedCtx = null;
+      if (ctx && ctx.close) { try { ctx.close(); } catch (_) {} }
+    }
     function cancelSound() {
       env.clearTimeout(soundTimer); soundTimer = null;
       detachAudio();
@@ -436,15 +440,20 @@
       if (!previous && after) after(true);
     }
     function resetFlow() { retried = true; session.streak = 0; }
-    // Create the element without a source: loading a praise clip in the same
-    // tap as recognition.start() needlessly changes the audio route on iOS.
-    // This does not assume constructor/load unlocks autoplay; blocked playback
-    // still has a bounded text-only fallback.
-    // 첫 탭에서 클립 데이터만 미리 받아 둔다. 오디오 장치는 재생할 때만 잠깐 연다.
+    // iPad Safari only guarantees Web Audio playback when AudioContext.resume()
+    // happens inside a user gesture. Prime an idle context on the microphone tap;
+    // it makes no sound and is reused only after recognition has fully stopped.
     function unlockAudio() {
-      if (unlocked) return;
-      unlocked = true;
-      if (!canPlay()) return;
+      if (primedCtx || !canPlay()) return;
+      const AC = env.AudioContext || env.webkitAudioContext;
+      try {
+        primedCtx = new AC();
+        if (primedCtx.state === "suspended" && primedCtx.resume) {
+          const ready = primedCtx.resume();
+          if (ready && ready.catch) ready.catch(function () { log("audio-prime-wait"); });
+        }
+        log("audio-primed");
+      } catch (_) { primedCtx = null; log("audio-prime-fail"); }
     }
     function completePass() {
       if (disposed || passDone) return;
@@ -479,19 +488,24 @@
     function playClip(src, stallMs, onDone, options) {
       const id = serial;
       let done = false;
+      let reservedCtx = null;
       const finish = function (how) {
         if (done || disposed || id !== serial) return;
         done = true;
+        if (reservedCtx && reservedCtx !== audioCtx && reservedCtx.close) { try { reservedCtx.close(); } catch (_) {} }
+        reservedCtx = null;
         detachAudio();
         env.clearTimeout(soundTimer); soundTimer = null;
         onDone(how);
       };
       if (!canPlay()) { finish("no-audio"); return; }
+      reservedCtx = primedCtx; primedCtx = null;
       armWatchdog(stallMs, function () { finish("stall"); });
       const AC = env.AudioContext || env.webkitAudioContext;
       loadClip(env, src).then(function (buf) {
         if (done || disposed || id !== serial) return;
-        const ctx = new AC();
+        const ctx = reservedCtx || new AC();
+        reservedCtx = null;
         audioCtx = ctx;
         const decoded = ctx.decodeAudioData(buf.slice(0));
         return (decoded && decoded.then ? decoded : Promise.resolve(decoded)).then(function (sound) {
@@ -749,9 +763,9 @@
       if (soundActive) { stop(); read(); }
       else if (active) finishAttempt();
     });
-    const hide = function () { if (doc.hidden) { if (active) resetFlow(); stop("잠시 멈췄어요. 읽어 보기를 눌러 다시 시작해요."); if (awarded) completePass(); } };
-    const leave = function () { if (active) resetFlow(); stop(); if (awarded) completePass(); };
-    const offline = function () { resetFlow(); fallback.hidden = false; stop("인터넷 연결 후 다시 읽어 주세요. 다른 공부는 계속할 수 있어요."); if (awarded) completePass(); };
+    const hide = function () { if (doc.hidden) { if (active) resetFlow(); stop("잠시 멈췄어요. 읽어 보기를 눌러 다시 시작해요."); releasePrimedAudio(); if (awarded) completePass(); } };
+    const leave = function () { if (active) resetFlow(); stop(); releasePrimedAudio(); if (awarded) completePass(); };
+    const offline = function () { resetFlow(); fallback.hidden = false; stop("인터넷 연결 후 다시 읽어 주세요. 다른 공부는 계속할 수 있어요."); releasePrimedAudio(); if (awarded) completePass(); };
     const online = function () { controls(); };
     doc.addEventListener("visibilitychange", hide);
     env.addEventListener("pagehide", leave);
@@ -765,6 +779,7 @@
       destroy: function () {
         disposed = true; stop();
         detachAudio();
+        releasePrimedAudio();
         doc.removeEventListener("visibilitychange", hide);
         env.removeEventListener("pagehide", leave);
         env.removeEventListener("offline", offline);

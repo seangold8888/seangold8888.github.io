@@ -100,11 +100,12 @@ test("retry list follows sentence order, deduplicates, caps three, omits wholeLi
 
 /* 소리는 Web Audio 로만 낸다. iOS Safari 는 <audio> 재생 뒤 음성 인식을 조용히
    멈추는 일이 있어(WebKit 321436), 재생이 끝나면 AudioContext 를 곧바로 닫는다. */
-test("starting the microphone opens no audio resource at all", () => {
+test("the microphone tap primes one silent context without loading or playing a clip", () => {
   const s = setup(), v = s.mount();
   v.mic.fire("click");
   assert.equal(s.audios.length, 0);
-  assert.equal(s.contexts.length, 0);
+  assert.equal(s.contexts.length, 1);
+  assert.equal(s.contexts[0].closed, undefined);
   assert.equal(s.events.filter(e => e === "load").length, 0);
   assert.ok(s.events.includes("start"));
 });
@@ -119,6 +120,7 @@ test("praise waits for stop AND end, then releases the audio device before the n
   const clip = s.audios[0];
   assert.match(clip.src, /assets\/study\/praise\/(?:[a-z]+\.mp3|perfect-v2\.wav)$/);
   assert.equal(clip.playing, true);
+  assert.equal(s.contexts.length, 1, "praise reuses the context unlocked by the microphone tap");
   assert.ok(s.gains.some(g => g.gain.value === 1.28), "praise voice gets a clear volume lift");
   assert.equal(s.events.filter(e => e === "chime").length, 3, "a three-note victory chime starts with the voice");
   assert.ok(s.events.indexOf("stop") < s.events.indexOf("play:" + clip.src));
@@ -146,7 +148,7 @@ test("a stale result from the previous recognizer cannot score, and the next que
   assert.ok(!v.words[2].classList.contains("listening"));
   v.mic.fire("click");
   assert.equal(s.recognizers.length, 2);
-  assert.ok(s.contexts.every(c => c.closed), "no context is left open when the microphone restarts");
+  assert.equal(s.contexts.filter(c => !c.closed).length, 1, "only the new silent primed context remains open");
 });
 
 test("misread words play once each, in order, 400ms apart; interrupting stops the sound before the mic", () => {
@@ -160,7 +162,7 @@ test("misread words play once each, in order, 400ms apart; interrupting stops th
   v.stop.fire("click");
   assert.equal(s.recognizers.length, 2);
   assert.ok(s.events.lastIndexOf("pause") < s.events.lastIndexOf("start"));
-  assert.ok(s.contexts.every(c => c.closed));
+  assert.equal(s.contexts.filter(c => !c.closed).length, 1, "the interrupted sound closes before one fresh silent context is primed");
   s.tick(5000); assert.deepEqual(plays(), ["see.mp3", "a.mp3"]);
 });
 
@@ -306,10 +308,10 @@ test("recognizer alternatives can pass; display uses the first guess; session sh
 
 test("the hub clears stale permanent silence and the worker precaches every clip", () => {
   const sw = require("../../sw.js"), html = fs.readFileSync(path.join(__dirname, "../../index.html"), "utf8");
-  assert.equal(sw.CACHE_VERSION, "v75");
-  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=10"));
+  assert.equal(sw.CACHE_VERSION, "v76");
+  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=11"));
   assert.ok(sw.CORE_SHELL.includes("./assets/study/praise/perfect-v2.wav"));
-  assert.match(html, /english-reading\.js\?v=10/);
+  assert.match(html, /english-reading\.js\?v=11/);
   assert.match(html, /removeItem\('hub2_reading_silent'\)/);
   assert.doesNotMatch(html, /setItem\('hub2_reading_silent'/);
   assert.match(html, /silent: readingSilent/);
