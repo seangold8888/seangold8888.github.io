@@ -4475,6 +4475,28 @@ dialog p:not(.kicker) {
 .story-card.is-collection-compact .hp-gem strong { font-size: 15px; }
 .story-card.is-collection-compact .hp-gem i { font-size: 10px; }
 
+.combat-facts {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  gap: 5px;
+  margin: 6px;
+  padding: 8px;
+  border-radius: 10px;
+  background: #141225;
+  color: #fff5dd;
+}
+.combat-fact { display: grid; gap: 1px; line-height: 1.25; }
+.combat-fact > span { font-size: 12px; color: #c6bfd7; }
+.combat-fact > strong { font-size: 14px; overflow-wrap: anywhere; }
+.combat-power > strong { color: #ffdc80; }
+.combat-weakness > strong { color: #ffbcb2; }
+.combat-trait > strong { color: #aee6ee; }
+.story-card.is-collection-compact .combat-facts { margin: 2px; padding: 5px 6px; gap: 4px; }
+.card-reference { margin-top: 10px; font-size: 14px; }
+.card-reference summary { min-height: 44px; padding: 12px 4px; cursor: pointer; }
+.card-reference p { font-size: 14px; line-height: 1.5; }
+
 .card-stats {
   position: relative;
   z-index: 2;

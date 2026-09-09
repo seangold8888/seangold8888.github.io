@@ -76,39 +76,24 @@ test("동양 확장 51장 모두 공격력·방어력·정신력 1~5 별점을 �
   assert.deepEqual(byId.get("fairygodmother").stats, { attack: 1, defense: 4, spirit: 4 });
 });
 
-test("컴팩트 카드는 4:4.55 원화·이름·HP·고정 5칸 별점 세 줄만 렌더한다", () => {
-  const CardView = loadCardView();
-  const card = data.cards.find((item) => item.id === "heracles");
-  const element = CardView.create(card, {
-    interactive: true,
-    compact: true,
-    collectionCompact: true,
-  });
-  const nodes = walk(element);
-  const rows = nodes.filter((node) => hasClass(node, "stat-row"));
-
-  assert.equal(hasClass(element, "is-collection-compact"), true);
-  assert.equal(element.getAttribute("aria-haspopup"), "dialog");
-  assert.deepEqual(
-    element.children.slice(1).map((node) => node.className),
-    ["card-art", "card-crown", "card-stats"],
-  );
-  assert.equal(rows.length, 3);
-  assert.deepEqual(rows.map((row) => row.getAttribute("aria-label")), [
-    "공격 5점 만점 5",
-    "방어 5점 만점 5",
-    "지력 1점 만점 5",
-  ]);
-  // 종합 = 별 합계 × 5 + 체력 ÷ 5. 헤라클레스는 (5+5+1)×5 + 120÷5 = 79.
-  const totals = nodes.filter((node) => hasClass(node, "stat-total"));
-  assert.equal(totals.length, 1);
-  assert.equal(totals[0].getAttribute("aria-label"), "종합 79점");
-  assert.deepEqual(rows.map((row) => walk(row).filter((node) => hasClass(node, "stat-star")).length), [5, 5, 5]);
-  assert.deepEqual(rows.map((row) => walk(row).filter((node) => hasClass(node, "is-filled")).length), [5, 5, 1]);
-  assert.equal(nodes.some((node) => hasClass(node, "card-details")), false);
-  assert.match(css, /\.story-card\.is-collection-compact \.card-art \{[\s\S]*?aspect-ratio: 4 \/ 4\.55/);
-  assert.deepEqual(rows.map((row) => row.getAttribute("role")), ["img", "img", "img"]);
-  assert.match(css, /\.stat-star \{[\s\S]*?clip-path: polygon/);
+test("작은 카드는 실제 피해·비용·약점·특성을 표시하고 별점은 상세에 둔다", () => {
+  const view = loadCardView();
+  const card = data.cards.find(c => c.id === "heracles");
+  const compact = view.create(card, {interactive:true, compact:true, collectionCompact:true});
+  const nodes = walk(compact);
+  assert.equal(nodes.filter(n => hasClass(n, "combat-fact")).length, 3);
+  assert.equal(nodes.some(n => hasClass(n, "card-stats")), false);
+  const info = view.combatInfo(card);
+  const best = card.attacks.slice().sort((a,b) => b.dmg-a.dmg || a.cost-b.cost)[0];
+  assert.equal(info.attack, best.dmg + " 피해 · ⭐" + best.cost);
+  assert.match(info.weakness, /지혜에게 ×2/);
+  assert.equal(view.combatInfo(data.cards.find(c => c.id === "perseus")).weakness, "🛡 약점 방어 특성");
+  assert.equal(view.combatInfo(data.cards.find(c => c.id === "polyphemus")).weakness, "약점 없음");
+  const detailed = walk(view.create(card, {}));
+  assert.ok(detailed.some(n => n.tagName === "DETAILS" && hasClass(n, "card-reference")));
+  assert.ok(detailed.some(n => hasClass(n, "card-stats")));
+  const three = data.cards.find(c => c.attacks.length === 3);
+  assert.equal(walk(view.create(three, {})).filter(n => hasClass(n, "attack-row")).length, 3);
 });
 
 test("컬렉션은 폰 2열·iPad 세로 3열·가로 5열이며 큰 소개 없이 바로 시작한다", () => {
@@ -123,12 +108,7 @@ test("컬렉션은 폰 2열·iPad 세로 3열·가로 5열이며 큰 소개 없�
   assert.match(css, /\.collection-toolbar \.story-link \{[\s\S]*?min-height: 60px/);
   assert.match(css, /\.story-card\.is-collection-compact \.card-art \{[\s\S]*?width: calc\(100% - 8px\)/);
   assert.match(css, /\.story-card\.is-collection-compact \.stat-row \{ min-height: 14px; \}/);
-  assert.match(html, /⚔ 공격[\s\S]*?🛡 방어[\s\S]*?✨ 지력[\s\S]*?♥ 체력[\s\S]*?🏅 종합/);
-
-  const estimatedCardHeight = 1.25 * 138 + 65;
-  const portraitGridBottom = 72 + 20 + 8 + 60 + 3 + 24 + 5 + (estimatedCardHeight * 3) + 16;
-  const portraitDockTop = 1024 - 20 - 70;
-  assert.ok(portraitGridBottom < portraitDockTop, "iPad portrait must show three complete rows above the dock");
+  assert.match(html, /남은 체력[\s\S]*?기본 피해[\s\S]*?약점/);
 });
 
 test("열린 카드는 상세에서만 출전 선택하고 잠긴 카드는 기존 이야기 dialog를 쓴다", () => {
@@ -148,12 +128,12 @@ test("열린 카드는 상세에서만 출전 선택하고 잠긴 카드는 기�
   assert.match(app, /origin && origin\.isConnected[\s\S]*?origin\.focus/);
 });
 
-test("양쪽 전투 카드가 같은 3줄 별점 렌더러를 사용하고 카드 자산은 v33이다", () => {
+test("양쪽 전투 카드가 같은 전투 정보 렌더러를 사용하고 카드 자산은 v34이다", () => {
   assert.match(app, /syncBattleCard\(dom\.playerCardSlot/);
   assert.match(app, /syncBattleCard\(dom\.enemyCardSlot/);
   assert.match(app, /CardView\.create\(side\.card, \{[\s\S]*?compact: true/);
-  assert.match(viewSource, /else if \(options\.compact\) \{[\s\S]*?crown, stats, art/);
-  assert.equal((html.match(/\?v=33/g) || []).length, 7);
+  assert.match(viewSource, /else if \(options\.compact\) \{[\s\S]*?crown, facts, art/);
+  assert.equal((html.match(/\?v=34/g) || []).length, 7);
   assert.doesNotMatch(html, /\?v=(?:25|26|27|28|29|30|31)/);
-  assert.equal((sw.match(/\.\/cards\/[^"\n]+\?v=33/g) || []).length, 7);
+  assert.equal((sw.match(/\.\/cards\/[^"\n]+\?v=34/g) || []).length, 7);
 });

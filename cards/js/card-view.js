@@ -138,6 +138,51 @@
   }
 
 
+  function combatInfo(card) {
+    const attacks = (card.attacks || []).filter(a => !window.CardEngine ||
+      window.CardEngine.isAttackSupported(a));
+    const best = attacks.slice().sort((a, b) =>
+      (Number(b.dmg) || 0) - (Number(a.dmg) || 0) || a.cost - b.cost)[0];
+    const chart = window.CardEngine ? window.CardEngine.TYPE_CHART :
+      { brave: {weakTo: "wise"}, wise: {weakTo: "magic"}, magic: {weakTo: "brave"}, monster: {weakTo: null} };
+    const weak = Object.prototype.hasOwnProperty.call(card, "weakTo")
+      ? card.weakTo : (chart[card.type] || {}).weakTo;
+    return {
+      attack: best && best.dmg > 0 ? best.dmg + " 피해 · ⭐" + best.cost : "효과 기술",
+      attackNote: best ? best.name + " — 기본 피해이며 약점·특성·누적으로 달라져요." : "기술을 확인해 주세요.",
+      weakness: card.passive && card.passive.fx === "no_weakness"
+        ? "🛡 약점 방어 특성" : weak && TYPE_META[weak]
+          ? TYPE_META[weak].icon + " " + TYPE_META[weak].label + "에게 ×2" : "약점 없음",
+      passive: card.passive ? ({
+        reduce_dmg_10: "피해 −10",
+        reduce_dmg_20_monster: "괴물 피해 −20",
+        first_hit_zero: "첫 공격 막기",
+        revive_half_once: "한 번 부활",
+        coin_evade: "동전 회피",
+        coin_miss: "동전 실패 시 빗나감",
+        no_weakness: "약점 ×2 방어",
+        nullify_passive: "상대 특성 무효",
+        boost_20_below_half: "반피 아래 공격 +20",
+        wish_limit_3: "기술 총 3회 제한"
+      }[card.passive.fx] || card.passive.name) : "특성 없음"
+    };
+  }
+
+  function createCombatInfo(card) {
+    const info = combatInfo(card);
+    const box = el("div", "combat-facts");
+    const attack = el("div", "combat-fact combat-power");
+    attack.append(el("span", "", "큰 기술 · 기본"), el("strong", "", info.attack));
+    attack.setAttribute("title", info.attackNote);
+    const weak = el("div", "combat-fact combat-weakness");
+    weak.append(el("span", "", "받는 피해"), el("strong", "", info.weakness));
+    const passive = el("div", "combat-fact combat-trait");
+    passive.append(el("span", "", "특성"), el("strong", "", info.passive));
+    passive.setAttribute("title", card.passive ? card.passive.desc : "별도 특성이 없어요.");
+    box.append(attack, weak, passive);
+    return box;
+  }
+
   function createArt(card, options) {
     const frame = el("div", "card-art");
     const picture = document.createElement("picture");
@@ -207,11 +252,10 @@
     cardEl.setAttribute(
       "aria-label",
       card.name + ", " + type.label + " 타입, 희귀도 별 " + rarity +
-        "개, 종합 " + totalScore(card) + "점" +
+        "개" +
         ", 체력 " + Math.max(0, currentHp) +
-        ", 공격 " + statValue(card, "attack") + "점" +
-        ", 방어 " + statValue(card, "defense") + "점" +
-        ", 지력 " + statValue(card, "spirit") + "점, " + stateLabel
+        ", " + combatInfo(card).attack + ", " + combatInfo(card).weakness +
+        ", 특성 " + combatInfo(card).passive + ", " + stateLabel
     );
     if (options.interactive) {
       cardEl.tabIndex = 0;
@@ -259,7 +303,7 @@
     hpTrack.appendChild(hpFill);
 
     const details = el("div", "card-details");
-    const stats = createStats(card);
+    const facts = createCombatInfo(card);
     if (card.passive) {
       const passive = el("div", "passive-row");
       const passiveDesc = card.passive.fx === "coin_evade"
@@ -270,7 +314,7 @@
     }
 
     const attacks = el("div", "attack-preview");
-    (card.attacks || []).slice(0, options.compact ? 1 : 2).forEach(function (attack) {
+    (card.attacks || []).forEach(function (attack) {
       const row = el("div", "attack-row");
       const copy = el("span", "attack-copy");
       copy.append(el("strong", "", attack.name), attack.desc ? el("small", "", attack.desc) : document.createTextNode(""));
@@ -280,14 +324,21 @@
       attacks.appendChild(row);
     });
     details.appendChild(attacks);
+    if (!options.compact && !options.collectionCompact) {
+      const reference = el("details", "card-reference");
+      reference.append(el("summary", "", "참고 별점 보기"),
+        el("p", "", "별점과 종합은 참고 평가예요. 실제 피해·방어 수치는 기술과 특성을 보세요."),
+        createStats(card));
+      details.appendChild(reference);
+    }
 
     const art = createArt(card, options);
     if (options.collectionCompact) {
-      cardEl.append(ornament, art, crown, stats);
+      cardEl.append(ornament, art, crown, facts);
     } else if (options.compact) {
-      cardEl.append(ornament, crown, stats, art, hpTrack, meta, details);
+      cardEl.append(ornament, crown, facts, art, hpTrack, meta, details);
     } else {
-      cardEl.append(ornament, crown, art, hpTrack, meta, stats, details);
+      cardEl.append(ornament, crown, art, hpTrack, meta, facts, details);
     }
 
     if (options.interactive && typeof options.onSelect === "function") {
@@ -305,6 +356,7 @@
 
   window.CardView = {
     create: create,
+    combatInfo: combatInfo,
     artPosition: ART_POSITION,
     typeMeta: TYPE_META,
     statMeta: STAT_META
