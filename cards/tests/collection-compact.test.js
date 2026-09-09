@@ -128,14 +128,14 @@ test("열린 카드는 상세에서만 출전 선택하고 잠긴 카드는 기�
   assert.match(app, /origin && origin\.isConnected[\s\S]*?origin\.focus/);
 });
 
-test("양쪽 전투 카드가 같은 전투 정보 렌더러를 사용하고 카드 자산은 v37이다", () => {
+test("양쪽 전투 카드가 같은 전투 정보 렌더러를 사용하고 카드 자산은 v38이다", () => {
   assert.match(app, /syncBattleCard\(dom\.playerCardSlot/);
   assert.match(app, /syncBattleCard\(dom\.enemyCardSlot/);
   assert.match(app, /CardView\.create\(side\.card, \{[\s\S]*?compact: true/);
   assert.match(viewSource, /else if \(options\.compact\) \{[\s\S]*?crown, facts, art/);
-  assert.equal((html.match(/\?v=37/g) || []).length, 7);
+  assert.equal((html.match(/\?v=38/g) || []).length, 7);
   assert.doesNotMatch(html, /\?v=(?:25|26|27|28|29|30|31)/);
-  assert.equal((sw.match(/\.\/cards\/[^"\n]+\?v=37/g) || []).length, 7);
+  assert.equal((sw.match(/\.\/cards\/[^"\n]+\?v=38/g) || []).length, 7);
 });
 
 test("오행 속성이 카드 클래스, 원화 배지와 접근성 이름에 함께 드러난다", () => {
@@ -149,4 +149,10 @@ test("오행 속성이 카드 클래스, 원화 배지와 접근성 이름에 �
   assert.ok(nodes.some(node => hasClass(node, "element-rune") && node.textContent === "🌳 나무"));
   assert.match(css, /\.story-card\.element-wood/);
   assert.match(css, /\.element-rune/);
+  for (const element of ["wood", "fire", "earth", "metal", "water"]) {
+    assert.match(css, new RegExp("\\.story-card\\.element-" + element + "\\s*\\{"));
+  }
+  assert.match(css, /--element-pattern:/);
+  assert.match(css, /\.frame-ornament::before/);
+  assert.match(css, /\.story-card\.element-water \.frame-crest/);
 });

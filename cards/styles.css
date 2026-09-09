@@ -4819,3 +4819,107 @@ dialog p:not(.kicker) {
   .in-battle .action-list { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .in-battle .battle-card-slot { max-height: 490px; align-self: center; }
 }
+
+
+/* v38 — 오행 프리미엄 프레임
+   희귀도 금속은 외곽 트림으로 남기고, 속성은 바탕·재질·광선·보석을 지배한다. */
+.story-card[class*="element-"] {
+  --element-bright: #f4efff;
+  --element-surface: #eee8f4;
+  --element-pattern: linear-gradient(transparent, transparent);
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.76), transparent 34%, rgba(255,255,255,.14) 59%, transparent 77%) padding-box,
+    var(--element-pattern) padding-box,
+    radial-gradient(circle at 84% 11%, var(--element-soft), transparent 34%) padding-box,
+    linear-gradient(148deg, var(--element-bright) 0%, var(--element-surface) 59%, color-mix(in srgb, var(--element-surface) 70%, var(--element-dark)) 100%) padding-box,
+    linear-gradient(138deg, #0c142a 0 5%, var(--element) 15%, var(--frame-metal) 29%, var(--element-dark) 49%, var(--frame-shadow) 66%, var(--frame-metal) 78%, var(--element) 90%, #0b1328 100%) border-box;
+}
+
+.story-card.element-wood {
+  --element: #61df91; --element-bright: #ecffe9; --element-dark: #0c4a2a;
+  --element-surface: #b9e5c2; --element-soft: rgba(38,202,104,.3);
+  --element-pattern: repeating-radial-gradient(ellipse at 4% 50%, transparent 0 15px, rgba(28,110,62,.1) 16px 17px, transparent 18px 31px);
+}
+.story-card.element-fire {
+  --element: #ff714f; --element-bright: #fff0d3; --element-dark: #741c17;
+  --element-surface: #efb08e; --element-soft: rgba(255,77,43,.32);
+  --element-pattern: repeating-conic-gradient(from 202deg at 84% 112%, rgba(255,76,33,.09) 0deg 7deg, transparent 8deg 22deg);
+}
+.story-card.element-earth {
+  --element: #e7b959; --element-bright: #fff7d9; --element-dark: #614015;
+  --element-surface: #d9bf86; --element-soft: rgba(202,145,46,.3);
+  --element-pattern: repeating-linear-gradient(138deg, transparent 0 22px, rgba(105,70,20,.08) 23px 25px, transparent 26px 45px);
+}
+.story-card.element-metal {
+  --element: #dff5ff; --element-bright: #fbfdff; --element-dark: #354b59;
+  --element-surface: #bdccd5; --element-soft: rgba(174,222,247,.31);
+  --element-pattern: repeating-linear-gradient(112deg, transparent 0 14px, rgba(255,255,255,.23) 15px 16px, rgba(53,75,89,.08) 17px 19px, transparent 20px 36px);
+}
+.story-card.element-water {
+  --element: #53c8ff; --element-bright: #e9fbff; --element-dark: #0a4b72;
+  --element-surface: #9dd9ea; --element-soft: rgba(30,170,239,.32);
+  --element-pattern: repeating-radial-gradient(ellipse at 50% 116%, transparent 0 18px, rgba(15,105,159,.1) 19px 21px, transparent 22px 38px);
+}
+
+.story-card[class*="element-"][role="button"]:hover,
+.story-card[class*="element-"][role="button"]:focus-visible {
+  box-shadow:
+    0 13px 0 #0a1022,
+    0 31px 62px rgba(0,0,0,.5),
+    0 0 38px color-mix(in srgb, var(--element) 48%, transparent),
+    inset 0 0 0 3px var(--frame-night),
+    inset 0 0 0 5px var(--frame-metal);
+}
+
+.story-card[class*="element-"] .card-art {
+  box-shadow:
+    0 0 0 2px var(--frame-metal),
+    0 6px 0 #0c1328,
+    inset 0 0 0 2px rgba(255,255,255,.2),
+    0 0 25px var(--element-soft);
+}
+.story-card[class*="element-"] .art-glow {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.22), transparent 24%),
+    radial-gradient(circle at 50% 90%, color-mix(in srgb, var(--element) 46%, transparent), transparent 52%);
+}
+.story-card[class*="element-"] .element-rune {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--element-dark) 94%, #090d19), color-mix(in srgb, var(--element) 50%, var(--element-dark)));
+  box-shadow: 0 3px 10px rgba(0,0,0,.42), inset 0 1px rgba(255,255,255,.3), 0 0 14px var(--element-soft);
+}
+
+.story-card[class*="element-"] .frame-ornament::before,
+.story-card[class*="element-"] .frame-ornament::after {
+  content: "";
+  position: absolute;
+  top: 19%;
+  bottom: 17%;
+  width: 4px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, transparent, var(--element-bright) 16%, var(--element) 48%, var(--element-dark) 84%, transparent);
+  box-shadow: 0 0 10px var(--element-soft), inset 0 0 1px #fff;
+  opacity: .78;
+}
+.story-card[class*="element-"] .frame-ornament::before { left: 8px; }
+.story-card[class*="element-"] .frame-ornament::after { right: 8px; }
+
+.story-card.element-wood .frame-crest { border-radius: 58% 28% 58% 28%; }
+.story-card.element-fire .frame-crest { border-radius: 58% 58% 48% 18%; }
+.story-card.element-earth .frame-crest { clip-path: polygon(25% 5%,75% 5%,100% 50%,75% 95%,25% 95%,0 50%); border-radius: 0; }
+.story-card.element-metal .frame-crest { clip-path: polygon(29% 0,71% 0,100% 29%,100% 71%,71% 100%,29% 100%,0 71%,0 29%); border-radius: 0; }
+.story-card.element-water .frame-crest { border-radius: 52% 48% 60% 40%; }
+
+.story-card[class*="element-"] .combat-facts {
+  box-shadow: inset 3px 0 var(--element), inset 0 1px rgba(255,255,255,.08), 0 4px 10px rgba(0,0,0,.16);
+}
+
+.story-card.is-collection-compact .frame-ornament::before,
+.story-card.is-collection-compact .frame-ornament::after {
+  top: 22%; bottom: 20%; width: 2px; opacity: .7;
+}
+.story-card.is-collection-compact .frame-ornament::before { left: 4px; }
+.story-card.is-collection-compact .frame-ornament::after { right: 4px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .story-card[class*="element-"] { background-attachment: scroll; }
+}

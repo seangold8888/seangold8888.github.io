@@ -171,9 +171,9 @@ test("손패 UI와 캐시 버전 37가 함께 배포되도록 묶여 있다", ()
   ["fragmentTray", "fragmentHand", "fragmentPreview"].forEach((id) => {
     assert.match(html, new RegExp('id="' + id + '"'));
   });
-  assert.match(html, /styles\.css\?v=37/);
+  assert.match(html, /styles\.css\?v=38/);
   ["engine", "audio", "card-view", "vfx-recipes", "story-gates", "app"].forEach((file) => {
-    assert.match(html, new RegExp("js/" + file + "\\.js\\?v=37"));
+    assert.match(html, new RegExp("js/" + file + "\\.js\\?v=38"));
   });
   assert.doesNotMatch(html, /\?v=(?:19|20|21|22|23|24|25|26|27|28|29|30|31)/);
 
