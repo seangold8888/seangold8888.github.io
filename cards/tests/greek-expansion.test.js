@@ -8,6 +8,16 @@ const crypto = require("node:crypto");
 const Engine = require("../js/engine.js");
 const root = path.join(__dirname, "..");
 const data = JSON.parse(fs.readFileSync(path.join(root, "cards.json"), "utf8"));
+// Compare historical content excluding only the approved five-element migration.
+// HP, skills, art and all other fields must retain their original fingerprints.
+function legacyJson(cards) {
+  return JSON.stringify(cards.map(card => {
+    const copy = structuredClone(card);
+    delete copy.element;
+    if (copy.id === "perseus") copy.passive.desc = "약점 ×2를 받지 않는다";
+    return copy;
+  }));
+}
 const g1Ids = ["zeus", "poseidon", "hades", "apollo"];
 const g2Ids = ["minotaur", "cerberus", "hydra", "sphinx"];
 const g3Ids = ["achilles", "theseus", "artemis", "atalanta"];
@@ -39,8 +49,8 @@ test("G1 stays byte-for-byte stable after G4 except the deliberate Sun Wukong C1
   assert.deepEqual(g1Collection.slice(-4), g1Ids);
   const old = g1Data.filter(card => !g1Ids.includes(card.id) && card.id !== "sunwukong");
   assert.equal(old.length, 23);
-  assert.equal(crypto.createHash("sha256").update(JSON.stringify(old)).digest("hex"), "10d1479e7ef883a1afa2d22799a52df49389ddc2b6be439f9a5b78963e9516e2");
-  assert.equal(crypto.createHash("sha256").update(JSON.stringify(g1Data)).digest("hex"), "4c944235850c0a3bc5a27a6d215bba394c65f5bc3b42966ac984002eb4dad7f6");
+  assert.equal(crypto.createHash("sha256").update(legacyJson(old)).digest("hex"), "10d1479e7ef883a1afa2d22799a52df49389ddc2b6be439f9a5b78963e9516e2");
+  assert.equal(crypto.createHash("sha256").update(legacyJson(g1Data)).digest("hex"), "4c944235850c0a3bc5a27a6d215bba394c65f5bc3b42966ac984002eb4dad7f6");
   assert.deepEqual(g1Data.reduce((counts, card) => { counts[card.type] = (counts[card.type] || 0) + 1; return counts; }, {}), {brave: 6, wise: 6, magic: 10, monster: 6});
   for (const id of g1Ids) {
     const card = get(id);
@@ -68,7 +78,7 @@ test("G2 adds exactly four playable monster cards and preserves the C1-adjusted 
   assert.equal(new Set(g2Collection).size, 32);
   assert.deepEqual(g2Collection.slice(-4), g2Ids);
   const earlier = g2Data.filter(card => !g2Ids.includes(card.id));
-  assert.equal(crypto.createHash("sha256").update(JSON.stringify(earlier)).digest("hex"), "4c944235850c0a3bc5a27a6d215bba394c65f5bc3b42966ac984002eb4dad7f6");
+  assert.equal(crypto.createHash("sha256").update(legacyJson(earlier)).digest("hex"), "4c944235850c0a3bc5a27a6d215bba394c65f5bc3b42966ac984002eb4dad7f6");
   assert.deepEqual(g2Data.reduce((counts, card) => { counts[card.type] = (counts[card.type] || 0) + 1; return counts; }, {}), {brave: 6, wise: 6, magic: 10, monster: 10});
   const utilities = new Set(["heal_40", "weaken_next_20", "skip_next_enemy", "steal_star_1", "gain_star_1", "dmg_half_enemy_hp", "dmg_stack_10"]);
   for (const id of g2Ids) {
@@ -96,7 +106,7 @@ test("G3 and G4 keep their first 40 cards byte-stable and balanced after the Eas
   assert.equal(data.collection.length, 51);
   assert.equal(new Set(data.collection).size, 51);
   assert.deepEqual(data.collection.slice(32, 40), laterIds);
-  assert.equal(crypto.createHash("sha256").update(JSON.stringify(data.cards.slice(0, 32))).digest("hex"), "ed7995ce57070e0fb646002d8a29f74a14ca3b6c08e5255b7b4d83ba889ff8c9");
+  assert.equal(crypto.createHash("sha256").update(legacyJson(data.cards.slice(0, 32))).digest("hex"), "ed7995ce57070e0fb646002d8a29f74a14ca3b6c08e5255b7b4d83ba889ff8c9");
   assert.equal(crypto.createHash("sha256").update(JSON.stringify(data.collection.slice(0, 32))).digest("hex"), "708ddca5dc2c6c7819274763b496bdc8c23960d856b3fbf1e6050169aa5182c6");
   assert.deepEqual(data.cards.slice(0, 40).reduce((counts, card) => { counts[card.type] = (counts[card.type] || 0) + 1; return counts; }, {}), {brave: 10, wise: 10, magic: 10, monster: 10});
   const utilities = new Set(["heal_40", "weaken_next_20", "skip_next_enemy", "steal_star_1", "gain_star_1", "dmg_half_enemy_hp", "dmg_stack_10"]);

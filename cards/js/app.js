@@ -459,7 +459,7 @@
         "-" + visual.damage
       );
       if (visual.weakness) {
-        damagePop.appendChild(createFxPart("damage-multiplier", "×2"));
+        damagePop.appendChild(createFxPart("damage-multiplier", "상성 +10"));
       }
       layer.appendChild(damagePop);
     }
@@ -2106,12 +2106,13 @@
   }
 
   function updateWeaknessHint(player, enemy) {
-    const chart = window.CardEngine.TYPE_CHART[enemy.type];
-    if (chart && chart.weakTo === player.type) {
-      dom.weaknessHint.textContent = "약점 발견! 공격 데미지 ×2";
+    const chart = window.CardEngine.ELEMENT_CHART[enemy.element];
+    const blocked = enemy.passive?.fx === "no_weakness" && player.passive?.fx !== "nullify_passive";
+    if (chart && chart.weakTo === player.element && !blocked) {
+      dom.weaknessHint.textContent = "오행 상성! 공격 피해 +10";
       dom.weaknessHint.style.color = "#ffe982";
     } else {
-      dom.weaknessHint.textContent = "타입 약점을 노리면 ×2!";
+      dom.weaknessHint.textContent = "유리한 오행 속성은 피해 +10!";
       dom.weaknessHint.style.color = "";
     }
   }
@@ -2410,7 +2411,7 @@
       hit: damage.amount > 0 ? damage.target : null
     };
     if (damage) return {
-      effect: damage.weakness ? "×2!" : "-" + damage.amount,
+      effect: damage.weakness ? "상성 +10!" : "-" + damage.amount,
       message: damage.weakness ? "약점을 정확히 맞혔어요!" : (damage.attack + " 공격!"),
       sound: damage.amount > 0 ? "hit" : "magic",
       hit: damage.amount > 0 ? damage.target : null

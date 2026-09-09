@@ -13,6 +13,7 @@ function card(overrides = {}) {
     id: overrides.id || "card-" + Math.random(),
     name: overrides.name || "시험 카드",
     type: overrides.type || "monster",
+    element: overrides.element || null,
     hp: overrides.hp || 100,
     passive: Object.prototype.hasOwnProperty.call(overrides, "passive")
       ? overrides.passive
@@ -114,21 +115,21 @@ test("쉬기는 별을 보존하고 양쪽 별사탕은 각 턴 시작에 최대
   assert.ok(state.events.some((event) => event.type === "turn_start"));
 });
 
-test("공격 비용을 지불하고 확정 상성에 따라 약점 데미지를 두 배 적용한다", () => {
+test("공격 비용을 지불하고 확정 상성에 따라 오행 추가 피해 10을 적용한다", () => {
   const magic = card({
     id: "magic",
-    type: "magic",
+    type: "magic", element: "wood",
     attacks: [{ name: "마법", cost: 1, dmg: 20, fx: null }],
   });
-  const wise = card({ id: "wise", type: "wise", hp: 100 });
+  const wise = card({ id: "wise", type: "wise", element: "earth", hp: 100 });
   const original = Engine.createGame(magic, wise);
   const state = take(original, { type: "attack", attackIndex: 0 });
 
   assert.equal(original.sides.enemy.hp, 100, "입력 상태는 변경하지 않는다");
   assert.equal(state.sides.player.stars, 0);
-  assert.equal(state.sides.enemy.hp, 60);
+  assert.equal(state.sides.enemy.hp, 70);
   const hit = state.events.find((event) => event.type === "damage");
-  assert.equal(hit.amount, 40);
+  assert.equal(hit.amount, 30);
   assert.equal(hit.weakness, true);
 });
 
@@ -533,7 +534,7 @@ test("페르세우스 설명과 실제 v1 대전 상대 풀이 레어도 ±1 계
   );
   const perseus = data.cards.find((entry) => entry.id === "perseus");
 
-  assert.equal(perseus.passive.desc, "약점 ×2를 받지 않는다");
+  assert.equal(perseus.passive.desc, "오행 상성 추가 피해 +10을 받지 않는다");
 
   const featuredCards = data.collection
     .map((id) => data.cards.find((entry) => entry.id === id))
@@ -672,13 +673,13 @@ test("guard_zero는 다음 실제 공격 피해만 한 번 0으로 막는다", (
   assert.equal(state.sides.player.hp, 60, "막기는 첫 유효 공격 뒤 소비되어야 한다");
 });
 
-test("boost_damage는 기본 데미지에 더한 뒤 약점 배율을 적용하고 한 번만 지속한다", () => {
+test("boost_damage는 기본 데미지에 더한 뒤 상성 +10을 적용하고 한 번만 지속한다", () => {
   const magic = card({
     id: "boost-magic",
-    type: "magic",
+    type: "magic", element: "wood",
     attacks: [{ name: "작은 마법", cost: 1, dmg: 10, fx: null }],
   });
-  const wise = card({ id: "boost-wise", type: "wise", hp: 100 });
+  const wise = card({ id: "boost-wise", type: "wise", element: "earth", hp: 100 });
   let state = gameWithFragments(magic, wise, [
     fragment("pumpkin", "boost_damage", 20),
   ]);
@@ -686,7 +687,7 @@ test("boost_damage는 기본 데미지에 더한 뒤 약점 배율을 적용하�
   state = take(state, { type: "fragment", fragmentIndex: 0 });
   state = take(state, { type: "attack", attackIndex: 0 });
   let hit = state.events.find((event) => event.type === "damage");
-  assert.equal(hit.amount, 60, "(기본 10 + 조각 20) × 약점 2 순서여야 한다");
+  assert.equal(hit.amount, 40, "기본 10 + 조각 20 + 상성 10 순서여야 한다");
   assert.equal(hit.weakness, true);
 
   state = take(state, { type: "rest" });
@@ -700,12 +701,12 @@ test("reduce_next_damage는 타입과 무관하게 약점 계산 뒤 설정된 2
     await t.test(amount + " 감소", () => {
       const defender = card({
         id: "defender-" + amount,
-        type: "wise",
+        type: "wise", element: "earth",
         attacks: [{ name: "준비", cost: 1, dmg: 0, fx: null }],
       });
       const attacker = card({
         id: "attacker-" + amount,
-        type: "magic",
+        type: "magic", element: "wood",
         attacks: [{ name: "약점 공격", cost: 1, dmg: 40, fx: null }],
       });
       let state = gameWithFragments(defender, attacker, [
@@ -718,8 +719,8 @@ test("reduce_next_damage는 타입과 무관하게 약점 계산 뒤 설정된 2
       const hit = state.events.find((event) => event.type === "damage");
 
       assert.equal(hit.weakness, true);
-      assert.equal(hit.amount, 80 - amount);
-      assert.equal(state.sides.player.hp, 20 + amount);
+      assert.equal(hit.amount, 50 - amount);
+      assert.equal(state.sides.player.hp, 50 + amount);
     });
   }
 });

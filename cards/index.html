@@ -17,7 +17,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   <link rel="icon" href="../icon.png">
   <link rel="apple-touch-icon" href="../icon.png">
   <link rel="manifest" href="../manifest.json">
-<link rel="stylesheet" href="styles.css?v=35">
+<link rel="stylesheet" href="styles.css?v=36">
 </head>
 <body>
   <div class="sky" aria-hidden="true">
@@ -55,7 +55,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 
       <div class="collection-guide">
         <h2>카드를 탭해 능력을 보고 출전 영웅을 골라요</h2>
-        <p aria-label="전투 정보 읽는 법"><span>♥ 남은 체력</span><span>⚔ 기본 피해 · ⭐ 비용</span><span>받는 피해 ×2 = 약점</span></p>
+        <p aria-label="전투 정보 읽는 법"><span>♥ 남은 체력</span><span>⚔ 기본 피해 · ⭐ 비용</span><span>약점 속성에게 받는 피해 +10</span></p>
       </div>
 
       <div class="card-gallery" id="collectionGrid" role="list" aria-label="카드 컬렉션"></div>
@@ -129,7 +129,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         </div>
         <div class="action-title">
           <span id="actionHeading">어떤 행동을 할까요?</span>
-          <small id="weaknessHint">타입 약점을 노리면 ×2!</small>
+          <small id="weaknessHint">유리한 오행 속성은 피해 +10!</small>
         </div>
         <div class="action-list" id="actionList" role="group" aria-labelledby="actionHeading"></div>
       </div>
@@ -190,12 +190,12 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   </dialog>
 
   <noscript>이야기 카드 배틀을 하려면 JavaScript를 켜 주세요.</noscript>
-<script src="js/engine.js?v=35" defer></script>
-<script src="js/audio.js?v=35" defer></script>
-<script src="js/card-view.js?v=35" defer></script>
-<script src="js/vfx-recipes.js?v=35" defer></script>
-<script src="js/story-gates.js?v=35" defer></script>
-<script src="js/app.js?v=35" defer></script>
+<script src="js/engine.js?v=36" defer></script>
+<script src="js/audio.js?v=36" defer></script>
+<script src="js/card-view.js?v=36" defer></script>
+<script src="js/vfx-recipes.js?v=36" defer></script>
+<script src="js/story-gates.js?v=36" defer></script>
+<script src="js/app.js?v=36" defer></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {

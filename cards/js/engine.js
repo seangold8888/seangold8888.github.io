@@ -21,13 +21,13 @@
   var ULTIMATE_COST = 3;
   var ULTIMATE_DAMAGE = 50;
 
-  // 사용자 확정 상성: 용기 > 마법 > 지혜 > 용기.
-  // 즉, 각 타입은 weakTo에 적힌 타입의 공격을 받으면 데미지가 두 배다.
-  var TYPE_CHART = Object.freeze({
-    brave: Object.freeze({ weakTo: "wise" }),
-    wise: Object.freeze({ weakTo: "magic" }),
-    magic: Object.freeze({ weakTo: "brave" }),
-    monster: Object.freeze({ weakTo: null }),
+  // 오행 상극은 +10. 기존 type은 캐릭터 분류와 연출에만 사용한다.
+  var ELEMENT_CHART = Object.freeze({
+    wood: Object.freeze({label: "나무", icon: "🌳", weakTo: "metal"}),
+    fire: Object.freeze({label: "불", icon: "🔥", weakTo: "water"}),
+    earth: Object.freeze({label: "땅", icon: "🪨", weakTo: "wood"}),
+    metal: Object.freeze({label: "금속", icon: "⚙️", weakTo: "fire"}),
+    water: Object.freeze({label: "물", icon: "💧", weakTo: "earth"}),
   });
 
   var DRAWBACK_PASSIVES = Object.freeze({
@@ -575,11 +575,8 @@
     var defender = sideOf(state, defenderActor);
     if (isPassiveActive(state, defenderActor, "no_weakness")) return false;
 
-    var chart = TYPE_CHART[defender.card.type] || { weakTo: null };
-    var weakTo = Object.prototype.hasOwnProperty.call(defender.card, "weakTo")
-      ? defender.card.weakTo
-      : chart.weakTo;
-    return Boolean(weakTo && weakTo === attacker.card.type);
+    var chart = ELEMENT_CHART[defender.card.element];
+    return Boolean(chart && chart.weakTo === attacker.card.element);
   }
 
   function calculateDamage(
@@ -635,7 +632,7 @@
 
     var weakness = !neutralDamage && damage > 0 &&
       hasWeakness(state, attackerActor, defenderActor);
-    if (weakness) damage *= 2;
+    if (weakness) damage += 10;
 
     var reducedBy = 0;
     if (damage > 0 && isPassiveActive(state, defenderActor, "reduce_dmg_10")) {
@@ -1719,7 +1716,8 @@
     GUARD_MIN_DAMAGE: GUARD_MIN_DAMAGE,
     ULTIMATE_COST: ULTIMATE_COST,
     ULTIMATE_DAMAGE: ULTIMATE_DAMAGE,
-    TYPE_CHART: TYPE_CHART,
+    ELEMENT_CHART: ELEMENT_CHART,
+    hasWeakness: hasWeakness,
     SUPPORTED_FRAGMENT_EFFECTS: SUPPORTED_FRAGMENT_EFFECTS,
     createGame: createGame,
     beginTurn: beginTurn,

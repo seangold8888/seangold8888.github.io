@@ -188,6 +188,7 @@
   "cards": [
     {
       "id": "heracles",
+      "element": "fire",
       "name": "헤라클레스",
       "emoji": "💪",
       "type": "brave",
@@ -234,6 +235,7 @@
     },
     {
       "id": "honggildong",
+      "element": "water",
       "name": "홍길동",
       "emoji": "🏹",
       "type": "brave",
@@ -279,6 +281,7 @@
     },
     {
       "id": "perseus",
+      "element": "metal",
       "name": "페르세우스",
       "emoji": "🛡️",
       "type": "brave",
@@ -287,7 +290,7 @@
       "hp": 70,
       "passive": {
         "name": "거울 방패",
-        "desc": "약점 ×2를 받지 않는다",
+        "desc": "오행 상성 추가 피해 +10을 받지 않는다",
         "fx": "no_weakness"
       },
       "attacks": [
@@ -325,6 +328,7 @@
     },
     {
       "id": "jack",
+      "element": "wood",
       "name": "콩나무 잭",
       "emoji": "🫘",
       "type": "brave",
@@ -366,6 +370,7 @@
     },
     {
       "id": "threepigs",
+      "element": "earth",
       "name": "아기돼지 삼형제",
       "emoji": "🐷",
       "type": "brave",
@@ -411,6 +416,7 @@
     },
     {
       "id": "arthur",
+      "element": "metal",
       "name": "아서왕",
       "emoji": "🗡️",
       "type": "brave",
@@ -457,6 +463,7 @@
     },
     {
       "id": "odysseus",
+      "element": "water",
       "name": "오디세우스",
       "emoji": "⛵",
       "type": "wise",
@@ -503,6 +510,7 @@
     },
     {
       "id": "cinderella",
+      "element": "water",
       "name": "신데렐라",
       "emoji": "👠",
       "type": "wise",
@@ -548,6 +556,7 @@
     },
     {
       "id": "tortoisehare",
+      "element": "earth",
       "name": "토끼와 거북",
       "emoji": "🐢",
       "type": "wise",
@@ -594,6 +603,7 @@
     },
     {
       "id": "redhood",
+      "element": "wood",
       "name": "빨간 모자",
       "emoji": "🧢",
       "type": "wise",
@@ -640,6 +650,7 @@
     },
     {
       "id": "bremen",
+      "element": "wood",
       "name": "브레멘 음악대",
       "emoji": "🎺",
       "type": "wise",
@@ -682,6 +693,7 @@
     },
     {
       "id": "pinocchio",
+      "element": "wood",
       "name": "피노키오",
       "emoji": "🤥",
       "type": "wise",
@@ -723,6 +735,7 @@
     },
     {
       "id": "sunwukong",
+      "element": "fire",
       "name": "손오공",
       "emoji": "🐒",
       "type": "magic",
@@ -780,6 +793,7 @@
     },
     {
       "id": "fairygodmother",
+      "element": "wood",
       "name": "요정 대모",
       "emoji": "🧚",
       "type": "magic",
@@ -833,6 +847,7 @@
     },
     {
       "id": "genie",
+      "element": "water",
       "name": "램프의 요정",
       "emoji": "🪔",
       "type": "magic",
@@ -879,6 +894,7 @@
     },
     {
       "id": "snowqueen",
+      "element": "water",
       "name": "눈의 여왕",
       "emoji": "❄️",
       "type": "magic",
@@ -932,6 +948,7 @@
     },
     {
       "id": "witch",
+      "element": "fire",
       "name": "과자집 마녀",
       "emoji": "🍭",
       "type": "magic",
@@ -973,6 +990,7 @@
     },
     {
       "id": "mermaid",
+      "element": "water",
       "name": "인어공주",
       "emoji": "🧜‍♀️",
       "type": "magic",
@@ -1014,6 +1032,7 @@
     },
     {
       "id": "polyphemus",
+      "element": "earth",
       "name": "폴리페모스",
       "emoji": "👁️",
       "type": "monster",
@@ -1060,6 +1079,7 @@
     },
     {
       "id": "wolf",
+      "element": "metal",
       "name": "커다란 늑대",
       "emoji": "🐺",
       "type": "monster",
@@ -1105,6 +1125,7 @@
     },
     {
       "id": "beanstalkgiant",
+      "element": "earth",
       "name": "콩나무 거인",
       "emoji": "🏔️",
       "type": "monster",
@@ -1147,6 +1168,7 @@
     },
     {
       "id": "medusa",
+      "element": "earth",
       "name": "메두사",
       "emoji": "🐍",
       "type": "monster",
@@ -1189,6 +1211,7 @@
     },
     {
       "id": "midas",
+      "element": "metal",
       "name": "미다스 왕",
       "emoji": "👑",
       "type": "monster",
@@ -1234,6 +1257,7 @@
     },
     {
       "id": "tiger",
+      "element": "earth",
       "name": "호랑이",
       "emoji": "🐯",
       "type": "monster",
@@ -1276,6 +1300,7 @@
     },
     {
       "id": "zeus",
+      "element": "fire",
       "name": "제우스",
       "emoji": "⚡",
       "type": "magic",
@@ -1326,6 +1351,7 @@
     },
     {
       "id": "poseidon",
+      "element": "water",
       "name": "포세이돈",
       "emoji": "🔱",
       "type": "magic",
@@ -1372,6 +1398,7 @@
     },
     {
       "id": "hades",
+      "element": "earth",
       "name": "하데스",
       "emoji": "🌒",
       "type": "magic",
@@ -1422,6 +1449,7 @@
     },
     {
       "id": "apollo",
+      "element": "fire",
       "name": "아폴론",
       "emoji": "☀️",
       "type": "magic",
@@ -1474,6 +1502,7 @@
     },
     {
       "id": "minotaur",
+      "element": "earth",
       "name": "미노타우로스",
       "emoji": "🐂",
       "type": "monster",
@@ -1524,6 +1553,7 @@
     },
     {
       "id": "cerberus",
+      "element": "fire",
       "name": "케르베로스",
       "emoji": "🐕",
       "type": "monster",
@@ -1570,6 +1600,7 @@
     },
     {
       "id": "hydra",
+      "element": "water",
       "name": "히드라",
       "emoji": "🐍",
       "type": "monster",
@@ -1615,6 +1646,7 @@
     },
     {
       "id": "sphinx",
+      "element": "earth",
       "name": "스핑크스",
       "emoji": "🪽",
       "type": "monster",
@@ -1672,6 +1704,7 @@
     },
     {
       "id": "achilles",
+      "element": "metal",
       "name": "아킬레우스",
       "emoji": "🛡️",
       "type": "brave",
@@ -1723,6 +1756,7 @@
     },
     {
       "id": "theseus",
+      "element": "metal",
       "name": "테세우스",
       "emoji": "🧵",
       "type": "brave",
@@ -1780,6 +1814,7 @@
     },
     {
       "id": "artemis",
+      "element": "wood",
       "name": "아르테미스",
       "emoji": "🏹",
       "type": "brave",
@@ -1837,6 +1872,7 @@
     },
     {
       "id": "atalanta",
+      "element": "wood",
       "name": "아탈란테",
       "emoji": "🍎",
       "type": "brave",
@@ -1886,6 +1922,7 @@
     },
     {
       "id": "athena",
+      "element": "metal",
       "name": "아테나",
       "emoji": "🦉",
       "type": "wise",
@@ -1943,6 +1980,7 @@
     },
     {
       "id": "hermes",
+      "element": "wood",
       "name": "헤르메스",
       "emoji": "🪽",
       "type": "wise",
@@ -1995,6 +2033,7 @@
     },
     {
       "id": "orpheus",
+      "element": "wood",
       "name": "오르페우스",
       "emoji": "🎵",
       "type": "wise",
@@ -2041,6 +2080,7 @@
     },
     {
       "id": "prometheus",
+      "element": "fire",
       "name": "프로메테우스",
       "emoji": "🔥",
       "type": "wise",
@@ -2102,6 +2142,7 @@
     },
     {
       "id": "guanyu",
+      "element": "metal",
       "name": "관우",
       "emoji": "🗡️",
       "type": "brave",
@@ -2137,6 +2178,7 @@
     },
     {
       "id": "zhangfei",
+      "element": "fire",
       "name": "장비",
       "emoji": "📣",
       "type": "brave",
@@ -2172,6 +2214,7 @@
     },
     {
       "id": "zhaoyun",
+      "element": "water",
       "name": "조운",
       "emoji": "🐎",
       "type": "brave",
@@ -2207,6 +2250,7 @@
     },
     {
       "id": "zhugeliang",
+      "element": "wood",
       "name": "제갈량",
       "emoji": "🪶",
       "type": "wise",
@@ -2242,6 +2286,7 @@
     },
     {
       "id": "caocao",
+      "element": "metal",
       "name": "조조",
       "emoji": "♟️",
       "type": "wise",
@@ -2277,6 +2322,7 @@
     },
     {
       "id": "simayi",
+      "element": "water",
       "name": "사마의",
       "emoji": "🪭",
       "type": "wise",
@@ -2320,6 +2366,7 @@
     },
     {
       "id": "nezha",
+      "element": "fire",
       "name": "나타",
       "emoji": "⭕",
       "type": "magic",
@@ -2355,6 +2402,7 @@
     },
     {
       "id": "erlangshen",
+      "element": "metal",
       "name": "이랑진군",
       "emoji": "👁️",
       "type": "magic",
@@ -2398,6 +2446,7 @@
     },
     {
       "id": "wumawang",
+      "element": "earth",
       "name": "우마왕",
       "emoji": "🐂",
       "type": "monster",
@@ -2433,6 +2482,7 @@
     },
     {
       "id": "honghaier",
+      "element": "fire",
       "name": "홍해아",
       "emoji": "🔥",
       "type": "monster",
@@ -2468,6 +2518,7 @@
     },
     {
       "id": "baigujing",
+      "element": "water",
       "name": "백골정",
       "emoji": "🌫️",
       "type": "monster",

@@ -143,16 +143,16 @@
       window.CardEngine.isAttackSupported(a));
     const best = attacks.slice().sort((a, b) =>
       (Number(b.dmg) || 0) - (Number(a.dmg) || 0) || a.cost - b.cost)[0];
-    const chart = window.CardEngine ? window.CardEngine.TYPE_CHART :
-      { brave: {weakTo: "wise"}, wise: {weakTo: "magic"}, magic: {weakTo: "brave"}, monster: {weakTo: null} };
-    const weak = Object.prototype.hasOwnProperty.call(card, "weakTo")
-      ? card.weakTo : (chart[card.type] || {}).weakTo;
+    const chart = window.CardEngine ? window.CardEngine.ELEMENT_CHART : {};
+    const element = chart[card.element];
+    const weak = element && element.weakTo;
     return {
+      element: element ? element.icon + " " + element.label : "속성 없음",
       attack: best && best.dmg > 0 ? best.dmg + " 피해 · ⭐" + best.cost : "효과 기술",
       attackNote: best ? best.name + " — 기본 피해이며 약점·특성·누적으로 달라져요." : "기술을 확인해 주세요.",
       weakness: card.passive && card.passive.fx === "no_weakness"
-        ? "🛡 약점 방어 특성" : weak && TYPE_META[weak]
-          ? TYPE_META[weak].icon + " " + TYPE_META[weak].label + "에게 ×2" : "약점 없음",
+        ? "🛡 상성 방어" : weak && chart[weak]
+          ? chart[weak].icon + " " + chart[weak].label + "에게 +10" : "약점 없음",
       passive: card.passive ? ({
         reduce_dmg_10: "피해 −10",
         reduce_dmg_20_monster: "괴물 피해 −20",
@@ -160,7 +160,7 @@
         revive_half_once: "한 번 부활",
         coin_evade: "동전 회피",
         coin_miss: "동전 실패 시 빗나감",
-        no_weakness: "약점 ×2 방어",
+        no_weakness: "상성 +10 방어",
         nullify_passive: "상대 특성 무효",
         boost_20_below_half: "반피 아래 공격 +20",
         wish_limit_3: "기술 총 3회 제한"
@@ -172,10 +172,10 @@
     const info = combatInfo(card);
     const box = el("div", "combat-facts");
     const attack = el("div", "combat-fact combat-power");
-    attack.append(el("span", "", "큰 기술 · 기본"), el("strong", "", info.attack));
+    attack.append(el("span", "", info.element), el("strong", "", info.attack));
     attack.setAttribute("title", info.attackNote);
     const weak = el("div", "combat-fact combat-weakness");
-    weak.append(el("span", "", "받는 피해"), el("strong", "", info.weakness));
+    weak.append(el("span", "", "약점 피해"), el("strong", "", info.weakness));
     const passive = el("div", "combat-fact combat-trait");
     passive.append(el("span", "", "특성"), el("strong", "", info.passive));
     passive.setAttribute("title", card.passive ? card.passive.desc : "별도 특성이 없어요.");
@@ -275,7 +275,7 @@
 
     const crown = el("div", "card-crown");
     const ornament = el("div", "frame-ornament");
-    const crest = el("span", "frame-crest", type.icon);
+    const crest = el("span", "frame-crest", combatInfo(card).element.split(" ")[0]);
     crest.setAttribute("aria-hidden", "true");
     ornament.setAttribute("aria-hidden", "true");
     ornament.append(
@@ -295,7 +295,7 @@
     const storyLabel = options.collectionOnly
       ? "컬렉션 전용 · 대전 준비 중"
       : card.unlock ? "이야기에서 깨어난 카드" : "처음부터 함께하는 카드";
-    meta.append(el("span", "type-chip", type.icon + " " + type.label), el("span", "card-story", storyLabel));
+    meta.append(el("span", "type-chip", type.label + " · " + combatInfo(card).element), el("span", "card-story", storyLabel));
 
     const hpTrack = el("div", "hp-track");
     const hpFill = el("span", "hp-fill");
