@@ -9,6 +9,7 @@ import { awardBattleProgress, getCombatGrowth, weaponEnhanceText } from './progr
 import { dashSkill, startDashState, collectDashHits } from './dashSkills.js';
 import { combatBounds, clampCombatX, constrainEnemy, waveSpawnX } from './combatBounds.js';
 import { MOUNT_PROFILES, drawConsistentMount } from './mountedSprites.js';
+import { BATTLE_CRY_PACKS, FEMALE_BATTLE_CRY_SEGMENTS, battleCryProfile } from './battleCries.js';
 
 const CANVAS_UI_FONT = '"Pretendard Variable", Pretendard, "Noto Sans KR", "Malgun Gothic", sans-serif';
 const CANVAS_IMPACT_FONT = CANVAS_UI_FONT;
@@ -390,14 +391,16 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
   // 무기 효과음만 사용한다. 없는 WAV를 요청해 콘솔 404를 만들지 않는다.
   const recordedHeroCallouts = new Set(['liubei','guanyu','zhangfei','caocao','zhaoyun','zhouyu','huanggai','zhugeliang','machao','huangzhong','sunshangxiang','wukong','bajie','wujing','tieshangongzhu','wusong','linchong','lizhishen','husanniang']);
   const hasRecordedHeroCallouts = recordedHeroCallouts.has(heroId);
+  const battleCry = battleCryProfile(heroId);
   const sampleManifest = {
     footstep: [0, 1, 2, 3].map((index) => 'audio/kenney-impact/footstep_concrete_00' + index + '.ogg'),
     // 실제 동물 녹음을 중심에 두고 절차 합성은 안장·호흡·강제이탈 보강층으로 쓴다.
     mountHorse: ['audio/mount-sfx/horse-neigh-pd-v1.ogg'],
     mountBoar: ['audio/mount-sfx/boar-grunt-ccby-v1.ogg'],
-    // 기존 CC0 grunt/yell은 공격 기합이 아니라 피격 비명처럼 들렸다.
-    // 새 전용 녹음 전까지 일반 공격·적군 비명은 비워 두고 무기음에 집중한다.
-    playerGrunt: [], playerShout: [], enemyGrunt: [], enemyDeath: [],
+    // 적 피격 비명은 아이가 듣기 거칠어 비워 둔다. 영웅의 공격·필살 함성은
+    // 아래 battleCry에서 별도로 불러 캐릭터별 프로필로 마스터링한다.
+    enemyGrunt: [], enemyDeath: [],
+    battleCry: BATTLE_CRY_PACKS[battleCry.pack],
     // v6는 피치업·더블링·소프트클립을 제거한 자연스러운 기술명 원음이다.
     voiceSpecial: hasRecordedHeroCallouts ? ['audio/hero-callouts-ko-v6/' + heroId + '-special-v6.wav'] : [],
     voiceMusou: hasRecordedHeroCallouts ? ['audio/hero-callouts-ko-v6/' + heroId + '-musou-v6.wav'] : [],
@@ -414,11 +417,14 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
     wukong: { rate: 1.05, gain: .63, lowpass: 5900, highpass: 105, wet: .10 }, bajie: { rate: .90, gain: .70, lowpass: 4300, wet: .08 },
     wujing: { rate: .94, gain: .65, lowpass: 4800, wet: .10 }, wusong: { rate: .94, gain: .68, lowpass: 4550, wet: .08 }, linchong: { rate: 1.00, gain: .62, lowpass: 5300, wet: .09 }, lizhishen: { rate: .90, gain: .72, lowpass: 4200, wet: .08 }, tieshangongzhu: { rate: 1.07, gain: .56, lowpass: 6300, highpass: 125, wet: .10 },
     husanniang: { rate: 1.06, gain: .57, lowpass: 6200, highpass: 120, wet: .08 },
+    xiahoudun: { rate: .91, gain: .68, lowpass: 4400, wet: .09 }, zhangliao: { rate: .98, gain: .63, lowpass: 5200, wet: .08 }, xuchu: { rate: .86, gain: .74, lowpass: 3700, wet: .08 }, simayi: { rate: .96, gain: .60, lowpass: 5200, wet: .12 },
+    sunquan: { rate: .99, gain: .61, lowpass: 5500, wet: .09 }, taishici: { rate: .99, gain: .64, lowpass: 5600, wet: .08 }, ganning: { rate: 1.05, gain: .62, lowpass: 6000, highpass: 105, wet: .07 }, luxun: { rate: 1.06, gain: .58, lowpass: 6400, highpass: 115, wet: .10 },
+    nezha: { rate: 1.09, gain: .57, lowpass: 6900, highpass: 135, wet: .08 }, erlangshen: { rate: .94, gain: .65, lowpass: 4900, wet: .11 }, honghaier: { rate: 1.10, gain: .58, lowpass: 6500, highpass: 125, wet: .10 },
   };
   const voiceProfile = voiceProfiles[heroId] || { rate: .98, gain: .62, lowpass: 5100, wet: .09 };
   const BGM_VOLUME = .30;
   let ctx, master, sfxBus, musicBus, voiceBus, reverb, noiseBuffer, bgm, bgmSource, muted = false, loading = false;
-  let lastVoiceAt = 0, lastSpecialVoiceAt = -Infinity, lastEnemyVoiceAt = 0, lastMountSfxAt = -Infinity, lastMountVocalAt = -Infinity, musicDuckTimer = 0;
+  let lastVoiceAt = -Infinity, lastSpecialVoiceAt = -Infinity, lastEnemyVoiceAt = 0, lastMountSfxAt = -Infinity, lastMountVocalAt = -Infinity, musicDuckTimer = 0;
   let activeCallout = null;
   let duckRequests = [];
   const sampleCursor = {};
@@ -524,7 +530,18 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
     source.playbackRate.value = filters?.fixedRate ? Math.max(.84, rate) : Math.max(.84, rate * (.97 + Math.random() * .06));
     gain = Math.min(filters?.gainCeiling ?? .78, gain);
     const startedAt = ctx.currentTime + Math.max(0, filters?.delay || 0);
-    const duration = Math.max(.06, source.buffer.duration / source.playbackRate.value);
+    const segments = filters?.segments || [];
+    let segment = null;
+    if (segments.length) {
+      const cursorKey = group + ':segment';
+      let segmentIndex = Math.floor(Math.random() * segments.length);
+      if (segments.length > 1 && segmentIndex === sampleCursor[cursorKey]) segmentIndex = (segmentIndex + 1) % segments.length;
+      sampleCursor[cursorKey] = segmentIndex;
+      segment = segments[segmentIndex];
+    }
+    const sourceOffset = Math.max(0, Math.min(source.buffer.duration - .02, segment?.offset || 0));
+    const sourceDuration = Math.max(.02, Math.min(segment?.duration || source.buffer.duration, source.buffer.duration - sourceOffset));
+    const duration = Math.max(.06, sourceDuration / source.playbackRate.value);
 
     // 연속 필살기에서도 두 기술명이 겹치지 않도록 이전 음성을 짧게 교차감쇠한다.
     if (filters?.exclusiveVoice && activeCallout) {
@@ -572,7 +589,7 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
       activeCallout = handle;
       source.addEventListener('ended', () => { if (activeCallout === handle) activeCallout = null; }, { once: true });
     }
-    source.start(startedAt);
+    source.start(startedAt, sourceOffset, sourceDuration);
     source.stop(startedAt + duration + .02);
     return true;
   };
@@ -765,11 +782,30 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
     refreshMusicDuck();
   };
 
+  const playBattleCry = (powerful = false, delay = 0) => playSample(
+    'battleCry',
+    battleCry.gain * (powerful ? 1 : .88),
+    battleCry.rate * (powerful ? .97 : 1.02),
+    (Math.random() - .5) * .10,
+    battleCry.wet,
+    {
+      lowpass: battleCry.lowpass,
+      highpass: battleCry.highpass,
+      gainCeiling: .84,
+      voice: true,
+      fixedRate: false,
+      delay,
+      segments: battleCry.pack === 'female' ? FEMALE_BATTLE_CRY_SEGMENTS : null,
+    },
+    true,
+  );
+
   try { ensure(); } catch { ctx = null; }
 
   return {
     ready() {
       return Promise.all([
+        sampleReady.battleCry,
         sampleReady.voiceSpecial, sampleReady.voiceMusou,
         sampleReady.waterSplashLight, sampleReady.waterSplashHeavy,
         sampleReady.breathNeutral, sampleReady.breathDeep,
@@ -873,20 +909,12 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
     shout(powerful = false) {
       const now = performance.now();
       if (now - lastVoiceAt < (powerful ? 520 : 760)) return;
-      const group = powerful ? 'playerShout' : 'playerGrunt';
-      if (!buffers[group]?.length) return;
       lastVoiceAt = now;
-      duckMusic(powerful ? .16 : .22, powerful ? 580 : 310);
-      const filters = { ...voiceProfile, lowpass: Math.max(4300, voiceProfile.lowpass), highpass: Math.max(72, voiceProfile.highpass || 0) };
-      const played = playSample(
-        group,
-        voiceProfile.gain * (powerful ? .90 : .56),
-        Math.max(.92, voiceProfile.rate * (powerful ? .99 : 1.04)),
-        (Math.random() - .5) * .16,
-        voiceProfile.wet,
-        filters,
-        true,
-      );
+      duckMusic(powerful ? .14 : .21, powerful ? 700 : 360);
+      const played = playBattleCry(powerful);
+      if (!played) sampleReady.battleCry?.then(() => {
+        if (!muted && performance.now() - now < 260) playBattleCry(powerful);
+      });
       return played;
     },
 
@@ -916,12 +944,12 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
       lastSpecialVoiceAt = now;
       startMusic();
       const impactAt = powerful ? .451 : .414;
-      duckMusic(powerful ? .15 : .17, powerful ? 1280 : 1080);
+      duckMusic(powerful ? .095 : .11, powerful ? 1600 : 1320);
 
       // 과장된 피치·끝음절 증폭 대신 캐릭터별 EQ와 일정한 게인으로 기술명을
       // 재생한다. 새 기술은 이전 음성을 75ms 교차감쇠해 대사가 겹치지 않는다.
       const voiceToken = lastSpecialVoiceAt;
-      const voiceGain = Math.min(.80, (voiceProfile.gain + .08) * (powerful ? 1.02 : .96));
+      const voiceGain = Math.min(.68, (voiceProfile.gain + .06) * (powerful ? .90 : .84));
       const playCry = () => playSample(
         powerful ? 'voiceMusou' : 'voiceSpecial',
         voiceGain,
@@ -938,6 +966,15 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
       if (!playCry()) sampleReady[powerful ? 'voiceMusou' : 'voiceSpecial']?.then(() => {
         if (muted || lastSpecialVoiceAt !== voiceToken || performance.now() - voiceToken > 240) return;
         playCry();
+      });
+
+      // 실제 목소리의 짧은 전투 함성을 기술명 뒤, 타격 프레임 직전에 겹친다.
+      // 모든 영웅이 이 층을 가지며 기술명 녹음이 없는 11명도 침묵하지 않는다.
+      const battleCryDelay = powerful ? .18 : .11;
+      const playHeroCry = () => playBattleCry(powerful, battleCryDelay);
+      if (!playHeroCry()) sampleReady.battleCry?.then(() => {
+        if (muted || lastSpecialVoiceAt !== voiceToken || performance.now() - voiceToken > 240) return;
+        playHeroCry();
       });
 
       // 독자적인 호흡→응축→날 세움→접촉→잔향의 한 타임라인. 실제 CC0

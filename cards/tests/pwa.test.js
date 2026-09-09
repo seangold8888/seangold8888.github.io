@@ -82,14 +82,14 @@ test("install is strict only for core and card art; optional warmup is bounded a
   }
 });
 
-test("all checked-in Sanguo PNG, OGG and WAV assets are best-effort background assets", () => {
+test("all checked-in Sanguo PNG, OGG, MP3 and WAV assets are best-effort background assets", () => {
   const expected = walkFiles(path.join(siteRoot, "sanguo"))
-    .filter(file => /\.(?:png|ogg|wav)$/i.test(file))
+    .filter(file => /\.(?:png|ogg|mp3|wav)$/i.test(file))
     .map(file => `./${path.relative(siteRoot, file).split(path.sep).join("/")}`)
     .sort();
-  const shellAssets = sw.OPTIONAL_SHELL.filter(asset => /^\.\/sanguo\/.*\.(?:png|ogg|wav)(?:[?#].*)?$/i.test(asset));
+  const shellAssets = sw.OPTIONAL_SHELL.filter(asset => /^\.\/sanguo\/.*\.(?:png|ogg|mp3|wav)(?:[?#].*)?$/i.test(asset));
   const declared = [...new Set([...sw.SANGUO_RUNTIME_ASSETS, ...shellAssets])].sort();
-  assert.equal(expected.length, 207);
+  assert.equal(expected.length, 216);
   assert.deepEqual(declared, expected);
   assert.equal(new Set(sw.SANGUO_RUNTIME_ASSETS).size, sw.SANGUO_RUNTIME_ASSETS.length);
 });
@@ -114,9 +114,9 @@ test("all story episode mp3 files match the service worker fallback list", () =>
   }
 });
 
-test("cache generation v63 preserves exact v30 card assets and canonical navigation aliases", () => {
-  assert.equal(sw.CACHE_VERSION, "v63");
-  assert.match(sw.STATIC_CACHE, /^adventure-box-v63-/);
+test("cache generation v64 preserves exact v30 card assets and canonical navigation aliases", () => {
+  assert.equal(sw.CACHE_VERSION, "v64");
+  assert.match(sw.STATIC_CACHE, /^adventure-box-v64-/);
   const studioImages = fs.readdirSync(path.join(siteRoot, "princess/assets/studio-v3")).filter(name => /\.(webp|jpg)$/.test(name));
   assert.equal(studioImages.length, 95);
   for (const name of studioImages) assert.ok(sw.OPTIONAL_SHELL.includes("./princess/assets/studio-v3/" + name), name);

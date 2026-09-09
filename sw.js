@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v63";
+const CACHE_VERSION = "v64";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -239,6 +239,7 @@ const OPTIONAL_SHELL = [
   "./sanguo/src/game/sideScroller.js",
   "./sanguo/src/game/hud.js",
   "./sanguo/src/game/dashSkills.js",
+  "./sanguo/src/game/battleCries.js",
   "./sanguo/src/game/combatBounds.js",
   "./sanguo/src/game/mountedSprites.js",
   "./sanguo/art/side-scroller/zhaoyun-bow-painted-sheet-v1.png",
@@ -410,6 +411,15 @@ const SANGUO_RUNTIME_ASSETS = [
   "./sanguo/art/side-scroller/zhouyu-bow-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/zhouyu-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/zhugeliang-painted-sheet-v1.png",
+  "./sanguo/audio/battle-cries/female-warrior-cheers-cc0.mp3",
+  "./sanguo/audio/battle-cries/male-agile-a-cc0.wav",
+  "./sanguo/audio/battle-cries/male-agile-b-cc0.wav",
+  "./sanguo/audio/battle-cries/male-fierce-a-cc0.wav",
+  "./sanguo/audio/battle-cries/male-fierce-b-cc0.wav",
+  "./sanguo/audio/battle-cries/male-heavy-a-cc0.wav",
+  "./sanguo/audio/battle-cries/male-heavy-b-cc0.wav",
+  "./sanguo/audio/battle-cries/male-noble-a-cc0.wav",
+  "./sanguo/audio/battle-cries/male-noble-b-cc0.wav",
   "./sanguo/audio/cinematic-breath/battle-inhale-deep-cc0-v1.ogg",
   "./sanguo/audio/cinematic-breath/battle-inhale-neutral-cc0-v1.ogg",
   "./sanguo/audio/cinematic-water/water-splash-heavy-01-cc0-v1.ogg",

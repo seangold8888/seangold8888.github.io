@@ -29,7 +29,7 @@ export function showTitle(root, { onStart, onBrowse }) {
             <div class="title-controls" aria-label="전투 조작법"><span><kbd>WASD</kbd> 이동</span><span><kbd>J</kbd> 공격 · 꾹 강공</span><span><kbd>K</kbd> 활</span><span><kbd>L</kbd> 필살기</span><span><kbd>I</kbd> 돌진기</span><span><kbd>F</kbd> 승마</span></div>
             <button class="btn primary hero-start" id="btn-start"><span class="btn-t">${hero.name}로 호로관 출진</span><span class="btn-k">STORY → BATTLE</span></button>
             <button class="btn hero-start" id="btn-browse" style="margin-top:8px"><span class="btn-t">다른 고전 둘러보기</span><span class="btn-k">${Object.values(WORKS).map((w) => w.name).join(' · ')}</span></button>
-            <details class="audio-credits"><summary>음원 크레딧 · 라이선스</summary><p>“Pig grunt” by erdie, via Freesound/Wikimedia Commons, <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noreferrer">CC BY 3.0</a>; 게임용으로 수정. 말 울음 “Wiehern.ogg” by Hü는 퍼블릭 도메인. <a href="audio/mount-sfx/LICENSES.md" target="_blank" rel="noreferrer">전체 고지</a></p></details>
+            <details class="audio-credits"><summary>음원 크레딧 · 라이선스</summary><p>전투 함성: HaelDB·SkyRae, <a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="noreferrer">CC0</a>. “Pig grunt” by erdie, CC BY 3.0; 말 울음 “Wiehern.ogg”은 퍼블릭 도메인. <a href="audio/battle-cries/LICENSES.md" target="_blank" rel="noreferrer">함성 고지</a> · <a href="audio/mount-sfx/LICENSES.md" target="_blank" rel="noreferrer">탈것 고지</a></p></details>
           </div>
         </section>
       </div></div>`;

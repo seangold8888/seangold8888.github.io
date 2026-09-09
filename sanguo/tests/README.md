@@ -4,7 +4,7 @@ Run from the site repository root with Node.js and Playwright/Chromium installed
 (or point NODE_PATH at an existing Playwright installation).
 
 ```sh
-node --test sanguo/tests/combat-bounds.test.cjs sanguo/tests/dash-skills.test.cjs sanguo/tests/mounted-sprites.test.cjs
+node --test sanguo/tests/combat-bounds.test.cjs sanguo/tests/dash-skills.test.cjs sanguo/tests/mounted-sprites.test.cjs sanguo/tests/battle-cries.test.cjs
 node --test --test-name-pattern="cache generation" cards/tests/pwa.test.js
 node sanguo/tests/menu.cjs
 node sanguo/tests/art-atlas.cjs
@@ -15,7 +15,16 @@ node sanguo/tests/xiyou-x1.cjs
 node sanguo/tests/xiyou-x2.cjs
 node sanguo/tests/xiyou-x3.cjs
 node sanguo/tests/xiyou-x4.cjs
+node sanguo/tests/battle-cries-browser.cjs
 ```
+
+## Battle cry coverage
+
+- All 30 playable heroes have an explicit voice family and bounded character EQ profile.
+- Nine CC0 source recordings are decoded and cached; female takes use three short regions.
+- Real Chromium verifies noble, fierce, heavy, agile and female voices, including a hero
+  without a Korean technique-name recording, and checks the pre-impact scheduling layer.
+- Specials and musou duck the score under the voice while regular attack shouts stay cooldown-limited.
 
 Set MENU_QA_OUTPUT / COMBAT_QA_OUTPUT / MOUNT_QA_OUTPUT to an external directory for screenshots.
 Set XIYOU_QA_OUTPUT for the X1/X2/X3 menu, battle and victory-lesson screenshots.
