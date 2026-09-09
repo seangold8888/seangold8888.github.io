@@ -22,6 +22,7 @@ function render(){
  scene();$('welcome').hidden=state.started;$('play').hidden=!state.started;if(!state.started)return;
  const stage=state.stage,done=stage<3&&E.completed(state)[stage];
  $('play').classList.toggle('is-party',stage===3);
+ $('parityInPlay').hidden=stage!==1&&stage!==3;
  document.querySelectorAll('[data-stop]').forEach(n=>{const i=Number(n.dataset.stop);n.className=i===stage?'current':i<stage?'done':'';if(i===stage)n.setAttribute('aria-current','step');else n.removeAttribute('aria-current');});
  $('help').hidden=stage===3||done;$('finishActions').hidden=!done;$('partyActions').hidden=stage!==3;
  $('next').textContent=stage===2?'파티를 시작하자! →':'다음 준비하러 가자 →';
