@@ -27,6 +27,7 @@ const FAMILY = [
       A("발냄새 공격", 1, 20, null, "", "aura", "🦶"),
       A("연속 방귀", 2, 20, "dmg_stack_10", "쓸 때마다 피해가 10씩 늘어요", "burst", "💨"),
       A("대왕 방귀", 3, 50, null, "", "burst", "💥", true),
+      A("메가랩터킥", 4, 60, null, "", "strike", "🦖", true),
     ],
     stats: { attack: 2, defense: 3, spirit: 2 },
   },
