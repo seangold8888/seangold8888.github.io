@@ -279,6 +279,7 @@
   const WORD_CLIPS = {};
   sentences.forEach(function (sentence) { normalize(sentence.text).split(" ").forEach(function (word) { WORD_CLIPS[word] = WORD_PATH + word + ".mp3"; }); });
   const STALL_MS = 5000, NO_AUDIO_MS = 1800, WORD_STALL_MS = 4000, WORD_GAP_MS = 400, STOP_WAIT_MS = 600;
+  const PRAISE_GAIN = 1.28;
   // 칭찬·단어 소리는 Web Audio 로만 낸다. <audio> 재생 뒤 iOS Safari 가 음성 인식을
   // 조용히 멈추는 문제(WebKit 321436)를 피하려고, 재생이 끝나면 AudioContext 를
   // 즉시 close 해서 오디오 장치를 완전히 놓아 준다.
@@ -319,7 +320,9 @@
     const doc = env.document;
     if (!sessions.has(env)) sessions.set(env, createFeedbackSession());
     const session = sessions.get(env);
-    if (callbacks.silent) session.silent = true;
+    // Silent recovery is temporary. A fresh question gets another chance to
+    // celebrate, so one old iOS microphone stall cannot mute praise forever.
+    session.silent = callbacks.silent === true;
     let disposed = false, awarded = false, active = null, serial = 0, timer = null, finalText = "";
     let retried = false, soundActive = false, soundTimer = null, stopTimer = null, passDone = false, stopping = null;
     let audioCtx = null, playing = null, unlocked = false, healthTimer = null, recovering = false;
@@ -452,9 +455,26 @@
       env.clearTimeout(soundTimer);
       soundTimer = env.setTimeout(fn, ms);
     }
+    function victoryChime(ctx, destination, big) {
+      if (!ctx || !ctx.createOscillator || !ctx.createGain) return;
+      const start = ctx.currentTime || 0;
+      const notes = big ? [659.25, 783.99, 987.77] : [523.25, 659.25, 783.99];
+      notes.forEach(function (frequency, index) {
+        const oscillator = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const at = start + index * 0.085;
+        oscillator.type = "triangle";
+        oscillator.frequency.value = frequency;
+        gain.gain.setValueAtTime(0.0001, at);
+        gain.gain.exponentialRampToValueAtTime(big ? 0.13 : 0.09, at + 0.025);
+        gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.32);
+        oscillator.connect(gain); gain.connect(destination);
+        oscillator.start(at); oscillator.stop(at + 0.34);
+      });
+    }
     // Plays one clip on the shared element. onDone fires once: at the ended
     // event, at a playback error, or when progress stalls for stallMs.
-    function playClip(src, stallMs, onDone) {
+    function playClip(src, stallMs, onDone, options) {
       const id = serial;
       let done = false;
       const finish = function (how) {
@@ -476,7 +496,21 @@
           if (done || disposed || id !== serial || audioCtx !== ctx) { if (ctx.close) try { ctx.close(); } catch (_) {} return; }
           const node = ctx.createBufferSource();
           node.buffer = sound;
-          node.connect(ctx.destination);
+          let destination = ctx.destination;
+          if (options && options.praise && ctx.createGain) {
+            const voice = ctx.createGain();
+            voice.gain.value = PRAISE_GAIN;
+            if (ctx.createDynamicsCompressor) {
+              const limiter = ctx.createDynamicsCompressor();
+              limiter.threshold.value = -8; limiter.knee.value = 8; limiter.ratio.value = 8;
+              limiter.attack.value = 0.003; limiter.release.value = 0.18;
+              voice.connect(limiter); limiter.connect(ctx.destination);
+            } else voice.connect(ctx.destination);
+            destination = voice;
+            if (node.playbackRate) node.playbackRate.value = 1.035;
+            victoryChime(ctx, ctx.destination, !!options.big);
+          }
+          node.connect(destination);
           node.onended = function () { finish("ended"); };
           playing = node;
           // 클립 길이만큼은 기다린다. 끝 이벤트가 안 오면 그때 정리.
@@ -491,11 +525,9 @@
       const clip = choosePraise(session, !retried);
       nodes.status.textContent = "";
       nodes.status.appendChild(element("span", "reading-praise", (clip === "threeinarow" ? "🌟 " : "⭐ ") + PRAISE_TEXT[clip]));
-      nodes.status.appendChild(element("span", "reading-praise-detail", clip === "threeinarow" ? "세 문장 연속!" : retried ? "다시 읽어서 해냈어!" : "한 번에 읽었어!"));
-      if (clip === "threeinarow") {
-        const stars = element("span", "reading-star-burst", "★ ✦ ⭐ ✦ ★");
-        stars.setAttribute("aria-hidden", "true"); nodes.status.appendChild(stars);
-      }
+      nodes.status.appendChild(element("span", "reading-praise-detail", clip === "threeinarow" ? "세 문장 연속 성공! 최고야!" : retried ? "다시 읽어서 해냈어! 멋져!" : "와! 한 번에 성공! 다음 문장도 가자!"));
+      const stars = element("span", "reading-star-burst", clip === "threeinarow" ? "★ ✦ ⭐ ✦ ★" : "✦ ★ ✦");
+      stars.setAttribute("aria-hidden", "true"); nodes.status.appendChild(stars);
       log("pass " + clip + (retried ? " retry" : " first"));
       stop(null, function (safe) {
         if (!safe || !canPlay()) { soundActive = false; controls(); if (!soundTimer) armWatchdog(NO_AUDIO_MS, completePass); return; }
@@ -507,7 +539,7 @@
           log("praise-" + how);
           if (how === "blocked" || how === "error") { armWatchdog(NO_AUDIO_MS, completePass); return; }
           completePass();
-        });
+        }, { praise: true, big: clip === "threeinarow" });
       });
       // Visible praise without any playable audio still moves on.
       if (!disposed && !passDone && !soundTimer) armWatchdog(NO_AUDIO_MS, completePass);

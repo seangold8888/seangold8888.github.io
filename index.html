@@ -1222,7 +1222,7 @@
 <script src="math/learning.js?v=29"></script>
 <script src="math/store.js?v=30"></script>
 <script src="assets/study/math-bridge.js?v=1"></script>
-<script src="assets/study/english-reading.js?v=8"></script>
+<script src="assets/study/english-reading.js?v=9"></script>
 <script>
 (function () {
   'use strict';
@@ -1535,7 +1535,8 @@
   var lastReadingIndex = -1, readingView = null, answerTimer = null, readingFallback = false;
   /* 최근 읽은 문장 번호(최대 12개) — 같은 문장이 금방 다시 나오지 않도록. 기기에만 저장. */
   var readingSilent = false;
-  try { readingSilent = localStorage.getItem('hub2_reading_silent') === '1'; } catch (_) {}
+  /* v9: 예전 마이크 복구가 남긴 영구 무음을 지운다. 복구 무음은 현재 페이지에서만 유지. */
+  try { localStorage.removeItem('hub2_reading_silent'); } catch (_) {}
   var readingRecent = [];
   try { readingRecent = (JSON.parse(localStorage.getItem('hub2_reading_recent') || '[]') || []).filter(function (n) { return typeof n === 'number' && n >= 0; }).slice(-12); } catch (_) { readingRecent = []; }
   function rememberReading(idx) {
@@ -2017,9 +2018,8 @@
       }, window, {
         silent: readingSilent,
         onSilent: function () {
-          // 소리 뒤 마이크가 막히는 기기 → 이 기기는 다음부터 소리 없이 읽기만
+          // 소리 뒤 마이크가 막히는 기기 → 현재 페이지에서만 잠시 소리 없이 복구
           readingSilent = true;
-          try { localStorage.setItem('hub2_reading_silent', '1'); } catch (_) {}
         },
         onRetry: function (words) { readingMistake(target, words); },
         onUnavailable: function () {

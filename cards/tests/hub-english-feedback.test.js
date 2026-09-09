@@ -15,7 +15,7 @@ function node() {
 }
 function setup(options={}) {
   let now=0, timerId=0, passes=0;
-  const timers=new Map(), events=[], recognizers=[], audios=[], contexts=[], utterances=[], retries=[];
+  const timers=new Map(), events=[], recognizers=[], audios=[], contexts=[], utterances=[], retries=[], gains=[];
   const doc=Object.assign(target(),{hidden:false,createElement:node});
   class Recognition {
     constructor() { recognizers.push(this); }
@@ -34,7 +34,7 @@ function setup(options={}) {
     return settled({ok:true,arrayBuffer:()=>settled({slice:()=>({}),byteLength:8})});
   }
   class Ctx {
-    constructor(){this.state=options.suspended?"suspended":"running";this.destination={};contexts.push(this);}
+    constructor(){this.state=options.suspended?"suspended":"running";this.destination={};this.currentTime=0;contexts.push(this);}
     resume(){this.state="running";return settled();}
     decodeAudioData(){return options.decodeFails?failed(Error("decode")):settled({duration:options.clipSeconds||1});}
     createBufferSource(){
@@ -44,6 +44,9 @@ function setup(options={}) {
         stop(){this.playing=false;events.push("pause");}};
       audios.push(nodeObj);return nodeObj;
     }
+    createGain(){const param={value:1,setValueAtTime(){},exponentialRampToValueAtTime(){}};const gain={gain:param,connect(){}};gains.push(gain);return gain;}
+    createOscillator(){return {type:"",frequency:{value:0},connect(){},start(){events.push("chime")},stop(){}};}
+    createDynamicsCompressor(){return {threshold:{value:0},knee:{value:0},ratio:{value:0},attack:{value:0},release:{value:0},connect(){}};}
     close(){this.closed=true;events.push("release");return settled();}
   }
   const synth={ getVoices:()=>options.voices || [{lang:"ko-KR",localService:true},{lang:"en-US",localService:false},{name:"Samantha",lang:"en-US",localService:true}],
@@ -70,7 +73,7 @@ function setup(options={}) {
     const result=Object.assign([{transcript:text}],{isFinal:true});
     recognizers.at(-1).onresult({results:[result]});
   }
-  return {env,doc,events,recognizers,audios,contexts,utterances,retries,timers,tick,mount,result,passes:()=>passes};
+  return {env,doc,events,recognizers,audios,contexts,utterances,retries,gains,timers,tick,mount,result,passes:()=>passes};
 }
 test("first/retry praise pools, every third first-attempt pass and 100 nonrepeating draws",()=>{
   const session=reading.createFeedbackSession();
@@ -112,6 +115,8 @@ test("praise waits for stop AND end, then releases the audio device before the n
   const clip = s.audios[0];
   assert.match(clip.src, /assets\/study\/praise\/[a-z]+\.mp3$/);
   assert.equal(clip.playing, true);
+  assert.ok(s.gains.some(g => g.gain.value === 1.28), "praise voice gets a clear volume lift");
+  assert.equal(s.events.filter(e => e === "chime").length, 3, "a three-note victory chime starts with the voice");
   assert.ok(s.events.indexOf("stop") < s.events.indexOf("play:" + clip.src));
   assert.equal(s.passes(), 0);
   clip.onended(); s.tick(0);
@@ -227,17 +232,18 @@ test("a microphone that never starts turns the sound off by itself and restarts"
   assert.ok(!v.container.children[3].children.some(n => n.className === "reading-recovery"), "no button yet");
 });
 
-test("silent mode keeps every question moving with no sound at all", () => {
+test("automatic silent recovery is temporary and the next question celebrates again", () => {
   const s = setup({ neverStarts: true }), v = s.mount();
   v.mic.fire("click"); s.tick(12500);
   v.view.destroy();
   const w = s.mount();
   w.mic.fire("click");
   s.result("I like apples"); s.recognizers.at(-1).end();
-  assert.ok(!s.events.some(e => e.startsWith("play:")), "no clip is played once the page is silent");
+  const clip = s.audios.at(-1);
+  assert.ok(clip && clip.src.includes("/praise/"), "a fresh question retries recorded praise");
   assert.ok(w.status.children.some(n => n.className === "reading-praise"), "the praise is still shown");
-  s.tick(1800);
-  assert.equal(s.passes(), 1, "the question still moves on without sound");
+  clip.onended();
+  assert.equal(s.passes(), 1, "the question moves on after the full praise");
 });
 
 test("after two silent retries the child is offered the recovery button", () => {
@@ -294,12 +300,13 @@ test("recognizer alternatives can pass; display uses the first guess; session sh
   assert.deepEqual(Object.keys(session).sort(), ["autoRetries", "lastClip", "log", "silent", "streak"]);
 });
 
-test("the hub remembers a silent device and the worker precaches every clip", () => {
+test("the hub clears stale permanent silence and the worker precaches every clip", () => {
   const sw = require("../../sw.js"), html = fs.readFileSync(path.join(__dirname, "../../index.html"), "utf8");
-  assert.equal(sw.CACHE_VERSION, "v73");
-  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=8"));
-  assert.match(html, /english-reading\.js\?v=8/);
-  assert.match(html, /hub2_reading_silent/);
+  assert.equal(sw.CACHE_VERSION, "v74");
+  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=9"));
+  assert.match(html, /english-reading\.js\?v=9/);
+  assert.match(html, /removeItem\('hub2_reading_silent'\)/);
+  assert.doesNotMatch(html, /setItem\('hub2_reading_silent'/);
   assert.match(html, /silent: readingSilent/);
   const clips = sw.CORE_SHELL.filter(p => p.includes("/praise/"));
   assert.equal(clips.length, 9);
