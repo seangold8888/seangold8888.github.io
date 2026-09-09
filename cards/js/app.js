@@ -1373,7 +1373,7 @@
         ? 0.18 + Math.random() * 0.1
         : dust ? 0.035 + Math.random() * 0.065
           : 0.075 + Math.random() * (plan.big ? 0.16 : 0.1);
-      const speed = speedBase * 1.45;
+      const speed = speedBase * (plan.big ? 2.25 : 1.85);
       const color = contact
         ? palette.hot
         : dust ? palette.shadow
@@ -1456,6 +1456,7 @@
     );
     [
       "--impact-x",
+      "--impact-y",
       "--impact-back-x",
       "--impact-settle-x",
       "--impact-color",
@@ -1473,14 +1474,23 @@
     const targetSlot = effect._targetSlot;
     const sourceSlot = effect._sourceSlot;
     const palette = paletteForPlan(plan);
-    const direction = Math.sign(
-      effect._fxPoints.endX - effect._fxPoints.startX
-    ) || 1;
+    const direction = (effect._fxPoints.endX - effect._fxPoints.startX) /
+      Math.max(1, Math.hypot(
+        effect._fxPoints.endX - effect._fxPoints.startX,
+        effect._fxPoints.endY - effect._fxPoints.startY
+      ));
     clearTechniqueImpactState(targetSlot);
     targetSlot.classList.add("is-technique-impact", "impact-type-" + plan.type);
     if (plan.big) targetSlot.classList.add("is-impact-heavy");
     if (plan.weakness) targetSlot.classList.add("is-impact-weakness");
-    const recoil = Math.max(3, Number(plan.recoilPx) || 5);
+    const recoil = Math.max(12, Number(plan.recoilPx) || 5) * (plan.big ? 1.7 : 1.15);
+    const travel = Math.max(1, Math.hypot(
+      effect._fxPoints.endX - effect._fxPoints.startX,
+      effect._fxPoints.endY - effect._fxPoints.startY
+    ));
+    targetSlot.style.setProperty("--impact-y", (
+      (effect._fxPoints.endY - effect._fxPoints.startY) / travel * recoil
+    ).toFixed(2) + "px");
     targetSlot.style.setProperty(
       "--impact-x",
       (direction * recoil) + "px"
@@ -1511,6 +1521,9 @@
 
   function resetTechniqueNode(effect) {
     if (!effect) return;
+    if (effect._cardMotion) effect._cardMotion.cancel();
+    effect._cardMotion = null;
+    if (effect._sourceSlot) effect._sourceSlot.classList.remove("is-cinematic-attack");
     clearTimeout(effect._cleanupTimer);
     clearTimeout(effect._impactTimer);
     clearTimeout(effect._hitStopTimer);
@@ -1574,6 +1587,26 @@
       x: rect.left + rect.width * x - layerRect.left,
       y: rect.top + rect.height * y - layerRect.top
     };
+  }
+
+  function cardMotionFrames(plan, dx, dy, width) {
+    const length = Math.max(1, Math.hypot(dx, dy));
+    const ux = dx / length, uy = dy / length;
+    const melee = plan.kind === "strike";
+    const reach = melee ? Math.min(length * 0.78, Math.max(0, length - width * 0.65)) : 16;
+    const contact = plan.impactAtMs / plan.totalMs;
+    const hold = Math.min(0.88, contact + (plan.hitStopMs || 36) / plan.totalMs);
+    const pose = (distance, scale, tilt) =>
+      `translate3d(${(ux * distance).toFixed(2)}px,${(uy * distance).toFixed(2)}px,0) scale(${scale}) rotate(${tilt}deg)`;
+    const tilt = (dx < 0 ? -1 : 1) * (melee ? 7 : 3);
+    return [
+      { offset: 0, transform: pose(0, 1, 0) },
+      { offset: contact * 0.57, transform: pose(-22, 1.055, -tilt), easing: "cubic-bezier(.6,0,.9,.4)" },
+      { offset: contact, transform: pose(reach, melee ? 1.09 : 1.035, tilt) },
+      { offset: hold, transform: pose(reach, melee ? 1.09 : 1.035, tilt), easing: "cubic-bezier(.12,.75,.2,1)" },
+      { offset: Math.max(hold + 0.04, 0.9), transform: pose(-5, .99, -tilt * .18) },
+      { offset: 1, transform: pose(0, 1, 0) }
+    ];
   }
 
   function playTechniqueFx(plan) {
@@ -1674,6 +1707,14 @@
     effect._castingClass = "is-casting-" + plan.kind;
     effect._sourceSlot = sourceSlot;
     effect._targetSlot = targetSlot;
+    if (!prefersReducedMotion() && sourceSlot !== targetSlot &&
+        plan.outcome !== "support" && typeof sourceSlot.animate === "function") {
+      sourceSlot.classList.add("is-cinematic-attack");
+      effect._cardMotion = sourceSlot.animate(
+        cardMotionFrames(plan, endPoint.x - startX, endPoint.y - startY, sourceRect.width),
+        { duration: plan.totalMs, easing: "linear" }
+      );
+    }
     sourceSlot.classList.add(effect._castingClass);
     sourceSlot.style.setProperty("--fx-duration", plan.totalMs + "ms");
     sourceSlot.style.setProperty("--cast-back", (-8 * direction) + "px");
@@ -2984,7 +3025,8 @@
     particleRecipeForPlan: particleRecipeForPlan,
     materialPalettes: MATERIAL_PALETTES,
     paletteForPlan: paletteForPlan,
-    recipeForAttack: recipeForAttack
+    recipeForAttack: recipeForAttack,
+    cardMotionFrames: cardMotionFrames
   });
 
   document.addEventListener("DOMContentLoaded", init);
