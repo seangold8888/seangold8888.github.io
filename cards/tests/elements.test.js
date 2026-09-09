@@ -27,7 +27,7 @@ test("affinity immunity, nullification, zero damage and legacy categories obey t
 });
 test("redhood gets +10 against earth without changing original HP or skills", () => {
   const red = cards.find(c => c.id === "redhood");
-  assert.equal(red.hp, 40);
+  assert.equal(red.hp, 60);
   assert.equal(red.element, "wood");
   const state = hit(red, make("earth"));
   assert.equal(200 - state.sides.enemy.hp, red.attacks[0].dmg + 10);

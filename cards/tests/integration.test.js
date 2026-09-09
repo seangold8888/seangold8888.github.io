@@ -558,7 +558,7 @@ test("miss·evade는 충돌음을 만들지 않고 날아가는 시작음만 낸
   });
 });
 
-test("동양 확장 114개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가진다", () => {
+test("동양 확장 117개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가진다", () => {
   const data = JSON.parse(read("cards.json"));
   const attacks = data.cards.flatMap((card) =>
     card.attacks.map((attack) => ({
@@ -572,7 +572,7 @@ test("동양 확장 114개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가�
   const materialCounts = {};
   const signatures = new Set();
 
-  assert.equal(attacks.length, 114);
+  assert.equal(attacks.length, 117);
   attacks.forEach(({ card, cardType, attack }) => {
     assert.ok(attack.vfx, card + " / " + attack.name);
     assert.ok(attack.vfx.emoji, card + " / " + attack.name);
@@ -605,11 +605,11 @@ test("동양 확장 114개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가�
     materialCounts[soundPlan.material] = (materialCounts[soundPlan.material] || 0) + 1;
     assert.ok(["brave", "wise", "magic", "monster"].includes(soundPlan.type));
   });
-  assert.equal(signatures.size, 114, "114개 기술은 각각 고유한 안정 음색 서명을 가져야 한다");
+  assert.equal(signatures.size, 117, "117개 기술은 각각 고유한 안정 음색 서명을 가져야 한다");
   assert.deepEqual(materialCounts, {
     body: 13,
     fire: 8,
-    air: 24,
+    air: 26,
     wood: 6,
     metal: 21,
     stone: 5,
@@ -617,14 +617,14 @@ test("동양 확장 114개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가�
     hollow: 7,
     glass: 2,
     crystal: 17,
-    earth: 6
+    earth: 7
   });
 
   assert.deepEqual(counts, {
-    strike: 34,
+    strike: 35,
     burst: 26,
     debuff: 19,
-    projectile: 19,
+    projectile: 21,
     aura: 10,
     summon: 6
   });

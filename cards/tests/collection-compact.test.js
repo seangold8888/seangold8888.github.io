@@ -72,7 +72,7 @@ test("동양 확장 51장 모두 공격력·방어력·정신력 1~5 별점을 �
   const byId = new Map(data.cards.map((card) => [card.id, card]));
   assert.deepEqual(byId.get("heracles").stats, { attack: 5, defense: 5, spirit: 1 });
   assert.deepEqual(byId.get("pinocchio").stats, { attack: 2, defense: 2, spirit: 4 });
-  assert.deepEqual(byId.get("polyphemus").stats, { attack: 5, defense: 5, spirit: 1 });
+  assert.deepEqual(byId.get("polyphemus").stats, { attack: 5, defense: 4, spirit: 1 });
   assert.deepEqual(byId.get("fairygodmother").stats, { attack: 1, defense: 4, spirit: 4 });
 });
 

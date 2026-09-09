@@ -1032,9 +1032,11 @@ test("늑대가 약화를 반복해도 인어공주 AI 대전은 무피해 교�
     actions += 1;
   }
 
-  assert.equal(state.winner, "enemy");
+  // 2026-09-09 균형 조정으로 늑대의 1★ 기술에 피해가 붙고 2★ 기술이 40으로 올라
+  // 승패가 뒤집혔다. 이 검사의 목적은 승자가 아니라 무피해 교착이 없는 것이다.
+  assert.equal(state.winner, "player");
   assert.ok(actions < 70, "레어도 ±1 실제 대진은 3분 상한 안에 끝나야 한다");
-  assert.ok(state.sides.player.hp <= 0);
+  assert.ok(state.sides.enemy.hp <= 0);
 });
 
 test("actionNeedsCoin은 패시브·기술·참기름 상태의 실제 동전 판정만 알린다", () => {

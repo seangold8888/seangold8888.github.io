@@ -307,7 +307,7 @@
         },
         {
           "name": "메두사의 머리",
-          "cost": 3,
+          "cost": 2,
           "dmg": 30,
           "fx": "skip_next_enemy",
           "desc": "상대는 다음 턴 기술을 쓸 수 없다",
@@ -335,7 +335,11 @@
       "rarity": 1,
       "summonCost": 1,
       "hp": 50,
-      "passive": null,
+      "passive": {
+        "name": "재빠른 손",
+        "desc": "공격받을 때 동전 앞면이면 잽싸게 피해요",
+        "fx": "coin_evade"
+      },
       "attacks": [
         {
           "name": "콩나무 타기",
@@ -364,7 +368,7 @@
       "art": "art/jack.png",
       "stats": {
         "attack": 2,
-        "defense": 2,
+        "defense": 3,
         "spirit": 2
       }
     },
@@ -376,7 +380,7 @@
       "type": "brave",
       "rarity": 1,
       "summonCost": 1,
-      "hp": 40,
+      "hp": 60,
       "passive": {
         "name": "벽돌집",
         "desc": "받는 데미지 항상 -10",
@@ -410,7 +414,7 @@
       "art": "art/threepigs.png",
       "stats": {
         "attack": 2,
-        "defense": 2,
+        "defense": 3,
         "spirit": 1
       }
     },
@@ -537,7 +541,7 @@
         {
           "name": "호박마차 돌진",
           "cost": 2,
-          "dmg": 30,
+          "dmg": 40,
           "fx": null,
           "desc": "",
           "vfx": {
@@ -549,7 +553,7 @@
       "unlock": "cinderella",
       "art": "art/cinderella.png",
       "stats": {
-        "attack": 2,
+        "attack": 3,
         "defense": 3,
         "spirit": 2
       }
@@ -562,7 +566,7 @@
       "type": "wise",
       "rarity": 2,
       "summonCost": 2,
-      "hp": 50,
+      "hp": 70,
       "passive": {
         "name": "등껍질",
         "desc": "받는 데미지 -10",
@@ -572,7 +576,7 @@
         {
           "name": "깡총 박치기",
           "cost": 1,
-          "dmg": 10,
+          "dmg": 20,
           "fx": null,
           "desc": "",
           "vfx": {
@@ -582,7 +586,7 @@
         },
         {
           "name": "느림보 역전",
-          "cost": 3,
+          "cost": 2,
           "dmg": 0,
           "fx": "dmg_half_enemy_hp",
           "desc": "데미지 = 상대 남은 체력의 절반",
@@ -597,7 +601,7 @@
       "art": "art/tortoisehare.png",
       "stats": {
         "attack": 1,
-        "defense": 3,
+        "defense": 4,
         "spirit": 3
       }
     },
@@ -609,7 +613,7 @@
       "type": "wise",
       "rarity": 1,
       "summonCost": 1,
-      "hp": 40,
+      "hp": 60,
       "passive": {
         "name": "가짜 할머니 간파",
         "desc": "괴물 타입에게 받는 데미지 -20",
@@ -644,7 +648,7 @@
       "art": "art/redhood.png",
       "stats": {
         "attack": 3,
-        "defense": 2,
+        "defense": 3,
         "spirit": 2
       }
     },
@@ -657,12 +661,27 @@
       "rarity": 2,
       "summonCost": 2,
       "hp": 70,
-      "passive": null,
+      "passive": {
+        "name": "넷이 함께",
+        "desc": "서로 등을 맞대 받는 피해가 10 줄어요",
+        "fx": "reduce_dmg_10"
+      },
       "attacks": [
+        {
+          "name": "나팔 소리",
+          "cost": 1,
+          "dmg": 20,
+          "fx": null,
+          "desc": "",
+          "vfx": {
+            "kind": "projectile",
+            "emoji": "🎺"
+          }
+        },
         {
           "name": "합동 연주",
           "cost": 2,
-          "dmg": 0,
+          "dmg": 10,
           "fx": "gain_star_1",
           "desc": "넷이 소리를 모아 별사탕을 하나 더 얻어요",
           "vfx": {
@@ -687,7 +706,7 @@
       "art": "art/bremen.png",
       "stats": {
         "attack": 3,
-        "defense": 3,
+        "defense": 4,
         "spirit": 3
       }
     },
@@ -700,7 +719,11 @@
       "rarity": 1,
       "summonCost": 1,
       "hp": 50,
-      "passive": null,
+      "passive": {
+        "name": "용감해진 나무",
+        "desc": "겁을 이겨내면 힘이 나요. 체력이 절반 아래면 공격 피해 +20",
+        "fx": "boost_20_below_half"
+      },
       "attacks": [
         {
           "name": "길어지는 코 찌르기",
@@ -901,7 +924,11 @@
       "rarity": 2,
       "summonCost": 3,
       "hp": 70,
-      "passive": null,
+      "passive": {
+        "name": "얼음 갑옷",
+        "desc": "받는 피해가 10 줄어요",
+        "fx": "reduce_dmg_10"
+      },
       "attacks": [
         {
           "name": "서리 바늘",
@@ -942,8 +969,8 @@
       "art": "art/snowqueen.png",
       "stats": {
         "attack": 2,
-        "defense": 3,
-        "spirit": 4
+        "defense": 4,
+        "spirit": 3
       }
     },
     {
@@ -955,12 +982,16 @@
       "rarity": 2,
       "summonCost": 2,
       "hp": 60,
-      "passive": null,
+      "passive": {
+        "name": "달콤한 함정",
+        "desc": "처음 받는 공격은 과자벽이 막아 줘요",
+        "fx": "first_hit_zero"
+      },
       "attacks": [
         {
           "name": "과자집 유혹",
           "cost": 1,
-          "dmg": 0,
+          "dmg": 10,
           "fx": "weaken_next_20",
           "desc": "다음 기술 피해를 최대 20 줄여요 (최소 10)",
           "vfx": {
@@ -984,7 +1015,7 @@
       "art": "art/witch.png",
       "stats": {
         "attack": 3,
-        "defense": 2,
+        "defense": 3,
         "spirit": 3
       }
     },
@@ -997,7 +1028,11 @@
       "rarity": 2,
       "summonCost": 2,
       "hp": 60,
-      "passive": null,
+      "passive": {
+        "name": "바다의 축복",
+        "desc": "기절해도 판마다 한 번 절반 체력으로 되살아나요",
+        "fx": "revive_half_once"
+      },
       "attacks": [
         {
           "name": "파도타기",
@@ -1026,7 +1061,7 @@
       "art": "art/mermaid.png",
       "stats": {
         "attack": 1,
-        "defense": 2,
+        "defense": 3,
         "spirit": 3
       }
     },
@@ -1046,9 +1081,20 @@
       },
       "attacks": [
         {
+          "name": "몽둥이 휘두르기",
+          "cost": 1,
+          "dmg": 20,
+          "fx": null,
+          "desc": "",
+          "vfx": {
+            "kind": "strike",
+            "emoji": "🪵"
+          }
+        },
+        {
           "name": "양떼 몰기",
           "cost": 2,
-          "dmg": 30,
+          "dmg": 40,
           "fx": null,
           "desc": "",
           "vfx": {
@@ -1058,7 +1104,7 @@
         },
         {
           "name": "바위 던지기",
-          "cost": 4,
+          "cost": 3,
           "dmg": 80,
           "fx": null,
           "desc": "",
@@ -1073,7 +1119,7 @@
       "art": "art/polyphemus.png",
       "stats": {
         "attack": 5,
-        "defense": 5,
+        "defense": 4,
         "spirit": 1
       }
     },
@@ -1095,7 +1141,7 @@
         {
           "name": "어슬렁 노려보기",
           "cost": 1,
-          "dmg": 0,
+          "dmg": 10,
           "fx": "weaken_next_20",
           "desc": "다음 기술 피해를 최대 20 줄여요 (최소 10)",
           "vfx": {
@@ -1106,7 +1152,7 @@
         {
           "name": "후― 불어 날리기",
           "cost": 2,
-          "dmg": 30,
+          "dmg": 40,
           "fx": null,
           "desc": "",
           "vfx": {
@@ -1118,7 +1164,7 @@
       "unlock": "redhood_story",
       "art": "art/wolf.png",
       "stats": {
-        "attack": 2,
+        "attack": 3,
         "defense": 3,
         "spirit": 2
       }
@@ -1175,7 +1221,11 @@
       "rarity": 2,
       "summonCost": 3,
       "hp": 70,
-      "passive": null,
+      "passive": {
+        "name": "돌의 시선",
+        "desc": "노려보는 것만으로 받는 피해가 10 줄어요",
+        "fx": "reduce_dmg_10"
+      },
       "attacks": [
         {
           "name": "뱀머리 깨물기",
@@ -1205,7 +1255,7 @@
       "art": "art/medusa.png",
       "stats": {
         "attack": 1,
-        "defense": 3,
+        "defense": 4,
         "spirit": 2
       }
     },
@@ -1217,7 +1267,7 @@
       "type": "monster",
       "rarity": 2,
       "summonCost": 2,
-      "hp": 60,
+      "hp": 80,
       "passive": {
         "name": "황금의 저주",
         "desc": "내 턴이 끝날 때마다 자기 체력 -10",
@@ -1238,7 +1288,7 @@
         {
           "name": "황금 손",
           "cost": 2,
-          "dmg": 20,
+          "dmg": 30,
           "fx": "gold_freeze_gain_star",
           "desc": "맞은 상대 1턴 정지, 나는 별 +1",
           "vfx": {
@@ -1250,8 +1300,8 @@
       "unlock": "midas",
       "art": "art/midas.png",
       "stats": {
-        "attack": 1,
-        "defense": 1,
+        "attack": 2,
+        "defense": 3,
         "spirit": 2
       }
     },
@@ -1264,7 +1314,11 @@
       "rarity": 1,
       "summonCost": 3,
       "hp": 80,
-      "passive": null,
+      "passive": {
+        "name": "굶주린 배",
+        "desc": "체력이 절반 아래면 공격 피해 +20",
+        "fx": "boost_20_below_half"
+      },
       "attacks": [
         {
           "name": "떡 하나 주면 안 잡아먹지",
@@ -1293,7 +1347,7 @@
       "unlock": "sunmoon",
       "art": "art/tiger.png",
       "stats": {
-        "attack": 4,
+        "attack": 5,
         "defense": 4,
         "spirit": 2
       }
@@ -1456,7 +1510,11 @@
       "rarity": 2,
       "summonCost": 3,
       "hp": 70,
-      "passive": null,
+      "passive": {
+        "name": "태양의 가호",
+        "desc": "해가 기울수록 화살이 매서워져요. 체력이 절반 아래면 공격 피해 +20",
+        "fx": "boost_20_below_half"
+      },
       "attacks": [
         {
           "name": "태양의 화살",
@@ -1495,7 +1553,7 @@
       "unlock": "midas",
       "art": "art/apollo.png",
       "stats": {
-        "attack": 3,
+        "attack": 4,
         "defense": 3,
         "spirit": 3
       }
@@ -1653,12 +1711,16 @@
       "rarity": 2,
       "summonCost": 3,
       "hp": 70,
-      "passive": null,
+      "passive": {
+        "name": "풀리지 않는 수수께끼",
+        "desc": "처음 받는 공격은 수수께끼로 되돌려요",
+        "fx": "first_hit_zero"
+      },
       "attacks": [
         {
           "name": "수수께끼",
           "cost": 1,
-          "dmg": 0,
+          "dmg": 10,
           "fx": "steal_star_1",
           "desc": "상대 별사탕 1개 훔치기",
           "vfx": {
@@ -1698,7 +1760,7 @@
       "art": "art/sphinx.png",
       "stats": {
         "attack": 3,
-        "defense": 3,
+        "defense": 4,
         "spirit": 2
       }
     },
@@ -1763,12 +1825,16 @@
       "rarity": 2,
       "summonCost": 3,
       "hp": 80,
-      "passive": null,
+      "passive": {
+        "name": "아리아드네의 실",
+        "desc": "길을 잃지 않아 받는 피해가 10 줄어요",
+        "fx": "reduce_dmg_10"
+      },
       "attacks": [
         {
           "name": "미궁의 실타래",
           "cost": 1,
-          "dmg": 0,
+          "dmg": 10,
           "fx": "gain_star_1",
           "desc": "별사탕 1개 얻기",
           "vfx": {
@@ -1808,7 +1874,7 @@
       "art": "art/theseus.png",
       "stats": {
         "attack": 4,
-        "defense": 4,
+        "defense": 5,
         "spirit": 2
       }
     },
@@ -1821,7 +1887,11 @@
       "rarity": 3,
       "summonCost": 5,
       "hp": 80,
-      "passive": null,
+      "passive": {
+        "name": "달의 가호",
+        "desc": "달이 차오르면 활이 매서워져요. 체력이 절반 아래면 공격 피해 +20",
+        "fx": "boost_20_below_half"
+      },
       "attacks": [
         {
           "name": "은화살",
@@ -1865,7 +1935,7 @@
       ],
       "art": "art/artemis.png",
       "stats": {
-        "attack": 4,
+        "attack": 5,
         "defense": 4,
         "spirit": 2
       }
@@ -1938,7 +2008,7 @@
         {
           "name": "올빼미의 눈",
           "cost": 1,
-          "dmg": 0,
+          "dmg": 10,
           "fx": "weaken_next_20",
           "desc": "상대 다음 공격 피해 -20",
           "vfx": {
@@ -1987,12 +2057,16 @@
       "rarity": 2,
       "summonCost": 3,
       "hp": 60,
-      "passive": null,
+      "passive": {
+        "name": "날랜 발",
+        "desc": "처음 받는 공격은 날아올라 피해요",
+        "fx": "first_hit_zero"
+      },
       "attacks": [
         {
           "name": "날개 신발",
           "cost": 1,
-          "dmg": 0,
+          "dmg": 10,
           "fx": "gain_star_1",
           "desc": "별사탕 1개 얻기",
           "vfx": {
@@ -2027,7 +2101,7 @@
       "art": "art/hermes.png",
       "stats": {
         "attack": 2,
-        "defense": 2,
+        "defense": 3,
         "spirit": 4
       }
     },
@@ -2040,8 +2114,23 @@
       "rarity": 2,
       "summonCost": 3,
       "hp": 60,
-      "passive": null,
+      "passive": {
+        "name": "저승도 멈춘 노래",
+        "desc": "처음 받는 공격은 노래가 멈춰 세워요",
+        "fx": "first_hit_zero"
+      },
       "attacks": [
+        {
+          "name": "현을 뜯다",
+          "cost": 1,
+          "dmg": 20,
+          "fx": null,
+          "desc": "",
+          "vfx": {
+            "kind": "projectile",
+            "emoji": "🎵"
+          }
+        },
         {
           "name": "리라의 노래",
           "cost": 2,
@@ -2056,7 +2145,7 @@
         {
           "name": "저승의 노래",
           "cost": 3,
-          "dmg": 40,
+          "dmg": 50,
           "fx": null,
           "desc": "",
           "vfx": {
@@ -2073,8 +2162,8 @@
       ],
       "art": "art/orpheus.png",
       "stats": {
-        "attack": 3,
-        "defense": 2,
+        "attack": 4,
+        "defense": 3,
         "spirit": 3
       }
     },
@@ -2161,7 +2250,10 @@
           "dmg": 20,
           "fx": null,
           "desc": "",
-          "vfx": { "kind": "strike", "emoji": "🗡️" }
+          "vfx": {
+            "kind": "strike",
+            "emoji": "🗡️"
+          }
         },
         {
           "name": "청룡일섬",
@@ -2169,12 +2261,20 @@
           "dmg": 50,
           "fx": null,
           "desc": "",
-          "vfx": { "kind": "strike", "emoji": "🐉", "big": true }
+          "vfx": {
+            "kind": "strike",
+            "emoji": "🐉",
+            "big": true
+          }
         }
       ],
       "unlock": "game:sanguo/hulao",
       "art": "art/guanyu.png",
-      "stats": { "attack": 4, "defense": 5, "spirit": 1 }
+      "stats": {
+        "attack": 4,
+        "defense": 5,
+        "spirit": 1
+      }
     },
     {
       "id": "zhangfei",
@@ -2193,24 +2293,35 @@
       "attacks": [
         {
           "name": "장팔사모",
-          "cost": 2,
-          "dmg": 30,
+          "cost": 1,
+          "dmg": 20,
           "fx": null,
           "desc": "",
-          "vfx": { "kind": "strike", "emoji": "🔱" }
+          "vfx": {
+            "kind": "strike",
+            "emoji": "🔱"
+          }
         },
         {
           "name": "장판교 호통",
           "cost": 2,
-          "dmg": 0,
+          "dmg": 10,
           "fx": "skip_next_enemy",
           "desc": "상대의 다음 턴을 건너뛰게 해요",
-          "vfx": { "kind": "burst", "emoji": "📣", "big": true }
+          "vfx": {
+            "kind": "burst",
+            "emoji": "📣",
+            "big": true
+          }
         }
       ],
       "unlock": "game:sanguo/changban",
       "art": "art/zhangfei.png",
-      "stats": { "attack": 3, "defense": 4, "spirit": 2 }
+      "stats": {
+        "attack": 2,
+        "defense": 4,
+        "spirit": 2
+      }
     },
     {
       "id": "zhaoyun",
@@ -2220,7 +2331,7 @@
       "type": "brave",
       "rarity": 3,
       "summonCost": 4,
-      "hp": 70,
+      "hp": 60,
       "passive": {
         "name": "단기필마",
         "desc": "공격받을 때 동전 앞면이면 재빠르게 피해요",
@@ -2233,20 +2344,30 @@
           "dmg": 10,
           "fx": "dmg_stack_10",
           "desc": "쓸 때마다 피해가 10씩 늘어요",
-          "vfx": { "kind": "strike", "emoji": "⚡" }
+          "vfx": {
+            "kind": "strike",
+            "emoji": "⚡"
+          }
         },
         {
           "name": "아두 구출",
-          "cost": 2,
+          "cost": 3,
           "dmg": 0,
           "fx": "heal_40",
           "desc": "체력을 40 회복해요",
-          "vfx": { "kind": "aura", "emoji": "🛡️" }
+          "vfx": {
+            "kind": "aura",
+            "emoji": "🛡️"
+          }
         }
       ],
       "unlock": "game:sanguo/changban",
       "art": "art/zhaoyun.png",
-      "stats": { "attack": 2, "defense": 4, "spirit": 4 }
+      "stats": {
+        "attack": 2,
+        "defense": 3,
+        "spirit": 3
+      }
     },
     {
       "id": "zhugeliang",
@@ -2266,23 +2387,34 @@
         {
           "name": "동남풍",
           "cost": 1,
-          "dmg": 0,
+          "dmg": 10,
           "fx": "gain_star_1",
           "desc": "별사탕 1개를 더 얻어요",
-          "vfx": { "kind": "aura", "emoji": "🌬️" }
+          "vfx": {
+            "kind": "aura",
+            "emoji": "🌬️"
+          }
         },
         {
           "name": "화공",
-          "cost": 3,
+          "cost": 2,
           "dmg": 50,
           "fx": null,
           "desc": "",
-          "vfx": { "kind": "projectile", "emoji": "🔥", "big": true }
+          "vfx": {
+            "kind": "projectile",
+            "emoji": "🔥",
+            "big": true
+          }
         }
       ],
       "unlock": "game:sanguo/chushi",
       "art": "art/zhugeliang.png",
-      "stats": { "attack": 4, "defense": 3, "spirit": 3 }
+      "stats": {
+        "attack": 4,
+        "defense": 3,
+        "spirit": 3
+      }
     },
     {
       "id": "caocao",
@@ -2305,20 +2437,31 @@
           "dmg": 0,
           "fx": "steal_star_1",
           "desc": "상대 별사탕 1개를 가져와요",
-          "vfx": { "kind": "debuff", "emoji": "🌾" }
+          "vfx": {
+            "kind": "debuff",
+            "emoji": "🌾"
+          }
         },
         {
           "name": "관도 대공세",
-          "cost": 3,
+          "cost": 2,
           "dmg": 50,
           "fx": null,
           "desc": "",
-          "vfx": { "kind": "burst", "emoji": "♟️", "big": true }
+          "vfx": {
+            "kind": "burst",
+            "emoji": "♟️",
+            "big": true
+          }
         }
       ],
       "unlock": "game:sanguo/guandu",
       "art": "art/caocao.png",
-      "stats": { "attack": 4, "defense": 4, "spirit": 3 }
+      "stats": {
+        "attack": 4,
+        "defense": 4,
+        "spirit": 3
+      }
     },
     {
       "id": "simayi",
@@ -2341,7 +2484,10 @@
           "dmg": 10,
           "fx": "weaken_next_20",
           "desc": "상대의 다음 기술 피해를 최대 20 줄여요",
-          "vfx": { "kind": "debuff", "emoji": "🪭" }
+          "vfx": {
+            "kind": "debuff",
+            "emoji": "🪭"
+          }
         },
         {
           "name": "공성계",
@@ -2349,7 +2495,10 @@
           "dmg": 20,
           "fx": "coin_skip_next_enemy",
           "desc": "동전 앞면이면 상대의 다음 턴을 건너뛰게 해요",
-          "vfx": { "kind": "aura", "emoji": "🏯" }
+          "vfx": {
+            "kind": "aura",
+            "emoji": "🏯"
+          }
         },
         {
           "name": "낙양 진군",
@@ -2357,12 +2506,20 @@
           "dmg": 40,
           "fx": null,
           "desc": "",
-          "vfx": { "kind": "burst", "emoji": "🏯", "big": true }
+          "vfx": {
+            "kind": "burst",
+            "emoji": "🏯",
+            "big": true
+          }
         }
       ],
       "unlock": "game:sanguo/chushi",
       "art": "art/simayi.png",
-      "stats": { "attack": 4, "defense": 3, "spirit": 4 }
+      "stats": {
+        "attack": 4,
+        "defense": 3,
+        "spirit": 4
+      }
     },
     {
       "id": "nezha",
@@ -2385,7 +2542,10 @@
           "dmg": 20,
           "fx": null,
           "desc": "",
-          "vfx": { "kind": "projectile", "emoji": "⭕" }
+          "vfx": {
+            "kind": "projectile",
+            "emoji": "⭕"
+          }
         },
         {
           "name": "풍화륜 돌진",
@@ -2393,12 +2553,20 @@
           "dmg": 50,
           "fx": null,
           "desc": "",
-          "vfx": { "kind": "strike", "emoji": "🔥", "big": true }
+          "vfx": {
+            "kind": "strike",
+            "emoji": "🔥",
+            "big": true
+          }
         }
       ],
       "unlock": "game:sanguo/heavenpalace",
       "art": "art/nezha.png",
-      "stats": { "attack": 4, "defense": 3, "spirit": 2 }
+      "stats": {
+        "attack": 4,
+        "defense": 3,
+        "spirit": 2
+      }
     },
     {
       "id": "erlangshen",
@@ -2421,7 +2589,10 @@
           "dmg": 10,
           "fx": "weaken_next_20",
           "desc": "상대의 다음 기술 피해를 최대 20 줄여요",
-          "vfx": { "kind": "summon", "emoji": "🐕" }
+          "vfx": {
+            "kind": "summon",
+            "emoji": "🐕"
+          }
         },
         {
           "name": "천안 간파",
@@ -2429,7 +2600,10 @@
           "dmg": 20,
           "fx": "skip_next_enemy",
           "desc": "상대의 다음 턴을 건너뛰게 해요",
-          "vfx": { "kind": "debuff", "emoji": "👁️" }
+          "vfx": {
+            "kind": "debuff",
+            "emoji": "👁️"
+          }
         },
         {
           "name": "삼첨양인도",
@@ -2437,12 +2611,20 @@
           "dmg": 40,
           "fx": null,
           "desc": "",
-          "vfx": { "kind": "strike", "emoji": "🔱", "big": true }
+          "vfx": {
+            "kind": "strike",
+            "emoji": "🔱",
+            "big": true
+          }
         }
       ],
       "unlock": "game:sanguo/heavenpalace",
       "art": "art/erlangshen.png",
-      "stats": { "attack": 3, "defense": 5, "spirit": 4 }
+      "stats": {
+        "attack": 3,
+        "defense": 5,
+        "spirit": 4
+      }
     },
     {
       "id": "wumawang",
@@ -2465,7 +2647,10 @@
           "dmg": 40,
           "fx": null,
           "desc": "",
-          "vfx": { "kind": "strike", "emoji": "🏏" }
+          "vfx": {
+            "kind": "strike",
+            "emoji": "🏏"
+          }
         },
         {
           "name": "소 돌진",
@@ -2473,12 +2658,20 @@
           "dmg": 60,
           "fx": null,
           "desc": "",
-          "vfx": { "kind": "burst", "emoji": "🐂", "big": true }
+          "vfx": {
+            "kind": "burst",
+            "emoji": "🐂",
+            "big": true
+          }
         }
       ],
       "unlock": "game:sanguo/flamemountain",
       "art": "art/wumawang.png",
-      "stats": { "attack": 5, "defense": 5, "spirit": 1 }
+      "stats": {
+        "attack": 5,
+        "defense": 5,
+        "spirit": 1
+      }
     },
     {
       "id": "honghaier",
@@ -2501,20 +2694,31 @@
           "dmg": 20,
           "fx": null,
           "desc": "",
-          "vfx": { "kind": "projectile", "emoji": "🛞" }
+          "vfx": {
+            "kind": "projectile",
+            "emoji": "🛞"
+          }
         },
         {
           "name": "삼매진화",
-          "cost": 3,
+          "cost": 2,
           "dmg": 50,
           "fx": null,
           "desc": "",
-          "vfx": { "kind": "burst", "emoji": "🔥", "big": true }
+          "vfx": {
+            "kind": "burst",
+            "emoji": "🔥",
+            "big": true
+          }
         }
       ],
       "unlock": "game:sanguo/huoyundong",
       "art": "art/honghaier.png",
-      "stats": { "attack": 5, "defense": 2, "spirit": 1 }
+      "stats": {
+        "attack": 5,
+        "defense": 2,
+        "spirit": 1
+      }
     },
     {
       "id": "baigujing",
@@ -2524,7 +2728,7 @@
       "type": "monster",
       "rarity": 2,
       "summonCost": 2,
-      "hp": 40,
+      "hp": 50,
       "passive": {
         "name": "세 번의 변신",
         "desc": "공격받을 때 동전 앞면이면 다른 모습으로 피해요",
@@ -2534,10 +2738,13 @@
         {
           "name": "거짓 미소",
           "cost": 1,
-          "dmg": 0,
+          "dmg": 10,
           "fx": "steal_star_1",
           "desc": "상대 별사탕 1개를 가져와요",
-          "vfx": { "kind": "debuff", "emoji": "🌫️" }
+          "vfx": {
+            "kind": "debuff",
+            "emoji": "🌫️"
+          }
         },
         {
           "name": "백골 손톱",
@@ -2545,12 +2752,19 @@
           "dmg": 30,
           "fx": "dmg_stack_10",
           "desc": "쓸 때마다 피해가 10씩 늘어요",
-          "vfx": { "kind": "strike", "emoji": "🤍" }
+          "vfx": {
+            "kind": "strike",
+            "emoji": "🤍"
+          }
         }
       ],
       "unlock": "game:sanguo/baihuling",
       "art": "art/baigujing.png",
-      "stats": { "attack": 3, "defense": 2, "spirit": 4 }
+      "stats": {
+        "attack": 3,
+        "defense": 3,
+        "spirit": 3
+      }
     }
   ]
 }
