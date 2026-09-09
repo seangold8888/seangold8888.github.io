@@ -8,10 +8,14 @@
     monster: { label: "괴물", icon: "🌑" }
   };
   const STAT_META = Object.freeze([
-    Object.freeze({ key: "attack", label: "공격력", short: "세기", icon: "⚔" }),
-    Object.freeze({ key: "defense", label: "방어력", short: "튼튼", icon: "🛡" }),
-    Object.freeze({ key: "spirit", label: "정신력", short: "똑똑", icon: "✨" })
+    Object.freeze({ key: "attack", label: "공격", short: "공격", icon: "⚔" }),
+    Object.freeze({ key: "defense", label: "방어", short: "방어", icon: "🛡" }),
+    Object.freeze({ key: "spirit", label: "지력", short: "지력", icon: "✨" })
   ]);
+  // 종합점수 = 별 하나 5점 + 체력 5마다 1점. 가장 센 폴리페모스가 85점,
+  // 가장 약한 미다스 왕이 32점이라 아이가 카드끼리 견주기 좋은 폭이 나온다.
+  const TOTAL_STAR_POINT = 5;
+  const TOTAL_HP_DIVISOR = 5;
 
 
   const ART_POSITION = {
@@ -72,9 +76,37 @@
     return Math.max(1, Math.min(5, Number.isFinite(value) ? Math.round(value) : 1));
   }
 
+  function totalScore(card) {
+    const stars = STAT_META.reduce(function (sum, meta) {
+      return sum + statValue(card, meta.key);
+    }, 0);
+    const hp = card && Number.isFinite(Number(card.hp)) ? Number(card.hp) : 0;
+    return stars * TOTAL_STAR_POINT + Math.round(hp / TOTAL_HP_DIVISOR);
+  }
+
+  function createTotal(card) {
+    const score = totalScore(card);
+    const row = el("div", "stat-total");
+    row.setAttribute("role", "img");
+    row.setAttribute("aria-label", "종합 " + score + "점");
+    const label = el("span", "stat-label", "🏅 종합");
+    const track = el("span", "total-track");
+    const fill = el("span", "total-fill");
+    fill.style.width = Math.max(4, Math.min(100, score)) + "%";
+    track.appendChild(fill);
+    const value = el("strong", "total-value", String(score));
+    label.setAttribute("aria-hidden", "true");
+    track.setAttribute("aria-hidden", "true");
+    value.setAttribute("aria-hidden", "true");
+    row.append(label, track, value);
+    return row;
+  }
+
   function createStats(card) {
     const stats = el("div", "card-stats");
     stats.setAttribute("aria-label", "카드 능력치");
+    // 종합은 맨 위에 둔다. 맨 아래에 두면 카드 모서리 장식이 숫자를 덮는다.
+    stats.appendChild(createTotal(card));
     STAT_META.forEach(function (meta) {
       const value = statValue(card, meta.key);
       const row = el("div", "stat-row stat-" + meta.key);
@@ -164,10 +196,11 @@
     cardEl.setAttribute(
       "aria-label",
       card.name + ", " + type.label + " 타입, 희귀도 별 " + rarity +
-        "개, HP " + Math.max(0, currentHp) +
-        ", 공격력 " + statValue(card, "attack") + "점" +
-        ", 방어력 " + statValue(card, "defense") + "점" +
-        ", 정신력 " + statValue(card, "spirit") + "점, " + stateLabel
+        "개, 종합 " + totalScore(card) + "점" +
+        ", 체력 " + Math.max(0, currentHp) +
+        ", 공격 " + statValue(card, "attack") + "점" +
+        ", 방어 " + statValue(card, "defense") + "점" +
+        ", 지력 " + statValue(card, "spirit") + "점, " + stateLabel
     );
     if (options.interactive) {
       cardEl.tabIndex = 0;
@@ -200,7 +233,7 @@
     const identity = el("div", "card-identity");
     identity.append(el("h3", "card-name", card.name), el("span", "rarity", rarityLabel(card.rarity)));
     const hp = el("div", "hp-gem");
-    hp.innerHTML = '<span>HP</span><strong>' + Math.max(0, currentHp) + '</strong><i>♥</i>';
+    hp.innerHTML = '<span>체력</span><strong>' + Math.max(0, currentHp) + '</strong><i>♥</i>';
     crown.append(identity, hp);
 
     const meta = el("div", "card-meta");

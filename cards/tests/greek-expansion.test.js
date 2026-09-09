@@ -38,8 +38,8 @@ test("G1 stays byte-for-byte stable after G4", () => {
   assert.deepEqual(g1Collection.slice(-4), g1Ids);
   const old = g1Data.filter(card => !g1Ids.includes(card.id));
   assert.equal(old.length, 24);
-  assert.equal(crypto.createHash("sha256").update(JSON.stringify(old)).digest("hex"), "88c6913741d59ffea6b2631e6ddf047539557d1536a090b01de265ce38f733a7");
-  assert.equal(crypto.createHash("sha256").update(JSON.stringify(g1Data)).digest("hex"), "ab05c6836227ad39e9fe2c65e679a0d8ec0529142579a8241c6c606d47d63a4c");
+  assert.equal(crypto.createHash("sha256").update(JSON.stringify(old)).digest("hex"), "a19db7df148f253cecf062f511e8e2483375a8c2af19f843701c3b429ac32f07");
+  assert.equal(crypto.createHash("sha256").update(JSON.stringify(g1Data)).digest("hex"), "5b02f7a950c5b0054e881279277cbf14b54f086c4e0e318bbbfee06d50954bd5");
   assert.deepEqual(g1Data.reduce((counts, card) => { counts[card.type] = (counts[card.type] || 0) + 1; return counts; }, {}), {brave: 6, wise: 6, magic: 10, monster: 6});
   for (const id of g1Ids) {
     const card = get(id);
@@ -67,7 +67,7 @@ test("G2 adds exactly four playable monster cards and preserves all 28 earlier c
   assert.equal(new Set(g2Collection).size, 32);
   assert.deepEqual(g2Collection.slice(-4), g2Ids);
   const earlier = g2Data.filter(card => !g2Ids.includes(card.id));
-  assert.equal(crypto.createHash("sha256").update(JSON.stringify(earlier)).digest("hex"), "ab05c6836227ad39e9fe2c65e679a0d8ec0529142579a8241c6c606d47d63a4c");
+  assert.equal(crypto.createHash("sha256").update(JSON.stringify(earlier)).digest("hex"), "5b02f7a950c5b0054e881279277cbf14b54f086c4e0e318bbbfee06d50954bd5");
   assert.deepEqual(g2Data.reduce((counts, card) => { counts[card.type] = (counts[card.type] || 0) + 1; return counts; }, {}), {brave: 6, wise: 6, magic: 10, monster: 10});
   const utilities = new Set(["heal_40", "weaken_next_20", "skip_next_enemy", "steal_star_1", "gain_star_1", "dmg_half_enemy_hp", "dmg_stack_10"]);
   for (const id of g2Ids) {
@@ -95,7 +95,7 @@ test("G3 and G4 add eight playable cards, preserve G2, and balance all four type
   assert.equal(data.collection.length, 40);
   assert.equal(new Set(data.collection).size, 40);
   assert.deepEqual(data.collection.slice(-8), laterIds);
-  assert.equal(crypto.createHash("sha256").update(JSON.stringify(data.cards.slice(0, 32))).digest("hex"), "65d5d405497ea5f178cc62a76306aeb865bea5096fd600168fedacd318f6c169");
+  assert.equal(crypto.createHash("sha256").update(JSON.stringify(data.cards.slice(0, 32))).digest("hex"), "8696a1e2a36e41ad12b0359077fdc15dc6c689b85ac769074ca6aeb88ce49419");
   assert.equal(crypto.createHash("sha256").update(JSON.stringify(data.collection.slice(0, 32))).digest("hex"), "708ddca5dc2c6c7819274763b496bdc8c23960d856b3fbf1e6050169aa5182c6");
   assert.deepEqual(data.cards.reduce((counts, card) => { counts[card.type] = (counts[card.type] || 0) + 1; return counts; }, {}), {brave: 10, wise: 10, magic: 10, monster: 10});
   const utilities = new Set(["heal_40", "weaken_next_20", "skip_next_enemy", "steal_star_1", "gain_star_1", "dmg_half_enemy_hp", "dmg_stack_10"]);

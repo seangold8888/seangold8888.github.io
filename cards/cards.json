@@ -131,7 +131,7 @@
       "emoji": "🥚",
       "unlock": "jack_story",
       "kind": "heal",
-      "desc": "HP를 30 회복해요",
+      "desc": "체력를 30 회복해요",
       "effect": {
         "type": "heal",
         "amount": 30
@@ -185,7 +185,7 @@
       "hp": 120,
       "passive": {
         "name": "불굴의 심장",
-        "desc": "HP가 60 이하면 모든 기술 데미지 +20",
+        "desc": "체력가 60 이하면 모든 기술 데미지 +20",
         "fx": "boost_20_below_half"
       },
       "attacks": [
@@ -500,7 +500,7 @@
       "hp": 60,
       "passive": {
         "name": "유리 구두",
-        "desc": "기절해도 판마다 한 번 HP 30으로 부활",
+        "desc": "기절해도 판마다 한 번 체력 30으로 부활",
         "fx": "revive_half_once"
       },
       "attacks": [
@@ -565,7 +565,7 @@
           "cost": 3,
           "dmg": 0,
           "fx": "dmg_half_enemy_hp",
-          "desc": "데미지 = 상대 남은 HP의 절반",
+          "desc": "데미지 = 상대 남은 체력의 절반",
           "vfx": {
             "kind": "burst",
             "emoji": "🏁",
@@ -695,7 +695,7 @@
           "cost": 2,
           "dmg": 0,
           "fx": "heal_40",
-          "desc": "HP 40 회복",
+          "desc": "체력 40 회복",
           "vfx": {
             "kind": "summon",
             "emoji": "🐦"
@@ -793,7 +793,7 @@
           "cost": 2,
           "dmg": 0,
           "fx": "heal_40",
-          "desc": "HP 40 회복",
+          "desc": "체력 40 회복",
           "vfx": {
             "kind": "aura",
             "emoji": "🎃"
@@ -1186,7 +1186,7 @@
       "hp": 60,
       "passive": {
         "name": "황금의 저주",
-        "desc": "내 턴이 끝날 때마다 자기 HP -10",
+        "desc": "내 턴이 끝날 때마다 자기 체력 -10",
         "fx": "self_hurt_10_eot"
       },
       "attacks": [
@@ -1323,7 +1323,7 @@
       "hp": 110,
       "passive": {
         "name": "바다의 분노",
-        "desc": "HP가 절반 아래면 공격 피해 +20",
+        "desc": "체력가 절반 아래면 공격 피해 +20",
         "fx": "boost_20_below_half"
       },
       "attacks": [
@@ -1521,7 +1521,7 @@
       "hp": 120,
       "passive": {
         "name": "머리가 셋",
-        "desc": "HP가 절반 아래면 공격 피해 +20",
+        "desc": "체력가 절반 아래면 공격 피해 +20",
         "fx": "boost_20_below_half"
       },
       "attacks": [
@@ -1567,7 +1567,7 @@
       "hp": 100,
       "passive": {
         "name": "다시 자라는 머리",
-        "desc": "처음 기절하면 HP 절반으로 한 번 되살아나요",
+        "desc": "처음 기절하면 체력 절반으로 한 번 되살아나요",
         "fx": "revive_half_once"
       },
       "attacks": [
@@ -1834,7 +1834,7 @@
       "hp": 70,
       "passive": {
         "name": "누구보다 빠른 발",
-        "desc": "HP가 절반 아래면 공격 피해 +20",
+        "desc": "체력가 절반 아래면 공격 피해 +20",
         "fx": "boost_20_below_half"
       },
       "attacks": [
@@ -2038,7 +2038,7 @@
       "hp": 100,
       "passive": {
         "name": "꺼지지 않는 불",
-        "desc": "HP가 절반 아래면 공격 피해 +20",
+        "desc": "체력가 절반 아래면 공격 피해 +20",
         "fx": "boost_20_below_half"
       },
       "attacks": [

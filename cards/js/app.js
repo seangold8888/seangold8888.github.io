@@ -1729,7 +1729,7 @@
       ) + "%";
     }
     const label = cardEl.getAttribute("aria-label") || "";
-    cardEl.setAttribute("aria-label", label.replace(/HP \d+/, "HP " + hpValue));
+    cardEl.setAttribute("aria-label", label.replace(/체력 \d+/, "체력 " + hpValue));
     return cardEl;
   }
 
@@ -1955,7 +1955,7 @@
     }
     dom.battleMessage.textContent = correct
       ? "이야기 기억 성공! 필살기 「별빛 이야기」가 깨어났어요."
-      : "틀려도 HP와 별사탕은 그대로예요.";
+      : "틀려도 체력과 별사탕은 그대로예요.";
     renderBattle();
     clearTimeout(quizTimer);
     quizTimer = setTimeout(function () {
@@ -2342,7 +2342,7 @@
       sound: damage.amount > 0 ? "hit" : "magic",
       hit: damage.amount > 0 ? damage.target : null
     };
-    if (heal) return { effect: "+" + heal.amount, message: "따뜻한 마법으로 HP를 회복했어요.", sound: "magic" };
+    if (heal) return { effect: "+" + heal.amount, message: "따뜻한 마법으로 체력을 회복했어요.", sound: "magic" };
     if (coin) return { effect: coin.result === "heads" ? "앞면!" : "뒷면!", message: "운명의 동전이 빙글빙글!", sound: "coin" };
     if (guard) return { effect: "🛡️", message: "방어 자세! 다음 공격 피해를 최대 20 막아요.", sound: "guard" };
     if (rest) return { effect: "+⭐", message: actor === "player" ? "별사탕을 아껴 더 큰 기술을 준비해요." : "상대가 별사탕을 모으고 있어요.", sound: "star" };

@@ -76,7 +76,7 @@ test("G4 40장 모두 공격력·방어력·정신력 1~5 별점을 가진다", 
   assert.deepEqual(byId.get("fairygodmother").stats, { attack: 1, defense: 4, spirit: 4 });
 });
 
-test("컴팩트 카드는 4:5 원화·이름·HP·고정 5칸 별점 세 줄만 렌더한다", () => {
+test("컴팩트 카드는 4:4.55 원화·이름·HP·고정 5칸 별점 세 줄만 렌더한다", () => {
   const CardView = loadCardView();
   const card = data.cards.find((item) => item.id === "heracles");
   const element = CardView.create(card, {
@@ -95,14 +95,18 @@ test("컴팩트 카드는 4:5 원화·이름·HP·고정 5칸 별점 세 줄만 
   );
   assert.equal(rows.length, 3);
   assert.deepEqual(rows.map((row) => row.getAttribute("aria-label")), [
-    "공격력 5점 만점 5",
-    "방어력 5점 만점 5",
-    "정신력 1점 만점 5",
+    "공격 5점 만점 5",
+    "방어 5점 만점 5",
+    "지력 1점 만점 5",
   ]);
+  // 종합 = 별 합계 × 5 + 체력 ÷ 5. 헤라클레스는 (5+5+1)×5 + 120÷5 = 79.
+  const totals = nodes.filter((node) => hasClass(node, "stat-total"));
+  assert.equal(totals.length, 1);
+  assert.equal(totals[0].getAttribute("aria-label"), "종합 79점");
   assert.deepEqual(rows.map((row) => walk(row).filter((node) => hasClass(node, "stat-star")).length), [5, 5, 5]);
   assert.deepEqual(rows.map((row) => walk(row).filter((node) => hasClass(node, "is-filled")).length), [5, 5, 1]);
   assert.equal(nodes.some((node) => hasClass(node, "card-details")), false);
-  assert.match(css, /\.story-card\.is-collection-compact \.card-art \{[\s\S]*?aspect-ratio: 4 \/ 5/);
+  assert.match(css, /\.story-card\.is-collection-compact \.card-art \{[\s\S]*?aspect-ratio: 4 \/ 4\.55/);
   assert.deepEqual(rows.map((row) => row.getAttribute("role")), ["img", "img", "img"]);
   assert.match(css, /\.stat-star \{[\s\S]*?clip-path: polygon/);
 });
@@ -119,7 +123,7 @@ test("컬렉션은 폰 2열·iPad 세로 3열·가로 5열이며 큰 소개 없�
   assert.match(css, /\.collection-toolbar \.story-link \{[\s\S]*?min-height: 60px/);
   assert.match(css, /\.story-card\.is-collection-compact \.card-art \{[\s\S]*?width: calc\(100% - 8px\)/);
   assert.match(css, /\.story-card\.is-collection-compact \.stat-row \{ min-height: 14px; \}/);
-  assert.match(html, /⚔ 세기[\s\S]*?🛡 튼튼[\s\S]*?✨ 똑똑/);
+  assert.match(html, /⚔ 공격[\s\S]*?🛡 방어[\s\S]*?✨ 지력[\s\S]*?♥ 체력[\s\S]*?🏅 종합/);
 
   const estimatedCardHeight = 1.25 * 138 + 65;
   const portraitGridBottom = 72 + 20 + 8 + 60 + 3 + 24 + 5 + (estimatedCardHeight * 3) + 16;
@@ -144,12 +148,12 @@ test("열린 카드는 상세에서만 출전 선택하고 잠긴 카드는 기�
   assert.match(app, /origin && origin\.isConnected[\s\S]*?origin\.focus/);
 });
 
-test("양쪽 전투 카드가 같은 3줄 별점 렌더러를 사용하고 카드 자산은 v30이다", () => {
+test("양쪽 전투 카드가 같은 3줄 별점 렌더러를 사용하고 카드 자산은 v31이다", () => {
   assert.match(app, /syncBattleCard\(dom\.playerCardSlot/);
   assert.match(app, /syncBattleCard\(dom\.enemyCardSlot/);
   assert.match(app, /CardView\.create\(side\.card, \{[\s\S]*?compact: true/);
   assert.match(viewSource, /else if \(options\.compact\) \{[\s\S]*?crown, stats, art/);
-  assert.equal((html.match(/\?v=30/g) || []).length, 7);
-  assert.doesNotMatch(html, /\?v=(?:25|26|27|28|29)/);
-  assert.equal((sw.match(/\.\/cards\/[^"\n]+\?v=30/g) || []).length, 7);
+  assert.equal((html.match(/\?v=31/g) || []).length, 7);
+  assert.doesNotMatch(html, /\?v=(?:25|26|27|28|29|30)/);
+  assert.equal((sw.match(/\.\/cards\/[^"\n]+\?v=31/g) || []).length, 7);
 });
