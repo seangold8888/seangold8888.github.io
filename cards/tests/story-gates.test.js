@@ -44,7 +44,18 @@ const PLAYABLE_CARD_IDS = [
   "athena",
   "hermes",
   "orpheus",
-  "prometheus"
+  "prometheus",
+  "guanyu",
+  "zhangfei",
+  "zhaoyun",
+  "zhugeliang",
+  "caocao",
+  "simayi",
+  "nezha",
+  "erlangshen",
+  "wumawang",
+  "honghaier",
+  "baigujing"
 ];
 
 function loadStoryGates() {
@@ -66,7 +77,7 @@ test("exports one story gate for every playable card", function () {
     function (question) { return question.cardId; }
   ).sort();
 
-  assert.ok(gates.all.length >= 40 * 5, "카드당 5문항 이상이어야 한다");
+  assert.ok(gates.all.length >= 51 * 5, "카드당 5문항 이상이어야 한다");
   assert.equal(
     new Set(Array.from(gates.all, function (question) {
       return question.id;

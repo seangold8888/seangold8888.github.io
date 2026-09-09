@@ -57,6 +57,17 @@ Constraints: original public-domain interpretation; character and scene art only
 - `hermes.png`: 하늘색 튜닉과 황금 망토의 젊은 전령이 구름다리를 가볍게 걷는다. 양쪽 신발의 날개, 두 뱀이 감긴 전령 지팡이, 닫힌 가죽 가방이 또렷하다.
 - `orpheus.png`: 자주색 튜닉과 청록 망토의 젊은 음악가가 고요한 달빛 강가에서 황금 리라를 연주한다. 음표 기호·유령·해골 없이 따뜻한 빛의 물결만 퍼진다.
 - `prometheus.png`: 남색 튜닉과 녹슨 붉은 망토의 온화한 거인이 산등성이에서 작은 불이 든 흙 등잔을 두 손으로 보호한다. 독수리는 멀리 날고 사슬·상처·처벌 장면 없음.
+- `guanyu.png`: 긴 검은 수염·녹색 도포·비취와 고금빛 갑옷의 관우가 청룡언월도를 침착하게 휘두를 준비를 한다. 글자 없는 산성 배경과 옅은 비취빛 용 궤적.
+- `zhangfei.png`: 검붉은 갑옷과 짙은 수염의 장비가 달빛 장판교를 지키며 장팔사모를 들고 호통친다. 무섭지 않은 영웅 표정과 바람에 휘날리는 무문자 깃발.
+- `zhaoyun.png`: 은백 갑옷과 청색 천의 젊은 조운이 포대기에 안전히 안은 아두를 지키며 은창을 든다. 흰 말과 달빛 안개로 구출 장면을 표현.
+- `zhugeliang.png`: 상아색·청록 학자복의 제갈량이 백우선을 펼치고 강과 배 위로 동남풍을 일으킨다. 모형 전장과 등불, 글자 없는 깃발.
+- `caocao.png`: 검붉은 갑옷의 조조가 군량 자루와 무문자 작전판을 살피며 칼자루를 잡는다. 관도 진영의 빈 깃발과 침착한 계산가 표정.
+- `simayi.png`: 자주·먹색 도포와 갑옷의 사마의가 닫힌 부채를 들고 성문 앞에서 새벽을 기다린다. 발밑에는 문양 없는 전략 돌.
+- `nezha.png`: 붉은 비단과 금빛 전투복의 어린 나타가 두 풍화륜 위에서 건곤권과 화첨창을 든다. 완전히 옷을 입고 장난기 있는 용감한 표정.
+- `erlangshen.png`: 은백·청색 갑옷의 이랑진군이 은은한 천안과 삼첨양인도를 드러내고 친근한 검은 효천견과 선다. 공포 요소 없는 달빛 천궁.
+- `wumawang.png`: 둥근 뿔과 다문 입의 듬직한 우마왕이 검붉은 산왕 갑옷과 혼철곤을 갖춘다. 화염산은 따뜻한 주황빛 배경이며 이빨·포효 없음.
+- `honghaier.png`: 붉은 금빛 옷의 어린 홍해아가 작은 불수레를 타고 화첨창을 돌린다. 주황·산호·금빛 삼매진화와 장난스러운 미소, 상체 노출 없음.
+- `baigujing.png`: 진주빛 흰옷과 은빛 반가면의 백골정이 꽃바구니를 내민다. 뒤에는 세 가지 사람 변신의 옅은 안개 실루엣. 해골·뼈·빈 눈구멍·시체 묘사 없음.
 ## 카드 크롭
 
 | id | object-position |
@@ -101,6 +112,17 @@ Constraints: original public-domain interpretation; character and scene art only
 | hermes | `50% 28%` |
 | orpheus | `50% 24%` |
 | prometheus | `50% 20%` |
+| guanyu | `50% 22%` |
+| zhangfei | `50% 24%` |
+| zhaoyun | `50% 22%` |
+| zhugeliang | `50% 18%` |
+| caocao | `50% 18%` |
+| simayi | `50% 18%` |
+| nezha | `50% 24%` |
+| erlangshen | `50% 20%` |
+| wumawang | `50% 18%` |
+| honghaier | `50% 24%` |
+| baigujing | `50% 20%` |
 
 두 번째 묶음(요정 대모·빨간 모자·잭)은 첫 묶음(신데렐라·오디세우스·폴리페모스)을 스타일·조명·재질 참고 이미지로 사용했고, 인물과 구도는 복제하지 않도록 명시했다. 6단계 전 검수에서 신데렐라와 폴리페모스는 위 장면으로 새로 생성해 PNG·WebP를 모두 교체했다.
 
@@ -255,3 +277,48 @@ Subject: ORPHEUS, a gentle youthful Greek musician and storyteller with warm oli
 ```text
 Subject: PROMETHEUS, a compassionate strong but gentle Greek titan and teacher with sun-warmed bronze skin, thick dark hair streaked with copper, a short neat beard and intelligent caring eyes; mature, distinct from Zeus. Fully clothed in a charcoal-blue long-sleeved tunic, layered rust-red wool cloak and sturdy bronze bracers, torso and legs covered. He kneels on one knee at a high starlit mountain ledge and protects ONE small bright living FLAME inside a shallow plain clay lamp cupped carefully between both hands at chest height. The fire illuminates his face, hands and cloth with warm amber light; flame remains small, safe and clearly readable. In the far upper sky, ONE peaceful eagle glides as a small silhouette, not attacking. Below, distant tiny warm village lights suggest the gift reaching people, with no visible crowd. Face and clay lamp form the central focus; deep indigo rock and sky, copper-rust cloak, golden fire. Expression brave, generous and hopeful. No chains, punishment, wounds, exposed chest, giant muscles, torches, forest fire, lightning, superhero likeness, or threatening bird.
 ```
+
+## 동양 C2~C3 최종 프롬프트 (2026-09-09)
+
+Codex 내장 ImageGen으로 11장을 각각 별도 생성했다. 기존 손오공 원화는 재생성하지 않았다. 생성본은 중앙 cover 방식으로 1024×1536 RGB PNG에 정규화하고 같은 그림을 WebP 품질 90으로 인코딩했다.
+
+| id | ImageGen 원본 |
+|---|---|
+| guanyu | `exec-a3fe158f-c059-4920-a824-fecb9cd62d3f.png` |
+| zhangfei | `exec-9fcfdd07-49df-4739-9c0a-dd4b78110406.png` |
+| zhaoyun | `exec-ef3ea0ec-d999-4d20-8a74-781a9c2c35cb.png` |
+| zhugeliang | `exec-9b4766f1-bfef-4724-bf24-3d67ece34225.png` |
+| caocao | `exec-4b4b7ab7-e203-477e-835d-28514dccf75b.png` |
+| simayi | `exec-fbd5707e-55bb-497d-8b3b-efdd0eba4d2f.png` |
+| nezha | `exec-a4957b10-6e59-471d-a93f-f448beab6487.png` |
+| erlangshen | `exec-33218e98-8c48-4a85-9d5c-99f61260e45a.png` |
+| wumawang | `exec-5b0265c4-7420-452a-948a-5b191ea982df.png` |
+| honghaier | `exec-0d0e0609-f766-403f-914b-07050430f3a7.png` |
+| baigujing | `exec-85b74910-542c-4ec1-be41-fef97d444cd6.png` |
+
+공통부:
+
+```text
+Use case: illustration-story
+Asset type: premium vertical collectible card character artwork for a children's strategy game
+Primary request: create a new 1024×1536 portrait illustration.
+Style/medium: premium cinematic hand-painted East Asian historical or mythic storybook fantasy, rich natural brushwork, polished and original, no imitation of any existing film, animation, game, or trading-card franchise.
+Composition/framing: one main character fills 65–78% of the height, face in the upper third, strong readable silhouette, important weapon and prop inside the central 72%, softly blurred narrative background, no border.
+Lighting/mood: deep indigo starlit night, warm gold rim light, subtle jewel-color accents; brave, exciting and welcoming for children ages 5–8.
+Constraints: family-friendly; fully clothed; no blood, injury, gore or active stabbing; no text, letters, numbers, logos, watermark, UI, card frame, stars, type icons, readable signs, writing, calligraphy, runes, emblems or banner symbols.
+Avoid: photorealism, chibi proportions, horror, aggressive snarling, sharp exposed teeth, modern clothing, copyrighted screen adaptation styling.
+```
+
+카드별 Subject:
+
+- `guanyu`: Honorable tall Guan Yu, warm reddish-brown face, exceptionally long black beard, deep green robe and jade-antique-gold armor, dark green headcloth, long guandao, restrained jade dragon-shaped light trail, blank moonlit stone pass and pine mountains, dignified protective expression.
+- `zhangfei`: Broad Zhang Fei with round expressive eyes, dense black beard, black-crimson armor and dark red headcloth, long serpent spear, protecting a moonlit wooden bridge; bold rallying shout but child-safe heroic face.
+- `zhaoyun`: Youthful Zhao Yun in silver-white armor and blue-white scarf, silver spear and safely wrapped infant held close, pale horse and moonlit mist, focused kind fearless expression.
+- `zhugeliang`: Elegant Zhuge Liang in ivory and cool-teal scholar robes and black cap, white feather fan, miniature river-and-boat tactical landscape, southeast wind and warm sparks, quiet intelligent expression.
+- `caocao`: Keen Cao Cao in dark red-black armor and crimson cloak, grain pouch and unmarked battlefield pieces, sheathed straight sword, Guandu tents and blank flags, calculating but charismatic.
+- `simayi`: Patient Sima Yi in midnight-purple and charcoal robes over armor, closed fan, quiet fortress gate, plain strategy stones and pale dawn, calm watchful expression.
+- `nezha`: Spirited child Nezha with twin buns, red ribbons, fully clothed red-gold battle tunic, exactly two Wind-Fire Wheels, golden Cosmic Ring, fire-tipped spear and celestial sash, playful brave expression.
+- `erlangshen`: Composed Erlang Shen in silver-white and blue armor, gentle glowing third eye, three-pointed spear and friendly black celestial hound, moonlit heavenly gate, protective expression.
+- `wumawang`: Storybook-friendly Bull Demon King with rounded horns, closed mouth, dark-brown fur, charcoal-oxblood mountain armor, black iron staff and warm Flaming Mountains, sturdy rather than menacing.
+- `honghaier`: Mischievous child Red Boy in fully clothed crimson-gold tunic, tiny fire-wheeled cart, short fire-tipped spear and controlled orange-coral-gold flame spiral, cheeky smile.
+- `baigujing`: Safe White Bone Spirit interpretation: elegant woman in pearl-white and silver robes, smooth silver half-mask, flower basket and exactly three harmless mist disguises; no skeleton, skull, bones, empty sockets, corpse imagery or claws.

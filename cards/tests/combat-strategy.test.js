@@ -465,6 +465,35 @@ test("피노키오 AI는 안전할 때 방어 10의 저체력 상대에게 누�
       attackIndex: 1,
     });
   });
+
+  await t.test("회복을 두 번 쓴 뒤에는 공격으로 전환해 교착을 막는다", () => {
+    const state = setup(10);
+    state.sides.enemy.attackUses[1] = 2;
+    assert.deepEqual(Engine.chooseAiAction(state), {
+      type: "attack",
+      attackIndex: 0,
+    });
+  });
+});
+
+test("AI는 상대 방어막 앞에서 피해 0 건너뛰기 대신 피해 기술로 막을 깬다", () => {
+  const shouter = card({
+    id: "guard-break-shouter",
+    attacks: [
+      { name: "창", cost: 2, dmg: 30, fx: null },
+      { name: "호통", cost: 2, dmg: 0, fx: "skip_next_enemy" },
+    ],
+  });
+  const defender = card({ id: "guard-break-defender", hp: 20 });
+  const state = Engine.createGame(shouter, defender);
+  state.sides.player.stars = 2;
+  state.sides.enemy.status.guardReduction = 20;
+  state.sides.enemy.status.guardExpiresTurnNumber = state.turnNumber + 2;
+
+  assert.deepEqual(Engine.chooseAiAction(state, () => 0.49), {
+    type: "attack",
+    attackIndex: 0,
+  });
 });
 
 test("v1의 모든 허용 매치업은 방어·이야기 필살기 전략으로 120행동 안에 끝난다", () => {

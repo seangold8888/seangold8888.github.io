@@ -171,6 +171,9 @@
         fragmentGuardZero: 0,
         fragmentReduceNext: 0,
         fragmentOilCoin: 0,
+        // A successful coin evade makes the next hostile hit guaranteed.
+        // This keeps two evade cards from producing an endless battle.
+        coinEvadeCooldown: 0,
         guardReduction: 0,
         guardExpiresTurnNumber: 0,
         guardCooldownUntilTurnNumber: 0,
@@ -558,7 +561,11 @@
     return Boolean(
       (hostile && sideOf(state, actor).status.fragmentOilCoin > 0) ||
       isPassiveActive(state, actor, "coin_miss") ||
-      (hostile && isPassiveActive(state, targetActor, "coin_evade")) ||
+      (
+        hostile &&
+        isPassiveActive(state, targetActor, "coin_evade") &&
+        (Number(sideOf(state, targetActor).status.coinEvadeCooldown) || 0) <= 0
+      ) ||
       attack.fx === "coin_skip_next_enemy"
     );
   }
@@ -1143,12 +1150,16 @@
 
     if (
       attackTargetsEnemy(attack) &&
-      isPassiveActive(next, targetActor, "coin_evade") &&
-      flipCoin(next, rng, targetActor, "coin_evade")
+      isPassiveActive(next, targetActor, "coin_evade")
     ) {
-      emit(next, { type: "attack_evaded", actor: targetActor, source: actor });
-      finishTurn(next, actor);
-      return next;
+      if ((Number(sideOf(next, targetActor).status.coinEvadeCooldown) || 0) > 0) {
+        sideOf(next, targetActor).status.coinEvadeCooldown = 0;
+      } else if (flipCoin(next, rng, targetActor, "coin_evade")) {
+        sideOf(next, targetActor).status.coinEvadeCooldown = 1;
+        emit(next, { type: "attack_evaded", actor: targetActor, source: actor });
+        finishTurn(next, actor);
+        return next;
+      }
     }
 
     if (attackTargetsEnemy(attack)) {
@@ -1190,7 +1201,8 @@
     if (isPassiveActive(state, actor, "coin_miss")) expectedDamage *= 0.5;
     if (
       attackTargetsEnemy(attack) &&
-      isPassiveActive(state, targetActor, "coin_evade")
+      isPassiveActive(state, targetActor, "coin_evade") &&
+      (Number(target.status.coinEvadeCooldown) || 0) <= 0
     ) {
       expectedDamage *= 0.5;
     }
@@ -1291,6 +1303,12 @@
     var candidates = [];
     actorSide.card.attacks.forEach(function (attack, attackIndex) {
       if (attacksExhausted || !isAttackSupported(attack)) return;
+      // 수동 플레이의 회복은 제한하지 않되 AI는 같은 40 회복을 최대 두 번만 쓴다.
+      // 저비용 공격과 회복량이 정확히 맞물리는 조합의 무한 반복을 막는다.
+      if (
+        attack.fx === "heal_40" &&
+        (Number(actorSide.attackUses[attackIndex]) || 0) >= 2
+      ) return;
       candidates.push({
         attack: attack,
         estimate: estimateAttack(state, actor, attack, attackIndex),
@@ -1311,6 +1329,41 @@
       });
     if (lethal.length) {
       return { type: "attack", attackIndex: lethal[0].estimate.attackIndex };
+    }
+
+    // A zero-damage skip/debuff must not loop against a refreshed guard.
+    // Break the active guard with real damage so the following turn can
+    // advance toward a knockout while the guard is on cooldown. Keep this
+    // priority to attacks that would otherwise be lethal, so ordinary guard
+    // play does not flatten each card's strategy or lengthen every match.
+    if (target.status.guardReduction > 0) {
+      var unguarded = clone(state);
+      sideOf(unguarded, other(actor)).status.guardReduction = 0;
+      sideOf(unguarded, other(actor)).status.guardExpiresTurnNumber = 0;
+      var guardBreak = affordable
+        .map(function (candidate) {
+          return {
+            candidate: candidate,
+            unguarded: estimateAttack(
+              unguarded,
+              actor,
+              candidate.attack,
+              candidate.estimate.attackIndex
+            ),
+          };
+        })
+        .filter(function (plan) {
+          return plan.candidate.estimate.damage > 0 && plan.unguarded.damage >= target.hp;
+        })
+        .sort(function (a, b) {
+          return b.unguarded.damage - a.unguarded.damage;
+        })[0] || null;
+      if (guardBreak) {
+        return {
+          type: "attack",
+          attackIndex: guardBreak.candidate.estimate.attackIndex,
+        };
+      }
     }
 
     var fragmentPlans = [];
@@ -1555,7 +1608,18 @@
       }
     }
 
-    if (!bestNow || bestNow.estimate.score <= 0) return { type: "rest" };
+    // A stacking attack can score zero on its first use, but resting forever
+    // never improves that position. Once healing/saving has not produced a
+    // better action, start the stack so every matchup is guaranteed to move.
+    if (!bestNow || bestNow.estimate.score <= 0) {
+      if (safeStackSetup) {
+        return {
+          type: "attack",
+          attackIndex: safeStackSetup.estimate.attackIndex,
+        };
+      }
+      return { type: "rest" };
+    }
     if (
       typeof rng === "function" &&
       affordable.length > 1 &&

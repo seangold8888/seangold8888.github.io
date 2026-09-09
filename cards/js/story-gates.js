@@ -42,7 +42,18 @@
     athena: "perseus",
     hermes: "perseus",
     orpheus: "perseus",
-    prometheus: "heracles"
+    prometheus: "heracles",
+    guanyu: "game:sanguo/hulao",
+    zhangfei: "game:sanguo/changban",
+    zhaoyun: "game:sanguo/changban",
+    zhugeliang: "game:sanguo/chushi",
+    caocao: "game:sanguo/guandu",
+    simayi: "game:sanguo/chushi",
+    nezha: "game:sanguo/heavenpalace",
+    erlangshen: "game:sanguo/heavenpalace",
+    wumawang: "game:sanguo/flamemountain",
+    honghaier: "game:sanguo/huoyundong",
+    baigujing: "game:sanguo/baihuling"
   });
 
   function question(id, cardId, prompt, choices, correctChoiceId, refs) {
@@ -623,6 +634,93 @@
       [["mountain", "산 아래 오백 년 동안 갇혔어요"], ["jail", "감옥에서 하루를 보냈어요"], ["nothing", "아무 벌도 받지 않았어요"]], "mountain",
       ["audio: sunwukong 오행산"])
   ];
+
+  // 동양 확장: 손오공의 기존 오디오 문항 5개와 아래 게임 전장 문항 55개로 총 60개.
+  // 실제 전장의 mission/lesson/scene_intro/real/fiction만 묻고, 새 오디오가 있는 것처럼 꾸미지 않는다.
+  const eastQuestionSets = {
+    guanyu: [
+      ["flags", "호로관 전투에서 되찾아야 하는 것은 무엇인가요?", [["flags", "연합군 깃발"], ["fans", "부채"], ["peaches", "복숭아"]], "flags", "sanguo/data/gamedata.json#ACTION_STAGES.hulao.mission"],
+      ["count", "호로관에서 되찾아야 하는 깃발은 모두 몇 개인가요?", [["two", "두 개"], ["four", "네 개"], ["eight", "여덟 개"]], "four", "sanguo/data/gamedata.json#ACTION_STAGES.hulao.required"],
+      ["boss", "호로관을 지키는 동탁군의 선봉은 누구인가요?", [["huaxiong", "화웅"], ["simayi", "사마의"], ["wumawang", "우마왕"]], "huaxiong", "sanguo/data/gamedata.json#ACTION_STAGES.hulao.bossName"],
+      ["alliance", "반동탁연합이 힘을 합치기 어려웠던 까닭은 무엇인가요?", [["different", "서로 생각이 달랐기 때문에"], ["sleep", "모두 잠들었기 때문에"], ["rain", "비가 왔기 때문에"]], "different", "sanguo/data/gamedata.json#ACTION_STAGES.hulao.lesson"],
+      ["trust", "여러 사람이 힘을 합칠 때 필요한 것은 무엇인가요?", [["trust", "공동 목표와 신뢰"], ["gold", "많은 황금"], ["magic", "마법 지팡이"]], "trust", "sanguo/data/gamedata.json#ACTION_STAGES.hulao.lesson"]
+    ],
+    zhangfei: [
+      ["people", "장판 전투에서 먼저 도와야 하는 사람은 몇 명인가요?", [["two", "두 명"], ["four", "네 명"], ["ten", "열 명"]], "four", "sanguo/data/gamedata.json#ACTION_STAGES.changban.required"],
+      ["goal", "도움이 필요한 사람들을 어디까지 지켜야 하나요?", [["bridge", "안전한 다리"], ["palace", "하늘 궁전"], ["cave", "동굴"]], "bridge", "sanguo/data/gamedata.json#ACTION_STAGES.changban.goalName"],
+      ["courage", "장판 이야기에서 진짜 용기는 무엇을 위해 쓰는 힘인가요?", [["protect", "누군가를 안전하게 지키기 위해"], ["boast", "강함을 자랑하기 위해"], ["treasure", "보물을 모으기 위해"]], "protect", "sanguo/data/gamedata.json#ACTION_STAGES.changban.midTip"],
+      ["boss", "장판의 길을 막는 호표기 대장은 누구인가요?", [["caochun", "조순"], ["huaxiong", "화웅"], ["aoguang", "오광"]], "caochun", "sanguo/data/gamedata.json#ACTION_STAGES.changban.bossName"],
+      ["lesson", "장판의 구출 이야기가 가르쳐 주는 것은 무엇인가요?", [["responsibility", "보호할 사람을 위한 책임"], ["speed", "혼자 빨리 달리기"], ["shouting", "큰 소리만 내기"]], "responsibility", "sanguo/data/gamedata.json#ACTION_STAGES.changban.lesson"]
+    ],
+    zhaoyun: [
+      ["mission", "조운의 장판 임무는 무엇인가요?", [["rescue", "도움이 필요한 사람을 구하기"], ["fan", "부채 찾기"], ["music", "악기 연주하기"]], "rescue", "sanguo/data/gamedata.json#ACTION_STAGES.changban.mission"],
+      ["item", "장판 전장에서 모으는 표시는 무엇을 뜻하나요?", [["protected", "보호한 사람"], ["grain", "군량"], ["rings", "건곤권"]], "protected", "sanguo/data/gamedata.json#ACTION_STAGES.changban.itemName"],
+      ["bridge", "구출한 사람들과 향하는 곳은 어디인가요?", [["safe", "안전한 다리"], ["fire", "화염산"], ["sea", "바다 밑 용궁"]], "safe", "sanguo/data/gamedata.json#ACTION_STAGES.changban.goalName"],
+      ["meaning", "조운의 강함이 빛난 까닭은 무엇인가요?", [["protect", "사람을 보호하는 데 썼기 때문에"], ["crown", "왕관이 있었기 때문에"], ["alone", "혼자 자랑했기 때문에"]], "protect", "sanguo/data/gamedata.json#ACTION_STAGES.changban.lesson"],
+      ["enemy", "장판에서 조운을 쫓는 부대는 무엇인가요?", [["tiger", "호표기"], ["navy", "수군"], ["monkeys", "원숭이 군대"]], "tiger", "sanguo/data/gamedata.json#ACTION_STAGES.changban.bossName"]
+    ],
+    zhugeliang: [
+      ["carts", "출사표 전장에서 지켜야 하는 보급 수레는 몇 개인가요?", [["three", "세 개"], ["five", "다섯 개"], ["nine", "아홉 개"]], "five", "sanguo/data/gamedata.json#ACTION_STAGES.chushi.required"],
+      ["supplies", "북벌을 오래 이어 가려면 무엇을 꾸준히 준비해야 하나요?", [["roads", "길과 식량과 사람"], ["magic", "마법 주문"], ["gold", "황금 왕관"]], "roads", "sanguo/data/gamedata.json#ACTION_STAGES.chushi.lesson"],
+      ["goal", "보급 수레를 어디까지 옮겨야 하나요?", [["camp", "북벌군의 진지"], ["bridge", "장판의 다리"], ["palace", "용궁"]], "camp", "sanguo/data/gamedata.json#ACTION_STAGES.chushi.goalName"],
+      ["year", "출사표 전장의 시대 표시는 몇 년인가요?", [["190", "190년"], ["208", "208년"], ["227", "227년"]], "227", "sanguo/data/gamedata.json#ACTION_STAGES.chushi.year"],
+      ["skill", "출사표 이야기가 말하는 진짜 실력은 무엇인가요?", [["prepare", "준비를 오래 이어 가는 힘"], ["rush", "무조건 서두르는 힘"], ["luck", "동전 운만 믿는 힘"]], "prepare", "sanguo/data/gamedata.json#ACTION_STAGES.chushi.midTip"]
+    ],
+    caocao: [
+      ["scrolls", "관도대전에서 모아야 하는 정보 죽간은 몇 개인가요?", [["two", "두 개"], ["four", "네 개"], ["seven", "일곱 개"]], "four", "sanguo/data/gamedata.json#ACTION_STAGES.guandu.required"],
+      ["target", "정보 죽간으로 찾아내는 곳은 어디인가요?", [["wuchao", "오소 군량창"], ["hulao", "호로관"], ["heaven", "천궁"]], "wuchao", "sanguo/data/gamedata.json#ACTION_STAGES.guandu.mission"],
+      ["important", "관도대전에서 병사의 수만큼 중요했던 것은 무엇인가요?", [["info", "정보와 보급"], ["songs", "노래와 춤"], ["weather", "눈과 비"]], "info", "sanguo/data/gamedata.json#ACTION_STAGES.guandu.lesson"],
+      ["boss", "오소 군량창을 지키는 장수는 누구인가요?", [["chunyuqiong", "순우경"], ["caochun", "조순"], ["erlang", "이랑진군"]], "chunyuqiong", "sanguo/data/gamedata.json#ACTION_STAGES.guandu.bossName"],
+      ["use", "좋은 정보가 힘을 잃지 않으려면 어떻게 해야 하나요?", [["quick", "확인하고 빠르게 활용해요"], ["hide", "아무에게도 쓰지 않아요"], ["forget", "곧바로 잊어요"]], "quick", "sanguo/data/gamedata.json#ACTION_STAGES.guandu.midTip"]
+    ],
+    simayi: [
+      ["enemy", "출사표 전장에서 북벌군을 기다리는 위군 도독은 누구인가요?", [["simayi", "사마의"], ["guanyu", "관우"], ["nezha", "나타"]], "simayi", "sanguo/data/gamedata.json#ACTION_STAGES.chushi.bossName"],
+      ["line", "사마의가 전장에서 강조하는 태도는 무엇인가요?", [["wait", "서두르지 않기"], ["shout", "계속 소리치기"], ["sleep", "아무것도 하지 않기"]], "wait", "sanguo/data/gamedata.json#ACTION_STAGES.chushi.bossLine"],
+      ["wagons", "사마의에게 막히지 않도록 지켜야 하는 것은 무엇인가요?", [["wagons", "보급 수레"], ["apples", "황금 사과"], ["slipper", "유리 구두"]], "wagons", "sanguo/data/gamedata.json#ACTION_STAGES.chushi.mission"],
+      ["count", "출사표 전장의 보급 수레는 모두 몇 개인가요?", [["one", "한 개"], ["five", "다섯 개"], ["twelve", "열두 개"]], "five", "sanguo/data/gamedata.json#ACTION_STAGES.chushi.required"],
+      ["preparation", "오래 준비하는 힘이 필요한 까닭은 무엇인가요?", [["campaign", "긴 북벌을 이어 가기 위해"], ["race", "달리기 경주를 위해"], ["concert", "연주회를 위해"]], "campaign", "sanguo/data/gamedata.json#ACTION_STAGES.chushi.lesson"]
+    ],
+    nezha: [
+      ["place", "천궁대소동이 벌어진 곳은 어디인가요?", [["heaven", "하늘 궁전"], ["forest", "밤 숲"], ["sea", "바닷가"]], "heaven", "sanguo/src/data/works.js#WORK_STAGES.heavenpalace.title"],
+      ["name", "손오공이 스스로 지은 높은 이름은 무엇인가요?", [["greatsage", "제천대성"], ["dragonking", "용왕"], ["bullking", "우마왕"]], "greatsage", "sanguo/src/data/works.js#WORK_STAGES.heavenpalace.scene_intro"],
+      ["army", "손오공의 소동을 막으려고 몰려온 것은 누구인가요?", [["heavenly", "십만 천병"], ["musicians", "음악대"], ["knights", "원탁의 기사"]], "heavenly", "sanguo/src/data/works.js#WORK_STAGES.heavenpalace.scene_intro"],
+      ["punishment", "천궁대소동 뒤 손오공은 얼마나 산 아래 갇혔나요?", [["five", "오 년"], ["fifty", "오십 년"], ["fivehundred", "오백 년"]], "fivehundred", "sanguo/src/data/works.js#WORK_STAGES.heavenpalace.lesson"],
+      ["lesson", "천궁대소동이 알려 주는 것은 무엇인가요?", [["rules", "힘이 세도 마음대로 하면 안 돼요"], ["strong", "힘이 세면 무엇이든 해도 돼요"], ["alone", "친구는 필요 없어요"]], "rules", "sanguo/src/data/works.js#WORK_STAGES.heavenpalace.lesson"]
+    ],
+    erlangshen: [
+      ["boss", "천궁에서 손오공과 맞서는 신장은 누구인가요?", [["erlang", "이랑진군"], ["midas", "미다스 왕"], ["zhangfei", "장비"]], "erlang", "sanguo/src/data/works.js#WORK_STAGES.heavenpalace.bossName"],
+      ["mission", "천궁대소동 전장의 임무는 무엇인가요?", [["cross", "하늘 병사를 물리치고 천궁을 가로질러요"], ["build", "벽돌집을 지어요"], ["sing", "노래로 문을 열어요"]], "cross", "sanguo/src/data/works.js#WORK_STAGES.heavenpalace.mission"],
+      ["origin", "손오공 이야기에는 어느 나라의 원숭이 신 이야기도 섞였나요?", [["india", "인도"], ["greece", "그리스"], ["egypt", "이집트"]], "india", "sanguo/src/data/works.js#WORK_STAGES.heavenpalace.real"],
+      ["history", "손오공은 실제 역사에 있었던 인물인가요?", [["no", "아니요, 여러 신화와 민담이 섞인 인물이에요"], ["yes", "네, 황제가 남긴 기록이 있어요"], ["diary", "네, 손오공의 일기가 있어요"]], "no", "sanguo/src/data/works.js#WORK_STAGES.heavenpalace.real"],
+      ["feeling", "서유기는 손오공을 하늘에 맞서는 인물로 그려 어떤 느낌을 주나요?", [["thrill", "통쾌함"], ["bored", "지루함"], ["sleepy", "졸림"]], "thrill", "sanguo/src/data/works.js#WORK_STAGES.heavenpalace.fiction"]
+    ],
+    wumawang: [
+      ["fan", "화염산의 불을 끄려면 무엇이 필요한가요?", [["fan", "파초선"], ["sword", "은빛 검"], ["slipper", "유리 구두"]], "fan", "sanguo/src/data/works.js#WORK_STAGES.flamemountain.scene_intro"],
+      ["wife", "파초선을 가진 나찰녀는 누구의 아내인가요?", [["bull", "우마왕"], ["dragon", "용왕"], ["midas", "미다스 왕"]], "bull", "sanguo/src/data/works.js#WORK_STAGES.flamemountain.scene_intro"],
+      ["distance", "이야기 속 화염산의 불바다는 얼마나 이어지나요?", [["eight", "팔 리"], ["eighty", "팔십 리"], ["eighthundred", "팔백 리"]], "eighthundred", "sanguo/src/data/works.js#WORK_STAGES.flamemountain.scene_intro"],
+      ["real", "실제 현장 스님이 넘은 곳은 어디인가요?", [["desert", "사막과 산맥"], ["firesea", "진짜 불바다"], ["cloud", "구름 궁전"]], "desert", "sanguo/src/data/works.js#WORK_STAGES.flamemountain.real"],
+      ["help", "손오공이 파초선을 얻으며 배운 것은 무엇인가요?", [["help", "혼자 못 넘는 벽에는 여러 사람의 도움이 필요해요"], ["alone", "항상 혼자 해결해야 해요"], ["giveup", "어려우면 바로 포기해요"]], "help", "sanguo/src/data/works.js#WORK_STAGES.flamemountain.lesson"]
+    ],
+    honghaier: [
+      ["parents", "홍해아의 부모는 누구인가요?", [["bull-raksha", "우마왕과 나찰녀"], ["midas-queen", "미다스 왕과 왕비"], ["zeus-athena", "제우스와 아테나"]], "bull-raksha", "sanguo/src/data/works.js#WORK_STAGES.huoyundong.scene_intro"],
+      ["fire", "홍해아가 뿜는 특별한 불의 이름은 무엇인가요?", [["samadhi", "삼매진화"], ["campfire", "모닥불"], ["starlight", "별빛 불꽃"]], "samadhi", "sanguo/src/data/works.js#WORK_STAGES.huoyundong.scene_intro"],
+      ["water", "삼매진화에 물을 뿌리면 어떻게 되나요?", [["notout", "꺼지지 않아요"], ["out", "바로 꺼져요"], ["ice", "얼음이 돼요"]], "notout", "sanguo/src/data/works.js#WORK_STAGES.huoyundong.scene_intro"],
+      ["helper", "홍해아를 막을 때 손오공을 도운 분은 누구인가요?", [["guanyin", "관음보살"], ["witch", "과자집 마녀"], ["hermes", "헤르메스"]], "guanyin", "sanguo/src/data/works.js#WORK_STAGES.huoyundong.scene_intro"],
+      ["courage", "혼자 이기기 어려울 때 필요한 용기는 무엇인가요?", [["ask", "도움을 청하는 용기"], ["hide", "계속 숨는 용기"], ["pretend", "모르는 척하는 용기"]], "ask", "sanguo/src/data/works.js#WORK_STAGES.huoyundong.lesson"]
+    ],
+    baigujing: [
+      ["count", "백골정은 모두 몇 번 모습을 바꿔 다가왔나요?", [["one", "한 번"], ["three", "세 번"], ["ten", "열 번"]], "three", "sanguo/src/data/works.js#WORK_STAGES.baihuling.scene_intro"],
+      ["forms", "백골정이 바꾼 세 모습은 무엇인가요?", [["people", "처녀, 할머니, 할아버지"], ["animals", "토끼, 거북, 호랑이"], ["gods", "제우스, 하데스, 포세이돈"]], "people", "sanguo/src/data/works.js#WORK_STAGES.baihuling.scene_intro"],
+      ["recognize", "백골정의 진짜 모습을 알아본 사람은 누구인가요?", [["wukong", "손오공"], ["bajie", "저팔계"], ["tangsanzang", "삼장"]], "wukong", "sanguo/src/data/works.js#WORK_STAGES.baihuling.scene_intro"],
+      ["misunderstood", "삼장은 백골정을 알아본 손오공에게 어떻게 했나요?", [["scold", "오히려 나무라고 쫓아냈어요"], ["praise", "바로 칭찬했어요"], ["crown", "왕관을 주었어요"]], "scold", "sanguo/src/data/works.js#WORK_STAGES.baihuling.scene_intro"],
+      ["return", "쫓겨난 손오공은 나중에 어떻게 했나요?", [["return", "다시 돌아와 스승을 구했어요"], ["leave", "영원히 돌아오지 않았어요"], ["sleep", "동굴에서 잠만 잤어요"]], "return", "sanguo/src/data/works.js#WORK_STAGES.baihuling.lesson"]
+    ]
+  };
+  Object.keys(eastQuestionSets).forEach(function (cardId) {
+    eastQuestionSets[cardId].forEach(function (entry) {
+      all.push(question(cardId + "-" + entry[0], cardId, entry[1], entry[2], entry[3], [entry[4]]));
+    });
+  });
 
   // G1~G4: 기존 검수 문항을 재사용한다. 새 음원을 검증한 것처럼 출처를 만들지 않는다.
   // 문항 id와 최근 출제 기록은 카드별로 독립; 복수 해금 카드는 첫 이야기에서 출제.

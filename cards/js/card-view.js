@@ -58,7 +58,18 @@
     athena: "50% 18%",
     hermes: "50% 28%",
     orpheus: "50% 24%",
-    prometheus: "50% 20%"
+    prometheus: "50% 20%",
+    guanyu: "50% 22%",
+    zhangfei: "50% 24%",
+    zhaoyun: "50% 22%",
+    zhugeliang: "50% 18%",
+    caocao: "50% 18%",
+    simayi: "50% 18%",
+    nezha: "50% 24%",
+    erlangshen: "50% 20%",
+    wumawang: "50% 18%",
+    honghaier: "50% 24%",
+    baigujing: "50% 20%"
   };
 
   function el(tag, className, text) {
@@ -251,7 +262,10 @@
     const stats = createStats(card);
     if (card.passive) {
       const passive = el("div", "passive-row");
-      passive.append(el("span", "passive-icon", "✦"), el("strong", "", card.passive.name), el("small", "", card.passive.desc));
+      const passiveDesc = card.passive.fx === "coin_evade"
+        ? `${card.passive.desc} · 한 번 피하면 다음 공격은 맞아요.`
+        : card.passive.desc;
+      passive.append(el("span", "passive-icon", "✦"), el("strong", "", card.passive.name), el("small", "", passiveDesc));
       details.appendChild(passive);
     }
 

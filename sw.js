@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v65";
+const CACHE_VERSION = "v66";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -141,14 +141,14 @@ const CORE_SHELL = [
   "./story/index.html",
   "./cards/",
   "./cards/index.html",
-  "./cards/styles.css?v=31",
+  "./cards/styles.css?v=32",
   "./cards/cards.json",
-  "./cards/js/engine.js?v=31",
-  "./cards/js/audio.js?v=31",
-  "./cards/js/card-view.js?v=31",
-  "./cards/js/vfx-recipes.js?v=31",
-  "./cards/js/story-gates.js?v=31",
-  "./cards/js/app.js?v=31",
+  "./cards/js/engine.js?v=32",
+  "./cards/js/audio.js?v=32",
+  "./cards/js/card-view.js?v=32",
+  "./cards/js/vfx-recipes.js?v=32",
+  "./cards/js/story-gates.js?v=32",
+  "./cards/js/app.js?v=32",
 ];
 
 // Existing games are precached as best-effort shells. A missing optional asset
@@ -497,6 +497,8 @@ const CARD_ART_FILES = [
   "minotaur", "cerberus", "hydra", "sphinx",
   "achilles", "theseus", "artemis", "atalanta",
   "athena", "hermes", "orpheus", "prometheus",
+  "guanyu", "zhangfei", "zhaoyun", "zhugeliang", "caocao", "simayi",
+  "nezha", "erlangshen", "wumawang", "honghaier", "baigujing",
 ].map((id) => `./cards/art/${id}.webp`);
 
 const VFX_ART_FILES = [

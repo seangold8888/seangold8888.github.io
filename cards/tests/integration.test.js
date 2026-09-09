@@ -163,7 +163,7 @@ test("이야기 조각 데이터는 9종 효과·완청 키·초기 3장 풀 계
   );
 });
 
-test("손패 UI와 캐시 버전 31이 함께 배포되도록 묶여 있다", () => {
+test("손패 UI와 캐시 버전 32가 함께 배포되도록 묶여 있다", () => {
   const html = read("index.html");
   const css = read("styles.css");
   const app = read(path.join("js", "app.js"));
@@ -171,11 +171,11 @@ test("손패 UI와 캐시 버전 31이 함께 배포되도록 묶여 있다", ()
   ["fragmentTray", "fragmentHand", "fragmentPreview"].forEach((id) => {
     assert.match(html, new RegExp('id="' + id + '"'));
   });
-  assert.match(html, /styles\.css\?v=31/);
+  assert.match(html, /styles\.css\?v=32/);
   ["engine", "audio", "card-view", "vfx-recipes", "story-gates", "app"].forEach((file) => {
-    assert.match(html, new RegExp("js/" + file + "\\.js\\?v=31"));
+    assert.match(html, new RegExp("js/" + file + "\\.js\\?v=32"));
   });
-  assert.doesNotMatch(html, /\?v=(?:19|20|21|22|23|24|25|26|27|28|29|30)/);
+  assert.doesNotMatch(html, /\?v=(?:19|20|21|22|23|24|25|26|27|28|29|30|31)/);
 
   assert.match(css, /\.fragment-chip[\s\S]*?min-height: 68px/);
   assert.match(
@@ -558,7 +558,7 @@ test("miss·evade는 충돌음을 만들지 않고 날아가는 시작음만 낸
   });
 });
 
-test("G4 90개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가진다", () => {
+test("동양 확장 114개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가진다", () => {
   const data = JSON.parse(read("cards.json"));
   const attacks = data.cards.flatMap((card) =>
     card.attacks.map((attack) => ({
@@ -572,7 +572,7 @@ test("G4 90개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가진다", () =
   const materialCounts = {};
   const signatures = new Set();
 
-  assert.equal(attacks.length, 90);
+  assert.equal(attacks.length, 114);
   attacks.forEach(({ card, cardType, attack }) => {
     assert.ok(attack.vfx, card + " / " + attack.name);
     assert.ok(attack.vfx.emoji, card + " / " + attack.name);
@@ -605,30 +605,30 @@ test("G4 90개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가진다", () =
     materialCounts[soundPlan.material] = (materialCounts[soundPlan.material] || 0) + 1;
     assert.ok(["brave", "wise", "magic", "monster"].includes(soundPlan.type));
   });
-  assert.equal(signatures.size, 90, "90개 기술은 각각 고유한 안정 음색 서명을 가져야 한다");
+  assert.equal(signatures.size, 114, "114개 기술은 각각 고유한 안정 음색 서명을 가져야 한다");
   assert.deepEqual(materialCounts, {
-    body: 11,
-    fire: 5,
-    air: 18,
-    wood: 5,
-    metal: 15,
-    stone: 4,
-    paper: 3,
-    hollow: 5,
+    body: 13,
+    fire: 8,
+    air: 24,
+    wood: 6,
+    metal: 21,
+    stone: 5,
+    paper: 5,
+    hollow: 7,
     glass: 2,
-    crystal: 14,
-    earth: 8
+    crystal: 17,
+    earth: 6
   });
 
   assert.deepEqual(counts, {
-    strike: 26,
-    burst: 21,
-    debuff: 15,
-    projectile: 15,
-    aura: 7,
+    strike: 34,
+    burst: 26,
+    debuff: 19,
+    projectile: 19,
+    aura: 10,
     summon: 6
   });
-  assert.equal(attacks.filter(({ attack }) => attack.vfx.big).length, 27);
+  assert.equal(attacks.filter(({ attack }) => attack.vfx.big).length, 36);
 
   const redhood = data.cards.find((card) => card.id === "redhood");
   assert.deepEqual(redhood.attacks[0].vfx, {

@@ -218,6 +218,32 @@ test("coin_miss와 coin_evade는 주입된 RNG로 재현 가능하다", () => {
   assert.ok(state.events.some((event) => event.type === "attack_evaded"));
 });
 
+test("coin_evade는 한 번 피한 뒤 다음 적대 기술을 확정 명중시킨다", () => {
+  const attacker = card({
+    id: "evade-loop-attacker",
+    attacks: [{ name: "타격", cost: 1, dmg: 30, fx: null }],
+  });
+  const dodger = card({
+    id: "evade-loop-dodger",
+    passive: { name: "회피", fx: "coin_evade" },
+  });
+  let state = Engine.createGame(attacker, dodger);
+  state = take(state, { type: "attack", attackIndex: 0 }, heads);
+  assert.equal(state.sides.enemy.hp, 100);
+  assert.equal(state.sides.enemy.status.coinEvadeCooldown, 1);
+
+  state = take(state, { type: "rest" }, heads);
+  let rngCalls = 0;
+  state = take(state, { type: "attack", attackIndex: 0 }, () => {
+    rngCalls += 1;
+    return 0;
+  });
+  assert.equal(rngCalls, 0);
+  assert.equal(state.sides.enemy.hp, 70);
+  assert.equal(state.sides.enemy.status.coinEvadeCooldown, 0);
+  assert.equal(state.events.some((event) => event.type === "coin"), false);
+});
+
 test("데미지 감소와 첫 공격 무효를 적용한다", () => {
   const attacker = card({
     id: "attacker",
@@ -422,7 +448,7 @@ test("기존 대표 6장은 v1 기술과 PNG·WebP 원화를 모두 갖춘다", 
   });
 });
 
-test("G4 40장 전체 원화·프롬프트·크롭 매핑이 완전하고 1024×1536이다", () => {
+test("동양 확장 51장 전체 원화·프롬프트·크롭 매핑이 완전하고 1024×1536이다", () => {
   const cardsRoot = path.join(__dirname, "..");
   const data = JSON.parse(
     fs.readFileSync(path.join(cardsRoot, "cards.json"), "utf8")
@@ -460,21 +486,21 @@ test("G4 40장 전체 원화·프롬프트·크롭 매핑이 완전하고 1024×
     );
   });
 
-  assert.deepEqual(cropRows, ids, "프롬프트 문서의 크롭 행은 40장과 일치해야 한다");
+  assert.deepEqual(cropRows, ids, "프롬프트 문서의 크롭 행은 51장과 일치해야 한다");
   assert.deepEqual(
     Object.keys(context.window.CardView.artPosition).sort(),
     ids,
-    "렌더러의 크롭 매핑은 40장과 일치해야 한다"
+    "렌더러의 크롭 매핑은 51장과 일치해야 한다"
   );
 });
 
-test("컬렉션 해금 경제는 G4 40장 전체를 노출하고 이야기 극장과 짝이 맞는다", () => {
+test("컬렉션 해금 경제는 동양 확장 51장 전체를 노출한다", () => {
   const data = JSON.parse(
     fs.readFileSync(path.join(__dirname, "..", "cards.json"), "utf8")
   );
   const byId = new Map(data.cards.map((item) => [item.id, item]));
 
-  assert.equal(new Set(data.collection).size, 40);
+  assert.equal(new Set(data.collection).size, 51);
   assert.deepEqual(
     [...data.collection].sort(),
     data.cards.map((item) => item.id).sort(),
@@ -512,7 +538,7 @@ test("페르세우스 설명과 실제 v1 대전 상대 풀이 레어도 ±1 계
   const featuredCards = data.collection
     .map((id) => data.cards.find((entry) => entry.id === id))
     .filter(Engine.isBattleCard);
-  assert.equal(featuredCards.length, 40, "컬렉션 전원이 대전 가능해야 한다");
+  assert.equal(featuredCards.length, 51, "컬렉션 전원이 대전 가능해야 한다");
 
   featuredCards.forEach((player) => {
     const balancedOpponents = Engine.getBalancedEnemyPool(featuredCards, player);
@@ -1117,6 +1143,8 @@ test("검수 완료된 24장 PNG·WebP 원화는 바뀌지 않는다", () => {
       "minotaur", "cerberus", "hydra", "sphinx",
       "achilles", "theseus", "artemis", "atalanta",
       "athena", "hermes", "orpheus", "prometheus",
+      "guanyu", "zhangfei", "zhaoyun", "zhugeliang", "caocao", "simayi",
+      "nezha", "erlangshen", "wumawang", "honghaier", "baigujing",
     ].includes(id))
     .flatMap((id) => [id + ".png", id + ".webp"])
     .sort();

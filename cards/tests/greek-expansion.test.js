@@ -13,6 +13,7 @@ const g2Ids = ["minotaur", "cerberus", "hydra", "sphinx"];
 const g3Ids = ["achilles", "theseus", "artemis", "atalanta"];
 const g4Ids = ["athena", "hermes", "orpheus", "prometheus"];
 const laterIds = g3Ids.concat(g4Ids);
+const eastIds = ["guanyu", "zhangfei", "zhaoyun", "zhugeliang", "caocao", "simayi", "nezha", "erlangshen", "wumawang", "honghaier", "baigujing"];
 const ids = g1Ids.concat(g2Ids, laterIds);
 const get = id => data.cards.find(card => card.id === id);
 function appRuntime(hostname = "seangold8888.github.io", search = "") {
@@ -30,16 +31,16 @@ function gatesRuntime() {
   vm.runInNewContext(fs.readFileSync(path.join(root, "js/story-gates.js"), "utf8"), sandbox);
   return sandbox.window.CardStoryGates;
 }
-test("G1 stays byte-for-byte stable after G4", () => {
-  const afterG1Ids = g2Ids.concat(laterIds);
+test("G1 stays byte-for-byte stable after G4 except the deliberate Sun Wukong C1 activation", () => {
+  const afterG1Ids = g2Ids.concat(laterIds, eastIds);
   const g1Data = data.cards.filter(card => !afterG1Ids.includes(card.id));
   const g1Collection = data.collection.filter(id => !afterG1Ids.includes(id));
   assert.equal(g1Data.length, 28);
   assert.deepEqual(g1Collection.slice(-4), g1Ids);
-  const old = g1Data.filter(card => !g1Ids.includes(card.id));
-  assert.equal(old.length, 24);
-  assert.equal(crypto.createHash("sha256").update(JSON.stringify(old)).digest("hex"), "a19db7df148f253cecf062f511e8e2483375a8c2af19f843701c3b429ac32f07");
-  assert.equal(crypto.createHash("sha256").update(JSON.stringify(g1Data)).digest("hex"), "5b02f7a950c5b0054e881279277cbf14b54f086c4e0e318bbbfee06d50954bd5");
+  const old = g1Data.filter(card => !g1Ids.includes(card.id) && card.id !== "sunwukong");
+  assert.equal(old.length, 23);
+  assert.equal(crypto.createHash("sha256").update(JSON.stringify(old)).digest("hex"), "10d1479e7ef883a1afa2d22799a52df49389ddc2b6be439f9a5b78963e9516e2");
+  assert.equal(crypto.createHash("sha256").update(JSON.stringify(g1Data)).digest("hex"), "4c944235850c0a3bc5a27a6d215bba394c65f5bc3b42966ac984002eb4dad7f6");
   assert.deepEqual(g1Data.reduce((counts, card) => { counts[card.type] = (counts[card.type] || 0) + 1; return counts; }, {}), {brave: 6, wise: 6, magic: 10, monster: 6});
   for (const id of g1Ids) {
     const card = get(id);
@@ -59,15 +60,15 @@ test("G1 stays byte-for-byte stable after G4", () => {
   }
 });
 
-test("G2 adds exactly four playable monster cards and preserves all 28 earlier cards", () => {
-  const g2Data = data.cards.filter(card => !laterIds.includes(card.id));
-  const g2Collection = data.collection.filter(id => !laterIds.includes(id));
+test("G2 adds exactly four playable monster cards and preserves the C1-adjusted first 28 cards", () => {
+  const g2Data = data.cards.filter(card => !laterIds.concat(eastIds).includes(card.id));
+  const g2Collection = data.collection.filter(id => !laterIds.concat(eastIds).includes(id));
   assert.equal(g2Data.length, 32);
   assert.equal(g2Collection.length, 32);
   assert.equal(new Set(g2Collection).size, 32);
   assert.deepEqual(g2Collection.slice(-4), g2Ids);
   const earlier = g2Data.filter(card => !g2Ids.includes(card.id));
-  assert.equal(crypto.createHash("sha256").update(JSON.stringify(earlier)).digest("hex"), "5b02f7a950c5b0054e881279277cbf14b54f086c4e0e318bbbfee06d50954bd5");
+  assert.equal(crypto.createHash("sha256").update(JSON.stringify(earlier)).digest("hex"), "4c944235850c0a3bc5a27a6d215bba394c65f5bc3b42966ac984002eb4dad7f6");
   assert.deepEqual(g2Data.reduce((counts, card) => { counts[card.type] = (counts[card.type] || 0) + 1; return counts; }, {}), {brave: 6, wise: 6, magic: 10, monster: 10});
   const utilities = new Set(["heal_40", "weaken_next_20", "skip_next_enemy", "steal_star_1", "gain_star_1", "dmg_half_enemy_hp", "dmg_stack_10"]);
   for (const id of g2Ids) {
@@ -90,14 +91,14 @@ test("G2 adds exactly four playable monster cards and preserves all 28 earlier c
     assert.deepEqual(card.stats, {attack: Math.min(5, attack), defense: Math.min(5, defense), spirit: Math.min(5, spirit)});
   }
 });
-test("G3 and G4 add eight playable cards, preserve G2, and balance all four types at ten", () => {
-  assert.equal(data.cards.length, 40);
-  assert.equal(data.collection.length, 40);
-  assert.equal(new Set(data.collection).size, 40);
-  assert.deepEqual(data.collection.slice(-8), laterIds);
-  assert.equal(crypto.createHash("sha256").update(JSON.stringify(data.cards.slice(0, 32))).digest("hex"), "8696a1e2a36e41ad12b0359077fdc15dc6c689b85ac769074ca6aeb88ce49419");
+test("G3 and G4 keep their first 40 cards byte-stable and balanced after the East expansion", () => {
+  assert.equal(data.cards.length, 51);
+  assert.equal(data.collection.length, 51);
+  assert.equal(new Set(data.collection).size, 51);
+  assert.deepEqual(data.collection.slice(32, 40), laterIds);
+  assert.equal(crypto.createHash("sha256").update(JSON.stringify(data.cards.slice(0, 32))).digest("hex"), "ed7995ce57070e0fb646002d8a29f74a14ca3b6c08e5255b7b4d83ba889ff8c9");
   assert.equal(crypto.createHash("sha256").update(JSON.stringify(data.collection.slice(0, 32))).digest("hex"), "708ddca5dc2c6c7819274763b496bdc8c23960d856b3fbf1e6050169aa5182c6");
-  assert.deepEqual(data.cards.reduce((counts, card) => { counts[card.type] = (counts[card.type] || 0) + 1; return counts; }, {}), {brave: 10, wise: 10, magic: 10, monster: 10});
+  assert.deepEqual(data.cards.slice(0, 40).reduce((counts, card) => { counts[card.type] = (counts[card.type] || 0) + 1; return counts; }, {}), {brave: 10, wise: 10, magic: 10, monster: 10});
   const utilities = new Set(["heal_40", "weaken_next_20", "skip_next_enemy", "steal_star_1", "gain_star_1", "dmg_half_enemy_hp", "dmg_stack_10"]);
   for (const id of laterIds) {
     const card = get(id);
@@ -281,7 +282,8 @@ test("G2 monsters finish 1600 seeded alternating-first matches without always wi
     assert.ok(wins > 0 && wins < 400, id + " should have both wins and losses");
   }
   assert.equal(matches, 1600);
-  assert.ok(longest <= 30, "G2 match should finish quickly; longest was " + longest);
+  // C3's anti-loop guard response can add one honest break-and-finish cycle.
+  assert.ok(longest <= 35, "G2 match should finish quickly; longest was " + longest);
 });
 
 test("G3 and G4 finish 2240 seeded alternating-first matches without a stall", () => {
@@ -312,11 +314,11 @@ test("G3 and G4 finish 2240 seeded alternating-first matches without a stall", (
     assert.ok(wins > 0 && wins < 280, id + " should have both wins and losses");
   }
   assert.equal(matches, 2240);
-  assert.ok(longest <= 40, "G3/G4 match should finish quickly; longest was " + longest);
+  assert.ok(longest <= 45, "G3/G4 match should finish quickly; longest was " + longest);
 });
 
 test("G1 28장의 PNG·WebP 56개 배포 원화는 검증된 매니페스트와 일치한다", () => {
-  const files = data.collection.filter(id => !g2Ids.concat(laterIds).includes(id))
+  const files = data.collection.filter(id => !g2Ids.concat(laterIds, eastIds).includes(id))
     .flatMap(id => [id + ".png", id + ".webp"]).sort();
   const sha = value => crypto.createHash("sha256").update(value).digest("hex");
   const manifest = files.map(name => name + ":" + sha(fs.readFileSync(path.join(root, "art", name)))).join("\n");
@@ -325,7 +327,7 @@ test("G1 28장의 PNG·WebP 56개 배포 원화는 검증된 매니페스트와 
 });
 
 test("G2까지 32장의 PNG·WebP 64개 원화가 모두 존재하고 최종 매니페스트와 일치한다", () => {
-  const files = data.collection.filter(id => !laterIds.includes(id))
+  const files = data.collection.filter(id => !laterIds.concat(eastIds).includes(id))
     .flatMap(id => [id + ".png", id + ".webp"]).sort();
   const sha = value => crypto.createHash("sha256").update(value).digest("hex");
   const manifest = files.map(name => name + ":" + sha(fs.readFileSync(path.join(root, "art", name)))).join("\n");
@@ -334,7 +336,7 @@ test("G2까지 32장의 PNG·WebP 64개 원화가 모두 존재하고 최종 매
 });
 
 test("G4 최종 40장의 PNG·WebP 80개 원화가 매니페스트와 일치한다", () => {
-  const files = data.collection.flatMap(id => [id + ".png", id + ".webp"]).sort();
+  const files = data.collection.slice(0, 40).flatMap(id => [id + ".png", id + ".webp"]).sort();
   const sha = value => crypto.createHash("sha256").update(value).digest("hex");
   const manifest = files.map(name => name + ":" + sha(fs.readFileSync(path.join(root, "art", name)))).join("\n");
   assert.equal(files.length, 80);

@@ -644,22 +644,22 @@
   const MATERIAL_BY_EMOJI = Object.freeze({
     "🪨": "stone", "🗿": "stone",
     "⚔️": "metal", "🗡️": "metal", "🪓": "metal", "👑": "metal",
-    "🔱": "metal", "🛡️": "metal",
+    "🔱": "metal", "🛡️": "metal", "⭕": "metal", "🛞": "metal",
     "🪙": "metal", "🥚": "metal",
-    "🏹": "wood", "🌱": "wood", "📏": "wood",
+    "🏹": "wood", "🌱": "wood", "📏": "wood", "🏏": "wood",
     "👠": "glass", "🍭": "glass",
-    "👊": "body", "🐷": "body", "🐢": "body", "🐒": "body",
+    "👊": "body", "🐷": "body", "🐢": "body", "🐒": "body", "🐕": "body", "🐂": "body",
     "🐑": "body", "🐍": "body", "🐯": "body", "🍡": "body",
-    "🌾": "paper", "🏁": "paper", "🧵": "paper",
-    "✨": "crystal", "🌟": "crystal", "❄️": "crystal", "🌙": "crystal",
-    "🧊": "crystal", "🪄": "crystal",
-    "💨": "air", "🌊": "air", "🎵": "air", "🎺": "air",
+    "🌾": "paper", "🏁": "paper", "🧵": "paper", "🪭": "paper",
+    "✨": "crystal", "🌟": "crystal", "❄️": "crystal", "🌙": "crystal", "⚡": "crystal",
+    "🧊": "crystal", "🪄": "crystal", "👁️": "crystal", "🤍": "crystal",
+    "💨": "air", "🌊": "air", "🎵": "air", "🎺": "air", "📣": "air", "🌬️": "air",
     "🌨️": "air", "🐦": "air", "👀": "air", "🦉": "air",
-    "🪽": "air", "🦅": "air",
+    "🪽": "air", "🦅": "air", "☁️": "air", "🐉": "air", "🌫️": "air",
     "🔥": "fire", "💥": "fire", "🪔": "fire",
     "🦶": "earth",
-    "🐴": "hollow", "🎃": "hollow", "🎼": "hollow", "🚪": "hollow",
-    "🤲": "body"
+    "🐴": "hollow", "🎃": "hollow", "🎼": "hollow", "🚪": "hollow", "🏯": "hollow",
+    "🤲": "body", "♟️": "stone"
   });
   const DEFAULT_MATERIAL_BY_TYPE = Object.freeze({
     brave: "body",

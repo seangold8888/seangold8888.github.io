@@ -40,7 +40,18 @@
     "athena",
     "hermes",
     "orpheus",
-    "prometheus"
+    "prometheus",
+    "guanyu",
+    "zhangfei",
+    "zhaoyun",
+    "zhugeliang",
+    "caocao",
+    "simayi",
+    "nezha",
+    "erlangshen",
+    "wumawang",
+    "honghaier",
+    "baigujing"
   ],
   "types": {
     "brave": {
@@ -720,30 +731,30 @@
       "hp": 90,
       "passive": {
         "name": "칠십이변",
-        "desc": "처음 받는 공격은 다른 모습으로 바뀌어 흘려보내요",
-        "fx": "first_hit_zero"
+        "desc": "공격받을 때 동전 앞면이면 다른 모습으로 피해요",
+        "fx": "coin_evade"
       },
       "attacks": [
         {
           "name": "여의봉 연타",
           "cost": 1,
           "dmg": 10,
-          "fx": null,
-          "desc": "",
+          "fx": "dmg_stack_10",
+          "desc": "쓸 때마다 피해가 10씩 늘어요",
           "vfx": {
             "kind": "strike",
             "emoji": "🪄"
           }
         },
         {
-          "name": "분신술",
+          "name": "근두운 급습",
           "cost": 2,
-          "dmg": 10,
-          "fx": "skip_next_enemy",
-          "desc": "분신들이 에워싸 상대는 다음 턴에 기술을 못 써요",
+          "dmg": 30,
+          "fx": null,
+          "desc": "",
           "vfx": {
-            "kind": "summon",
-            "emoji": "🐒"
+            "kind": "projectile",
+            "emoji": "☁️"
           }
         },
         {
@@ -762,9 +773,9 @@
       "unlock": "sunwukong",
       "art": "art/sunwukong.png",
       "stats": {
-        "attack": 4,
-        "defense": 5,
-        "spirit": 3
+        "attack": 5,
+        "defense": 4,
+        "spirit": 4
       }
     },
     {
@@ -2088,6 +2099,407 @@
         "defense": 4,
         "spirit": 3
       }
+    },
+    {
+      "id": "guanyu",
+      "name": "관우",
+      "emoji": "🗡️",
+      "type": "brave",
+      "rarity": 3,
+      "summonCost": 4,
+      "hp": 90,
+      "passive": {
+        "name": "청룡의 위엄",
+        "desc": "받는 피해가 10 줄어요",
+        "fx": "reduce_dmg_10"
+      },
+      "attacks": [
+        {
+          "name": "언월 베기",
+          "cost": 1,
+          "dmg": 20,
+          "fx": null,
+          "desc": "",
+          "vfx": { "kind": "strike", "emoji": "🗡️" }
+        },
+        {
+          "name": "청룡일섬",
+          "cost": 3,
+          "dmg": 50,
+          "fx": null,
+          "desc": "",
+          "vfx": { "kind": "strike", "emoji": "🐉", "big": true }
+        }
+      ],
+      "unlock": "game:sanguo/hulao",
+      "art": "art/guanyu.png",
+      "stats": { "attack": 4, "defense": 5, "spirit": 1 }
+    },
+    {
+      "id": "zhangfei",
+      "name": "장비",
+      "emoji": "📣",
+      "type": "brave",
+      "rarity": 2,
+      "summonCost": 3,
+      "hp": 100,
+      "passive": {
+        "name": "불붙는 투지",
+        "desc": "체력이 절반 아래면 공격 피해가 20 늘어요",
+        "fx": "boost_20_below_half"
+      },
+      "attacks": [
+        {
+          "name": "장팔사모",
+          "cost": 2,
+          "dmg": 30,
+          "fx": null,
+          "desc": "",
+          "vfx": { "kind": "strike", "emoji": "🔱" }
+        },
+        {
+          "name": "장판교 호통",
+          "cost": 2,
+          "dmg": 0,
+          "fx": "skip_next_enemy",
+          "desc": "상대의 다음 턴을 건너뛰게 해요",
+          "vfx": { "kind": "burst", "emoji": "📣", "big": true }
+        }
+      ],
+      "unlock": "game:sanguo/changban",
+      "art": "art/zhangfei.png",
+      "stats": { "attack": 3, "defense": 4, "spirit": 2 }
+    },
+    {
+      "id": "zhaoyun",
+      "name": "조운",
+      "emoji": "🐎",
+      "type": "brave",
+      "rarity": 3,
+      "summonCost": 4,
+      "hp": 70,
+      "passive": {
+        "name": "단기필마",
+        "desc": "공격받을 때 동전 앞면이면 재빠르게 피해요",
+        "fx": "coin_evade"
+      },
+      "attacks": [
+        {
+          "name": "칠진칠출",
+          "cost": 1,
+          "dmg": 10,
+          "fx": "dmg_stack_10",
+          "desc": "쓸 때마다 피해가 10씩 늘어요",
+          "vfx": { "kind": "strike", "emoji": "⚡" }
+        },
+        {
+          "name": "아두 구출",
+          "cost": 2,
+          "dmg": 0,
+          "fx": "heal_40",
+          "desc": "체력을 40 회복해요",
+          "vfx": { "kind": "aura", "emoji": "🛡️" }
+        }
+      ],
+      "unlock": "game:sanguo/changban",
+      "art": "art/zhaoyun.png",
+      "stats": { "attack": 2, "defense": 4, "spirit": 4 }
+    },
+    {
+      "id": "zhugeliang",
+      "name": "제갈량",
+      "emoji": "🪶",
+      "type": "wise",
+      "rarity": 3,
+      "summonCost": 4,
+      "hp": 60,
+      "passive": {
+        "name": "팔진도",
+        "desc": "처음 받는 공격 피해를 0으로 만들어요",
+        "fx": "first_hit_zero"
+      },
+      "attacks": [
+        {
+          "name": "동남풍",
+          "cost": 1,
+          "dmg": 0,
+          "fx": "gain_star_1",
+          "desc": "별사탕 1개를 더 얻어요",
+          "vfx": { "kind": "aura", "emoji": "🌬️" }
+        },
+        {
+          "name": "화공",
+          "cost": 3,
+          "dmg": 50,
+          "fx": null,
+          "desc": "",
+          "vfx": { "kind": "projectile", "emoji": "🔥", "big": true }
+        }
+      ],
+      "unlock": "game:sanguo/chushi",
+      "art": "art/zhugeliang.png",
+      "stats": { "attack": 4, "defense": 3, "spirit": 3 }
+    },
+    {
+      "id": "caocao",
+      "name": "조조",
+      "emoji": "♟️",
+      "type": "wise",
+      "rarity": 2,
+      "summonCost": 3,
+      "hp": 70,
+      "passive": {
+        "name": "난세의 셈",
+        "desc": "받는 피해가 10 줄어요",
+        "fx": "reduce_dmg_10"
+      },
+      "attacks": [
+        {
+          "name": "둔전",
+          "cost": 1,
+          "dmg": 0,
+          "fx": "steal_star_1",
+          "desc": "상대 별사탕 1개를 가져와요",
+          "vfx": { "kind": "debuff", "emoji": "🌾" }
+        },
+        {
+          "name": "관도 대공세",
+          "cost": 3,
+          "dmg": 50,
+          "fx": null,
+          "desc": "",
+          "vfx": { "kind": "burst", "emoji": "♟️", "big": true }
+        }
+      ],
+      "unlock": "game:sanguo/guandu",
+      "art": "art/caocao.png",
+      "stats": { "attack": 4, "defense": 4, "spirit": 3 }
+    },
+    {
+      "id": "simayi",
+      "name": "사마의",
+      "emoji": "🪭",
+      "type": "wise",
+      "rarity": 2,
+      "summonCost": 3,
+      "hp": 70,
+      "passive": {
+        "name": "기다리는 자",
+        "desc": "체력이 절반 아래면 공격 피해가 20 늘어요",
+        "fx": "boost_20_below_half"
+      },
+      "attacks": [
+        {
+          "name": "인내",
+          "cost": 1,
+          "dmg": 10,
+          "fx": "weaken_next_20",
+          "desc": "상대의 다음 기술 피해를 최대 20 줄여요",
+          "vfx": { "kind": "debuff", "emoji": "🪭" }
+        },
+        {
+          "name": "공성계",
+          "cost": 2,
+          "dmg": 20,
+          "fx": "coin_skip_next_enemy",
+          "desc": "동전 앞면이면 상대의 다음 턴을 건너뛰게 해요",
+          "vfx": { "kind": "aura", "emoji": "🏯" }
+        },
+        {
+          "name": "낙양 진군",
+          "cost": 3,
+          "dmg": 40,
+          "fx": null,
+          "desc": "",
+          "vfx": { "kind": "burst", "emoji": "🏯", "big": true }
+        }
+      ],
+      "unlock": "game:sanguo/chushi",
+      "art": "art/simayi.png",
+      "stats": { "attack": 4, "defense": 3, "spirit": 4 }
+    },
+    {
+      "id": "nezha",
+      "name": "나타",
+      "emoji": "⭕",
+      "type": "magic",
+      "rarity": 2,
+      "summonCost": 3,
+      "hp": 60,
+      "passive": {
+        "name": "연꽃의 몸",
+        "desc": "처음 쓰러지면 체력 절반으로 한 번 부활해요",
+        "fx": "revive_half_once"
+      },
+      "attacks": [
+        {
+          "name": "건곤권",
+          "cost": 1,
+          "dmg": 20,
+          "fx": null,
+          "desc": "",
+          "vfx": { "kind": "projectile", "emoji": "⭕" }
+        },
+        {
+          "name": "풍화륜 돌진",
+          "cost": 3,
+          "dmg": 50,
+          "fx": null,
+          "desc": "",
+          "vfx": { "kind": "strike", "emoji": "🔥", "big": true }
+        }
+      ],
+      "unlock": "game:sanguo/heavenpalace",
+      "art": "art/nezha.png",
+      "stats": { "attack": 4, "defense": 3, "spirit": 2 }
+    },
+    {
+      "id": "erlangshen",
+      "name": "이랑진군",
+      "emoji": "👁️",
+      "type": "magic",
+      "rarity": 3,
+      "summonCost": 4,
+      "hp": 80,
+      "passive": {
+        "name": "요괴 사냥꾼",
+        "desc": "괴물 타입에게 받는 피해가 20 줄어요",
+        "fx": "reduce_dmg_20_monster"
+      },
+      "attacks": [
+        {
+          "name": "효천견",
+          "cost": 1,
+          "dmg": 10,
+          "fx": "weaken_next_20",
+          "desc": "상대의 다음 기술 피해를 최대 20 줄여요",
+          "vfx": { "kind": "summon", "emoji": "🐕" }
+        },
+        {
+          "name": "천안 간파",
+          "cost": 2,
+          "dmg": 20,
+          "fx": "skip_next_enemy",
+          "desc": "상대의 다음 턴을 건너뛰게 해요",
+          "vfx": { "kind": "debuff", "emoji": "👁️" }
+        },
+        {
+          "name": "삼첨양인도",
+          "cost": 3,
+          "dmg": 40,
+          "fx": null,
+          "desc": "",
+          "vfx": { "kind": "strike", "emoji": "🔱", "big": true }
+        }
+      ],
+      "unlock": "game:sanguo/heavenpalace",
+      "art": "art/erlangshen.png",
+      "stats": { "attack": 3, "defense": 5, "spirit": 4 }
+    },
+    {
+      "id": "wumawang",
+      "name": "우마왕",
+      "emoji": "🐂",
+      "type": "monster",
+      "rarity": 3,
+      "summonCost": 5,
+      "hp": 120,
+      "passive": {
+        "name": "무쇠 가죽",
+        "desc": "받는 피해가 10 줄어요",
+        "fx": "reduce_dmg_10"
+      },
+      "attacks": [
+        {
+          "name": "혼철곤",
+          "cost": 2,
+          "dmg": 40,
+          "fx": null,
+          "desc": "",
+          "vfx": { "kind": "strike", "emoji": "🏏" }
+        },
+        {
+          "name": "소 돌진",
+          "cost": 4,
+          "dmg": 60,
+          "fx": null,
+          "desc": "",
+          "vfx": { "kind": "burst", "emoji": "🐂", "big": true }
+        }
+      ],
+      "unlock": "game:sanguo/flamemountain",
+      "art": "art/wumawang.png",
+      "stats": { "attack": 5, "defense": 5, "spirit": 1 }
+    },
+    {
+      "id": "honghaier",
+      "name": "홍해아",
+      "emoji": "🔥",
+      "type": "monster",
+      "rarity": 2,
+      "summonCost": 2,
+      "hp": 50,
+      "passive": {
+        "name": "꺼지지 않는 불",
+        "desc": "체력이 절반 아래면 공격 피해가 20 늘어요",
+        "fx": "boost_20_below_half"
+      },
+      "attacks": [
+        {
+          "name": "불수레",
+          "cost": 1,
+          "dmg": 20,
+          "fx": null,
+          "desc": "",
+          "vfx": { "kind": "projectile", "emoji": "🛞" }
+        },
+        {
+          "name": "삼매진화",
+          "cost": 3,
+          "dmg": 50,
+          "fx": null,
+          "desc": "",
+          "vfx": { "kind": "burst", "emoji": "🔥", "big": true }
+        }
+      ],
+      "unlock": "game:sanguo/huoyundong",
+      "art": "art/honghaier.png",
+      "stats": { "attack": 5, "defense": 2, "spirit": 1 }
+    },
+    {
+      "id": "baigujing",
+      "name": "백골정",
+      "emoji": "🌫️",
+      "type": "monster",
+      "rarity": 2,
+      "summonCost": 2,
+      "hp": 40,
+      "passive": {
+        "name": "세 번의 변신",
+        "desc": "공격받을 때 동전 앞면이면 다른 모습으로 피해요",
+        "fx": "coin_evade"
+      },
+      "attacks": [
+        {
+          "name": "거짓 미소",
+          "cost": 1,
+          "dmg": 0,
+          "fx": "steal_star_1",
+          "desc": "상대 별사탕 1개를 가져와요",
+          "vfx": { "kind": "debuff", "emoji": "🌫️" }
+        },
+        {
+          "name": "백골 손톱",
+          "cost": 2,
+          "dmg": 30,
+          "fx": "dmg_stack_10",
+          "desc": "쓸 때마다 피해가 10씩 늘어요",
+          "vfx": { "kind": "strike", "emoji": "🤍" }
+        }
+      ],
+      "unlock": "game:sanguo/baihuling",
+      "art": "art/baigujing.png",
+      "stats": { "attack": 3, "defense": 2, "spirit": 4 }
     }
   ]
 }

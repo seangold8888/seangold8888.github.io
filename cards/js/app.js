@@ -21,7 +21,15 @@
     honggildong: "홍길동전",
     sunmoon: "해와 달이 된 오누이",
     arthur: "아서왕과 전설의 검",
-    bongi: "봉이 김선달"
+    bongi: "봉이 김선달",
+    "game:sanguo/hulao": "삼국지 · 호로관 전투",
+    "game:sanguo/changban": "삼국지 · 장판 전투",
+    "game:sanguo/chushi": "삼국지 · 출사표",
+    "game:sanguo/guandu": "삼국지 · 관도대전",
+    "game:sanguo/heavenpalace": "서유기 · 천궁대전",
+    "game:sanguo/flamemountain": "서유기 · 화염산",
+    "game:sanguo/huoyundong": "서유기 · 화운동",
+    "game:sanguo/baihuling": "서유기 · 백호령"
   };
 
   const dom = {};
@@ -98,6 +106,26 @@
     }
   }
 
+  function isGameDone(token) {
+    if (!token || isPreviewMode()) return true;
+    const slash = token.indexOf("/");
+    if (slash < 0) return false;
+    const game = token.slice(0, slash);
+    const stage = token.slice(slash + 1);
+    if (game !== "sanguo" || !/^[a-z0-9_-]+$/.test(stage)) return false;
+    try {
+      return localStorage.getItem("sanguo_clear_" + stage) === "1";
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function isUnlockDone(token) {
+    return typeof token === "string" && token.indexOf("game:") === 0
+      ? isGameDone(token.slice(5))
+      : isStoryDone(token);
+  }
+
   // 같은 카드로 연달아 대결해도 같은 문제가 반복되지 않게 최근 3문항을 기억한다.
   function quizMemoryKey(cardId) {
     return "cards_quiz_recent_" + cardId;
@@ -123,9 +151,9 @@
 
   function isUnlocked(card) {
     if (Array.isArray(card.unlockAll) && card.unlockAll.length) {
-      return card.unlockAll.every(isStoryDone);
+      return card.unlockAll.every(isUnlockDone);
     }
-    return !card.unlock || isStoryDone(card.unlock);
+    return !card.unlock || isUnlockDone(card.unlock);
   }
 
   function unlockStoryLabel(card) {
@@ -294,14 +322,18 @@
 
   function openLockedDialog(card) {
     const storyLabel = unlockStoryLabel(card);
-    const listening = Array.isArray(card.unlockAll) && card.unlockAll.length > 1
-      ? " 이야기를 모두 끝까지 들으면 " : " 이야기를 끝까지 들으면 ";
+    const gameUnlock = typeof card.unlock === "string" && card.unlock.indexOf("game:") === 0;
+    const requirement = gameUnlock
+      ? "에서 이기면 "
+      : Array.isArray(card.unlockAll) && card.unlockAll.length > 1
+        ? " 이야기를 모두 끝까지 들으면 "
+        : " 이야기를 끝까지 들으면 ";
     dom.lockedArt.style.backgroundImage = 'linear-gradient(rgba(17,13,37,.22), rgba(17,13,37,.42)), url("' + artUrl(card) + '")';
     dom.lockedArt.style.backgroundPosition = window.CardView.artPosition[card.id] || "50% 40%";
     dom.lockedTitle.textContent = card.name + " 카드가 잠들어 있어요";
     dom.lockedDescription.textContent = isPlayableCard(card)
-      ? storyLabel + listening + "이 영웅과 함께 대결할 수 있어요."
-      : storyLabel + listening + "컬렉션에 깨어나요. 대전 기술은 다음 확장에서 준비됩니다.";
+      ? storyLabel + requirement + "이 영웅과 함께 대결할 수 있어요."
+      : storyLabel + requirement + "컬렉션에 깨어나요. 대전 기술은 다음 확장에서 준비됩니다.";
     dom.lockedDialog.showModal();
   }
 

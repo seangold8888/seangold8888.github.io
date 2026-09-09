@@ -1924,6 +1924,9 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   }
   function finish(win) {
     if (ended) return; ended = true; cancelAnimationFrame(raf); if (resizeFrame) cancelAnimationFrame(resizeFrame); input.destroy(); removeEventListener('pointerdown', unlockAudio, { capture: true }); removeEventListener('resize', onViewportChange); removeEventListener('orientationchange', onViewportChange); document.removeEventListener('visibilitychange', onVisibility); document.removeEventListener('fullscreenchange', onViewportChange); removeEventListener('blur', onBlur); removeEventListener('focus', onFocus); globalThis.visualViewport?.removeEventListener('resize', onViewportChange); globalThis.visualViewport?.removeEventListener('scroll', onViewportChange); for (const type of ['gesturestart', 'gesturechange', 'gestureend', 'touchstart', 'touchmove']) document.removeEventListener(type, preventBrowserGesture); document.documentElement.classList.remove('battle-viewport'); bossHud.remove(); audio.stop(); if (win) audio.win(); assets.releaseStageBackground?.(); paintedBackground = null; if (paintedGroundLayer) { paintedGroundLayer.width = paintedGroundLayer.height = 1; paintedGroundLayer = null; }
+    if (win) {
+      try { localStorage.setItem('sanguo_clear_' + stageKey, '1'); } catch {}
+    }
     const rewards = awardBattleProgress(heroId, { win, ko: player.ko, stageKey, difficultyId: diff.id });
     setTimeout(() => { document.getElementById('ui').innerHTML = ''; showResult(document.getElementById('ui'), { win, heroName, enemyName: bossLabel, weaponName, rewards, story: stageInfo?.work === 'xiyou' ? stageInfo : null, onRetry: () => startSideBattle(heroId, stageKey, { onExit }), onMenu: () => onExit?.() }); }, 450);
   }
