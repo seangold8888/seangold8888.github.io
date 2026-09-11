@@ -993,6 +993,9 @@ if (typeof self !== "undefined" && typeof self.addEventListener === "function") 
     if (request.method !== "GET") return;
     const url = new URL(request.url);
     if (url.origin !== SITE_ROOT_URL.origin) return;
+    // 같은 도메인의 다른 사이트(점심 사이트 SIKPAN, 옛 주소 포함)는 이 워커 범위(/) 안에 있지만
+    // 모험 상자 것이 아니다. 캐시하면 어제 메뉴를 먼저 보여 주므로 손대지 않는다.
+    if (/^\/(?:sikpan|gasan-lunch)(?:\/|$)/.test(url.pathname)) return;
     if (!backgroundWarmupFinished) {
       event.waitUntil(warmBackgroundAssets().catch(() => null));
     }
