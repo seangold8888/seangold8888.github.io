@@ -40,10 +40,10 @@ function audioRuntime() {
   return sandbox.window.CardAudio;
 }
 
-test("기존 51장 데이터와 컬렉션 순서는 바이트 의미상 고정된다", () => {
+test("S급 재조정된 첫 51장 데이터와 컬렉션 순서는 고정된다", () => {
   assert.equal(
     sha(JSON.stringify(data.cards.slice(0, 51))),
-    "36595a065e3d8dcbf7d9b8ee79872e75e2884668c5be0775102650cb9f6a0897"
+    "dbf444a53268dbf7d12b039ec3d5178aa5dafd7333dfa15f07566bf54a50d621"
   );
   assert.equal(
     sha(JSON.stringify(data.collection.slice(0, 51))),
@@ -65,14 +65,14 @@ test("가족 4장 수치·기술·해금은 확정 설계와 일치한다", () =
       ];
     }),
     [
-      ["jaei", "wise", "water", 3, 90, "first_hit_zero", "game:math/streak7",
+      ["jaei", "wise", "water", 3, 180, "first_hit_zero", "game:math/streak7",
         [["코딱지 날리기", 1, 20, null], ["트림 폭탄", 2, 40, "weaken_next_20"], ["참았던 방귀", 3, 60, null]], [4, 5, 3]],
-      ["taeo", "monster", "fire", 2, 80, "reduce_dmg_10", "game:math/streak3",
+      ["taeo", "monster", "fire", 2, 130, "reduce_dmg_10", "game:math/streak3",
         [["발냄새 공격", 1, 20, null], ["연속 방귀", 2, 20, "dmg_stack_10"], ["대왕 방귀", 3, 50, null], ["메가랩터킥", 4, 60, null]], [5, 5, 2]],
-      ["appa", "brave", "earth", 2, 80, "boost_20_below_half", "game:math/streak7",
-        [["목말 태우기", 1, 10, null], ["간지럽히기", 2, 20, "skip_next_enemy"]], [2, 5, 2]],
-      ["eomma", "magic", "wood", 3, 70, "reduce_dmg_10", "game:math/streak7",
-        [["이제 그만!", 1, 10, "weaken_next_20"], ["정리정돈", 2, 30, null], ["엄마의 한마디", 3, 30, "skip_next_enemy"]], [2, 4, 4]]
+      ["appa", "brave", "earth", 2, 110, "boost_20_below_half", "game:math/streak7",
+        [["목말 태우기", 1, 20, null], ["간지럽히기", 2, 30, "skip_next_enemy"]], [4, 5, 2]],
+      ["eomma", "magic", "wood", 3, 120, "reduce_dmg_10", "game:math/streak7",
+        [["이제 그만!", 1, 10, "weaken_next_20"], ["정리정돈", 2, 30, null], ["엄마의 한마디", 3, 30, "skip_next_enemy"]], [2, 5, 4]]
     ]
   );
 });
@@ -137,7 +137,7 @@ test("기존 51장의 11개 소리 프로필과 이모지 매핑은 고정 해�
   assert.doesNotMatch(profiles[0], /wobble(?:Hz|Cents)/);
 });
 
-test("승률은 재이 > 태오 > 부모이고 네 장 모두 35~75%, 교착 0이다", () => {
+test("승률은 재이 > 태오 > 부모이고 네 장 모두 S급 70% 이상, 교착 0이다", () => {
   const output = execFileSync(
     process.execPath,
     [path.join(root, "tools", "family-balance.cjs")],
@@ -151,7 +151,21 @@ test("승률은 재이 > 태오 > 부모이고 네 장 모두 35~75%, 교착 0�
   assert.ok(rates["재이"] > rates["태오"]);
   assert.ok(rates["태오"] > rates["아빠"]);
   assert.ok(rates["태오"] > rates["엄마"]);
-  Object.values(rates).forEach((rate) => assert.ok(rate >= 35 && rate <= 75));
+  Object.values(rates).forEach((rate) => assert.ok(rate >= 70 && rate <= 100));
+});
+
+test("카드 화면은 가족 네 장을 모두 실제 S등급으로 표시한다", () => {
+  const sandbox = { window: {} };
+  vm.runInNewContext(
+    fs.readFileSync(path.join(root, "js", "card-view.js"), "utf8"),
+    sandbox,
+    { filename: "cards/js/card-view.js" }
+  );
+  familyIds.forEach((id) => assert.equal(sandbox.window.CardView.battleTier(byId.get(id)), "S", id));
+  const rankedIds = Object.values(sandbox.window.CardView.battleTiers).flatMap((ids) => [...ids]);
+  assert.equal(rankedIds.length, 71);
+  assert.equal(new Set(rankedIds).size, 71);
+  assert.deepEqual(rankedIds.slice().sort(), data.collection.slice().sort());
 });
 
 test("가족 필살기 문항은 카드당 5개이며 가족 사실과 실제 기술을 묻는다", () => {

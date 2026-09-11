@@ -202,7 +202,7 @@
       "type": "brave",
       "rarity": 3,
       "summonCost": 4,
-      "hp": 120,
+      "hp": 100,
       "passive": {
         "name": "불굴의 심장",
         "desc": "체력가 60 이하면 모든 기술 데미지 +20",
@@ -223,7 +223,7 @@
         {
           "name": "열두 과업",
           "cost": 3,
-          "dmg": 60,
+          "dmg": 50,
           "fx": null,
           "desc": "",
           "vfx": {
@@ -249,7 +249,7 @@
       "type": "brave",
       "rarity": 2,
       "summonCost": 2,
-      "hp": 60,
+      "hp": 70,
       "passive": {
         "name": "동에 번쩍 서에 번쩍",
         "desc": "공격받을 때 동전 앞면이면 회피",
@@ -259,7 +259,7 @@
         {
           "name": "바람 발걸음",
           "cost": 1,
-          "dmg": 0,
+          "dmg": 10,
           "fx": "weaken_next_20",
           "desc": "다음 기술 피해를 최대 20 줄여요 (최소 10)",
           "vfx": {
@@ -295,7 +295,7 @@
       "type": "brave",
       "rarity": 2,
       "summonCost": 2,
-      "hp": 70,
+      "hp": 100,
       "passive": {
         "name": "거울 방패",
         "desc": "오행 상성 추가 피해 +10을 받지 않는다",
@@ -305,7 +305,7 @@
         {
           "name": "청동 검",
           "cost": 1,
-          "dmg": 20,
+          "dmg": 30,
           "fx": null,
           "desc": "",
           "vfx": {
@@ -316,7 +316,7 @@
         {
           "name": "메두사의 머리",
           "cost": 2,
-          "dmg": 30,
+          "dmg": 40,
           "fx": "skip_next_enemy",
           "desc": "상대는 다음 턴 기술을 쓸 수 없다",
           "vfx": {
@@ -342,7 +342,7 @@
       "type": "brave",
       "rarity": 1,
       "summonCost": 1,
-      "hp": 50,
+      "hp": 70,
       "passive": {
         "name": "재빠른 손",
         "desc": "공격받을 때 동전 앞면이면 잽싸게 피해요",
@@ -388,7 +388,7 @@
       "type": "brave",
       "rarity": 1,
       "summonCost": 1,
-      "hp": 60,
+      "hp": 80,
       "passive": {
         "name": "벽돌집",
         "desc": "받는 데미지 항상 -10",
@@ -398,7 +398,7 @@
         {
           "name": "지푸라기 던지기",
           "cost": 1,
-          "dmg": 10,
+          "dmg": 20,
           "fx": null,
           "desc": "",
           "vfx": {
@@ -409,7 +409,7 @@
         {
           "name": "삼형제 박치기",
           "cost": 2,
-          "dmg": 30,
+          "dmg": 40,
           "fx": null,
           "desc": "",
           "vfx": {
@@ -528,7 +528,7 @@
       "type": "wise",
       "rarity": 2,
       "summonCost": 2,
-      "hp": 60,
+      "hp": 80,
       "passive": {
         "name": "유리 구두",
         "desc": "기절해도 판마다 한 번 체력 30으로 부활",
@@ -538,7 +538,7 @@
         {
           "name": "구두 콕콕",
           "cost": 1,
-          "dmg": 10,
+          "dmg": 20,
           "fx": null,
           "desc": "",
           "vfx": {
@@ -574,7 +574,7 @@
       "type": "wise",
       "rarity": 2,
       "summonCost": 2,
-      "hp": 70,
+      "hp": 80,
       "passive": {
         "name": "등껍질",
         "desc": "받는 데미지 -10",
@@ -621,17 +621,17 @@
       "type": "wise",
       "rarity": 1,
       "summonCost": 1,
-      "hp": 60,
+      "hp": 80,
       "passive": {
         "name": "가짜 할머니 간파",
-        "desc": "괴물 타입에게 받는 데미지 -20",
-        "fx": "reduce_dmg_20_monster"
+        "desc": "받는 피해가 10 줄어요",
+        "fx": "reduce_dmg_10"
       },
       "attacks": [
         {
           "name": "조약돌 던지기",
           "cost": 1,
-          "dmg": 10,
+          "dmg": 20,
           "fx": null,
           "desc": "",
           "vfx": {
@@ -668,7 +668,7 @@
       "type": "wise",
       "rarity": 2,
       "summonCost": 2,
-      "hp": 70,
+      "hp": 80,
       "passive": {
         "name": "넷이 함께",
         "desc": "서로 등을 맞대 받는 피해가 10 줄어요",
@@ -700,7 +700,7 @@
         {
           "name": "왁자지껄 대소동",
           "cost": 3,
-          "dmg": 40,
+          "dmg": 50,
           "fx": null,
           "desc": "",
           "vfx": {
@@ -726,7 +726,7 @@
       "type": "wise",
       "rarity": 1,
       "summonCost": 1,
-      "hp": 50,
+      "hp": 60,
       "passive": {
         "name": "용감해진 나무",
         "desc": "겁을 이겨내면 힘이 나요. 체력이 절반 아래면 공격 피해 +20",
@@ -736,7 +736,7 @@
         {
           "name": "길어지는 코 찌르기",
           "cost": 1,
-          "dmg": 10,
+          "dmg": 20,
           "fx": "dmg_stack_10",
           "desc": "쓸 때마다 데미지 +10 (10→20→30…)",
           "vfx": {
@@ -830,8 +830,12 @@
       "type": "magic",
       "rarity": 3,
       "summonCost": 3,
-      "hp": 80,
-      "passive": null,
+      "hp": 90,
+      "passive": {
+        "name": "자정의 보호",
+        "desc": "처음 받는 공격은 마법이 막아 줘요",
+        "fx": "first_hit_zero"
+      },
       "attacks": [
         {
           "name": "별가루 톡!",
@@ -884,17 +888,17 @@
       "type": "magic",
       "rarity": 3,
       "summonCost": 0,
-      "hp": 100,
+      "hp": 80,
       "passive": {
-        "name": "램프의 계약",
-        "desc": "소환 별 0. 대신 판마다 기술 총 3번 (세 가지 소원)",
-        "fx": "wish_limit_3"
+        "name": "램프의 보호",
+        "desc": "처음 받는 공격은 램프가 막아 줘요",
+        "fx": "first_hit_zero"
       },
       "attacks": [
         {
           "name": "연기 소용돌이",
           "cost": 1,
-          "dmg": 0,
+          "dmg": 10,
           "fx": "weaken_next_20",
           "desc": "다음 기술 피해를 최대 20 줄여요 (최소 10)",
           "vfx": {
@@ -931,7 +935,7 @@
       "type": "magic",
       "rarity": 2,
       "summonCost": 3,
-      "hp": 70,
+      "hp": 80,
       "passive": {
         "name": "얼음 갑옷",
         "desc": "받는 피해가 10 줄어요",
@@ -989,7 +993,7 @@
       "type": "magic",
       "rarity": 2,
       "summonCost": 2,
-      "hp": 60,
+      "hp": 70,
       "passive": {
         "name": "달콤한 함정",
         "desc": "처음 받는 공격은 과자벽이 막아 줘요",
@@ -999,7 +1003,7 @@
         {
           "name": "과자집 유혹",
           "cost": 1,
-          "dmg": 10,
+          "dmg": 20,
           "fx": "weaken_next_20",
           "desc": "다음 기술 피해를 최대 20 줄여요 (최소 10)",
           "vfx": {
@@ -1035,7 +1039,7 @@
       "type": "magic",
       "rarity": 2,
       "summonCost": 2,
-      "hp": 60,
+      "hp": 80,
       "passive": {
         "name": "바다의 축복",
         "desc": "기절해도 판마다 한 번 절반 체력으로 되살아나요",
@@ -1055,8 +1059,8 @@
         },
         {
           "name": "바다의 노래",
-          "cost": 2,
-          "dmg": 0,
+          "cost": 1,
+          "dmg": 20,
           "fx": "weaken_next_20",
           "desc": "다음 기술 피해를 최대 20 줄여요 (최소 10)",
           "vfx": {
@@ -1081,7 +1085,7 @@
       "type": "monster",
       "rarity": 3,
       "summonCost": 5,
-      "hp": 150,
+      "hp": 170,
       "passive": {
         "name": "외눈",
         "desc": "기술 쓸 때 동전 뒷면이면 빗나감",
@@ -1139,7 +1143,7 @@
       "type": "monster",
       "rarity": 1,
       "summonCost": 2,
-      "hp": 60,
+      "hp": 70,
       "passive": {
         "name": "할머니 변장",
         "desc": "처음 받는 공격 1번은 데미지 0",
@@ -1149,7 +1153,7 @@
         {
           "name": "어슬렁 노려보기",
           "cost": 1,
-          "dmg": 10,
+          "dmg": 20,
           "fx": "weaken_next_20",
           "desc": "다음 기술 피해를 최대 20 줄여요 (최소 10)",
           "vfx": {
@@ -1186,7 +1190,11 @@
       "rarity": 2,
       "summonCost": 4,
       "hp": 110,
-      "passive": null,
+      "passive": {
+        "name": "거인의 돌가죽",
+        "desc": "받는 피해가 10 줄어요",
+        "fx": "reduce_dmg_10"
+      },
       "attacks": [
         {
           "name": "거인의 손아귀",
@@ -1228,7 +1236,7 @@
       "type": "monster",
       "rarity": 2,
       "summonCost": 3,
-      "hp": 70,
+      "hp": 90,
       "passive": {
         "name": "돌의 시선",
         "desc": "노려보는 것만으로 받는 피해가 10 줄어요",
@@ -1248,8 +1256,8 @@
         },
         {
           "name": "돌로 만들기",
-          "cost": 3,
-          "dmg": 0,
+          "cost": 2,
+          "dmg": 20,
           "fx": "coin_skip_next_enemy",
           "desc": "동전 앞면이면 상대는 다음 턴 통째로 쉼",
           "vfx": {
@@ -1275,11 +1283,11 @@
       "type": "monster",
       "rarity": 2,
       "summonCost": 2,
-      "hp": 80,
+      "hp": 70,
       "passive": {
-        "name": "황금의 저주",
-        "desc": "내 턴이 끝날 때마다 자기 체력 -10",
-        "fx": "self_hurt_10_eot"
+        "name": "황금 갑옷",
+        "desc": "오행 상성 추가 피해 +10을 받지 않아요",
+        "fx": "no_weakness"
       },
       "attacks": [
         {
@@ -1331,7 +1339,7 @@
         {
           "name": "떡 하나 주면 안 잡아먹지",
           "cost": 1,
-          "dmg": 10,
+          "dmg": 20,
           "fx": "steal_star_1",
           "desc": "상대 별사탕 1개 훔치기",
           "vfx": {
@@ -1419,7 +1427,7 @@
       "type": "magic",
       "rarity": 3,
       "summonCost": 5,
-      "hp": 110,
+      "hp": 100,
       "passive": {
         "name": "바다의 분노",
         "desc": "체력가 절반 아래면 공격 피해 +20",
@@ -1428,8 +1436,8 @@
       "attacks": [
         {
           "name": "삼지창",
-          "cost": 2,
-          "dmg": 30,
+          "cost": 1,
+          "dmg": 20,
           "fx": null,
           "desc": "",
           "vfx": {
@@ -1439,7 +1447,7 @@
         },
         {
           "name": "해일",
-          "cost": 4,
+          "cost": 3,
           "dmg": 60,
           "fx": null,
           "desc": "",
@@ -1454,7 +1462,7 @@
       "art": "art/poseidon.png",
       "stats": {
         "attack": 5,
-        "defense": 5,
+        "defense": 4,
         "spirit": 2
       }
     },
@@ -1466,7 +1474,7 @@
       "type": "magic",
       "rarity": 3,
       "summonCost": 5,
-      "hp": 90,
+      "hp": 100,
       "passive": {
         "name": "보이지 않는 투구",
         "desc": "처음 받는 공격을 한 번 막아요",
@@ -1476,7 +1484,7 @@
         {
           "name": "저승의 손길",
           "cost": 1,
-          "dmg": 10,
+          "dmg": 20,
           "fx": "steal_star_1",
           "desc": "상대 별사탕 1개 훔치기",
           "vfx": {
@@ -1517,7 +1525,7 @@
       "type": "magic",
       "rarity": 2,
       "summonCost": 3,
-      "hp": 70,
+      "hp": 90,
       "passive": {
         "name": "태양의 가호",
         "desc": "해가 기울수록 화살이 매서워져요. 체력이 절반 아래면 공격 피해 +20",
@@ -1538,7 +1546,7 @@
         {
           "name": "신탁의 빛",
           "cost": 2,
-          "dmg": 0,
+          "dmg": 10,
           "fx": "weaken_next_20",
           "desc": "상대 다음 공격 피해 -20",
           "vfx": {
@@ -1549,7 +1557,7 @@
         {
           "name": "리라의 심판",
           "cost": 3,
-          "dmg": 40,
+          "dmg": 50,
           "fx": null,
           "desc": "",
           "vfx": {
@@ -1561,8 +1569,8 @@
       "unlock": "midas",
       "art": "art/apollo.png",
       "stats": {
-        "attack": 4,
-        "defense": 3,
+        "attack": 5,
+        "defense": 4,
         "spirit": 3
       }
     },
@@ -1574,7 +1582,7 @@
       "type": "monster",
       "rarity": 3,
       "summonCost": 5,
-      "hp": 130,
+      "hp": 100,
       "passive": {
         "name": "미궁의 주인",
         "desc": "받는 피해가 10 줄어요",
@@ -1625,7 +1633,7 @@
       "type": "monster",
       "rarity": 3,
       "summonCost": 5,
-      "hp": 120,
+      "hp": 100,
       "passive": {
         "name": "머리가 셋",
         "desc": "체력가 절반 아래면 공격 피해 +20",
@@ -1660,7 +1668,7 @@
       "art": "art/cerberus.png",
       "stats": {
         "attack": 5,
-        "defense": 5,
+        "defense": 4,
         "spirit": 2
       }
     },
@@ -1718,7 +1726,7 @@
       "type": "monster",
       "rarity": 2,
       "summonCost": 3,
-      "hp": 70,
+      "hp": 80,
       "passive": {
         "name": "풀리지 않는 수수께끼",
         "desc": "처음 받는 공격은 수수께끼로 되돌려요",
@@ -1728,7 +1736,7 @@
         {
           "name": "수수께끼",
           "cost": 1,
-          "dmg": 10,
+          "dmg": 20,
           "fx": "steal_star_1",
           "desc": "상대 별사탕 1개 훔치기",
           "vfx": {
@@ -1739,7 +1747,7 @@
         {
           "name": "사자의 발톱",
           "cost": 2,
-          "dmg": 30,
+          "dmg": 40,
           "fx": null,
           "desc": "",
           "vfx": {
@@ -1750,7 +1758,7 @@
         {
           "name": "날개 급습",
           "cost": 3,
-          "dmg": 40,
+          "dmg": 50,
           "fx": null,
           "desc": "",
           "vfx": {
@@ -1767,8 +1775,8 @@
       ],
       "art": "art/sphinx.png",
       "stats": {
-        "attack": 3,
-        "defense": 4,
+        "attack": 4,
+        "defense": 5,
         "spirit": 2
       }
     },
@@ -1780,7 +1788,7 @@
       "type": "brave",
       "rarity": 3,
       "summonCost": 5,
-      "hp": 110,
+      "hp": 90,
       "passive": {
         "name": "불사의 몸",
         "desc": "받는 피해가 10 줄어요",
@@ -1956,7 +1964,7 @@
       "type": "brave",
       "rarity": 2,
       "summonCost": 3,
-      "hp": 70,
+      "hp": 80,
       "passive": {
         "name": "누구보다 빠른 발",
         "desc": "체력가 절반 아래면 공격 피해 +20",
@@ -1966,7 +1974,7 @@
         {
           "name": "달리기 겨루기",
           "cost": 1,
-          "dmg": 10,
+          "dmg": 20,
           "fx": "steal_star_1",
           "desc": "상대 별사탕 1개 훔치기",
           "vfx": {
@@ -1977,7 +1985,7 @@
         {
           "name": "사냥 창",
           "cost": 2,
-          "dmg": 30,
+          "dmg": 40,
           "fx": null,
           "desc": "",
           "vfx": {
@@ -1993,8 +2001,8 @@
       ],
       "art": "art/atalanta.png",
       "stats": {
-        "attack": 3,
-        "defense": 3,
+        "attack": 4,
+        "defense": 4,
         "spirit": 2
       }
     },
@@ -2064,7 +2072,7 @@
       "type": "wise",
       "rarity": 2,
       "summonCost": 3,
-      "hp": 60,
+      "hp": 70,
       "passive": {
         "name": "날랜 발",
         "desc": "처음 받는 공격은 날아올라 피해요",
@@ -2074,7 +2082,7 @@
         {
           "name": "날개 신발",
           "cost": 1,
-          "dmg": 10,
+          "dmg": 20,
           "fx": "gain_star_1",
           "desc": "별사탕 1개 얻기",
           "vfx": {
@@ -2096,7 +2104,7 @@
         {
           "name": "전령의 지팡이",
           "cost": 2,
-          "dmg": 30,
+          "dmg": 40,
           "fx": null,
           "desc": "",
           "vfx": {
@@ -2108,8 +2116,8 @@
       "unlock": "perseus",
       "art": "art/hermes.png",
       "stats": {
-        "attack": 2,
-        "defense": 3,
+        "attack": 3,
+        "defense": 4,
         "spirit": 4
       }
     },
@@ -2121,7 +2129,7 @@
       "type": "wise",
       "rarity": 2,
       "summonCost": 3,
-      "hp": 60,
+      "hp": 100,
       "passive": {
         "name": "저승도 멈춘 노래",
         "desc": "처음 받는 공격은 노래가 멈춰 세워요",
@@ -2142,7 +2150,7 @@
         {
           "name": "리라의 노래",
           "cost": 2,
-          "dmg": 10,
+          "dmg": 30,
           "fx": "skip_next_enemy",
           "desc": "상대 다음 턴 건너뛰기",
           "vfx": {
@@ -2153,7 +2161,7 @@
         {
           "name": "저승의 노래",
           "cost": 3,
-          "dmg": 50,
+          "dmg": 60,
           "fx": null,
           "desc": "",
           "vfx": {
@@ -2171,7 +2179,7 @@
       "art": "art/orpheus.png",
       "stats": {
         "attack": 4,
-        "defense": 3,
+        "defense": 5,
         "spirit": 3
       }
     },
@@ -2183,7 +2191,7 @@
       "type": "wise",
       "rarity": 3,
       "summonCost": 5,
-      "hp": 100,
+      "hp": 90,
       "passive": {
         "name": "꺼지지 않는 불",
         "desc": "체력가 절반 아래면 공격 피해 +20",
@@ -2204,7 +2212,7 @@
         {
           "name": "독수리의 시련",
           "cost": 2,
-          "dmg": 30,
+          "dmg": 20,
           "fx": "dmg_stack_10",
           "desc": "쓸 때마다 피해 +10",
           "vfx": {
@@ -2385,7 +2393,7 @@
       "type": "wise",
       "rarity": 3,
       "summonCost": 4,
-      "hp": 60,
+      "hp": 70,
       "passive": {
         "name": "팔진도",
         "desc": "처음 받는 공격 피해를 0으로 만들어요",
@@ -2395,7 +2403,7 @@
         {
           "name": "동남풍",
           "cost": 1,
-          "dmg": 10,
+          "dmg": 20,
           "fx": "gain_star_1",
           "desc": "별사탕 1개를 더 얻어요",
           "vfx": {
@@ -2489,7 +2497,7 @@
         {
           "name": "인내",
           "cost": 1,
-          "dmg": 10,
+          "dmg": 20,
           "fx": "weaken_next_20",
           "desc": "상대의 다음 기술 피해를 최대 20 줄여요",
           "vfx": {
@@ -2500,7 +2508,7 @@
         {
           "name": "공성계",
           "cost": 2,
-          "dmg": 20,
+          "dmg": 30,
           "fx": "coin_skip_next_enemy",
           "desc": "동전 앞면이면 상대의 다음 턴을 건너뛰게 해요",
           "vfx": {
@@ -2511,7 +2519,7 @@
         {
           "name": "낙양 진군",
           "cost": 3,
-          "dmg": 40,
+          "dmg": 50,
           "fx": null,
           "desc": "",
           "vfx": {
@@ -2537,7 +2545,7 @@
       "type": "magic",
       "rarity": 2,
       "summonCost": 3,
-      "hp": 60,
+      "hp": 90,
       "passive": {
         "name": "연꽃의 몸",
         "desc": "처음 쓰러지면 체력 절반으로 한 번 부활해요",
@@ -2558,7 +2566,7 @@
         {
           "name": "풍화륜 돌진",
           "cost": 3,
-          "dmg": 50,
+          "dmg": 60,
           "fx": null,
           "desc": "",
           "vfx": {
@@ -2584,7 +2592,7 @@
       "type": "magic",
       "rarity": 3,
       "summonCost": 4,
-      "hp": 80,
+      "hp": 90,
       "passive": {
         "name": "요괴 사냥꾼",
         "desc": "괴물 타입에게 받는 피해가 20 줄어요",
@@ -2594,7 +2602,7 @@
         {
           "name": "효천견",
           "cost": 1,
-          "dmg": 10,
+          "dmg": 20,
           "fx": "weaken_next_20",
           "desc": "상대의 다음 기술 피해를 최대 20 줄여요",
           "vfx": {
@@ -2689,7 +2697,7 @@
       "type": "monster",
       "rarity": 2,
       "summonCost": 2,
-      "hp": 50,
+      "hp": 70,
       "passive": {
         "name": "꺼지지 않는 불",
         "desc": "체력이 절반 아래면 공격 피해가 20 늘어요",
@@ -2736,7 +2744,7 @@
       "type": "monster",
       "rarity": 2,
       "summonCost": 2,
-      "hp": 50,
+      "hp": 70,
       "passive": {
         "name": "세 번의 변신",
         "desc": "공격받을 때 동전 앞면이면 다른 모습으로 피해요",
@@ -2746,7 +2754,7 @@
         {
           "name": "거짓 미소",
           "cost": 1,
-          "dmg": 10,
+          "dmg": 20,
           "fx": "steal_star_1",
           "desc": "상대 별사탕 1개를 가져와요",
           "vfx": {
@@ -2757,7 +2765,7 @@
         {
           "name": "백골 손톱",
           "cost": 2,
-          "dmg": 30,
+          "dmg": 40,
           "fx": "dmg_stack_10",
           "desc": "쓸 때마다 피해가 10씩 늘어요",
           "vfx": {
@@ -2782,7 +2790,7 @@
       "type": "wise",
       "rarity": 3,
       "summonCost": 3,
-      "hp": 90,
+      "hp": 180,
       "passive": {
         "name": "누나는 다 알아",
         "desc": "처음 받는 공격은 미리 알아채고 피해요",
@@ -2826,7 +2834,7 @@
       "type": "monster",
       "rarity": 2,
       "summonCost": 2,
-      "hp": 80,
+      "hp": 130,
       "passive": {
         "name": "누나 뒤에 숨기",
         "desc": "누나가 막아 줘서 받는 피해가 10 줄어요",
@@ -2878,7 +2886,7 @@
       "type": "brave",
       "rarity": 2,
       "summonCost": 3,
-      "hp": 80,
+      "hp": 110,
       "passive": {
         "name": "퇴근 후 힘내기",
         "desc": "체력이 절반 아래면 공격 피해 +20",
@@ -2888,7 +2896,7 @@
         {
           "name": "목말 태우기",
           "cost": 1,
-          "dmg": 10,
+          "dmg": 20,
           "fx": null,
           "desc": "",
           "vfx": { "kind": "strike", "emoji": "🎈" }
@@ -2896,7 +2904,7 @@
         {
           "name": "간지럽히기",
           "cost": 2,
-          "dmg": 20,
+          "dmg": 30,
           "fx": "skip_next_enemy",
           "desc": "간지러워서 상대는 다음 턴에 기술을 못 써요",
           "vfx": { "kind": "debuff", "emoji": "🤣" }
@@ -2904,7 +2912,7 @@
       ],
       "unlock": "game:math/streak7",
       "art": "art/appa.png",
-      "stats": { "attack": 2, "defense": 5, "spirit": 2 }
+      "stats": { "attack": 4, "defense": 5, "spirit": 2 }
     },
     {
       "id": "eomma",
@@ -2914,7 +2922,7 @@
       "type": "magic",
       "rarity": 3,
       "summonCost": 4,
-      "hp": 70,
+      "hp": 120,
       "passive": {
         "name": "엄마 눈썰미",
         "desc": "받는 피해가 10 줄어요",
@@ -2948,14 +2956,14 @@
       ],
       "unlock": "game:math/streak7",
       "art": "art/eomma.png",
-      "stats": { "attack": 2, "defense": 4, "spirit": 4 }
+      "stats": { "attack": 2, "defense": 5, "spirit": 4 }
     },
     {
-      "id": "yisunshin", "element": "water", "name": "이순신", "emoji": "🚢", "type": "brave", "rarity": 3, "summonCost": 4, "hp": 70,
+      "id": "yisunshin", "element": "water", "name": "이순신", "emoji": "🚢", "type": "brave", "rarity": 3, "summonCost": 4, "hp": 80,
       "passive": { "name": "필사즉생", "desc": "오행 상성 추가 피해 +10을 받지 않아요", "fx": "no_weakness" },
       "attacks": [
         { "name": "학익진", "cost": 1, "dmg": 20, "fx": "weaken_next_20", "desc": "상대의 다음 기술 피해가 최대 20 줄어요", "vfx": { "kind": "aura", "emoji": "🧭" } },
-        { "name": "거북선 돌진", "cost": 3, "dmg": 50, "fx": null, "desc": "", "vfx": { "kind": "summon", "emoji": "🛶", "big": true } }
+        { "name": "거북선 돌진", "cost": 3, "dmg": 60, "fx": null, "desc": "", "vfx": { "kind": "summon", "emoji": "🛶", "big": true } }
       ], "unlock": null, "art": "art/yisunshin.png", "stats": { "attack": 4, "defense": 5, "spirit": 4 }
     },
     {
@@ -2967,15 +2975,15 @@
       ], "unlock": "game:math/streak3", "art": "art/euljimundeok.png", "stats": { "attack": 4, "defense": 4, "spirit": 5 }
     },
     {
-      "id": "ganggamchan", "element": "earth", "name": "강감찬", "emoji": "🔭", "type": "wise", "rarity": 3, "summonCost": 4, "hp": 80,
+      "id": "ganggamchan", "element": "earth", "name": "강감찬", "emoji": "🔭", "type": "wise", "rarity": 3, "summonCost": 4, "hp": 90,
       "passive": { "name": "흔들리지 않는 별", "desc": "오행 상성 추가 피해 +10을 받지 않아요", "fx": "no_weakness" },
       "attacks": [
         { "name": "별을 읽는 눈", "cost": 1, "dmg": 20, "fx": "gain_star_1", "desc": "별사탕 1개를 더 얻어요", "vfx": { "kind": "aura", "emoji": "🔭" } },
-        { "name": "귀주대첩", "cost": 3, "dmg": 50, "fx": null, "desc": "", "vfx": { "kind": "burst", "emoji": "🏞️", "big": true } }
+        { "name": "귀주대첩", "cost": 3, "dmg": 60, "fx": null, "desc": "", "vfx": { "kind": "burst", "emoji": "🏞️", "big": true } }
       ], "unlock": "game:math/streak7", "art": "art/ganggamchan.png", "stats": { "attack": 4, "defense": 5, "spirit": 5 }
     },
     {
-      "id": "kwonyul", "element": "fire", "name": "권율", "emoji": "🪨", "type": "brave", "rarity": 2, "summonCost": 3, "hp": 80,
+      "id": "kwonyul", "element": "fire", "name": "권율", "emoji": "🪨", "type": "brave", "rarity": 2, "summonCost": 3, "hp": 90,
       "passive": { "name": "행주산성의 끈기", "desc": "체력이 절반 아래면 공격 피해가 20 늘어요", "fx": "boost_20_below_half" },
       "attacks": [
         { "name": "행주 돌팔매", "cost": 1, "dmg": 20, "fx": null, "desc": "", "vfx": { "kind": "projectile", "emoji": "🧱" } },
@@ -2991,10 +2999,10 @@
       ], "unlock": null, "art": "art/sherlockholmes.png", "stats": { "attack": 4, "defense": 3, "spirit": 5 }
     },
     {
-      "id": "doctorwatson", "element": "earth", "name": "왓슨 박사", "emoji": "🩺", "type": "brave", "rarity": 2, "summonCost": 3, "hp": 80,
+      "id": "doctorwatson", "element": "earth", "name": "왓슨 박사", "emoji": "🩺", "type": "brave", "rarity": 2, "summonCost": 3, "hp": 90,
       "passive": { "name": "믿음직한 기록자", "desc": "오행 상성 추가 피해 +10을 받지 않아요", "fx": "no_weakness" },
       "attacks": [
-        { "name": "의사의 진단", "cost": 1, "dmg": 10, "fx": "gain_star_1", "desc": "별사탕 1개를 더 얻어요", "vfx": { "kind": "aura", "emoji": "🩺" } },
+        { "name": "의사의 진단", "cost": 1, "dmg": 20, "fx": "gain_star_1", "desc": "별사탕 1개를 더 얻어요", "vfx": { "kind": "aura", "emoji": "🩺" } },
         { "name": "믿음직한 동행", "cost": 2, "dmg": 30, "fx": "weaken_next_20", "desc": "상대의 다음 기술 피해가 최대 20 줄어요", "vfx": { "kind": "strike", "emoji": "🤝", "big": true } }
       ], "unlock": "game:math/streak3", "art": "art/doctorwatson.png", "stats": { "attack": 3, "defense": 5, "spirit": 4 }
     },
@@ -3015,7 +3023,7 @@
       ], "unlock": "game:math/streak7", "art": "art/moriarty.png", "stats": { "attack": 5, "defense": 4, "spirit": 5 }
     },
     {
-      "id": "gearwing", "element": "metal", "name": "기어윙", "emoji": "⚙️", "type": "magic", "rarity": 3, "summonCost": 4, "hp": 70,
+      "id": "gearwing", "element": "metal", "name": "기어윙", "emoji": "⚙️", "type": "magic", "rarity": 3, "summonCost": 4, "hp": 90,
       "passive": { "name": "자동 회피 날개", "desc": "처음 받는 공격은 날개가 막아 줘요", "fx": "first_hit_zero" },
       "attacks": [
         { "name": "톱니깃 발사", "cost": 1, "dmg": 20, "fx": null, "desc": "", "vfx": { "kind": "projectile", "emoji": "⚙️" } },
@@ -3032,7 +3040,7 @@
       ], "unlock": "game:math/streak7", "art": "art/starshield.png", "stats": { "attack": 3, "defense": 5, "spirit": 4 }
     },
     {
-      "id": "thunderguard", "element": "fire", "name": "천둥북 수호자", "emoji": "🥁", "type": "magic", "rarity": 3, "summonCost": 4, "hp": 80,
+      "id": "thunderguard", "element": "fire", "name": "천둥북 수호자", "emoji": "🥁", "type": "magic", "rarity": 3, "summonCost": 4, "hp": 90,
       "passive": { "name": "심장을 울리는 장단", "desc": "체력이 절반 아래면 공격 피해가 20 늘어요", "fx": "boost_20_below_half" },
       "attacks": [
         { "name": "구름북 울림", "cost": 1, "dmg": 20, "fx": null, "desc": "", "vfx": { "kind": "aura", "emoji": "🥁" } },
@@ -3040,7 +3048,7 @@
       ], "unlock": "game:math/streak3", "art": "art/thunderguard.png", "stats": { "attack": 5, "defense": 3, "spirit": 4 }
     },
     {
-      "id": "redknot", "element": "metal", "name": "붉은매듭 첩보원", "emoji": "🧶", "type": "wise", "rarity": 2, "summonCost": 3, "hp": 70,
+      "id": "redknot", "element": "metal", "name": "붉은매듭 첩보원", "emoji": "🧶", "type": "wise", "rarity": 2, "summonCost": 3, "hp": 80,
       "passive": { "name": "그림자 발걸음", "desc": "공격받을 때 동전 앞면이면 재빠르게 피해요", "fx": "coin_evade" },
       "attacks": [
         { "name": "매듭 표창", "cost": 1, "dmg": 20, "fx": null, "desc": "", "vfx": { "kind": "projectile", "emoji": "🧶" } },
@@ -3072,7 +3080,7 @@
       ], "unlock": "game:math/streak7", "art": "art/moonmoth.png", "stats": { "attack": 4, "defense": 5, "spirit": 4 }
     },
     {
-      "id": "ppungdetective", "element": "wood", "name": "뿡경감", "emoji": "👃", "type": "monster", "rarity": 2, "summonCost": 3, "hp": 70,
+      "id": "ppungdetective", "element": "wood", "name": "뿡경감", "emoji": "👃", "type": "monster", "rarity": 2, "summonCost": 3, "hp": 80,
       "passive": { "name": "냄새는 못 속여", "desc": "오행 상성 추가 피해 +10을 받지 않아요", "fx": "no_weakness" },
       "attacks": [
         { "name": "냄새 단서", "cost": 1, "dmg": 20, "fx": "steal_star_1", "desc": "상대 별사탕 1개를 가져와요", "vfx": { "kind": "projectile", "emoji": "👃" } },

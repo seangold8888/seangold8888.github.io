@@ -163,7 +163,7 @@ test("이야기 조각 데이터는 9종 효과·완청 키·초기 3장 풀 계
   );
 });
 
-test("손패 UI와 캐시 버전 40이 함께 배포되도록 묶여 있다", () => {
+test("손패 UI와 캐시 버전 41이 함께 배포되도록 묶여 있다", () => {
   const html = read("index.html");
   const css = read("styles.css");
   const app = read(path.join("js", "app.js"));
@@ -171,9 +171,9 @@ test("손패 UI와 캐시 버전 40이 함께 배포되도록 묶여 있다", ()
   ["fragmentTray", "fragmentHand", "fragmentPreview"].forEach((id) => {
     assert.match(html, new RegExp('id="' + id + '"'));
   });
-  assert.match(html, /styles\.css\?v=40/);
+  assert.match(html, /styles\.css\?v=41/);
   ["engine", "audio", "card-view", "vfx-recipes", "story-gates", "app"].forEach((file) => {
-    assert.match(html, new RegExp("js/" + file + "\\.js\\?v=40"));
+    assert.match(html, new RegExp("js/" + file + "\\.js\\?v=41"));
   });
   assert.doesNotMatch(html, /\?v=(?:19|20|21|22|23|24|25|26|27|28|29|30|31)/);
 
@@ -301,7 +301,8 @@ test("공격 비주얼은 네 타입·피격·약점·기절·부활을 읽기 �
 
 test("복합 행동은 상대 부활·내 자해 K.O.를 두 카드에 나누고 0피해 약점은 흔들지 않는다", () => {
   const data = JSON.parse(read("cards.json"));
-  const midas = data.cards.find((card) => card.id === "midas");
+  const midas = structuredClone(data.cards.find((card) => card.id === "midas"));
+  midas.passive = { name: "자해 검사", desc: "턴 끝에 체력 10 감소", fx: "self_hurt_10_eot" };
   const cinderella = data.cards.find((card) => card.id === "cinderella");
   const Fx = loadFxRuntime();
   let state = Engine.createGame(midas, cinderella);
@@ -311,7 +312,7 @@ test("복합 행동은 상대 부활·내 자해 K.O.를 두 카드에 나누고
   const result = Engine.performAction(state, { type: "attack", attackIndex: 0 });
   assert.equal(result.winner, "enemy");
   assert.equal(result.sides.player.hp, 0);
-  assert.equal(result.sides.enemy.hp, 30);
+  assert.equal(result.sides.enemy.hp, Math.floor(cinderella.hp / 2));
   assert.deepEqual(
     result.events.map((event) => event.type),
     ["attack", "damage", "revive", "self_damage", "game_over"]

@@ -25,9 +25,9 @@ test("affinity immunity, nullification, zero damage and legacy categories obey t
   assert.equal(hit(make("wood", {attacks:[{name:"준비",cost:1,dmg:0}]}), make("earth")).sides.enemy.hp, 200);
   assert.equal(hit(make(null, {type:"magic"}), make(null, {type:"wise"})).sides.enemy.hp, 180);
 });
-test("redhood gets +10 against earth without changing original HP or skills", () => {
+test("redhood gets +10 against earth after the S-tier balance pass", () => {
   const red = cards.find(c => c.id === "redhood");
-  assert.equal(red.hp, 60);
+  assert.equal(red.hp, 80);
   assert.equal(red.element, "wood");
   const state = hit(red, make("earth"));
   assert.equal(200 - state.sides.enemy.hp, red.attacks[0].dmg + 10);

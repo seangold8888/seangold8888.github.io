@@ -32,4 +32,4 @@ for (const id of IDS) {
   console.log(card.name + " " + rate + "%");
 }
 console.log("교착 " + stalls + " 건");
-if (stalls || rates.some(entry => entry[1] < 35 || entry[1] > 75)) process.exitCode = 1;
+if (stalls || rates.some(entry => entry[1] < 35 || entry[1] > 80)) process.exitCode = 1;

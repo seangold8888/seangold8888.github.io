@@ -44,15 +44,15 @@ test("동양 12장 능력치·해금·손오공 v1 기술이 설계 계약과 �
     guanyu: ["brave", 3, 90, "reduce_dmg_10", "game:sanguo/hulao", [4, 5, 1]],
     zhangfei: ["brave", 2, 100, "boost_20_below_half", "game:sanguo/changban", [2, 4, 2]],
     zhaoyun: ["brave", 3, 60, "coin_evade", "game:sanguo/changban", [2, 3, 3]],
-    zhugeliang: ["wise", 3, 60, "first_hit_zero", "game:sanguo/chushi", [4, 3, 3]],
+    zhugeliang: ["wise", 3, 70, "first_hit_zero", "game:sanguo/chushi", [4, 3, 3]],
     caocao: ["wise", 2, 70, "reduce_dmg_10", "game:sanguo/guandu", [4, 4, 3]],
     simayi: ["wise", 2, 70, "boost_20_below_half", "game:sanguo/chushi", [4, 3, 4]],
     sunwukong: ["magic", 3, 90, "coin_evade", "sunwukong", [5, 4, 4]],
-    nezha: ["magic", 2, 60, "revive_half_once", "game:sanguo/heavenpalace", [4, 3, 2]],
-    erlangshen: ["magic", 3, 80, "reduce_dmg_20_monster", "game:sanguo/heavenpalace", [3, 5, 4]],
+    nezha: ["magic", 2, 90, "revive_half_once", "game:sanguo/heavenpalace", [4, 3, 2]],
+    erlangshen: ["magic", 3, 90, "reduce_dmg_20_monster", "game:sanguo/heavenpalace", [3, 5, 4]],
     wumawang: ["monster", 3, 120, "reduce_dmg_10", "game:sanguo/flamemountain", [5, 5, 1]],
-    honghaier: ["monster", 2, 50, "boost_20_below_half", "game:sanguo/huoyundong", [5, 2, 1]],
-    baigujing: ["monster", 2, 50, "coin_evade", "game:sanguo/baihuling", [3, 3, 3]]
+    honghaier: ["monster", 2, 70, "boost_20_below_half", "game:sanguo/huoyundong", [5, 2, 1]],
+    baigujing: ["monster", 2, 70, "coin_evade", "game:sanguo/baihuling", [3, 3, 3]]
   };
   for (const [id, spec] of Object.entries(expected)) {
     const card = get(id);

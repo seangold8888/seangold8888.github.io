@@ -4627,6 +4627,17 @@ dialog p:not(.kicker) {
   color: color-mix(in srgb, var(--type) 72%, #241f38);
 }
 
+.stat-total[data-tier="S"] .total-fill {
+  background: linear-gradient(90deg, #fff1a8, #ffc52f 55%, #ff8a00);
+  box-shadow: 0 0 9px rgba(255, 190, 35, .72);
+}
+
+.stat-total[data-tier="S"] .total-value {
+  color: #9b4b00;
+  font-size: 18px;
+  text-shadow: 0 1px 0 #fff3b2, 0 0 8px rgba(255, 184, 0, .55);
+}
+
 .story-card.is-collection-compact .stat-total {
   min-height: 15px;
   margin-bottom: 2px;

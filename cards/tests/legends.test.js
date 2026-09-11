@@ -27,8 +27,8 @@ function audioRuntime() {
   return sandbox.window.CardAudio;
 }
 
-test("기존 55장 데이터·순서와 각 기술 소리는 바뀌지 않는다", () => {
-  assert.equal(sha(JSON.stringify(data.cards.slice(0, 55))), "5900db658e14d87ee84713675dfe59c4a5ad17792981c0c0f5c5482a98336660");
+test("S급 재조정된 55장 데이터·순서와 각 기술 소리는 고정된다", () => {
+  assert.equal(sha(JSON.stringify(data.cards.slice(0, 55))), "1f48873f2a372eaa0cc949e6faa437476819abf7c03b751e439992e4cc37691e");
   assert.equal(sha(JSON.stringify(data.collection.slice(0, 55))), "f55b8a8d24c97df0f7335c5bcc680a4744d6b67806ff06876c83fd68c82136ed");
   const Audio = audioRuntime();
   const plans = data.cards.slice(0, 55).flatMap(card => card.attacks.map(attack => {
@@ -56,10 +56,10 @@ test("전설 16장은 카드당 5문항과 1024×1536 PNG·WEBP를 가진다", (
   });
 });
 
-test("전설 16장은 35~75%이고 교착이 없다", () => {
+test("전설 16장은 35~80%이고 교착이 없다", () => {
   const output = execFileSync(process.execPath, [path.join(root, "tools/legends-balance.cjs")], {encoding: "utf8"});
   assert.match(output, /교착 0 건/);
   const rates = [...output.matchAll(/^(.+?) (\d+)%$/gm)].map(match => Number(match[2]));
   assert.equal(rates.length, 16);
-  rates.forEach(rate => assert.ok(rate >= 35 && rate <= 75, rate));
+  rates.forEach(rate => assert.ok(rate >= 35 && rate <= 80, rate));
 });

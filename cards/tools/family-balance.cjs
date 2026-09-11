@@ -1,4 +1,4 @@
-// 가족 4장 시안을 임시로 넣고 51장과 붙여 균형을 본다. cards.json은 건드리지 않는다.
+// 가족 4장을 현재 전체 카드 풀과 붙여 실제 전투 등급과 순서를 검산한다.
 const fs = require("fs");
 const root = require("path").join(__dirname, "..") + "/";
 const Engine = require(root + "js/engine.js");
@@ -59,8 +59,7 @@ const FAMILY = familyIds.every((id) => data.cards.some((card) => card.id === id)
   : FAMILY_FALLBACK;
 
 const implemented = familyIds.every((id) => data.collection.includes(id));
-// 가족 확정 당시의 상대 풀 55장을 고정해 뒤 확장이 가족 순서를 흔들지 않게 한다.
-const all = data.collection.slice(0, 55).map((id) => data.cards.find((c) => c.id === id))
+const all = data.collection.map((id) => data.cards.find((c) => c.id === id))
   .concat(implemented ? [] : FAMILY)
   .filter(Engine.isBattleCard);
 const rngOf = (s) => { let x = s >>> 0; return () => { x = (Math.imul(x, 1664525) + 1013904223) >>> 0; return x / 4294967296; }; };
@@ -92,6 +91,10 @@ console.log("\n가족 4장");
 for (const c of FAMILY) {
   console.log(`  ${c.name}  ${(rate(c) * 100).toFixed(0)}%  ${c.type}/${c.element} hp${c.hp}`);
 }
+console.log("\n전체 순위");
+all.slice().sort((a, b) => rate(b) - rate(a)).forEach((card, index) => {
+  console.log(String(index + 1).padStart(2) + "위  " + card.name.padEnd(10) + " " + (rate(card) * 100).toFixed(1) + "%");
+});
 const sorted = all.map(rate).sort((a, b) => a - b);
 console.log("\n전체 분포: 최저", (sorted[0] * 100).toFixed(0) + "%", "중앙", (sorted[Math.floor(sorted.length / 2)] * 100).toFixed(0) + "%", "최고", (sorted[sorted.length - 1] * 100).toFixed(0) + "%");
 const types = {};

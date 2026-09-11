@@ -12,10 +12,16 @@
     Object.freeze({ key: "defense", label: "방어", short: "방어", icon: "🛡" }),
     Object.freeze({ key: "spirit", label: "지력", short: "지력", icon: "✨" })
   ]);
-  // 종합점수 = 별 하나 5점 + 체력 5마다 1점. 가장 센 폴리페모스가 85점,
-  // 가장 약한 미다스 왕이 32점이라 아이가 카드끼리 견주기 좋은 폭이 나온다.
-  const TOTAL_STAR_POINT = 5;
-  const TOTAL_HP_DIVISOR = 5;
+  // family-balance.cjs의 전체 71장 맞대결 결과를 등급으로 고정한다.
+  // 수치가 바뀌면 검사 도구를 다시 돌리고 이 묶음도 함께 갱신한다.
+  const BATTLE_TIERS = Object.freeze({
+    S: new Set(["jaei", "midas", "taeo", "appa", "eomma", "baigujing", "zhaoyun", "mermaid"]),
+    A: new Set(["perseus", "beanstalkgiant", "hades", "simayi", "poseidon", "wumawang", "doctorwatson"]),
+    B: new Set(["hydra", "zhugeliang", "jack", "redknot", "heracles", "nezha", "zeus", "erlangshen", "polyphemus", "atalanta", "zhangfei", "tiger"]),
+    C: new Set(["sunwukong", "ppungdetective", "kwonyul", "achilles", "athena", "guanyu", "sphinx", "wolf", "hermes", "prometheus", "starshield", "witch", "honggildong", "ganggamchan", "redhood", "odysseus", "euljimundeok", "moriarty", "cinderella", "apollo", "neonjumper", "arthur", "moonmoth", "threepigs"]),
+    D: new Set(["arsenelupin", "thunderguard", "medusa", "gearwing", "theseus", "sherlockholmes", "tortoisehare", "fairygodmother", "yisunshin", "honghaier", "snowqueen", "pinocchio", "cerberus", "orpheus", "artemis", "minotaur", "caocao", "bremen", "walllizard", "genie"])
+  });
+  const TIER_WIDTH = Object.freeze({ S: 100, A: 82, B: 64, C: 46, D: 28 });
 
 
   const ART_POSITION = {
@@ -107,25 +113,26 @@
     return Math.max(1, Math.min(5, Number.isFinite(value) ? Math.round(value) : 1));
   }
 
-  function totalScore(card) {
-    const stars = STAT_META.reduce(function (sum, meta) {
-      return sum + statValue(card, meta.key);
-    }, 0);
-    const hp = card && Number.isFinite(Number(card.hp)) ? Number(card.hp) : 0;
-    return stars * TOTAL_STAR_POINT + Math.round(hp / TOTAL_HP_DIVISOR);
+  function battleTier(card) {
+    const id = card && card.id;
+    for (const tier of ["S", "A", "B", "C", "D"]) {
+      if (BATTLE_TIERS[tier].has(id)) return tier;
+    }
+    return "D";
   }
 
   function createTotal(card) {
-    const score = totalScore(card);
+    const tier = battleTier(card);
     const row = el("div", "stat-total");
+    row.dataset.tier = tier;
     row.setAttribute("role", "img");
-    row.setAttribute("aria-label", "종합 " + score + "점");
-    const label = el("span", "stat-label", "🏅 종합");
+    row.setAttribute("aria-label", "실전 등급 " + tier);
+    const label = el("span", "stat-label", "🏆 실전");
     const track = el("span", "total-track");
     const fill = el("span", "total-fill");
-    fill.style.width = Math.max(4, Math.min(100, score)) + "%";
+    fill.style.width = TIER_WIDTH[tier] + "%";
     track.appendChild(fill);
-    const value = el("strong", "total-value", String(score));
+    const value = el("strong", "total-value", tier);
     label.setAttribute("aria-hidden", "true");
     track.setAttribute("aria-hidden", "true");
     value.setAttribute("aria-hidden", "true");
@@ -136,7 +143,7 @@
   function createStats(card) {
     const stats = el("div", "card-stats");
     stats.setAttribute("aria-label", "카드 능력치");
-    // 종합은 맨 위에 둔다. 맨 아래에 두면 카드 모서리 장식이 숫자를 덮는다.
+    // 실전 등급은 맨 위에 둔다. 맨 아래에 두면 카드 모서리 장식이 글자를 덮는다.
     stats.appendChild(createTotal(card));
     STAT_META.forEach(function (meta) {
       const value = statValue(card, meta.key);
@@ -354,7 +361,7 @@
     if (!options.compact && !options.collectionCompact) {
       const reference = el("details", "card-reference");
       reference.append(el("summary", "", "참고 별점 보기"),
-        el("p", "", "별점과 종합은 참고 평가예요. 실제 피해·방어 수치는 기술과 특성을 보세요."),
+        el("p", "", "실전 등급은 전체 카드 맞대결 결과예요. 별점은 카드의 성격을 보여 줘요."),
         createStats(card));
       details.appendChild(reference);
     }
@@ -384,8 +391,10 @@
   window.CardView = {
     create: create,
     combatInfo: combatInfo,
+    battleTier: battleTier,
     artPosition: ART_POSITION,
     typeMeta: TYPE_META,
-    statMeta: STAT_META
+    statMeta: STAT_META,
+    battleTiers: BATTLE_TIERS
   };
 }());

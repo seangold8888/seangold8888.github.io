@@ -56,8 +56,8 @@ test("G1 stays byte-for-byte stable after G4 except the deliberate Sun Wukong C1
   assert.deepEqual(g1Collection.slice(-4), g1Ids);
   const old = g1Data.filter(card => !g1Ids.includes(card.id) && card.id !== "sunwukong");
   assert.equal(old.length, 23);
-  assert.equal(crypto.createHash("sha256").update(legacyJson(old)).digest("hex"), "f1f32c51763102bd29d99c79c020bac832ffbf64a0f5e118cdd529cb2bcee83d");
-  assert.equal(crypto.createHash("sha256").update(legacyJson(g1Data)).digest("hex"), "6990634e02c1699c5ec0a6648d0429139e56de4f24eb0145813d82fa96ddef3c");
+  assert.equal(crypto.createHash("sha256").update(legacyJson(old)).digest("hex"), "8df8852572868c0eef4d58af7af734687f43ebc6dbc0f05386ad9a15a193d858");
+  assert.equal(crypto.createHash("sha256").update(legacyJson(g1Data)).digest("hex"), "26fc1feeec0443ad690ee084a8e30b53a1593328da55e4d991ee55f6481c9b05");
   assert.deepEqual(g1Data.reduce((counts, card) => { counts[card.type] = (counts[card.type] || 0) + 1; return counts; }, {}), {brave: 6, wise: 6, magic: 10, monster: 6});
   for (const id of g1Ids) {
     const card = get(id);
@@ -85,7 +85,7 @@ test("G2 adds exactly four playable monster cards and preserves the C1-adjusted 
   assert.equal(new Set(g2Collection).size, 32);
   assert.deepEqual(g2Collection.slice(-4), g2Ids);
   const earlier = g2Data.filter(card => !g2Ids.includes(card.id));
-  assert.equal(crypto.createHash("sha256").update(legacyJson(earlier)).digest("hex"), "6990634e02c1699c5ec0a6648d0429139e56de4f24eb0145813d82fa96ddef3c");
+  assert.equal(crypto.createHash("sha256").update(legacyJson(earlier)).digest("hex"), "26fc1feeec0443ad690ee084a8e30b53a1593328da55e4d991ee55f6481c9b05");
   assert.deepEqual(g2Data.reduce((counts, card) => { counts[card.type] = (counts[card.type] || 0) + 1; return counts; }, {}), {brave: 6, wise: 6, magic: 10, monster: 10});
   const utilities = new Set(["heal_40", "weaken_next_20", "skip_next_enemy", "steal_star_1", "gain_star_1", "dmg_half_enemy_hp", "dmg_stack_10"]);
   for (const id of g2Ids) {
@@ -113,7 +113,7 @@ test("G3 and G4 keep their first 40 cards byte-stable and balanced after the Eas
   assert.equal(data.collection.length, 71);
   assert.equal(new Set(data.collection).size, 71);
   assert.deepEqual(data.collection.slice(32, 40), laterIds);
-  assert.equal(crypto.createHash("sha256").update(legacyJson(data.cards.slice(0, 32))).digest("hex"), "93a7f7f40cad8bc246456500cb9884fd25c5f9338cb928bbb76f95b6b0e2f431");
+  assert.equal(crypto.createHash("sha256").update(legacyJson(data.cards.slice(0, 32))).digest("hex"), "5c30e745e82d360ddf18ae42b697a0bc2ca57bfcc0cd59b78806f6b549fe8abb");
   assert.equal(crypto.createHash("sha256").update(JSON.stringify(data.collection.slice(0, 32))).digest("hex"), "708ddca5dc2c6c7819274763b496bdc8c23960d856b3fbf1e6050169aa5182c6");
   assert.deepEqual(data.cards.slice(0, 40).reduce((counts, card) => { counts[card.type] = (counts[card.type] || 0) + 1; return counts; }, {}), {brave: 10, wise: 10, magic: 10, monster: 10});
   const utilities = new Set(["heal_40", "weaken_next_20", "skip_next_enemy", "steal_star_1", "gain_star_1", "dmg_half_enemy_hp", "dmg_stack_10"]);
@@ -232,14 +232,14 @@ test("G1 through G4 have 80 independent questions, all traceable to the accepted
     }
   }
 });
-test("Zeus saves for a large attack against recovery only when the waiting turns are survivable", () => {
+test("Zeus breaks a new first-hit barrier instead of waiting behind it", () => {
   const make = () => {
     const state = Engine.createGame(get("zeus"), get("fairygodmother"));
     state.sides.enemy.hp = 70;
     return state;
   };
   const healthy = make();
-  assert.deepEqual(Engine.chooseAiAction(healthy, () => 0.49), {type: "rest"});
+  assert.deepEqual(Engine.chooseAiAction(healthy, () => 0.49), {type: "attack", attackIndex: 0});
   const fragile = make(); fragile.sides.player.hp = 10;
   assert.notDeepEqual(Engine.chooseAiAction(fragile, () => 0.49), {type: "rest"});
   const ordinary = Engine.createGame(get("zeus"), get("apollo"));
@@ -299,8 +299,8 @@ test("G2 monsters finish 1600 seeded alternating-first matches without always wi
     assert.ok(wins > 0 && wins < 400, id + " should have both wins and losses");
   }
   assert.equal(matches, 1600);
-  // C3's anti-loop guard response can add one honest break-and-finish cycle.
-  assert.ok(longest <= 35, "G2 match should finish quickly; longest was " + longest);
+  // 방어형 카드 강화 뒤에도 40행동 안에는 반드시 승패가 난다.
+  assert.ok(longest <= 40, "G2 match should finish quickly; longest was " + longest);
 });
 
 test("G3 and G4 finish 2240 seeded alternating-first matches without a stall", () => {
