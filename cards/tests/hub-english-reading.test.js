@@ -228,7 +228,7 @@ test("speech text stays textContent and audio/transcripts have no storage API", 
   assert.deepEqual(source.match(/fetch\(/g), ["fetch("]);
   assert.match(source, /return env\.fetch\(url\)/);
 });
-const html = fs.readFileSync(path.join(__dirname, "../../index.html"), "utf8").replace(/\r/g, "");
+const html = fs.readFileSync(path.join(__dirname, "../../game/index.html"), "utf8").replace(/\r/g, "");
 function fn(name) {
   const start = html.indexOf("  function " + name + "(");
   return html.slice(start, html.indexOf("\n  }", start) + 4);

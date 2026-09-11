@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v79";
+const CACHE_VERSION = "v80";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -17,6 +17,9 @@ const SITE_ROOT_URL = new URL("./", workerScriptUrl);
 const CORE_SHELL = [
   "./",
   "./index.html",
+  // 허브(모험 상자)는 /game/ 에 있다. 뿌리 index.html 은 여기로 보내는 작은 페이지다.
+  "./game/",
+  "./game/index.html",
   "./assets/study/picnic-scene.jpg",
   "./assets/study/jaei.jpg",
   "./math/curriculum.js?v=20",
@@ -490,7 +493,7 @@ const BACKGROUND_WARM_CONCURRENCY = 2;
 const BACKGROUND_RETRY_MS = 5 * 60 * 1000;
 const AUDIO_FETCH_TIMEOUT_MS = 45000;
 const NAVIGATION_ROUTES = [
-  "cards", "story", "avengers", "bori", "hogwarts", "kart", "kart3d",
+  "game", "cards", "story", "avengers", "bori", "hogwarts", "kart", "kart3d",
   "kedehun", "odyssey", "princess", "sanguo",
 ];
 
@@ -628,7 +631,7 @@ async function staleWhileRevalidate(request, event) {
   if (network) return network;
   if (request.mode === "navigate") {
     const fallback = cache
-      ? await cache.match(scopedUrl("./index.html"), { ignoreVary: true }).catch(() => null)
+      ? await cache.match(scopedUrl("./game/index.html"), { ignoreVary: true }).catch(() => null)
       : null;
     return fallback || Response.error();
   }

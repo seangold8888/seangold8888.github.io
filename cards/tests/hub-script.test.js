@@ -6,7 +6,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
 
-const html = fs.readFileSync(path.join(__dirname, "..", "..", "index.html"), "utf8");
+const html = fs.readFileSync(path.join(__dirname, "..", "..", "game", "index.html"), "utf8");
 
 test("모험 대시보드의 모든 인라인 스크립트가 문법적으로 유효하다", () => {
   const blocks = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)]

@@ -70,7 +70,7 @@ test("a dashboard mistake enters the playground review queue and mastery can pro
 });
 
 test("hub loads math modules in order and exposes age, shared stage and math review UI", () => {
-  const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
+  const html = fs.readFileSync(path.join(root, "game", "index.html"), "utf8");
   const bridge = fs.readFileSync(path.join(root, "assets", "study", "math-bridge.js"), "utf8");
   const sw = require("../../sw.js");
   const order = ["math/curriculum.js", "math/learning.js", "math/store.js", "assets/study/math-bridge.js", "assets/study/english-reading.js"].map(src => html.indexOf(src));

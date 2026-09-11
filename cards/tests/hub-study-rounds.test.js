@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
-const html = fs.readFileSync(path.join(__dirname, "../../index.html"), "utf8").replace(/\r/g, "");
+const html = fs.readFileSync(path.join(__dirname, "../../game/index.html"), "utf8").replace(/\r/g, "");
 function fn(name) {
   const start = html.indexOf("  function " + name + "(");
   assert.ok(start >= 0, name);

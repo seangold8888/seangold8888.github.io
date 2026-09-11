@@ -4,7 +4,7 @@
   "short_name": "모험 상자",
   "description": "이야기와 게임을 인터넷 없이도 즐기는 어린이 모험 상자",
   "lang": "ko-KR",
-  "start_url": "./",
+  "start_url": "./game/",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",

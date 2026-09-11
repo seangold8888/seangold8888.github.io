@@ -114,9 +114,9 @@ test("all story episode mp3 files match the service worker fallback list", () =>
   }
 });
 
-test("cache generation v79 preserves exact v40 card assets and canonical navigation aliases", () => {
-  assert.equal(sw.CACHE_VERSION, "v79");
-  assert.match(sw.STATIC_CACHE, /^adventure-box-v79-/);
+test("cache generation v80 preserves exact v40 card assets and canonical navigation aliases", () => {
+  assert.equal(sw.CACHE_VERSION, "v80");
+  assert.match(sw.STATIC_CACHE, /^adventure-box-v80-/);
   const studioImages = fs.readdirSync(path.join(siteRoot, "princess/assets/studio-v3")).filter(name => /\.(webp|jpg)$/.test(name));
   assert.equal(studioImages.length, 95);
   for (const name of studioImages) assert.ok(sw.OPTIONAL_SHELL.includes("./princess/assets/studio-v3/" + name), name);
@@ -321,7 +321,8 @@ test("manifest icons have truthful 180, 192 and 512 pixel declarations", () => {
   const manifest = JSON.parse(fs.readFileSync(path.join(siteRoot, "manifest.json"), "utf8"));
   assert.equal(manifest.name, "모험 상자");
   assert.equal(manifest.display, "standalone");
-  assert.equal(manifest.start_url, "./");
+  // 허브는 /game/ 에서 시작하지만 범위는 뿌리 전체(게임들이 뿌리 아래에 있다).
+  assert.equal(manifest.start_url, "./game/");
   assert.equal(manifest.scope, "./");
 
   for (const size of [180, 192, 512]) {
@@ -333,7 +334,7 @@ test("manifest icons have truthful 180, 192 and 512 pixel declarations", () => {
 });
 
 test("hub, story and cards expose the unified root PWA", () => {
-  for (const relative of ["index.html", "story/index.html", "cards/index.html"]) {
+  for (const relative of ["game/index.html", "story/index.html", "cards/index.html"]) {
     const html = fs.readFileSync(path.join(siteRoot, relative), "utf8");
     assert.match(html, /rel="manifest"/i, relative);
     assert.match(html, /serviceWorker[\s\S]{0,180}\.register/i, relative);

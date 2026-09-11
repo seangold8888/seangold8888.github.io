@@ -6,7 +6,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const root = path.join(__dirname, "..", "..");
-const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
+const html = fs.readFileSync(path.join(root, "game", "index.html"), "utf8");
 const vm = require("node:vm");
 
 test("메인 바로가기는 티켓을 소비하지 않고 현재 상태에 맞는 영역을 안내한다", () => {

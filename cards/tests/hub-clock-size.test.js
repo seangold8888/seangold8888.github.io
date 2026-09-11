@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test'), assert = require('node:assert/strict');
 const fs = require('node:fs'), path = require('node:path'), vm = require('node:vm');
-const html = fs.readFileSync(path.join(__dirname, '../../index.html'), 'utf8');
+const html = fs.readFileSync(path.join(__dirname, '../../game/index.html'), 'utf8');
 test('clock face has its own responsive size without enlarging other study images', () => {
   assert.match(html, /#study \.items\.clock-face\s*\{[^}]*font-size: clamp\(160px, 28vw, 240px\)/);
   assert.match(html, /#study \.items\.clock-face\s*\{[^}]*text-align: center/);
