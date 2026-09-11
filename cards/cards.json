@@ -59,7 +59,8 @@
     "yisunshin", "euljimundeok", "ganggamchan", "kwonyul",
     "sherlockholmes", "doctorwatson", "arsenelupin", "moriarty",
     "gearwing", "starshield", "thunderguard", "redknot",
-    "walllizard", "neonjumper", "moonmoth", "ppungdetective"
+    "walllizard", "neonjumper", "moonmoth", "ppungdetective",
+    "circe", "siren", "scylla", "helios"
   ],
   "types": {
     "brave": {
@@ -3086,6 +3087,38 @@
         { "name": "냄새 단서", "cost": 1, "dmg": 20, "fx": "steal_star_1", "desc": "상대 별사탕 1개를 가져와요", "vfx": { "kind": "projectile", "emoji": "👃" } },
         { "name": "범인은 너야", "cost": 2, "dmg": 30, "fx": "skip_next_enemy", "desc": "상대는 다음 턴에 기술을 못 써요", "vfx": { "kind": "debuff", "emoji": "🧐", "big": true } }
       ], "unlock": null, "art": "art/ppungdetective.png", "stats": { "attack": 3, "defense": 4, "spirit": 5 }
+    },
+    {
+      "id": "circe", "element": "wood", "name": "키르케", "emoji": "🪄", "type": "magic", "rarity": 3, "summonCost": 4, "hp": 80,
+      "passive": { "name": "몰리의 지혜", "desc": "처음 받는 공격은 마법 안개가 막아 줘요", "fx": "first_hit_zero" },
+      "attacks": [
+        { "name": "몰리 향기", "cost": 1, "dmg": 20, "fx": "weaken_next_20", "desc": "상대의 다음 기술 피해가 최대 20 줄어요", "vfx": { "kind": "aura", "emoji": "🌿" } },
+        { "name": "돼지 변신", "cost": 2, "dmg": 30, "fx": "skip_next_enemy", "desc": "상대는 다음 턴에 기술을 못 써요", "vfx": { "kind": "burst", "emoji": "🐷", "big": true } }
+      ], "unlock": "game:odyssey/circe", "art": "art/circe.png", "stats": { "attack": 3, "defense": 5, "spirit": 4 }
+    },
+    {
+      "id": "siren", "element": "metal", "name": "세이렌", "emoji": "🪽", "type": "wise", "rarity": 2, "summonCost": 3, "hp": 70,
+      "passive": { "name": "홀리는 노래", "desc": "공격받을 때 동전 앞면이면 노랫결로 피해요", "fx": "coin_evade" },
+      "attacks": [
+        { "name": "노래 물결", "cost": 1, "dmg": 20, "fx": "steal_star_1", "desc": "상대 별사탕 1개를 가져와요", "vfx": { "kind": "projectile", "emoji": "🎶" } },
+        { "name": "마음을 끄는 합창", "cost": 2, "dmg": 40, "fx": "weaken_next_20", "desc": "상대의 다음 기술 피해가 최대 20 줄어요", "vfx": { "kind": "aura", "emoji": "🎙️", "big": true } }
+      ], "unlock": "game:odyssey/sirens", "art": "art/siren.png", "stats": { "attack": 4, "defense": 3, "spirit": 4 }
+    },
+    {
+      "id": "scylla", "element": "earth", "name": "스킬라", "emoji": "🐉", "type": "monster", "rarity": 3, "summonCost": 4, "hp": 90,
+      "passive": { "name": "여섯 머리 집중", "desc": "체력이 절반 아래면 공격 피해가 20 늘어요", "fx": "boost_20_below_half" },
+      "attacks": [
+        { "name": "절벽 손짓", "cost": 1, "dmg": 20, "fx": "weaken_next_20", "desc": "상대의 다음 기술 피해가 최대 20 줄어요", "vfx": { "kind": "debuff", "emoji": "🪸" } },
+        { "name": "여섯 머리 급습", "cost": 3, "dmg": 50, "fx": null, "desc": "", "vfx": { "kind": "summon", "emoji": "🐲", "big": true } }
+      ], "unlock": "game:odyssey/scylla", "art": "art/scylla.png", "stats": { "attack": 5, "defense": 4, "spirit": 3 }
+    },
+    {
+      "id": "helios", "element": "fire", "name": "헬리오스", "emoji": "☀️", "type": "brave", "rarity": 3, "summonCost": 4, "hp": 100,
+      "passive": { "name": "태양의 갑옷", "desc": "오행 상성 추가 피해 +10을 받지 않아요", "fx": "no_weakness" },
+      "attacks": [
+        { "name": "새벽빛 고삐", "cost": 1, "dmg": 20, "fx": "gain_star_1", "desc": "별사탕 1개를 더 얻어요", "vfx": { "kind": "aura", "emoji": "🌅" } },
+        { "name": "태양 마차", "cost": 3, "dmg": 60, "fx": null, "desc": "", "vfx": { "kind": "summon", "emoji": "🏇", "big": true } }
+      ], "unlock": "game:odyssey/helios", "art": "art/helios.png", "stats": { "attack": 4, "defense": 5, "spirit": 3 }
     }
   ]
 }

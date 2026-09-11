@@ -92,6 +92,10 @@ Constraints: original public-domain interpretation; character and scene art only
 - `neonjumper.png`: 짧은 곱슬머리의 검은 피부 소녀가 청록·자홍 재킷과 빛나는 바퀴 신발로 타원형 차원문을 넘는다. 거미 문양·가면 없음.
 - `moonmoth.png`: 은라벤더 땋은 머리와 크림·라일락 나방 날개의 수호자가 닫힌 등불을 들고 달빛 갈대 위를 난다. 흰 후드·거미 문양 없음.
 - `ppungdetective.png`: 둥근 보통 개 코의 비글 뿡경감이 베이지 트렌치코트와 돋보기로 진주빛 냄새 한 줄을 좇는다. 엉덩이 모양 얼굴·배설물 없음.
+- `circe.png`: 자주·청록 로브의 친근한 젊은 마법사 키르케가 달빛 약초 정원에서 지팡이와 흙잔을 든다. 곁에는 편안한 돼지 한 마리, 변신 공포 표현 없음.
+- `siren.png`: 청록 깃털 튜닉과 진주빛 남색 날개의 세이렌 한 명이 달빛 바위 위에서 노래한다. 따뜻한 빛의 고리만 퍼지고 음표·인어 꼬리·노출 없음.
+- `scylla.png`: 둥근 바다표범 같은 푸른 한 몸에서 정확히 여섯 개의 긴 바다용 목과 머리가 이어진다. 입은 모두 다물고 표정은 서로 다르며 촉수·공포·추가 머리 없음.
+- `helios.png`: 황금 마차의 온화한 태양신 헬리오스가 샛노란 튜닉·청동 갑옷·붉은 금빛 망토를 입는다. 흰 말은 정확히 두 마리이며 불꽃 머리·슈퍼히어로 요소 없음.
 ## 카드 크롭
 
 | id | object-position |
@@ -167,6 +171,10 @@ Constraints: original public-domain interpretation; character and scene art only
 | neonjumper | `50% 18%` |
 | moonmoth | `50% 18%` |
 | ppungdetective | `50% 20%` |
+| circe | `50% 20%` |
+| siren | `50% 18%` |
+| scylla | `50% 16%` |
+| helios | `50% 18%` |
 
 두 번째 묶음(요정 대모·빨간 모자·잭)은 첫 묶음(신데렐라·오디세우스·폴리페모스)을 스타일·조명·재질 참고 이미지로 사용했고, 인물과 구도는 복제하지 않도록 명시했다. 6단계 전 검수에서 신데렐라와 폴리페모스는 위 장면으로 새로 생성해 PNG·WebP를 모두 교체했다.
 
@@ -400,3 +408,14 @@ Avoid: photorealism, chibi proportions, horror, aggressive snarling, sharp expos
 | neonjumper | `exec-e9abd399-f567-464d-9635-ac499be8388c.png` |
 | moonmoth | `exec-67e3c28e-db3d-4eca-a074-7904c2ee05bb.png` |
 | ppungdetective | `exec-b833f0fc-3b4f-486b-9311-b8d53a9d130d.png` |
+
+## 오디세이 조우 카드 최종 생성본 (2026-09-11)
+
+Codex 내장 ImageGen의 `stylized-concept` 모드로 네 장을 각각 새로 생성했다. 공통 프롬프트는 어린이용 프리미엄 세로 카드 원화, 독창적인 손그림 그리스 신화 동화 판타지, 깊은 남색과 샴페인 금빛 조명, 중앙 인물·생물 65~78%, 글자·숫자·로고·프레임·유혈·신체 공포 금지로 고정했다. 생성본은 1024×1536 RGB PNG와 WebP 품질 90으로 저장했다.
+
+| id | ImageGen 원본 |
+|---|---|
+| circe | `exec-fbb5928e-9297-4f95-a7b1-891eae1b5e7c.png` |
+| siren | `exec-26f1eb40-62cd-45dd-9501-5615fe314946.png` |
+| scylla | `exec-c3dd104c-3477-441a-8291-c9d46269de71.png` |
+| helios | `exec-90972529-727b-41ad-8b35-8e5d7bb84ce2.png` |

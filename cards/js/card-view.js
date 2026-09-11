@@ -12,14 +12,14 @@
     Object.freeze({ key: "defense", label: "방어", short: "방어", icon: "🛡" }),
     Object.freeze({ key: "spirit", label: "지력", short: "지력", icon: "✨" })
   ]);
-  // family-balance.cjs의 전체 71장 맞대결 결과를 등급으로 고정한다.
+  // family-balance.cjs의 전체 75장 맞대결 결과를 등급으로 고정한다.
   // 수치가 바뀌면 검사 도구를 다시 돌리고 이 묶음도 함께 갱신한다.
   const BATTLE_TIERS = Object.freeze({
-    S: new Set(["jaei", "midas", "taeo", "appa", "eomma", "baigujing", "zhaoyun", "mermaid"]),
-    A: new Set(["perseus", "beanstalkgiant", "hades", "simayi", "poseidon", "wumawang", "doctorwatson"]),
-    B: new Set(["hydra", "zhugeliang", "jack", "redknot", "heracles", "nezha", "zeus", "erlangshen", "polyphemus", "atalanta", "zhangfei", "tiger"]),
-    C: new Set(["sunwukong", "ppungdetective", "kwonyul", "achilles", "athena", "guanyu", "sphinx", "wolf", "hermes", "prometheus", "starshield", "witch", "honggildong", "ganggamchan", "redhood", "odysseus", "euljimundeok", "moriarty", "cinderella", "apollo", "neonjumper", "arthur", "moonmoth", "threepigs"]),
-    D: new Set(["arsenelupin", "thunderguard", "medusa", "gearwing", "theseus", "sherlockholmes", "tortoisehare", "fairygodmother", "yisunshin", "honghaier", "snowqueen", "pinocchio", "cerberus", "orpheus", "artemis", "minotaur", "caocao", "bremen", "walllizard", "genie"])
+    S: new Set(["jaei", "midas", "taeo", "eomma", "appa", "scylla", "siren", "baigujing", "zhaoyun", "mermaid"]),
+    A: new Set(["perseus", "beanstalkgiant", "circe", "hades", "simayi"]),
+    B: new Set(["poseidon", "zhugeliang", "doctorwatson", "wumawang", "hydra", "redknot", "jack", "nezha", "heracles", "zeus", "erlangshen", "polyphemus", "atalanta", "helios", "tiger"]),
+    C: new Set(["zhangfei", "athena", "sunwukong", "ppungdetective", "wolf", "achilles", "kwonyul", "guanyu", "hermes", "sphinx", "witch", "prometheus", "honggildong", "starshield", "moriarty", "redhood", "ganggamchan", "odysseus", "euljimundeok", "apollo", "cinderella", "neonjumper", "arthur", "moonmoth", "threepigs", "thunderguard", "medusa", "theseus", "arsenelupin", "fairygodmother", "gearwing", "sherlockholmes", "tortoisehare", "yisunshin", "pinocchio", "orpheus"]),
+    D: new Set(["snowqueen", "honghaier", "cerberus", "bremen", "caocao", "artemis", "minotaur", "walllizard", "genie"])
   });
   const TIER_WIDTH = Object.freeze({ S: 100, A: 82, B: 64, C: 46, D: 28 });
 
@@ -95,7 +95,11 @@
     walllizard: "50% 18%",
     neonjumper: "50% 18%",
     moonmoth: "50% 18%",
-    ppungdetective: "50% 20%"
+    ppungdetective: "50% 20%",
+    circe: "50% 20%",
+    siren: "50% 18%",
+    scylla: "50% 16%",
+    helios: "50% 18%"
   };
 
   function el(tag, className, text) {

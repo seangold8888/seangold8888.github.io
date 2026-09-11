@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v81";
+const CACHE_VERSION = "v82";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -148,14 +148,14 @@ const CORE_SHELL = [
   "./story/index.html",
   "./cards/",
   "./cards/index.html",
-  "./cards/styles.css?v=41",
+  "./cards/styles.css?v=42",
   "./cards/cards.json",
-  "./cards/js/engine.js?v=41",
-  "./cards/js/audio.js?v=41",
-  "./cards/js/card-view.js?v=41",
-  "./cards/js/vfx-recipes.js?v=41",
-  "./cards/js/story-gates.js?v=41",
-  "./cards/js/app.js?v=41",
+  "./cards/js/engine.js?v=42",
+  "./cards/js/audio.js?v=42",
+  "./cards/js/card-view.js?v=42",
+  "./cards/js/vfx-recipes.js?v=42",
+  "./cards/js/story-gates.js?v=42",
+  "./cards/js/app.js?v=42",
 ];
 
 // Existing games are precached as best-effort shells. A missing optional asset
@@ -512,6 +512,7 @@ const CARD_ART_FILES = [
   "sherlockholmes", "doctorwatson", "arsenelupin", "moriarty",
   "gearwing", "starshield", "thunderguard", "redknot",
   "walllizard", "neonjumper", "moonmoth", "ppungdetective",
+  "circe", "siren", "scylla", "helios",
 ].map((id) => `./cards/art/${id}.webp`);
 
 const VFX_ART_FILES = [

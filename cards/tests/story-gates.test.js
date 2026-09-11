@@ -85,7 +85,7 @@ test("exports one story gate for every playable card", function () {
     function (question) { return question.cardId; }
   ).sort();
 
-  assert.ok(gates.all.length >= 71 * 5, "카드당 5문항 이상이어야 한다");
+  assert.ok(gates.all.length >= 75 * 5, "카드당 5문항 이상이어야 한다");
   assert.equal(
     new Set(Array.from(gates.all, function (question) {
       return question.id;

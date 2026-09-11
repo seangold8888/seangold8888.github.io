@@ -40,11 +40,11 @@ test("S급 재조정된 55장 데이터·순서와 각 기술 소리는 고정�
 });
 
 test("전설 16장은 타입 4장씩이며 오행은 14·15·14·14·14로 균형이다", () => {
-  assert.equal(data.cards.length, 71);
-  assert.deepEqual(data.collection.slice(-16), ids);
-  const added = data.cards.slice(-16);
+  assert.equal(data.cards.length, 75);
+  assert.deepEqual(data.collection.slice(55, 71), ids);
+  const added = data.cards.slice(55, 71);
   assert.deepEqual(added.reduce((out, card) => ((out[card.type] = (out[card.type] || 0) + 1), out), {}), {brave: 4, wise: 4, magic: 4, monster: 4});
-  assert.deepEqual(data.cards.reduce((out, card) => ((out[card.element] = (out[card.element] || 0) + 1), out), {}), {fire: 14, water: 15, metal: 14, wood: 14, earth: 14});
+  assert.deepEqual(data.cards.slice(0, 71).reduce((out, card) => ((out[card.element] = (out[card.element] || 0) + 1), out), {}), {fire: 14, water: 15, metal: 14, wood: 14, earth: 14});
 });
 
 test("전설 16장은 카드당 5문항과 1024×1536 PNG·WEBP를 가진다", () => {

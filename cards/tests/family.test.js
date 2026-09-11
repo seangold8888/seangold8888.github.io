@@ -53,7 +53,7 @@ test("S급 재조정된 첫 51장 데이터와 컬렉션 순서는 고정된다"
 });
 
 test("가족 4장 수치·기술·해금은 확정 설계와 일치한다", () => {
-  assert.equal(data.cards.length, 71);
+  assert.equal(data.cards.length, 75);
   assert.deepEqual(
     familyIds.map((id) => {
       const card = byId.get(id);
@@ -163,8 +163,8 @@ test("카드 화면은 가족 네 장을 모두 실제 S등급으로 표시한�
   );
   familyIds.forEach((id) => assert.equal(sandbox.window.CardView.battleTier(byId.get(id)), "S", id));
   const rankedIds = Object.values(sandbox.window.CardView.battleTiers).flatMap((ids) => [...ids]);
-  assert.equal(rankedIds.length, 71);
-  assert.equal(new Set(rankedIds).size, 71);
+  assert.equal(rankedIds.length, 75);
+  assert.equal(new Set(rankedIds).size, 75);
   assert.deepEqual(rankedIds.slice().sort(), data.collection.slice().sort());
 });
 

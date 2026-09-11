@@ -1,7 +1,12 @@
 "use strict";
 const Engine = require("../js/engine.js");
 const data = require("../cards.json");
-const IDS = data.collection.slice(-16);
+const IDS = [
+  "yisunshin", "euljimundeok", "ganggamchan", "kwonyul",
+  "sherlockholmes", "doctorwatson", "arsenelupin", "moriarty",
+  "gearwing", "starshield", "thunderguard", "redknot",
+  "walllizard", "neonjumper", "moonmoth", "ppungdetective",
+];
 const pool = data.cards.filter(Engine.isBattleCard);
 const seeds = [11, 29, 47, 83, 101, 149, 211, 307, 401, 503];
 const rngOf = seed => { let x = seed >>> 0; return () => { x = (Math.imul(x, 1664525) + 1013904223) >>> 0; return x / 4294967296; }; };

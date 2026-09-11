@@ -73,7 +73,11 @@
     walllizard: "legend:walllizard",
     neonjumper: "legend:neonjumper",
     moonmoth: "legend:moonmoth",
-    ppungdetective: "legend:ppungdetective"
+    ppungdetective: "legend:ppungdetective",
+    circe: "game:odyssey/circe",
+    siren: "game:odyssey/sirens",
+    scylla: "game:odyssey/scylla",
+    helios: "game:odyssey/helios"
   });
 
   function question(id, cardId, prompt, choices, correctChoiceId, refs) {
@@ -858,6 +862,53 @@
       "엄마 카드는 무슨 타입인가요?",
       [["magic", "마법"], ["monster", "괴물"], ["brave", "용기"]], "magic",
       ["카드: 엄마"])
+  ].forEach(function (item) { all.push(item); });
+
+  // 오디세이 확장 문항은 각 스테이지 시작 그림책의 문장만 사용한다.
+  [
+    question("circe-friends", "circe", "키르케의 장난으로 친구들은 무엇이 되었나요?",
+      [["pig", "귀여운 돼지"], ["bird", "작은 새"], ["stone", "돌 조각"]], "pig", ["odyssey:circe/pigFriends"]),
+    question("circe-helper", "circe", "오디세우스에게 몰리 약초를 준 이는 누구인가요?",
+      [["hermes", "헤르메스"], ["zeus", "제우스"], ["midas", "미다스"]], "hermes", ["odyssey:circe/moly"]),
+    question("circe-solution", "circe", "키르케의 마법은 무엇으로 풀었나요?",
+      [["wisdom", "지혜와 좋은 생각"], ["strength", "힘센 주먹"], ["race", "달리기"]], "wisdom", ["odyssey:circe/moly"]),
+    question("circe-game", "circe", "키르케의 정원에서 무엇을 뿌려 친구를 찾나요?",
+      [["moly", "몰리 약초"], ["sand", "모래"], ["snow", "눈가루"]], "moly", ["odyssey:circe/game"]),
+    question("circe-place", "circe", "친구들이 맛있는 냄새를 따라 들어간 곳은 어디인가요?",
+      [["palace", "섬의 궁전"], ["cave", "바닷속 동굴"], ["school", "마법 학교"]], "palace", ["odyssey:circe/circeIsland"]),
+
+    question("siren-ears", "siren", "친구들은 세이렌의 노래를 피하려고 귀를 무엇으로 막았나요?",
+      [["wax", "부드러운 밀랍"], ["leaves", "나뭇잎"], ["shell", "조개껍데기"]], "wax", ["odyssey:sirens/waxAndRope"]),
+    question("siren-odysseus", "siren", "오디세우스는 노래를 들을 때 어디에 안전히 기대었나요?",
+      [["mast", "배의 돛대"], ["rock", "섬의 바위"], ["cloud", "구름"]], "mast", ["odyssey:sirens/waxAndRope"]),
+    question("siren-danger", "siren", "세이렌의 노래를 따라가면 배는 어떻게 될 수 있나요?",
+      [["lost", "길을 잃을 수 있어요"], ["gold", "황금으로 변해요"], ["tiny", "아주 작아져요"]], "lost", ["odyssey:sirens/sirenIsland"]),
+    question("siren-shield", "siren", "노래의 둥근 음파가 반짝일 때 무엇을 펴나요?",
+      [["shield", "지혜 방패"], ["sail", "새 돛"], ["umbrella", "우산"]], "shield", ["odyssey:sirens/songWave"]),
+    question("siren-way", "siren", "오디세우스 일행은 세이렌을 무엇으로 이겨 냈나요?",
+      [["prepare", "미리 준비해서"], ["shout", "더 크게 소리쳐서"], ["fight", "싸워서"]], "prepare", ["odyssey:sirens/waxAndRope"]),
+
+    question("scylla-road", "scylla", "스킬라가 있던 물길은 어디에 있었나요?",
+      [["cliffs", "두 절벽 사이"], ["forest", "깊은 숲속"], ["sky", "구름 위"]], "cliffs", ["odyssey:scylla/narrowStrait"]),
+    question("scylla-place", "scylla", "스킬라는 어디에서 빼꼼 보았나요?",
+      [["above", "절벽 위"], ["below", "배 밑"], ["mast", "돛대 위"]], "above", ["odyssey:scylla/scyllaPeek"]),
+    question("scylla-other", "scylla", "좁은 해협 아래에서 빙글빙글 돈 것은 무엇인가요?",
+      [["whirlpool", "카립디스의 소용돌이"], ["wheel", "태양 마차 바퀴"], ["beans", "콩나무"]], "whirlpool", ["odyssey:scylla/whirlpoolChoice"]),
+    question("scylla-warning", "scylla", "스킬라가 팔을 뻗기 전에 무엇이 알려 주나요?",
+      [["starlight", "별빛"], ["bell", "종소리"], ["pig", "돼지"]], "starlight", ["odyssey:scylla/scyllaPeek"]),
+    question("scylla-safe", "scylla", "소용돌이를 지날 때 찾아야 하는 길은 어디인가요?",
+      [["middle", "가운데의 잔잔한 길"], ["edge", "절벽 바로 옆"], ["under", "바닷속"]], "middle", ["odyssey:scylla/whirlpoolChoice"]),
+
+    question("helios-cattle", "helios", "태양신의 섬에서 풀을 뜯던 것은 무엇인가요?",
+      [["cattle", "황금빛 소들"], ["sheep", "하얀 양들"], ["horses", "날개 달린 말들"]], "cattle", ["odyssey:helios/sunPasture"]),
+    question("helios-rule", "helios", "헬리오스의 소들은 어떻게 해야 하나요?",
+      [["leave", "건드리지 않아야 해요"], ["ride", "타고 달려야 해요"], ["paint", "색칠해야 해요"]], "leave", ["odyssey:helios/sunPasture"]),
+    question("helios-hungry", "helios", "친구들이 소 쪽으로 간 까닭은 무엇인가요?",
+      [["hungry", "너무 배가 고파서"], ["cold", "너무 추워서"], ["lost", "길을 잃어서"]], "hungry", ["odyssey:helios/hungryCrew"]),
+    question("helios-call", "helios", "오디세우스는 무엇을 나눠 먹자며 친구를 불렀나요?",
+      [["bread", "빵"], ["apple", "황금 사과"], ["ricecake", "떡"]], "bread", ["odyssey:helios/campfire"]),
+    question("helios-goal", "helios", "친구들을 어디까지 데려가면 안전한가요?",
+      [["fire", "모닥불"], ["cave", "동굴"], ["palace", "궁전"]], "fire", ["odyssey:helios/campfire"])
   ].forEach(function (item) { all.push(item); });
 
   // 전설 확장 문항은 음원이 없는 카드 자체의 공개 정보만 묻는다.

@@ -29,7 +29,11 @@
     "game:sanguo/heavenpalace": "서유기 · 천궁대전",
     "game:sanguo/flamemountain": "서유기 · 화염산",
     "game:sanguo/huoyundong": "서유기 · 화운동",
-    "game:sanguo/baihuling": "서유기 · 백호령"
+    "game:sanguo/baihuling": "서유기 · 백호령",
+    "game:odyssey/circe": "오디세이 3장 · 키르케의 섬",
+    "game:odyssey/sirens": "오디세이 5장 · 세이렌의 바다",
+    "game:odyssey/scylla": "오디세이 6장 · 좁은 해협",
+    "game:odyssey/helios": "오디세이 7장 · 태양신의 목장"
   };
 
   const dom = {};
@@ -146,6 +150,11 @@
           if (cursor < "2026-01-01") break;
         }
         return days >= Number(match[1]);
+      }
+      if (game === "odyssey") {
+        const raw = localStorage.getItem("ody_progress");
+        const progress = raw ? JSON.parse(raw) : {};
+        return !!(progress.stages && progress.stages[stage] && progress.stages[stage].cleared);
       }
       if (game !== "sanguo") return false;
       return localStorage.getItem("sanguo_clear_" + stage) === "1";
