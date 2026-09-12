@@ -4,9 +4,33 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
+const vm = require("node:vm");
 
 const cardsRoot = path.resolve(__dirname, "..");
 const read = (relative) => fs.readFileSync(path.join(cardsRoot, relative), "utf8");
+
+test("expedition card quizzes use the deployed card without bypassing ordinary listening gates", () => {
+  const app=read("js/app.js");
+  const source=app.slice(app.indexOf("  function storyGateHasListeningProof()"),app.indexOf("  function prepareEnemyIntent("));
+  function proof({storyId="family:jaei",deployed="jaei",actual="jaei",unlocked=false,listened=false}={}) {
+    return vm.runInNewContext(source+"\nstoryGateHasListeningProof()", {
+      storyChallenge:{cardId:"jaei",storyId},cards:[{id:"jaei"}],
+      campaignBattle:deployed?{player:{id:deployed}}:null,
+      game:{sides:{player:{card:{id:actual}}}},
+      isUnlocked:()=>unlocked,isStoryDone:()=>listened
+    });
+  }
+  assert.equal(proof(),true);
+  assert.equal(proof({deployed:null}),false,"ordinary locked family card is not globally unlocked");
+  assert.equal(proof({deployed:"taeo"}),false,"another expedition card is not proof");
+  assert.equal(proof({actual:"taeo"}),false,"actual battle owner must match");
+  assert.equal(proof({deployed:null,unlocked:true}),true,"ordinary unlocked card quiz still works");
+  assert.equal(proof({storyId:"redhood_story"}),false,"expedition is not an audiobook completion");
+  assert.equal(proof({storyId:"redhood_story",listened:true}),true);
+  const css=read("styles.css");
+  assert.match(css,/\.quiz-book \{\s*pointer-events: none/);
+  assert.match(css,/\.story-quiz-dialog \.dialog-close \{\s*z-index: 2/);
+});
 
 test("battle UI exposes enemy intent, defense, and an independent story gate dialog", () => {
   const html = read("index.html");

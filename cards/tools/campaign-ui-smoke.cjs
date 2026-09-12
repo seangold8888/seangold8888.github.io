@@ -58,6 +58,26 @@ async function main() {
   async function noHorizontalOverflow(page) {
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),"no horizontal overflow");
   }
+  async function checkFamilyGate(page, id, name, answer = false) {
+    assert.equal(await page.locator("#storyGateButton").innerText(),"문제 열기");
+    assert.doesNotMatch(await page.locator("#storyGateStatus").innerText(),/새로운 이야기|들으면/);
+    const before=await page.evaluate(()=>({hp:__testGame.sides.player.hp,stars:__testGame.sides.player.stars,turn:__testGame.turnNumber}));
+    await page.locator("#storyGateButton").click();
+    assert.ok(await page.locator("#storyQuizDialog").isVisible());
+    assert.ok(!await page.locator("#lockedDialog").isVisible());
+    assert.equal(await page.locator("#storyQuizTitle").innerText(),name+" 카드 관문");
+    if(answer) {
+      const label=await page.evaluate(id=>{
+        const question=CardStoryGates.all.find(q=>q.cardId===id && q.prompt===document.getElementById("storyQuizQuestion").textContent);
+        return question.choices.find(c=>c.id===question.correctChoiceId).text;
+      },id);
+      await page.locator("#storyQuizChoices button").filter({hasText:label}).click();
+      assert.ok(await page.evaluate(()=>__testGame.sides.player.flags.ultimateUnlocked));
+      assert.deepEqual(await page.evaluate(()=>({hp:__testGame.sides.player.hp,stars:__testGame.sides.player.stars,turn:__testGame.turnNumber})),before);
+      await page.clock.runFor(1000);
+    } else await page.locator("[data-quiz-close]").first().click();
+    console.log("PASS",id,"expedition card quiz, no listening redirect");
+  }
   async function finish(page,winner) {
     await page.evaluate(winner=>window.__testWinner=winner,winner);
     await page.locator("#actionList button:not(:disabled)").last().click();
@@ -68,6 +88,7 @@ async function main() {
     // Fresh prologue, real actions against Jack (no forced winner).
     const fresh=await open({width:820,height:1180});
     const {page}=fresh;
+    assert.match(await page.locator('#collectionGrid [data-card-id="jaei"]').getAttribute("class"),/is-locked/);
     await page.locator("#campaignButton").click();
     assert.equal(await page.locator(".expedition-world").count(),8);
     await noHorizontalOverflow(page);
@@ -76,6 +97,7 @@ async function main() {
     await advanceScene(page); await advanceScene(page);
     await page.locator('.expedition-deploy [data-card-id="jaei"]').click();
     assert.match(await page.locator("#campaignBattleLabel").innerText(),/0장/);
+    await checkFamilyGate(page,"jaei","재이",true);
     for(let i=0;i<30&&!await page.locator("#resultDialog").isVisible();i++) {
       if(await page.locator("#coinDialog").isVisible()) await page.locator("#coinButton").click();
       else if(await page.locator("#actionList button:not(:disabled)").count()) {
@@ -108,6 +130,7 @@ async function main() {
       await p.locator(".expedition-go").click();
       await noHorizontalOverflow(p);
       await p.locator('.expedition-deploy [data-card-id="taeo"]').click();
+      await checkFamilyGate(p,"taeo","태오");
       assert.equal(await p.locator("#actionList button").count(),7);
       await noHorizontalOverflow(p);
       if(viewport.width>=700) {
@@ -155,7 +178,7 @@ async function main() {
     await p.screenshot({path:path.join(output,"ipad-boss-scene.png"),fullPage:true});
     await p.locator(".expedition-scene .primary-button").click();
     await p.locator('.expedition-deploy [data-card-id="jaei"]').click();
-    assert.equal(await p.evaluate(()=>window.__testGame.sides.enemy.card.hp),160);
+    assert.equal(await p.evaluate(()=>window.__testGame.sides.enemy.card.hp),110);
     assert.equal(await p.evaluate(()=>window.__testGame.aiMistakeRate),0);
     await finish(p,"player");await p.locator("#rematchButton").click();await advanceScene(p);
     assert.equal(await p.locator(".expedition-world:not(:disabled)").count(),0);
@@ -169,6 +192,10 @@ async function main() {
     await p.locator("#battleButton").click();
     assert.ok(await p.locator("#campaignBattleLabel").isHidden());
     assert.equal(await p.evaluate(()=>window.__testGame.aiMistakeRate),.3);
+    assert.equal(await p.locator("#storyGateButton").innerText(),"이야기 듣기");
+    await p.locator("#storyGateButton").click();
+    assert.ok(await p.locator("#lockedDialog").isVisible(),"ordinary unlistened story still requires listening");
+    assert.ok(!await p.locator("#storyQuizDialog").isVisible());
     assert.deepEqual(last.errors,[]);await last.context.close();
     console.log("PASS boss copy / S2 boundary / recruit unlock / ordinary battle preserved");
     const blocked=await open({width:390,height:844},null,true);

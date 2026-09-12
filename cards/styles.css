@@ -4105,6 +4105,7 @@ dialog p:not(.kicker) {
 }
 
 .quiz-book {
+  pointer-events: none;
   margin: 0 auto 8px;
   display: flex;
   gap: 12px;
@@ -4117,6 +4118,10 @@ dialog p:not(.kicker) {
 
 .quiz-book span {
   font-size: 18px;
+}
+
+.story-quiz-dialog .dialog-close {
+  z-index: 2;
 }
 
 .story-quiz-dialog h2 {

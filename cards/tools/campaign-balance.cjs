@@ -2,6 +2,7 @@
 const Engine = require("../js/engine.js");
 const Campaign = require("../js/campaign.js");
 const data = require("../cards.json");
+const BOSS_LIMITS = Object.freeze({viableRate: 0.25, minimumChoices: 2, meanActions: 26, p95Actions: 36});
 
 function seeded(seed) {
   let value = seed >>> 0;
@@ -37,15 +38,21 @@ function measure(chapter, stage, samples, bonus) {
   const rates = Campaign.candidatesForChapter(chapter).map(id => {
     const card = data.cards.find(item => item.id === id);
     if (!card) throw new Error("합류 카드 누락: " + id);
-    let wins = 0;
+    let wins = 0, totalActions = 0, winningActions = 0;
+    const durations = [];
     for (let seed = 0; seed < samples; seed++) {
       const result = play(card, opponent.card, hash(chapter + "/" + stage + "/" + id) + seed * 7919, opponent.options.aiMistakeRate);
-      if (result.winner === "player") wins++;
+      if (result.winner === "player") {wins++; winningActions += result.actions;}
+      totalActions += result.actions;
+      durations.push(result.actions);
       if (!result.winner) stalls++;
       if (result.invalid) invalid++;
       longest = Math.max(longest, result.actions);
     }
-    return {id, rate: wins / samples};
+    durations.sort((a,b)=>a-b);
+    return {id, rate: wins / samples, averageActions: totalActions / samples,
+      winningAverageActions: wins ? winningActions / wins : null,
+      p95Actions: durations[Math.ceil(samples * .95) - 1]};
   });
   rates.sort((a, b) => b.rate - a.rate);
   const minimum = opponent.card.id === "sseugumi" ? 0.3 : opponent.boss ? 0.35 : 0.45;
@@ -55,9 +62,15 @@ function measure(chapter, stage, samples, bonus) {
   // Approved 2026-09-12: a good counter may win 100%. Boss difficulty comes
   // from the choice: typical candidates <=80%, best/worst gap >=25 points.
   const choiceMatters = !opponent.boss || (median <= 0.8 && spread >= 0.25);
+  const viable = rates.filter(row => row.rate >= BOSS_LIMITS.viableRate);
+  const choiceBreadth = !opponent.boss || viable.length >= BOSS_LIMITS.minimumChoices;
+  // Actions count both sides; this is not a promise about human thinking time.
+  const durationOk = !opponent.boss || viable.every(row =>
+    row.averageActions <= BOSS_LIMITS.meanActions && row.p95Actions <= BOSS_LIMITS.p95Actions);
   return {chapter, stage, enemy: opponent.card.id, boss: opponent.boss, hp: opponent.card.hp,
-    hpBonus: opponent.hpBonus, rates, best: rates[0], minimum, median, spread, choiceMatters, stalls, invalid, longest,
-    pass: rates[0].rate >= minimum && choiceMatters && stalls === 0 && invalid === 0};
+    hpBonus: opponent.hpBonus, rates, best: rates[0], minimum, median, spread, choiceMatters,
+    viableCount: viable.length, choiceBreadth, durationOk, stalls, invalid, longest,
+    pass: rates[0].rate >= minimum && choiceMatters && choiceBreadth && durationOk && stalls === 0 && invalid === 0};
 }
 
 function combinations(ids, size = 3) {
@@ -131,7 +144,7 @@ function run(options = {}) {
 }
 function printRow(row) {
   console.log(`${row.pass ? "PASS" : "FAIL"} ${row.chapter}장 ${row.stage + 1} ${row.enemy} HP${row.hp} (+${row.hpBonus}) 최선 ${row.best.id} ${(row.best.rate * 100).toFixed(1)}% 교착 ${row.stalls}`);
-  if (row.boss) console.log(`  후보 중앙 ${(row.median * 100).toFixed(1)}% · 선택 격차 ${(row.spread * 100).toFixed(1)}%p`);
+  if (row.boss) console.log(`  후보 중앙 ${(row.median * 100).toFixed(1)}% · 선택 격차 ${(row.spread * 100).toFixed(1)}%p · 승산 있는 카드 ${row.viableCount}장 · 최선 평균 ${row.best.averageActions.toFixed(1)}행동 / P95 ${row.best.p95Actions}`);
 }
 if (require.main === module) {
   const samplesArg = process.argv.find(arg => arg.startsWith("--samples="));
@@ -145,15 +158,12 @@ if (require.main === module) {
       for (let stage = 0; stage < Campaign.encounterIds(chapter.id).length; stage++) {
         let row = measure(chapter.id, stage, samples);
         if (!row.pass) {
-          let low = -Math.min(row.hp - row.hpBonus - 10, 100), high = 1000;
-          while (high - low > 10) {
-            const mid = Math.floor((low + high) / 20) * 10;
-            const attempt = measure(chapter.id, stage, samples, mid);
-            if (attempt.best.rate > 0.85) low = mid;
-            else high = mid;
-          }
-          const attempts = [high - 10, high, high + 10].map(bonus => measure(chapter.id, stage, samples, bonus));
-          row = attempts.filter(item => item.pass).sort((a, b) => Math.abs(a.best.rate - 0.75) - Math.abs(b.best.rate - 0.75))[0] || attempts[1];
+          // Discrete damage makes HP -> win rate discontinuous. Do not chase
+          // a target win rate with unbounded HP; enforce breadth and length too.
+          const attempts = [0, 10, 20, 30, 40].map(bonus => measure(chapter.id, stage, samples, bonus));
+          row = attempts.filter(item => item.pass).sort((a, b) =>
+            Math.abs(a.hpBonus - 20) - Math.abs(b.hpBonus - 20) ||
+            b.viableCount - a.viableCount)[0] || row;
         }
         printRow(row);
         if (!row.pass) unresolved++;
@@ -172,4 +182,4 @@ if (require.main === module) {
     if (!report.pass) process.exitCode = 1;
   }
 }
-module.exports = {play, measure, measureRecruit, combinations, partyChance, run};
+module.exports = {BOSS_LIMITS, play, measure, measureRecruit, combinations, partyChance, run};

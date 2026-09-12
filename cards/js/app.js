@@ -1925,7 +1925,12 @@
       const challengeCard = cards.find(function (card) {
         return card.id === storyChallenge.cardId;
       });
-      return Boolean(challengeCard && isUnlocked(challengeCard));
+      // Expedition starters are usable before their free-battle unlock.
+      // Scope this exception to the actual deployed card, not all family cards.
+      return Boolean(challengeCard && (isUnlocked(challengeCard) ||
+        (campaignBattle && campaignBattle.player &&
+          campaignBattle.player.id === challengeCard.id &&
+          game && game.sides.player.card.id === challengeCard.id)));
     }
     return isStoryDone(storyChallenge.storyId);
   }
@@ -2051,9 +2056,10 @@
       return;
     }
     dom.storyGateBar.classList.add("is-awake");
+    const cardGate = /^(?:family|legend):/.test(storyChallenge.storyId || "");
     dom.storyGateStatus.textContent = flags.ultimateAttempts
-      ? "마지막 기회! 이야기를 잘 떠올려 봐요"
-      : "이야기를 기억하면 강력한 필살기가 깨어나요";
+      ? (cardGate ? "마지막 기회! 카드의 기술과 특징을 떠올려 봐요" : "마지막 기회! 이야기를 잘 떠올려 봐요")
+      : (cardGate ? "카드 문제를 풀면 강력한 필살기가 깨어나요" : "이야기를 기억하면 강력한 필살기가 깨어나요");
     dom.storyGateButton.textContent = flags.ultimateAttempts ? "다시 도전" : "문제 열기";
     dom.storyGateButton.disabled = !canInteract;
   }

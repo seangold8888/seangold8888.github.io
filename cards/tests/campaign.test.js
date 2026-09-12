@@ -239,9 +239,28 @@ test("approved campaign balance rewards good counters, differentiates bosses and
     assert.equal(row.stalls, 0);
     assert.equal(row.invalid, 0);
     assert.ok(row.best.rate >= row.minimum);
-    if (row.boss) assert.ok(row.median <= 0.8 && row.spread >= 0.25);
+    if (row.boss) {
+      assert.ok(row.median <= 0.8 && row.spread >= 0.25);
+      assert.ok(row.viableCount >= Balance.BOSS_LIMITS.minimumChoices);
+      assert.equal(row.choiceBreadth, true);
+      assert.equal(row.durationOk, true);
+      assert.ok(row.hpBonus >= 0 && row.hpBonus <= 40);
+      for (const card of row.rates.filter(card => card.rate >= Balance.BOSS_LIMITS.viableRate)) {
+        assert.ok(card.averageActions <= Balance.BOSS_LIMITS.meanActions);
+        assert.ok(card.p95Actions <= Balance.BOSS_LIMITS.p95Actions);
+      }
+    }
   }
   for (const chapter of report.parties) assert.ok(chapter.best.chance >= chapter.minimum);
   assert.equal(report.recruit.games, 9600);
   assert.ok(report.recruit.rate >= 0.35 && report.recruit.rate <= 0.8);
+});
+
+test("breadth and duration guards reject the former single-choice and long bosses", () => {
+  const queen = Balance.measure(1, 3, 64, 80);
+  assert.equal(queen.choiceBreadth, false);
+  assert.equal(queen.pass, false);
+  const guanyu = Balance.measure(5, 3, 64, 120);
+  assert.equal(guanyu.durationOk, false);
+  assert.equal(guanyu.pass, false);
 });
