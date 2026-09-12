@@ -10,6 +10,9 @@
   let transientBus = null;
   let bodyBus = null;
   let materialBus = null;
+  let cinemaBodyBus = null;
+  let cinemaDetailBus = null;
+  let cinemaTransientBus = null;
   let materialRoomSend = null;
   let materialRoomDelay = null;
   let musicBus = null;
@@ -94,6 +97,15 @@
     transientBus = audio.createGain();
     bodyBus = audio.createGain();
     materialBus = audio.createGain();
+    cinemaBodyBus = audio.createGain();
+    cinemaDetailBus = audio.createGain();
+    cinemaTransientBus = audio.createGain();
+    cinemaBodyBus.gain.value = 2.4;
+    cinemaDetailBus.gain.value = 3;
+    cinemaTransientBus.gain.value = 3;
+    cinemaBodyBus.connect(bodyBus);
+    cinemaDetailBus.connect(materialBus);
+    cinemaTransientBus.connect(transientBus);
     materialRoomSend = audio.createGain();
     materialRoomDelay = audio.createDelay(0.1);
     musicBus = audio.createGain();
@@ -199,6 +211,9 @@
     transientBus = null;
     bodyBus = null;
     materialBus = null;
+    cinemaBodyBus = null;
+    cinemaDetailBus = null;
+    cinemaTransientBus = null;
     materialRoomSend = null;
     materialRoomDelay = null;
     musicBus = null;
@@ -751,6 +766,7 @@
       type: type,
       material: material,
       materialProfile: material,
+      cinemaProfile: ["lightning", "blade", "frost"].includes(plan.cinemaProfile) ? plan.cinemaProfile : "",
       tailMs: Math.round(materialProfile.decay * 1000),
       voicePriority: strong ? 3 : 2,
       signature: signature,
@@ -883,7 +899,7 @@
     connectWithPan(
       audio,
       gain,
-      materialBus,
+      options.bus || materialBus,
       start,
       duration,
       options.panFrom || 0,
@@ -950,7 +966,7 @@
         start + duration + 0.02,
         options.priority === undefined ? 1 : options.priority
       )) return;
-      oscillator.connect(gain).connect(materialBus);
+      oscillator.connect(gain).connect(options.bus || materialBus);
       oscillator.start(start);
       oscillator.stop(start + duration + 0.02);
     });
@@ -1166,6 +1182,49 @@
     return soundPlan;
   }
 
+  // Explicit visual-profile opt-in: legacy emoji/material routing stays intact.
+  // Contact crack + weight + scattered detail, all inside the shared voice budget.
+  function cinemaImpactAt(audio, start, plan) {
+    const style = plan.cinemaProfile;
+    if (!style) return false;
+    const power = plan.strong ? 1 : .78;
+    const pan = plan.direction * .16;
+    noiseBurstAt(audio, start, {
+      frequency: style === "lightning" ? 2400 : style === "blade" ? 3900 : 5200,
+      duration: style === "lightning" ? .085 : .035,
+      volume: .065 * power, q: .65, priority: 3, pan: pan, bus: cinemaTransientBus
+    });
+    toneSweepAt(audio, start + .002, {
+      fromHz: style === "blade" ? 185 : 135, toHz: style === "frost" ? 94 : 58,
+      duration: style === "lightning" ? .28 : .14,
+      volume: (style === "lightning" ? .078 : .052) * power, type: "sine", priority: 3, bus: cinemaBodyBus
+    });
+    if (style === "lightning") {
+      whooshAt(audio, start + .025, {
+        fromHz: 480, toHz: 110, duration: .32, volume: .036 * power,
+        panFrom: pan, panTo: -pan, q: .5, priority: 2, bus: cinemaDetailBus
+      });
+      for (let i = 0; i < 3; i++) noiseBurstAt(audio, start + .025 + i * .027, {
+        frequency: 1600 + i * 850, duration: .025, volume: .022 * power,
+        pan: i % 2 ? -pan : pan, q: .7, priority: 1, bus: cinemaTransientBus
+      });
+    } else {
+      modalHitAt(audio, start + .005, {
+        baseHz: style === "blade" ? 940 : 1680,
+        ratios: style === "blade" ? [1, 1.47, 2.09] : [1, 1.62, 2.71],
+        levels: [1, .30, .14], decays: [1, .67, .43],
+        duration: style === "blade" ? .22 : .26,
+        volume: .018 * power, type: "sine", bus: cinemaDetailBus
+      });
+      for (let i = 0; i < 3; i++) noiseBurstAt(audio, start + .045 + i * .041, {
+        frequency: (style === "blade" ? 2700 : 4700) + i * 430,
+        duration: .032, volume: (.022 - i * .004) * power,
+        pan: i % 2 ? -pan : pan, q: 1.3, priority: 1, bus: cinemaDetailBus
+      });
+    }
+    return true;
+  }
+
   function materialImpactAt(audio, start, soundPlan) {
     const profile = MATERIAL_PROFILES[soundPlan.material] || MATERIAL_PROFILES.earth;
     const strong = soundPlan.strong;
@@ -1321,7 +1380,7 @@
       soundPlan.strong ? 0.28 : 0.42,
       soundPlan.strong ? 0.38 : 0.24
     );
-    materialImpactAt(audio, start, soundPlan);
+    if (!cinemaImpactAt(audio, start, soundPlan)) materialImpactAt(audio, start, soundPlan);
     if (soundPlan.weakness) weaknessChimeAt(audio, start);
     if (soundPlan.revive) {
       supportBloomAt(audio, start + 0.09, Object.assign({}, soundPlan, {

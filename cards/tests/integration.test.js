@@ -171,9 +171,9 @@ test("손패·원정 UI와 캐시 버전 43이 함께 배포되도록 묶여 있
   ["fragmentTray", "fragmentHand", "fragmentPreview"].forEach((id) => {
     assert.match(html, new RegExp('id="' + id + '"'));
   });
-  assert.match(html, /styles\.css\?v=43/);
-  ["engine", "audio", "card-view", "vfx-recipes", "story-gates", "campaign", "campaign-ui", "app"].forEach((file) => {
-    assert.match(html, new RegExp("js/" + file + "\\.js\\?v=43"));
+  assert.match(html, /styles\.css\?v=44/);
+  ["engine", "audio", "card-view", "vfx-recipes", "story-gates", "campaign", "campaign-ui", "combat-cinema", "app"].forEach((file) => {
+    assert.match(html, new RegExp("js/" + file + "\\.js\\?v=44"));
   });
   assert.doesNotMatch(html, /\?v=(?:19|20|21|22|23|24|25|26|27|28|29|30|31)/);
 
@@ -753,7 +753,8 @@ test("대표 기술은 원본 텍스처·재질 파편·접촉 정지 레시피�
   assert.match(css, /\.technique-fx\.has-premium-art/);
   assert.match(css, /premium-v21-target-recoil/);
   assert.match(app, /triggerTechniqueContact\(effect, plan\)/);
-  assert.match(app, /const spread = plan\.recipe \? Math\.PI \* 0\.78/);
+  assert.match(app, /plan\.recipe \? Math\.PI \* 0\.78/);
+  assert.match(app, /plan\.cinemaProfile === "frost" \? Math\.PI \* 2/);
   assert.match(app, /slotAnchorPoint\(sourceSlot/);
 });
 

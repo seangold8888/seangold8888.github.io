@@ -91,6 +91,26 @@ function loadActiveAudioRuntime() {
   return { Audio: sandbox.window.CardAudio, started };
 }
 
+test("cinema impacts are bounded opt-ins and never create a hit on miss or evade", () => {
+  for (const cinemaProfile of ["lightning","blade","frost"]) {
+    const {Audio,started}=loadActiveAudioRuntime();
+    Audio.prime();
+    const before=started.length;
+    Audio.techniqueImpact({cinemaProfile,emoji:"⚡",kind:"burst",type:"magic",outcome:"hit",impactAtMs:350,totalMs:800});
+    const voices=started.slice(before);
+    assert.ok(voices.length>=6 && voices.length<=10,cinemaProfile);
+    assert.ok(voices.every(v=>v.stopAt-v.startAt<=.36),cinemaProfile+" short tail");
+    assert.ok(Math.min(...voices.map(v=>v.startAt))>=.003);
+    const after=started.length;
+    Audio.techniqueImpact({cinemaProfile,kind:"burst",type:"magic",outcome:"miss"});
+    Audio.techniqueImpact({cinemaProfile,kind:"burst",type:"magic",outcome:"evade"});
+    assert.equal(started.length,after,"no contact sounds");
+    assert.equal(Audio.soundPlanForTechnique({emoji:"⚡"}).cinemaProfile,"","legacy opt-out");
+    assert.equal(Audio.soundPlanForTechnique({cinemaProfile,emoji:"⚡"}).material,
+      Audio.soundPlanForTechnique({emoji:"⚡"}).material,"material mapping unchanged");
+  }
+});
+
 test("story-gate audio cues are public and remain silent while muted", () => {
   const Audio = loadMutedAudioRuntime();
   ["guard", "quizCorrect", "quizWrong", "ultimateUnlock"].forEach((name) => {

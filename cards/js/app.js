@@ -60,6 +60,7 @@
   let techniquePoolCursor = 0;
   let combatParticleFrame = 0;
   let combatParticleContext = null;
+  let combatCinema = null;
   let combatParticleMetrics = { width: 0, height: 0, dpr: 1 };
   let battleSession = 0;
   let pendingCoinAction = null;
@@ -80,7 +81,7 @@
       "battleButton", "battleButtonLabel",
       "muteButton", "musicButton", "leaveBattleButton", "turnOwner", "turnNumber",
       "battleStars", "arena", "enemyCardSlot", "playerCardSlot", "battleMessage",
-      "effectBurst", "combatParticleCanvas", "techniqueFxLayer", "actionList",
+      "effectBurst", "combatParticleCanvas", "combatShaderCanvas", "techniqueFxLayer", "actionList",
       "weaknessHint", "enemyIntent", "enemyIntentIcon", "enemyIntentName",
       "enemyIntentDetail", "enemyIntentBadge", "storyGateBar", "storyGateStatus",
       "storyGateButton", "storyQuizDialog", "storyQuizTitle", "storyQuizQuestion",
@@ -92,6 +93,13 @@
       "coinButton", "coinResult", "fragmentTray", "fragmentHand",
       "fragmentHelp", "fragmentPreview"
     ].forEach(function (id) { dom[id] = byId(id); });
+    if (dom.combatShaderCanvas) {
+      dom.combatShaderCanvas.addEventListener("webglcontextlost", function () {
+        dom.techniqueFxLayer.querySelectorAll(".has-cinema").forEach(function (effect) {
+          effect.classList.remove("has-cinema");
+        });
+      });
+    }
   }
 
   function isPreviewMode() {
@@ -425,6 +433,7 @@
   }
 
   function resetBattleFlow() {
+    if (combatCinema) combatCinema.reset();
     battleSession += 1;
     clearTimeout(effectTimer);
     clearTimeout(actionTimer);
@@ -717,6 +726,9 @@
   });
 
   function paletteForPlan(plan) {
+    if (plan && plan.cinemaProfile === "lightning") {
+      return {hot: "#f5fdff", primary: "#69c8ff", secondary: "#9aabff", shadow: "#415c99"};
+    }
     return MATERIAL_PALETTES[plan && plan.material] ||
       FX_PALETTES[plan && plan.type] ||
       FX_PALETTES.magic;
@@ -1435,7 +1447,8 @@
       points.endY - points.startY,
       points.endX - points.startX
     );
-    const spread = plan.recipe ? Math.PI * 0.78 : Math.PI * 0.92;
+    const spread = plan.cinemaProfile === "frost" ? Math.PI * 2
+      : plan.cinemaProfile ? Math.PI * 1.4 : plan.recipe ? Math.PI * 0.78 : Math.PI * 0.92;
     const contactCount = Math.min(2, recipe.impactCount);
     const dustStart = Math.max(contactCount, Math.round(recipe.impactCount * 0.72));
     for (let index = 0; index < recipe.impactCount; index += 1) {
@@ -1447,12 +1460,14 @@
         ? 0.18 + Math.random() * 0.1
         : dust ? 0.035 + Math.random() * 0.065
           : 0.075 + Math.random() * (plan.big ? 0.16 : 0.1);
-      const speed = speedBase * (plan.big ? 2.25 : 1.85);
+      const speed = speedBase * (plan.big ? 2.25 : 1.85) * (plan.cinemaProfile ? 1.3 : 1);
       const color = contact
         ? palette.hot
         : dust ? palette.shadow
           : index % 2 ? palette.primary : palette.secondary;
-      const shape = contact ? "spark" : dust ? "dust" : recipe.shape;
+      const shape = contact ? "spark" : dust ? "dust"
+        : plan.cinemaProfile === "frost" ? "shard"
+          : plan.cinemaProfile ? "streak" : recipe.shape;
       emitCombatParticle(
         points.endX + (Math.random() - 0.5) * (plan.big ? 28 : 18),
         points.endY + (Math.random() - 0.5) * (plan.big ? 24 : 15),
@@ -1808,6 +1823,10 @@
     effect.classList.add("is-playing");
     effect._fxPoints = points;
     effect._journey = registerCombatJourney(plan, points);
+    if (window.CardCombatCinema && dom.combatShaderCanvas) {
+      if (!combatCinema) combatCinema = window.CardCombatCinema.create(dom.combatShaderCanvas);
+      if (combatCinema.start(plan, points)) effect.classList.add("has-cinema");
+    }
     effect._cleanupTimer = setTimeout(function () {
       resetTechniqueNode(effect);
     }, plan.totalMs + 40);
@@ -1822,6 +1841,7 @@
         : "has-pass"
     );
     triggerTechniqueContact(effect, plan);
+    if (combatCinema) combatCinema.impact(plan);
     spawnCombatImpact(plan, effect._fxPoints);
   }
 
@@ -2755,6 +2775,8 @@
     }
     if (techniquePlan) {
       techniquePlan.sound = actionSound;
+      techniquePlan.cinemaProfile = window.CardCombatCinema
+        ? window.CardCombatCinema.profileForPlan(techniquePlan) : "";
       techniquePlan.knockout = events.some(function (event) {
         return event.type === "game_over";
       });
@@ -3142,6 +3164,7 @@
   }
 
   window.CardBattleFx = Object.freeze({
+    cinemaStatus: function () { return combatCinema ? combatCinema.inspect() : {backend: "idle", active: false}; },
     actionVisualsForEvents: actionVisualsForEvents,
     impactFlagsForVisuals: impactFlagsForVisuals,
     soundForEvents: soundForEvents,
