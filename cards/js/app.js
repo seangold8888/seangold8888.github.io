@@ -209,19 +209,26 @@
     return !card.unlock || isUnlockDone(card.unlock);
   }
 
-  function unlockStoryLabel(card) {
+  // 잠긴 카드 안내의 앞부분을 통째로 만든다. 예전에는 이 함수가 수학 해금에만
+  // 완성된 문장을 돌려주어 "…만날 수 있어!에서 이기면 …"처럼 조사가 겹쳤다.
+  function unlockLeadPhrase(card) {
     const stories = Array.isArray(card.unlockAll) && card.unlockAll.length
       ? card.unlockAll : [card.unlock];
     const mathToken = stories.find(function (id) {
       return typeof id === "string" && /^game:math\/streak(?:3|7)$/.test(id);
     });
     if (mathToken) {
-      const days = mathToken.endsWith("streak3") ? 3 : 7;
-      return "수학을 " + days + "일 이어서 하면 만날 수 있어!";
+      return "수학을 " + (mathToken.endsWith("streak3") ? 3 : 7) + "일 이어서 하면 ";
     }
-    return stories.map(function (id) {
+    const labels = stories.map(function (id) {
       return "「" + (STORY_NAMES[id] || "새로운 이야기") + "」";
     }).join(stories.length === 2 ? "와 " : ", ");
+    if (typeof card.unlock === "string" && card.unlock.indexOf("game:") === 0) {
+      return labels + "에서 이기면 ";
+    }
+    return labels + (stories.length > 1
+      ? " 이야기를 모두 끝까지 들으면 "
+      : " 이야기를 끝까지 들으면 ");
   }
 
   function artUrl(card) {
@@ -381,19 +388,13 @@
   }
 
   function openLockedDialog(card) {
-    const storyLabel = unlockStoryLabel(card);
-    const gameUnlock = typeof card.unlock === "string" && card.unlock.indexOf("game:") === 0;
-    const requirement = gameUnlock
-      ? "에서 이기면 "
-      : Array.isArray(card.unlockAll) && card.unlockAll.length > 1
-        ? " 이야기를 모두 끝까지 들으면 "
-        : " 이야기를 끝까지 들으면 ";
+    const lead = unlockLeadPhrase(card);
     dom.lockedArt.style.backgroundImage = 'linear-gradient(rgba(17,13,37,.22), rgba(17,13,37,.42)), url("' + artUrl(card) + '")';
     dom.lockedArt.style.backgroundPosition = window.CardView.artPosition[card.id] || "50% 40%";
     dom.lockedTitle.textContent = card.name + " 카드가 잠들어 있어요";
     dom.lockedDescription.textContent = isPlayableCard(card)
-      ? storyLabel + requirement + "이 영웅과 함께 대결할 수 있어요."
-      : storyLabel + requirement + "컬렉션에 깨어나요. 대전 기술은 다음 확장에서 준비됩니다.";
+      ? lead + "이 영웅과 함께 대결할 수 있어요."
+      : lead + "컬렉션에 깨어나요. 대전 기술은 다음 확장에서 준비됩니다.";
     dom.lockedDialog.showModal();
   }
 
@@ -1871,6 +1872,20 @@
     return STORY_NAMES[storyChallenge.storyId] || storyChallenge.title || "새로운 이야기";
   }
 
+  // 가족 카드는 오디오 이야기가 없고 카드 자체를 묻는다. 이야기 제목을 붙이면
+  // "「새로운 이야기」 이야기 관문"처럼 읽혀서 카드 이름으로 바꾼다.
+  function storyGateTitle() {
+    const familyGate = storyChallenge &&
+      /^(?:family|legend):/.test(storyChallenge.storyId || "");
+    if (familyGate) {
+      const owner = cards.find(function (card) {
+        return card.id === storyChallenge.cardId;
+      });
+      return (owner ? owner.name : "우리 가족") + " 카드 관문";
+    }
+    return "「" + storyGateStoryName() + "」 이야기 관문";
+  }
+
   function storyGateHasListeningProof() {
     if (!storyChallenge) return false;
     if (/^(?:family|legend):/.test(storyChallenge.storyId || "")) {
@@ -2038,7 +2053,7 @@
     const flags = game.sides.player.flags;
     if (flags.ultimateUnlocked || flags.ultimateUsed || flags.ultimateFailed ||
         game.turnNumber < flags.ultimateRetryTurn) return;
-    dom.storyQuizTitle.textContent = "「" + storyGateStoryName() + "」 이야기 관문";
+    dom.storyQuizTitle.textContent = storyGateTitle();
     dom.storyQuizQuestion.textContent = storyChallenge.question || storyChallenge.prompt || "";
     dom.storyQuizResult.textContent = "정답을 고르면 턴을 쓰지 않고 필살기가 깨어나요.";
     dom.storyQuizResult.className = "story-quiz-result";

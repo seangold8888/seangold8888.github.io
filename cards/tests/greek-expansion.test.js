@@ -38,7 +38,7 @@ function appRuntime(hostname = "seangold8888.github.io", search = "") {
   const store = new Map();
   const dom = Object.fromEntries(["lockedArt", "lockedTitle", "lockedDescription", "lockedDialog"].map(id => [id, {style: {}, textContent: "", showModal() { this.open = true; }}]));
   const sandbox = {window: {CardEngine: Engine, CardView: {artPosition: {}}}, document: {addEventListener() {}, getElementById(id) { return dom[id]; }}, location: {hostname, search}, URLSearchParams, localStorage: {getItem(key) { return store.get(key) || null; }}};
-  const source = fs.readFileSync(path.join(root, "js/app.js"), "utf8").replace('document.addEventListener("DOMContentLoaded", init);', 'window.GreekQa = {isUnlocked, unlockStoryLabel, openLockedDialog, cacheDom, getUnlockSnapshot, setCards(value) { cards = value; }};');
+  const source = fs.readFileSync(path.join(root, "js/app.js"), "utf8").replace('document.addEventListener("DOMContentLoaded", init);', 'window.GreekQa = {isUnlocked, unlockLeadPhrase, openLockedDialog, cacheDom, getUnlockSnapshot, setCards(value) { cards = value; }};');
   vm.runInNewContext(source, sandbox);
   const api = sandbox.window.GreekQa;
   api.cacheDom(); api.setCards(data.cards);
@@ -207,7 +207,7 @@ test("locked dialog names every required story and refresh snapshot sees the fin
   api.openLockedDialog(get("athena"));
   assert.match(dom.lockedDescription.textContent, /페르세우스와 메두사/);
   assert.doesNotMatch(dom.lockedDescription.textContent, /모두 끝까지/);
-  assert.equal(api.unlockStoryLabel({unlockAll: ["heracles", "perseus", "midas"]}).split(", ").length, 3);
+  assert.equal(api.unlockLeadPhrase({unlockAll: ["heracles", "perseus", "midas"]}).split(", ").length, 3);
   store.set("story_done_heracles", "1");
   const before = api.getUnlockSnapshot();
   store.set("story_done_perseus", "1");

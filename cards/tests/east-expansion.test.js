@@ -80,7 +80,7 @@ test("게임 클리어 해금은 카드와 삼국지 승리 저장 양쪽에 연
   assert.match(app, /function isGameDone\(token\)/);
   assert.match(app, /localStorage\.getItem\("sanguo_clear_" \+ stage\) === "1"/);
   assert.match(app, /card\.unlock\.indexOf\("game:"\) === 0/);
-  assert.match(app, /\? "에서 이기면 "/);
+  assert.match(app, /"에서 이기면 "/);
   assert.match(sanguo, /if \(win\) \{[\s\S]*?localStorage\.setItem\('sanguo_clear_' \+ stageKey, '1'\)/);
   for (const id of newIds) assert.ok(get(id).unlock.startsWith("game:sanguo/"), id);
 });

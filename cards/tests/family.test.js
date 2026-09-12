@@ -193,7 +193,9 @@ test("수학 연속일 해금과 폰 세로 7버튼 가로 스크롤 계약이 �
   const css = fs.readFileSync(path.join(root, "styles.css"), "utf8");
   assert.match(app, /localStorage\.getItem\("math10_state"\)/);
   assert.match(app, /\^streak\(3\|7\)\$/);
-  assert.match(app, /수학을 " \+ days \+ "일 이어서 하면 만날 수 있어!/);
+  // 문장을 통째로 돌려주면 뒤에 조사가 겹친다. 조각만 돌려주는지 본다.
+  assert.match(app, /"수학을 " \+ \(mathToken\.endsWith\("streak3"\) \? 3 : 7\) \+ "일 이어서 하면 "/);
+  assert.doesNotMatch(app, /일 이어서 하면 만날 수 있어!/);
   assert.match(app, /classList\.toggle\("is-scrollable", dom\.actionList\.children\.length > 6\)/);
   assert.match(css, /@media \(max-width: 680px\) and \(orientation: portrait\)[\s\S]*?\.in-battle \.action-list\.is-scrollable[\s\S]*?overflow-x: auto/);
   assert.equal(byId.get("taeo").attacks.length + 3, 7);
