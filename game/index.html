@@ -759,6 +759,9 @@
   .card .meta { position: relative; z-index: 2; gap: 6px; }
   .card .name { color: var(--text); font-size: clamp(20px, 2.5vw, 27px); letter-spacing: -.035em; text-shadow: 0 2px 12px rgba(0,0,0,.5); }
   .card .desc { max-width: 600px; color: #d8dbec; opacity: .9; font-size: 12px; line-height: 1.5; }
+  .card .update { display: flex; gap: 6px; align-items: baseline; margin-top: 2px; color: #b9c0dd; font-size: 11px; line-height: 1.45; }
+  .card .update b { flex: 0 0 auto; color: #15162e; background: var(--lime); padding: 1px 6px; border-radius: 999px; font-size: 10px; font-weight: 800; letter-spacing: -.02em; }
+  .card .update i { font-style: normal; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
   .card .genre { color: #e6e9f8; background: rgba(12,15,39,.62); border: 1px solid rgba(255,255,255,.16); font-size: 10px; }
   .card .plays { color: #15162e; background: var(--lime); border: 0; font-size: 10px; }
   .card .go { color: var(--gold); background: transparent; padding: 2px 0; font-size: 11px; }
@@ -918,6 +921,7 @@
     #study { min-height: 0; padding: 22px; }
     .card, .card.hero, .card.battle { grid-column: span 6; min-height: 210px; padding: 14px; }
     .card .desc { display: none; }
+    .card .update { font-size: 10px; }
     .card .name { font-size: 19px; }
     .card .badge { display: none; }
     .section-heading { gap: 8px; }
@@ -2448,6 +2452,46 @@
     var unsupportedLabel = document.getElementById("hubOfflineStat");
     if (unsupportedLabel) unsupportedLabel.textContent = "연결 필요";
   }
+</script>
+<script>
+  // 게임 카드에 "최근 업데이트" 한 줄을 붙인다. 날짜는 tools/build-updates.js 가
+  // git 기록에서 만들어 두므로 여기서는 읽어 쓰기만 한다. 파일이 없거나 실패하면
+  // 아무 줄도 붙이지 않고 지나간다. 대시보드가 멈추면 안 된다.
+  (function () {
+    function label(iso) {
+      var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || "");
+      if (!m) return null;
+      var then = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+      var today = new Date();
+      today.setHours(0, 0, 0, 0);
+      var days = Math.round((today - then) / 86400000);
+      if (days <= 0) return "오늘";
+      if (days === 1) return "어제";
+      if (days < 7) return days + "일 전";
+      return Number(m[2]) + "월 " + Number(m[3]) + "일";
+    }
+    fetch("game/updates.json", { cache: "no-store" })
+      .then(function (res) { return res.ok ? res.json() : null; })
+      .then(function (data) {
+        if (!data) return;
+        Object.keys(data).forEach(function (id) {
+          var card = document.querySelector('.card[href="' + id + '/"]');
+          var meta = card && card.querySelector(".meta");
+          var when = label(data[id].date);
+          if (!meta || !when || !data[id].text) return;
+          var row = document.createElement("span");
+          row.className = "update";
+          var badge = document.createElement("b");
+          badge.textContent = when;
+          var text = document.createElement("i");
+          text.textContent = data[id].text;
+          row.append(badge, text);
+          var go = meta.querySelector(".go");
+          if (go) meta.insertBefore(row, go); else meta.appendChild(row);
+        });
+      })
+      .catch(function () { /* 업데이트 줄은 없어도 그만이다 */ });
+  })();
 </script>
 </body>
 </html>
