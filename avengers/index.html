@@ -20,6 +20,93 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>AVENGERS — JAY &amp; TEO'S MULTIVERSE</title>
+    <script id="avengers-worker-migration">
+      (() => {
+        if (!("serviceWorker" in navigator)) return;
+        const container = navigator.serviceWorker;
+        const nativeRegister = container.register.bind(container);
+        const rootScriptUrl = new URL("../sw.js", window.location.href).href;
+        const rootScopeUrl = new URL("../", window.location.href).href;
+        const childScriptUrl = new URL("./sw.js", window.location.href).href;
+        const childScopeUrl = new URL("./", window.location.href).href;
+        let migrationPromise = null;
+
+        function waitForRootWorker(registration) {
+          if (registration.active && registration.active.state === "activated") return Promise.resolve(registration);
+          return new Promise((resolve, reject) => {
+            const watched = new Set();
+            const cleanup = () => {
+              clearTimeout(timeout);
+              registration.removeEventListener("updatefound", update);
+              watched.forEach(worker => worker.removeEventListener("statechange", check));
+            };
+            const check = () => {
+              if ([registration.active, ...watched].some(worker => worker && worker.state === "activated")) {
+                cleanup();
+                resolve(registration);
+              }
+            };
+            const observe = worker => {
+              if (!worker || watched.has(worker)) return;
+              watched.add(worker);
+              worker.addEventListener("statechange", check);
+            };
+            const update = () => { observe(registration.installing); check(); };
+            const timeout = setTimeout(() => {
+              cleanup();
+              reject(new Error("통합 서비스워커 활성화 시간 초과"));
+            }, 12000);
+            registration.addEventListener("updatefound", update);
+            observe(registration.installing);
+            observe(registration.waiting);
+            observe(registration.active);
+            check();
+          });
+        }
+
+        function migrateToRootWorker() {
+          if (migrationPromise) return migrationPromise;
+          // Activate the shared worker first. Failed/offline installations must
+          // not unregister the currently available offline controller.
+          migrationPromise = nativeRegister(rootScriptUrl, { scope: rootScopeUrl })
+            .then(waitForRootWorker)
+            .then(rootRegistration => {
+              const registrations = typeof container.getRegistrations === "function"
+                ? container.getRegistrations()
+                : container.getRegistration(childScopeUrl).then(item => item ? [item] : []);
+              return registrations.then(items => Promise.all(items
+                .filter(registration => registration.scope === childScopeUrl)
+                .map(registration => registration.unregister())))
+                .then(() => {
+                  // Root claim during activation may have preceded child removal.
+                  // Request a claim; browsers may retain this document's old
+                  // controller until its next navigation. Never interrupt play.
+                  rootRegistration.active.postMessage({type: "CLAIM_CLIENTS"});
+                  return rootRegistration;
+                });
+            }).catch(error => {
+              migrationPromise = null;
+              throw error;
+            });
+          return migrationPromise;
+        }
+
+        function unifiedRegister(scriptUrl, options) {
+          let resolved;
+          try { resolved = new URL(String(scriptUrl), window.location.href).href; }
+          catch (_) { return nativeRegister(scriptUrl, options); }
+          return resolved === childScriptUrl
+            ? migrateToRootWorker()
+            : nativeRegister(scriptUrl, options);
+        }
+        try {
+          Object.defineProperty(container, "register", {configurable: true, value: unifiedRegister});
+        } catch (_) { container.register = unifiedRegister; }
+        window.addEventListener("load", () => {
+          migrateToRootWorker().catch(error => console.warn("통합 오프라인 모드 등록 실패:", error));
+        });
+      })();
+    </script>
     <script type="module" crossorigin src="./assets/index-D_Krq1Fc.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-uRBZKIPW.css">
   </head>

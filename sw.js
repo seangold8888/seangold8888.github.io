@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v82";
+const CACHE_VERSION = "v83";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -1035,6 +1035,8 @@ if (typeof self !== "undefined" && typeof self.addEventListener === "function") 
       })));
     } else if (data.type === "SKIP_WAITING") {
       event.waitUntil(self.skipWaiting());
+    } else if (data.type === "CLAIM_CLIENTS") {
+      event.waitUntil(self.clients.claim());
     }
   });
 }
