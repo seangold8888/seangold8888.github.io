@@ -33,13 +33,13 @@
   // §4 chapter identities. Bonuses apply to copies, never cards.json.
   const CHAPTERS = freeze([
     {id: 0, name: "우리 집", enemies: ["jack"], boss: null, recruit: "redhood", hpBonuses: [0]},
-    {id: 1, name: "동화 나라", enemies: ["wolf", "witch", "beanstalkgiant"], boss: "snowqueen", recruit: "cinderella", hpBonuses: [0, 0, 0, 20]},
+    {id: 1, name: "동화 나라", enemies: ["wolf", "witch", "beanstalkgiant"], boss: "snowqueen", recruit: "cinderella", hpBonuses: [0, 0, 0, 80]},
     {id: 2, name: "옛이야기 나라", enemies: ["euljimundeok", "ganggamchan", "kwonyul"], boss: "tiger", recruit: "honggildong", hpBonuses: [0, 0, 0, 20]},
-    {id: 3, name: "신들의 산", enemies: ["medusa", "hydra", "minotaur"], boss: "cerberus", recruit: "heracles", hpBonuses: [0, 0, 0, 20]},
-    {id: 4, name: "오디세우스의 바다", enemies: ["circe", "siren", "scylla"], boss: "polyphemus", recruit: "odysseus", hpBonuses: [0, 0, 0, 20]},
-    {id: 5, name: "세 나라 전장", enemies: ["zhangfei", "caocao", "simayi"], boss: "guanyu", recruit: "zhaoyun", hpBonuses: [0, 0, 0, 20]},
-    {id: 6, name: "서쪽으로 가는 길", enemies: ["honghaier", "baigujing", "erlangshen"], boss: "wumawang", recruit: "sunwukong", hpBonuses: [0, 0, 0, 20]},
-    {id: 7, name: "쓰구미 왕궁", enemies: ["hydra", "scylla", "wumawang"], boss: "sseugumi", recruit: "sseugumi", hpBonuses: [0, 0, 0, 40]}
+    {id: 3, name: "신들의 산", enemies: ["medusa", "hydra", "minotaur"], boss: "cerberus", recruit: "heracles", hpBonuses: [0, 0, 0, 70]},
+    {id: 4, name: "오디세우스의 바다", enemies: ["circe", "siren", "scylla"], boss: "polyphemus", recruit: "odysseus", hpBonuses: [0, 0, 0, 80]},
+    {id: 5, name: "세 나라 전장", enemies: ["zhangfei", "caocao", "simayi"], boss: "guanyu", recruit: "zhaoyun", hpBonuses: [0, 0, 0, 120]},
+    {id: 6, name: "서쪽으로 가는 길", enemies: ["honghaier", "baigujing", "erlangshen"], boss: "wumawang", recruit: "sunwukong", hpBonuses: [0, 0, 0, 60]},
+    {id: 7, name: "쓰구미 왕궁", enemies: ["hydra", "scylla", "wumawang"], boss: "sseugumi", recruit: "sseugumi", hpBonuses: [0, 0, 0, 130]}
   ]);
 
   // Approved text only. Later draft dialogue belongs to S3.

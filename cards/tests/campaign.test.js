@@ -228,3 +228,20 @@ test("winning the chapter brings back a resting party member", () => {
   assert.deepEqual(next.resting, []);
   assert.deepEqual(next.recruited, ["redhood", "cinderella"]);
 });
+
+test("approved campaign balance rewards good counters, differentiates bosses and leaves every chapter finishable", () => {
+  const report = Balance.run();
+  assert.equal(report.pass, true, JSON.stringify(report.rows.filter(row => !row.pass)));
+  assert.equal(report.rows.length, 29);
+  assert.equal(report.parties.reduce((sum, row) => sum + row.combinations, 0), 211);
+  assert.ok(report.rows.some(row => row.best.rate === 1), "good counter choices may guarantee victory");
+  for (const row of report.rows) {
+    assert.equal(row.stalls, 0);
+    assert.equal(row.invalid, 0);
+    assert.ok(row.best.rate >= row.minimum);
+    if (row.boss) assert.ok(row.median <= 0.8 && row.spread >= 0.25);
+  }
+  for (const chapter of report.parties) assert.ok(chapter.best.chance >= chapter.minimum);
+  assert.equal(report.recruit.games, 9600);
+  assert.ok(report.recruit.rate >= 0.35 && report.recruit.rate <= 0.8);
+});

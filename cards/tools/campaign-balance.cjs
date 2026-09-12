@@ -49,9 +49,15 @@ function measure(chapter, stage, samples, bonus) {
   });
   rates.sort((a, b) => b.rate - a.rate);
   const minimum = opponent.card.id === "sseugumi" ? 0.3 : opponent.boss ? 0.35 : 0.45;
+  const middle = Math.floor(rates.length / 2);
+  const median = rates.length % 2 ? rates[middle].rate : (rates[middle - 1].rate + rates[middle].rate) / 2;
+  const spread = rates[0].rate - rates.at(-1).rate;
+  // Approved 2026-09-12: a good counter may win 100%. Boss difficulty comes
+  // from the choice: typical candidates <=80%, best/worst gap >=25 points.
+  const choiceMatters = !opponent.boss || (median <= 0.8 && spread >= 0.25);
   return {chapter, stage, enemy: opponent.card.id, boss: opponent.boss, hp: opponent.card.hp,
-    hpBonus: opponent.hpBonus, rates, best: rates[0], minimum, stalls, invalid, longest,
-    pass: rates[0].rate >= minimum && rates[0].rate <= 0.9 && stalls === 0 && invalid === 0};
+    hpBonus: opponent.hpBonus, rates, best: rates[0], minimum, median, spread, choiceMatters, stalls, invalid, longest,
+    pass: rates[0].rate >= minimum && choiceMatters && stalls === 0 && invalid === 0};
 }
 
 function combinations(ids, size = 3) {
@@ -116,13 +122,16 @@ function run(options = {}) {
     const options = combinations(Campaign.candidatesForChapter(chapter.id));
     const chapterRows = rows.filter(row => row.chapter === chapter.id);
     const candidates = options.map(party => ({party, chance: partyChance(party, chapterRows)})).sort((a, b) => b.chance - a.chance);
-    return {chapter: chapter.id, combinations: candidates.length, best: candidates[0], worst: candidates.at(-1)};
+    const minimum = chapter.id <= 1 ? 0.7 : 0.5;
+    return {chapter: chapter.id, combinations: candidates.length, best: candidates[0], worst: candidates.at(-1), minimum,
+      pass: candidates[0].chance >= minimum};
   });
   const recruit = measureRecruit(samples);
-  return {samples, rows, parties, recruit, pass: rows.every(row => row.pass) && recruit.pass};
+  return {samples, rows, parties, recruit, pass: rows.every(row => row.pass) && parties.every(party => party.pass) && recruit.pass};
 }
 function printRow(row) {
   console.log(`${row.pass ? "PASS" : "FAIL"} ${row.chapter}장 ${row.stage + 1} ${row.enemy} HP${row.hp} (+${row.hpBonus}) 최선 ${row.best.id} ${(row.best.rate * 100).toFixed(1)}% 교착 ${row.stalls}`);
+  if (row.boss) console.log(`  후보 중앙 ${(row.median * 100).toFixed(1)}% · 선택 격차 ${(row.spread * 100).toFixed(1)}%p`);
 }
 if (require.main === module) {
   const samplesArg = process.argv.find(arg => arg.startsWith("--samples="));
