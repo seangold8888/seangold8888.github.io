@@ -17,7 +17,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   <link rel="icon" href="../icon.png">
   <link rel="apple-touch-icon" href="../icon.png">
   <link rel="manifest" href="../manifest.json">
-<link rel="stylesheet" href="styles.css?v=42">
+<link rel="stylesheet" href="styles.css?v=43">
+<link rel="stylesheet" href="campaign.css?v=43">
 </head>
 <body>
   <div class="sky" aria-hidden="true">
@@ -39,6 +40,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   </header>
 
   <main>
+    <p id="campaignSaveNotice" class="expedition-save-notice" role="status" hidden>이 기기에서는 진행을 저장할 수 없어요. 이 창을 닫으면 이번 진행이 사라질 수 있어요.</p>
     <section class="screen collection-screen" id="collectionScreen">
       <div class="collection-toolbar">
         <div class="collection-title">
@@ -52,6 +54,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         </div>
         <a class="story-link" href="../story/">🎧 이야기</a>
       </div>
+
+      <button id="campaignButton" class="expedition-entry" type="button">원정 떠나기</button>
 
       <div class="collection-guide">
         <h2>카드를 탭해 능력을 보고 출전 영웅을 골라요</h2>
@@ -72,8 +76,11 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       </aside>
     </section>
 
+    <section class="screen expedition-screen" id="campaignScreen" aria-label="이야기 원정" hidden></section>
+
     <section class="screen battle-screen" id="battleScreen" hidden>
       <div class="battle-header">
+        <span id="campaignBattleLabel" class="expedition-battle-label" hidden></span>
         <button class="ghost-button" id="leaveBattleButton" type="button">← 카드 바꾸기</button>
         <div class="round-pill"><span id="turnOwner">나의 턴</span><b id="turnNumber">1</b></div>
         <div class="battle-stars" id="battleStars" aria-live="polite">⭐ 0</div>
@@ -190,12 +197,14 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   </dialog>
 
   <noscript>이야기 카드 배틀을 하려면 JavaScript를 켜 주세요.</noscript>
-<script src="js/engine.js?v=42" defer></script>
-<script src="js/audio.js?v=42" defer></script>
-<script src="js/card-view.js?v=42" defer></script>
-<script src="js/vfx-recipes.js?v=42" defer></script>
-<script src="js/story-gates.js?v=42" defer></script>
-<script src="js/app.js?v=42" defer></script>
+<script src="js/engine.js?v=43" defer></script>
+<script src="js/audio.js?v=43" defer></script>
+<script src="js/card-view.js?v=43" defer></script>
+<script src="js/vfx-recipes.js?v=43" defer></script>
+<script src="js/story-gates.js?v=43" defer></script>
+<script src="js/campaign.js?v=43" defer></script>
+<script src="js/campaign-ui.js?v=43" defer></script>
+<script src="js/app.js?v=43" defer></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {

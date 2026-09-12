@@ -66,6 +66,8 @@
   let unlockSnapshot = "";
   let tiltFrame = 0;
   let tiltingCard = null;
+  let campaignUi = null;
+  let campaignBattle = null;
 
   function byId(id) {
     return document.getElementById(id);
@@ -73,7 +75,7 @@
 
   function cacheDom() {
     [
-      "collectionScreen", "battleScreen", "collectionGrid", "unlockCount",
+      "collectionScreen", "battleScreen", "campaignScreen", "campaignBattleLabel", "collectionGrid", "unlockCount",
       "selectionDock", "selectedPortrait", "selectedStatus", "selectedName",
       "battleButton", "battleButtonLabel",
       "muteButton", "musicButton", "leaveBattleButton", "turnOwner", "turnNumber",
@@ -203,6 +205,7 @@
   }
 
   function isUnlocked(card) {
+    if (campaignUi ? campaignUi.hasRecruited(card.id) : window.CardCampaign && window.CardCampaign.load().recruited.includes(card.id)) return true;
     if (Array.isArray(card.unlockAll) && card.unlockAll.length) {
       return card.unlockAll.every(isUnlockDone);
     }
@@ -400,8 +403,9 @@
 
   function showScreen(name) {
     const battle = name === "battle";
-    dom.collectionScreen.hidden = battle;
+    dom.collectionScreen.hidden = name !== "collection";
     dom.battleScreen.hidden = !battle;
+    if (dom.campaignScreen) dom.campaignScreen.hidden = name !== "campaign";
     document.body.classList.toggle("in-battle", battle);
     if (window.CardAudio.setScene) {
       window.CardAudio.setScene(battle ? "battle" : "collection");
@@ -458,13 +462,21 @@
     });
   }
 
-  function startBattle() {
-    if (!selectedCard || !isUnlocked(selectedCard) || !isPlayableCard(selectedCard)) return;
+  function startBattle(request) {
+    const expedition = request && request.campaign === true ? request : null;
+    if (expedition) selectedCard = expedition.player;
+    if (!selectedCard || (!expedition && !isUnlocked(selectedCard)) || !isPlayableCard(selectedCard)) return;
+    campaignBattle = expedition;
     resetBattleFlow();
     // 배경 무대: 마법·괴물 카드는 마법 숲, 나머지는 별빛 성 (블렌더 렌더)
     if (dom.arena) dom.arena.classList.toggle("bg-forest", selectedCard.type === "magic" || selectedCard.type === "monster");
     window.CardAudio.prime();
-    const enemy = pickEnemy();
+    const enemy = expedition ? expedition.enemy : pickEnemy();
+    dom.campaignBattleLabel.hidden = !expedition;
+    dom.campaignBattleLabel.textContent = expedition ? expedition.label : "";
+    dom.leaveBattleButton.textContent = expedition ? "← 원정 지도" : "← 카드 바꾸기";
+    dom.enemyCardSlot.parentElement.querySelector(".combat-label").textContent = expedition ? "장난에 걸린 " + enemy.name : "별그림자 상대";
+    dom.rematchButton.textContent = "한 판 더!";
     const fragmentPool = getUnlockedFragmentPool();
     storyChallenge = window.CardStoryGates &&
       typeof window.CardStoryGates.getForCard === "function"
@@ -474,6 +486,7 @@
       : null;
     if (storyChallenge) rememberQuizId(selectedCard.id, storyChallenge.id);
     game = window.CardEngine.createGame(selectedCard, enemy, {
+      ...(expedition ? expedition.options : {}),
       playerFragments: window.CardEngine.drawFragments(fragmentPool, Math.random, 3),
       enemyFragments: window.CardEngine.drawFragments(fragmentPool, Math.random, 3)
     });
@@ -2865,6 +2878,14 @@
     dom.resultText.textContent = victory
       ? "이야기 속 용기와 지혜가 멋진 기술이 되었어요."
       : "카드의 약점과 별사탕 비용을 보고 다시 작전을 세워 봐요.";
+    if (campaignBattle && !campaignBattle.settled) {
+      campaignBattle.resultText = campaignUi.settle(campaignBattle.serial, game.winner);
+      campaignBattle.settled = true;
+    }
+    if (campaignBattle) {
+      dom.resultText.textContent = campaignBattle.resultText;
+      dom.rematchButton.textContent = victory ? "다음으로 →" : "다른 카드로 다시";
+    }
     victory ? window.CardAudio.win() : window.CardAudio.lose();
     resultTimer = setTimeout(function () {
       if (session === battleSession && game && !dom.resultDialog.open) {
@@ -2874,12 +2895,26 @@
   }
 
   function returnToCollection() {
+    if (campaignUi) campaignUi.pause();
+    campaignBattle = null;
     resetBattleFlow();
     if (dom.resultDialog.open) dom.resultDialog.close();
     game = null;
     busy = false;
     showScreen("collection");
     renderCollection();
+  }
+
+  function returnToCampaign(continueRun) {
+    if (!campaignUi) return returnToCollection();
+    campaignUi.pause();
+    campaignBattle = null;
+    resetBattleFlow();
+    if (dom.resultDialog.open) dom.resultDialog.close();
+    game = null;
+    busy = false;
+    if (continueRun) campaignUi.resume();
+    else campaignUi.showMap();
   }
 
   function cardTiltAllowed(event) {
@@ -2942,10 +2977,14 @@
   function bindEvents() {
     bindCardTilt();
     dom.battleButton.addEventListener("click", startBattle);
-    dom.leaveBattleButton.addEventListener("click", returnToCollection);
+    dom.leaveBattleButton.addEventListener("click", function () {
+      if (campaignBattle) returnToCampaign(false);
+      else returnToCollection();
+    });
     dom.rematchButton.addEventListener("click", function () {
       dom.resultDialog.close();
-      startBattle();
+      if (campaignBattle) returnToCampaign(true);
+      else startBattle();
     });
     document.querySelectorAll("[data-detail-close]").forEach(function (button) {
       button.addEventListener("click", closeCardDetail);
@@ -3085,6 +3124,8 @@
         throw new Error("컬렉션 카드 목록이 비었거나 데이터와 일치하지 않습니다.");
       }
       battleCards = cards.filter(isPlayableCard);
+      campaignUi = window.CardCampaignUI.create({cards: cards, showScreen: showScreen,
+        onBattle: startBattle, onExit: returnToCollection});
       const requested = new URLSearchParams(location.search).get("card");
       selectedCard = cards.find(function (card) {
         return card.id === requested && isUnlocked(card) && isPlayableCard(card);

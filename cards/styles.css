@@ -4761,10 +4761,12 @@ dialog p:not(.kicker) {
 /* Tablet battle: budget the actual visible viewport, including Safari chrome. */
 @media (min-width: 681px) and (min-height: 600px) {
   body.in-battle { --topbar-h: 60px; }
-  body.in-battle .topbar { padding-block: 0; }
+  body.in-battle .topbar { padding-block: 0; height: calc(60px + env(safe-area-inset-top)); transition: none; }
   body.in-battle main { max-width: none; }
   body.in-battle .battle-screen:not([hidden]) {
     box-sizing: border-box;
+    /* Entry/impact transforms must not create a temporary document scrollbar. */
+    overflow: clip;
     height: calc(100dvh - 60px - env(safe-area-inset-top));
     min-height: 0;
     padding: 6px max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom));
@@ -4840,6 +4842,32 @@ dialog p:not(.kicker) {
   }
   .in-battle .action-button {
     scroll-snap-align: start;
+  }
+  /* Seven-action hands: do not let the ultimate span the horizontal grid or
+     long descriptions make a 76px row overflow and clip its touch targets. */
+  .in-battle .action-list.is-scrollable .action-button {
+    grid-column: auto;
+    grid-row: auto;
+    min-height: 76px;
+    height: 76px;
+    padding: 7px;
+    gap: 3px 5px;
+    grid-template-columns: minmax(0,1fr) 40px;
+    grid-template-rows: minmax(0,1fr) auto;
+  }
+  .in-battle .action-list.is-scrollable .action-button strong { font-size: 14px; line-height: 1.2; }
+  .in-battle .action-list.is-scrollable .action-button small {
+    grid-column: 1 / -1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 11px;
+  }
+  .in-battle .action-list.is-scrollable .action-button .action-cost {
+    grid-row: 1;
+    min-width: 0;
+    padding: 5px 2px;
+    font-size: 12px;
   }
 }
 @media (min-width: 960px) and (min-height: 600px) and (orientation: landscape) {
