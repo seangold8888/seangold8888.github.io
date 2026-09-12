@@ -186,6 +186,7 @@
 
     var state = {
       version: 1,
+      aiMistakeRate: normaliseAiMistakeRate(options.aiMistakeRate),
       turn: "player",
       turnNumber: 0,
       phase: "turn_start",
@@ -1289,9 +1290,15 @@
     };
   }
 
+  function normaliseAiMistakeRate(value) {
+    return typeof value === "number" && Number.isFinite(value)
+      ? Math.max(0, Math.min(1, value)) : 0.3;
+  }
+
   function chooseAiAction(state, rng) {
     if (!state || state.winner || state.phase !== "action") return null;
 
+    var mistakeRate = normaliseAiMistakeRate(state.aiMistakeRate);
     var actor = state.turn;
     var actorSide = sideOf(state, actor);
     var target = sideOf(state, other(actor));
@@ -1477,11 +1484,11 @@
     var usefulPlans = fragmentPlans.filter(usefulFragmentPlan);
     if (typeof rng === "function" && usefulPlans.length) {
       var fragmentRoll = randomNumber(rng);
-      if (fragmentRoll < 0.3) {
+      if (fragmentRoll < mistakeRate) {
         var chosenPlan = usefulPlans[
           Math.min(
             usefulPlans.length - 1,
-            Math.floor(fragmentRoll / 0.3 * usefulPlans.length)
+            Math.floor(fragmentRoll / mistakeRate * usefulPlans.length)
           )
         ];
         return {
@@ -1543,7 +1550,7 @@
         threat.reducedBy >= 10 &&
         actorSide.hp <= actorSide.maxHp / 2 &&
         typeof rng === "function" &&
-        randomNumber(rng) < 0.3
+        randomNumber(rng) < mistakeRate
       ) {
         return { type: "guard" };
       }
@@ -1621,7 +1628,7 @@
       typeof rng === "function" &&
       affordable.length > 1 &&
       affordable[1].estimate.score > 0 &&
-      randomNumber(rng) < 0.3
+      randomNumber(rng) < mistakeRate
     ) {
       bestNow = affordable[1];
     }
