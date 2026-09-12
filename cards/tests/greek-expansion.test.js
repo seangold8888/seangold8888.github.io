@@ -336,7 +336,7 @@ test("G3 and G4 finish 2240 seeded alternating-first matches without a stall", (
 });
 
 test("G1 28장의 PNG·WebP 56개 배포 원화는 검증된 매니페스트와 일치한다", () => {
-  const files = data.collection.filter(id => !g2Ids.concat(laterIds, eastIds, familyIds, legendIds).includes(id))
+  const files = data.collection.filter(id => !g2Ids.concat(laterIds, eastIds, familyIds, legendIds, odysseyIds).includes(id))
     .flatMap(id => [id + ".png", id + ".webp"]).sort();
   const sha = value => crypto.createHash("sha256").update(value).digest("hex");
   const manifest = files.map(name => name + ":" + sha(fs.readFileSync(path.join(root, "art", name)))).join("\n");
@@ -345,7 +345,7 @@ test("G1 28장의 PNG·WebP 56개 배포 원화는 검증된 매니페스트와 
 });
 
 test("G2까지 32장의 PNG·WebP 64개 원화가 모두 존재하고 최종 매니페스트와 일치한다", () => {
-  const files = data.collection.filter(id => !laterIds.concat(eastIds, familyIds, legendIds).includes(id))
+  const files = data.collection.filter(id => !laterIds.concat(eastIds, familyIds, legendIds, odysseyIds).includes(id))
     .flatMap(id => [id + ".png", id + ".webp"]).sort();
   const sha = value => crypto.createHash("sha256").update(value).digest("hex");
   const manifest = files.map(name => name + ":" + sha(fs.readFileSync(path.join(root, "art", name)))).join("\n");

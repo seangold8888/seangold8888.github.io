@@ -63,7 +63,8 @@ const PLAYABLE_CARD_IDS = [
   "yisunshin", "euljimundeok", "ganggamchan", "kwonyul",
   "sherlockholmes", "doctorwatson", "arsenelupin", "moriarty",
   "gearwing", "starshield", "thunderguard", "redknot",
-  "walllizard", "neonjumper", "moonmoth", "ppungdetective"
+  "walllizard", "neonjumper", "moonmoth", "ppungdetective",
+  "circe", "siren", "scylla", "helios"
 ];
 
 function loadStoryGates() {
