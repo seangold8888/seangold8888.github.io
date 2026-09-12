@@ -48,7 +48,7 @@
       const img = el("img", className);
       img.src = (card.art || "art/" + card.id + ".png").replace(/\.png$/i, ".webp");
       img.alt = card.name;
-      img.style.objectPosition = (/world|card-art/.test(className) && PORTRAIT_CROPS[card.id]) || window.CardView.artPosition[card.id] || "50% 30%";
+      img.style.objectPosition = (/world|card-art|scene-art/.test(className) && PORTRAIT_CROPS[card.id]) || window.CardView.artPosition[card.id] || "50% 30%";
       return img;
     }
     function elementInfo(card) {
@@ -163,33 +163,45 @@
       if (sceneKey !== key) {sceneKey = key; sceneLine = 0;}
       sceneDone = done;
       const lines = kind === "ending" ? C.ENDING[progress.endingScene] : C.SCENES[progress.chapter][kind];
+      const pageSize = C.SCENE_PAGE_SIZE;
+      const pageIndex = Math.floor(sceneLine / pageSize);
+      const pageCount = Math.ceil(lines.length / pageSize);
+      const lastPage = sceneLine + pageSize >= lines.length;
       const title = kind === "ending" ? ["굴러간 왕관", "우리랑 놀자", "우리 집 아침", "우리가 지킨 이야기"][progress.endingScene] : C.CHAPTERS[progress.chapter].name;
       shell(title, kind === "ending" ? "결말 · " + (progress.endingScene + 1) + "/4" : kind === "restore" ? "이야기를 되돌렸어요" : "책장을 넘겨요");
       const row = C.CHAPTERS[progress.chapter];
       const id = kind === "ending" ? (progress.endingScene === 1 ? "taeo" : "sseugumi") : kind === "restore" ? row.recruit : kind === "beforeBoss" ? row.boss : kind === "beforeBattle" ? row.enemies[0] : progress.chapter === 0 ? "jaei" : WORLDS[progress.chapter][0];
       const scene = el("div", "expedition-scene");
+      scene.dataset.sceneKey = key;
+      scene.dataset.page = String(pageIndex);
+      scene.dataset.pageCount = String(pageCount);
       const familyEnding = kind === "ending" && progress.endingScene === 2;
       if (familyEnding) scene.className += " is-family-ending";
       scene.append(art(familyEnding ? {id:"family-ending",name:"재이와 태오의 가족",art:"../math/assets/jaei-family-v4.webp"} : cardById(id), "expedition-scene-art"));
       const sheet = el("div", "expedition-scene-sheet");
-      sheet.append(el("span", "eyebrow", "이야기 " + (sceneLine + 1) + " / " + lines.length));
+      sheet.append(el("span", "eyebrow", "이야기 " + (pageIndex + 1) + " / " + pageCount + "쪽"));
       const text = el("div", "expedition-scene-lines");
       text.setAttribute("aria-live", "polite");
-      lines.slice(0, sceneLine + 1).forEach(line => text.append(el("p", "", line)));
+      lines.slice(sceneLine, sceneLine + pageSize).forEach(line => text.append(el("p", "", line)));
       sheet.append(text);
-      // Keep the approved dialogue verbatim, but do not teach a false combat rule.
-      if (kind === "beforeBoss" && progress.chapter === 1 && sceneLine === lines.length - 1) {
-        sheet.append(el("p", "expedition-rule-note", "실제 대결 상성: 땅 → 물, 피해 +10. 불로 얼음을 녹이는 이야기와는 달라요."));
+      if (kind === "beforeBoss" && progress.chapter === 1 && lastPage) {
+        sheet.append(el("p", "expedition-rule-note", "상대의 물 속성은 땅에 약해요. 땅 → 물, 피해 +10."));
       }
       const advance = () => {
-        if (sceneLine < lines.length - 1) {sceneLine++; showScene(kind, done);}
+        if (!lastPage) {sceneLine += pageSize; showScene(kind, done);}
       };
       scene.querySelector("img").addEventListener("click", advance);
       text.addEventListener("click", advance);
-      sheet.append(button(sceneLine < lines.length - 1 ? "톡! 다음 줄 →" : "다음 →", "primary-button", () => {
-        if (sceneLine < lines.length - 1) advance();
+      const controls = el("div", "expedition-page-controls");
+      const previous = button("← 이전 쪽", "ghost-button expedition-previous", () => {
+        if (sceneLine > 0) {sceneLine -= pageSize; showScene(kind, done);}
+      });
+      previous.disabled = pageIndex === 0;
+      controls.append(previous, button(lastPage ? "다음 장면 →" : "다음 쪽 →", "primary-button", () => {
+        if (!lastPage) advance();
         else {const callback = sceneDone; sceneKey = ""; sceneDone = null; callback();}
       }));
+      sheet.append(controls);
       scene.append(sheet);
       root.append(scene);
     }

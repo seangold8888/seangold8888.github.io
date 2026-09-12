@@ -65,6 +65,10 @@
 .expedition-scene-lines { flex: 1; font-size: clamp(18px,2.3vw,25px); font-weight: 650; line-height: 1.7; word-break: keep-all; overflow-wrap: anywhere; }
 .expedition-scene-lines p { margin: 0 0 14px; animation: expedition-line-in .22s ease-out; }
 .expedition-scene-sheet .primary-button { align-self: stretch; }
+.expedition-page-controls { display: flex; flex-wrap: wrap; gap: 10px; margin-top: auto; }
+.expedition-page-controls button { flex: 1; min-height: 54px; padding-inline: 12px; white-space: nowrap; }
+.expedition-page-controls .ghost-button { color: #635078; border-color: #63507855; }
+.expedition-page-controls .ghost-button:disabled { opacity: .35; cursor: default; }
 .expedition-rule-note { margin: 0; font-size: 13px; line-height: 1.6; color: #63547d; border-top: 1px solid #63547d33; padding-top: 10px; }
 .expedition-save-notice { margin: 10px; padding: 14px; border-radius: 12px; background: #704121; color: white; }
 .battle-header:has(.expedition-battle-label:not([hidden])) { position: relative; }
@@ -104,7 +108,7 @@
   .expedition-target strong { font-size: 17px; }
   .expedition-target p { font-size: 12px; }
   .expedition-scene { grid-template-columns: 1fr; min-height: 0; border-radius: 18px; }
-  .expedition-scene-art { height: 210px; }
+  .expedition-scene-art { height: clamp(120px, 20vh, 180px); }
   .expedition-scene-sheet { gap: 12px; padding: 20px; }
   .expedition-scene-lines { font-size: 18px; line-height: 1.65; }
   .expedition-scene-lines p { margin-bottom: 10px; }

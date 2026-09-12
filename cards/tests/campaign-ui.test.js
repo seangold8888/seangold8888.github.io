@@ -35,7 +35,12 @@ function setup(initial) {
   const ui=window.CardCampaignUI.create({cards:data.cards,showScreen(){},onExit(){},onBattle:request=>battle=request});
   const root=nodes.campaignScreen;
   const find=(className)=>walk(root).find(n=>hasClass(n,className));
-  function scene() {for(let i=0;i<4;i++)find("expedition-scene-sheet").querySelector("button").click();}
+  function scene() {
+    const key=find("expedition-scene").dataset.sceneKey;
+    for(let i=0;i<10 && find("expedition-scene")?.dataset.sceneKey===key;i++)
+      find("expedition-scene-sheet").querySelector(".primary-button").click();
+    assert.notEqual(find("expedition-scene")?.dataset.sceneKey,key,"scene must finish");
+  }
   return {ui,root,find,scene,nodes,get battle(){return battle;},get progress(){return C.load(storage);}};
 }
 function chapterOne() {
@@ -76,11 +81,46 @@ test("S3 continues into chapter two without granting the ending early",()=>{
   assert.equal(walk(qa.root).filter(n=>hasClass(n,"expedition-world") && !n.disabled).length,1);
   qa.ui.resume();assert.ok(qa.find("expedition-scene"));assert.equal(qa.battle,null);
 });
+test("expanded scenes show two paragraphs per page, support rereading and advance only after the last page",()=>{
+  const qa=setup();qa.ui.resume();
+  const initial=qa.find("expedition-scene-lines").children.map(n=>n.textContent);
+  assert.deepEqual(initial,C.SCENES[0].intro.slice(0,2));
+  assert.ok(qa.find("expedition-previous").disabled);
+  const count=Number(qa.find("expedition-scene").dataset.pageCount);
+  qa.find("expedition-scene-sheet").querySelector(".primary-button").click();
+  assert.equal(qa.find("expedition-scene").dataset.page,"1");
+  assert.equal(qa.find("expedition-scene-lines").children.length,2);
+  assert.match(qa.find("expedition-scene-lines").children.map(n=>n.textContent).join(" "),/블레이뽀/);
+  qa.find("expedition-previous").click();
+  assert.deepEqual(qa.find("expedition-scene-lines").children.map(n=>n.textContent),initial);
+  for(let i=0;i<count-1;i++)qa.find("expedition-scene-sheet").querySelector(".primary-button").click();
+  assert.equal(qa.progress.phase,"intro","reading pages must not finish the intro");
+  assert.equal(qa.find("expedition-scene-lines").children.length,2);
+  qa.find("expedition-scene-sheet").querySelector(".primary-button").click();
+  assert.equal(qa.progress.phase,"encounter");
+});
+
+test("expanded story keeps Ta eo's family song and gives each scene actions and dialogue",()=>{
+  const scenes=Object.values(C.SCENES).flatMap(chapter=>Object.values(chapter));
+  assert.equal(scenes.length,23);
+  for(const lines of scenes) {
+    assert.ok(lines.length>=6 && lines.length<=8);
+    assert.ok(lines.every(line=>line.length>10 && line.length<=180));
+    assert.ok(lines.some(line=>line.includes("“")));
+  }
+  for(const lines of [C.SCENES[0].intro,C.SCENES[4].intro,C.ENDING[1]]) {
+    assert.ok(lines.some(line=>line.includes("잇츠 레인보우, 잇츠 레인보우")));
+    assert.ok(lines.some(line=>line.includes("블레이뽀, 블레이뽀, 잇츠 레인보우")));
+    assert.ok(!lines.join("").includes("뷰티풀"),"keep the family's intentional pronunciation");
+  }
+  assert.equal(C.SCENE_PAGE_SIZE,2);
+});
+
 test("S2 module and styles are cached exactly once and load before the app",()=>{
   const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
   const sw=require("../../sw.js");
   for(const name of ["campaign.css","js/campaign.js","js/campaign-ui.js"]){
-    assert.equal(sw.CORE_SHELL.filter(item=>item==="./cards/"+name+"?v=46").length,1);
-    assert.ok(html.indexOf(name+"?v=46")<html.indexOf("js/app.js?v=46"));
+    assert.equal(sw.CORE_SHELL.filter(item=>item==="./cards/"+name+"?v=47").length,1);
+    assert.ok(html.indexOf(name+"?v=47")<html.indexOf("js/app.js?v=47"));
   }
 });

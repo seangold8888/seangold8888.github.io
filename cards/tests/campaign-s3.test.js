@@ -77,8 +77,8 @@ test("S3 includes every later scene, four ending panels and no narration depende
       assert.ok(Object.isFrozen(C.SCENES[chapter][kind]));
     }
   }
-  assert.deepEqual(C.ENDING.map(lines=>lines.length), [4,4,4,1]);
-  assert.ok(C.ENDING[3][0].includes("쓰구미 대마왕도 같이"));
+  assert.deepEqual(C.ENDING.map(lines=>lines.length), [6,8,6,4]);
+  assert.ok(C.ENDING[3].some(line=>line.includes("쓰구미 대마왕도 같이")));
   assert.doesNotMatch(read("js/campaign-ui.js"), /speechSynthesis|SpeechSynthesisUtterance/);
 });
 test("S3 published Sseugumi retains the simulated mechanics, with a 100 HP collectible and 140 HP boss copy", () => {

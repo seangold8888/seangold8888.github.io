@@ -49,7 +49,11 @@ async function main() {
     return {context,page,errors};
   }
   async function advanceScene(page) {
-    for(let i=0;i<4;i++) await page.locator(".expedition-scene .primary-button").click();
+    const scene=page.locator(".expedition-scene");
+    const key=await scene.getAttribute("data-scene-key");
+    for(let i=0;i<10 && await scene.count() && await scene.getAttribute("data-scene-key")===key;i++)
+      await scene.locator(".primary-button").click();
+    assert.ok(!await scene.count() || await scene.getAttribute("data-scene-key")!==key);
   }
   async function mapContinue(page) {
     await page.locator("#campaignButton").click();
@@ -228,6 +232,12 @@ async function main() {
         }
         if(await q.locator(".expedition-scene").isVisible()){
           await noHorizontalOverflow(q);
+          assert.ok(await q.locator(".expedition-scene-lines p").count()<=2,"two paragraphs per page");
+          const controls=await q.locator(".expedition-page-controls").boundingBox();
+          assert.ok(controls && controls.y>=0 && controls.y+controls.height<=viewport.height+1,
+            "story controls stay visible: "+JSON.stringify({viewport,state,controls}));
+          if((await q.locator(".expedition-scene").getAttribute("data-scene-key")).startsWith("0:0:intro:") && await q.locator(".expedition-scene").getAttribute("data-page")==="1")
+            await q.screenshot({path:path.join(output,viewport.width+"-rainbow-story.png")});
           assert.ok(await q.locator(".expedition-scene img").evaluate(n=>n.complete && n.naturalWidth>0));
           await q.locator(".expedition-scene .primary-button").click();
         }else if(await q.locator(".expedition-go").isVisible()){
