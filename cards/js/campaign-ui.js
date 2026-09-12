@@ -1,13 +1,13 @@
 (function () {
   "use strict";
   const C = window.CardCampaign;
-  const LAST_PLAYABLE_CHAPTER = 1; // S2: later dialogue and the ending belong to S3.
+  const LAST_PLAYABLE_CHAPTER = 7;
   const PORTRAIT_CROPS = {jaei: "50% 12%", taeo: "50% 12%", cinderella: "54% 14%", redhood: "47% 14%"};
   const WORLDS = [
     ["jaei", "책 속으로", "#ec8cc5"], ["cinderella", "동화를 되돌려요", "#93bcff"],
     ["honggildong", "산 너머 이야기", "#76c6a8"], ["heracles", "구름 위의 모험", "#e7bd70"],
     ["odysseus", "파도 너머로", "#79bedc"], ["guanyu", "펄럭이는 깃발", "#de9c83"],
-    ["sunwukong", "화염산을 지나", "#dbaaff"], [null, "장난꾸러기를 찾아", "#f4cf71"]
+    ["sunwukong", "화염산을 지나", "#dbaaff"], ["sseugumi", "장난꾸러기를 찾아", "#f4cf71"]
   ];
   const el = (tag, className, text) => {
     const node = document.createElement(tag);
@@ -38,8 +38,8 @@
       updateEntry();
     }
     function updateEntry() {
-      entry.textContent = progress.chapter > LAST_PLAYABLE_CHAPTER
-        ? "원정 지도 · 동화 나라를 되돌렸어요!"
+      entry.textContent = progress.phase === "complete"
+        ? "원정 완료 · 모두 친구가 됐어요!"
         : progress.battleSerial || progress.phase !== "intro"
           ? "원정 이어서 · " + progress.chapter + "장"
           : "원정 떠나기";
@@ -76,7 +76,7 @@
       C.CHAPTERS.forEach(chapter => {
         const cleared = progress.cleared.includes(chapter.id);
         const current = chapter.id === progress.chapter;
-        const available = current && chapter.id <= LAST_PLAYABLE_CHAPTER;
+        const available = current && chapter.id <= LAST_PLAYABLE_CHAPTER && progress.phase !== "complete";
         const node = button("", "expedition-world" + (cleared ? " is-restored" : "") + (available ? " is-current" : ""), resume);
         node.disabled = !available;
         node.dataset.chapter = chapter.id;
@@ -99,8 +99,8 @@
       });
       root.append(intro, map);
       const foot = el("div", "expedition-map-footer");
-      if (progress.chapter > LAST_PLAYABLE_CHAPTER) {
-        foot.append(el("strong", "", "신데렐라가 친구가 됐어요!"), el("p", "", "동화 나라까지 되돌렸어요. 다음 세계는 준비 중이에요."),
+      if (progress.phase === "complete") {
+        foot.append(el("strong", "", "쓰구미 대마왕도 우리 친구!"), el("p", "", "여덟 세계를 모두 되돌렸어요. 쓰구미 카드가 컬렉션에서 기다려요."),
           button("친구가 된 카드 보러 가기", "primary-button", options.onExit));
       } else {
         const chapter = C.CHAPTERS[progress.chapter];
@@ -159,15 +159,18 @@
       root.append(choices, go);
     }
     function showScene(kind, done) {
-      const key = progress.chapter + ":" + progress.stage + ":" + kind;
+      const key = progress.chapter + ":" + progress.stage + ":" + kind + ":" + progress.endingScene;
       if (sceneKey !== key) {sceneKey = key; sceneLine = 0;}
       sceneDone = done;
-      const lines = C.SCENES[progress.chapter][kind];
-      shell(C.CHAPTERS[progress.chapter].name, kind === "restore" ? "이야기를 되돌렸어요" : "책장을 넘겨요");
+      const lines = kind === "ending" ? C.ENDING[progress.endingScene] : C.SCENES[progress.chapter][kind];
+      const title = kind === "ending" ? ["굴러간 왕관", "우리랑 놀자", "우리 집 아침", "우리가 지킨 이야기"][progress.endingScene] : C.CHAPTERS[progress.chapter].name;
+      shell(title, kind === "ending" ? "결말 · " + (progress.endingScene + 1) + "/4" : kind === "restore" ? "이야기를 되돌렸어요" : "책장을 넘겨요");
       const row = C.CHAPTERS[progress.chapter];
-      const id = kind === "restore" ? row.recruit : kind === "beforeBoss" ? row.boss : kind === "beforeBattle" ? row.enemies[0] : progress.chapter === 0 ? "jaei" : "cinderella";
+      const id = kind === "ending" ? (progress.endingScene === 1 ? "taeo" : "sseugumi") : kind === "restore" ? row.recruit : kind === "beforeBoss" ? row.boss : kind === "beforeBattle" ? row.enemies[0] : progress.chapter === 0 ? "jaei" : WORLDS[progress.chapter][0];
       const scene = el("div", "expedition-scene");
-      scene.append(art(cardById(id), "expedition-scene-art"));
+      const familyEnding = kind === "ending" && progress.endingScene === 2;
+      if (familyEnding) scene.className += " is-family-ending";
+      scene.append(art(familyEnding ? {id:"family-ending",name:"재이와 태오의 가족",art:"../math/assets/jaei-family-v4.webp"} : cardById(id), "expedition-scene-art"));
       const sheet = el("div", "expedition-scene-sheet");
       sheet.append(el("span", "eyebrow", "이야기 " + (sceneLine + 1) + " / " + lines.length));
       const text = el("div", "expedition-scene-lines");
@@ -222,10 +225,17 @@
       root.append(party);
     }
     function resume() {
+      if (progress.phase === "complete") return showMap();
       if (progress.chapter > LAST_PLAYABLE_CHAPTER) return showMap();
       if (progress.phase === "intro") return showScene("intro", () => {progress = C.finishIntro(progress); persist(); resume();});
       if (progress.phase === "party") {selected = progress.party.slice(); return showParty();}
-      if (progress.phase === "restore") return showScene("restore", () => {restoredNow = progress.chapter; progress = C.finishChapter(progress); persist(); showMap();});
+      if (progress.phase === "restore") {
+        if (progress.chapter === 7) return showScene("ending", () => {
+          if (progress.endingScene < 3) {progress = C.advanceEnding(progress); persist(); resume();}
+          else {restoredNow = 7; progress = C.finishChapter(progress); persist(); showMap();}
+        });
+        return showScene("restore", () => {restoredNow = progress.chapter; progress = C.finishChapter(progress); persist(); showMap();});
+      }
       if (progress.phase === "battle") {progress = C.normaliseProgress(progress, true); persist();}
       const scene = progress.chapter === 0 ? "beforeBattle" : progress.stage === 3 ? "beforeBoss" : null;
       const key = progress.chapter + ":" + progress.stage + ":" + scene;

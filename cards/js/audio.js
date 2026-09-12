@@ -684,6 +684,7 @@
     })
   });
   const MATERIAL_BY_EMOJI = Object.freeze({
+    "🪅": "gas", "🍬": "body", "🪶": "body", "🤪": "gas",
     "🪨": "stone", "🗿": "stone",
     "⚔️": "metal", "🗡️": "metal", "🪓": "metal", "👑": "metal",
     "🔱": "metal", "🛡️": "metal", "⭕": "metal", "🛞": "metal",

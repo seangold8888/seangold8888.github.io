@@ -32,11 +32,14 @@ const legendIds = [
   "walllizard", "neonjumper", "moonmoth", "ppungdetective"
 ];
 const odysseyIds = ["circe", "siren", "scylla", "helios"];
+const campaignIds = ["sseugumi"];
 const ids = g1Ids.concat(g2Ids, laterIds);
 const get = id => data.cards.find(card => card.id === id);
 function appRuntime(hostname = "seangold8888.github.io", search = "") {
   const store = new Map();
   const dom = Object.fromEntries(["lockedArt", "lockedTitle", "lockedDescription", "lockedDialog"].map(id => [id, {style: {}, textContent: "", showModal() { this.open = true; }}]));
+  const dialogAction = {hidden: false};
+  dom.lockedDialog.querySelector = () => dialogAction;
   const sandbox = {window: {CardEngine: Engine, CardView: {artPosition: {}}}, document: {addEventListener() {}, getElementById(id) { return dom[id]; }}, location: {hostname, search}, URLSearchParams, localStorage: {getItem(key) { return store.get(key) || null; }}};
   const source = fs.readFileSync(path.join(root, "js/app.js"), "utf8").replace('document.addEventListener("DOMContentLoaded", init);', 'window.GreekQa = {isUnlocked, unlockLeadPhrase, openLockedDialog, cacheDom, getUnlockSnapshot, setCards(value) { cards = value; }};');
   vm.runInNewContext(source, sandbox);
@@ -50,7 +53,7 @@ function gatesRuntime() {
   return sandbox.window.CardStoryGates;
 }
 test("G1 stays byte-for-byte stable after G4 except the deliberate Sun Wukong C1 activation", () => {
-  const afterG1Ids = g2Ids.concat(laterIds, eastIds, familyIds, legendIds, odysseyIds);
+  const afterG1Ids = g2Ids.concat(laterIds, eastIds, familyIds, legendIds, odysseyIds, campaignIds);
   const g1Data = data.cards.filter(card => !afterG1Ids.includes(card.id));
   const g1Collection = data.collection.filter(id => !afterG1Ids.includes(id));
   assert.equal(g1Data.length, 28);
@@ -79,8 +82,8 @@ test("G1 stays byte-for-byte stable after G4 except the deliberate Sun Wukong C1
 });
 
 test("G2 adds exactly four playable monster cards and preserves the C1-adjusted first 28 cards", () => {
-  const g2Data = data.cards.filter(card => !laterIds.concat(eastIds, familyIds, legendIds, odysseyIds).includes(card.id));
-  const g2Collection = data.collection.filter(id => !laterIds.concat(eastIds, familyIds, legendIds, odysseyIds).includes(id));
+  const g2Data = data.cards.filter(card => !laterIds.concat(eastIds, familyIds, legendIds, odysseyIds, campaignIds).includes(card.id));
+  const g2Collection = data.collection.filter(id => !laterIds.concat(eastIds, familyIds, legendIds, odysseyIds, campaignIds).includes(id));
   assert.equal(g2Data.length, 32);
   assert.equal(g2Collection.length, 32);
   assert.equal(new Set(g2Collection).size, 32);
@@ -110,9 +113,9 @@ test("G2 adds exactly four playable monster cards and preserves the C1-adjusted 
   }
 });
 test("G3 and G4 keep their first 40 cards byte-stable and balanced after the East expansion", () => {
-  assert.equal(data.cards.length, 75);
-  assert.equal(data.collection.length, 75);
-  assert.equal(new Set(data.collection).size, 75);
+  assert.equal(data.cards.length, 76);
+  assert.equal(data.collection.length, 76);
+  assert.equal(new Set(data.collection).size, 76);
   assert.deepEqual(data.collection.slice(32, 40), laterIds);
   assert.equal(crypto.createHash("sha256").update(legacyJson(data.cards.slice(0, 32))).digest("hex"), "5c30e745e82d360ddf18ae42b697a0bc2ca57bfcc0cd59b78806f6b549fe8abb");
   assert.equal(crypto.createHash("sha256").update(JSON.stringify(data.collection.slice(0, 32))).digest("hex"), "708ddca5dc2c6c7819274763b496bdc8c23960d856b3fbf1e6050169aa5182c6");
@@ -336,7 +339,7 @@ test("G3 and G4 finish 2240 seeded alternating-first matches without a stall", (
 });
 
 test("G1 28장의 PNG·WebP 56개 배포 원화는 검증된 매니페스트와 일치한다", () => {
-  const files = data.collection.filter(id => !g2Ids.concat(laterIds, eastIds, familyIds, legendIds, odysseyIds).includes(id))
+  const files = data.collection.filter(id => !g2Ids.concat(laterIds, eastIds, familyIds, legendIds, odysseyIds, campaignIds).includes(id))
     .flatMap(id => [id + ".png", id + ".webp"]).sort();
   const sha = value => crypto.createHash("sha256").update(value).digest("hex");
   const manifest = files.map(name => name + ":" + sha(fs.readFileSync(path.join(root, "art", name)))).join("\n");
@@ -345,7 +348,7 @@ test("G1 28장의 PNG·WebP 56개 배포 원화는 검증된 매니페스트와 
 });
 
 test("G2까지 32장의 PNG·WebP 64개 원화가 모두 존재하고 최종 매니페스트와 일치한다", () => {
-  const files = data.collection.filter(id => !laterIds.concat(eastIds, familyIds, legendIds, odysseyIds).includes(id))
+  const files = data.collection.filter(id => !laterIds.concat(eastIds, familyIds, legendIds, odysseyIds, campaignIds).includes(id))
     .flatMap(id => [id + ".png", id + ".webp"]).sort();
   const sha = value => crypto.createHash("sha256").update(value).digest("hex");
   const manifest = files.map(name => name + ":" + sha(fs.readFileSync(path.join(root, "art", name)))).join("\n");

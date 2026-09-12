@@ -150,6 +150,7 @@ test("all eight chapters finish, restore resting cards, recruit once and award t
       assert.deepEqual(Campaign.load(storage), progress);
     }
     assert.equal(progress.phase, "restore");
+    if (chapter.id === 7) for (let i=0;i<3;i++) progress=Campaign.advanceEnding(progress);
     progress = Campaign.finishChapter(progress);
     assert.deepEqual(progress.resting, []);
     assert.equal(progress.recruited.length, chapter.id + 1);
@@ -198,7 +199,8 @@ test("campaign HP is isolated and all original collection data remains frozen", 
   opponent.card.attacks[0].dmg = 999;
   opponent.card.passive.fx = "changed";
   assert.equal(JSON.stringify(data), before);
-  assert.equal(crypto.createHash("sha256").update(before).digest("hex"), "3bdad4902a84cf2fb6a9eae9e978995c0acc4f999d42db5d5adb62ef6f5ae596");
+  const legacy = {...data, cards:data.cards.slice(0,75), collection:data.collection.slice(0,75)};
+  assert.equal(crypto.createHash("sha256").update(JSON.stringify(legacy)).digest("hex"), "3bdad4902a84cf2fb6a9eae9e978995c0acc4f999d42db5d5adb62ef6f5ae596");
   assert.throws(() => Campaign.encounter(0, 2, data.cards), RangeError);
   assert.throws(() => Campaign.encounter(0, 0, []), /누락/);
 });

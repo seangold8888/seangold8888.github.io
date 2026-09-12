@@ -213,6 +213,8 @@
   }
 
   function isUnlocked(card) {
+    if (card.id === "sseugumi") return Boolean(window.CardCampaign &&
+      (window.CardCampaign.load().ending >= 1 || (campaignUi && campaignUi.hasRecruited(card.id))));
     if (campaignUi ? campaignUi.hasRecruited(card.id) : window.CardCampaign && window.CardCampaign.load().recruited.includes(card.id)) return true;
     if (Array.isArray(card.unlockAll) && card.unlockAll.length) {
       return card.unlockAll.every(isUnlockDone);
@@ -223,6 +225,7 @@
   // 잠긴 카드 안내의 앞부분을 통째로 만든다. 예전에는 이 함수가 수학 해금에만
   // 완성된 문장을 돌려주어 "…만날 수 있어!에서 이기면 …"처럼 조사가 겹쳤다.
   function unlockLeadPhrase(card) {
+    if (card.id === "sseugumi") return "원정을 끝까지 가면 만날 수 있어!";
     const stories = Array.isArray(card.unlockAll) && card.unlockAll.length
       ? card.unlockAll : [card.unlock];
     const mathToken = stories.find(function (id) {
@@ -403,9 +406,11 @@
     dom.lockedArt.style.backgroundImage = 'linear-gradient(rgba(17,13,37,.22), rgba(17,13,37,.42)), url("' + artUrl(card) + '")';
     dom.lockedArt.style.backgroundPosition = window.CardView.artPosition[card.id] || "50% 40%";
     dom.lockedTitle.textContent = card.name + " 카드가 잠들어 있어요";
-    dom.lockedDescription.textContent = isPlayableCard(card)
+    dom.lockedDescription.textContent = card.id === "sseugumi" ? lead : isPlayableCard(card)
       ? lead + "이 영웅과 함께 대결할 수 있어요."
       : lead + "컬렉션에 깨어나요. 대전 기술은 다음 확장에서 준비됩니다.";
+    const link = dom.lockedDialog.querySelector(".dialog-action");
+    link.hidden = card.id === "sseugumi";
     dom.lockedDialog.showModal();
   }
 
@@ -2065,6 +2070,7 @@
   }
 
   function showStoryListeningGate() {
+    dom.lockedDialog.querySelector(".dialog-action").hidden = false;
     const storyName = storyGateStoryName();
     dom.lockedArt.style.backgroundImage = 'linear-gradient(rgba(17,13,37,.22), rgba(17,13,37,.42)), url("' + artUrl(selectedCard) + '")';
     dom.lockedArt.style.backgroundPosition = window.CardView.artPosition[selectedCard.id] || "50% 40%";

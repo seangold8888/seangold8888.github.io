@@ -67,20 +67,20 @@ test("S2 party only offers starters and recruits, and records a lost card as res
   qa.ui.settle(qa.battle.serial,"enemy");qa.ui.resume();
   assert.ok(qa.find("expedition-deploy").children.find(n=>n.dataset.cardId==="taeo").disabled);
 });
-test("S2 completion preserves chapter two progress but never starts draft content or grants the ending",()=>{
+test("S3 continues into chapter two without granting the ending early",()=>{
   let p=C.selectParty(C.finishIntro(chapterOne()),["jaei","taeo","redhood"]);
   for(let i=0;i<4;i++){p=C.beginBattle(p,"jaei");p=C.finishBattle(p,p.battleSerial,"player");}
   const qa=setup(p);qa.ui.resume();qa.scene();
   assert.equal(qa.progress.chapter,2);assert.equal(qa.progress.ending,0);
   assert.ok(qa.ui.hasRecruited("cinderella"));
-  assert.ok(walk(qa.root).filter(n=>hasClass(n,"expedition-world")).every(n=>n.disabled));
-  qa.ui.resume();assert.equal(qa.battle,null);
+  assert.equal(walk(qa.root).filter(n=>hasClass(n,"expedition-world") && !n.disabled).length,1);
+  qa.ui.resume();assert.ok(qa.find("expedition-scene"));assert.equal(qa.battle,null);
 });
 test("S2 module and styles are cached exactly once and load before the app",()=>{
   const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
   const sw=require("../../sw.js");
   for(const name of ["campaign.css","js/campaign.js","js/campaign-ui.js"]){
-    assert.equal(sw.CORE_SHELL.filter(item=>item==="./cards/"+name+"?v=45").length,1);
-    assert.ok(html.indexOf(name+"?v=45")<html.indexOf("js/app.js?v=45"));
+    assert.equal(sw.CORE_SHELL.filter(item=>item==="./cards/"+name+"?v=46").length,1);
+    assert.ok(html.indexOf(name+"?v=46")<html.indexOf("js/app.js?v=46"));
   }
 });

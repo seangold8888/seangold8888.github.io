@@ -9,7 +9,7 @@ const path = require("node:path");
 const os = require("node:os");
 const C = require("../js/campaign.js");
 const root = path.resolve(__dirname, "../..");
-const output = fs.mkdtempSync(path.join(os.tmpdir(), "campaign-s2-"));
+const output = fs.mkdtempSync(path.join(os.tmpdir(), "campaign-s3-"));
 const mime = {".html":"text/html", ".js":"application/javascript", ".css":"text/css", ".json":"application/json", ".webp":"image/webp", ".png":"image/png", ".mp3":"audio/mpeg", ".wav":"audio/wav", ".svg":"image/svg+xml"};
 const server = http.createServer((req,res) => {
   let pathname;
@@ -45,7 +45,7 @@ async function main() {
     await page.clock.install();
     const errors=[]; page.on("pageerror",error=>errors.push(String(error)));
     await page.goto(base+"/cards/");
-    await page.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===75);
+    await page.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===76);
     return {context,page,errors};
   }
   async function advanceScene(page) {
@@ -152,7 +152,7 @@ async function main() {
       }
       await p.screenshot({path:path.join(output,viewport.width+"-battle.png"),fullPage:true});
       // Reload an unfinished fight: same opponent, no accidental win/loss.
-      await p.reload();await p.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===75);
+      await p.reload();await p.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===76);
       await mapContinue(p);
       assert.match(await p.locator(".expedition-target h2").innerText(),/늑대/);
       await p.locator('.expedition-deploy [data-card-id="taeo"]').click();
@@ -168,7 +168,7 @@ async function main() {
       console.log("PASS",viewport.width+"x"+viewport.height,"party / 7 actions / reload / resting / full-party retry");
       await run.context.close();
     }
-    // Boss scene, corrected combat hint, boosted copy and S2 milestone boundary.
+    // Boss scene, corrected combat hint, boosted copy and continuation to S3.
     let boss=C.selectParty(C.finishIntro(afterPrologue()),["jaei","taeo","redhood"]);
     for(let i=0;i<3;i++){boss=C.beginBattle(boss,"jaei");boss=C.finishBattle(boss,boss.battleSerial,"player");}
     const last=await open({width:820,height:1180},boss);const p=last.page;
@@ -181,11 +181,11 @@ async function main() {
     assert.equal(await p.evaluate(()=>window.__testGame.sides.enemy.card.hp),110);
     assert.equal(await p.evaluate(()=>window.__testGame.aiMistakeRate),0);
     await finish(p,"player");await p.locator("#rematchButton").click();await advanceScene(p);
-    assert.equal(await p.locator(".expedition-world:not(:disabled)").count(),0);
-    assert.match(await p.locator(".expedition-map-footer").innerText(),/준비 중/);
+    assert.equal(await p.locator(".expedition-world:not(:disabled)").count(),1);
+    assert.match(await p.locator(".expedition-map-footer").innerText(),/옛이야기/);
     const saved=await p.evaluate(()=>JSON.parse(localStorage.card_campaign));
     assert.deepEqual(saved.recruited,["redhood","cinderella"]);assert.equal(saved.ending,0);
-    await p.locator(".expedition-map-footer button").click();
+    await p.locator(".expedition-header button").click();
     await p.locator('#collectionGrid [data-card-id="cinderella"]').click();
     assert.ok(await p.locator("#cardDetailDialog").isVisible(),"campaign recruit unlocked without listening");
     await p.locator("[data-detail-close]").first().click();
@@ -197,12 +197,69 @@ async function main() {
     assert.ok(await p.locator("#lockedDialog").isVisible(),"ordinary unlistened story still requires listening");
     assert.ok(!await p.locator("#storyQuizDialog").isVisible());
     assert.deepEqual(last.errors,[]);await last.context.close();
-    console.log("PASS boss copy / S2 boundary / recruit unlock / ordinary battle preserved");
+    console.log("PASS boss copy / chapter two continuation / recruit unlock / ordinary battle preserved");
     const blocked=await open({width:390,height:844},null,true);
     await mapContinue(blocked.page);await advanceScene(blocked.page);
     assert.ok(await blocked.page.locator("#campaignSaveNotice").isVisible());
     assert.deepEqual(blocked.errors,[]);await blocked.context.close();
     console.log("PASS blocked storage remains playable with visible warning");
+    // Actual UI traversal through all 29 encounters. Forced wins are a QA-only
+    // engine wrapper; production battle balance is tested by campaign-balance.
+    for(const viewport of [{width:820,height:1180},{width:1180,height:820},{width:390,height:844}]) {
+      const run=await open(viewport);const q=run.page;
+      await q.locator('#collectionGrid [data-card-id="sseugumi"]').click();
+      assert.match(await q.locator("#lockedDescription").innerText(),/원정을 끝까지/);
+      assert.ok(await q.locator("#lockedDialog .dialog-action").isHidden());
+      await q.locator("[data-close-dialog]").click();
+      await q.locator("#campaignButton").click();
+      let fights=0,reloaded=false;
+      for(let step=0;step<280;step++){
+        const state=await q.evaluate(()=>JSON.parse(localStorage.getItem("card_campaign")||"null"));
+        if(state && state.phase==="complete")break;
+        if(state && state.chapter===7 && state.phase==="restore"){
+          assert.equal(state.ending,0);assert.ok(!state.recruited.includes("sseugumi"));
+          if(state.endingScene===2 && !reloaded){
+            await q.reload();await q.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===76);
+            assert.match(await q.locator('#collectionGrid [data-card-id="sseugumi"]').getAttribute("class"),/is-locked/);
+            await mapContinue(q);reloaded=true;
+            assert.ok(await q.locator(".is-family-ending img").evaluate(n=>n.complete && n.naturalWidth>0));
+            await q.screenshot({path:path.join(output,viewport.width+"-family-ending.png"),fullPage:true});
+          }
+        }
+        if(await q.locator(".expedition-scene").isVisible()){
+          await noHorizontalOverflow(q);
+          assert.ok(await q.locator(".expedition-scene img").evaluate(n=>n.complete && n.naturalWidth>0));
+          await q.locator(".expedition-scene .primary-button").click();
+        }else if(await q.locator(".expedition-go").isVisible()){
+          for(const id of ["jaei","taeo","redhood"]){
+            const card=q.locator('.expedition-candidates [data-card-id="'+id+'"]');
+            if(await card.getAttribute("aria-pressed")==="false")await card.click();
+          }
+          await q.locator(".expedition-go").click();
+        }else if(await q.locator(".expedition-deploy").isVisible()){
+          await q.locator(".expedition-deploy button:not(:disabled)").first().click();
+        }else if(await q.locator("#battleScreen").isVisible()){
+          await finish(q,"player");fights++;
+          await q.locator("#rematchButton").click();
+        }else await q.locator(".expedition-map-footer .primary-button").click();
+      }
+      const state=await q.evaluate(()=>JSON.parse(localStorage.card_campaign));
+      assert.equal(state.phase,"complete");assert.equal(state.ending,1);assert.equal(fights,29);
+      assert.equal(state.recruited.filter(id=>id==="sseugumi").length,1);assert.ok(reloaded);
+      assert.equal(await q.locator(".expedition-world:not(:disabled)").count(),0);
+      await q.screenshot({path:path.join(output,viewport.width+"-complete.png"),fullPage:true});
+      await q.locator(".expedition-map-footer .primary-button").click();
+      await q.locator('#collectionGrid [data-card-id="sseugumi"]').click();
+      assert.ok(await q.locator("#cardDetailDialog").isVisible());
+      await q.locator("#detailSelectButton").click();await q.locator("#battleButton").click();
+      assert.equal(await q.evaluate(()=>__testGame.sides.player.card.id),"sseugumi");
+      assert.equal(await q.evaluate(()=>__testGame.sides.player.card.hp),100);
+      assert.equal(await q.locator("#actionList button").count(),7);
+      assert.equal(await q.locator("#storyGateButton").innerText(),"문제 열기");
+      assert.deepEqual(run.errors,[]);
+      console.log("PASS S3",viewport,"29 battles, 4 ending scenes, reload, recruitment, free battle");
+      await run.context.close();
+    }
     console.log("SCREENSHOTS",output);
   } finally {await browser.close();server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}
 }

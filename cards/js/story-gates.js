@@ -3,6 +3,7 @@
 
   // 카드 → 해금 이야기(에피소드 id). 문제는 이 이야기의 오디오 내용만 묻는다.
   const cardStories = Object.freeze({
+    sseugumi: "legend:sseugumi",
     heracles: "heracles",
     honggildong: "honggildong",
     perseus: "perseus",
@@ -947,6 +948,14 @@
         [["correct", fact[5]], ["other1", fact[4]], ["other2", "별사탕 모으기"]], "correct", ref)
     ].forEach(function (item) { all.push(item); });
   });
+
+  [
+    question("sseugumi-cushion", "sseugumi", "쓰구미가 별사탕 1개로 쓰는 기술은?", [["yes","방귀 쿠션"],["no","대왕 장난"],["other","간지럼 깃털"]], "yes", ["카드: 쓰구미 대마왕"]),
+    question("sseugumi-steal", "sseugumi", "사탕 훔치기는 무엇을 가져오나요?", [["yes","상대 별사탕 1개"],["no","상대 카드"],["other","내 체력"]], "yes", ["카드: 쓰구미 대마왕"]),
+    question("sseugumi-feather", "sseugumi", "간지럼 깃털을 맞은 상대는?", [["yes","다음 턴에 기술을 못 써요"],["no","체력을 모두 회복해요"],["other","별사탕이 두 배가 돼요"]], "yes", ["카드: 쓰구미 대마왕"]),
+    question("sseugumi-passive", "sseugumi", "쿠션 엉덩이 특성은 무엇을 하나요?", [["yes","받는 피해를 10 줄여요"],["no","항상 공격을 피해요"],["other","공격 피해를 두 배로 해요"]], "yes", ["카드: 쓰구미 대마왕"]),
+    question("sseugumi-prank", "sseugumi", "별사탕 4개로 쓰는 큰 기술은?", [["yes","대왕 장난"],["no","사탕 훔치기"],["other","방귀 쿠션"]], "yes", ["카드: 쓰구미 대마왕"])
+  ].forEach(item => all.push(item));
 
   function deepFreeze(value) {
     if (!value || typeof value !== "object" || Object.isFrozen(value)) {

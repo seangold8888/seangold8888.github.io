@@ -17,7 +17,7 @@
     return value;
   }
 
-  // S1 simulates this future card; S3 publishes its art, sound and quiz.
+  // Simulation fallback; S3 tests keep it aligned with the published card.
   const FINAL_BOSS = freeze({
     id: "sseugumi", name: "쓰구미 대마왕", type: "monster", element: null,
     rarity: 3, hp: 100,
@@ -42,7 +42,7 @@
     {id: 7, name: "쓰구미 왕궁", enemies: ["hydra", "scylla", "wumawang"], boss: "sseugumi", recruit: "sseugumi", hpBonuses: [0, 0, 0, 40]}
   ]);
 
-  // Approved text only. Later draft dialogue belongs to S3.
+  // S3 uses the supplied appendix verbatim, including its ending.
   const SCENES = freeze({
     0: {
       intro: ["밤이에요. 책이 혼자 펄럭거려요.", "펼쳐 보니 글자가 하나도 없어요.", "어디선가 \"쓰구미~\" 소리가 났어요.", "책이 두 아이를 쏙 빨아들였어요."],
@@ -55,6 +55,17 @@
       restore: ["낙서가 지워지고 색이 돌아왔어요.", "신데렐라가 절뚝이며 왔어요.", "\"구두에 방귀 쿠션이 들어 있었어요!\"", "지도의 스티커가 하나 떨어졌어요."]
     }
   });
+
+  const LATER_SCENES = freeze({
+    2: {"intro":["산 너머 옛이야기 나라예요.","장군들이 투구를 거꾸로 쓰고 있어요.","\"앞이 안 보여!\" \"누구야!\"","재이는 조심스럽게 다가갔어요."],"beforeBoss":["호랑이가 어흥 하고 나타났어요.","\"떡 하나 주면… 에취! 겨자 떡이잖아!\"","태오가 말했어요. \"방귀 하나 줄게!\""],"restore":["호랑이가 물을 벌컥벌컥 마시고 물러났어요.","홍길동이 바람처럼 나타났어요.","\"동에 번쩍, 서에 번쩍. 그 왕, 내가 잡을게.\""]},
+    3: {"intro":["구름 위로 올라왔어요. 신들의 산이에요.","괴물들이 서로 \"네가 웃었지?\" 하며 싸워요.","\"헤라클레스가 여기 어딘가에 있을 거야.\""],"beforeBoss":["머리가 셋인 개가 문을 지켜요.","머리마다 분홍 리본이 묶여 있어요.","\"쓰구미 대마왕이 묶었대.\" 재이가 웃음을 참았어요.","\"물은 불을 이겨요. 잘 골라.\""],"restore":["케르베로스가 리본을 떼고 꼬리를 흔들었어요.","헤라클레스가 사자 가죽을 털며 웃었어요.","\"그 꼬마 왕, 힘으로는 안 되겠지. 같이 가자.\""]},
+    4: {"intro":["배를 타고 바다로 나왔어요.","세이렌이 노래 대신 딸꾹질을 해요.","\"노래를 못 하게 장난쳤나 봐.\""],"beforeBoss":["동굴에 깃털이 가득해요.","폴리페모스가 간지러워서 데굴데굴 굴러요.","\"저번에 아빠랑 게임에서 봤어!\" 태오가 말했어요."],"restore":["거인이 깃털을 털고 양을 세기 시작했어요.","오디세우스가 배에서 손을 흔들었어요.","\"장난꾸러기는 꾀로 잡는 거야. 내가 있어.\""]},
+    5: {"intro":["깃발이 펄럭이는 전장이에요.","장군들 깃발이 전부 뒤집혀 있어요.","\"누가 우리 편인지 모르겠어!\""],"beforeBoss":["붉은 얼굴의 장군이 청룡언월도를 들었어요.","관우예요. 수염이 삼각형으로 묶여 있어요.","\"웃으면 안 돼.\" 재이가 말했어요. 태오가 웃었어요."],"restore":["관우가 수염을 풀고 고개를 끄덕였어요.","조운이 하얀 말을 타고 달려왔어요.","\"일곱 번 들어갔다 일곱 번 나온 나야. 같이 가자.\""]},
+    6: {"intro":["화염산이 보여요. 뜨거워요.","요괴들이 서로 발을 걸고 넘어져요.","\"손오공은 어디 있을까?\""],"beforeBoss":["우마왕이 쇠몽둥이를 들고 서 있어요.","코에 방울이 달려 딸랑딸랑 울려요.","\"화가 많이 났나 봐. 불은 물로.\""],"restore":["우마왕이 방울을 떼고 킁 하며 물러났어요.","근두운을 타고 손오공이 내려왔어요.","\"다 모였네. 이제 그 꼬마 왕 잡으러 가자!\""]},
+    7: {"intro":["쓰구미 왕궁이에요. 장난감이 굴러다녀요.","히드라, 스킬라, 우마왕이 또 장난에 걸렸어요.","\"우리가 풀어 줬던 애들이야. 다시 풀자.\""],"beforeBoss":["삐뚤어진 왕관을 쓴 꼬마가 사탕을 먹고 있어요.","\"드디어 왔네, 쓰구미~. 심심했단 말이야, 쓰구미~.\"","\"책 돌려줘.\" 재이가 말했어요.","태오가 앞으로 나섰어요. \"나랑 방귀 대결 해.\""]}
+  });
+  const ALL_SCENES = freeze({...SCENES, ...LATER_SCENES});
+  const ENDING = freeze([["쓰구미 대마왕이 엉덩방아를 찧었어요.","왕관이 데굴데굴 굴렀어요.","대마왕이 훌쩍였어요.","\"아무도 나랑 안 놀아 줬어.\""],["태오가 손을 내밀었어요.","\"우리랑 놀자. 방귀 대결 매일 하자.\"","대마왕이 눈을 크게 떴어요. \"…쓰구미?\"","책이 펄럭이며 글자가 채워졌어요."],["창문이 열리고 아침이에요.","아빠와 엄마가 방문을 열었어요.","\"둘 다 여기 있었네. 밥 먹자.\"","책 사이에서 작은 \"쓰구미~\" 소리가 났어요."],["\"이야기는 우리가 지켰어. 쓰구미 대마왕도 같이.\""]]);
 
   function chapterAt(index) {
     if (!Number.isInteger(index) || !CHAPTERS[index]) throw new RangeError("없는 원정 장입니다.");
@@ -70,7 +81,7 @@
   }
   function createProgress() {
     return {version: 1, chapter: 0, stage: 0, party: STARTERS.slice(), resting: [],
-      recruited: [], cleared: [], ending: 0, phase: "intro", activeCard: null, battleSerial: 0};
+      recruited: [], cleared: [], ending: 0, endingScene: 0, phase: "intro", activeCard: null, battleSerial: 0};
   }
   function uniqueStrings(value) {
     return Array.isArray(value) && value.every(item => typeof item === "string") && new Set(value).size === value.length;
@@ -102,10 +113,14 @@
         (phase === "restore" || last ? raw.stage !== 4 : raw.stage >= encounterIds(raw.chapter).length) ||
         (["intro", "party"].includes(phase) && (raw.stage !== 0 || raw.resting.length > 0))) return fresh;
     const serial = raw.battleSerial === undefined ? 0 : raw.battleSerial;
+    const endingScene = raw.endingScene === undefined ? (last ? 3 : 0) : raw.endingScene;
+    if (!Number.isInteger(endingScene) || endingScene < 0 || endingScene > 3 ||
+        (endingScene !== 0 && !(raw.chapter === 7 && (phase === "restore" || last))) ||
+        (last && endingScene !== 3)) return fresh;
     if (!Number.isSafeInteger(serial) || serial < 0 ||
         (phase === "battle" && (!raw.party.includes(raw.activeCard) || raw.resting.includes(raw.activeCard) || serial === 0))) return fresh;
     return {version: 1, chapter: raw.chapter, stage: raw.stage, party: raw.party.slice(),
-      resting: raw.resting.slice(), recruited, cleared, ending: raw.ending,
+      resting: raw.resting.slice(), recruited, cleared, ending: raw.ending, endingScene,
       phase: resume && phase === "battle" ? "encounter" : phase,
       activeCard: !resume && phase === "battle" ? raw.activeCard : null, battleSerial: serial};
   }
@@ -169,9 +184,15 @@
     return next;
   }
   // Recruitment occurs after the restoration/ending scene finishes.
+  function advanceEnding(progress) {
+    const next = normaliseProgress(progress, false);
+    if (next.chapter === 7 && next.phase === "restore" && next.endingScene < 3) next.endingScene++;
+    return next;
+  }
   function finishChapter(progress) {
     const next = normaliseProgress(progress, false);
     if (next.phase !== "restore") return next;
+    if (next.chapter === 7 && next.endingScene !== 3) return next;
     next.cleared.push(next.chapter);
     next.recruited.push(CHAPTERS[next.chapter].recruit);
     next.resting = [];
@@ -197,7 +218,7 @@
     return {card: enemy, boss: id === row.boss, hpBonus: bonus,
       options: {aiMistakeRate: id === row.boss ? 0 : 0.3}};
   }
-  return Object.freeze({STORAGE_KEY, CHAPTERS, SCENES, FINAL_BOSS, createProgress,
+  return Object.freeze({STORAGE_KEY, CHAPTERS, SCENES: ALL_SCENES, ENDING, advanceEnding, FINAL_BOSS, createProgress,
     normaliseProgress, load, save, finishIntro, selectParty, availableParty,
     beginBattle, finishBattle, finishChapter, encounter, encounterIds, candidatesForChapter});
 });

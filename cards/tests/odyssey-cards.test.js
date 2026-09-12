@@ -58,11 +58,11 @@ function webpSize(filePath) {
 }
 
 test("오디세이 조우 4장은 75장 컬렉션의 마지막 묶음이고 오행이 완전히 균형이다", () => {
-  assert.equal(data.cards.length, 75);
-  assert.equal(data.collection.length, 75);
-  assert.deepEqual(data.collection.slice(-4), ids);
+  assert.equal(data.cards.length, 76);
+  assert.equal(data.collection.length, 76);
+  assert.deepEqual(data.collection.slice(71, 75), ids);
   assert.deepEqual(
-    data.cards.reduce((out, card) => ((out[card.element] = (out[card.element] || 0) + 1), out), {}),
+    data.cards.filter(card => card.id !== "sseugumi").reduce((out, card) => ((out[card.element] = (out[card.element] || 0) + 1), out), {}),
     { fire: 15, water: 15, metal: 15, wood: 15, earth: 15 }
   );
   ids.forEach((id) => assert.equal(Engine.isBattleCard(get(id)), true, id));

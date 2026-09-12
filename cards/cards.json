@@ -60,7 +60,7 @@
     "sherlockholmes", "doctorwatson", "arsenelupin", "moriarty",
     "gearwing", "starshield", "thunderguard", "redknot",
     "walllizard", "neonjumper", "moonmoth", "ppungdetective",
-    "circe", "siren", "scylla", "helios"
+    "circe", "siren", "scylla", "helios", "sseugumi"
   ],
   "types": {
     "brave": {
@@ -3119,6 +3119,7 @@
         { "name": "새벽빛 고삐", "cost": 1, "dmg": 20, "fx": "gain_star_1", "desc": "별사탕 1개를 더 얻어요", "vfx": { "kind": "aura", "emoji": "🌅" } },
         { "name": "태양 마차", "cost": 3, "dmg": 60, "fx": null, "desc": "", "vfx": { "kind": "summon", "emoji": "🏇", "big": true } }
       ], "unlock": "game:odyssey/helios", "art": "art/helios.png", "stats": { "attack": 4, "defense": 5, "spirit": 3 }
-    }
+    },
+    {"id":"sseugumi","element":null,"name":"쓰구미 대마왕","emoji":"👑","type":"monster","rarity":3,"summonCost":4,"hp":100,"passive":{"name":"쿠션 엉덩이","fx":"reduce_dmg_10","desc":"엉덩이에 방귀 쿠션이 있어 받는 피해가 10 줄어요"},"attacks":[{"name":"방귀 쿠션","cost":1,"dmg":20,"fx":null,"desc":"","vfx":{"kind":"burst","emoji":"🪅"}},{"name":"사탕 훔치기","cost":2,"dmg":10,"fx":"steal_star_1","desc":"상대 별사탕을 하나 훔쳐요. 쓰구미~","vfx":{"kind":"projectile","emoji":"🍬"}},{"name":"간지럼 깃털","cost":3,"dmg":30,"fx":"skip_next_enemy","desc":"간지러워서 상대는 다음 턴에 기술을 못 써요","vfx":{"kind":"debuff","emoji":"🪶"}},{"name":"대왕 장난","cost":4,"dmg":60,"fx":null,"desc":"","vfx":{"kind":"burst","emoji":"🤪","big":true}}],"unlock":"campaign:ending","art":"art/sseugumi.png","stats":{"attack":5,"defense":4,"spirit":5}}
   ]
 }

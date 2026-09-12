@@ -8,6 +8,7 @@ const hit = (a, b) => E.performAction(E.createGame(a, b), {type: "attack", attac
 test("all 75 cards have exactly one valid element; all 25 element pairs use +10, never x2", () => {
   const counts = {};
   for (const card of cards) {
+    if (card.id === "sseugumi") { assert.equal(card.element, null); continue; }
     assert.ok(E.ELEMENT_CHART[card.element], card.id);
     counts[card.element] = (counts[card.element] || 0) + 1;
   }

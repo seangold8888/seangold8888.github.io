@@ -64,7 +64,7 @@ const PLAYABLE_CARD_IDS = [
   "sherlockholmes", "doctorwatson", "arsenelupin", "moriarty",
   "gearwing", "starshield", "thunderguard", "redknot",
   "walllizard", "neonjumper", "moonmoth", "ppungdetective",
-  "circe", "siren", "scylla", "helios"
+  "circe", "siren", "scylla", "helios", "sseugumi"
 ];
 
 function loadStoryGates() {

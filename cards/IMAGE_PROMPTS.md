@@ -419,3 +419,14 @@ Codex 내장 ImageGen의 `stylized-concept` 모드로 네 장을 각각 새로 �
 | siren | `exec-26f1eb40-62cd-45dd-9501-5615fe314946.png` |
 | scylla | `exec-c3dd104c-3477-441a-8291-c9d46269de71.png` |
 | helios | `exec-90972529-727b-41ad-8b35-8e5d7bb84ce2.png` |
+
+## S3 쓰구미 대마왕 (2026-09-13)
+
+내장 image_gen 도구로 새 원화를 생성하고 RGB PNG·WebP 쌍으로 저장했다. 기존 원화는 변경하지 않았다.
+
+- `sseugumi.png`: Use case: illustration-story. Asset: premium original children's fantasy collectible card character artwork, portrait 1024x1536 PNG, no frame or typography. Subject: Sseugumi, a comical little prankster king about the height and proportions of a five-year-old child, round covered belly, oversized crooked gold crown, mischievous broad grin with ordinary small rounded teeth, expressive warm eyes with visible colored irises, rosy cheeks. One hand holds a pink whoopee cushion, the other a bag of stolen wrapped sweets. His royal cape is so long he accidentally steps on its hem. Full body visible from crown to shoes, central clear silhouette with margins. Background: bright toy-strewn cozy storybook palace, painterly richly detailed materials and fabric, polished collectible-card illustration, charming and funny rather than threatening, warm even illumination. Original character, no reference to existing franchises. Avoid fangs, solid black eyes, scary shadows, sinister face, gore, weapons, dark horror atmosphere. NO text, letters, numbers, logos, watermarks or card borders anywhere.
+- 원본: `exec-2f757daa-bfd4-4bcb-8fb1-2faf97b566cd.png`.
+
+| id | crop |
+|---|---|
+| sseugumi | `50% 22%` |
