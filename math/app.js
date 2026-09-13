@@ -7,7 +7,7 @@
   const Learn = window.MathLearning;
   const Play = window.MathPlayground;
   const Music = window.MathFocusMusic.create();
-  let hintStep = 0, sessionMode = "adventure", recovered = 0, nextTimer = null, sessionSpot = null, sessionFocus = "";
+  let hintStep = 0, sessionMode = "adventure", recovered = 0, nextTimer = null, friendTimer = null, sessionSpot = null, sessionFocus = "";
   let state = S.load(storage);
   const PRAISE = ["맞았어요", "정확해요", "잘했어요", "좋아요", "그렇지!", "딩동댕"];
   let session = null, index = 0, current = null, typed = "", shownAt = 0, firstTry = true, results = [], lastLine = "";
@@ -49,7 +49,31 @@
       setTimeout(function () { b.remove(); }, 800);
     }
   }
+  function hideFriendPrompt() {
+    clearTimeout(friendTimer); friendTimer = null;
+    const prompt = $("friendPrompt"); if (prompt) prompt.hidden = true;
+    const climber = $("questRungs") && $("questRungs").querySelector(".monkey-climber");
+    if (climber) climber.classList.remove("waiting");
+  }
+  function friendPromptEligible() {
+    return state.friendPrompts && document.body.dataset.screen === "quiz" && !document.hidden && !placement && current && firstTry && hintStep === 0 && !$("keypad").hidden;
+  }
+  function showFriendPrompt() {
+    friendTimer = null;
+    if (!friendPromptEligible()) return;
+    $("friendPromptText").textContent = state.climber === "kitty"
+      ? "키티: 재이야, 다음 봉까지 같이 가자!"
+      : "폼폼푸린: 오래 매달리면 힘들어~ 다음 봉까지 도와줘!";
+    $("friendPrompt").hidden = false;
+    const climber = $("questRungs").querySelector(".monkey-climber");
+    if (climber) climber.classList.add("waiting");
+  }
+  function scheduleFriendPrompt() {
+    hideFriendPrompt();
+    if (friendPromptEligible()) friendTimer = setTimeout(showFriendPrompt, 18000);
+  }
   function show(id) {
+    if (id !== "quiz") hideFriendPrompt();
     document.body.dataset.screen=id;
     ["setup", "placed", "home", "quiz", "capsule", "result", "showcard", "pick", "wardrobe"].forEach(function (v) { $(v).hidden = v !== id; });
     Music.setScene(id === "quiz" ? "quiz" : id === "home" ? "home" : "rest");
@@ -274,6 +298,7 @@
       current=session[index]; firstTry=p.firstTry !== false; hintStep=Number(p.hintStep)||0;
       show("quiz"); renderProblem(); shownAt=performance.now();
       if (!firstTry) { $("explain").textContent=Learn.hint(current); $("explain").hidden=false; }
+      if (firstTry && hintStep === 0) scheduleFriendPrompt(); else hideFriendPrompt();
       return;
     }
     sessionMode = mode === "quick" ? "quick" : "adventure";
@@ -314,7 +339,7 @@
     if (index >= session.length) { finish(); return; }
     current = session[index]; firstTry = true; hintStep = 0;
     renderProblem();
-    shownAt = performance.now(); checkpoint();
+    shownAt = performance.now(); checkpoint(); scheduleFriendPrompt();
   }
   function paint() { const box = $("answerBox"); if (box) box.textContent = typed; }
   function key(k) {
@@ -322,7 +347,7 @@
     if (k === "back") typed = typed.slice(0, -1);
     else if (k === "go") { submit(); return; }
     else if (typed.length < 2 || (typed.length < 3 && current.answer >= 100)) typed = (typed === "0" ? "" : typed) + k;
-    paint();
+    paint(); scheduleFriendPrompt();
   }
   function praiseLine() {
     const who = buddy() || F.guideFor(current.level);
@@ -393,6 +418,7 @@
 
   function submit() {
     if (typed === "" || $("keypad").hidden) return;
+    hideFriendPrompt();
     const value=parseInt(typed,10), ok=value === current.answer, ms=Math.round(performance.now()-shownAt);
     if (placement) { placementAnswer(value,ms); return; }
     const box=$("answerBox");
@@ -426,6 +452,7 @@
   }
   function offerHelp(together) {
     if (placement || !current || $("keypad").hidden) return;
+    hideFriendPrompt();
     firstTry=false; hintStep=together ? Math.max(2,hintStep+1) : hintStep+1;
     const ex=$("explain"); ex.hidden=false;
     if(hintStep === 1) { ex.textContent=Learn.hint(current); $("hintBtn").textContent="그림 힌트 더 보기"; }
@@ -439,6 +466,7 @@
     checkpoint();
   }
   function retry() {
+    hideFriendPrompt();
     typed = "";
     $("retryBtn").hidden = true; $("keypad").hidden = false;
     $("hintBtn").hidden=false; $("togetherBtn").hidden=false;
@@ -576,7 +604,7 @@
   $("doneBtn").addEventListener("click", function () { renderHome(); show("home"); });
   $("retryBtn").addEventListener("click", retry);
   $("quitBtn").addEventListener("click", function () {
-    clearTimeout(nextTimer);
+    clearTimeout(nextTimer); hideFriendPrompt();
     if (placement) { placement = null; $("quitBtn").textContent = "여기까지 하고 쉬기"; showSetup(); return; }
     checkpoint(); renderHome(); show("home");
   });
@@ -704,13 +732,17 @@
     }
   },{capture:true});
   document.addEventListener("visibilitychange",function() {
-    if(document.hidden) Music.setScene("rest");
-    else if(state.music) Music.setScene(document.body.dataset.screen === "quiz" ? "quiz" : document.body.dataset.screen === "home" ? "home" : "rest");
+    if(document.hidden) { Music.setScene("rest"); hideFriendPrompt(); }
+    else {
+      if(state.music) Music.setScene(document.body.dataset.screen === "quiz" ? "quiz" : document.body.dataset.screen === "home" ? "home" : "rest");
+      if(friendPromptEligible()) scheduleFriendPrompt();
+    }
   });
   paintMusicButton();
   $("quickBtn").addEventListener("click",function() { start("quick"); });
   $("hintBtn").addEventListener("click",function() { offerHelp(false); });
   $("togetherBtn").addEventListener("click",function() { offerHelp(true); });
+  $("friendHelpBtn").addEventListener("click",function() { hideFriendPrompt(); offerHelp(true); });
   $("wishSelect").addEventListener("change",function() { state.wish=this.value || null; S.save(storage,state); renderWardrobe(); });
   $("quickSetupBtn").addEventListener("click",function() {
     state.name=$("setupName").value.trim().slice(0,12); state.grade=parseInt($("setupGrade").value,10)||1;

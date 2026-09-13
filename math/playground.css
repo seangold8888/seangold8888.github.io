@@ -366,11 +366,19 @@ body[data-screen="home"] header.top{padding-bottom:22px}
 .climber-grip{position:absolute;top:var(--grip-y);left:19%;width:62%;height:10px;border-radius:7px;background:linear-gradient(#f9df95,#d5ac53 65%,#ba9044);box-shadow:0 2px 0 #98753a;z-index:-1}
 .climber-shadow{position:absolute;bottom:22px;left:23%;width:54%;height:10px;border-radius:50%;background:#64815626;filter:blur(3px)}
 .climber-cheer{position:absolute;top:89px;left:83%;font-size:13px;white-space:nowrap;background:#fffdf1;border:1px solid #e4d7a8;border-radius:12px;padding:6px 9px;opacity:0;transform:translateY(5px)}
+.friend-prompt{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;width:min(100%,560px);margin:4px auto 1px;padding:10px 11px 10px 16px;border:1px solid #e7d7a9;border-radius:17px;background:linear-gradient(145deg,#fffdf4,#fff7dd);box-shadow:0 7px 18px #69582412;color:#67552b}
+.friend-prompt[hidden]{display:none}
+.friend-prompt:before{content:"";position:absolute;top:-8px;left:24%;width:14px;height:14px;background:#fffbee;border-left:1px solid #e7d7a9;border-top:1px solid #e7d7a9;transform:rotate(45deg)}
+.friend-prompt span{position:relative;font:16px/1.45 Jua,system-ui}
+.friend-prompt button{position:relative;flex:0 0 auto;min-height:44px;border:1px solid #d7b45b;border-radius:13px;padding:8px 14px;background:#f8d878;color:#5d4619;font:15px Jua,system-ui;box-shadow:inset 0 1px #fff8d7,0 3px 0 #c29d47;cursor:pointer}
+.friend-prompt button:focus-visible{outline:3px solid #245b78;outline-offset:3px}
 .monkey-climber.arrived .climber-cheer{left:auto;right:80%;opacity:1;transform:none;transition:opacity .2s .65s}
 .monkey-climber.is-moving .hanging-body{animation:monkey-cross 650ms ease-in-out}
 .monkey-climber.is-moving .climber-shadow{animation:monkey-shadow 650ms ease-in-out}
+.monkey-climber.waiting .hanging-body{animation:monkey-wait 900ms ease-in-out 2}
 @keyframes monkey-cross{0%,100%{transform:rotate(0)}28%{transform:rotate(calc(-11deg * var(--swing-direction)))}65%{transform:rotate(calc(7deg * var(--swing-direction)))}85%{transform:rotate(calc(-2deg * var(--swing-direction)))}}
 @keyframes monkey-shadow{50%{transform:scaleX(.7);opacity:.55}}
+@keyframes monkey-wait{0%,100%{transform:rotate(0)}45%{transform:rotate(-3deg)}70%{transform:rotate(2deg)}}
 @media(min-width:900px) and (orientation:landscape){
  #quiz .quest-rungs.monkey-stage{height:148px}
  #quiz .monkey-world{--body-size:112px;--grip-y:35px}
@@ -382,8 +390,9 @@ body[data-screen="home"] header.top{padding-bottom:22px}
  #home .monkey-world{--body-size:160px;--grip-y:43px}
  .monkey-stage .rung b{font-size:12px}
  .climber-cheer{left:70%;font-size:12px}
+ .friend-prompt{align-items:stretch;flex-direction:column;padding:11px 12px 13px;text-align:center}.friend-prompt button{width:100%}
 }
 @media(prefers-reduced-motion:reduce){
  .monkey-climber,.monkey-climber.arrived .climber-cheer{transition:none!important}
- .monkey-climber.is-moving .hanging-body,.monkey-climber.is-moving .climber-shadow{animation:none!important}
+ .monkey-climber.is-moving .hanging-body,.monkey-climber.is-moving .climber-shadow,.monkey-climber.waiting .hanging-body{animation:none!important}
 }

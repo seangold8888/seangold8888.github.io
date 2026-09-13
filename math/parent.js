@@ -145,6 +145,7 @@
     $("visualPolicy").value = state.visualPolicy;
     $("sound").value = state.sound ? "1" : "0";
     $("music").value = state.music ? "1" : "0";
+    $("friendPrompts").value = state.friendPrompts ? "1" : "0";
     $("sheetLevel").value = String(state.level);
     $("planStart").value = state.planStart; $("planEnd").value = state.planEnd;
     $("planDays").value = String(state.planDays); $("planFrom").value = String(state.planFrom);
@@ -166,6 +167,7 @@
     state.visualPolicy = $("visualPolicy").value;
     state.sound = $("sound").value === "1";
     state.music = $("music").value === "1";
+    state.friendPrompts = $("friendPrompts").value === "1";
     state.planStart = $("planStart").value || state.planStart;
     state.planEnd = $("planEnd").value || state.planEnd;
     state.planDays = parseInt($("planDays").value, 10);

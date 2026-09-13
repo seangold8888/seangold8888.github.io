@@ -11,7 +11,7 @@
   function addDays(dateStr, days) { const d = new Date(dateStr + "T00:00:00"); d.setDate(d.getDate() + days); return today(d); }
 
   function defaults() {
-    return { name: "", level: 1, streak: 0, perSession: 12, visualPolicy: "auto", sound: false, music: false,
+    return { name: "", level: 1, streak: 0, perSession: 12, visualPolicy: "auto", sound: false, music: false, friendPrompts: true,
       history: [], wrong: [], stamps: {}, cardStudyDays: {}, createdAt: today(),
       planStart: today(), planEnd: "2027-01-29", planDays: 6, planFrom: 1,
       album: [], hearts: {}, chests: {}, buddy: null,
@@ -55,6 +55,7 @@
     out.growthRewards = out.growthRewards && typeof out.growthRewards === "object" ? out.growthRewards : {};
     out.playgroundSpot = ["bars","slide","swing","seesaw","blocks","steps"].indexOf(out.playgroundSpot) >= 0 ? out.playgroundSpot : "bars";
     out.music = !!out.music;
+    out.friendPrompts = out.friendPrompts !== false;
     out.climber = out.climber === "kitty" ? "kitty" : "purin";
     out.wish = typeof out.wish === "string" ? out.wish : null;
     out.avatar = out.avatar && typeof out.avatar === "object" && out.avatar.char ? out.avatar : null;
