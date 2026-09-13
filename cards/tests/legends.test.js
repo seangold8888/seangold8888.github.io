@@ -40,7 +40,7 @@ test("S급 재조정된 55장 데이터·순서와 각 기술 소리는 고정�
 });
 
 test("전설 16장은 타입 4장씩이며 오행은 14·15·14·14·14로 균형이다", () => {
-  assert.equal(data.cards.length, 84);
+  assert.equal(data.cards.length, 85);
   assert.deepEqual(data.collection.slice(55, 71), ids);
   const added = data.cards.slice(55, 71);
   assert.deepEqual(added.reduce((out, card) => ((out[card.type] = (out[card.type] || 0) + 1), out), {}), {brave: 4, wise: 4, magic: 4, monster: 4});

@@ -4,7 +4,7 @@ const data=require("../cards.json"),C=require("../js/campaign.js"),E=require("..
 const {beforeMidasRollback}=require("./approved-card-baseline.cjs");
 const sha=o=>crypto.createHash("sha256").update(JSON.stringify(o)).digest("hex");
 test("only the approved Midas passive changes; family and recruited Sseugumi remain byte-stable",()=>{
- assert.equal(sha(beforeMidasRollback(data.cards)),"36dab38a3d811d84de2d847e32760f26382848c161c261ccc3ad66a2280722dd");
+ assert.equal(sha(beforeMidasRollback(data.cards.slice(0,84))),"36dab38a3d811d84de2d847e32760f26382848c161c261ccc3ad66a2280722dd");
  assert.equal(sha(data.cards.filter(c=>["jaei","taeo","appa","eomma"].includes(c.id))),"2b60354935c9e8ab9bdeb7f9b5376b414d6732d1f40e5f61adb0d5e2e1b034a5");
  assert.equal(sha(data.cards.find(c=>c.id==="sseugumi")),"e48575b93f5e6a2a1c6b4db5fa0e0de7066650f96ba2fa291ffaad7db8bf66bc");
  assert.deepEqual(data.cards.find(c=>c.id==="midas").passive,{name:"황금의 저주",desc:"내 턴이 끝날 때마다 내 체력이 10 줄어요",fx:"self_hurt_10_eot"});

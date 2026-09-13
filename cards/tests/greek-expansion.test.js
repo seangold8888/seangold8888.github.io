@@ -32,7 +32,7 @@ const legendIds = [
   "walllizard", "neonjumper", "moonmoth", "ppungdetective"
 ];
 const odysseyIds = ["circe", "siren", "scylla", "helios"];
-const campaignIds = ["sseugumi", "sejong", "jangyeongsil", "heojun", "shinsaimdang", "jeongyakyong", "kimhongdo", "yugwansun", "kimgu"];
+const campaignIds = ["sseugumi", "sejong", "jangyeongsil", "heojun", "shinsaimdang", "jeongyakyong", "kimhongdo", "yugwansun", "kimgu", "jaewing"];
 const ids = g1Ids.concat(g2Ids, laterIds);
 const get = id => data.cards.find(card => card.id === id);
 function appRuntime(hostname = "seangold8888.github.io", search = "") {
@@ -113,9 +113,9 @@ test("G2 adds exactly four playable monster cards and preserves the C1-adjusted 
   }
 });
 test("G3 and G4 keep their first 40 cards byte-stable and balanced after the East expansion", () => {
-  assert.equal(data.cards.length, 84);
-  assert.equal(data.collection.length, 84);
-  assert.equal(new Set(data.collection).size, 84);
+  assert.equal(data.cards.length, 85);
+  assert.equal(data.collection.length, 85);
+  assert.equal(new Set(data.collection).size, 85);
   assert.deepEqual(data.collection.slice(32, 40), laterIds);
   assert.equal(crypto.createHash("sha256").update(legacyJson(data.cards.slice(0, 32))).digest("hex"), "5c30e745e82d360ddf18ae42b697a0bc2ca57bfcc0cd59b78806f6b549fe8abb");
   assert.equal(crypto.createHash("sha256").update(JSON.stringify(data.collection.slice(0, 32))).digest("hex"), "708ddca5dc2c6c7819274763b496bdc8c23960d856b3fbf1e6050169aa5182c6");

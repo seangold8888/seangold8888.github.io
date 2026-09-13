@@ -501,7 +501,7 @@ test("컬렉션 해금 경제는 오디세이 확장 75장 전체를 노출한�
   );
   const byId = new Map(data.cards.map((item) => [item.id, item]));
 
-  assert.equal(new Set(data.collection).size, 84);
+  assert.equal(new Set(data.collection).size, 85);
   assert.deepEqual(
     [...data.collection].sort(),
     data.cards.map((item) => item.id).sort(),
@@ -539,7 +539,7 @@ test("페르세우스 설명과 실제 v1 대전 상대 풀이 레어도 ±1 계
   const featuredCards = data.collection
     .map((id) => data.cards.find((entry) => entry.id === id))
     .filter(Engine.isBattleCard);
-  assert.equal(featuredCards.length, 84, "컬렉션 전원이 대전 가능해야 한다");
+  assert.equal(featuredCards.length, 85, "컬렉션 전원이 대전 가능해야 한다");
 
   featuredCards.forEach((player) => {
     const balancedOpponents = Engine.getBalancedEnemyPool(featuredCards, player);
@@ -1155,6 +1155,7 @@ test("검수 완료된 24장 PNG·WebP 원화는 바뀌지 않는다", () => {
       "walllizard", "neonjumper", "moonmoth", "ppungdetective",
       "circe", "siren", "scylla", "helios", "sseugumi",
       "sejong", "jangyeongsil", "heojun", "shinsaimdang", "jeongyakyong", "kimhongdo", "yugwansun", "kimgu",
+      "jaewing",
     ].includes(id))
     .flatMap((id) => [id + ".png", id + ".webp"])
     .sort();

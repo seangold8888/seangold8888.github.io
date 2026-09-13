@@ -14,7 +14,7 @@ const server=http.createServer((req,res)=>{
   for(const viewport of [{width:820,height:1180},{width:1180,height:820},{width:390,height:844}]){
    const context=await browser.newContext({viewport,reducedMotion:"reduce"}),page=await context.newPage(),errors=[];
    page.on('pageerror',e=>errors.push(String(e)));
-   const ready=()=>page.waitForFunction(()=>document.querySelectorAll('.card-gallery-item').length===84);
+   const ready=()=>page.waitForFunction(()=>document.querySelectorAll('.card-gallery-item').length===85);
    const open=async id=>{await page.locator('#collectionGrid [data-card-id="'+id+'"]').click();};
    const close=()=>page.locator('[data-detail-close]').first().click();
    await page.goto(base+'/cards/');await ready();
@@ -43,7 +43,7 @@ const server=http.createServer((req,res)=>{
   }
   const context=await browser.newContext(),page=await context.newPage();
   await page.goto(base+'/cards/cards.json');await page.evaluate(()=>localStorage.setItem('story_done_mermaid','1'));
-  await page.goto(base+'/cards/');await page.waitForFunction(()=>document.querySelectorAll('.card-gallery-item').length===84);
+  await page.goto(base+'/cards/');await page.waitForFunction(()=>document.querySelectorAll('.card-gallery-item').length===85);
   assert.doesNotMatch(await page.locator('#collectionGrid [data-card-id="mermaid"]').getAttribute('class'),/is-locked/);await context.close();
   console.log('PASS first-upgrade legacy ownership; SCREENSHOTS',output);
  }finally{await browser.close();server.closeAllConnections();await new Promise(r=>server.close(r));}

@@ -71,7 +71,7 @@
     "gearwing", "starshield", "thunderguard", "redknot",
     "walllizard", "neonjumper", "moonmoth", "ppungdetective",
     "circe", "siren", "scylla", "helios", "sseugumi",
-    "sejong", "jangyeongsil", "heojun", "shinsaimdang", "jeongyakyong", "kimhongdo", "yugwansun", "kimgu"
+    "sejong", "jangyeongsil", "heojun", "shinsaimdang", "jeongyakyong", "kimhongdo", "yugwansun", "kimgu", "jaewing"
   ],
   "types": {
     "brave": {
@@ -3139,6 +3139,18 @@
     {"id":"jeongyakyong","name":"정약용","element":"earth","type":"wise","hp":110,"emoji":"📚","rarity":3,"summonCost":4,"passive":{"name":"차근차근 설계","fx":"no_weakness","desc":"약점의 추가 피해 10을 받지 않아요"},"attacks":[{"name":"도르래 돌리기","cost":1,"dmg":30,"fx":null,"desc":"","vfx":{"kind":"projectile","emoji":"⚙️"}},{"name":"거중기의 힘","cost":3,"dmg":60,"fx":null,"desc":"","vfx":{"kind":"strike","emoji":"🪨","big":true}}],"unlock":"game:math/streak7","art":"art/jeongyakyong.png","stats":{"attack":4,"defense":4,"spirit":5}},
     {"id":"kimhongdo","name":"김홍도","element":"water","type":"magic","hp":80,"emoji":"📚","rarity":3,"summonCost":4,"passive":{"name":"세심한 관찰","fx":"nullify_passive","desc":"상대의 자동 능력을 막아요"},"attacks":[{"name":"먹빛 물결","cost":1,"dmg":20,"fx":"weaken_next_20","desc":"상대의 다음 공격 피해를 20 줄여요","vfx":{"kind":"projectile","emoji":"🌊"}},{"name":"풍속화 한 장","cost":2,"dmg":30,"fx":"dmg_stack_10","desc":"쓸 때마다 이 기술의 피해가 10씩 늘어요","vfx":{"kind":"aura","emoji":"🖌️"}}],"unlock":"game:math/streak3","art":"art/kimhongdo.png","stats":{"attack":4,"defense":4,"spirit":5}},
     {"id":"yugwansun","name":"유관순","element":"fire","type":"brave","hp":100,"emoji":"📚","rarity":3,"summonCost":4,"passive":{"name":"굽히지 않는 용기","fx":"boost_20_below_half","desc":"체력이 절반 아래일 때 공격 피해가 20 늘어요"},"attacks":[{"name":"희망의 외침","cost":1,"dmg":30,"fx":null,"desc":"","vfx":{"kind":"burst","emoji":"📣"}},{"name":"아우내의 메아리","cost":3,"dmg":50,"fx":"weaken_next_20","desc":"상대의 다음 공격 피해를 20 줄여요","vfx":{"kind":"aura","emoji":"✨","big":true}}],"unlock":"game:math/streak7","art":"art/yugwansun.png","stats":{"attack":4,"defense":4,"spirit":5}},
-    {"id":"kimgu","name":"김구","element":"earth","type":"brave","hp":90,"emoji":"📚","rarity":3,"summonCost":4,"passive":{"name":"함께 지키는 마음","fx":"reduce_dmg_10","desc":"받는 피해를 10 줄여요"},"attacks":[{"name":"백범의 다짐","cost":1,"dmg":10,"fx":"gain_star_1","desc":"별사탕 1개를 돌려받아요","vfx":{"kind":"aura","emoji":"📖"}},{"name":"문화의 힘","cost":3,"dmg":50,"fx":"weaken_next_20","desc":"상대의 다음 공격 피해를 20 줄여요","vfx":{"kind":"burst","emoji":"🌟","big":true}}],"unlock":"game:math/streak7","art":"art/kimgu.png","stats":{"attack":4,"defense":4,"spirit":5}}
+    {"id":"kimgu","name":"김구","element":"earth","type":"brave","hp":90,"emoji":"📚","rarity":3,"summonCost":4,"passive":{"name":"함께 지키는 마음","fx":"reduce_dmg_10","desc":"받는 피해를 10 줄여요"},"attacks":[{"name":"백범의 다짐","cost":1,"dmg":10,"fx":"gain_star_1","desc":"별사탕 1개를 돌려받아요","vfx":{"kind":"aura","emoji":"📖"}},{"name":"문화의 힘","cost":3,"dmg":50,"fx":"weaken_next_20","desc":"상대의 다음 공격 피해를 20 줄여요","vfx":{"kind":"burst","emoji":"🌟","big":true}}],"unlock":"game:math/streak7","art":"art/kimgu.png","stats":{"attack":4,"defense":4,"spirit":5}},
+    {
+      "id": "jaewing", "name": "재윙", "element": "water", "type": "monster",
+      "emoji": "🪽", "rarity": 3, "summonCost": 4, "hp": 110,
+      "lore": "재이의 괴물 친구 재윙이에요. 폭신한 날개로 첫 공격을 막고, 장난 바람으로 상대의 힘을 빼요. 별사탕을 모으면 커다란 회오리를 일으킬 수 있어요.",
+      "passive": {"name": "폭신한 날개", "fx": "first_hit_zero", "desc": "처음 받는 공격 피해를 한 번 막아요"},
+      "attacks": [
+        {"name": "날개 툭", "cost": 1, "dmg": 20, "fx": null, "desc": "", "vfx": {"kind": "strike", "emoji": "🦢"}},
+        {"name": "장난 바람", "cost": 2, "dmg": 30, "fx": "weaken_next_20", "desc": "상대의 다음 공격 피해를 20 줄여요", "vfx": {"kind": "debuff", "emoji": "🍃"}},
+        {"name": "재윙 회오리", "cost": 4, "dmg": 70, "fx": null, "desc": "별사탕을 모아 큰 회오리를 날려요", "vfx": {"kind": "burst", "emoji": "🌪️", "big": true}}
+      ],
+      "unlock": "game:math/streak7", "art": "art/jaewing.png", "stats": {"attack": 4, "defense": 4, "spirit": 4}
+    }
   ]
 }

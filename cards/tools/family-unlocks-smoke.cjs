@@ -14,7 +14,7 @@ const server=http.createServer((req,res)=>{
  try{
   const expedition=await browser.newContext({viewport:{width:820,height:1180},serviceWorkers:"block",reducedMotion:"reduce"});
   const battle=await expedition.newPage();
-  await battle.goto(base+"/cards/");await battle.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===84);
+  await battle.goto(base+"/cards/");await battle.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===85);
   assert.match(await battle.locator('#collectionGrid [data-card-id="jaei"]').getAttribute("class"),/is-locked/);
   await battle.locator("#campaignButton").click();await battle.locator(".expedition-map-footer .primary-button").click();
   for(let i=0;i<20 && await battle.locator(".expedition-scene").isVisible();i++)await battle.locator(".expedition-scene .primary-button").click();
@@ -27,7 +27,7 @@ const server=http.createServer((req,res)=>{
   for(const viewport of [{width:820,height:1180},{width:1180,height:820},{width:390,height:844}]){
    const context=await browser.newContext({viewport,reducedMotion:"reduce"}),page=await context.newPage(),errors=[];
    page.on("pageerror",e=>errors.push(String(e)));
-   await page.goto(base+"/cards/");await page.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===84);
+   await page.goto(base+"/cards/");await page.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===85);
    assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.card_family_unlocks_v1).unlocked),[]);
    await page.locator('#collectionGrid [data-card-id="jaei"]').click();
    assert.match(await page.locator("#cardDetailStatus").innerText(),/30일.*400문제/);
@@ -44,7 +44,7 @@ const server=http.createServer((req,res)=>{
       const stamps={};for(let i=0;i<days;i++){const d=new Date();d.setDate(d.getDate()-i*2);const date=[d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");stamps[date]=1;}
       localStorage.setItem("math10_state",JSON.stringify({stamps,garden:problems}));
      },{days,problems});
-     await page.reload();await page.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===84);
+     await page.reload();await page.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===85);
      await page.locator('#collectionGrid [data-card-id="'+id+'"]').click();
      assert.equal(await page.locator("#detailSelectButton").isDisabled(),locked,id);
      if(locked)assert.match(await page.locator("#detailUnlockLink").getAttribute("href"),/math/);
@@ -53,7 +53,7 @@ const server=http.createServer((req,res)=>{
     }
    }
    await page.evaluate(()=>localStorage.setItem("math10_state","{}"));await page.reload();
-   await page.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===84);
+   await page.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===85);
    for(const id of Object.keys(data.familyUnlockGoals))assert.doesNotMatch(await page.locator('#collectionGrid [data-card-id="'+id+'"]').getAttribute("class"),/is-locked/);
    assert.deepEqual(errors,[]);
    await context.close();console.log("PASS",viewport,"goals, AND thresholds, skipped days, permanent ownership and offline");

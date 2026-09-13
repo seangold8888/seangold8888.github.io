@@ -46,7 +46,7 @@ async function main() {
     await page.clock.install();
     const errors=[]; page.on("pageerror",error=>errors.push(String(error)));
     await page.goto(base+"/cards/");
-    await page.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===84);
+    await page.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===85);
     return {context,page,errors};
   }
   async function advanceScene(page) {
@@ -157,7 +157,7 @@ async function main() {
       }
       await p.screenshot({path:path.join(output,viewport.width+"-battle.png"),fullPage:true});
       // Reload an unfinished fight: same opponent, no accidental win/loss.
-      await p.reload();await p.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===84);
+      await p.reload();await p.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===85);
       await mapContinue(p);
       assert.match(await p.locator(".expedition-target h2").innerText(),/늑대/);
       await p.locator('.expedition-deploy [data-card-id="taeo"]').click();
@@ -224,7 +224,7 @@ async function main() {
         if(state && state.chapter===7 && state.phase==="restore"){
           assert.equal(state.ending,0);assert.ok(!state.recruited.includes("sseugumi"));
           if(state.endingScene===2 && !reloaded){
-            await q.reload();await q.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===84);
+            await q.reload();await q.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===85);
             assert.match(await q.locator('#collectionGrid [data-card-id="sseugumi"]').getAttribute("class"),/is-locked/);
             await mapContinue(q);reloaded=true;
             await q.waitForFunction(()=>{const images=[...document.querySelectorAll(".is-family-ending img")];return images.length===4&&images.every(n=>n.complete&&n.naturalWidth>0);});

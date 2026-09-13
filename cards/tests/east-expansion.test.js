@@ -24,9 +24,9 @@ function loadGates() {
 }
 
 test("동양 확장 11장은 가족 4장이 붙은 뒤에도 그대로다", () => {
-  assert.equal(data.cards.length, 84);
-  assert.equal(data.collection.length, 84);
-  assert.equal(new Set(data.collection).size, 84);
+  assert.equal(data.cards.length, 85);
+  assert.equal(data.collection.length, 85);
+  assert.equal(new Set(data.collection).size, 85);
   assert.deepEqual(data.collection.slice(40, 51), newIds, "동양 11장 순서는 새 확장 뒤에도 고정된다");
   assert.deepEqual(
     data.cards.slice(0, 55).reduce((counts, card) => {

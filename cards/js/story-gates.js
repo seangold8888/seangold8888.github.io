@@ -3,6 +3,7 @@
 
   // 카드 → 해금 이야기(에피소드 id). 문제는 이 이야기의 오디오 내용만 묻는다.
   const cardStories = Object.freeze({
+    jaewing: "legend:jaewing",
     sejong: "legend:sejong",
     jangyeongsil: "legend:jangyeongsil",
     heojun: "legend:heojun",
@@ -964,6 +965,14 @@
     question("sseugumi-feather", "sseugumi", "간지럼 깃털을 맞은 상대는?", [["yes","다음 턴에 기술을 못 써요"],["no","체력을 모두 회복해요"],["other","별사탕이 두 배가 돼요"]], "yes", ["카드: 쓰구미 대마왕"]),
     question("sseugumi-passive", "sseugumi", "쿠션 엉덩이 특성은 무엇을 하나요?", [["yes","받는 피해를 10 줄여요"],["no","항상 공격을 피해요"],["other","공격 피해를 두 배로 해요"]], "yes", ["카드: 쓰구미 대마왕"]),
     question("sseugumi-prank", "sseugumi", "별사탕 4개로 쓰는 큰 기술은?", [["yes","대왕 장난"],["no","사탕 훔치기"],["other","방귀 쿠션"]], "yes", ["카드: 쓰구미 대마왕"])
+  ].forEach(item => all.push(item));
+
+  [
+    question("jaewing-friend", "jaewing", "재윙은 누구의 괴물 친구인가요?", [["yes","재이"],["no","태오"],["other","쓰구미"]], "yes", ["카드: 재윙 친구 소개"]),
+    question("jaewing-wings", "jaewing", "폭신한 날개는 무엇을 하나요?", [["yes","첫 공격 피해를 한 번 막아요"],["no","모든 공격을 계속 막아요"],["other","매턴 체력을 채워요"]], "yes", ["카드: 재윙"]),
+    question("jaewing-tap", "jaewing", "별사탕 1개로 쓸 수 있는 기술은?", [["yes","날개 툭"],["no","장난 바람"],["other","재윙 회오리"]], "yes", ["카드: 재윙"]),
+    question("jaewing-wind", "jaewing", "장난 바람을 맞으면 상대의 다음 공격은?", [["yes","피해가 20 줄어요"],["no","피해가 20 늘어요"],["other","아무것도 달라지지 않아요"]], "yes", ["카드: 재윙"]),
+    question("jaewing-twirl", "jaewing", "재윙 회오리를 쓰려면 별사탕 몇 개가 필요할까요?", [["yes","4개"],["no","1개"],["other","2개"]], "yes", ["카드: 재윙"])
   ].forEach(item => all.push(item));
 
   function deepFreeze(value) {

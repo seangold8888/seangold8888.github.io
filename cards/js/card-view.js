@@ -30,13 +30,14 @@
     S: new Set(["jaei", "taeo", "eomma", "appa", "scylla", "siren", "baigujing", "zhaoyun", "mermaid"]),
     A: new Set(["jeongyakyong", "kimhongdo", "yugwansun", "perseus", "beanstalkgiant", "circe", "hades", "simayi"]),
     B: new Set(["jangyeongsil", "heojun", "kimgu", "poseidon", "zhugeliang", "doctorwatson", "wumawang", "hydra", "redknot", "jack", "nezha", "heracles", "zeus", "erlangshen", "polyphemus", "atalanta", "helios", "tiger"]),
-    C: new Set(["sejong", "shinsaimdang", "sseugumi", "zhangfei", "athena", "sunwukong", "ppungdetective", "wolf", "achilles", "kwonyul", "guanyu", "hermes", "sphinx", "witch", "prometheus", "honggildong", "starshield", "moriarty", "redhood", "ganggamchan", "odysseus", "euljimundeok", "apollo", "cinderella", "neonjumper", "arthur", "moonmoth", "threepigs", "thunderguard", "medusa", "theseus", "arsenelupin", "fairygodmother", "gearwing", "sherlockholmes", "tortoisehare", "yisunshin", "pinocchio", "orpheus"]),
+    C: new Set(["jaewing", "sejong", "shinsaimdang", "sseugumi", "zhangfei", "athena", "sunwukong", "ppungdetective", "wolf", "achilles", "kwonyul", "guanyu", "hermes", "sphinx", "witch", "prometheus", "honggildong", "starshield", "moriarty", "redhood", "ganggamchan", "odysseus", "euljimundeok", "apollo", "cinderella", "neonjumper", "arthur", "moonmoth", "threepigs", "thunderguard", "medusa", "theseus", "arsenelupin", "fairygodmother", "gearwing", "sherlockholmes", "tortoisehare", "yisunshin", "pinocchio", "orpheus"]),
     D: new Set(["midas", "snowqueen", "honghaier", "cerberus", "bremen", "caocao", "artemis", "minotaur", "walllizard", "genie"])
   });
   const TIER_WIDTH = Object.freeze({ S: 100, A: 82, B: 64, C: 46, D: 28 });
 
 
   const ART_POSITION = {
+    jaewing: "50% 40%",
     sejong: "50% 22%", jangyeongsil: "50% 22%", heojun: "50% 22%",
     shinsaimdang: "50% 22%", jeongyakyong: "50% 22%", kimhongdo: "50% 22%",
     yugwansun: "50% 22%", kimgu: "50% 22%",
@@ -421,6 +422,11 @@
     hpTrack.appendChild(hpFill);
 
     const details = el("div", "card-details");
+    if (card.lore && !options.compact && !options.collectionCompact) {
+      const lore = el("section", "card-history");
+      lore.append(el("h4", "", "친구 소개"), el("p", "", card.lore));
+      details.appendChild(lore);
+    }
     const history = window.CardStoryGates && window.CardStoryGates.historyForCard && window.CardStoryGates.historyForCard(card);
     if (history && !options.compact && !options.collectionCompact) {
       const biography = el("section", "card-history");

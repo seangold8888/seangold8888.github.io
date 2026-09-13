@@ -89,7 +89,7 @@ const rate = (c) => (games.get(c.id) ? wins.get(c.id) / games.get(c.id) : 0);
 console.log("교착", stalls, "건 · 전체", all.length, "장");
 console.log("\n가족 4장");
 for (const c of FAMILY) {
-  console.log(`  ${c.name}  ${(rate(c) * 100).toFixed(0)}%  ${c.type}/${c.element} hp${c.hp}`);
+  console.log(`  ${c.name}  ${(rate(c) * 100).toFixed(2)}%  ${c.type}/${c.element} hp${c.hp}`);
 }
 console.log("\n전체 순위");
 all.slice().sort((a, b) => rate(b) - rate(a)).forEach((card, index) => {

@@ -58,8 +58,8 @@ function webpSize(filePath) {
 }
 
 test("오디세이 조우 4장은 75장 컬렉션의 마지막 묶음이고 오행이 완전히 균형이다", () => {
-  assert.equal(data.cards.length, 84);
-  assert.equal(data.collection.length, 84);
+  assert.equal(data.cards.length, 85);
+  assert.equal(data.collection.length, 85);
   assert.deepEqual(data.collection.slice(71, 75), ids);
   assert.deepEqual(
     data.cards.slice(0,75).reduce((out, card) => ((out[card.element] = (out[card.element] || 0) + 1), out), {}),

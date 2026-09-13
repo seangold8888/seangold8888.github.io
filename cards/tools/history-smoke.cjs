@@ -16,12 +16,12 @@ const server=http.createServer((req,res)=>{
  const base="http://127.0.0.1:"+server.address().port;
  try{
   await page.goto(base+"/cards/");
-  await page.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===84);
+  await page.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===85);
   await page.evaluate(()=>navigator.serviceWorker.register("/sw.js"));
   await page.waitForFunction(()=>navigator.serviceWorker.controller,null,{timeout:60000});
   await page.waitForFunction(async ({name,ids})=>{const c=await caches.open(name);return (await Promise.all(ids.map(id=>c.match("/cards/art/"+id+".webp")))).every(Boolean);},{name:SW.STATIC_CACHE,ids});
   await context.setOffline(true);await page.reload();
-  await page.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===84);
+  await page.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===85);
   for(const viewport of [{width:820,height:1180},{width:1180,height:820},{width:390,height:844}]){
    await page.setViewportSize(viewport);
    for(const id of ids){
