@@ -50,6 +50,14 @@ const server=http.createServer((req,res)=>{
    await page.locator("#collectionElement").selectOption("all");
    const colors=await page.locator('#collectionGrid .story-card[class*="element-"]').evaluateAll(nodes=>Object.fromEntries(nodes.map(n=>[n.className.match(/element-(\w+)/)[1],getComputedStyle(n).borderTopColor])));
    assert.equal(new Set(Object.values(colors)).size,5);
+   const silver=await page.locator("#collectionGrid .element-metal").first().evaluate(card=>
+     [card,...card.querySelectorAll(".card-name,.hp-gem,.collection-tier,.element-rune")].flatMap(n=>{
+       const s=getComputedStyle(n);return [s.color,s.borderTopColor,s.backgroundColor,s.backgroundImage];
+     }));
+   for(const value of silver)for(const rgb of value.matchAll(/rgba?\((\d+), (\d+), (\d+)/g)) {
+     assert.equal(rgb[1],rgb[2],"silver must have no color tint: "+value);
+     assert.equal(rgb[2],rgb[3],"silver must have no color tint: "+value);
+   }
    if(viewport.width===1180){
      // Visual fixture: move one real card of each element to the front, without changing card content.
      await page.evaluate(()=>{

@@ -4933,9 +4933,9 @@ dialog p:not(.kicker) {
   --element-pattern: repeating-linear-gradient(138deg, transparent 0 22px, rgba(105,70,20,.08) 23px 25px, transparent 26px 45px);
 }
 .story-card.element-metal {
-  --element: #dff5ff; --element-bright: #fbfdff; --element-dark: #354b59;
-  --element-surface: #bdccd5; --element-soft: rgba(174,222,247,.31);
-  --element-pattern: repeating-linear-gradient(112deg, transparent 0 14px, rgba(255,255,255,.23) 15px 16px, rgba(53,75,89,.08) 17px 19px, transparent 20px 36px);
+  --element: #dedede; --element-bright: #ffffff; --element-dark: #505050;
+  --element-surface: #cfcfcf; --element-soft: rgba(220,220,220,.31);
+  --element-pattern: repeating-linear-gradient(112deg, transparent 0 14px, rgba(255,255,255,.23) 15px 16px, rgba(65,65,65,.08) 17px 19px, transparent 20px 36px);
 }
 .story-card.element-water {
   --element: #53c8ff; --element-bright: #e9fbff; --element-dark: #0a4b72;
@@ -5125,8 +5125,10 @@ dialog p:not(.kicker) {
   --element-pattern: repeating-linear-gradient(140deg, #f5ce752c 0 13px, transparent 14px 35px, #33200638 36px 40px);
 }
 #collectionGrid .story-card.element-metal {
-  --element: #d2deef; --element-dark: #303d56; --element-surface: #74849b; --element-bright: #ffffff;
-  --element-pattern: repeating-linear-gradient(115deg, transparent 0 12px, #ffffff50 13px 15px, #12223b35 16px 20px, transparent 21px 34px);
+  color: #242424;
+  --element: #e4e4e4; --element-dark: #505050; --element-surface: #cfcfcf; --element-bright: #ffffff;
+  --element-pattern: repeating-linear-gradient(115deg, transparent 0 12px, #ffffff60 13px 15px, #38383820 16px 20px, transparent 21px 34px);
+  background: var(--element-pattern), linear-gradient(145deg, #fafafa, #bcbcbc 34%, #eeeeee 62%, #aaaaaa);
 }
 #collectionGrid .story-card.element-water {
   --element: #38b5ff; --element-dark: #072f78; --element-surface: #0868c9; --element-bright: #bcf5ff;
@@ -5134,7 +5136,7 @@ dialog p:not(.kicker) {
 }
 #collectionGrid .story-card .card-crown { background: transparent; color: white; border: 0; }
 #collectionGrid .story-card .card-name { color: white; text-shadow: 0 1px 3px #000c; font-weight: 900; }
-#collectionGrid .story-card.element-metal .card-name { color: #101c30; text-shadow: 0 1px 1px #fff9; }
+#collectionGrid .story-card.element-metal .card-name { color: #242424; text-shadow: 0 1px 1px #fff9; }
 #collectionGrid .story-card .frame-ornament { display: none; }
 #collectionGrid .story-card .element-rune {
   min-width: 64px; text-align: center; font-size: 13px; padding: 5px 10px;
@@ -5144,7 +5146,7 @@ dialog p:not(.kicker) {
 #collectionGrid .element-wood .element-rune { border-radius: 16px 4px 16px 4px; }
 #collectionGrid .element-fire .element-rune { border-radius: 14px 14px 4px 4px; }
 #collectionGrid .element-earth .element-rune { border-radius: 5px; border-style: double; }
-#collectionGrid .element-metal .element-rune { border-radius: 3px; background: #d2deef; color: #172943; }
+#collectionGrid .element-metal .element-rune { border-radius: 3px; background: #e4e4e4; color: #242424; }
 #collectionGrid .element-water .element-rune { border-radius: 6px 6px 18px 18px; }
 #collectionGrid .story-card.is-selected { outline: 0; }
 #collectionGrid .story-card:focus-visible { outline: 3px dashed #fff; outline-offset: 3px; }
@@ -5173,4 +5175,11 @@ dialog p:not(.kicker) {
 #collectionGrid .story-card .card-name {
   color: var(--element-bright); text-shadow: 0 1px 3px var(--element-dark), 0 1px 5px #000c;
 }
-#collectionGrid .story-card.element-metal .card-name { color: #f1f7ff; text-shadow: 0 1px 3px #152c48, 0 1px 5px #152c48; }
+#collectionGrid .story-card.element-metal .card-name { color: #242424; text-shadow: 0 1px 1px #ffffff99; }
+#collectionGrid .story-card.element-metal .hp-gem,
+#collectionGrid .story-card.element-metal .collection-tier {
+  background: linear-gradient(145deg, #ffffff, #bcbcbc); color: #242424; border-color: #f4f4f4;
+}
+#collectionGrid .story-card.element-metal .hp-gem span,
+#collectionGrid .story-card.element-metal .hp-gem strong,
+#collectionGrid .story-card.element-metal .hp-gem i { color: #242424; text-shadow: 0 1px 0 #ffffff88; }
