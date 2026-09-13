@@ -217,7 +217,12 @@
     // 고무줄: 아이가 뒤처지면 AI가 살짝 느긋해진다
     const gap = kart.total - playerTotal;
     let mult = 1 - 0.34 * curve;            // 코너 진입 전에 미리 감속
-    if (gap > 900) mult *= 0.84;
+    if (kart.rival) {
+      // 라이벌: 앞서도 늦추지 않는다. 멀리(약 3초) 달아나면 살짝 숨을 고르고, 연패하면 assist.
+      if (gap < -900) mult *= 1.03;
+      if (gap > 1200) mult *= 0.94;
+      mult *= kart.rival.assist || 1;
+    } else if (gap > 900) mult *= 0.84;
     else if (gap < -900) mult *= 1.06;
     if (Math.abs(diff) > 0.55) mult *= 0.86;
     kart.baseTop = kart.spec.top * mult;

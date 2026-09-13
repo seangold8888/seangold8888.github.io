@@ -13,7 +13,9 @@ import {
 export const MODES = [
   { id: 'battle', name: '아이템 배틀', desc: '⭐ 추천 · 상자를 먹고 아이템 발사!', ai: 3, items: true },
   { id: 'speed',  name: '스피드 매치', desc: '아이템 없이 순수 속도 대결',        ai: 3, items: false },
-  { id: 'time',   name: '타임어택',   desc: '혼자 달리며 최고 기록 도전',        ai: 0, items: false }
+  { id: 'time',   name: '타임어택',   desc: '혼자 달리며 최고 기록 도전',        ai: 0, items: false },
+  // 일반 경주에서 이 코스를 1등으로 끝내야 메뉴에 나타난다.
+  { id: 'rival',  name: '🔥 라이벌 레이스', desc: '봐주지 않는 라이벌 · 바나나는 방패로 막아요', ai: 3, items: true, rival: true }
 ];
 
 const el = id => document.getElementById(id);
@@ -55,7 +57,8 @@ export function startGame() {
     karts: [], models: [], player: null,
     boxes: [], projectiles: [], projMeshes: [], extraMeshes: [],
     raceTime: 0, countdown: 0, lapStart: 0, bestLap: null, myBest: null,
-    results: [], finishDelay: 0, finishSide: 0, time: 0
+    results: [], finishDelay: 0, finishSide: 0, time: 0,
+    rival: null, rivalBeat: false, rivalUnlockedNow: false
   };
 
   const keys = Object.create(null);
@@ -106,6 +109,32 @@ export function startGame() {
     return 'sanrio-kart3d:' + TRACKS[state.trackIndex].id + ':' + MODES[state.modeIndex].id;
   }
 
+  // ---------- 라이벌 레이스 기록 ----------
+  // 코스별 { unlocked, won, losses }. 일반 기록(최고 바퀴)과 섞지 않는다.
+  const RIVAL_KEY = 'sanrio-kart3d:rival:v1';
+  let rivalRecords = (() => {
+    try {
+      const raw = JSON.parse(localStorage.getItem(RIVAL_KEY) || '{}');
+      return raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+    } catch (_) { return {}; }
+  })();
+  function rivalRecord(trackId) {
+    const r = rivalRecords[trackId];
+    const unlocked = !!(r && r.unlocked === true);
+    return {
+      unlocked,
+      won: unlocked && r.won === true,
+      losses: unlocked && Number.isFinite(Number(r.losses)) ? Math.max(0, Math.min(9, Math.floor(Number(r.losses)))) : 0
+    };
+  }
+  function saveRivalRecord(trackId, rec) {
+    rivalRecords[trackId] = rec;
+    try { localStorage.setItem(RIVAL_KEY, JSON.stringify(rivalRecords)); } catch (_) {}
+  }
+  function modeVisible(i) {
+    return !MODES[i].rival || rivalRecord(TRACKS[state.trackIndex].id).unlocked;
+  }
+
   function startRace() {
     clearRace();
     const def = TRACKS[state.trackIndex];
@@ -124,6 +153,12 @@ export function startGame() {
 
     const order = [state.charIndex].concat(
       CHARACTERS.map((_, i) => i).filter(i => i !== state.charIndex));
+    if (mode.rival) {
+      // 라이벌은 남은 친구 중 가장 빠른 카트이고, 바로 옆 칸에서 출발한다.
+      const rivalIdx = order.slice(1).reduce((best, i) => CHARACTERS[i].top > CHARACTERS[best].top ? i : best, order[1]);
+      order.splice(order.indexOf(rivalIdx), 1);
+      order.splice(1, 0, rivalIdx);
+    }
     const count = 1 + mode.ai;
     const p0 = state.track.points[0];
     const startAngle = Math.atan2(p0.tx, p0.tz);
@@ -155,6 +190,14 @@ export function startGame() {
       }
     }
 
+    state.rival = null;
+    if (mode.rival) {
+      const rec = rivalRecord(def.id);
+      state.rival = state.karts[1];
+      // 세 번 연달아 지면 3%씩, 최대 6%까지 라이벌이 느려진다.
+      state.rival.rival = { assist: 1 - Math.min(0.06, Math.floor(rec.losses / 3) * 0.03) };
+    }
+
     // 아이템 상자
     if (mode.items) {
       const T = state.track, n = T.points.length;
@@ -180,6 +223,8 @@ export function startGame() {
     state.results = [];
     state.finishDelay = 0;
     state.finishSide = 0;
+    state.rivalBeat = false;
+    state.rivalUnlockedNow = false;
     driftArmed = false; jumpEdge = false;
     sfxPrev = null;
     audio.startMusic(state.trackIndex);
@@ -234,7 +279,7 @@ export function startGame() {
       let leader = state.player.total;
       for (const k of state.karts) if (k.total > leader) leader = k.total;
       const behind = leader - state.player.total;
-      const boostMult = behind > 55 ? Math.min(1.14, 1 + (behind - 55) / 620) : 1;
+      const boostMult = behind > 55 ? Math.min(mode.rival ? 1.06 : 1.14, 1 + (behind - 55) / 620) : 1;
       state.player.baseTop = state.player.spec.top * boostMult;
     }
 
@@ -303,6 +348,7 @@ export function startGame() {
         state.scene = 'result';
         audio.stopMusic();
         audio.fanfare();
+        settleRival();
         showResult();
       }
     }
@@ -331,6 +377,7 @@ export function startGame() {
     }
     for (const k of state.karts) {
       if (k.isPlayer || !k.item || k.finished) continue;
+      if (k.rival) { rivalUseItem(k, dt); continue; }
       k.aiDelay = (k.aiDelay === undefined ? 1.4 : k.aiDelay) - dt;
       if (k.aiDelay <= 0) { useItem(k, state.karts, spawnProjectile); k.aiDelay = 1.4; }
     }
@@ -365,6 +412,31 @@ export function startGame() {
         if (mi >= 0) state.projMeshes.splice(mi, 1);
         state.projectiles.splice(i, 1);
       }
+    }
+  }
+
+  // 라이벌은 아이템을 바로 쓰지 않는다. 바나나는 바로 뒤에 붙었을 때,
+  // 폭탄은 플레이어가 앞서 있을 때 쓴다. 그래서 방패를 아껴 둘 이유가 생긴다.
+  function rivalUseItem(k, dt) {
+    const gap = k.total - state.player.total;           // + 이면 라이벌이 앞
+    k.aiDelay = (k.aiDelay === undefined ? 0.6 : k.aiDelay) - dt;
+    if (k.aiDelay > 0) return;
+    const id = k.item;
+    const use = id === 'banana' ? gap > 0 && gap < 150
+      : id === 'bomb' ? gap < 0 && gap > -320
+      : id === 'magnet' ? gap < 40                        // 자석은 뒤에 있을 때
+      : true;                                             // 부스터·방패는 바로
+    if (use) { useItem(k, state.karts, spawnProjectile); k.aiDelay = 0.8; }
+  }
+
+  function settleRival() {
+    const mode = MODES[state.modeIndex], id = TRACKS[state.trackIndex].id, rec = rivalRecord(id);
+    if (mode.rival && state.rival) {
+      state.rivalBeat = state.player.finishTime < state.rival.finishTime;
+      saveRivalRecord(id, { unlocked: true, won: rec.won || state.rivalBeat, losses: state.rivalBeat ? 0 : rec.losses + 1 });
+    } else if (mode.ai > 0 && state.player.place === 1 && !rec.unlocked) {
+      state.rivalUnlockedNow = true;
+      saveRivalRecord(id, { unlocked: true, won: false, losses: 0 });
     }
   }
 
@@ -577,6 +649,18 @@ export function startGame() {
     el('place').textContent = MODES[state.modeIndex].ai ? p.place + '등' : '혼자';
     el('timer').textContent = fmt(state.raceTime);
     el('best').textContent = state.bestLap ? '최고 ' + fmt(state.bestLap) : '';
+    const rivalPanel = el('p-rival');
+    if (state.rival) {
+      const r = state.rival;
+      // 속도로 나누면 부딪혀 멈췄을 때 숫자가 튄다. 내 카트 최고 속도의 90%로 환산한다.
+      const sec = (r.total - p.total) / (p.spec.top * 0.9);
+      const close = !r.finished && !p.finished && sec < 0 && sec > -1.2;
+      rivalPanel.style.display = '';
+      el('rival-name').textContent = '🔥 ' + r.spec.name;
+      el('rival-gap').textContent = r.finished ? '도착' : (sec > 0 ? '앞 ' : '뒤 ') + Math.abs(sec).toFixed(1) + '초';
+      el('rival-warn').textContent = close ? (r.item === 'banana' ? '🍌 뒤에서 노려요!' : '바짝 쫓아와요!') : '';
+      rivalPanel.classList.toggle('close', close);
+    } else rivalPanel.style.display = 'none';
     const item = el('item');
     if (!MODES[state.modeIndex].items) {
       item.style.display = 'none';
@@ -633,7 +717,7 @@ export function startGame() {
     g.closePath();
     g.stroke();
     state.karts.forEach(k => {
-      g.fillStyle = k.isPlayer ? '#ff3d7a' : '#6b5b78';
+      g.fillStyle = k.isPlayer ? '#ff3d7a' : k === state.rival ? '#ff8a3d' : '#6b5b78';
       g.beginPath();
       g.arc(k.x, k.z, k.isPlayer ? 34 : 26, 0, Math.PI * 2);
       g.fill();
@@ -661,11 +745,12 @@ export function startGame() {
     const sel = state.menuStep === 0 ? state.charIndex
       : state.menuStep === 1 ? state.trackIndex : state.modeIndex;
     items.forEach((it, i) => {
+      if (state.menuStep === 2 && !modeVisible(i)) return;
       const b = document.createElement('button');
       b.className = 'card' + (i === sel ? ' on' : '');
       const sub = state.menuStep === 0
         ? '속도 ' + '★'.repeat(Math.max(1, Math.round((it.top - 106) / 5)))
-        : state.menuStep === 1 ? it.laps + '바퀴 · ' + (it.tip || '') : it.desc;
+        : state.menuStep === 1 ? it.laps + '바퀴 · ' + (it.tip || '') : it.desc + (it.rival && rivalRecord(TRACKS[state.trackIndex].id).won ? ' · ✓ 이겨 봤어요' : '');
       b.innerHTML = '<strong>' + it.name + '</strong><small>' + sub + '</small>';
       b.addEventListener('click', () => {
         if (state.menuStep === 0) state.charIndex = i;
@@ -684,7 +769,11 @@ export function startGame() {
   }
 
   function nextStep() {
-    if (state.menuStep < 2) { state.menuStep++; renderMenu(); }
+    if (state.menuStep < 2) {
+      state.menuStep++;
+      if (state.menuStep === 2 && !modeVisible(state.modeIndex)) state.modeIndex = 0;
+      renderMenu();
+    }
     else { menu.style.display = 'none'; startRace(); }
   }
 
@@ -698,20 +787,25 @@ export function startGame() {
     box.style.display = 'flex';
     const p = state.player;
     const solo = MODES[state.modeIndex].ai === 0;
-    el('result-title').textContent = solo ? '완주했어요!' :
-      (p.place === 1 ? '1등! 최고예요!' : '완주했어요!');
+    const mode = MODES[state.modeIndex];
+    el('result-title').textContent = mode.rival
+      ? (state.rivalBeat ? '🔥 라이벌을 이겼어요!' : '라이벌에게 졌어요 · 한 번 더!')
+      : solo ? '완주했어요!' : (p.place === 1 ? '1등! 최고예요!' : '완주했어요!');
     const rows = el('result-rows');
     rows.innerHTML = '';
     state.results.forEach((k, i) => {
       const d = document.createElement('div');
       d.className = 'row' + (k.isPlayer ? ' me' : '');
-      d.innerHTML = '<span>' + (i + 1) + '등</span><b>' + k.spec.name + '</b><em>' +
+      d.innerHTML = '<span>' + (i + 1) + '등</span><b>' + (k === state.rival ? '🔥 ' : '') + k.spec.name + '</b><em>' +
         fmt(k.finishTime) + '</em>';
       rows.appendChild(d);
     });
     el('result-best').textContent = state.myBest
       ? '내 최고 바퀴 ' + fmt(state.myBest) + (state.bestLap === state.myBest ? '  🎉 신기록!' : '')
       : '';
+    const note = state.rivalUnlockedNow ? '🔥 이 코스에 라이벌 레이스가 열렸어요!'
+      : mode.rival && !state.rivalBeat && rivalRecord(TRACKS[state.trackIndex].id).losses >= 3 ? '라이벌 바나나는 🛡️ 방패로 막을 수 있어요' : '';
+    if (note) el('result-best').textContent += (el('result-best').textContent ? '  ·  ' : '') + note;
   }
 
   el('again').addEventListener('click', () => { el('result').style.display = 'none'; startRace(); });
@@ -776,8 +870,17 @@ export function startGame() {
     if (state.scene === 'menu') {
       const items = state.menuStep === 0 ? CHARACTERS : state.menuStep === 1 ? TRACKS : MODES;
       const key = state.menuStep === 0 ? 'charIndex' : state.menuStep === 1 ? 'trackIndex' : 'modeIndex';
-      if (e.code === 'ArrowLeft') { state[key] = (state[key] + items.length - 1) % items.length; renderMenu(); }
-      if (e.code === 'ArrowRight') { state[key] = (state[key] + 1) % items.length; renderMenu(); }
+      // 모드 단계에서는 잠긴 라이벌 레이스를 건너뛴다.
+      const stepTo = dir => {
+        let v = state[key];
+        for (let n = 0; n < items.length; n++) {
+          v = (v + dir + items.length) % items.length;
+          if (state.menuStep !== 2 || modeVisible(v)) break;
+        }
+        state[key] = v; renderMenu();
+      };
+      if (e.code === 'ArrowLeft') stepTo(-1);
+      if (e.code === 'ArrowRight') stepTo(1);
       if (e.code === 'Space' || e.code === 'Enter') nextStep();
       if (e.code === 'Escape' && state.menuStep > 0) { state.menuStep--; renderMenu(); }
     } else if (state.scene === 'result') {
@@ -831,6 +934,7 @@ export function startGame() {
     render() { renderer.render(scene, camera); },
     press(c) { keys[c] = true; },
     release(c) { keys[c] = false; },
-    pick(char, track, mode) { state.charIndex = char; state.trackIndex = track; state.modeIndex = mode; }
+    pick(char, track, mode) { state.charIndex = char; state.trackIndex = track; state.modeIndex = mode; },
+    rivalRecord, modeVisible, renderMenu, nextStep, settleRival, driveAI
   };
 }

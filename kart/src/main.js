@@ -19,13 +19,26 @@
   let bestLap = null, lastLapStart = 0, playerBestLap = null;
   let resultOrder = [];
   let challenge = { drift: 0, items: 0 }, cheer = '', cheerTime = 0, medals = 0;
+  let rivalMode = false, rival = null, rivalBeat = false, rivalUnlockedNow = false, rivalRec = { unlocked: false, won: false, losses: 0 };
   const bestKey = () => 'sanrio-kart:best:' + SK.TRACKS[trackIndex].id;
   const medalKey = () => 'sanrio-kart:medals:' + SK.TRACKS[trackIndex].id;
   function celebrate(message) { cheer = message; cheerTime = 2.2; }
   function readRecords() {
     try { bestLap = Number(localStorage.getItem(bestKey())) || null; medals = Math.max(0, Math.min(3, Number(localStorage.getItem(medalKey())) || 0)); }
     catch (_) { bestLap = null; medals = 0; }
+    rivalRec = readRival();
   }
+  // 라이벌 레이스 기록: 코스별 { unlocked, won, losses }. 일반 기록·배지와 섞지 않는다.
+  const rivalKey = () => 'sanrio-kart:rival:' + SK.TRACKS[trackIndex].id;
+  function readRival() {
+    try {
+      const r = JSON.parse(localStorage.getItem(rivalKey()) || '{}') || {};
+      const unlocked = r.unlocked === true;
+      return { unlocked, won: unlocked && r.won === true,
+        losses: unlocked && Number.isFinite(Number(r.losses)) ? Math.max(0, Math.min(9, Math.floor(Number(r.losses)))) : 0 };
+    } catch (_) { return { unlocked: false, won: false, losses: 0 }; }
+  }
+  function writeRival() { try { localStorage.setItem(rivalKey(), JSON.stringify(rivalRec)); } catch (_) {} }
   function earnedMedals() { return 1 + Number(challenge.drift >= 2) + Number(challenge.items >= 2); }
   // height 를 낮추면 지면 렌더는 그대로다(행별 배율 = depth/fov 로 height 와 무관).
   // 대신 화면 아래쪽이 더 가까운 땅을 비추게 되어, 카메라 118 뒤에 있는
@@ -56,7 +69,9 @@
   }
 
   // ---------- 레이스 준비 ----------
-  function startRace() {
+  function startRace(withRival) {
+    rivalRec = readRival();
+    rivalMode = !!withRival && rivalRec.unlocked;
     // 고른 코스만 만든다. 2048² 텍스처를 여러 장 들고 있으면 메모리에 부담이라
     // 이전 것은 캔버스 크기를 0으로 만들어 놓아 준다.
     const def = SK.TRACKS[trackIndex];
@@ -68,6 +83,12 @@
     const T = SK.Track;
     karts = [];
     const order = [chosen].concat(SK.CHARACTERS.map((_, i) => i).filter(i => i !== chosen));
+    if (rivalMode) {
+      // 라이벌은 남은 친구 중 가장 빠른 카트이고, 바로 옆 칸에서 출발한다.
+      const rivalIdx = order.slice(1).reduce((best, i) => SK.CHARACTERS[i].top > SK.CHARACTERS[best].top ? i : best, order[1]);
+      order.splice(order.indexOf(rivalIdx), 1);
+      order.splice(1, 0, rivalIdx);
+    }
     order.forEach((specIndex, slot) => {
       const spec = SK.CHARACTERS[specIndex];
       // 출발선 뒤쪽에 두 줄로 세운다
@@ -87,6 +108,12 @@
       karts.push(k);
       if (k.isPlayer) player = k;
     });
+    rival = null;
+    if (rivalMode) {
+      rival = karts[1];
+      // 세 번 연달아 지면 3%씩, 최대 6%까지 라이벌이 느려진다.
+      rival.rival = { assist: 1 - Math.min(0.06, Math.floor(rivalRec.losses / 3) * 0.03) };
+    }
 
     // 아이템 상자: 중심선을 따라 일정 간격
     boxes = [];
@@ -112,6 +139,7 @@
     playerBestLap = null;
     resultOrder = [];
     challenge = { drift: 0, items: 0 }; cheer = ''; cheerTime = 0;
+    rivalBeat = false; rivalUnlockedNow = false;
     Object.keys(keys).forEach(key => { keys[key] = false; });
     Object.assign(touch, { steer: 0, drift: false, item: false, leftId: null, rightId: null });
     scene = 'race';
@@ -227,8 +255,12 @@
       if (raceTime - player.finishTime > 1.8) {
         karts.forEach(k => { if (!k.finished) { k.finished = true; k.finishTime = raceTime + 99; resultOrder.push(k); } });
         scene = 'result';
-        medals = Math.max(medals, earnedMedals());
-        try { localStorage.setItem(medalKey(), String(medals)); } catch (_) {}
+        settleRival();
+        // 도전 배지는 일반 경주에서만 기록한다.
+        if (!rivalMode) {
+          medals = Math.max(medals, earnedMedals());
+          try { localStorage.setItem(medalKey(), String(medals)); } catch (_) {}
+        }
         audio.stopMusic();
         audio.fanfare();
       }
@@ -254,6 +286,7 @@
     // AI 사용 — 얻으면 잠시 뒤 그냥 쓴다
     for (const k of karts) {
       if (k.isPlayer || !k.item || k.finished) continue;
+      if (k.rival) { rivalItem(k, dt); continue; }
       k.aiItemDelay = (k.aiItemDelay || 1.2) - dt;
       if (k.aiItemDelay <= 0) { useItem(k); k.aiItemDelay = 1.2; }
     }
@@ -272,6 +305,27 @@
       }
     }
     items = items.filter(it => it.life > 0);
+  }
+
+  // 라이벌은 리본을 쥐고 있다가 플레이어가 앞서 달릴 때 던진다.
+  function rivalItem(k, dt) {
+    k.aiItemDelay = (k.aiItemDelay || 0.6) - dt;
+    if (k.aiItemDelay > 0) return;
+    const gap = k.total - player.total;                 // + 이면 라이벌이 앞
+    const use = k.item === 'ribbon' ? gap < 0 && gap > -700 : true;   // 부스터는 바로 쓴다
+    if (use) { useItem(k); k.aiItemDelay = 0.8; }
+  }
+
+  function settleRival() {
+    if (rivalMode && rival) {
+      rivalBeat = player.finishTime < rival.finishTime;
+      rivalRec = { unlocked: true, won: rivalRec.won || rivalBeat, losses: rivalBeat ? 0 : rivalRec.losses + 1 };
+      writeRival();
+    } else if (!rivalMode && player.place === 1 && !rivalRec.unlocked) {
+      rivalUnlockedNow = true;
+      rivalRec = { unlocked: true, won: false, losses: 0 };
+      writeRival();
+    }
   }
 
   function useItem(k) {
@@ -446,6 +500,21 @@
     g.font = '900 34px "Malgun Gothic", sans-serif';
     g.fillStyle = player.place === 1 ? '#e8952c' : '#4a3550';
     g.fillText(player.place + '등', W - 118, 54);
+
+    // 라이벌과의 간격 (라이벌 레이스)
+    if (rival) {
+      // 속도로 나누면 부딪혀 멈췄을 때 숫자가 튄다. 내 카트 최고 속도의 90%로 환산한다.
+      const sec = (rival.total - player.total) / (player.spec.top * 0.9);
+      const close = !rival.finished && !player.finished && sec < 0 && sec > -1.2;
+      panel(W - 196, 92, 168, 56);
+      if (close) { ctx.strokeStyle = '#ff8a3d'; ctx.lineWidth = 4; ctx.stroke(); }
+      g.textAlign = 'right';
+      g.fillStyle = '#9a3877'; g.font = '900 15px "Malgun Gothic", sans-serif';
+      g.fillText('🔥 ' + rival.spec.name, W - 44, 114);
+      g.fillStyle = close ? '#e0552b' : '#4a3550'; g.font = '900 20px "Malgun Gothic", sans-serif';
+      g.fillText(rival.finished ? '도착' : (sec > 0 ? '앞 ' : '뒤 ') + Math.abs(sec).toFixed(1) + '초', W - 44, 138);
+      g.textAlign = 'left';
+    }
 
     // 시간
     panel(W * 0.5 - 92, 22, 184, 44);
@@ -696,7 +765,13 @@
       : (selStep === 0 ? '← → 로 고르고 스페이스' : '← → 로 고르고 스페이스로 출발!'), W * 0.5, 418);
 
     g.font = '900 15px "Malgun Gothic", sans-serif'; g.fillStyle = '#8c4a63';
-    g.fillText('2바퀴 스프린트 · 등수와 상관없이 도전 배지 3개를 모아요', 480, 155);
+    if (selStep === 1 && rivalRec.unlocked) {
+      // 이 코스를 1등으로 끝낸 적이 있으면 라이벌 레이스 버튼
+      g.fillStyle = '#ff9a6b'; rrAt(g, 330, 138, 300, 34, 17); g.fill();
+      g.strokeStyle = '#b8502a'; g.lineWidth = 2.5; g.stroke();
+      g.fillStyle = '#3a1f2c'; g.font = '900 17px "Malgun Gothic", sans-serif';
+      g.fillText('🔥 라이벌 레이스' + (rivalRec.won ? ' ✓' : '') + (E_isTouch ? '' : '  ·  R'), 480, 161);
+    } else g.fillText('2바퀴 스프린트 · 등수와 상관없이 도전 배지 3개를 모아요', 480, 155);
     // 최고 기록은 위쪽에. 아래는 조작 설명 자리다.
     if (bestLap) {
       g.font = '900 15px "Malgun Gothic", sans-serif';
@@ -768,7 +843,7 @@
 
     g.font = '900 42px "Malgun Gothic", sans-serif';
     g.fillStyle = '#4a3550';
-    g.fillText(player.place === 1 ? '1등! 최고예요!' : '완주했어요!', W * 0.5, 132);
+    g.fillText(rivalMode ? (rivalBeat ? '🔥 라이벌을 이겼어요!' : '라이벌에게 졌어요!') : player.place === 1 ? '1등! 최고예요!' : '완주했어요!', W * 0.5, 132);
 
     resultOrder.slice(0, 3).forEach((k, i) => {
       const y = 190 + i * 58;
@@ -776,7 +851,7 @@
       g.font = '900 26px "Malgun Gothic", sans-serif';
       g.fillStyle = k.isPlayer ? '#ff5c8a' : '#6b5b78';
       g.fillText((i + 1) + '등', W * 0.5 - 200, y);
-      g.fillText(k.spec.name, W * 0.5 - 130, y);
+      g.fillText((k === rival ? '🔥 ' : '') + k.spec.name, W * 0.5 - 130, y);
       g.textAlign = 'right';
       g.font = '900 22px "Malgun Gothic", sans-serif';
       g.fillText(k.finishTime > player.finishTime + 90 ? '—' : fmt(k.finishTime), W * 0.5 + 200, y);
@@ -785,6 +860,9 @@
     g.textAlign = 'center';
     g.font = '900 20px "Malgun Gothic", sans-serif';
     g.fillStyle = '#8c7a95';
+    const note = rivalUnlockedNow ? '🔥 이 코스에 라이벌 레이스가 열렸어요!'
+      : rivalMode && !rivalBeat && rivalRec.losses >= 3 ? '라이벌 리본은 옆으로 피하고 드리프트로 따라잡아요' : '';
+    if (note) { g.fillStyle = '#e0552b'; g.font = '900 18px "Malgun Gothic", sans-serif'; g.fillText(note, 480, 336); g.font = '900 20px "Malgun Gothic", sans-serif'; }
     g.fillStyle = '#cc8324'; g.fillText('이번 도전 ' + '★'.repeat(earnedMedals()) + '☆'.repeat(3-earnedMedals()) + '  ·  코스 최고 ' + medals + '개', 480, 365);
     g.font = '900 16px "Malgun Gothic", sans-serif'; g.fillStyle = '#8c7a95';
     g.fillText('완주 ✓   드리프트 ' + Math.min(2,challenge.drift) + '/2   아이템 ' + Math.min(2,challenge.items) + '/2',480,394);
@@ -888,12 +966,13 @@
         if (e.code === 'ArrowLeft') next = (cur + n - 1) % n;
         if (e.code === 'ArrowRight') next = (cur + 1) % n;
         if (selStep === 0) chosen = next; else { trackIndex = next; readRecords(); }
+        if (e.code === 'KeyR' && selStep === 1 && rivalRec.unlocked) { startRace(true); return; }
         if (e.code === 'Space' || e.code === 'Enter') {
           if (selStep === 0) selStep = 1; else startRace();
         }
         if (e.code === 'Escape' && selStep === 1) selStep = 0;
       } else if (scene === 'result' && (e.code === 'Space' || e.code === 'Enter')) {
-        startRace();
+        startRace(rivalMode);
       } else if (scene === 'result' && e.code === 'Escape') {
         scene = 'select'; selStep = 1;
       }
@@ -915,6 +994,7 @@
           }
           selStep = 1;
         } else {
+          if (rivalRec.unlocked && Math.abs(p.x - 480) < 150 && Math.abs(p.y - 155) < 17) { startRace(true); return; }
           const at = cardLayout(SK.TRACKS.length, 196);
           for (let i = 0; i < SK.TRACKS.length; i++) {
             if (Math.abs(p.x - at(i)) < 100 && Math.abs(p.y - 288) < 118) {
@@ -927,7 +1007,7 @@
         }
         return;
       }
-      if (scene === 'result') { if (p.y >= 430 && p.y <= 470) { if (p.x >= 230 && p.x < 480) startRace(); else if (p.x >= 480 && p.x <= 730) { scene = 'select'; selStep = 1; } } return; }
+      if (scene === 'result') { if (p.y >= 430 && p.y <= 470) { if (p.x >= 230 && p.x < 480) startRace(rivalMode); else if (p.x >= 480 && p.x <= 730) { scene = 'select'; selStep = 1; } } return; }
       // 레이스 조작
       if (Math.hypot(p.x - 92, p.y - (H - 88)) < 62) { touch.steer = -1; touch.leftId = e.pointerId; return; }
       if (Math.hypot(p.x - 242, p.y - (H - 88)) < 62) { touch.steer = 1; touch.leftId = e.pointerId; return; }
@@ -963,6 +1043,8 @@
     get trackName() { return SK.Track ? SK.Track.name : null; },
     get heartCount() { return hearts.length; },
     get selStep() { return selStep; }, setStep(i) { selStep = i; },
+    get rival() { return rival; }, get rivalMode() { return rivalMode; }, get rivalRec() { return rivalRec; },
+    get rivalBeat() { return rivalBeat; }, startRival() { startRace(true); },
     // 자동 검증용: 화면이 멈춘 환경에서도 게임 시간을 진행시킨다
     step(dt) { update(dt); },
     draw() {

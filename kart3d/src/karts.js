@@ -532,6 +532,9 @@ export class Kart {
   }
 }
 
+// 라이벌이 이 거리(최고 속도로 약 3초)보다 멀리 앞서면 살짝 숨을 고른다
+export const RIVAL_FAR = 360;
+
 // AI — 거리 기준 앞보기(인덱스로 보면 커브를 가로지른다)
 export function driveAI(kart, playerTotal) {
   const T = kart.track;
@@ -581,7 +584,13 @@ export function driveAI(kart, playerTotal) {
   const gap = kart.total - playerTotal;
   // 아이 상대라 AI는 완벽하게 몰지 않는다. 고무줄과 합쳐 접전을 만든다.
   let mult = 0.965 * (1 - 0.30 * curve);   // 코너 진입 전에 미리 감속
-  if (gap > 55) mult = Math.max(0.72, 0.965 - (gap - 55) / 520);
+  if (kart.rival) {
+    // 라이벌 레이스: 앞서도 늦추지 않는다. 뒤처지면 조금만 힘을 내고,
+    // 너무 멀리 달아나면 살짝 숨을 고른다. 연패하면 assist 만큼 느려진다.
+    if (gap < -140) mult = Math.min(1.03, mult + (-gap - 140) / 2400);
+    if (gap > RIVAL_FAR) mult *= 0.94;
+    mult *= kart.rival.assist || 1;
+  } else if (gap > 55) mult = Math.max(0.72, 0.965 - (gap - 55) / 520);
   else if (gap < -140) mult = Math.min(1.05, 0.965 + (-gap - 140) / 1600);
   if (Math.abs(diff) > 0.5) mult *= 0.84;
   kart.baseTop = kart.spec.top * mult;
