@@ -1,5 +1,9 @@
 {
   "version": 1,
+  "tierUnlockGoals": {
+    "story": {"D": {"studyDays": 0, "problems": 0}, "C": {"studyDays": 0, "problems": 0}, "B": {"studyDays": 1, "problems": 10}, "A": {"studyDays": 3, "problems": 30}, "S": {"studyDays": 5, "problems": 60}},
+    "math": {"D": {"studyDays": 1, "problems": 5}, "C": {"studyDays": 2, "problems": 10}, "B": {"studyDays": 3, "problems": 20}, "A": {"studyDays": 5, "problems": 40}, "S": {"studyDays": 7, "problems": 70}}
+  },
   "familyUnlockGoals": {
     "appa": {"studyDays": 10, "problems": 100},
     "eomma": {"studyDays": 15, "problems": 180},

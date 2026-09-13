@@ -39,6 +39,9 @@
   const dom = {};
   let cards = [];
   let familyUnlockGoals = {};
+  let tierUnlockGoals = {};
+  let collectionLedger = null;
+  const COLLECTION_UNLOCK_KEY = "card_collection_unlocks_v1";
   let familyLedger = null;
   const FAMILY_UNLOCK_KEY = "card_family_unlocks_v1";
   const FAMILY_MIGRATION_DAY = "2026-09-13";
@@ -284,8 +287,7 @@
     return true;
   }
 
-  function isUnlocked(card) {
-    if (familyGoal(card)) return isFamilyUnlocked(card);
+  function originalCardUnlocked(card) {
     if (card.id === "sseugumi") return Boolean(window.CardCampaign &&
       (window.CardCampaign.load().ending >= 1 || (campaignUi && campaignUi.hasRecruited(card.id))));
     if (campaignUi ? campaignUi.hasRecruited(card.id) : window.CardCampaign && window.CardCampaign.load().recruited.includes(card.id)) return true;
@@ -295,9 +297,84 @@
     return !card.unlock || isUnlockDone(card.unlock);
   }
 
+  function tierGoal(card) {
+    if (familyGoal(card) || card.id === "sseugumi" || (!card.unlock && !card.unlockAll?.length)) return null;
+    const tokens = card.unlockAll?.length ? card.unlockAll : [card.unlock];
+    const mathOnly = tokens.every(token => /^game:math\/streak(?:3|7)$/.test(token));
+    const tier = window.CardView?.battleTier?.(card);
+    const goal = tierUnlockGoals[mathOnly ? "math" : "story"]?.[tier];
+    return goal && Number.isSafeInteger(goal.studyDays) && goal.studyDays>=0 &&
+      Number.isSafeInteger(goal.problems) && goal.problems>=0 ? {...goal, mathOnly, tier} : null;
+  }
+
+  function loadCollectionLedger() {
+    let stored;
+    try { stored=JSON.parse(localStorage.getItem(COLLECTION_UNLOCK_KEY)||"null"); } catch (_) {}
+    const valid=stored && stored.version===1 && Array.isArray(stored.unlocked);
+    const ids=new Set(cards.filter(card=>!familyGoal(card)).map(card=>card.id));
+    const saved=valid ? stored.unlocked.filter(id=>ids.has(id)) : [];
+    if (collectionLedger) {
+      collectionLedger.unlocked=Array.from(new Set(collectionLedger.unlocked.concat(saved)));
+      return collectionLedger;
+    }
+    collectionLedger={version:1,unlocked:saved};
+    if (!valid) {
+      // Story/game flags have no dates: preserve the eligibility present on
+      // first upgrade. Historic math streaks can be checked at the rollout date.
+      let stamps={};
+      try { stamps=(JSON.parse(localStorage.getItem("math10_state")||"{}")||{}).stamps||{}; } catch (_) {}
+      const dates=Object.keys(stamps).filter(date=>Number.isSafeInteger(stamps[date]) && stamps[date]>0 &&
+        /^\d{4}-\d{2}-\d{2}$/.test(date) && date<=FAMILY_MIGRATION_DAY && addCalendarDays(date,0)===date);
+      cards.filter(tierGoal).forEach(card=>{
+        const goal=tierGoal(card);
+        const earned=goal.mathOnly ? dates.some(date=>isGameDone(card.unlock.slice(5),date)) : originalCardUnlocked(card);
+        if (earned) collectionLedger.unlocked.push(card.id);
+      });
+      saveCollectionLedger();
+    }
+    return collectionLedger;
+  }
+
+  function saveCollectionLedger() {
+    try { localStorage.setItem(COLLECTION_UNLOCK_KEY,JSON.stringify(collectionLedger)); } catch (_) {}
+  }
+
+  function isUnlocked(card) {
+    if (familyGoal(card)) return isFamilyUnlocked(card);
+    if (isPreviewMode() && card.id!=="sseugumi") return true;
+    const goal=tierGoal(card);
+    if (!goal) return originalCardUnlocked(card);
+    const ledger=loadCollectionLedger();
+    if (ledger.unlocked.includes(card.id)) return true;
+    const recruited=campaignUi ? campaignUi.hasRecruited(card.id) : window.CardCampaign?.load().recruited.includes(card.id);
+    const progress=mathCollectionProgress();
+    const earned=recruited || ((goal.mathOnly || originalCardUnlocked(card)) &&
+      progress.studyDays>=goal.studyDays && progress.problems>=goal.problems);
+    if (!earned) return false;
+    ledger.unlocked.push(card.id);saveCollectionLedger();
+    return true;
+  }
+
+  function tierProgressPhrase(card) {
+    const goal=tierGoal(card), p=mathCollectionProgress();
+    return goal.tier + "등급 · 수학 누적 " + goal.studyDays + "일 + " + goal.problems +
+      "문제 (현재 " + Math.min(p.studyDays,goal.studyDays) + "/" + goal.studyDays + "일 · " +
+      Math.min(p.problems,goal.problems) + "/" + goal.problems + "문제 · 하루 쉬어도 유지)";
+  }
+
   // 잠긴 카드 안내의 앞부분을 통째로 만든다. 예전에는 이 함수가 수학 해금에만
   // 완성된 문장을 돌려주어 "…만날 수 있어!에서 이기면 …"처럼 조사가 겹쳤다.
   function unlockLeadPhrase(card) {
+    const tier=tierGoal(card);
+    if (tier && (tier.studyDays || tier.problems)) {
+      if (tier.mathOnly) return tierProgressPhrase(card) + "를 채우면 ";
+      const source=originalUnlockLeadPhrase(card).trim().replace(/들으면$/, "듣고").replace(/이기면$/, "이기고");
+      return source + (originalCardUnlocked(card) ? " (완료) " : " ") + tierProgressPhrase(card) + "를 채우면 ";
+    }
+    return originalUnlockLeadPhrase(card);
+  }
+
+  function originalUnlockLeadPhrase(card) {
     const goal=familyGoal(card);
     if (goal) {
       const p=mathCollectionProgress();
@@ -327,6 +404,8 @@
 
   function unlockDestination(card) {
     if (familyGoal(card)) return {href:"../math/",label:"🔢 수학 공부하러 가기"};
+    const goal=tierGoal(card);
+    if (goal && (goal.mathOnly || originalCardUnlocked(card))) return {href:"../math/",label:"🔢 수학 공부하러 가기"};
     if (card.id === "sseugumi") return null;
     const tokens = card.unlockAll && card.unlockAll.length ? card.unlockAll : [card.unlock];
     const token = tokens.find(id => !isUnlockDone(id)) || tokens[0] || "";
@@ -357,7 +436,7 @@
     const fragmentSnapshot = fragments.map(function (fragment) {
       return "fragment-" + fragment.id + ":" + (isStoryDone(fragment.unlock) ? "1" : "0");
     });
-    const familyProgress=Object.keys(familyUnlockGoals).length ? JSON.stringify(mathCollectionProgress()) : "";
+    const familyProgress=Object.keys(familyUnlockGoals).length || Object.keys(tierUnlockGoals).length ? JSON.stringify(mathCollectionProgress()) : "";
     return cardSnapshot.concat(fragmentSnapshot,[familyProgress]).join("|");
   }
 
@@ -3221,6 +3300,7 @@
       if (!response.ok) throw new Error("카드 데이터를 불러오지 못했습니다.");
       const data = await response.json();
       familyUnlockGoals = data.familyUnlockGoals || {};
+      tierUnlockGoals = data.tierUnlockGoals || {};
       fragments = Array.isArray(data.fragments) ? data.fragments : [];
       const collectionIds = Array.isArray(data.collection) ? data.collection : [];
       cards = collectionIds.map(function (id) {
@@ -3232,6 +3312,7 @@
         throw new Error("컬렉션 카드 목록이 비었거나 데이터와 일치하지 않습니다.");
       }
       battleCards = cards.filter(isPlayableCard);
+      if (!isPreviewMode()) loadCollectionLedger();
       campaignUi = window.CardCampaignUI.create({cards: cards, showScreen: showScreen,
         onBattle: startBattle, onExit: returnToCollection});
       const requested = new URLSearchParams(location.search).get("card");

@@ -201,6 +201,7 @@ test("campaign HP is isolated and all original collection data remains frozen", 
   assert.equal(JSON.stringify(data), before);
   const legacy = {...data, cards:require("./approved-card-baseline.cjs").beforeMidasRollback(data.cards.slice(0,75)), collection:data.collection.slice(0,75)};
   delete legacy.familyUnlockGoals; // Added acquisition policy is not combat data.
+  delete legacy.tierUnlockGoals; // Tier acquisition goals do not alter any card combat data.
   assert.equal(crypto.createHash("sha256").update(JSON.stringify(legacy)).digest("hex"), "3bdad4902a84cf2fb6a9eae9e978995c0acc4f999d42db5d5adb62ef6f5ae596");
   assert.throws(() => Campaign.encounter(0, 2, data.cards), RangeError);
   assert.throws(() => Campaign.encounter(0, 0, []), /누락/);
