@@ -28,8 +28,8 @@
     const p = profile(e);
     const type = e.kind === 'boss' || e.kind === 'saja' ? e.attackType : p.move === 'wave' ? 2 : p.move === 'claw' ? 3 : 0;
     return {
-      text: type === 1 ? '돌진 · 뛰어넘기' : type === 2 ? '지면 파동 · 점프' : type === 3 ? '할퀴기 · 뒤로 피하기' : p.hint || '마력 구슬 · 점프',
-      color: type === 1 ? '#ffb36b' : type === 2 ? '#ff729d' : '#7be5ff',
+      text: type === 4 ? '혼문 파열 · 대시로 뚫기' : type === 1 ? '돌진 · 뛰어넘기' : type === 2 ? '지면 파동 · 점프' : type === 3 ? '할퀴기 · 뒤로 피하기' : p.hint || '마력 구슬 · 점프',
+      color: type === 4 ? '#ff2d55' : type === 1 ? '#ffb36b' : type === 2 ? '#ff729d' : '#7be5ff',
       type,
     };
   }
@@ -98,7 +98,7 @@
       const progress = clamp((total - e.telegraph) / Math.max(.01, total - threshold), 0, 1);
       ctx.save(); ctx.scale(e.facing, 1);
       ctx.globalAlpha = .16 + progress * .14;
-      const length = cue.type === 1 ? (e.kind === 'boss' ? 380 : 240) : cue.type === 2 ? 260 : cue.type === 3 ? 115 : 155;
+      const length = cue.type === 4 ? 520 : cue.type === 1 ? (e.kind === 'boss' ? 380 : 240) : cue.type === 2 ? 260 : cue.type === 3 ? 115 : 155;
       const left = cue.type === 2 ? -length : 0;
       const w = cue.type === 2 ? length * 2 : length;
       ctx.fillRect(left, -6, w, 12); ctx.globalAlpha = .85; ctx.strokeRect(left, -6, w, 12);

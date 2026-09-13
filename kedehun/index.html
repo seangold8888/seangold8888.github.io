@@ -48,6 +48,14 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   font-weight: 700;
   letter-spacing: 0.1em;
 }
+/* 혼문 무대(어려운 모드) */
+.hard-button {
+  border-color: #ff8a5b !important;
+  color: #ffe1d2 !important;
+  background: linear-gradient(135deg, #ff5a3d40, #ff3cac33) !important;
+}
+.health-fill.hype { background: linear-gradient(90deg, #ff3cac, #ffd166) !important; }
+.health-fill.hype.low { background: linear-gradient(90deg, #ff174d, #ff6f91) !important; }
 @keyframes dx-record-pulse {
   0%, 100% { transform: scale(1); opacity: 1; }
   50% { transform: scale(1.07); opacity: 0.82; }
@@ -323,6 +331,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       </details>
       <div class="start-actions">
         <button type="button" class="primary-button" id="startBtn">루미와 무대 출격</button>
+        <button type="button" class="secondary-button hard-button" id="hardBtn" hidden title="붉은 혼문 파열은 대시로 뚫고 지나가요">🔥 혼문 무대</button>
         <div class="control-summary" aria-label="주요 조작법">
           <span><i class="control-dot">A D</i>달리기</span>
           <span><i class="control-dot">W</i>더블점프</span>
@@ -384,7 +393,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     </div>
   </section>
 </main>
-<script src="combat-v2.js?v=1"></script>
+<script src="combat-v2.js?v=2"></script>
 <script src="attack-motion.js?v=1"></script>
 <script>
 'use strict';
@@ -607,6 +616,28 @@ function loadBest() {
 }
 function saveBest(best) {
   try { localStorage.setItem(BEST_KEY, JSON.stringify(best)); } catch { /* private mode */ }
+}
+
+/* 혼문 무대(어려운 모드) — HARD-MODES-SPEC.md H2.
+   일반 모드에서는 아래 값이 쓰이는 분기를 한 번도 타지 않는다.
+   회복 2.5/초·맞은 뒤 3초 대기는 호그와트 실측을 따른다: 드문드문 맞아도 곧바로 차면
+   일반 체력보다 쉬워지기 때문이다. */
+const HARD_KEY = 'kedehun-hard-v1';
+const HYPE = Object.freeze({ max: 100, start: 55, soft: 55, regen: 2.5, regenDelay: 3, hit: 22, kill: 6, heavyKill: 10, justDodge: 12, shard: 1.5, checkpoint: 65 });
+function loadHardRecord() {
+  const clean = { version: 1, normalStage1: false, normalWon: false, hardStage1: false, hardWon: false, hardBest: 0 };
+  try {
+    const raw = JSON.parse(localStorage.getItem(HARD_KEY) || '{}') || {};
+    for (const key of ['normalStage1', 'normalWon', 'hardStage1', 'hardWon']) clean[key] = raw[key] === true;
+    clean.hardBest = Number.isFinite(Number(raw.hardBest)) ? Math.max(0, Math.floor(Number(raw.hardBest))) : 0;
+  } catch { /* 손상된 기록은 기본값으로 */ }
+  // 이 기능 전에 이미 끝까지 깬 기기: 최고 기록이 곧 두 무대를 깬 증거다.
+  if (loadBest()) { clean.normalStage1 = true; clean.normalWon = true; }
+  if (!clean.normalStage1) { clean.hardStage1 = false; clean.hardWon = false; clean.hardBest = 0; }
+  return clean;
+}
+function saveHardRecord(record) {
+  try { localStorage.setItem(HARD_KEY, JSON.stringify(record)); } catch { /* private mode */ }
 }
 
 class InputBuffer {
@@ -865,6 +896,13 @@ class Game {
     this.streakTimer = 4;
     this.confettiTimer = 0;
     this.best = loadBest();
+    this.hardRecord = loadHardRecord();
+    this.hardMode = false;
+    this.hype = 0;
+    this.sinceHit = Infinity;
+    this.hypeLowAnnounced = false;
+    this.ruptureDemoDone = false;
+    this.hardStats = { rescues: 0, dodges: 0, ruptures: 0 };
     this.newRecord = false;
     this.storyKey = null;
     this.storyNext = null;
@@ -903,10 +941,13 @@ class Game {
 
   previewGuardian(id) { this.guardianId = id; this.publish(); }
 
-  async start(id) {
+  async start(id, hard = false) {
     if (!characterArtReadyForPlay) return;
     await this.audio.unlock();
     this.guardianId = id;
+    // 일반 1스테이지를 한 번 깬 기기에서만 혼문 무대가 열린다.
+    this.hardMode = !!hard && !!this.hardRecord?.normalStage1;
+    if (this.hardMode) { this.hardStats = { rescues: 0, dodges: 0, ruptures: 0 }; this.ruptureDemoDone = false; }
     this.score = 0;
     this.maxCombo = 0;
     this.combo = 0;
@@ -919,7 +960,8 @@ class Game {
     this.playStory('intro', () => {
       this.phase = 'playing';
       this.music.start(0);
-      this.announce('MISSION 01', '코랄 무대를 되찾아!');
+      if (this.hardMode) this.announce('🔥 HONMOON STAGE', '붉은 파열은 대시로 뚫고 지나가!');
+      else this.announce('MISSION 01', '코랄 무대를 되찾아!');
     });
   }
 
@@ -958,10 +1000,11 @@ class Game {
     });
   }
 
-  restartCampaign() { this.start(this.guardianId); }
+  restartCampaign() { this.start(this.guardianId, this.hardMode); }
 
   toTitle() {
     this.phase = 'select';
+    this.hardMode = false;
     this.input.clear();
     this.music.stop();
     this.enemies = [];
@@ -1034,6 +1077,7 @@ class Game {
     if (down && !repeat) {
       if (code === 'Escape' || code === 'KeyP') { this.togglePause(); return; }
       if (code === 'KeyM') { this.toggleMute(); return; }
+      if (code === 'KeyH' && this.phase === 'select' && this.hardRecord?.normalStage1) { this.start(this.guardianId, true); return; }
       if (code === 'Enter') {
         if (this.phase === 'select') this.start(this.guardianId);
         else if (this.phase === 'paused') this.togglePause();
@@ -1069,6 +1113,13 @@ class Game {
     this.enemies = stage.enemies
       .filter((e) => !fromCheckpoint || !stage.checkpoint || e.x > stage.checkpoint - 140)
       .map((e) => this.makeEnemy(e.kind, e.x, e));
+    if (this.hardMode) {
+      // 혼문 무대: 체크포인트 뒤에 그림자 한 체를 더 둔다. 무대마다 함성은 시작값에서 출발.
+      if (stage.checkpoint) this.enemies.push(this.makeEnemy('shade', stage.checkpoint + 260));
+      this.hype = HYPE.start;
+      this.sinceHit = Infinity;
+      this.hypeLowAnnounced = false;
+    }
     this.projectiles = [];
     this.particles = [];
     this.floaters = [];
@@ -1113,9 +1164,10 @@ class Game {
   makeBoss() {
     const stage = STAGES[this.stageIndex];
     const x = stage.worldWidth - 590;
+    const bossHealth = this.hardMode ? [460, 640][this.stageIndex] : stage.bossHealth;
     return {
       id: this.nextId++, kind: 'boss', bossKind: stage.bossKind ?? 'cloud', name: stage.boss, x, y: GROUND_Y - 18, px: x, py: GROUND_Y - 18, vx: 0,
-      width: 178, height: 182, health: Math.round(stage.bossHealth * 0.75), maxHealth: Math.round(stage.bossHealth * 0.75),
+      width: 178, height: 182, health: Math.round(bossHealth * 0.75), maxHealth: Math.round(bossHealth * 0.75),
       speed: 78, damage: 18,
       cooldown: 1.5, telegraph: 0, telegraphTotal: 0, recovery: 0, attackType: 0, attackFired: false,
       dash: 0, dashHit: false, stun: 0, flash: 0, spawn: 1.05, dead: false, death: 0,
@@ -1186,6 +1238,7 @@ class Game {
       if (this.respawnTimer <= 0) this.respawn();
       return;
     }
+    if (this.hardMode) this.updateHype(dt);
     this.updatePlayer(dt);
     this.updateEnemies(dt);
     this.updateProjectiles(dt);
@@ -1324,7 +1377,8 @@ class Game {
     if (!this.checkpointReached && stage.checkpoint && p.x >= stage.checkpoint) {
       this.checkpointReached = true;
       p.health = Math.min(p.maxHealth, p.health + 60);
-      this.announce('CHECKPOINT', '응원 깃발 발견 · 하트 충전!');
+      if (this.hardMode) this.hype = Math.max(this.hype, HYPE.checkpoint);
+      this.announce('CHECKPOINT', this.hardMode ? '응원 깃발 발견 · 함성 충전!' : '응원 깃발 발견 · 하트 충전!');
       this.audio.play('shard');
       this.burst(stage.checkpoint, GROUND_Y - 90, '#ffd166', 26, 'star');
     }
@@ -1406,7 +1460,8 @@ class Game {
           if (!e.attackFired && e.telegraph < 0.26) {
             e.attackFired = true;
             e.recovery = .85;
-            if (e.attackType === 1) {
+            if (e.attackType === 4) this.fireRupture(e);
+            else if (e.attackType === 1) {
               e.dash = 0.3;
               e.dashHit = false;
               e.vx = e.facing * 640;
@@ -1430,12 +1485,12 @@ class Game {
             }
           }
         } else if (dist < 150 && e.cooldown <= 0) {
-          e.attackType = COMBAT.chooseSajaAttack(e, dist);
+          e.attackType = this.pickHardAttack(e, COMBAT.chooseSajaAttack(e, dist));
           e.telegraph = e.telegraphTotal = 0.95;
           e.cooldown = 2.0;
           e.attackFired = false;
         } else if (dist < 520 && e.cooldown <= 0) {
-          e.attackType = COMBAT.chooseSajaAttack(e, dist);
+          e.attackType = this.pickHardAttack(e, COMBAT.chooseSajaAttack(e, dist));
           e.telegraph = e.telegraphTotal = 1.0;
           e.cooldown = 2.5;
           e.attackFired = false;
@@ -1493,7 +1548,8 @@ class Game {
       if (!e.attackFired && e.telegraph < (e.attackType === 1 ? 0.31 : 0.41)) {
         e.attackFired = true;
         e.recovery = e.phaseTwo ? .9 : 1.15;
-        if (e.attackType === 0) {
+        if (e.attackType === 4) this.fireRupture(e);
+        else if (e.attackType === 0) {
           const speed = e.phaseTwo ? 420 : 340;
           const spreads = e.phaseTwo ? [-0.28, 0, 0.28] : [0];
           for (const spread of spreads) {
@@ -1525,7 +1581,7 @@ class Game {
       return;
     }
     if (e.cooldown <= 0) {
-      e.attackType = (e.attackType + 1) % 3;
+      e.attackType = this.pickBossAttack(e);
       e.telegraph = e.telegraphTotal = e.attackType === 1 ? 1.2 : 1.35;
       e.cooldown = e.phaseTwo ? 1.05 : 1.6;
       e.attackFired = false;
@@ -1543,6 +1599,7 @@ class Game {
       pr.y += pr.vy * dt;
       if (pr.kind === 'orb') pr.vy += 55 * dt;
       if (pr.life <= 0) pr.dead = true;
+      if (pr.kind === 'rupture') { if (!pr.dead && !pr.dodged) this.touchRupture(pr); continue; }
       if (!pr.dead && overlap(
         p.x, p.y - 47, 46, 86, pr.x, pr.y,
         pr.kind === 'wave' ? pr.radius * 1.8 : pr.radius * 1.45,
@@ -1590,6 +1647,7 @@ class Game {
     e.stun = e.kind === 'boss' ? 0.045 : heavy ? 0.22 : 0.12;
     e.vx = knockback * (e.kind === 'boss' ? 0.22 : 1);
     const killed = e.health <= 0;
+    if (this.hardMode && killed) this.rewardHype(heavy ? HYPE.heavyKill : HYPE.kill);
     this.combo += 1;
     this.maxCombo = Math.max(this.maxCombo, this.combo);
     this.comboTimer = 3.2;
@@ -1643,9 +1701,14 @@ class Game {
       return;
     }
     if (p.invulnerable > 0 || p.ultimate > 0) return;
-    p.health = Math.max(0, p.health - Math.max(1, Math.round(damage * 0.65)));
+    if (this.hardMode) {
+      // 혼문 무대: 체력 대신 함성이 줄고, 바닥나면 기존 구조 연출이 돈다.
+      this.hype -= HYPE.hit;
+      this.sinceHit = 0;
+      p.health = this.hype <= 0 ? 0 : p.maxHealth;
+    } else p.health = Math.max(0, p.health - Math.max(1, Math.round(damage * 0.65)));
     p.hurt = 0.3;
-    p.invulnerable = 1.6;
+    p.invulnerable = this.hardMode ? 1.1 : 1.6;
     p.vx = dir * 250;
     p.vy = -260;
     this.combo = 0;
@@ -1657,11 +1720,105 @@ class Game {
     if (p.health <= 0) {
       p.dead = true;
       this.respawnTimer = 1.35;
-      this.announce('STARLIGHT HOLD', '잠깐 쉬고 다시 출발!');
+      if (this.hardMode) this.hardStats.rescues += 1;
+      if (this.hardMode) this.announce('LIGHTS OUT', '함성이 식었어 · 깃발에서 다시!');
+      else this.announce('STARLIGHT HOLD', '잠깐 쉬고 다시 출발!');
     } else if (p.health <= 30) {
       this.announce('HEART WARNING', '괜찮아 · 대시로 피할 수 있어!', 1.2);
     }
     this.publish();
+  }
+
+  /* ── 혼문 무대 ─────────────────────────────────────────────── */
+  // 사자 보이즈는 세 번째 공격마다 혼문 파열을 쓴다. 일반 모드에서는 원래 선택 그대로.
+  pickHardAttack(e, type) {
+    if (!this.hardMode) return type;
+    e.hardCount = (e.hardCount || 0) + 1;
+    return e.hardCount % 3 === 0 ? 4 : type;
+  }
+
+  // 보스는 구슬·돌진·파동 순환 사이에 네 번째마다 혼문 파열을 끼운다.
+  pickBossAttack(e) {
+    const next = e.attackType === 4 ? 0 : (e.attackType + 1) % 3;
+    if (!this.hardMode) return next;
+    e.hardCount = (e.hardCount || 0) + 1;
+    return e.hardCount % 4 === 0 ? 4 : next;
+  }
+
+  // 혼문 파열: 화면 높이 전체를 덮는 붉은 기둥이 빠르게 밀려온다.
+  // 점프로 넘을 수 없고 걸어서 못 벗어난다. 대시로 뚫고 지나가야 한다.
+  fireRupture(e) {
+    const dir = this.player.x >= e.x ? 1 : -1;
+    const demo = !this.ruptureDemoDone;
+    this.ruptureDemoDone = true;
+    this.hardStats.ruptures += 1;
+    this.projectiles.push({
+      kind: 'rupture', x: e.x + dir * 40, y: GROUND_Y - 14, vx: dir * 900, vy: 0,
+      radius: 34, life: 1.8, damage: e.damage, color: '#ff2d55', dead: false, source: e.id, demo, dodged: false,
+    });
+    this.trauma = Math.min(1, this.trauma + 0.3);
+    this.ring(e.x, GROUND_Y - 60, '#ff2d55', 150);
+    this.audio.play('boss');
+    if (demo) this.announce('HONMOON RUPTURE', '빨간 파열은 대시로 뚫고 지나가!', 1.6);
+  }
+
+  touchRupture(pr) {
+    const p = this.player;
+    if (p.dead || !overlap(p.x, p.y - 47, 46, 86, pr.x, WORLD_H / 2, pr.radius * 2, WORLD_H)) return;
+    if (p.dash > 0) {
+      pr.dodged = true;
+      this.hardStats.dodges += 1;
+      this.rewardHype(HYPE.justDodge);
+      this.hurtPlayer(pr.damage, pr.vx > 0 ? 1 : -1);   // 기존 JUST DODGE 연출·에너지
+      this.hitstop = Math.max(this.hitstop, this.reduced ? 0.05 : 0.2);
+      const source = this.enemies.find((e) => e.id === pr.source && !e.dead);
+      if (source) {
+        source.stun = Math.max(source.stun, 1.2);
+        source.telegraph = 0;
+        source.dash = 0;
+        this.floaters.push({ x: source.x, y: source.y - source.height - 30, life: 1, text: '관통! 빈틈', color: '#70efb2', size: 20 });
+      }
+      return;
+    }
+    if (pr.demo) {
+      pr.dodged = true;
+      this.floaters.push({ x: p.x, y: p.y - 140, life: 1.1, text: '연습이야 · 대시로 뚫어!', color: '#ffd166', size: 18 });
+      return;
+    }
+    pr.dead = true;
+    this.hurtPlayer(pr.damage, pr.vx > 0 ? 1 : -1);
+  }
+
+  // 함성은 맞은 뒤 3초가 지나야 시작값까지만 돌아온다. 그 위는 정화·회피·파편으로만.
+  updateHype(dt) {
+    this.sinceHit += dt;
+    if (this.hype < HYPE.soft && this.sinceHit >= HYPE.regenDelay) this.hype = Math.min(HYPE.soft, this.hype + HYPE.regen * dt);
+    if (this.hype < 30 && !this.hypeLowAnnounced) {
+      this.hypeLowAnnounced = true;
+      this.announce('HYPE DOWN', '함성이 식고 있어 · 정화하면 다시 뜨거워져!', 1.4);
+    }
+  }
+
+  rewardHype(amount) {
+    const room = this.hype <= HYPE.soft ? 1 : Math.max(0, 1 - (this.hype - HYPE.soft) / (HYPE.max - HYPE.soft));
+    this.hype = Math.min(HYPE.max, this.hype + amount * room);
+  }
+
+  recordClear(stage) {
+    const record = this.hardRecord;
+    if (!record) return;
+    if (this.hardMode) {
+      if (stage === 0) record.hardStage1 = true;
+      else {
+        record.hardStage1 = true;
+        record.hardWon = true;
+        if (this.score > record.hardBest) { record.hardBest = this.score; this.newRecord = true; }
+      }
+    } else {
+      record.normalStage1 = true;
+      if (stage === 1) record.normalWon = true;
+    }
+    saveHardRecord(record);
   }
 
   respawn() {
@@ -1681,6 +1838,7 @@ class Game {
         sh.collected = true;
         this.score += 25;
         this.player.energy = Math.min(MAX_ENERGY, this.player.energy + 9);
+        if (this.hardMode) this.rewardHype(HYPE.shard);
         this.audio.play('shard');
         this.burst(sh.x, sh.y, '#ffd166', 15, 'star');
         this.floaters.push({ x: sh.x, y: sh.y - 20, life: 0.72, text: '+25 CHEERS', color: '#ffd166', size: 15 });
@@ -1702,6 +1860,7 @@ class Game {
       this.enemies = this.enemies.filter((e) => e.kind === 'boss');
       this.projectiles = [];
       this.player.health = this.player.maxHealth;
+      if (this.hardMode) this.hype = Math.max(this.hype, HYPE.checkpoint);
       this.player.invulnerable = Math.max(this.player.invulnerable, 2);
       this.enemies.push(this.makeBoss());
       this.damageFlash = 0.4;
@@ -1721,13 +1880,16 @@ class Game {
         if (this.stageIndex === 0) {
           this.phase = 'stageClear';
           this.music.duck(true);
+          this.recordClear(0);
           this.publish();
         } else {
           this.music.stop();
           this.playStory('ending', () => {
             this.phase = 'victory';
             const grade = this.grade();
-            if (!this.best || this.score > this.best.score) {
+            this.recordClear(1);
+            // 혼문 무대 점수는 일반 최고 기록을 덮지 않는다.
+            if (!this.hardMode && (!this.best || this.score > this.best.score)) {
               this.best = { score: this.score, maxCombo: this.maxCombo, time: this.playTime, grade, guardianId: this.guardianId };
               saveBest(this.best);
               this.newRecord = true;
@@ -1864,6 +2026,10 @@ class Game {
       best: this.best,
       newRecord: this.newRecord,
       announcement: this.announcement ? { kicker: this.announcement.kicker, title: this.announcement.title } : null,
+      hard: this.hardMode,
+      hype: Math.round(this.hype),
+      hardRecord: this.hardRecord,
+      hardStats: this.hardStats,
     });
     this.lastPublish = performance.now();
   }
@@ -2565,7 +2731,19 @@ Object.assign(Game.prototype, {
       ctx.translate(pr.x, pr.y);
       ctx.shadowColor = pr.color;
       ctx.shadowBlur = 22;
-      if (pr.kind === 'heart') {
+      if (pr.kind === 'rupture') {
+        ctx.shadowBlur = this.reduced ? 0 : 26;
+        const top = -GROUND_Y;
+        const grad = ctx.createLinearGradient(0, top, 0, 14);
+        grad.addColorStop(0, pr.dodged ? 'rgba(112,239,178,0)' : 'rgba(255,45,85,0)');
+        grad.addColorStop(0.35, pr.dodged ? 'rgba(112,239,178,.5)' : 'rgba(255,45,85,.72)');
+        grad.addColorStop(1, pr.dodged ? 'rgba(112,239,178,.9)' : 'rgba(255,209,102,.95)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(-pr.radius, top, pr.radius * 2, GROUND_Y + 14);
+        ctx.strokeStyle = pr.dodged ? '#70efb2' : '#fff8ef';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(-pr.radius * 0.35, top, pr.radius * 0.7, GROUND_Y + 14);
+      } else if (pr.kind === 'heart') {
         ctx.fillStyle = pr.color;
         ctx.rotate(Math.atan2(pr.vy, pr.vx) * 0.15);
         const r = pr.radius;
@@ -2677,6 +2855,7 @@ Object.assign(Game.prototype, {
     vignette.addColorStop(1, 'rgba(2,0,12,.72)');
     ctx.fillStyle = vignette;
     ctx.fillRect(0, 0, this.viewWidth, WORLD_H);
+    if (this.hardMode && this.phase !== 'select') this.drawHypeFx();
     if (this.phase === 'playing' && !this.player.dead && this.player.health <= 30) {
       const pulse = 0.1 + Math.sin(this.ambient * 5) * 0.05;
       const danger = ctx.createRadialGradient(
@@ -2699,6 +2878,39 @@ Object.assign(Game.prototype, {
       ctx.fillRect(0, 0, this.viewWidth, WORLD_H);
     }
     ctx.globalAlpha = 1;
+  },
+
+  /* 혼문 무대: 함성이 곧 무대 조명이다. 55에서도 셋 중 하나는 꺼져 있고, 식을수록 어두워진다. */
+  drawHypeFx() {
+    const ctx = this.context, hype = clamp(this.hype, 0, HYPE.max), w = this.viewWidth;
+    const lit = hype >= 90 ? 3 : hype >= 45 ? 2 : hype >= 15 ? 1 : 0;
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    [0.2, 0.5, 0.8].forEach((anchor, i) => {
+      if (i >= lit) return;
+      const bx = w * anchor, sway = this.reduced ? 0 : Math.sin(this.ambient * 0.6 + i * 2) * 0.35;
+      const grad = ctx.createLinearGradient(bx, 0, bx + sway * 500, GROUND_Y);
+      grad.addColorStop(0, i === 1 ? '#ffd16660' : '#ff3cac52');
+      grad.addColorStop(1, '#ffffff00');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.moveTo(bx - 22, 0);
+      ctx.lineTo(bx + 22, 0);
+      ctx.lineTo(bx + sway * 500 + 130, GROUND_Y);
+      ctx.lineTo(bx + sway * 500 - 130, GROUND_Y);
+      ctx.closePath();
+      ctx.fill();
+    });
+    ctx.restore();
+    const dark = (1 - hype / HYPE.max) * 0.5;
+    if (dark > 0.01) {
+      const low = hype < 30, pulse = low && !this.reduced ? Math.sin(this.ambient * 5) * 0.05 : 0;
+      const grad = ctx.createRadialGradient(w / 2, WORLD_H * 0.5, WORLD_H * 0.22, w / 2, WORLD_H * 0.5, Math.max(w, WORLD_H) * 0.72);
+      grad.addColorStop(0, 'rgba(6,3,20,0)');
+      grad.addColorStop(1, low ? 'rgba(70,6,40,' + (dark + 0.18 + pulse) + ')' : 'rgba(6,3,20,' + dark + ')');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, WORLD_H);
+    }
   },
 });
 /* Original vector portraits for the three hunters (canvas-drawn, no external assets). */
@@ -3316,6 +3528,7 @@ function fileToPortraitDataUrl(file, size = 320) {
     victoryBest: $('victoryBest'),
     againBtn: $('againBtn'),
     victoryTitleBtn: $('victoryTitleBtn'),
+    hardBtn: $('hardBtn'),
   };
 
   let characterArtSettled = false;
@@ -3541,9 +3754,21 @@ function fileToPortraitDataUrl(file, size = 320) {
     if (playing) {
       renderHudMark(g.id);
       refs.playerName.textContent = g.name + ' · ' + g.skill;
-      refs.healthNumber.textContent = next.health + '/' + next.maxHealth;
-      refs.healthBar.setAttribute('aria-valuenow', String(next.health));
-      refs.healthFill.style.setProperty('--bar-value', clamp(next.health / next.maxHealth, 0, 1));
+      if (next.hard) {
+        refs.healthNumber.textContent = '무대 열기 ' + next.hype;
+        refs.healthBar.setAttribute('aria-label', '무대 열기');
+        refs.healthBar.setAttribute('aria-valuemax', '100');
+        refs.healthBar.setAttribute('aria-valuenow', String(next.hype));
+        refs.healthFill.style.setProperty('--bar-value', clamp(next.hype / 100, 0, 1));
+      } else {
+        refs.healthNumber.textContent = next.health + '/' + next.maxHealth;
+        refs.healthBar.setAttribute('aria-label', '가디언 체력');
+        refs.healthBar.setAttribute('aria-valuemax', '120');
+        refs.healthBar.setAttribute('aria-valuenow', String(next.health));
+        refs.healthFill.style.setProperty('--bar-value', clamp(next.health / next.maxHealth, 0, 1));
+      }
+      refs.healthFill.classList.toggle('hype', !!next.hard);
+      refs.healthFill.classList.toggle('low', !!next.hard && next.hype < 30);
       refs.energyFill.style.setProperty('--bar-value', clamp(next.energy / MAX_ENERGY, 0, 1));
       refs.energyFill.classList.toggle('ready', next.energy >= MAX_ENERGY);
       refs.energyBar.setAttribute('aria-valuenow', String(next.energy));
@@ -3600,6 +3825,9 @@ function fileToPortraitDataUrl(file, size = 320) {
     if (next.phase === 'story' && next.storyKey && !cutscene.active) cutscene.play(next.storyKey);
     if (next.phase !== 'story' && cutscene.active) cutscene.finish();
     if (next.phase === 'select') {
+      const record = next.hardRecord;
+      refs.hardBtn.hidden = !(record && record.normalStage1);
+      if (record) refs.hardBtn.textContent = '🔥 혼문 무대' + (record.hardWon ? ' ✓' : '');
       if (next.best) {
         const bg = guardianOf(next.best.guardianId ?? 'lumi');
         refs.bestLine.hidden = false;
@@ -3610,6 +3838,7 @@ function fileToPortraitDataUrl(file, size = 320) {
     }
     if (next.phase !== lastPhase) {
       if (next.phase === 'stageClear') {
+        refs.menuClear.querySelector('.dialog-kicker').textContent = next.hard ? '🔥 HONMOON STAGE 01 CLEAR' : 'STAGE 01 CLEAR';
         refs.clearScore.textContent = pad(next.score);
         refs.clearCombo.textContent = next.maxCombo + '×';
         refs.clearTime.textContent = fmtTime(next.playTime);
@@ -3620,8 +3849,12 @@ function fileToPortraitDataUrl(file, size = 320) {
         refs.victoryScore.textContent = pad(next.score);
         refs.victoryCombo.textContent = next.maxCombo + '×';
         refs.victoryTime.textContent = fmtTime(next.playTime);
+        refs.menuVictory.querySelector('.dialog-kicker').textContent = next.hard ? '🔥 HONMOON STAGE · ALL CLEAR' : 'ALL STAGES PURIFIED';
         refs.newRecord.hidden = !next.newRecord;
-        if (next.best && !next.newRecord) {
+        if (next.hard) {
+          refs.victoryBest.hidden = !!next.newRecord;
+          refs.victoryBest.textContent = 'HONMOON BEST ' + pad(next.hardRecord?.hardBest ?? 0) + ' CHEERS';
+        } else if (next.best && !next.newRecord) {
           refs.victoryBest.hidden = false;
           refs.victoryBest.textContent = 'BEST ' + pad(next.best.score) + ' CHEERS';
         } else refs.victoryBest.hidden = true;
@@ -3663,7 +3896,7 @@ function fileToPortraitDataUrl(file, size = 320) {
 
   const gameKeys = new Set([
     'ArrowLeft', 'ArrowRight', 'ArrowUp', 'Space', 'KeyA', 'KeyD', 'KeyW', 'KeyX', 'KeyJ', 'KeyK', 'KeyZ', 'KeyC', 'KeyL',
-    'ShiftLeft', 'ShiftRight', 'Escape', 'KeyP', 'KeyM', 'Digit1', 'Digit2', 'Digit3', 'Enter',
+    'ShiftLeft', 'ShiftRight', 'Escape', 'KeyP', 'KeyM', 'KeyH', 'Digit1', 'Digit2', 'Digit3', 'Enter',
   ]);
   window.addEventListener('keydown', (ev) => {
     if (isFormTarget(ev.target)) return;
@@ -3686,6 +3919,7 @@ function fileToPortraitDataUrl(file, size = 320) {
   root.addEventListener('contextmenu', (ev) => ev.preventDefault());
 
   refs.startBtn.addEventListener('click', () => void game.start(selectedId));
+  refs.hardBtn.addEventListener('click', () => void game.start(selectedId, true));
   refs.muteBtn.addEventListener('click', () => game.toggleMute());
   refs.pauseBtn.addEventListener('click', () => game.togglePause());
   refs.resumeBtn.addEventListener('click', () => game.togglePause());
