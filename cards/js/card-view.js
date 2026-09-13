@@ -9,26 +9,8 @@
   });
   function displayName(card) { return HERO_NAMES[card.id] || card.name; }
   function presentCard(card) { return HERO_NAMES[card.id] ? { ...card, name: displayName(card) } : card; }
-  function traitInfo(card) {
-    const fx = card.passive && card.passive.fx;
-    const traits = {
-      reduce_dmg_10: ["guard", "🛡 피해 감소"],
-      reduce_dmg_20_monster: ["guard", "🛡 괴물 방어"],
-      first_hit_zero: ["guard", "🛡 첫 공격 방어"],
-      no_weakness: ["guard", "🛡 약점 방어"],
-      coin_evade: ["evade", "💨 동전 회피"],
-      revive_half_once: ["revive", "💚 한 번 부활"],
-      boost_20_below_half: ["power", "🔥 역전 공격"],
-      nullify_passive: ["trick", "✦ 특성 봉쇄"],
-      coin_miss: ["other", "🪙 빗나감 주의"],
-      wish_limit_3: ["other", "⌛ 기술 3회"]
-    };
-    const trait = traits[fx] || ["other", fx ? "✦ 특별 능력" : "✦ 기본형"];
-    return { key: trait[0], label: trait[1] };
-  }
-  function filterCollection(cards, element, trait) {
-    return cards.filter(card => (element === "all" || card.element === element) &&
-      (trait === "all" || traitInfo(card).key === trait));
+  function filterCollection(cards, element) {
+    return cards.filter(card => element === "all" || card.element === element);
   }
 
   const TYPE_META = {
@@ -455,10 +437,6 @@
 
     const art = createArt(card, options);
     if (options.collectionCompact) {
-      const trait = traitInfo(card);
-      const badge = el("span", "trait-badge trait-" + trait.key, trait.label);
-      badge.setAttribute("title", describePassive(card));
-      art.appendChild(badge);
       cardEl.append(ornament, art, crown);
     } else if (options.compact) {
       cardEl.append(ornament, crown, facts, art, hpTrack, meta, details);
@@ -482,7 +460,6 @@
   window.CardView = {
     displayName: displayName,
     presentCard: presentCard,
-    traitInfo: traitInfo,
     filterCollection: filterCollection,
     create: create,
     combatInfo: combatInfo,

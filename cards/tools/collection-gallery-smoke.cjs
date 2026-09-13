@@ -14,7 +14,7 @@ const server=http.createServer((req,res)=>{
  await new Promise(resolve=>server.listen(0,"127.0.0.1",resolve));
  const browser=await chromium.launch({headless:true,channel:"msedge"});
  try{
-  for(const viewport of [{width:820,height:1180},{width:1180,height:820},{width:390,height:844}]){
+  for(const viewport of [{width:820,height:1180},{width:1180,height:820},{width:390,height:844},{width:1317,height:1085}]){
    const context=await browser.newContext({viewport,serviceWorkers:"block",reducedMotion:"reduce"});
    const page=await context.newPage(),errors=[];
    page.on("pageerror",e=>errors.push(String(e)));
@@ -27,22 +27,31 @@ const server=http.createServer((req,res)=>{
    assert.ok(Math.max(...geometry.map(c=>c.w))-Math.min(...geometry.map(c=>c.w))<1);
    assert.ok(Math.max(...geometry.map(c=>c.h))-Math.min(...geometry.map(c=>c.h))<1);
    for(const c of geometry)assert.ok(c.art/c.h>.65,JSON.stringify(c));
-   assert.equal(geometry.filter(c=>Math.abs(c.y-geometry[0].y)<1).length,viewport.width===820?3:viewport.width===1180?5:2);
+   assert.equal(geometry.filter(c=>Math.abs(c.y-geometry[0].y)<1).length,viewport.width===820?3:viewport.width>=1000?5:2);
    assert.equal(await page.locator("#collectionGrid .combat-facts").count(),0);
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
    await page.waitForFunction(()=>[...document.querySelectorAll("#collectionGrid img")].filter(img=>img.getBoundingClientRect().top<innerHeight).every(img=>img.complete&&img.naturalWidth>0));
    await page.screenshot({path:path.join(output,viewport.width+"-gallery.png")});
-   assert.equal(await page.locator("#collectionGrid .trait-badge").count(),76);
-   await page.locator("#collectionElement").selectOption("wood");
-   await page.locator("#collectionTrait").selectOption("evade");
-   assert.ok(await page.locator('#collectionGrid [data-card-id="jack"]').count());
-   assert.ok(await page.locator("#collectionGrid .story-card").evaluateAll(nodes=>nodes.every(n=>n.classList.contains("element-wood")&&n.querySelector(".trait-evade"))));
-   await page.locator("#collectionElement").selectOption("metal");
-   await page.locator("#collectionTrait").selectOption("revive");
-   assert.equal(await page.locator("#collectionGrid .story-card").count(),0);
-   assert.match(await page.locator("#collectionFilterStatus").innerText(),/없어요/);
+   assert.equal(await page.locator("#collectionGrid .trait-badge, #collectionTrait").count(),0);
+   for(const element of ["wood","fire","earth","metal","water"]) {
+     await page.locator("#collectionElement").selectOption(element);
+     assert.ok(await page.locator("#collectionGrid .story-card").count());
+     assert.ok(await page.locator("#collectionGrid .story-card").evaluateAll((nodes,e)=>nodes.every(n=>n.classList.contains("element-"+e)),element));
+   }
    await page.locator("#collectionElement").selectOption("all");
-   await page.locator("#collectionTrait").selectOption("all");
+   const colors=await page.locator('#collectionGrid .story-card[class*="element-"]').evaluateAll(nodes=>Object.fromEntries(nodes.map(n=>[n.className.match(/element-(\w+)/)[1],getComputedStyle(n).borderTopColor])));
+   assert.equal(new Set(Object.values(colors)).size,5);
+   if(viewport.width===1180){
+     // Visual fixture: move one real card of each element to the front, without changing card content.
+     await page.evaluate(()=>{
+       const grid=document.getElementById("collectionGrid");
+       grid.prepend(...["wood","fire","earth","metal","water"].map(e=>grid.querySelector(".element-"+e).parentElement));
+     });
+     await page.waitForFunction(()=>[...document.querySelectorAll("#collectionGrid img")].filter(img=>img.getBoundingClientRect().top<innerHeight).every(img=>img.complete&&img.naturalWidth>0));
+     await page.screenshot({path:path.join(output,"five-elements.png")});
+   }
+   await page.locator("#collectionSort").selectOption("hp");
+   await page.locator("#collectionSort").selectOption("ready");
    await page.locator('#collectionGrid [data-card-id="gearwing"]').click();
    assert.equal(await page.locator("#cardDetailTitle").innerText(),"아이언 윙");
    assert.ok(await page.evaluate(()=>CardStoryGates.all.filter(q=>q.cardId==="gearwing").every(q=>q.prompt.includes("아이언 윙"))));

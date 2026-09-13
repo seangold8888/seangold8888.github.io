@@ -17,8 +17,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   <link rel="icon" href="../icon.png">
   <link rel="apple-touch-icon" href="../icon.png">
   <link rel="manifest" href="../manifest.json">
-<link rel="stylesheet" href="styles.css?v=50">
-<link rel="stylesheet" href="campaign.css?v=50">
+<link rel="stylesheet" href="styles.css?v=51">
+<link rel="stylesheet" href="campaign.css?v=51">
 </head>
 <body>
   <div class="sky" aria-hidden="true">
@@ -76,14 +76,6 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
             <option value="all">모든 속성</option><option value="wood">🌳 나무</option>
             <option value="fire">🔥 불</option><option value="earth">⛰ 땅</option>
             <option value="metal">⚙ 금속</option><option value="water">💧 물</option>
-          </select>
-        </label>
-        <label>자동 능력
-          <select id="collectionTrait" aria-label="자동 능력으로 골라보기">
-            <option value="all">모든 특성</option><option value="guard">🛡 피해 막기</option>
-            <option value="evade">💨 동전 회피</option><option value="revive">💚 한 번 부활</option>
-            <option value="power">🔥 역전 공격</option><option value="trick">✦ 특성 봉쇄</option>
-            <option value="other">그 밖의 특성</option>
           </select>
         </label>
       </div>
@@ -215,21 +207,21 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   </dialog>
 
   <noscript>이야기 카드 배틀을 하려면 JavaScript를 켜 주세요.</noscript>
-<script src="js/engine.js?v=50" defer></script>
-<script src="js/audio.js?v=50" defer></script>
-<script src="js/card-view.js?v=50" defer></script>
-<script src="js/vfx-recipes.js?v=50" defer></script>
-<script src="js/story-gates.js?v=50" defer></script>
-<script src="js/campaign.js?v=50" defer></script>
-<script src="js/campaign-ui.js?v=50" defer></script>
-<script src="js/combat-cinema.js?v=50" defer></script>
-<script src="js/app.js?v=50" defer></script>
+<script src="js/engine.js?v=51" defer></script>
+<script src="js/audio.js?v=51" defer></script>
+<script src="js/card-view.js?v=51" defer></script>
+<script src="js/vfx-recipes.js?v=51" defer></script>
+<script src="js/story-gates.js?v=51" defer></script>
+<script src="js/campaign.js?v=51" defer></script>
+<script src="js/campaign-ui.js?v=51" defer></script>
+<script src="js/combat-cinema.js?v=51" defer></script>
+<script src="js/app.js?v=51" defer></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
         navigator.serviceWorker.register(
           new URL("../sw.js", window.location.href),
-          { scope: new URL("../", window.location.href).href }
+          { scope: new URL("../", window.location.href).href, updateViaCache: "none" }
         ).catch(function (error) {
           console.warn("오프라인 준비를 시작하지 못했어요.", error);
         });

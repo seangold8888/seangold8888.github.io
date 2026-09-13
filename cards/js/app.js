@@ -79,7 +79,7 @@
   function cacheDom() {
     [
       "collectionScreen", "battleScreen", "campaignScreen", "campaignBattleLabel", "collectionGrid", "unlockCount",
-      "collectionSort", "collectionElement", "collectionTrait", "collectionFilterStatus", "detailUnlockLink",
+      "collectionSort", "collectionElement", "collectionFilterStatus", "detailUnlockLink",
       "muteButton", "musicButton", "leaveBattleButton", "turnOwner", "turnNumber",
       "battleStars", "arena", "enemyCardSlot", "playerCardSlot", "battleMessage",
       "effectBurst", "combatParticleCanvas", "combatShaderCanvas", "techniqueFxLayer", "actionList",
@@ -301,9 +301,9 @@
       selectedCard = battleCards.find(isUnlocked) || null;
     }
 
-    const filtered = window.CardView.filterCollection(cards, dom.collectionElement.value, dom.collectionTrait.value);
+    const filtered = window.CardView.filterCollection(cards, dom.collectionElement.value);
     const shelfOrder = window.CardView.sortCollection(filtered, collectionSort, isUnlocked, isPlayableCard);
-    dom.collectionFilterStatus.textContent = filtered.length ? filtered.length + "장 · 위쪽 배지는 자동 능력, 아래쪽 배지는 속성이에요." : "두 조건에 맞는 카드가 없어요. 속성이나 특성을 ‘모두’로 바꿔 보세요.";
+    dom.collectionFilterStatus.textContent = filtered.length + "장 · 초록 나무 · 주홍 불 · 황토 땅 · 은색 금속 · 파랑 물";
 
     shelfOrder.forEach(function (card) {
       const locked = !isUnlocked(card);
@@ -3001,9 +3001,7 @@
       try { localStorage.setItem("card_collection_sort", collectionSort); } catch (_) {}
       renderCollection();
     });
-    [dom.collectionElement, dom.collectionTrait].forEach(function (select) {
-      select.addEventListener("change", renderCollection);
-    });
+    dom.collectionElement.addEventListener("change", renderCollection);
     dom.leaveBattleButton.addEventListener("click", function () {
       if (campaignBattle) returnToCampaign(false);
       else returnToCollection();

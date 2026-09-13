@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v91";
+const CACHE_VERSION = "v92";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -148,19 +148,19 @@ const CORE_SHELL = [
   "./story/index.html",
   "./cards/",
   "./cards/index.html",
-  "./cards/styles.css?v=50",
+  "./cards/styles.css?v=51",
   "./math/assets/jaei-family-v4.webp",
-  "./cards/campaign.css?v=50",
+  "./cards/campaign.css?v=51",
   "./cards/cards.json",
-  "./cards/js/engine.js?v=50",
-  "./cards/js/audio.js?v=50",
-  "./cards/js/card-view.js?v=50",
-  "./cards/js/vfx-recipes.js?v=50",
-  "./cards/js/story-gates.js?v=50",
-  "./cards/js/campaign.js?v=50",
-  "./cards/js/campaign-ui.js?v=50",
-  "./cards/js/app.js?v=50",
-  "./cards/js/combat-cinema.js?v=50",
+  "./cards/js/engine.js?v=51",
+  "./cards/js/audio.js?v=51",
+  "./cards/js/card-view.js?v=51",
+  "./cards/js/vfx-recipes.js?v=51",
+  "./cards/js/story-gates.js?v=51",
+  "./cards/js/campaign.js?v=51",
+  "./cards/js/campaign-ui.js?v=51",
+  "./cards/js/app.js?v=51",
+  "./cards/js/combat-cinema.js?v=51",
 ];
 
 // Existing games are precached as best-effort shells. A missing optional asset
@@ -616,6 +616,18 @@ async function matchCacheSafely(cacheName, request) {
   }
 }
 
+// Card navigation must not show yesterday's UI even when a new ?v= URL is opened.
+// Keep the canonical cached page as the bounded offline/failed-network fallback.
+async function cardNavigation(request) {
+  const key = navigationCacheKey(request);
+  const cache = await openCacheSafely(STATIC_CACHE);
+  try {
+    const response = await fetchWithTimeout(new Request(request, { cache: "no-cache" }), 2500);
+    if (response && response.ok) return cache ? putIfCacheable(cache, key, response) : response;
+  } catch (_) {}
+  return await matchCacheSafely(STATIC_CACHE, key) || Response.error();
+}
+
 async function staleWhileRevalidate(request, event) {
   const cache = await openCacheSafely(STATIC_CACHE);
   const key = request.mode === "navigate" ? navigationCacheKey(request) : request;
@@ -1014,6 +1026,10 @@ if (typeof self !== "undefined" && typeof self.addEventListener === "function") 
       event.respondWith(handleGenericRangeRequest(request));
       return;
     }
+    if (request.mode === "navigate" && navigationCacheKey(request).url === scopedUrl("./cards/")) {
+      event.respondWith(cardNavigation(request));
+      return;
+    }
     if (request.mode === "navigate" || /\.(?:html?|js|css|json)$/i.test(url.pathname)) {
       event.respondWith(staleWhileRevalidate(request, event));
       return;
@@ -1070,6 +1086,7 @@ if (typeof module !== "undefined" && module.exports) {
     canCache,
     putIfCacheable,
     staleWhileRevalidate,
+    cardNavigation,
     cacheFirst,
     parseByteRange,
     rangeResponse,

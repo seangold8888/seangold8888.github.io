@@ -114,9 +114,9 @@ test("all story episode mp3 files match the service worker fallback list", () =>
   }
 });
 
-test("cache generation v91 preserves exact v50 card assets and canonical navigation aliases", () => {
-  assert.equal(sw.CACHE_VERSION, "v91");
-  assert.match(sw.STATIC_CACHE, /^adventure-box-v91-/);
+test("cache generation v92 preserves exact v51 card assets and canonical navigation aliases", () => {
+  assert.equal(sw.CACHE_VERSION, "v92");
+  assert.match(sw.STATIC_CACHE, /^adventure-box-v92-/);
   const studioImages = fs.readdirSync(path.join(siteRoot, "princess/assets/studio-v3")).filter(name => /\.(webp|jpg)$/.test(name));
   assert.equal(studioImages.length, 95);
   for (const name of studioImages) assert.ok(sw.OPTIONAL_SHELL.includes("./princess/assets/studio-v3/" + name), name);
@@ -132,7 +132,7 @@ test("cache generation v91 preserves exact v50 card assets and canonical navigat
     assert.ok(sw.OPTIONAL_SHELL.includes("./princess/assets/bodies-v4/body-" + id + ".webp"));
   }
   for (const asset of ["styles.css", "campaign.css", "engine.js", "audio.js", "card-view.js", "vfx-recipes.js", "story-gates.js", "campaign.js", "campaign-ui.js", "combat-cinema.js", "app.js"]) {
-    assert.ok(sw.CORE_SHELL.some(entry => entry.endsWith(asset + "?v=50")), asset);
+    assert.ok(sw.CORE_SHELL.some(entry => entry.endsWith(asset + "?v=51")), asset);
   }
   assert.doesNotMatch(swSource, /\.\/cards\/[^"\n]+\?v=(?:19|2\d|30|31)|adventure-box-v(?:19|2\d|3\d|4\d|5\d|6[0-5])-/);
   assert.deepEqual(sw.VFX_ART_FILES, [
@@ -163,6 +163,22 @@ test("cache generation v91 preserves exact v50 card assets and canonical navigat
       );
     }
   }
+});
+
+test("card navigation prefers fresh HTML and preserves its canonical offline fallback", async () => {
+  const oldFetch=global.fetch,oldCaches=global.caches;
+  let cached=new Response("old page"),key;
+  global.caches={open:async()=>({match:async()=>cached.clone(),put:async(k,v)=>{key=k.url;cached=v.clone();}})};
+  try {
+    global.fetch=async request=>{assert.equal(request.cache,"no-cache");return new Response("new page");};
+    const request=new Request("https://example.test/cards/?v=new");
+    assert.equal(await (await sw.cardNavigation(request)).text(),"new page");
+    assert.equal(key,"https://example.test/cards/");
+    global.fetch=async()=>{throw Error("offline");};
+    assert.equal(await (await sw.cardNavigation(request)).text(),"new page");
+    global.fetch=async()=>new Response("bad gateway",{status:502});
+    assert.equal(await (await sw.cardNavigation(request)).text(),"new page");
+  } finally {global.fetch=oldFetch;global.caches=oldCaches;}
 });
 
 test("only full 200 or opaque responses are cacheable and cache failures preserve network success", async () => {
