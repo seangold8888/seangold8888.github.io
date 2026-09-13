@@ -368,7 +368,7 @@
     if (options.locked) cardEl.classList.add("is-locked");
     if (options.interactive && options.collectionCompact) {
       cardEl.setAttribute("aria-haspopup", "dialog");
-      cardEl.setAttribute("aria-label", card.name + ", 체력 " + currentHp + ", " + combatInfo(card).element + ", " + stateLabel + ". 눌러서 능력 자세히 보기");
+      cardEl.setAttribute("aria-label", card.name + ", 실전 등급 " + battleTier(card) + ", 체력 " + currentHp + ", " + combatInfo(card).element + ", " + stateLabel + ". 눌러서 능력 자세히 보기");
     }
     if (options.collectionOnly) cardEl.classList.add("is-collection-only");
     if (options.selected) cardEl.classList.add("is-selected");
@@ -391,6 +391,13 @@
       el("i", "frame-corner frame-corner-se")
     );
     const identity = el("div", "card-identity");
+    if (options.collectionCompact) {
+      const tier = el("span", "collection-tier");
+      tier.setAttribute("aria-label", "실전 등급 " + battleTier(card));
+      tier.setAttribute("title", "실전 등급 " + battleTier(card) + " · 여러 카드와의 대결 평가예요. 상대와 상성에 따라 결과는 달라져요.");
+      tier.append(el("small", "", "실전"), el("b", "", battleTier(card)));
+      identity.appendChild(tier);
+    }
     identity.append(el("h3", "card-name", card.name), el("span", "rarity", rarityLabel(card.rarity)));
     const hp = el("div", "hp-gem");
     hp.innerHTML = '<span>체력</span><strong>' + Math.max(0, currentHp) + '</strong><i>♥</i>';

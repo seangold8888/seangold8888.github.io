@@ -27,6 +27,15 @@ const server=http.createServer((req,res)=>{
    assert.ok(Math.max(...geometry.map(c=>c.w))-Math.min(...geometry.map(c=>c.w))<1);
    assert.ok(Math.max(...geometry.map(c=>c.h))-Math.min(...geometry.map(c=>c.h))<1);
    for(const c of geometry)assert.ok(c.art/c.h>.65,JSON.stringify(c));
+   const footer=await page.locator("#collectionGrid .story-card").evaluateAll(nodes=>nodes.map(n=>{
+     const art=n.querySelector(".card-art").getBoundingClientRect(),tier=n.querySelector(".collection-tier"),name=n.querySelector(".card-name"),hp=n.querySelector(".hp-gem");
+     const t=tier.getBoundingClientRect(),b=name.getBoundingClientRect(),h=hp.getBoundingClientRect();
+     return {id:n.dataset.cardId,grade:tier.querySelector("b").textContent,
+       clear:t.top>=art.bottom&&b.top>=art.bottom&&h.top>=art.bottom&&t.right<=b.left+1&&b.right<=h.left+1,
+       nameFits:name.scrollHeight<=name.clientHeight+1,
+       hpColor:getComputedStyle(hp).color,tierColor:getComputedStyle(tier).color};
+   }));
+   for(const f of footer){assert.ok(f.clear,JSON.stringify(f));assert.ok(f.nameFits,JSON.stringify(f));assert.equal(f.hpColor,f.tierColor);assert.match(f.grade,/^[SABCD]$/);}
    assert.equal(geometry.filter(c=>Math.abs(c.y-geometry[0].y)<1).length,viewport.width===820?3:viewport.width>=1000?5:2);
    assert.equal(await page.locator("#collectionGrid .combat-facts").count(),0);
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));

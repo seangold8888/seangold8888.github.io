@@ -5149,3 +5149,28 @@ dialog p:not(.kicker) {
 #collectionGrid .story-card.is-selected { outline: 0; }
 #collectionGrid .story-card:focus-visible { outline: 3px dashed #fff; outline-offset: 3px; }
 #collectionGrid .story-card .card-art { box-shadow: 0 0 0 2px var(--element-dark); }
+
+/* Compact ratings live below the illustration and share the elemental palette. */
+#collectionGrid .story-card .card-identity {
+  display: grid; grid-template-columns: 24px minmax(0, 1fr); align-items: center; gap: 5px;
+  flex: 1; min-width: 0;
+}
+#collectionGrid .story-card .collection-tier {
+  display: grid; place-items: center; gap: 1px; box-sizing: border-box; width: 24px; height: 34px;
+  border: 1px solid var(--element); border-radius: 7px;
+  background: var(--element-dark); color: var(--element-bright); line-height: 1;
+}
+#collectionGrid .collection-tier small { font-size: 8px; font-weight: 700; }
+#collectionGrid .collection-tier b { font-size: 17px; font-weight: 900; }
+#collectionGrid .story-card .hp-gem {
+  background: linear-gradient(145deg, var(--element-dark), var(--element-surface));
+  border: 2px solid var(--element); color: var(--element-bright);
+  box-shadow: inset 0 1px 0 #ffffff38, 0 2px 4px #0005;
+}
+#collectionGrid .story-card .hp-gem span,
+#collectionGrid .story-card .hp-gem strong,
+#collectionGrid .story-card .hp-gem i { color: var(--element-bright); text-shadow: 0 1px 2px #0008; }
+#collectionGrid .story-card .card-name {
+  color: var(--element-bright); text-shadow: 0 1px 3px var(--element-dark), 0 1px 5px #000c;
+}
+#collectionGrid .story-card.element-metal .card-name { color: #f1f7ff; text-shadow: 0 1px 3px #152c48, 0 1px 5px #152c48; }
