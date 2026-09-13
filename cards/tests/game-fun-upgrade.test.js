@@ -14,6 +14,11 @@ function forest(){
     Snd:new Proxy({},{get:()=>()=>{}}),Characters:{current:()=>({hp:5,cast:.19,spell:8,speed:1}),helper:()=>({name:'친구'})}};
   const context=vm.createContext({window:{WQ},document:{getElementById:()=>button},Math,console});
   vm.runInContext(scripts.find(s=>s.includes('F.timescale=1')),context);
+  // Load the real shared module in browser order, even when testing normal mode.
+  const hardScript=scripts.find(s=>s.includes('const Hard=WQ.Hard='));
+  assert.ok(hardScript,'magic school hard-mode module must be present');
+  vm.runInContext(hardScript,context);
+  assert.equal(WQ.Hard.pending,false,'legacy forest tests exercise normal mode');
   const code=scripts.find(s=>s.includes('function BroomRescue(onClear)')).replace(
     'return{enter,exit,update,draw,pointer};',
     'return{enter,exit,update,draw,pointer,probe:{p,cast,nova,hitEnemy,addPixie,addStar,get shots(){return shots},get enemies(){return enemies},get charge(){return charge},get done(){return done},get boss(){return boss},setBoss(e){boss=e},setTime(v){t=v},get time(){return t}}};');
