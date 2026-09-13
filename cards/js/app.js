@@ -2244,8 +2244,8 @@
     dom.storyQuizResult.textContent = "정답을 고르면 턴을 쓰지 않고 필살기가 깨어나요.";
     dom.storyQuizResult.className = "story-quiz-result";
     dom.storyQuizChoices.replaceChildren();
-    (storyChallenge.choices || []).forEach(function (rawChoice, index) {
-      const choice = normalizedQuizChoice(rawChoice, index);
+    const choices = (storyChallenge.choices || []).map(normalizedQuizChoice);
+    window.CardStoryGates.shuffleChoices(choices).forEach(function (choice) {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "story-quiz-choice";

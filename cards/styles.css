@@ -4908,6 +4908,41 @@ dialog p:not(.kicker) {
 }
 
 
+/* Battle text lives inside the decorative rail, not underneath it.
+   Explicit shrinkable tracks also keep the final +10 / star cost inside iPad cards. */
+.in-battle .battle-card-slot .story-card { padding: 12px; }
+.in-battle .battle-card-slot .card-crown {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 5px;
+  padding: 0;
+  min-width: 0;
+}
+.in-battle .battle-card-slot .card-identity { min-width: 0; }
+.in-battle .battle-card-slot .card-name {
+  margin: 0;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+  line-height: 1.2;
+}
+.in-battle .battle-card-slot .combat-facts {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+}
+.in-battle .battle-card-slot .combat-fact,
+.in-battle .battle-card-slot .combat-fact > * { min-width: 0; overflow-wrap: anywhere; }
+.in-battle .battle-card-slot .story-card::before { z-index: 1; }
+.in-battle .battle-card-slot .frame-ornament { z-index: 1; }
+.in-battle .battle-card-slot .frame-corner { width: 20px; height: 20px; border-width: 2px; }
+.in-battle .battle-card-slot .frame-corner-nw { top: 4px; left: 4px; }
+.in-battle .battle-card-slot .frame-corner-ne { top: 4px; right: 4px; }
+.in-battle .battle-card-slot .frame-corner-sw { bottom: 4px; left: 4px; }
+.in-battle .battle-card-slot .frame-corner-se { bottom: 4px; right: 4px; }
+@media (min-width: 681px) and (min-height: 600px) {
+  .in-battle .battle-card-slot .combat-fact { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); }
+}
+
 /* v38 — 오행 프리미엄 프레임
    희귀도 금속은 외곽 트림으로 남기고, 속성은 바탕·재질·광선·보석을 지배한다. */
 .story-card[class*="element-"] {

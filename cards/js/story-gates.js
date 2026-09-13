@@ -824,7 +824,7 @@
       ["가족 확인 2026-09-09"]),
     question("taeo-belt", "taeo",
       "태오가 태권도복에 두른 띠는 무슨 색인가요?",
-      [["blue-green", "파란 바탕에 초록 줄이 있는 띠"], ["black", "검은띠"], ["white", "흰띠"]], "blue-green",
+      [["blue-green", "파란 바탕에 초록 줄이 있는 띠"], ["red-white", "빨간 바탕에 하얀 줄이 있는 띠"], ["yellow-blue", "노란 바탕에 파란 줄이 있는 띠"]], "blue-green",
       ["가족 확인 2026-09-13: 도복은 흰색, 띠는 파란 바탕에 초록 줄"]),
     question("taeo-first-move", "taeo",
       "태오가 별사탕 1개로 쓰는 기술은 무엇인가요?",
@@ -1398,9 +1398,20 @@
     return bank ? bank.length : 0;
   }
 
+  // Shuffle only the display copy. Answer IDs and the frozen question bank stay intact.
+  function shuffleChoices(choices, rng = Math.random) {
+    const result = choices.map(choice => ({ ...choice }));
+    for (let i = result.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      [result[i], result[j]] = [result[j], result[i]];
+    }
+    return result;
+  }
+
   window.CardStoryGates = Object.freeze({
     historyForCard: cardOrId => historyProfiles[cardIdFrom(cardOrId)] || null,
     getForCard: getForCard,
+    shuffleChoices: shuffleChoices,
     countForCard: countForCard,
     storyIdForCard: storyIdForCard,
     all: all,
