@@ -189,14 +189,24 @@ test("잠긴 카드도 상세를 보되 출전은 막고 실제 해금 장소로
   assert.match(app, /origin && origin\.isConnected[\s\S]*?origin\.focus/);
 });
 
-test("양쪽 전투 카드가 같은 전투 정보 렌더러를 사용하고 카드·원정 자산은 v48이다", () => {
+test("상세에서 바로 대결하며 하단 재확인과 중복 시작은 없다", () => {
+  assert.doesNotMatch(html, /id="(?:selectionDock|battleButton)"/);
+  assert.match(html, /id="detailSelectButton"[^>]*>이 카드로 대결 시작/);
+  const handler=app.slice(app.indexOf('dom.detailSelectButton.addEventListener("click"'), app.indexOf('dom.cardDetailDialog.addEventListener("click"'));
+  assert.match(handler, /!dom.cardDetailDialog.open \|\| !detailCard \|\| !isPlayableCard\(detailCard\) \|\| !isUnlocked\(detailCard\)/);
+  assert.match(handler, /selectCard\(detailCard, detailOrigin\);\s*dom.cardDetailDialog.close\("battle"\);\s*startBattle\(\);/);
+  assert.match(app, /origin && origin.isConnected && !dom.collectionScreen.hidden/);
+  assert.doesNotMatch(app, /updateSelectionDock|dom.battleButton/);
+});
+
+test("양쪽 전투 카드가 같은 전투 정보 렌더러를 사용하고 카드·원정 자산은 v49이다", () => {
   assert.match(app, /syncBattleCard\(dom\.playerCardSlot/);
   assert.match(app, /syncBattleCard\(dom\.enemyCardSlot/);
   assert.match(app, /CardView\.create\(side\.card, \{[\s\S]*?compact: true/);
   assert.match(viewSource, /else if \(options\.compact\) \{[\s\S]*?crown, facts, art/);
-  assert.equal((html.match(/\?v=48/g) || []).length, 11);
+  assert.equal((html.match(/\?v=49/g) || []).length, 11);
   assert.doesNotMatch(html, /\?v=(?:25|26|27|28|29|30|31)/);
-  assert.equal((sw.match(/\.\/cards\/[^"\n]+\?v=48/g) || []).length, 11);
+  assert.equal((sw.match(/\.\/cards\/[^"\n]+\?v=49/g) || []).length, 11);
 });
 
 test("오행 속성이 카드 클래스, 원화 배지와 접근성 이름에 함께 드러난다", () => {

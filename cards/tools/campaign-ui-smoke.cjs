@@ -192,8 +192,7 @@ async function main() {
     await p.locator(".expedition-header button").click();
     await p.locator('#collectionGrid [data-card-id="cinderella"]').click();
     assert.ok(await p.locator("#cardDetailDialog").isVisible(),"campaign recruit unlocked without listening");
-    await p.locator("[data-detail-close]").first().click();
-    await p.locator("#battleButton").click();
+    await p.locator("#detailSelectButton").click();
     assert.ok(await p.locator("#campaignBattleLabel").isHidden());
     assert.equal(await p.evaluate(()=>window.__testGame.aiMistakeRate),.3);
     assert.equal(await p.locator("#storyGateButton").innerText(),"이야기 듣기");
@@ -262,7 +261,7 @@ async function main() {
       await q.locator(".expedition-map-footer .primary-button").click();
       await q.locator('#collectionGrid [data-card-id="sseugumi"]').click();
       assert.ok(await q.locator("#cardDetailDialog").isVisible());
-      await q.locator("#detailSelectButton").click();await q.locator("#battleButton").click();
+      await q.locator("#detailSelectButton").click();
       assert.equal(await q.evaluate(()=>__testGame.sides.player.card.id),"sseugumi");
       assert.equal(await q.evaluate(()=>__testGame.sides.player.card.hp),100);
       assert.equal(await q.locator("#actionList button").count(),7);

@@ -171,9 +171,9 @@ test("손패·원정 UI와 캐시 버전 43이 함께 배포되도록 묶여 있
   ["fragmentTray", "fragmentHand", "fragmentPreview"].forEach((id) => {
     assert.match(html, new RegExp('id="' + id + '"'));
   });
-  assert.match(html, /styles\.css\?v=48/);
+  assert.match(html, /styles\.css\?v=49/);
   ["engine", "audio", "card-view", "vfx-recipes", "story-gates", "campaign", "campaign-ui", "combat-cinema", "app"].forEach((file) => {
-    assert.match(html, new RegExp("js/" + file + "\\.js\\?v=48"));
+    assert.match(html, new RegExp("js/" + file + "\\.js\\?v=49"));
   });
   assert.doesNotMatch(html, /\?v=(?:19|20|21|22|23|24|25|26|27|28|29|30|31)/);
 
@@ -903,7 +903,7 @@ test("기술 무대는 풀을 재사용하고 프레임·기울기·60px 조작 
 
   const selectBlock = app.slice(
     app.indexOf("function selectCard(card, cardEl)"),
-    app.indexOf("function updateSelectionDock()")
+    app.indexOf("function openLockedDialog(card)")
   );
   assert.doesNotMatch(selectBlock, /renderCollection\(\)/);
   assert.match(css, /\.audio-controls \.icon-button \{[\s\S]*?width: 60px;[\s\S]*?height: 60px/);

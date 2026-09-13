@@ -67,10 +67,23 @@ const server=http.createServer((req,res)=>{
    await page.locator("[data-detail-close]").first().click();
    await page.locator('#collectionGrid [data-card-id="redhood"]').click();
    assert.ok(await page.locator("#detailSelectButton").isEnabled());
+   await page.evaluate(()=>{
+     window.__battleStarts=0;
+     const create=CardEngine.createGame;
+     window.CardEngine={...CardEngine,createGame(...args){window.__battleStarts++;return create(...args);}};
+   });
    await page.locator("#detailSelectButton").click();
-   assert.match(await page.locator("#selectedName").innerText(),/빨간 모자/);
+   await page.locator("#detailSelectButton").evaluate(button=>button.click());
+   assert.equal(await page.evaluate(()=>window.__battleStarts),1,"duplicate start is ignored");
+   assert.ok(await page.locator("#battleScreen").isVisible());
+   assert.ok(await page.locator("#cardDetailDialog").isHidden());
+   assert.equal(await page.locator("#playerCardSlot .story-card").getAttribute("data-card-id"),"redhood");
+   assert.equal(await page.locator("#selectionDock, #battleButton").count(),0);
+   await page.locator("#leaveBattleButton").click();
+   assert.ok(await page.locator("#collectionScreen").isVisible());
+   assert.equal(await page.locator("#collectionSort").inputValue(),"name");
    assert.deepEqual(errors,[]);
-   console.log("PASS",viewport,"uniform art-first cards, sorting persistence, full locked details and correct unlock links");
+   console.log("PASS",viewport,"uniform cards, sorting, locked details, direct battle start, duplicate prevention and return");
    await context.close();
   }
   console.log("SCREENSHOTS",output);

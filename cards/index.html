@@ -17,8 +17,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   <link rel="icon" href="../icon.png">
   <link rel="apple-touch-icon" href="../icon.png">
   <link rel="manifest" href="../manifest.json">
-<link rel="stylesheet" href="styles.css?v=48">
-<link rel="stylesheet" href="campaign.css?v=48">
+<link rel="stylesheet" href="styles.css?v=49">
+<link rel="stylesheet" href="campaign.css?v=49">
 </head>
 <body>
   <div class="sky" aria-hidden="true">
@@ -72,16 +72,6 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 
       <div class="card-gallery" id="collectionGrid" role="list" aria-label="카드 컬렉션"></div>
 
-      <aside class="selection-dock" id="selectionDock" aria-live="polite">
-        <div class="selected-portrait" id="selectedPortrait" aria-hidden="true">?</div>
-        <div class="selected-copy">
-          <span id="selectedStatus">오늘의 출전 카드</span>
-          <strong id="selectedName">카드를 골라 주세요</strong>
-        </div>
-        <button class="primary-button" id="battleButton" type="button" aria-label="대결 시작" disabled>
-          <span id="battleButtonLabel">대결 시작</span><b>⚔️</b>
-        </button>
-      </aside>
     </section>
 
     <section class="screen expedition-screen" id="campaignScreen" aria-label="이야기 원정" hidden></section>
@@ -179,7 +169,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     <a class="primary-button detail-unlock-link" id="detailUnlockLink" hidden></a>
     <div class="card-detail-card" id="cardDetailCard"></div>
     <div class="card-detail-actions">
-      <button class="primary-button" id="detailSelectButton" type="button">출전 선택</button>
+      <button class="primary-button" id="detailSelectButton" type="button">이 카드로 대결 시작</button>
       <button class="ghost-button" data-detail-close type="button">계속 보기</button>
     </div>
   </dialog>
@@ -207,15 +197,15 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   </dialog>
 
   <noscript>이야기 카드 배틀을 하려면 JavaScript를 켜 주세요.</noscript>
-<script src="js/engine.js?v=48" defer></script>
-<script src="js/audio.js?v=48" defer></script>
-<script src="js/card-view.js?v=48" defer></script>
-<script src="js/vfx-recipes.js?v=48" defer></script>
-<script src="js/story-gates.js?v=48" defer></script>
-<script src="js/campaign.js?v=48" defer></script>
-<script src="js/campaign-ui.js?v=48" defer></script>
-<script src="js/combat-cinema.js?v=48" defer></script>
-<script src="js/app.js?v=48" defer></script>
+<script src="js/engine.js?v=49" defer></script>
+<script src="js/audio.js?v=49" defer></script>
+<script src="js/card-view.js?v=49" defer></script>
+<script src="js/vfx-recipes.js?v=49" defer></script>
+<script src="js/story-gates.js?v=49" defer></script>
+<script src="js/campaign.js?v=49" defer></script>
+<script src="js/campaign-ui.js?v=49" defer></script>
+<script src="js/combat-cinema.js?v=49" defer></script>
+<script src="js/app.js?v=49" defer></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {

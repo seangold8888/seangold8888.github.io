@@ -4318,7 +4318,7 @@ dialog p:not(.kicker) {
 
 /* v25 — 한눈에 읽는 영웅 도감과 5칸 능력치 레일. */
 .collection-screen {
-  padding: 8px max(14px, env(safe-area-inset-left)) calc(96px + env(safe-area-inset-bottom));
+  padding: 8px max(14px, env(safe-area-inset-left)) calc(24px + env(safe-area-inset-bottom));
 }
 
 .collection-toolbar,
@@ -4736,7 +4736,7 @@ dialog p:not(.kicker) {
 }
 
 @media (max-width: 599px) {
-  .collection-screen { padding: 8px 10px calc(92px + env(safe-area-inset-bottom)); }
+  .collection-screen { padding: 8px 10px calc(24px + env(safe-area-inset-bottom)); }
   .collection-toolbar,
   .collection-guide,
   .collection-screen .card-gallery { width: min(100%, 308px); max-width: 308px; }

@@ -79,8 +79,7 @@
   function cacheDom() {
     [
       "collectionScreen", "battleScreen", "campaignScreen", "campaignBattleLabel", "collectionGrid", "unlockCount",
-      "selectionDock", "selectedPortrait", "selectedStatus", "selectedName", "collectionSort", "detailUnlockLink",
-      "battleButton", "battleButtonLabel",
+      "collectionSort", "detailUnlockLink",
       "muteButton", "musicButton", "leaveBattleButton", "turnOwner", "turnNumber",
       "battleStars", "arena", "enemyCardSlot", "playerCardSlot", "battleMessage",
       "effectBurst", "combatParticleCanvas", "combatShaderCanvas", "techniqueFxLayer", "actionList",
@@ -327,7 +326,6 @@
       dom.collectionGrid.appendChild(item);
     });
 
-    updateSelectionDock();
     unlockSnapshot = getUnlockSnapshot();
     if (focusedId) {
       const nextFocused = dom.collectionGrid.querySelector('[data-card-id="' + focusedId + '"]');
@@ -350,14 +348,14 @@
     dom.cardDetailTitle.textContent = card.name;
     dom.cardDetailCard.replaceChildren(detailView);
     dom.cardDetailStatus.textContent = !unlocked ? unlockLeadPhrase(card) + (card.id === "sseugumi" ? "" : "함께 대결할 수 있어요.") : playable
-      ? "기술과 특성을 확인했어요. 이 영웅으로 출전할까요?"
+      ? "능력을 살펴보고, 이 카드로 바로 대결해 보세요."
       : "컬렉션 전용 카드예요. 대전은 다음 모험에서 열려요.";
     dom.detailSelectButton.disabled = !playable || !unlocked;
-    dom.detailSelectButton.textContent = !unlocked ? "아직 잠든 카드" : playable ? "출전 선택" : "대전 준비 중";
+    dom.detailSelectButton.textContent = !unlocked ? "아직 잠든 카드" : playable ? "이 카드로 대결 시작" : "대전 준비 중";
     setUnlockLink(dom.detailUnlockLink, unlocked ? null : unlockDestination(card));
     dom.detailSelectButton.setAttribute(
       "aria-label",
-      !unlocked ? card.name + " 카드가 아직 잠들어 있어요" : playable ? card.name + " 출전 선택" : card.name + " 카드는 대전 준비 중"
+      !unlocked ? card.name + " 카드가 아직 잠들어 있어요" : playable ? card.name + " 카드로 대결 시작" : card.name + " 카드는 대전 준비 중"
     );
     dom.cardDetailDialog.showModal();
     window.CardAudio.select();
@@ -365,7 +363,7 @@
 
 
   function selectCard(card, cardEl) {
-    if (!isPlayableCard(card)) return;
+    if (!isPlayableCard(card) || !isUnlocked(card)) return;
     const previous = dom.collectionGrid.querySelector(".story-card.is-selected");
     const selected = cardEl || dom.collectionGrid.querySelector(
       '[data-card-id="' + card.id + '"]'
@@ -380,33 +378,6 @@
       selected.setAttribute("aria-pressed", "true");
     }
     window.CardAudio.select();
-    updateSelectionDock();
-    if (selected) selected.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
-  }
-
-  function updateSelectionDock() {
-    if (!selectedCard) {
-      dom.selectedStatus.textContent = "오늘의 출전 카드";
-      dom.selectedName.textContent = "카드를 골라 주세요";
-      dom.selectedPortrait.style.backgroundImage = "";
-      dom.selectedPortrait.textContent = "?";
-      dom.battleButtonLabel.textContent = "대결 시작";
-      dom.battleButton.setAttribute("aria-label", "대결 시작");
-      dom.battleButton.disabled = true;
-      return;
-    }
-    const playable = isPlayableCard(selectedCard);
-    dom.selectedStatus.textContent = playable ? "오늘의 출전 카드" : "컬렉션 전용 카드";
-    dom.selectedName.textContent = selectedCard.name;
-    dom.selectedPortrait.textContent = "";
-    dom.selectedPortrait.style.backgroundImage = 'url("' + artUrl(selectedCard) + '")';
-    dom.selectedPortrait.style.backgroundPosition = window.CardView.artPosition[selectedCard.id] || "50% 40%";
-    dom.battleButtonLabel.textContent = playable ? "대결 시작" : "대전 준비 중";
-    dom.battleButton.setAttribute(
-      "aria-label",
-      playable ? "대결 시작" : selectedCard.name + " 카드는 컬렉션 전용이며 대전 준비 중"
-    );
-    dom.battleButton.disabled = !playable;
   }
 
   function openLockedDialog(card) {
@@ -3028,7 +2999,6 @@
       try { localStorage.setItem("card_collection_sort", collectionSort); } catch (_) {}
       renderCollection();
     });
-    dom.battleButton.addEventListener("click", startBattle);
     dom.leaveBattleButton.addEventListener("click", function () {
       if (campaignBattle) returnToCampaign(false);
       else returnToCollection();
@@ -3042,9 +3012,10 @@
       button.addEventListener("click", closeCardDetail);
     });
     dom.detailSelectButton.addEventListener("click", function () {
-      if (!detailCard || !isPlayableCard(detailCard) || !isUnlocked(detailCard)) return;
+      if (!dom.cardDetailDialog.open || !detailCard || !isPlayableCard(detailCard) || !isUnlocked(detailCard)) return;
       selectCard(detailCard, detailOrigin);
-      dom.cardDetailDialog.close("selected");
+      dom.cardDetailDialog.close("battle");
+      startBattle();
     });
     dom.cardDetailDialog.addEventListener("click", function (event) {
       if (event.target === dom.cardDetailDialog) closeCardDetail();
@@ -3053,7 +3024,7 @@
       const origin = detailOrigin;
       detailCard = null;
       detailOrigin = null;
-      if (origin && origin.isConnected) origin.focus({ preventScroll: true });
+      if (origin && origin.isConnected && !dom.collectionScreen.hidden) origin.focus({ preventScroll: true });
     });
 
     dom.resultCollectionButton.addEventListener("click", returnToCollection);
