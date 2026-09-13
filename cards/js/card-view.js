@@ -215,6 +215,58 @@
     return box;
   }
 
+  // Display-only wording. Mechanics and the locked data fingerprints stay intact.
+  function describePassive(card) {
+    if (!card.passive) return "따로 쓰는 자동 능력은 없어요.";
+    return ({
+      reduce_dmg_10: "공격을 맞으면 받는 피해를 10 줄여요. 예: 30 피해 → 20 피해.",
+      reduce_dmg_20_monster: "괴물 타입에게 공격받으면 피해를 20 줄여요.",
+      first_hit_zero: "처음 받는 공격 피해를 한 번 막아요. 그다음부터는 피해를 받아요.",
+      revive_half_once: "처음 쓰러지면 체력을 절반 채우고 한 번 다시 일어나요.",
+      coin_evade: "공격받을 때 동전이 앞면이면 피해요. 한 번 피하면 다음 공격은 이 능력으로 피할 수 없어요.",
+      coin_miss: "동전을 던져 뒷면이 나오면 내 기술이 빗나가요.",
+      no_weakness: "내 약점 속성에게 맞아도 추가 피해 10을 받지 않아요.",
+      nullify_passive: "상대의 자동 능력을 못 쓰게 해요. 상대의 공격 기술은 그대로예요.",
+      boost_20_below_half: "내 체력이 절반 이하가 되면 공격 피해가 20 늘어요."
+    })[card.passive.fx] || card.passive.desc;
+  }
+
+  function describeAttack(attack) {
+    if (window.CardEngine && !window.CardEngine.isAttackSupported(attack))
+      return "아직 대결에서 쓸 수 없는 기술이에요.";
+    const parts = ["별사탕 " + attack.cost + "개를 써요."];
+    if (attack.fx === "dmg_half_enemy_hp") {
+      parts.push("상대의 남은 체력 절반만큼 공격해요. 10 단위로 내리고, 최소 피해는 10이에요.");
+    } else if (attack.dmg > 0) parts.push("기본 피해는 " + attack.dmg + "이에요.");
+    const effect = {
+      weaken_next_20: "상대의 다음 공격 피해를 20 줄여요. 단, 최소 10 피해는 남아요.",
+      skip_next_enemy: "상대는 다음 차례를 한 번 쉬어요.",
+      coin_skip_next_enemy: "동전이 앞면이면 상대가 다음 차례를 한 번 쉬어요.",
+      gain_star_1: "쓴 뒤 별사탕 1개를 돌려받아요. 최대 5개까지 모아요.",
+      steal_star_1: "상대에게 별사탕이 있으면 1개를 가져와요. 내 별사탕이 5개면 가져오지 못해요.",
+      heal_40: "내 체력을 40 회복해요. 처음 체력보다 높아지지는 않아요.",
+      dmg_stack_10: "이 기술을 쓸 때마다 다음에 쓸 기본 피해가 10씩 늘어요.",
+      gold_freeze_gain_star: "상대가 다음 차례를 한 번 쉬고, 나는 별사탕 1개를 받아요. 최대 5개까지 모아요."
+    }[attack.fx];
+    if (effect) parts.push(effect);
+    return parts.join(" ");
+  }
+
+  function sortCollection(cards, mode, unlocked, playable) {
+    const elements = ["wood", "fire", "earth", "metal", "water", null];
+    const power = card => Math.max(0, ...(card.attacks || []).filter(a =>
+      !window.CardEngine || window.CardEngine.isAttackSupported(a)).map(a => Number(a.dmg) || 0));
+    return cards.map((card,index) => ({card,index,ready:unlocked(card)?0:playable(card)?1:2})).sort((a,b) => {
+      let order = 0;
+      if (mode === "hp") order = b.card.hp - a.card.hp;
+      else if (mode === "power") order = power(b.card) - power(a.card);
+      else if (mode === "element") order = elements.indexOf(a.card.element || null) - elements.indexOf(b.card.element || null);
+      else if (mode === "name") order = a.card.name.localeCompare(b.card.name, "ko");
+      else order = a.ready - b.ready;
+      return order || a.index - b.index;
+    }).map(entry => entry.card);
+  }
+
   function createArt(card, options) {
     const frame = el("div", "card-art");
     const picture = document.createElement("picture");
@@ -261,7 +313,7 @@
 
     if (options.locked) {
       const veil = el("div", "lock-veil");
-      veil.append(el("span", "lock-icon", "🔒"), el("strong", "", "이야기를 들으면 깨어나요"));
+      veil.append(el("span", "lock-icon", "🔒"), el("strong", "", "아직 잠든 카드"));
       frame.appendChild(veil);
     }
     if (options.collectionOnly) {
@@ -303,6 +355,7 @@
     if (options.locked) cardEl.classList.add("is-locked");
     if (options.interactive && options.collectionCompact) {
       cardEl.setAttribute("aria-haspopup", "dialog");
+      cardEl.setAttribute("aria-label", card.name + ", 체력 " + currentHp + ", " + combatInfo(card).element + ", " + stateLabel + ". 눌러서 능력 자세히 보기");
     }
     if (options.collectionOnly) cardEl.classList.add("is-collection-only");
     if (options.selected) cardEl.classList.add("is-selected");
@@ -333,7 +386,7 @@
     const meta = el("div", "card-meta");
     const storyLabel = options.collectionOnly
       ? "컬렉션 전용 · 대전 준비 중"
-      : card.unlock ? "이야기에서 깨어난 카드" : "처음부터 함께하는 카드";
+      : card.unlock ? "함께할 수 있는 영웅 카드" : "처음부터 함께하는 카드";
     meta.append(el("span", "type-chip", type.label + " · " + combatInfo(card).element), el("span", "card-story", storyLabel));
 
     const hpTrack = el("div", "hp-track");
@@ -345,10 +398,8 @@
     const facts = createCombatInfo(card);
     if (card.passive) {
       const passive = el("div", "passive-row");
-      const passiveDesc = card.passive.fx === "coin_evade"
-        ? `${card.passive.desc} · 한 번 피하면 다음 공격은 맞아요.`
-        : card.passive.desc;
-      passive.append(el("span", "passive-icon", "✦"), el("strong", "", card.passive.name), el("small", "", passiveDesc));
+      const passiveDesc = describePassive(card);
+      passive.append(el("span", "passive-icon", "✦"), el("strong", "", "자동 능력 · " + card.passive.name), el("small", "", passiveDesc));
       details.appendChild(passive);
     }
 
@@ -356,7 +407,7 @@
     (card.attacks || []).forEach(function (attack) {
       const row = el("div", "attack-row");
       const copy = el("span", "attack-copy");
-      copy.append(el("strong", "", attack.name), attack.desc ? el("small", "", attack.desc) : document.createTextNode(""));
+      copy.append(el("strong", "", attack.name), el("small", "", describeAttack(attack)));
       const numbers = el("span", "attack-numbers");
       numbers.append(el("b", "cost", "⭐" + attack.cost), el("b", "damage", attack.dmg ? String(attack.dmg) : "✦"));
       row.append(copy, numbers);
@@ -373,7 +424,7 @@
 
     const art = createArt(card, options);
     if (options.collectionCompact) {
-      cardEl.append(ornament, art, crown, facts);
+      cardEl.append(ornament, art, crown);
     } else if (options.compact) {
       cardEl.append(ornament, crown, facts, art, hpTrack, meta, details);
     } else {
@@ -396,6 +447,9 @@
   window.CardView = {
     create: create,
     combatInfo: combatInfo,
+    describePassive: describePassive,
+    describeAttack: describeAttack,
+    sortCollection: sortCollection,
     battleTier: battleTier,
     artPosition: ART_POSITION,
     typeMeta: TYPE_META,

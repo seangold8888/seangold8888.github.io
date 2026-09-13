@@ -212,9 +212,10 @@ async function main() {
     for(const viewport of [{width:820,height:1180},{width:1180,height:820},{width:390,height:844}]) {
       const run=await open(viewport);const q=run.page;
       await q.locator('#collectionGrid [data-card-id="sseugumi"]').click();
-      assert.match(await q.locator("#lockedDescription").innerText(),/원정을 끝까지/);
-      assert.ok(await q.locator("#lockedDialog .dialog-action").isHidden());
-      await q.locator("[data-close-dialog]").click();
+      assert.match(await q.locator("#cardDetailStatus").innerText(),/원정을 끝까지/);
+      assert.ok(await q.locator("#detailUnlockLink").isHidden());
+      assert.ok(await q.locator("#detailSelectButton").isDisabled());
+      await q.locator("[data-detail-close]").first().click();
       await q.locator("#campaignButton").click();
       let fights=0,reloaded=false;
       for(let step=0;step<280;step++){

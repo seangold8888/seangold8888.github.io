@@ -59,6 +59,57 @@ function loadCardView() {
   return sandbox.window.CardView;
 }
 
+test("five sort choices are stable, leave source data intact and keep ready order as default", () => {
+  const view=loadCardView(),before=JSON.stringify(data.cards);
+  const unlocked=c=>["jack","redhood"].includes(c.id),playable=()=>true;
+  const ready=Array.from(view.sortCollection(data.cards,"ready",unlocked,playable));
+  assert.deepEqual(ready.slice(0,2).map(c=>c.id),data.cards.filter(unlocked).map(c=>c.id));
+  const hp=Array.from(view.sortCollection(data.cards,"hp",unlocked,playable));
+  assert.ok(hp.every((c,i)=>i===0||hp[i-1].hp>=c.hp));
+  const name=Array.from(view.sortCollection(data.cards,"name",unlocked,playable));
+  assert.ok(name.every((c,i)=>i===0||name[i-1].name.localeCompare(c.name,"ko")<=0));
+  const power=c=>Math.max(...c.attacks.filter(require("../js/engine.js").isAttackSupported).map(a=>a.dmg),0);
+  const damage=Array.from(view.sortCollection(data.cards,"power",unlocked,playable));
+  assert.ok(damage.every((c,i)=>i===0||power(damage[i-1])>=power(c)));
+  const order=["wood","fire","earth","metal","water",null];
+  const elements=Array.from(view.sortCollection(data.cards,"element",unlocked,playable));
+  assert.ok(elements.every((c,i)=>i===0||order.indexOf(elements[i-1].element)<=order.indexOf(c.element)));
+  assert.equal(JSON.stringify(data.cards),before);
+  assert.deepEqual(Array.from(view.sortCollection(data.cards,"unknown",unlocked,playable)),ready);
+});
+test("plain-language abilities explain costs, damage, timing and limits without changing card data", () => {
+  const view=loadCardView();
+  for(const card of data.cards) {
+    assert.ok(view.describePassive(card).length>8,card.id);
+    for(const attack of card.attacks)assert.ok(view.describeAttack(attack).length>8,card.id);
+  }
+  const get=id=>data.cards.find(c=>c.id===id);
+  assert.match(view.describePassive(get("redhood")),/30 피해 → 20 피해/);
+  assert.match(view.describePassive(get("jack")),/다음 공격은 이 능력으로 피할 수 없어요/);
+  assert.match(view.describePassive(get("perseus")),/추가 피해 10/);
+  const steal=get("sseugumi").attacks.find(a=>a.fx==="steal_star_1");
+  assert.match(view.describeAttack(steal),/별사탕 2개/);
+  assert.match(view.describeAttack(steal),/기본 피해는 10/);
+  assert.match(view.describeAttack(steal),/5개면 가져오지 못해요/);
+  assert.match(view.describeAttack({cost:1,dmg:0,fx:"heal_40"}),/처음 체력보다 높아지지는/);
+  assert.match(view.describeAttack({cost:1,dmg:0,fx:"dmg_half_enemy_hp"}),/최소 피해는 10/);
+});
+test("unlock links follow the actual requirement and never send math cards to the audio theater", () => {
+  const box={window:{},document:{addEventListener(){}},location:{hostname:"example.test",search:""},localStorage:{getItem(){return null;}},URLSearchParams};
+  const source=app.replace('document.addEventListener("DOMContentLoaded", init);','window.Qa = {unlockDestination, setUnlockLink};');
+  vm.runInNewContext(source,box);
+  const qa=box.window.Qa;
+  for(const [id,href] of [["jaei","../math/"],["taeo","../math/"],["guanyu","../sanguo/"],["circe","../odyssey/"],["cinderella","../story/"]])
+    assert.equal(qa.unlockDestination(data.cards.find(c=>c.id===id)).href,href);
+  assert.equal(qa.unlockDestination(data.cards.find(c=>c.id==="sseugumi")),null);
+  const link={};
+  qa.setUnlockLink(link,qa.unlockDestination(data.cards.find(c=>c.id==="jaei")));
+  assert.match(link.textContent,/수학 공부/);
+  qa.setUnlockLink(link,null);assert.equal(link.hidden,true);
+  qa.setUnlockLink(link,{href:"../story/",label:"🎧 이야기 극장으로"});
+  assert.equal(link.hidden,false);assert.equal(link.href,"../story/");
+});
+
 test("오디세이 확장 75장 모두 공격력·방어력·정신력 1~5 별점을 가진다", () => {
   assert.equal(data.cards.length, 76);
   assert.equal(data.collection.length, 76);
@@ -76,12 +127,15 @@ test("오디세이 확장 75장 모두 공격력·방어력·정신력 1~5 별�
   assert.deepEqual(byId.get("fairygodmother").stats, { attack: 1, defense: 4, spirit: 4 });
 });
 
-test("작은 카드는 실제 피해·비용·약점·특성을 표시하고 별점은 상세에 둔다", () => {
+test("컬렉션은 원화·이름·체력·속성만 표시하고 전투 정보는 상세와 대결에 둔다", () => {
   const view = loadCardView();
   const card = data.cards.find(c => c.id === "heracles");
   const compact = view.create(card, {interactive:true, compact:true, collectionCompact:true});
   const nodes = walk(compact);
-  assert.equal(nodes.filter(n => hasClass(n, "combat-fact")).length, 3);
+  assert.equal(nodes.filter(n => hasClass(n, "combat-fact")).length, 0);
+  for (const name of ["card-art","card-name","hp-gem","element-rune"])
+    assert.ok(nodes.some(n => hasClass(n,name)));
+  assert.equal(walk(view.create(card,{compact:true})).filter(n=>hasClass(n,"combat-fact")).length,3);
   assert.equal(nodes.some(n => hasClass(n, "card-stats")), false);
   const info = view.combatInfo(card);
   const best = card.attacks.slice().sort((a,b) => b.dmg-a.dmg || a.cost-b.cost)[0];
@@ -108,10 +162,15 @@ test("컬렉션은 폰 2열·iPad 세로 3열·가로 5열이며 큰 소개 없�
   assert.match(css, /\.collection-toolbar \.story-link \{[\s\S]*?min-height: 60px/);
   assert.match(css, /\.story-card\.is-collection-compact \.card-art \{[\s\S]*?width: calc\(100% - 8px\)/);
   assert.match(css, /\.story-card\.is-collection-compact \.stat-row \{ min-height: 14px; \}/);
-  assert.match(html, /남은 체력[\s\S]*?기본 피해[\s\S]*?약점/);
+  assert.match(html, /id="collectionSort"/);
+  const artFirstCss=css.slice(css.indexOf("/* v48"));
+  assert.match(artFirstCss,/aspect-ratio: 5 \/ 7/);
+  assert.match(artFirstCss,/grid-template-columns: repeat\(5, minmax\(0, 1fr\)\)/);
+  assert.match(artFirstCss,/grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
+  assert.match(artFirstCss,/grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
 });
 
-test("열린 카드는 상세에서만 출전 선택하고 잠긴 카드는 기존 이야기 dialog를 쓴다", () => {
+test("잠긴 카드도 상세를 보되 출전은 막고 실제 해금 장소로 안내한다", () => {
   ["cardDetailDialog", "cardDetailCard", "cardDetailTitle", "cardDetailStatus", "detailSelectButton", "lockedDialog"]
     .forEach((id) => assert.match(html, new RegExp('id="' + id + '"')));
   const lockedStart = html.indexOf('id="lockedDialog"');
@@ -120,22 +179,24 @@ test("열린 카드는 상세에서만 출전 선택하고 잠긴 카드는 기�
   assert.ok(lockedStart >= 0 && lockedEnd > lockedStart && detailStart > lockedEnd);
   const collectionBlock = app.slice(app.indexOf("function renderCollection()"), app.indexOf("function closeCardDetail()"));
   const detailBlock = app.slice(app.indexOf("function openCardDetail"), app.indexOf("function selectCard"));
-  assert.match(collectionBlock, /if \(locked\) \{[\s\S]*?openLockedDialog\(card\);[\s\S]*?return;[\s\S]*?openCardDetail\(chosenCard, chosenElement\)/);
+  assert.match(collectionBlock, /openCardDetail\(chosenCard, chosenElement\)/);
+  assert.doesNotMatch(collectionBlock,/openLockedDialog\(card\)/);
   assert.doesNotMatch(collectionBlock, /selectCard\(/);
   assert.match(detailBlock, /cardDetailDialog\.showModal\(\)/);
-  assert.match(detailBlock, /detailSelectButton\.disabled = !playable/);
+  assert.match(detailBlock, /detailSelectButton\.disabled = !playable \|\| !unlocked/);
+  assert.match(detailBlock, /setUnlockLink\(dom.detailUnlockLink, unlocked \? null : unlockDestination\(card\)\)/);
   assert.match(app, /detailSelectButton\.addEventListener\("click"[\s\S]*?selectCard\(detailCard, detailOrigin\)/);
   assert.match(app, /origin && origin\.isConnected[\s\S]*?origin\.focus/);
 });
 
-test("양쪽 전투 카드가 같은 전투 정보 렌더러를 사용하고 카드·원정 자산은 v47이다", () => {
+test("양쪽 전투 카드가 같은 전투 정보 렌더러를 사용하고 카드·원정 자산은 v48이다", () => {
   assert.match(app, /syncBattleCard\(dom\.playerCardSlot/);
   assert.match(app, /syncBattleCard\(dom\.enemyCardSlot/);
   assert.match(app, /CardView\.create\(side\.card, \{[\s\S]*?compact: true/);
   assert.match(viewSource, /else if \(options\.compact\) \{[\s\S]*?crown, facts, art/);
-  assert.equal((html.match(/\?v=47/g) || []).length, 11);
+  assert.equal((html.match(/\?v=48/g) || []).length, 11);
   assert.doesNotMatch(html, /\?v=(?:25|26|27|28|29|30|31)/);
-  assert.equal((sw.match(/\.\/cards\/[^"\n]+\?v=47/g) || []).length, 11);
+  assert.equal((sw.match(/\.\/cards\/[^"\n]+\?v=48/g) || []).length, 11);
 });
 
 test("오행 속성이 카드 클래스, 원화 배지와 접근성 이름에 함께 드러난다", () => {

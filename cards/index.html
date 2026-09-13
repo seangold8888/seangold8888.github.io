@@ -17,8 +17,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   <link rel="icon" href="../icon.png">
   <link rel="apple-touch-icon" href="../icon.png">
   <link rel="manifest" href="../manifest.json">
-<link rel="stylesheet" href="styles.css?v=47">
-<link rel="stylesheet" href="campaign.css?v=47">
+<link rel="stylesheet" href="styles.css?v=48">
+<link rel="stylesheet" href="campaign.css?v=48">
 </head>
 <body>
   <div class="sky" aria-hidden="true">
@@ -49,7 +49,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         </div>
         <div class="collection-status" aria-live="polite">
           <span class="status-orb">✦</span>
-<strong id="unlockCount">0 / 75</strong>
+<strong id="unlockCount">0 / 76</strong>
           <span>깨어남</span>
         </div>
         <a class="story-link" href="../story/">🎧 이야기</a>
@@ -58,8 +58,16 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       <button id="campaignButton" class="expedition-entry" type="button">원정 떠나기</button>
 
       <div class="collection-guide">
-        <h2>카드를 탭해 능력을 보고 출전 영웅을 골라요</h2>
-        <p aria-label="전투 정보 읽는 법"><span>♥ 남은 체력</span><span>⚔ 기본 피해 · ⭐ 비용</span><span>약점 속성에게 받는 피해 +10</span></p>
+        <h2>마음에 드는 그림을 눌러 능력을 살펴봐요</h2>
+        <label class="collection-sort">정렬
+          <select id="collectionSort" aria-label="카드 정렬 방식">
+            <option value="ready">깨어난 순</option>
+            <option value="hp">체력 높은 순</option>
+            <option value="power">기본 피해 높은 순</option>
+            <option value="element">속성순</option>
+            <option value="name">이름순</option>
+          </select>
+        </label>
       </div>
 
       <div class="card-gallery" id="collectionGrid" role="list" aria-label="카드 컬렉션"></div>
@@ -167,8 +175,9 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     <button class="dialog-close" data-detail-close type="button" aria-label="카드 상세 닫기">×</button>
     <p class="kicker">영웅 카드 자세히</p>
     <h2 id="cardDetailTitle">영웅 카드</h2>
-    <div class="card-detail-card" id="cardDetailCard"></div>
     <p class="card-detail-status" id="cardDetailStatus">기술과 특성을 살펴보세요.</p>
+    <a class="primary-button detail-unlock-link" id="detailUnlockLink" hidden></a>
+    <div class="card-detail-card" id="cardDetailCard"></div>
     <div class="card-detail-actions">
       <button class="primary-button" id="detailSelectButton" type="button">출전 선택</button>
       <button class="ghost-button" data-detail-close type="button">계속 보기</button>
@@ -198,15 +207,15 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   </dialog>
 
   <noscript>이야기 카드 배틀을 하려면 JavaScript를 켜 주세요.</noscript>
-<script src="js/engine.js?v=47" defer></script>
-<script src="js/audio.js?v=47" defer></script>
-<script src="js/card-view.js?v=47" defer></script>
-<script src="js/vfx-recipes.js?v=47" defer></script>
-<script src="js/story-gates.js?v=47" defer></script>
-<script src="js/campaign.js?v=47" defer></script>
-<script src="js/campaign-ui.js?v=47" defer></script>
-<script src="js/combat-cinema.js?v=47" defer></script>
-<script src="js/app.js?v=47" defer></script>
+<script src="js/engine.js?v=48" defer></script>
+<script src="js/audio.js?v=48" defer></script>
+<script src="js/card-view.js?v=48" defer></script>
+<script src="js/vfx-recipes.js?v=48" defer></script>
+<script src="js/story-gates.js?v=48" defer></script>
+<script src="js/campaign.js?v=48" defer></script>
+<script src="js/campaign-ui.js?v=48" defer></script>
+<script src="js/combat-cinema.js?v=48" defer></script>
+<script src="js/app.js?v=48" defer></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {

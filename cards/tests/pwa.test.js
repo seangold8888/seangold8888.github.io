@@ -114,9 +114,9 @@ test("all story episode mp3 files match the service worker fallback list", () =>
   }
 });
 
-test("cache generation v88 preserves exact v47 card assets and canonical navigation aliases", () => {
-  assert.equal(sw.CACHE_VERSION, "v88");
-  assert.match(sw.STATIC_CACHE, /^adventure-box-v88-/);
+test("cache generation v89 preserves exact v48 card assets and canonical navigation aliases", () => {
+  assert.equal(sw.CACHE_VERSION, "v89");
+  assert.match(sw.STATIC_CACHE, /^adventure-box-v89-/);
   const studioImages = fs.readdirSync(path.join(siteRoot, "princess/assets/studio-v3")).filter(name => /\.(webp|jpg)$/.test(name));
   assert.equal(studioImages.length, 95);
   for (const name of studioImages) assert.ok(sw.OPTIONAL_SHELL.includes("./princess/assets/studio-v3/" + name), name);
@@ -132,7 +132,7 @@ test("cache generation v88 preserves exact v47 card assets and canonical navigat
     assert.ok(sw.OPTIONAL_SHELL.includes("./princess/assets/bodies-v4/body-" + id + ".webp"));
   }
   for (const asset of ["styles.css", "campaign.css", "engine.js", "audio.js", "card-view.js", "vfx-recipes.js", "story-gates.js", "campaign.js", "campaign-ui.js", "combat-cinema.js", "app.js"]) {
-    assert.ok(sw.CORE_SHELL.some(entry => entry.endsWith(asset + "?v=47")), asset);
+    assert.ok(sw.CORE_SHELL.some(entry => entry.endsWith(asset + "?v=48")), asset);
   }
   assert.doesNotMatch(swSource, /\.\/cards\/[^"\n]+\?v=(?:19|2\d|30|31)|adventure-box-v(?:19|2\d|3\d|4\d|5\d|6[0-5])-/);
   assert.deepEqual(sw.VFX_ART_FILES, [

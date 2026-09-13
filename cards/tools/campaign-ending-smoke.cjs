@@ -50,7 +50,7 @@ function ending() {
     await page.waitForFunction(async name=>(await caches.keys()).includes(name),SW.STATIC_CACHE);
     const cached=await page.evaluate(async name=>{
       const cache=await caches.open(name);
-      const files=["/cards/js/campaign.js?v=47","/cards/art/sseugumi.webp","/math/assets/jaei-family-v4.webp"];
+      const files=["/cards/js/campaign.js?v=48","/cards/art/sseugumi.webp","/math/assets/jaei-family-v4.webp"];
       return Promise.all(files.map(async file=>Boolean(await cache.match(file))));
     },SW.STATIC_CACHE);
     assert.deepEqual(cached,[true,true,true]);
@@ -90,7 +90,7 @@ function ending() {
     await page.locator("#storyGateButton").click();
     assert.ok(await page.locator("#storyQuizDialog").isVisible());
     assert.deepEqual(errors,[]);
-    console.log("PASS offline v88: ending resume, family art, reward art, recruitment, seven actions and card quiz; 3 viewports");
+    console.log("PASS offline v89: ending resume, family art, reward art, recruitment, seven actions and card quiz; 3 viewports");
     console.log("SCREENSHOTS",output);
   }finally{
     await context.close();await browser.close();

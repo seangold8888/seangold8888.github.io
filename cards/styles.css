@@ -5005,3 +5005,83 @@ dialog p:not(.kicker) {
 @media (prefers-reduced-motion: reduce) {
   .story-card[class*="element-"] { background-attachment: scroll; }
 }
+
+/* v48 — artwork-first collection; mechanics stay in the detail dialog. */
+.collection-toolbar, .collection-guide, .collection-screen .card-gallery {
+  width: min(100%, 1100px); max-width: 1100px;
+}
+.collection-screen .card-gallery {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 16px; align-items: stretch;
+}
+.collection-guide { margin-block: 14px; gap: 10px; }
+.collection-guide h2 { display: block; margin: 0; font-size: 14px; font-weight: 500; color: #cfc7e3; }
+.collection-sort { display: flex; align-items: center; gap: 8px; color: #e9e0f8; font-size: 14px; }
+.collection-sort select {
+  min-height: 48px; max-width: 220px; padding: 9px 34px 9px 13px;
+  border: 1px solid #9682b9; border-radius: 12px; color: #fff8e8;
+  background: #2d2444; font: inherit; cursor: pointer;
+}
+.collection-sort select:focus-visible { outline: 3px solid #ffdc80; outline-offset: 3px; }
+.card-gallery .story-card.is-collection-compact {
+  width: 100%; height: auto; min-height: 0; aspect-ratio: 5 / 7;
+  display: grid; grid-template-rows: minmax(0, 1fr) 50px; gap: 5px;
+  padding: 6px; border-radius: 18px;
+  transform: none !important; animation: none;
+}
+.card-gallery .story-card.is-collection-compact .card-art {
+  width: 100%; height: 100%; min-height: 0; margin: 0;
+  aspect-ratio: auto; border-radius: 12px;
+}
+.card-gallery .story-card.is-collection-compact .card-art img { transform: none; }
+.card-gallery .story-card.is-collection-compact .card-crown {
+  min-height: 0; height: 50px; padding: 3px 2px; gap: 5px; align-items: center;
+}
+.card-gallery .story-card.is-collection-compact .card-name {
+  font-size: clamp(14px, 1.65vw, 18px); line-height: 1.2; margin: 0;
+  overflow-wrap: anywhere; -webkit-line-clamp: 2;
+}
+.card-gallery .story-card.is-collection-compact .hp-gem {
+  width: 48px; min-width: 48px; height: 38px; grid-template-rows: 10px 19px;
+}
+.card-gallery .story-card.is-collection-compact .hp-gem strong { font-size: 19px; }
+.card-gallery .story-card.is-collection-compact .element-rune { font-size: 12px; min-height: 26px; padding: 4px 8px; }
+.card-gallery .story-card.is-collection-compact .lock-veil {
+  inset: 6px 6px auto auto; padding: 0; background: none;
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+.card-gallery .story-card.is-collection-compact .lock-icon { width: 29px; height: 29px; font-size: 15px; border-radius: 10px; }
+.card-gallery .story-card.is-collection-compact .lock-veil strong { display: none; }
+.card-gallery .story-card.is-collection-compact.is-selected { outline: 3px solid #a6ffe0; outline-offset: 3px; }
+.card-detail-dialog { width: min(540px, calc(100% - 20px)); }
+.card-detail-card { width: min(410px, 100%); }
+.card-detail-card .story-card { width: 100%; max-width: none; }
+.card-detail-card .card-details { display: grid; gap: 12px; }
+.card-detail-card .passive-row { grid-template-columns: auto 1fr; gap: 8px; padding: 12px; text-align: left; }
+.card-detail-card .passive-row small { grid-column: 1 / -1; }
+.card-detail-card .passive-row strong, .card-detail-card .attack-copy strong { font-size: 16px; }
+.card-detail-card .attack-row { display: grid; grid-template-columns: minmax(0, 1fr); padding: 12px; gap: 9px; text-align: left; }
+.card-detail-card .attack-numbers { justify-content: flex-end; }
+.card-detail-card .passive-row small, .card-detail-card .attack-copy small {
+  display: block; font-size: 15px; line-height: 1.65; color: #443b50;
+  white-space: normal; overflow: visible; text-overflow: clip; -webkit-line-clamp: unset;
+}
+.card-detail-card .combat-facts::after {
+  content: "기본 피해는 상대의 약점이나 능력에 따라 달라져요.";
+  font-size: 13px; line-height: 1.5; color: #d7cde8;
+}
+.detail-unlock-link { display: block; margin: 12px 0; text-align: center; }
+.detail-unlock-link[hidden] { display: none; }
+@media (min-width: 600px) and (orientation: portrait) {
+  .collection-toolbar, .collection-guide, .collection-screen .card-gallery { width: min(100%, 660px); max-width: 660px; }
+  .collection-screen .card-gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+}
+@media (max-width: 599px) {
+  .collection-toolbar, .collection-guide, .collection-screen .card-gallery { width: 100%; max-width: none; }
+  .collection-screen .card-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .collection-guide { justify-content: space-between; }
+  .collection-guide h2 { width: 100%; font-size: 13px; }
+  .collection-sort { margin-left: auto; }
+  .card-gallery .story-card.is-collection-compact .card-name { font-size: 14px; }
+  .card-detail-card { width: 100%; }
+}

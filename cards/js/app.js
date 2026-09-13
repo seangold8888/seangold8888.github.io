@@ -43,6 +43,8 @@
   let selectedCard = null;
   let detailCard = null;
   let detailOrigin = null;
+  let collectionSort = "ready";
+  const COLLECTION_SORTS = ["ready", "hp", "power", "element", "name"];
   let selectedFragmentIndex = null;
   let enemyIntent = null;
   let storyChallenge = null;
@@ -77,7 +79,7 @@
   function cacheDom() {
     [
       "collectionScreen", "battleScreen", "campaignScreen", "campaignBattleLabel", "collectionGrid", "unlockCount",
-      "selectionDock", "selectedPortrait", "selectedStatus", "selectedName",
+      "selectionDock", "selectedPortrait", "selectedStatus", "selectedName", "collectionSort", "detailUnlockLink",
       "battleButton", "battleButtonLabel",
       "muteButton", "musicButton", "leaveBattleButton", "turnOwner", "turnNumber",
       "battleStars", "arena", "enemyCardSlot", "playerCardSlot", "battleMessage",
@@ -245,6 +247,21 @@
       : " 이야기를 끝까지 들으면 ");
   }
 
+  function unlockDestination(card) {
+    if (card.id === "sseugumi") return null;
+    const tokens = card.unlockAll && card.unlockAll.length ? card.unlockAll : [card.unlock];
+    const token = tokens.find(id => !isUnlockDone(id)) || tokens[0] || "";
+    if (token.startsWith("game:math/")) return {href:"../math/",label:"🔢 수학 공부하러 가기"};
+    if (token.startsWith("game:sanguo/")) return {href:"../sanguo/",label:"⚔️ 삼국지·서유기 게임으로"};
+    if (token.startsWith("game:odyssey/")) return {href:"../odyssey/",label:"⛵ 오디세이 게임으로"};
+    return {href:"../story/",label:"🎧 이야기 극장으로"};
+  }
+
+  function setUnlockLink(link, destination) {
+    link.hidden = !destination;
+    if (destination) { link.href = destination.href; link.textContent = destination.label; }
+  }
+
   function artUrl(card) {
     const requested = card.art || ("art/" + card.id + ".png");
     return requested.replace(/\.png$/i, ".webp");
@@ -285,14 +302,7 @@
       selectedCard = battleCards.find(isUnlocked) || null;
     }
 
-    // 깨어난 카드가 맨 위, 그다음 깨울 수 있는 대전 카드, 수집 전용은 마지막.
-    // 같은 묶음 안에서는 원래 순서를 지킨다(안정 정렬).
-    const shelfOrder = cards.map(function (card, index) {
-      const tier = isUnlocked(card) ? 0 : (isPlayableCard(card) ? 1 : 2);
-      return { card: card, tier: tier, index: index };
-    }).sort(function (a, b) {
-      return a.tier - b.tier || a.index - b.index;
-    }).map(function (entry) { return entry.card; });
+    const shelfOrder = window.CardView.sortCollection(cards, collectionSort, isUnlocked, isPlayableCard);
 
     shelfOrder.forEach(function (card) {
       const locked = !isUnlocked(card);
@@ -307,10 +317,6 @@
         eager: card.id === "cinderella",
         onSelect: function (chosenCard, chosenElement) {
           window.CardAudio.prime();
-          if (locked) {
-            openLockedDialog(card);
-            return;
-          }
           openCardDetail(chosenCard, chosenElement);
         }
       });
@@ -336,20 +342,22 @@
     detailCard = card;
     detailOrigin = cardEl;
     const playable = isPlayableCard(card);
+    const unlocked = isUnlocked(card);
     const detailView = window.CardView.create(card, {
       collectionOnly: !playable,
       eager: true
     });
     dom.cardDetailTitle.textContent = card.name;
     dom.cardDetailCard.replaceChildren(detailView);
-    dom.cardDetailStatus.textContent = playable
+    dom.cardDetailStatus.textContent = !unlocked ? unlockLeadPhrase(card) + (card.id === "sseugumi" ? "" : "함께 대결할 수 있어요.") : playable
       ? "기술과 특성을 확인했어요. 이 영웅으로 출전할까요?"
       : "컬렉션 전용 카드예요. 대전은 다음 모험에서 열려요.";
-    dom.detailSelectButton.disabled = !playable;
-    dom.detailSelectButton.textContent = playable ? "출전 선택" : "대전 준비 중";
+    dom.detailSelectButton.disabled = !playable || !unlocked;
+    dom.detailSelectButton.textContent = !unlocked ? "아직 잠든 카드" : playable ? "출전 선택" : "대전 준비 중";
+    setUnlockLink(dom.detailUnlockLink, unlocked ? null : unlockDestination(card));
     dom.detailSelectButton.setAttribute(
       "aria-label",
-      playable ? card.name + " 출전 선택" : card.name + " 카드는 대전 준비 중"
+      !unlocked ? card.name + " 카드가 아직 잠들어 있어요" : playable ? card.name + " 출전 선택" : card.name + " 카드는 대전 준비 중"
     );
     dom.cardDetailDialog.showModal();
     window.CardAudio.select();
@@ -410,7 +418,7 @@
       ? lead + "이 영웅과 함께 대결할 수 있어요."
       : lead + "컬렉션에 깨어나요. 대전 기술은 다음 확장에서 준비됩니다.";
     const link = dom.lockedDialog.querySelector(".dialog-action");
-    link.hidden = card.id === "sseugumi";
+    setUnlockLink(link, unlockDestination(card));
     dom.lockedDialog.showModal();
   }
 
@@ -2070,7 +2078,7 @@
   }
 
   function showStoryListeningGate() {
-    dom.lockedDialog.querySelector(".dialog-action").hidden = false;
+    setUnlockLink(dom.lockedDialog.querySelector(".dialog-action"), {href:"../story/",label:"🎧 이야기 극장으로"});
     const storyName = storyGateStoryName();
     dom.lockedArt.style.backgroundImage = 'linear-gradient(rgba(17,13,37,.22), rgba(17,13,37,.42)), url("' + artUrl(selectedCard) + '")';
     dom.lockedArt.style.backgroundPosition = window.CardView.artPosition[selectedCard.id] || "50% 40%";
@@ -3010,6 +3018,16 @@
 
   function bindEvents() {
     bindCardTilt();
+    try {
+      const savedSort = localStorage.getItem("card_collection_sort");
+      if (COLLECTION_SORTS.includes(savedSort)) collectionSort = savedSort;
+    } catch (_) {}
+    dom.collectionSort.value = collectionSort;
+    dom.collectionSort.addEventListener("change", function () {
+      collectionSort = COLLECTION_SORTS.includes(dom.collectionSort.value) ? dom.collectionSort.value : "ready";
+      try { localStorage.setItem("card_collection_sort", collectionSort); } catch (_) {}
+      renderCollection();
+    });
     dom.battleButton.addEventListener("click", startBattle);
     dom.leaveBattleButton.addEventListener("click", function () {
       if (campaignBattle) returnToCampaign(false);
@@ -3024,7 +3042,7 @@
       button.addEventListener("click", closeCardDetail);
     });
     dom.detailSelectButton.addEventListener("click", function () {
-      if (!detailCard || !isPlayableCard(detailCard)) return;
+      if (!detailCard || !isPlayableCard(detailCard) || !isUnlocked(detailCard)) return;
       selectCard(detailCard, detailOrigin);
       dom.cardDetailDialog.close("selected");
     });
