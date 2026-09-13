@@ -27,11 +27,11 @@
   // family-balance.cjs의 전체 75장 맞대결 결과를 등급으로 고정한다.
   // 수치가 바뀌면 검사 도구를 다시 돌리고 이 묶음도 함께 갱신한다.
   const BATTLE_TIERS = Object.freeze({
-    S: new Set(["jaei", "midas", "taeo", "eomma", "appa", "scylla", "siren", "baigujing", "zhaoyun", "mermaid"]),
+    S: new Set(["jaei", "taeo", "eomma", "appa", "scylla", "siren", "baigujing", "zhaoyun", "mermaid"]),
     A: new Set(["jeongyakyong", "kimhongdo", "yugwansun", "perseus", "beanstalkgiant", "circe", "hades", "simayi"]),
     B: new Set(["jangyeongsil", "heojun", "kimgu", "poseidon", "zhugeliang", "doctorwatson", "wumawang", "hydra", "redknot", "jack", "nezha", "heracles", "zeus", "erlangshen", "polyphemus", "atalanta", "helios", "tiger"]),
     C: new Set(["sejong", "shinsaimdang", "sseugumi", "zhangfei", "athena", "sunwukong", "ppungdetective", "wolf", "achilles", "kwonyul", "guanyu", "hermes", "sphinx", "witch", "prometheus", "honggildong", "starshield", "moriarty", "redhood", "ganggamchan", "odysseus", "euljimundeok", "apollo", "cinderella", "neonjumper", "arthur", "moonmoth", "threepigs", "thunderguard", "medusa", "theseus", "arsenelupin", "fairygodmother", "gearwing", "sherlockholmes", "tortoisehare", "yisunshin", "pinocchio", "orpheus"]),
-    D: new Set(["snowqueen", "honghaier", "cerberus", "bremen", "caocao", "artemis", "minotaur", "walllizard", "genie"])
+    D: new Set(["midas", "snowqueen", "honghaier", "cerberus", "bremen", "caocao", "artemis", "minotaur", "walllizard", "genie"])
   });
   const TIER_WIDTH = Object.freeze({ S: 100, A: 82, B: 64, C: 46, D: 28 });
 
@@ -317,10 +317,11 @@
     picture.append(source, img);
     frame.append(picture, fallback);
 
-    const element = combatInfo(card).element;
-    const rune = el("span", "element-rune", element);
-    rune.setAttribute("aria-hidden", "true");
-    frame.appendChild(rune);
+    if (card.element && window.CardEngine && window.CardEngine.ELEMENT_CHART[card.element]) {
+      const rune = el("span", "element-rune", combatInfo(card).element);
+      rune.setAttribute("aria-hidden", "true");
+      frame.appendChild(rune);
+    }
 
     const glow = el("span", "art-glow");
     glow.setAttribute("aria-hidden", "true");
@@ -383,11 +384,13 @@
 
     const crown = el("div", "card-crown");
     const ornament = el("div", "frame-ornament");
-    const crest = el("span", "frame-crest", combatInfo(card).element.split(" ")[0]);
-    crest.setAttribute("aria-hidden", "true");
     ornament.setAttribute("aria-hidden", "true");
+    if (card.element && window.CardEngine && window.CardEngine.ELEMENT_CHART[card.element]) {
+      const crest = el("span", "frame-crest", combatInfo(card).element.split(" ")[0]);
+      crest.setAttribute("aria-hidden", "true");
+      ornament.appendChild(crest);
+    }
     ornament.append(
-      crest,
       el("i", "frame-corner frame-corner-nw"),
       el("i", "frame-corner frame-corner-ne"),
       el("i", "frame-corner frame-corner-sw"),

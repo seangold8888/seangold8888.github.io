@@ -28,7 +28,7 @@ function audioRuntime() {
 }
 
 test("S급 재조정된 55장 데이터·순서와 각 기술 소리는 고정된다", () => {
-  assert.equal(sha(JSON.stringify(data.cards.slice(0, 55))), "1f48873f2a372eaa0cc949e6faa437476819abf7c03b751e439992e4cc37691e");
+  assert.equal(sha(JSON.stringify(require("./approved-card-baseline.cjs").beforeMidasRollback(data.cards.slice(0, 55)))), "1f48873f2a372eaa0cc949e6faa437476819abf7c03b751e439992e4cc37691e");
   assert.equal(sha(JSON.stringify(data.collection.slice(0, 55))), "f55b8a8d24c97df0f7335c5bcc680a4744d6b67806ff06876c83fd68c82136ed");
   const Audio = audioRuntime();
   const plans = data.cards.slice(0, 55).flatMap(card => card.attacks.map(attack => {

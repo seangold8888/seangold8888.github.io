@@ -1287,9 +1287,9 @@
       "summonCost": 2,
       "hp": 70,
       "passive": {
-        "name": "황금 갑옷",
-        "desc": "오행 상성 추가 피해 +10을 받지 않아요",
-        "fx": "no_weakness"
+        "name": "황금의 저주",
+        "desc": "내 턴이 끝날 때마다 내 체력이 10 줄어요",
+        "fx": "self_hurt_10_eot"
       },
       "attacks": [
         {

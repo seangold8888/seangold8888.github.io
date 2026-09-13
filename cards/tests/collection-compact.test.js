@@ -153,6 +153,16 @@ test("오디세이 확장 75장 모두 공격력·방어력·정신력 1~5 별�
   assert.deepEqual(byId.get("fairygodmother").stats, { attack: 1, defense: 4, spirit: 4 });
 });
 
+test("무속성 카드는 모든 화면에서 속성 보석과 룬을 만들지 않는다", () => {
+  const view=loadCardView(),base=data.cards.find(c=>c.id==="sseugumi");
+  for(const element of [null,undefined,"unknown"]) for(const options of [{},{compact:true},{compact:true,collectionCompact:true}]) {
+    const nodes=walk(view.create({...base,element},options));
+    assert.equal(nodes.filter(n=>hasClass(n,"frame-crest")||hasClass(n,"element-rune")).length,0);
+  }
+  const nodes=walk(view.create(data.cards.find(c=>c.id==="jaei"),{}));
+  assert.equal(nodes.filter(n=>hasClass(n,"frame-crest")).length,1);
+});
+
 test("컬렉션은 원화·이름·체력·속성만 표시하고 전투 정보는 상세와 대결에 둔다", () => {
   const view = loadCardView();
   const card = data.cards.find(c => c.id === "heracles");
@@ -234,9 +244,9 @@ test("양쪽 전투 카드가 같은 전투 정보 렌더러를 사용하고 카
   assert.match(app, /syncBattleCard\(dom\.enemyCardSlot/);
   assert.match(app, /CardView\.create\(side\.card, \{[\s\S]*?compact: true/);
   assert.match(viewSource, /else if \(options\.compact\) \{[\s\S]*?crown, facts, art/);
-  assert.equal((html.match(/\?v=55/g) || []).length, 11);
+  assert.equal((html.match(/\?v=56/g) || []).length, 11);
   assert.doesNotMatch(html, /\?v=(?:25|26|27|28|29|30|31)/);
-  assert.equal((sw.match(/\.\/cards\/[^"\n]+\?v=55/g) || []).length, 11);
+  assert.equal((sw.match(/\.\/cards\/[^"\n]+\?v=56/g) || []).length, 11);
 });
 
 test("오행 속성이 카드 클래스, 원화 배지와 접근성 이름에 함께 드러난다", () => {

@@ -42,6 +42,7 @@ async function main() {
       }});
     },{progress,storageBlocked});
     const page = await context.newPage();
+    page.setDefaultTimeout(15000);
     await page.clock.install();
     const errors=[]; page.on("pageerror",error=>errors.push(String(error)));
     await page.goto(base+"/cards/");
@@ -226,7 +227,8 @@ async function main() {
             await q.reload();await q.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===84);
             assert.match(await q.locator('#collectionGrid [data-card-id="sseugumi"]').getAttribute("class"),/is-locked/);
             await mapContinue(q);reloaded=true;
-            assert.ok(await q.locator(".is-family-ending img").evaluate(n=>n.complete && n.naturalWidth>0));
+            await q.waitForFunction(()=>{const images=[...document.querySelectorAll(".is-family-ending img")];return images.length===4&&images.every(n=>n.complete&&n.naturalWidth>0);});
+            assert.deepEqual(await q.locator(".is-family-ending img").evaluateAll(ns=>ns.map(n=>new URL(n.src).pathname)),["/cards/art/appa.webp","/cards/art/eomma.webp","/cards/art/jaei.webp","/cards/art/taeo.webp"]);
             await q.screenshot({path:path.join(output,viewport.width+"-family-ending.png"),fullPage:true});
           }
         }
@@ -238,7 +240,7 @@ async function main() {
             "story controls stay visible: "+JSON.stringify({viewport,state,controls}));
           if((await q.locator(".expedition-scene").getAttribute("data-scene-key")).startsWith("0:0:intro:") && await q.locator(".expedition-scene").getAttribute("data-page")==="1")
             await q.screenshot({path:path.join(output,viewport.width+"-rainbow-story.png")});
-          assert.ok(await q.locator(".expedition-scene img").evaluate(n=>n.complete && n.naturalWidth>0));
+          await q.waitForFunction(()=>[...document.querySelectorAll(".expedition-scene img")].every(n=>n.complete&&n.naturalWidth>0));
           await q.locator(".expedition-scene .primary-button").click();
         }else if(await q.locator(".expedition-go").isVisible()){
           for(const id of ["jaei","taeo","redhood"]){
@@ -257,6 +259,7 @@ async function main() {
       assert.equal(state.phase,"complete");assert.equal(state.ending,1);assert.equal(fights,29);
       assert.equal(state.recruited.filter(id=>id==="sseugumi").length,1);assert.ok(reloaded);
       assert.equal(await q.locator(".expedition-world:not(:disabled)").count(),0);
+      console.log("CHECK S3 free battle",viewport);
       await q.screenshot({path:path.join(output,viewport.width+"-complete.png"),fullPage:true});
       await q.locator(".expedition-map-footer .primary-button").click();
       await q.locator('#collectionGrid [data-card-id="sseugumi"]').click();
@@ -264,6 +267,9 @@ async function main() {
       await q.locator("#detailSelectButton").click();
       assert.equal(await q.evaluate(()=>__testGame.sides.player.card.id),"sseugumi");
       assert.equal(await q.evaluate(()=>__testGame.sides.player.card.hp),100);
+      assert.deepEqual(await q.evaluate(()=>__testGame.sides.player.card.attacks.map(a=>a.dmg)),[20,10,30,60]);
+      assert.equal(await q.locator('#playerCardSlot .story-card').count(),1);
+      assert.equal(await q.locator('#playerCardSlot .frame-crest, #playerCardSlot .element-rune').count(),0);
       assert.equal(await q.locator("#actionList button").count(),7);
       assert.equal(await q.locator("#storyGateButton").innerText(),"문제 열기");
       assert.deepEqual(run.errors,[]);

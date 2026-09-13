@@ -22,6 +22,7 @@ class Node {
     for(const part of selector.split(" ")) parent=walk(parent).slice(1).find(n=>part.startsWith(".")?hasClass(n,part.slice(1)):n.tag===part);
     return parent;
   }
+  querySelectorAll(selector) {return walk(this).slice(1).filter(n=>selector.startsWith(".")?hasClass(n,selector.slice(1)):n.tag===selector);}
   click() {if(!this.disabled&&this.events.click)this.events.click();}
 }
 function setup(initial) {
@@ -47,6 +48,23 @@ function chapterOne() {
   let p=C.beginBattle(C.finishIntro(C.createProgress()),"jaei");
   return C.finishChapter(C.finishBattle(p,p.battleSerial,"player"));
 }
+test("family ending reuses the four card portraits, never the differently dressed math picture",()=>{
+  let p=C.createProgress();
+  for(let chapter=0;chapter<8;chapter++){
+    p=C.finishIntro(p);
+    if(chapter)p=C.selectParty(p,["jaei","taeo","redhood"]);
+    for(const id of C.encounterIds(chapter)){p=C.beginBattle(p,"jaei");p=C.finishBattle(p,p.battleSerial,"player");}
+    if(chapter<7)p=C.finishChapter(p);
+  }
+  p=C.advanceEnding(C.advanceEnding(p));
+  const qa=setup(p);qa.ui.resume();
+  const images=walk(qa.find("expedition-family-art")).filter(n=>n.tag==="img");
+  assert.deepEqual(images.map(n=>n.src),["art/appa.webp","art/eomma.webp","art/jaei.webp","art/taeo.webp"]);
+  assert.equal(images.length,4);
+  assert.ok(images.every(n=>typeof n.events.click==="function"));
+  assert.doesNotMatch(source,/math\/assets\/jaei-family/);
+});
+
 test("S2 map exposes eight worlds but only the current approved chapter can start",()=>{
   const qa=setup();qa.ui.showMap();
   const worlds=walk(qa.root).filter(n=>hasClass(n,"expedition-world"));
@@ -120,7 +138,7 @@ test("S2 module and styles are cached exactly once and load before the app",()=>
   const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
   const sw=require("../../sw.js");
   for(const name of ["campaign.css","js/campaign.js","js/campaign-ui.js"]){
-    assert.equal(sw.CORE_SHELL.filter(item=>item==="./cards/"+name+"?v=55").length,1);
-    assert.ok(html.indexOf(name+"?v=55")<html.indexOf("js/app.js?v=55"));
+    assert.equal(sw.CORE_SHELL.filter(item=>item==="./cards/"+name+"?v=56").length,1);
+    assert.ok(html.indexOf(name+"?v=56")<html.indexOf("js/app.js?v=56"));
   }
 });

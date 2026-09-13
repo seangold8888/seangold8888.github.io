@@ -100,3 +100,10 @@ console.log("\n전체 분포: 최저", (sorted[0] * 100).toFixed(0) + "%", "중�
 const types = {};
 for (const c of all) types[c.type] = (types[c.type] || 0) + 1;
 console.log("타입", JSON.stringify(types));
+if (implemented) {
+  const ranked=all.slice().sort((a,b)=>rate(b)-rate(a)).map(c=>c.id);
+  const family=new Set(["jaei","taeo","appa","eomma"]);
+  const passed=ranked[0]==="jaei" && ranked[1]==="taeo" && ranked.slice(0,4).every(id=>family.has(id)) && stalls===0;
+  console.log("가족 상위 4위 · 재이 1위 · 태오 2위:",passed?"PASS":"FAIL");
+  if(!passed)process.exitCode=1;
+}

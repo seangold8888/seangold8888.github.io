@@ -19,7 +19,7 @@ function seeded(seed) {
 // without fragments, must retain their actions, coin rolls, damage and winners.
 test("S1 preserves the pre-campaign AI decision and battle fingerprint", () => {
   const trace = [];
-  const cards = data.cards.slice(0, 75);
+  const cards = require("./approved-card-baseline.cjs").beforeMidasRollback(data.cards.slice(0, 75));
   const fragments = [
     {id: "boost", name: "강화", effect: {type: "boost_damage", amount: 20}},
     {id: "heal", name: "회복", effect: {type: "heal", amount: 20}},
@@ -199,7 +199,7 @@ test("campaign HP is isolated and all original collection data remains frozen", 
   opponent.card.attacks[0].dmg = 999;
   opponent.card.passive.fx = "changed";
   assert.equal(JSON.stringify(data), before);
-  const legacy = {...data, cards:data.cards.slice(0,75), collection:data.collection.slice(0,75)};
+  const legacy = {...data, cards:require("./approved-card-baseline.cjs").beforeMidasRollback(data.cards.slice(0,75)), collection:data.collection.slice(0,75)};
   assert.equal(crypto.createHash("sha256").update(JSON.stringify(legacy)).digest("hex"), "3bdad4902a84cf2fb6a9eae9e978995c0acc4f999d42db5d5adb62ef6f5ae596");
   assert.throws(() => Campaign.encounter(0, 2, data.cards), RangeError);
   assert.throws(() => Campaign.encounter(0, 0, []), /누락/);
@@ -233,6 +233,10 @@ test("winning the chapter brings back a resting party member", () => {
 
 test("approved campaign balance rewards good counters, differentiates bosses and leaves every chapter finishable", () => {
   const report = Balance.run();
+  const final = report.rows.find(row => row.chapter === 7 && row.stage === 3);
+  assert.equal(final.best.id, "jaei");
+  assert.ok(final.rates.find(row=>row.id==="taeo").rate >= .25);
+  for (const row of final.rates) { assert.ok(row.averageActions<=26); assert.ok(row.p95Actions<=36); }
   assert.equal(report.pass, true, JSON.stringify(report.rows.filter(row => !row.pass)));
   assert.equal(report.rows.length, 29);
   assert.equal(report.parties.reduce((sum, row) => sum + row.combinations, 0), 211);

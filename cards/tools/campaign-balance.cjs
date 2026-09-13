@@ -67,10 +67,14 @@ function measure(chapter, stage, samples, bonus) {
   // Actions count both sides; this is not a promise about human thinking time.
   const durationOk = !opponent.boss || viable.every(row =>
     row.averageActions <= BOSS_LIMITS.meanActions && row.p95Actions <= BOSS_LIMITS.p95Actions);
+  const finalFamilyOk = opponent.card.id !== "sseugumi" || (
+    rates[0].id === "jaei" && rates.find(row=>row.id==="taeo").rate >= .25 &&
+    rates.every(row=>row.averageActions<=26 && row.p95Actions<=36));
   return {chapter, stage, enemy: opponent.card.id, boss: opponent.boss, hp: opponent.card.hp,
     hpBonus: opponent.hpBonus, rates, best: rates[0], minimum, median, spread, choiceMatters,
     viableCount: viable.length, choiceBreadth, durationOk, stalls, invalid, longest,
-    pass: rates[0].rate >= minimum && choiceMatters && choiceBreadth && durationOk && stalls === 0 && invalid === 0};
+    finalFamilyOk,
+    pass: rates[0].rate >= minimum && choiceMatters && choiceBreadth && durationOk && finalFamilyOk && stalls === 0 && invalid === 0};
 }
 
 function combinations(ids, size = 3) {

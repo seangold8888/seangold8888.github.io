@@ -42,7 +42,7 @@ function audioRuntime() {
 
 test("S급 재조정된 첫 51장 데이터와 컬렉션 순서는 고정된다", () => {
   assert.equal(
-    sha(JSON.stringify(data.cards.slice(0, 51))),
+    sha(JSON.stringify(require("./approved-card-baseline.cjs").beforeMidasRollback(data.cards.slice(0, 51)))),
     "dbf444a53268dbf7d12b039ec3d5178aa5dafd7333dfa15f07566bf54a50d621"
   );
   assert.equal(

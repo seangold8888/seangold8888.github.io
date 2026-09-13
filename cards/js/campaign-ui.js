@@ -177,7 +177,17 @@
       scene.dataset.pageCount = String(pageCount);
       const familyEnding = kind === "ending" && progress.endingScene === 2;
       if (familyEnding) scene.className += " is-family-ending";
-      scene.append(art(familyEnding ? {id:"family-ending",name:"재이와 태오의 가족",art:"../math/assets/jaei-family-v4.webp"} : cardById(id), "expedition-scene-art"));
+      if (familyEnding) {
+        const family = el("div", "expedition-family-art");
+        family.setAttribute("aria-label", "카드 속 모습 그대로 함께하는 우리 가족");
+        ["appa", "eomma", "jaei", "taeo"].forEach(familyId => {
+          const card = cardById(familyId);
+          const portrait = el("figure", "expedition-family-portrait");
+          portrait.append(art(card, "expedition-family-image"), el("figcaption", "", card.name));
+          family.append(portrait);
+        });
+        scene.append(family);
+      } else scene.append(art(cardById(id), "expedition-scene-art"));
       const sheet = el("div", "expedition-scene-sheet");
       sheet.append(el("span", "eyebrow", "이야기 " + (pageIndex + 1) + " / " + pageCount + "쪽"));
       const text = el("div", "expedition-scene-lines");
@@ -190,7 +200,7 @@
       const advance = () => {
         if (!lastPage) {sceneLine += pageSize; showScene(kind, done);}
       };
-      scene.querySelector("img").addEventListener("click", advance);
+      scene.querySelectorAll("img").forEach(img => img.addEventListener("click", advance));
       text.addEventListener("click", advance);
       const controls = el("div", "expedition-page-controls");
       const previous = button("← 이전 쪽", "ghost-button expedition-previous", () => {

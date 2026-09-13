@@ -9,7 +9,7 @@ function runtime(file) {
  vm.runInNewContext(fs.readFileSync(path.join(root,"js",file),"utf8"),box);return box.window;
 }
 test("history expansion preserves every original 76 card and collection entry",()=>{
- assert.equal(sha(data.cards.slice(0,76)),"c9f7be0431592cdfd17b5bb2418e23382a31f502434988ad69653610ec482397");
+ assert.equal(sha(require("./approved-card-baseline.cjs").beforeMidasRollback(data.cards.slice(0,76))),"c9f7be0431592cdfd17b5bb2418e23382a31f502434988ad69653610ec482397");
  assert.equal(sha(data.collection.slice(0,76)),"8223d33ea7f54966cd5613450f3116ac30f0f06940ca512405327a2ecc94a90a");
  assert.deepEqual(data.cards.slice(76).map(c=>c.id),ids);
  assert.deepEqual(data.collection.slice(76),ids);

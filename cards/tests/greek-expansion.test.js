@@ -11,7 +11,7 @@ const data = JSON.parse(fs.readFileSync(path.join(root, "cards.json"), "utf8"));
 // Compare historical content excluding only the approved five-element migration.
 // HP, skills, art and all other fields must retain their original fingerprints.
 function legacyJson(cards) {
-  return JSON.stringify(cards.map(card => {
+  return JSON.stringify(require("./approved-card-baseline.cjs").beforeMidasRollback(cards).map(card => {
     const copy = structuredClone(card);
     delete copy.element;
     if (copy.id === "perseus") copy.passive.desc = "약점 ×2를 받지 않는다";

@@ -439,6 +439,13 @@
     const enemy = clone(source);
     const bonus = options && Number.isFinite(options.hpBonus) ? options.hpBonus : row.hpBonuses[stage];
     enemy.hp = Math.max(10, enemy.hp + bonus);
+    // Final encounter only: the recruited card and FINAL_BOSS template stay unchanged.
+    if (chapter === 7 && id === row.boss && id === "sseugumi") {
+      enemy.attacks.forEach(attack => {
+        if (attack.name === "간지럼 깃털") attack.dmg = 40;
+        if (attack.name === "대왕 장난") attack.dmg = 80;
+      });
+    }
     return {card: enemy, boss: id === row.boss, hpBonus: bonus,
       options: {aiMistakeRate: id === row.boss ? 0 : 0.3}};
   }

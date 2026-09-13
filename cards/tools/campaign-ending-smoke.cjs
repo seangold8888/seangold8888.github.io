@@ -50,10 +50,10 @@ function ending() {
     await page.waitForFunction(async name=>(await caches.keys()).includes(name),SW.STATIC_CACHE);
     const cached=await page.evaluate(async name=>{
       const cache=await caches.open(name);
-      const files=["/cards/js/campaign.js?v=55","/cards/art/sseugumi.webp","/math/assets/jaei-family-v4.webp"];
+      const files=["/cards/js/campaign.js?v=56","/cards/art/sseugumi.webp",...["appa","eomma","jaei","taeo"].map(id=>"/cards/art/"+id+".webp")];
       return Promise.all(files.map(async file=>Boolean(await cache.match(file))));
     },SW.STATIC_CACHE);
-    assert.deepEqual(cached,[true,true,true]);
+    assert.deepEqual(cached,[true,true,true,true,true,true]);
     await page.evaluate(async name=>{
       const cache=await caches.open(name);
       await cache.put("/cards/",new Response("<html><body>OLD CARD SCREEN</body></html>",{headers:{"Content-Type":"text/html"}}));
@@ -74,7 +74,7 @@ function ending() {
     await page.locator("#campaignButton").click();
     await page.locator(".expedition-map-footer .primary-button").click();
     assert.match(await page.locator(".expedition-header").innerText(),/우리 집 아침/);
-    await page.waitForFunction(()=>{const img=document.querySelector(".is-family-ending img");return img&&img.complete&&img.naturalWidth>0;});
+    await page.waitForFunction(()=>{const imgs=[...document.querySelectorAll(".is-family-ending img")];return imgs.length===4&&imgs.every(img=>img.complete&&img.naturalWidth>0);});
     await page.screenshot({path:path.join(output,"ipad-offline-family.png")});
     const familyPages=Number(await page.locator(".expedition-scene").getAttribute("data-page-count"));
     for(let i=0;i<familyPages;i++)await page.locator(".expedition-scene .primary-button").click();
@@ -103,7 +103,7 @@ function ending() {
     await page.locator("#storyGateButton").click();
     assert.ok(await page.locator("#storyQuizDialog").isVisible());
     assert.deepEqual(errors,[]);
-    console.log("PASS offline v96: ending resume, family art, reward art, recruitment, seven actions and card quiz; 3 viewports");
+    console.log("PASS offline v97: ending resume, family art, reward art, recruitment, seven actions and card quiz; 3 viewports");
     console.log("SCREENSHOTS",output);
   }finally{
     await context.close();await browser.close();
