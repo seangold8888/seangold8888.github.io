@@ -38,6 +38,10 @@
 
   const dom = {};
   let cards = [];
+  let familyUnlockGoals = {};
+  let familyLedger = null;
+  const FAMILY_UNLOCK_KEY = "card_family_unlocks_v1";
+  const FAMILY_MIGRATION_DAY = "2026-09-13";
   let battleCards = [];
   let fragments = [];
   let selectedCard = null;
@@ -121,7 +125,7 @@
     }
   }
 
-  function isGameDone(token) {
+  function isGameDone(token, asOf) {
     if (!token || isPreviewMode()) return true;
     const slash = token.indexOf("/");
     if (slash < 0) return false;
@@ -136,7 +140,7 @@
         const state = raw ? JSON.parse(raw) : {};
         const stamps = state.stamps && typeof state.stamps === "object" ? state.stamps : {};
         const planDays = [5, 6, 7].includes(state.planDays) ? state.planDays : 6;
-        const now = new Date();
+        const now = asOf ? new Date(asOf + "T12:00:00") : new Date();
         const today = [
           now.getFullYear(),
           String(now.getMonth() + 1).padStart(2, "0"),
@@ -213,7 +217,75 @@
     } catch (error) {}
   }
 
+  function mathCollectionProgress() {
+    let state = {};
+    try { state = JSON.parse(localStorage.getItem("math10_state") || "{}") || {}; } catch (_) {}
+    const now = new Date();
+    const today = [now.getFullYear(),String(now.getMonth()+1).padStart(2,"0"),String(now.getDate()).padStart(2,"0")].join("-");
+    const days = new Set();
+    [state.stamps,state.cardStudyDays].forEach(records => {
+      if (!records || typeof records !== "object" || Array.isArray(records)) return;
+      Object.keys(records).forEach(date => {
+        const parsed = new Date(date + "T12:00:00");
+        if (/^\d{4}-\d{2}-\d{2}$/.test(date) && date <= today &&
+            Number.isFinite(parsed.getTime()) && addCalendarDays(date,0)===date &&
+            Number.isSafeInteger(records[date]) && records[date]>0) days.add(date);
+      });
+    });
+    const validCount = value => Number.isSafeInteger(value) && value>=0 ? value : 0;
+    const history = Array.isArray(state.history) ? state.history : [];
+    return {studyDays:days.size,problems:Math.max(validCount(state.garden),
+      history.reduce((sum,row)=>sum+validCount(row&&row.count),0))};
+  }
+
+  function familyGoal(card) {
+    const goal = familyUnlockGoals[card.id];
+    return goal && Number.isSafeInteger(goal.studyDays) && goal.studyDays>0 &&
+      Number.isSafeInteger(goal.problems) && goal.problems>0 ? goal : null;
+  }
+
+  function saveFamilyLedger() {
+    try { localStorage.setItem(FAMILY_UNLOCK_KEY,JSON.stringify(familyLedger)); } catch (_) {}
+  }
+
+  function loadFamilyLedger() {
+    let stored;
+    try { stored=JSON.parse(localStorage.getItem(FAMILY_UNLOCK_KEY)||"null"); } catch (_) {}
+    const valid = stored && stored.version===1 && Array.isArray(stored.unlocked);
+    const storedIds = valid ? stored.unlocked.filter(id=>Object.prototype.hasOwnProperty.call(familyUnlockGoals,id)) : [];
+    if (familyLedger) {
+      familyLedger.unlocked = Array.from(new Set(familyLedger.unlocked.concat(storedIds)));
+      return familyLedger;
+    }
+    familyLedger = {version:1,unlocked:storedIds};
+    if (!valid) {
+      // The old unlock tokens remain solely as migration evidence. Evaluate at
+      // the rollout date, so studying three days in the future cannot bypass v1.
+      let stamps={};
+      try { stamps=(JSON.parse(localStorage.getItem("math10_state")||"{}")||{}).stamps||{}; } catch (_) {}
+      const previousDates=Object.keys(stamps).filter(date=>stamps[date] &&
+        /^\d{4}-\d{2}-\d{2}$/.test(date) && date<=FAMILY_MIGRATION_DAY &&
+        addCalendarDays(date,0)===date).sort().reverse();
+      cards.filter(familyGoal).forEach(card => {
+        if (card.unlock && previousDates.some(date=>isGameDone(card.unlock.slice(5),date))) familyLedger.unlocked.push(card.id);
+      });
+      saveFamilyLedger();
+    }
+    return familyLedger;
+  }
+
+  function isFamilyUnlocked(card) {
+    if (isPreviewMode()) return true; // Never persist local QA grants.
+    const ledger=loadFamilyLedger();
+    if (ledger.unlocked.includes(card.id)) return true;
+    const goal=familyGoal(card), progress=mathCollectionProgress();
+    if (progress.studyDays<goal.studyDays || progress.problems<goal.problems) return false;
+    ledger.unlocked.push(card.id);saveFamilyLedger();
+    return true;
+  }
+
   function isUnlocked(card) {
+    if (familyGoal(card)) return isFamilyUnlocked(card);
     if (card.id === "sseugumi") return Boolean(window.CardCampaign &&
       (window.CardCampaign.load().ending >= 1 || (campaignUi && campaignUi.hasRecruited(card.id))));
     if (campaignUi ? campaignUi.hasRecruited(card.id) : window.CardCampaign && window.CardCampaign.load().recruited.includes(card.id)) return true;
@@ -226,6 +298,13 @@
   // 잠긴 카드 안내의 앞부분을 통째로 만든다. 예전에는 이 함수가 수학 해금에만
   // 완성된 문장을 돌려주어 "…만날 수 있어!에서 이기면 …"처럼 조사가 겹쳤다.
   function unlockLeadPhrase(card) {
+    const goal=familyGoal(card);
+    if (goal) {
+      const p=mathCollectionProgress();
+      return "수학 누적 " + goal.studyDays + "일 + " + goal.problems + "문제를 채우면 " +
+        "(현재 " + Math.min(p.studyDays,goal.studyDays) + "/" + goal.studyDays + "일 · " +
+        Math.min(p.problems,goal.problems) + "/" + goal.problems + "문제 · 하루 쉬어도 유지) ";
+    }
     if (card.id === "sseugumi") return "원정을 끝까지 가면 만날 수 있어!";
     const stories = Array.isArray(card.unlockAll) && card.unlockAll.length
       ? card.unlockAll : [card.unlock];
@@ -247,6 +326,7 @@
   }
 
   function unlockDestination(card) {
+    if (familyGoal(card)) return {href:"../math/",label:"🔢 수학 공부하러 가기"};
     if (card.id === "sseugumi") return null;
     const tokens = card.unlockAll && card.unlockAll.length ? card.unlockAll : [card.unlock];
     const token = tokens.find(id => !isUnlockDone(id)) || tokens[0] || "";
@@ -277,7 +357,8 @@
     const fragmentSnapshot = fragments.map(function (fragment) {
       return "fragment-" + fragment.id + ":" + (isStoryDone(fragment.unlock) ? "1" : "0");
     });
-    return cardSnapshot.concat(fragmentSnapshot).join("|");
+    const familyProgress=Object.keys(familyUnlockGoals).length ? JSON.stringify(mathCollectionProgress()) : "";
+    return cardSnapshot.concat(fragmentSnapshot,[familyProgress]).join("|");
   }
 
   function refreshUnlocks() {
@@ -3139,6 +3220,7 @@
       const response = await fetch("cards.json", { cache: "no-store" });
       if (!response.ok) throw new Error("카드 데이터를 불러오지 못했습니다.");
       const data = await response.json();
+      familyUnlockGoals = data.familyUnlockGoals || {};
       fragments = Array.isArray(data.fragments) ? data.fragments : [];
       const collectionIds = Array.isArray(data.collection) ? data.collection : [];
       cards = collectionIds.map(function (id) {

@@ -92,6 +92,9 @@
     var before = state.level;
     S.recordAnswer(state, problem, firstTry, now);
     state.garden = (state.garden || 0) + 1;
+    state.cardStudyDays = state.cardStudyDays || {};
+    var studyDate = S.today(now);
+    state.cardStudyDays[studyDate] = (state.cardStudyDays[studyDate] || 0) + 1;
     var limits = band(selectedAge);
     if (firstTry && state.level < limits.cap && L.ready(state, state.level)) state.level++;
     S.save(storage, state);

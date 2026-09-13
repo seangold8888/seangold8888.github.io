@@ -12,7 +12,7 @@
 
   function defaults() {
     return { name: "", level: 1, streak: 0, perSession: 12, visualPolicy: "auto", sound: false, music: false,
-      history: [], wrong: [], stamps: {}, createdAt: today(),
+      history: [], wrong: [], stamps: {}, cardStudyDays: {}, createdAt: today(),
       planStart: today(), planEnd: "2027-01-29", planDays: 6, planFrom: 1,
       album: [], hearts: {}, chests: {}, buddy: null,
       school: "", grade: 1, placed: false, placement: null,
@@ -29,6 +29,7 @@
     out.history = Array.isArray(out.history) ? out.history.slice(-200) : [];
     out.wrong = Array.isArray(out.wrong) ? out.wrong.filter(function (w) { return w && w.key && w.problem; }).slice(-60) : [];
     out.stamps = out.stamps && typeof out.stamps === "object" ? out.stamps : {};
+    out.cardStudyDays = out.cardStudyDays && typeof out.cardStudyDays === "object" && !Array.isArray(out.cardStudyDays) ? out.cardStudyDays : {};
     out.name = String(out.name || "").slice(0, 12);
     const dateOk = function (v, fallback) { return /^\d{4}-\d{2}-\d{2}$/.test(String(v || "")) ? v : fallback; };
     out.planStart = dateOk(out.planStart, d.planStart);
@@ -119,6 +120,8 @@
     const entry = { date: t, level: state.level, count: results.length, fresh: fresh.length, firstTry: firstTry, acc: Math.round(acc * 100), medianMs: Math.round(median(times) || 0), cv: stability(times), reviews: results.filter(function(r) { return r.review; }).length, reviewOk: results.filter(function (r) { return r.review && r.firstTry; }).length };
     state.history.push(entry);
     state.stamps[t] = (state.stamps[t] || 0) + 1;
+    state.cardStudyDays = state.cardStudyDays || {};
+    state.cardStudyDays[t] = (state.cardStudyDays[t] || 0) + results.length;
     let change = 0;
     // Calendar plans never loosen mastery or cap a child who is ready.
     if (fresh.length && Learn.ready(state, state.level) && state.level < 12) {

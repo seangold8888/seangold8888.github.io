@@ -77,7 +77,7 @@ test("동양 12장 능력치·해금·손오공 v1 기술이 설계 계약과 �
 test("게임 클리어 해금은 카드와 삼국지 승리 저장 양쪽에 연결된다", () => {
   const app = fs.readFileSync(path.join(root, "js", "app.js"), "utf8");
   const sanguo = fs.readFileSync(path.join(root, "..", "sanguo", "src", "game", "sideScroller.js"), "utf8");
-  assert.match(app, /function isGameDone\(token\)/);
+  assert.match(app, /function isGameDone\(token, asOf\)/);
   assert.match(app, /localStorage\.getItem\("sanguo_clear_" \+ stage\) === "1"/);
   assert.match(app, /card\.unlock\.indexOf\("game:"\) === 0/);
   assert.match(app, /"에서 이기면 "/);

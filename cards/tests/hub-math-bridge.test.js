@@ -80,7 +80,7 @@ test("hub loads math modules in order and exposes age, shared stage and math rev
   assert.match(html, /window\.HubMath\.next\(mathState/);
   assert.match(html, /window\.HubMath\.record\(localStorage, mathState/);
   assert.match(bridge, /재이의 수학놀이터 문제예요/);
-  for (const asset of ["./math/curriculum.js?v=20", "./math/learning.js?v=29", "./math/store.js?v=30", "./assets/study/math-bridge.js?v=1"]) {
+  for (const asset of ["./math/curriculum.js?v=20", "./math/learning.js?v=29", "./math/store.js?v=32", "./assets/study/math-bridge.js?v=2"]) {
     assert.ok(sw.CORE_SHELL.includes(asset), asset);
   }
 });

@@ -1,5 +1,11 @@
 {
   "version": 1,
+  "familyUnlockGoals": {
+    "appa": {"studyDays": 10, "problems": 100},
+    "eomma": {"studyDays": 15, "problems": 180},
+    "taeo": {"studyDays": 20, "problems": 260},
+    "jaei": {"studyDays": 30, "problems": 400}
+  },
   "collection": [
     "cinderella",
     "fairygodmother",
