@@ -933,7 +933,8 @@
     ppungdetective: ["뿡경감", "괴물", "나무", "오행 상성 추가 피해를 받지 않아요", "냄새 단서", "범인은 너야"]
   };
   Object.keys(legendFacts).forEach(function (cardId) {
-    const fact = legendFacts[cardId];
+    const fact = legendFacts[cardId].slice();
+    if (window.CardView) fact[0] = window.CardView.displayName({id: cardId, name: fact[0]});
     const ref = ["카드: " + fact[0]];
     [
       question(cardId + "-type", cardId, fact[0] + " 카드는 무슨 타입인가요?",

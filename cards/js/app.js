@@ -79,7 +79,7 @@
   function cacheDom() {
     [
       "collectionScreen", "battleScreen", "campaignScreen", "campaignBattleLabel", "collectionGrid", "unlockCount",
-      "collectionSort", "detailUnlockLink",
+      "collectionSort", "collectionElement", "collectionTrait", "collectionFilterStatus", "detailUnlockLink",
       "muteButton", "musicButton", "leaveBattleButton", "turnOwner", "turnNumber",
       "battleStars", "arena", "enemyCardSlot", "playerCardSlot", "battleMessage",
       "effectBurst", "combatParticleCanvas", "combatShaderCanvas", "techniqueFxLayer", "actionList",
@@ -301,7 +301,9 @@
       selectedCard = battleCards.find(isUnlocked) || null;
     }
 
-    const shelfOrder = window.CardView.sortCollection(cards, collectionSort, isUnlocked, isPlayableCard);
+    const filtered = window.CardView.filterCollection(cards, dom.collectionElement.value, dom.collectionTrait.value);
+    const shelfOrder = window.CardView.sortCollection(filtered, collectionSort, isUnlocked, isPlayableCard);
+    dom.collectionFilterStatus.textContent = filtered.length ? filtered.length + "장 · 위쪽 배지는 자동 능력, 아래쪽 배지는 속성이에요." : "두 조건에 맞는 카드가 없어요. 속성이나 특성을 ‘모두’로 바꿔 보세요.";
 
     shelfOrder.forEach(function (card) {
       const locked = !isUnlocked(card);
@@ -2999,6 +3001,9 @@
       try { localStorage.setItem("card_collection_sort", collectionSort); } catch (_) {}
       renderCollection();
     });
+    [dom.collectionElement, dom.collectionTrait].forEach(function (select) {
+      select.addEventListener("change", renderCollection);
+    });
     dom.leaveBattleButton.addEventListener("click", function () {
       if (campaignBattle) returnToCampaign(false);
       else returnToCollection();
@@ -3142,7 +3147,7 @@
         return data.cards.find(function (card) { return card.id === id; });
       }).filter(function (card) {
         return Boolean(card);
-      });
+      }).map(window.CardView.presentCard);
       if (!cards.length || cards.length !== collectionIds.length) {
         throw new Error("컬렉션 카드 목록이 비었거나 데이터와 일치하지 않습니다.");
       }

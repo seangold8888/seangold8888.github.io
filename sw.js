@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v90";
+const CACHE_VERSION = "v91";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -148,19 +148,19 @@ const CORE_SHELL = [
   "./story/index.html",
   "./cards/",
   "./cards/index.html",
-  "./cards/styles.css?v=49",
+  "./cards/styles.css?v=50",
   "./math/assets/jaei-family-v4.webp",
-  "./cards/campaign.css?v=49",
+  "./cards/campaign.css?v=50",
   "./cards/cards.json",
-  "./cards/js/engine.js?v=49",
-  "./cards/js/audio.js?v=49",
-  "./cards/js/card-view.js?v=49",
-  "./cards/js/vfx-recipes.js?v=49",
-  "./cards/js/story-gates.js?v=49",
-  "./cards/js/campaign.js?v=49",
-  "./cards/js/campaign-ui.js?v=49",
-  "./cards/js/app.js?v=49",
-  "./cards/js/combat-cinema.js?v=49",
+  "./cards/js/engine.js?v=50",
+  "./cards/js/audio.js?v=50",
+  "./cards/js/card-view.js?v=50",
+  "./cards/js/vfx-recipes.js?v=50",
+  "./cards/js/story-gates.js?v=50",
+  "./cards/js/campaign.js?v=50",
+  "./cards/js/campaign-ui.js?v=50",
+  "./cards/js/app.js?v=50",
+  "./cards/js/combat-cinema.js?v=50",
 ];
 
 // Existing games are precached as best-effort shells. A missing optional asset

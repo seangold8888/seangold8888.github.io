@@ -32,6 +32,21 @@ const server=http.createServer((req,res)=>{
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
    await page.waitForFunction(()=>[...document.querySelectorAll("#collectionGrid img")].filter(img=>img.getBoundingClientRect().top<innerHeight).every(img=>img.complete&&img.naturalWidth>0));
    await page.screenshot({path:path.join(output,viewport.width+"-gallery.png")});
+   assert.equal(await page.locator("#collectionGrid .trait-badge").count(),76);
+   await page.locator("#collectionElement").selectOption("wood");
+   await page.locator("#collectionTrait").selectOption("evade");
+   assert.ok(await page.locator('#collectionGrid [data-card-id="jack"]').count());
+   assert.ok(await page.locator("#collectionGrid .story-card").evaluateAll(nodes=>nodes.every(n=>n.classList.contains("element-wood")&&n.querySelector(".trait-evade"))));
+   await page.locator("#collectionElement").selectOption("metal");
+   await page.locator("#collectionTrait").selectOption("revive");
+   assert.equal(await page.locator("#collectionGrid .story-card").count(),0);
+   assert.match(await page.locator("#collectionFilterStatus").innerText(),/없어요/);
+   await page.locator("#collectionElement").selectOption("all");
+   await page.locator("#collectionTrait").selectOption("all");
+   await page.locator('#collectionGrid [data-card-id="gearwing"]').click();
+   assert.equal(await page.locator("#cardDetailTitle").innerText(),"아이언 윙");
+   assert.ok(await page.evaluate(()=>CardStoryGates.all.filter(q=>q.cardId==="gearwing").every(q=>q.prompt.includes("아이언 윙"))));
+   await page.locator("[data-detail-close]").first().click();
    for(const mode of ["hp","power","element","name","ready"]){
      await page.locator("#collectionSort").selectOption(mode);
      const ids=await page.locator("#collectionGrid .story-card").evaluateAll(nodes=>nodes.map(n=>n.dataset.cardId));

@@ -67,7 +67,7 @@ test("five sort choices are stable, leave source data intact and keep ready orde
   const hp=Array.from(view.sortCollection(data.cards,"hp",unlocked,playable));
   assert.ok(hp.every((c,i)=>i===0||hp[i-1].hp>=c.hp));
   const name=Array.from(view.sortCollection(data.cards,"name",unlocked,playable));
-  assert.ok(name.every((c,i)=>i===0||name[i-1].name.localeCompare(c.name,"ko")<=0));
+  assert.ok(name.every((c,i)=>i===0||view.displayName(name[i-1]).localeCompare(view.displayName(c),"ko")<=0));
   const power=c=>Math.max(...c.attacks.filter(require("../js/engine.js").isAttackSupported).map(a=>a.dmg),0);
   const damage=Array.from(view.sortCollection(data.cards,"power",unlocked,playable));
   assert.ok(damage.every((c,i)=>i===0||power(damage[i-1])>=power(c)));
@@ -76,6 +76,32 @@ test("five sort choices are stable, leave source data intact and keep ready orde
   assert.ok(elements.every((c,i)=>i===0||order.indexOf(elements[i-1].element)<=order.indexOf(c.element)));
   assert.equal(JSON.stringify(data.cards),before);
   assert.deepEqual(Array.from(view.sortCollection(data.cards,"unknown",unlocked,playable)),ready);
+});
+test("familiar hero names stay consistent without changing stored cards or mechanics", () => {
+  const view=loadCardView(),before=JSON.stringify(data.cards);
+  for(const [id,name] of Object.entries({gearwing:"아이언 윙",starshield:"캡틴 스타",thunderguard:"토르 썬더",redknot:"블랙 위도",walllizard:"스파이더 키드",neonjumper:"마일스 점퍼",moonmoth:"고스트 스파이더"})) {
+    const original=data.cards.find(c=>c.id===id),shown=view.presentCard(original);
+    assert.equal(shown.name,name);assert.equal(shown.id,original.id);
+    assert.equal(JSON.stringify({...shown,name:original.name}),JSON.stringify(original));
+    const nodes=walk(view.create(original,{compact:true,collectionCompact:true}));
+    assert.equal(nodes.find(n=>hasClass(n,"card-name")).textContent,name);
+  }
+  assert.equal(JSON.stringify(data.cards),before);
+});
+test("trait badges describe actual passives and intersect with element filters", () => {
+  const view=loadCardView();
+  for(const c of data.cards) {
+    const badge=walk(view.create(c,{compact:true,collectionCompact:true})).find(n=>hasClass(n,"trait-badge"));
+    assert.equal(badge.textContent,view.traitInfo(c).label);
+    assert.equal(badge.getAttribute("title"),view.describePassive(c));
+  }
+  for(const element of ["all","wood","fire","earth","metal","water"])
+    for(const trait of ["all","guard","evade","revive","power","trick","other"]){
+      const expected=data.cards.filter(c=>(element==="all"||c.element===element)&&(trait==="all"||view.traitInfo(c).key===trait));
+      assert.deepEqual(Array.from(view.filterCollection(data.cards,element,trait)),expected);
+    }
+  assert.equal(view.traitInfo(data.cards.find(c=>c.id==="jack")).key,"evade");
+  assert.equal(view.traitInfo(data.cards.find(c=>c.id==="cinderella")).key,"revive");
 });
 test("plain-language abilities explain costs, damage, timing and limits without changing card data", () => {
   const view=loadCardView();
@@ -199,14 +225,14 @@ test("상세에서 바로 대결하며 하단 재확인과 중복 시작은 없�
   assert.doesNotMatch(app, /updateSelectionDock|dom.battleButton/);
 });
 
-test("양쪽 전투 카드가 같은 전투 정보 렌더러를 사용하고 카드·원정 자산은 v49이다", () => {
+test("양쪽 전투 카드가 같은 전투 정보 렌더러를 사용하고 카드·원정 자산은 v50이다", () => {
   assert.match(app, /syncBattleCard\(dom\.playerCardSlot/);
   assert.match(app, /syncBattleCard\(dom\.enemyCardSlot/);
   assert.match(app, /CardView\.create\(side\.card, \{[\s\S]*?compact: true/);
   assert.match(viewSource, /else if \(options\.compact\) \{[\s\S]*?crown, facts, art/);
-  assert.equal((html.match(/\?v=49/g) || []).length, 11);
+  assert.equal((html.match(/\?v=50/g) || []).length, 11);
   assert.doesNotMatch(html, /\?v=(?:25|26|27|28|29|30|31)/);
-  assert.equal((sw.match(/\.\/cards\/[^"\n]+\?v=49/g) || []).length, 11);
+  assert.equal((sw.match(/\.\/cards\/[^"\n]+\?v=50/g) || []).length, 11);
 });
 
 test("오행 속성이 카드 클래스, 원화 배지와 접근성 이름에 함께 드러난다", () => {

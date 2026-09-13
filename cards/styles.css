@@ -5007,6 +5007,22 @@ dialog p:not(.kicker) {
 }
 
 /* v48 — artwork-first collection; mechanics stay in the detail dialog. */
+.collection-filters, .collection-filter-status { width: min(100%, 1100px); margin: 10px auto; }
+.collection-filters { display: flex; gap: 12px; }
+.collection-filters label { display: grid; gap: 5px; flex: 1; min-width: 0; color: #d9cfe9; font-size: 13px; }
+.collection-filters select { width: 100%; min-height: 46px; border: 1px solid #9682b9; border-radius: 12px; padding: 8px; background: #2d2444; color: #fff8e8; font: inherit; font-size: 15px; }
+.collection-filters select:focus-visible { outline: 3px solid #ffdc80; outline-offset: 2px; }
+.collection-filter-status { font-size: 12px; color: #d1c6e1; line-height: 1.5; }
+.card-gallery .trait-badge { position: absolute; top: 6px; left: 5px; z-index: 4; max-width: calc(100% - 40px); border: 1px solid #b8c7e0; border-radius: 8px; padding: 5px 6px; background: #152438ee; color: #fff; font-size: 11px; font-weight: 800; line-height: 1.2; pointer-events: none; }
+.card-gallery .trait-evade { background: #243762ee; border-style: dashed; }
+.card-gallery .trait-revive { background: #124a36ee; border-color: #87edb5; }
+.card-gallery .trait-power { background: #652821ee; border-color: #ffc38d; }
+.card-gallery .trait-trick { background: #493066ee; border-color: #d0aaff; }
+.card-gallery .story-card[class*="element-"] { border: 3px solid var(--element); }
+.card-gallery .story-card.is-collection-compact .element-rune { border: 1px solid var(--element-bright); font-weight: 900; }
+@media (min-width: 600px) and (orientation: portrait) {
+  .collection-filters, .collection-filter-status { width: min(100%, 660px); }
+}
 .collection-toolbar, .collection-guide, .collection-screen .card-gallery {
   width: min(100%, 1100px); max-width: 1100px;
 }

@@ -1,6 +1,36 @@
 (function () {
   "use strict";
 
+  // Familiar nicknames for the existing original hero art; IDs and balance data stay unchanged.
+  const HERO_NAMES = Object.freeze({
+    gearwing: "아이언 윙", starshield: "캡틴 스타", thunderguard: "토르 썬더",
+    redknot: "블랙 위도", walllizard: "스파이더 키드",
+    neonjumper: "마일스 점퍼", moonmoth: "고스트 스파이더"
+  });
+  function displayName(card) { return HERO_NAMES[card.id] || card.name; }
+  function presentCard(card) { return HERO_NAMES[card.id] ? { ...card, name: displayName(card) } : card; }
+  function traitInfo(card) {
+    const fx = card.passive && card.passive.fx;
+    const traits = {
+      reduce_dmg_10: ["guard", "🛡 피해 감소"],
+      reduce_dmg_20_monster: ["guard", "🛡 괴물 방어"],
+      first_hit_zero: ["guard", "🛡 첫 공격 방어"],
+      no_weakness: ["guard", "🛡 약점 방어"],
+      coin_evade: ["evade", "💨 동전 회피"],
+      revive_half_once: ["revive", "💚 한 번 부활"],
+      boost_20_below_half: ["power", "🔥 역전 공격"],
+      nullify_passive: ["trick", "✦ 특성 봉쇄"],
+      coin_miss: ["other", "🪙 빗나감 주의"],
+      wish_limit_3: ["other", "⌛ 기술 3회"]
+    };
+    const trait = traits[fx] || ["other", fx ? "✦ 특별 능력" : "✦ 기본형"];
+    return { key: trait[0], label: trait[1] };
+  }
+  function filterCollection(cards, element, trait) {
+    return cards.filter(card => (element === "all" || card.element === element) &&
+      (trait === "all" || traitInfo(card).key === trait));
+  }
+
   const TYPE_META = {
     brave: { label: "용기", icon: "⚔️" },
     wise: { label: "지혜", icon: "📘" },
@@ -261,7 +291,7 @@
       if (mode === "hp") order = b.card.hp - a.card.hp;
       else if (mode === "power") order = power(b.card) - power(a.card);
       else if (mode === "element") order = elements.indexOf(a.card.element || null) - elements.indexOf(b.card.element || null);
-      else if (mode === "name") order = a.card.name.localeCompare(b.card.name, "ko");
+      else if (mode === "name") order = displayName(a.card).localeCompare(displayName(b.card), "ko");
       else order = a.ready - b.ready;
       return order || a.index - b.index;
     }).map(entry => entry.card);
@@ -323,6 +353,7 @@
   }
 
   function create(card, options) {
+    card = presentCard(card);
     options = options || {};
     const type = TYPE_META[card.type] || TYPE_META.wise;
     const currentHp = Number.isFinite(options.currentHp) ? options.currentHp : card.hp;
@@ -424,6 +455,10 @@
 
     const art = createArt(card, options);
     if (options.collectionCompact) {
+      const trait = traitInfo(card);
+      const badge = el("span", "trait-badge trait-" + trait.key, trait.label);
+      badge.setAttribute("title", describePassive(card));
+      art.appendChild(badge);
       cardEl.append(ornament, art, crown);
     } else if (options.compact) {
       cardEl.append(ornament, crown, facts, art, hpTrack, meta, details);
@@ -445,6 +480,10 @@
   }
 
   window.CardView = {
+    displayName: displayName,
+    presentCard: presentCard,
+    traitInfo: traitInfo,
+    filterCollection: filterCollection,
     create: create,
     combatInfo: combatInfo,
     describePassive: describePassive,
