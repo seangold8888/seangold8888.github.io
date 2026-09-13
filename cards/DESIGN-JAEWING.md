@@ -35,7 +35,7 @@
 
 ## 원화 교체 (Codex 작업)
 
-현재 art/jaewing.png는 첫 시안인 흰 날개 동물이라 설정과 맞지 않는다. **재이 카드의 귀여운 악마 모드**로 다시 그린다.
+기존 art/jaewing.png는 첫 시안인 흰 날개 동물이라 설정과 맞지 않았다. 2026-09-13 **재이 카드의 귀여운 악마 모드**로 교체했다.
 
 - 같은 캐릭터: art/jaei.png의 재이와 얼굴형·머리 모양·키·그림체가 같아야 한다. 기존 재이 원화를 참고 이미지로 넣어 일관성을 맞춘다. 실제 아이 사진처럼 그리지 않는다(가족 카드와 같은 동화풍).
 - 악마 모드 표시: 작은 빨간 뿔 두 개, 작은 박쥐 날개, 끝이 하트나 화살표 모양인 꼬리. 옷은 재이의 잠옷을 보라·빨강 악마 무늬로 바꾼 느낌.
@@ -58,3 +58,25 @@ node cards/tools/jaewing-smoke.cjs
 node cards/tools/tier-unlocks-smoke.cjs
 
 node cards/tools/campaign-ending-smoke.cjs
+
+## 원화 교체 기록 (2026-09-13)
+
+- 내장 image_gen으로 제작. art/jaei.png를 읽어 표시한 원화를 정체성·그림체 참고로 사용했다. 원본 재이 그림은 변경하지 않았다.
+- 저장: art/jaewing.png (1024×1536), art/jaewing.webp (같은 크기, 품질 88).
+- 작은 빨간 뿔, 박쥐 날개, 하트 꼬리, 보라색 악마 무늬 잠옷과 구름사다리·바이킹 그네를 확인했다. 기존 크롭 50% 40%는 화면 검증 후 유지한다.
+- 태오 띠 수정이 이미 모듈 v61 / 서비스 워커 v102를 사용하므로 실제 반영 버전은 모듈 v62 / 서비스 워커 v105이다. 위 작업 지시의 v60→61은 당시 기준이다.
+- 카드 수치·기술·퀴즈·소리는 변경하지 않았다. push하지 않는다.
+
+### 실제 사용 프롬프트 전문
+
+검증: 카드 테스트 321/321 통과. 가족 균형은 재이 85.64%, 태오 80.12%, 엄마 79.36%, 아빠 78.69%로 상위 4위, 재윙 76.2% 6위, 교착 0건. 재윙/등급 해금/원정 결말 브라우저 스모크 모두 3개 화면 크기와 오프라인 검증 통과. 실제 상세 화면에서 얼굴·뿔·날개·꼬리와 새 원화를 확인했고 크롭은 유지했다. cards.json, audio.js, story-gates.js, 재이·태오 원화는 작업 전후 SHA-256이 같다.
+
+스모크 캡처는 원화 decode 후 두 프레임을 기다리도록 보강했다. 네트워크 로딩 완료만으로 그림이 그려졌다고 판단하지 않도록, 실제 캡처도 따로 확인했다.
+
+Use case: identity-preserve.
+Asset type: polished children's fantasy collectible card portrait, 1024x1536 PNG.
+Input image: the most recent image, Jaei in pink pajamas, is the identity and painting style reference. Create her cute mischievous devil-mode alter ego Jaewing. Preserve this EXACT girl's face shape, large brown eyes, nose, cheeks, long straight brown hair with wispy bangs, apparent age, height and childlike body proportions. Keep the same richly painted soft storybook illustration style, NOT a real child photo.
+Scene: a playground at sunset with a gentle violet sky, recognizable overhead monkey bars and a playground Viking-boat swing behind her. She hangs playfully from one monkey-bar rung with one hand, full body visible, other hand playfully on her hip, giving a cheeky little smile with one eyebrow raised. Clear natural grip and anatomy. Keep face dominant and unobstructed.
+Costume: her same long-sleeved button-up pajama jacket and full-length pajama trousers, now purple with red cute little devil/bat motifs, modest loose child pajamas. Two small rounded red horns above her bangs, a pair of small purple bat wings at her back, a curled red tail with heart-shaped tip. Comfortable cute slippers.
+Mood: funny, sweet and impish, friendly for children ages 5-8, warm sunset rim light, violet/red accents. No scary teeth, fangs, blood, fire, horror, weapons, boogers, extra characters, text, letters, numbers, logos, card border or watermark.
+Composition: centered full-body vertical portrait with safe margins around head, both horns, wings, feet and tail. Preserve Jaei's recognizability and painterly detail; do not turn her into an animal monster.
