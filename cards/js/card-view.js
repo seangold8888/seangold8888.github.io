@@ -28,15 +28,18 @@
   // 수치가 바뀌면 검사 도구를 다시 돌리고 이 묶음도 함께 갱신한다.
   const BATTLE_TIERS = Object.freeze({
     S: new Set(["jaei", "midas", "taeo", "eomma", "appa", "scylla", "siren", "baigujing", "zhaoyun", "mermaid"]),
-    A: new Set(["perseus", "beanstalkgiant", "circe", "hades", "simayi"]),
-    B: new Set(["poseidon", "zhugeliang", "doctorwatson", "wumawang", "hydra", "redknot", "jack", "nezha", "heracles", "zeus", "erlangshen", "polyphemus", "atalanta", "helios", "tiger"]),
-    C: new Set(["sseugumi", "zhangfei", "athena", "sunwukong", "ppungdetective", "wolf", "achilles", "kwonyul", "guanyu", "hermes", "sphinx", "witch", "prometheus", "honggildong", "starshield", "moriarty", "redhood", "ganggamchan", "odysseus", "euljimundeok", "apollo", "cinderella", "neonjumper", "arthur", "moonmoth", "threepigs", "thunderguard", "medusa", "theseus", "arsenelupin", "fairygodmother", "gearwing", "sherlockholmes", "tortoisehare", "yisunshin", "pinocchio", "orpheus"]),
+    A: new Set(["jeongyakyong", "kimhongdo", "yugwansun", "perseus", "beanstalkgiant", "circe", "hades", "simayi"]),
+    B: new Set(["jangyeongsil", "heojun", "kimgu", "poseidon", "zhugeliang", "doctorwatson", "wumawang", "hydra", "redknot", "jack", "nezha", "heracles", "zeus", "erlangshen", "polyphemus", "atalanta", "helios", "tiger"]),
+    C: new Set(["sejong", "shinsaimdang", "sseugumi", "zhangfei", "athena", "sunwukong", "ppungdetective", "wolf", "achilles", "kwonyul", "guanyu", "hermes", "sphinx", "witch", "prometheus", "honggildong", "starshield", "moriarty", "redhood", "ganggamchan", "odysseus", "euljimundeok", "apollo", "cinderella", "neonjumper", "arthur", "moonmoth", "threepigs", "thunderguard", "medusa", "theseus", "arsenelupin", "fairygodmother", "gearwing", "sherlockholmes", "tortoisehare", "yisunshin", "pinocchio", "orpheus"]),
     D: new Set(["snowqueen", "honghaier", "cerberus", "bremen", "caocao", "artemis", "minotaur", "walllizard", "genie"])
   });
   const TIER_WIDTH = Object.freeze({ S: 100, A: 82, B: 64, C: 46, D: 28 });
 
 
   const ART_POSITION = {
+    sejong: "50% 22%", jangyeongsil: "50% 22%", heojun: "50% 22%",
+    shinsaimdang: "50% 22%", jeongyakyong: "50% 22%", kimhongdo: "50% 22%",
+    yugwansun: "50% 22%", kimgu: "50% 22%",
     sseugumi: "50% 22%",
     heracles: "50% 40%",
     honggildong: "50% 40%",
@@ -395,7 +398,7 @@
       const tier = el("span", "collection-tier");
       tier.setAttribute("aria-label", "실전 등급 " + battleTier(card));
       tier.setAttribute("title", "실전 등급 " + battleTier(card) + " · 여러 카드와의 대결 평가예요. 상대와 상성에 따라 결과는 달라져요.");
-      tier.append(el("small", "", "실전"), el("b", "", battleTier(card)));
+      tier.appendChild(el("b", "", battleTier(card)));
       identity.appendChild(tier);
     }
     identity.append(el("h3", "card-name", card.name), el("span", "rarity", rarityLabel(card.rarity)));
@@ -415,6 +418,17 @@
     hpTrack.appendChild(hpFill);
 
     const details = el("div", "card-details");
+    const history = window.CardStoryGates && window.CardStoryGates.historyForCard && window.CardStoryGates.historyForCard(card);
+    if (history && !options.compact && !options.collectionCompact) {
+      const biography = el("section", "card-history");
+      biography.append(el("h4", "", "인물 이야기 · " + history.era));
+      history.paragraphs.forEach(text => biography.appendChild(el("p", "", text)));
+      biography.appendChild(el("small", "", "그림은 상상화예요. 아래 기술·오행·등급은 게임 설정이며 역사적 평가가 아니에요."));
+      const source = el("a", "history-source", "이야기 출처 보기 ↗");
+      source.href = history.source; source.target = "_blank"; source.rel = "noopener noreferrer";
+      biography.appendChild(source);
+      details.appendChild(biography);
+    }
     const facts = createCombatInfo(card);
     if (card.passive) {
       const passive = el("div", "passive-row");

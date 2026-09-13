@@ -82,9 +82,9 @@ test("S3 includes every later scene, four ending panels and no narration depende
   assert.doesNotMatch(read("js/campaign-ui.js"), /speechSynthesis|SpeechSynthesisUtterance/);
 });
 test("S3 published Sseugumi retains the simulated mechanics, with a 100 HP collectible and 140 HP boss copy", () => {
-  const card = data.cards.at(-1);
+  const card = data.cards.find(card => card.id === "sseugumi");
   assert.equal(card.id, "sseugumi");
-  assert.equal(data.collection.at(-1), card.id);
+  assert.equal(data.collection[75], card.id);
   assert.equal(card.unlock, "campaign:ending");
   assert.equal(card.element, null);
   assert.equal(card.hp, 100);
@@ -106,7 +106,7 @@ test("S3 leaves all 510 existing hit/support/miss sound plans byte-for-byte unch
   // Captured from the committed pre-S3 4fd314d audio.js and cards.json, not regenerated.
   assert.equal(crypto.createHash("sha256").update(JSON.stringify(plans)).digest("hex"),
     "61b388a011a250e4c02007188fea61a24c4bafad470767980dd6b1c85300fc00");
-  const card=data.cards.at(-1);
+  const card=data.cards.find(card => card.id === "sseugumi");
   const materials=card.attacks.map(attack=>Audio.soundPlanForTechnique({
     type:card.type,attack:attack.name,kind:attack.vfx.kind,emoji:attack.vfx.emoji,
     big:attack.vfx.big,outcome:"hit",impactAtMs:220,totalMs:500

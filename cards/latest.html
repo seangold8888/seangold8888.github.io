@@ -11,14 +11,14 @@
 <script>
 (function(){
   const status=document.getElementById("status"),retry=document.getElementById("retry");
-  const target=new URL("./?v=portrait-clear",location.href);
+  const target=new URL("./?v=history-eight",location.href);
   async function openLatest(){
     retry.hidden=true;
     try{
       if("serviceWorker" in navigator){
         // A separate navigation path bypasses old canonical /cards/ HTML caches.
         // Updating the worker preserves localStorage, IndexedDB and saved progress.
-        const registration=await navigator.serviceWorker.register(new URL("../sw.js?v=95",location.href),{
+        const registration=await navigator.serviceWorker.register(new URL("../sw.js?v=96",location.href),{
           scope:new URL("../",location.href).href,updateViaCache:"none"
         });
         await registration.update();

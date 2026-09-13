@@ -4557,6 +4557,11 @@ dialog p:not(.kicker) {
   font-size: 9px;
 }
 .card-reference { margin-top: 10px; font-size: 14px; }
+.card-history { margin: 0 0 16px; padding: 14px; border: 1px solid #ffffff30; border-radius: 14px; background: #121326; color: #f7f1df; }
+.card-history h4 { margin: 0 0 10px; font-size: 18px; }
+.card-history p { margin: 0 0 10px; font-size: 16px; line-height: 1.75; word-break: keep-all; }
+.card-history small { display: block; font-size: 12px; line-height: 1.5; color: #c9c4db; }
+.card-history .history-source { display: inline-flex; align-items: center; min-height: 44px; margin-top: 6px; color: #ffdc85; font-size: 14px; }
 .card-reference summary { min-height: 44px; padding: 12px 4px; cursor: pointer; }
 .card-reference p { font-size: 14px; line-height: 1.5; }
 

@@ -254,7 +254,7 @@ test("approved campaign balance rewards good counters, differentiates bosses and
     }
   }
   for (const chapter of report.parties) assert.ok(chapter.best.chance >= chapter.minimum);
-  assert.equal(report.recruit.games, 9600);
+  assert.equal(report.recruit.games, 10624);
   assert.ok(report.recruit.rate >= 0.35 && report.recruit.rate <= 0.8);
 });
 

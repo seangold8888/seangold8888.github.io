@@ -137,8 +137,8 @@ test("unlock links follow the actual requirement and never send math cards to th
 });
 
 test("오디세이 확장 75장 모두 공격력·방어력·정신력 1~5 별점을 가진다", () => {
-  assert.equal(data.cards.length, 76);
-  assert.equal(data.collection.length, 76);
+  assert.equal(data.cards.length, 84);
+  assert.equal(data.collection.length, 84);
   data.cards.forEach((card) => {
     assert.deepEqual(Object.keys(card.stats).sort(), ["attack", "defense", "spirit"]);
     Object.values(card.stats).forEach((value) => {
@@ -162,6 +162,7 @@ test("컬렉션은 원화·이름·체력·속성만 표시하고 전투 정보�
   for (const name of ["card-art","card-name","hp-gem","element-rune","collection-tier"])
     assert.ok(nodes.some(n => hasClass(n,name)));
   const tier=nodes.find(n=>hasClass(n,"collection-tier"));
+  assert.equal(walk(tier).some(n=>n.tagName === "SMALL"), false, "등급은 글자 하나만 표시한다");
   assert.equal(tier.getAttribute("aria-label"),"실전 등급 "+view.battleTier(card));
   assert.ok(!walk(nodes.find(n=>hasClass(n,"card-art"))).includes(tier));
   assert.equal(walk(view.create(card,{compact:true})).filter(n=>hasClass(n,"combat-fact")).length,3);
@@ -233,9 +234,9 @@ test("양쪽 전투 카드가 같은 전투 정보 렌더러를 사용하고 카
   assert.match(app, /syncBattleCard\(dom\.enemyCardSlot/);
   assert.match(app, /CardView\.create\(side\.card, \{[\s\S]*?compact: true/);
   assert.match(viewSource, /else if \(options\.compact\) \{[\s\S]*?crown, facts, art/);
-  assert.equal((html.match(/\?v=54/g) || []).length, 11);
+  assert.equal((html.match(/\?v=55/g) || []).length, 11);
   assert.doesNotMatch(html, /\?v=(?:25|26|27|28|29|30|31)/);
-  assert.equal((sw.match(/\.\/cards\/[^"\n]+\?v=54/g) || []).length, 11);
+  assert.equal((sw.match(/\.\/cards\/[^"\n]+\?v=55/g) || []).length, 11);
 });
 
 test("오행 속성이 카드 클래스, 원화 배지와 접근성 이름에 함께 드러난다", () => {

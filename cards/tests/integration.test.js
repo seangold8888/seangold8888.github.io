@@ -171,9 +171,9 @@ test("손패·원정 UI와 캐시 버전 43이 함께 배포되도록 묶여 있
   ["fragmentTray", "fragmentHand", "fragmentPreview"].forEach((id) => {
     assert.match(html, new RegExp('id="' + id + '"'));
   });
-  assert.match(html, /styles\.css\?v=54/);
+  assert.match(html, /styles\.css\?v=55/);
   ["engine", "audio", "card-view", "vfx-recipes", "story-gates", "campaign", "campaign-ui", "combat-cinema", "app"].forEach((file) => {
-    assert.match(html, new RegExp("js/" + file + "\\.js\\?v=54"));
+    assert.match(html, new RegExp("js/" + file + "\\.js\\?v=55"));
   });
   assert.doesNotMatch(html, /\?v=(?:19|20|21|22|23|24|25|26|27|28|29|30|31)/);
 
@@ -559,7 +559,7 @@ test("miss·evade는 충돌음을 만들지 않고 날아가는 시작음만 낸
   });
 });
 
-test("S3 확장 174개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가진다", () => {
+test("역사 확장 190개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가진다", () => {
   const data = JSON.parse(read("cards.json"));
   const attacks = data.cards.flatMap((card) =>
     card.attacks.map((attack) => ({
@@ -573,7 +573,7 @@ test("S3 확장 174개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가진�
   const materialCounts = {};
   const signatures = new Set();
 
-  assert.equal(attacks.length, 174);
+  assert.equal(attacks.length, 190);
   attacks.forEach(({ card, cardType, attack }) => {
     assert.ok(attack.vfx, card + " / " + attack.name);
     assert.ok(attack.vfx.emoji, card + " / " + attack.name);
@@ -607,18 +607,18 @@ test("S3 확장 174개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가진�
     materialCounts[soundPlan.material] = (materialCounts[soundPlan.material] || 0) + 1;
     assert.ok(["brave", "wise", "magic", "monster"].includes(soundPlan.type));
   });
-  assert.equal(signatures.size, 174, "174개 기술은 각각 고유한 안정 음색 서명을 가져야 한다");
+  assert.equal(signatures.size, 190, "190개 기술은 각각 고유한 안정 음색 서명을 가져야 한다");
   assert.deepEqual(materialCounts, {
-    body: 29,
+    body: 30,
     fire: 8,
-    air: 28,
+    air: 30,
     wood: 7,
     metal: 21,
-    stone: 6,
-    paper: 15,
+    stone: 7,
+    paper: 21,
     hollow: 7,
     glass: 2,
-    crystal: 27,
+    crystal: 33,
     earth: 16,
     flick: 1,
     belch: 1,
@@ -627,14 +627,14 @@ test("S3 확장 174개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가진�
   });
 
   assert.deepEqual(counts, {
-    strike: 42,
-    burst: 40,
+    strike: 43,
+    burst: 44,
     debuff: 28,
-    projectile: 31,
-    aura: 23,
+    projectile: 35,
+    aura: 30,
     summon: 10
   });
-  assert.equal(attacks.filter(({ attack }) => attack.vfx.big).length, 60);
+  assert.equal(attacks.filter(({ attack }) => attack.vfx.big).length, 67);
 
   const redhood = data.cards.find((card) => card.id === "redhood");
   assert.deepEqual(redhood.attacks[0].vfx, {

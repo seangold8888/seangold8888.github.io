@@ -19,7 +19,7 @@ const server=http.createServer((req,res)=>{
    const page=await context.newPage(),errors=[];
    page.on("pageerror",e=>errors.push(String(e)));
    await page.goto("http://127.0.0.1:"+server.address().port+"/cards/");
-   await page.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===76);
+   await page.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===84);
    const geometry=await page.evaluate(()=>{
      const cards=[...document.querySelectorAll("#collectionGrid .story-card")];
      return cards.map(c=>{const b=c.getBoundingClientRect(),a=c.querySelector(".card-art").getBoundingClientRect();return {id:c.dataset.cardId,w:b.width,h:b.height,art:a.height,y:b.y};});
@@ -86,7 +86,7 @@ const server=http.createServer((req,res)=>{
      if(expected)assert.deepEqual(ids,expected,mode);
    }
    await page.locator("#collectionSort").selectOption("name");
-   await page.reload();await page.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===76);
+   await page.reload();await page.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===84);
    assert.equal(await page.locator("#collectionSort").inputValue(),"name");
    for(const [id,destination] of [["jaei","/math/"],["guanyu","/sanguo/"],["circe","/odyssey/"],["cinderella","/story/"]]){
      await page.locator('#collectionGrid [data-card-id="'+id+'"]').click();

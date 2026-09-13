@@ -501,7 +501,7 @@ test("컬렉션 해금 경제는 오디세이 확장 75장 전체를 노출한�
   );
   const byId = new Map(data.cards.map((item) => [item.id, item]));
 
-  assert.equal(new Set(data.collection).size, 76);
+  assert.equal(new Set(data.collection).size, 84);
   assert.deepEqual(
     [...data.collection].sort(),
     data.cards.map((item) => item.id).sort(),
@@ -509,7 +509,7 @@ test("컬렉션 해금 경제는 오디세이 확장 75장 전체를 노출한�
   );
   assert.deepEqual(
     data.collection.filter((id) => byId.get(id).unlock === null).sort(),
-    ["gearwing", "jack", "ppungdetective", "redhood", "sherlockholmes", "yisunshin"],
+    ["gearwing", "jack", "ppungdetective", "redhood", "sejong", "sherlockholmes", "yisunshin"],
     "기존 기본 지급 2장과 새 세력 대표 4장을 지급한다"
   );
 
@@ -539,7 +539,7 @@ test("페르세우스 설명과 실제 v1 대전 상대 풀이 레어도 ±1 계
   const featuredCards = data.collection
     .map((id) => data.cards.find((entry) => entry.id === id))
     .filter(Engine.isBattleCard);
-  assert.equal(featuredCards.length, 76, "컬렉션 전원이 대전 가능해야 한다");
+  assert.equal(featuredCards.length, 84, "컬렉션 전원이 대전 가능해야 한다");
 
   featuredCards.forEach((player) => {
     const balancedOpponents = Engine.getBalancedEnemyPool(featuredCards, player);
@@ -1154,6 +1154,7 @@ test("검수 완료된 24장 PNG·WebP 원화는 바뀌지 않는다", () => {
       "gearwing", "starshield", "thunderguard", "redknot",
       "walllizard", "neonjumper", "moonmoth", "ppungdetective",
       "circe", "siren", "scylla", "helios", "sseugumi",
+      "sejong", "jangyeongsil", "heojun", "shinsaimdang", "jeongyakyong", "kimhongdo", "yugwansun", "kimgu",
     ].includes(id))
     .flatMap((id) => [id + ".png", id + ".webp"])
     .sort();

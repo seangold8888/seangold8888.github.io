@@ -12,7 +12,7 @@ test("all 75 cards have exactly one valid element; all 25 element pairs use +10,
     assert.ok(E.ELEMENT_CHART[card.element], card.id);
     counts[card.element] = (counts[card.element] || 0) + 1;
   }
-  assert.deepEqual(counts, {fire:15,water:15,metal:15,wood:15,earth:15});
+  assert.deepEqual(counts, {fire:16,water:17,metal:16,wood:17,earth:17});
   const counters = {wood:"metal", fire:"water", earth:"wood", metal:"fire", water:"earth"};
   for (const a of Object.keys(counters)) for (const b of Object.keys(counters)) {
     const state = hit(make(a), make(b));
