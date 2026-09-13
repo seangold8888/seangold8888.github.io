@@ -50,7 +50,7 @@ function ending() {
     await page.waitForFunction(async name=>(await caches.keys()).includes(name),SW.STATIC_CACHE);
     const cached=await page.evaluate(async name=>{
       const cache=await caches.open(name);
-      const files=["/cards/js/campaign.js?v=51","/cards/art/sseugumi.webp","/math/assets/jaei-family-v4.webp"];
+      const files=["/cards/js/campaign.js?v=52","/cards/art/sseugumi.webp","/math/assets/jaei-family-v4.webp"];
       return Promise.all(files.map(async file=>Boolean(await cache.match(file))));
     },SW.STATIC_CACHE);
     assert.deepEqual(cached,[true,true,true]);
@@ -61,6 +61,12 @@ function ending() {
     await page.goto(base+"/cards/?v=fresh-navigation-test");
     await page.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===76);
     assert.equal(await page.locator("#collectionTrait").count(),0);
+    const savedBefore=await page.evaluate(()=>localStorage.getItem("card_campaign"));
+    await page.goto(base+"/cards/latest.html");
+    await page.waitForURL("**/cards/?v=portrait-clear",{timeout:60000});
+    await page.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===76);
+    assert.equal(await page.locator("#collectionGrid .trait-badge").count(),0);
+    assert.equal(await page.evaluate(()=>localStorage.getItem("card_campaign")),savedBefore);
     await context.setOffline(true);
     await page.reload();
     await page.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===76);
@@ -97,7 +103,7 @@ function ending() {
     await page.locator("#storyGateButton").click();
     assert.ok(await page.locator("#storyQuizDialog").isVisible());
     assert.deepEqual(errors,[]);
-    console.log("PASS offline v92: ending resume, family art, reward art, recruitment, seven actions and card quiz; 3 viewports");
+    console.log("PASS offline v93: ending resume, family art, reward art, recruitment, seven actions and card quiz; 3 viewports");
     console.log("SCREENSHOTS",output);
   }finally{
     await context.close();await browser.close();

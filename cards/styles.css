@@ -5098,6 +5098,8 @@ dialog p:not(.kicker) {
 }
 
 /* v51 — five unmistakable materials, one fixed collection silhouette. */
+/* Compatibility guard for a cached renderer: ability copy never covers the portrait. */
+#collectionGrid .card-art .trait-badge { display: none !important; }
 .collection-filters label { flex: 0 1 230px; }
 #collectionGrid .card-gallery-item { position: relative; min-width: 0; width: 100%; aspect-ratio: 5 / 7; }
 #collectionGrid .story-card.is-collection-compact {
