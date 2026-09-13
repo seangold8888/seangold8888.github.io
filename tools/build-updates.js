@@ -20,7 +20,7 @@ const siteRoot = path.resolve(__dirname, "..");
 // 순서는 대시보드 카드 순서와 같다. text 만 손으로 고친다.
 const GAMES = [
   { id: "avengers", text: "관절이 이어진 영웅 동작과 합동 필살기" },
-  { id: "cards", text: "우리 가족 카드 4장과 개구쟁이 효과음" },
+  { id: "cards", text: "새 이름 J&T Adventure · 날개 악당 재윙 등장" },
   { id: "odyssey", text: "폴리페모스 어려움 모드와 미끄러지기" },
   { id: "kart3d", text: "블렌더로 만든 3D 카트 소품" },
   { id: "kart", text: "숲속 주문과 새 도전 과제" },
