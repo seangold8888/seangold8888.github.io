@@ -705,7 +705,7 @@
     "🐴": "hollow", "🎃": "hollow", "🎼": "hollow", "🚪": "hollow", "🏯": "hollow",
     "🤲": "body", "♟️": "stone",
     "🫧": "gas", "🌋": "gas", "😤": "belch", "🤧": "flick", "🧦": "stink",
-    "🦖": "body", "🎈": "air", "🤣": "body", "🧹": "wood", "💬": "air", "🖐️": "body", "📝": "paper"
+    "🦖": "body", "🎈": "air", "🤣": "body", "🧹": "wood", "💬": "air", "🖐️": "body", "🪜": "metal", "🎢": "air"
   });
   const DEFAULT_MATERIAL_BY_TYPE = Object.freeze({
     brave: "body",

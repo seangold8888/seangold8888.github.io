@@ -611,25 +611,25 @@ test("재윙 확장 193개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가�
   assert.deepEqual(materialCounts, {
     body: 30,
     fire: 8,
-    air: 32,
+    air: 31,
     wood: 7,
-    metal: 21,
+    metal: 22,
     stone: 7,
-    paper: 22,
+    paper: 21,
     hollow: 7,
     glass: 2,
     crystal: 33,
     earth: 16,
-    flick: 1,
+    flick: 2,
     belch: 1,
     gas: 5,
     stink: 1
   });
 
   assert.deepEqual(counts, {
-    strike: 44,
+    strike: 43,
     burst: 45,
-    debuff: 28,
+    debuff: 29,
     projectile: 36,
     aura: 30,
     summon: 10

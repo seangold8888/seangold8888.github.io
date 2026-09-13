@@ -19,7 +19,7 @@ const server=http.createServer((req,res)=>{const url=new URL(req.url,'http://loc
    await page.goto(base+'/cards/');await ready();await page.locator('#collectionGrid [data-card-id="jaewing"]').click();
    assert.match(await page.locator('#cardDetailStatus').innerText(),/7일.*70문제/);assert.equal(await page.locator('#detailSelectButton').isDisabled(),true);
    assert.equal(await page.locator('#detailUnlockLink').getAttribute('href'),'../math/');
-   assert.match(await page.locator('#cardDetailCard').innerText(),/날개 악당/);
+   assert.match(await page.locator('#cardDetailCard').innerText(),/귀여운 악마 모드/);
    await page.locator('[data-detail-close]').first().click();
    await page.evaluate(()=>{const days={};for(let i=0;i<7;i++){const d=new Date();d.setDate(d.getDate()-i*2);days[d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')]=1;}localStorage.setItem('math10_state',JSON.stringify({cardStudyDays:days,garden:70}));});
    await page.reload();await ready();await page.locator('#collectionGrid [data-card-id="jaewing"]').click();assert.equal(await page.locator('#detailSelectButton').isDisabled(),false);
@@ -29,7 +29,7 @@ const server=http.createServer((req,res)=>{const url=new URL(req.url,'http://loc
    await page.locator('#detailSelectButton').click();await page.locator('#storyGateButton').click();assert.equal(await page.locator('#storyQuizTitle').innerText(),'재윙 카드 관문');
    const answer=await page.evaluate(()=>{const q=CardStoryGates.all.find(q=>q.cardId==='jaewing'&&q.prompt===document.getElementById('storyQuizQuestion').textContent);return q.choices.find(c=>c.id===q.correctChoiceId).text;});
    await page.locator('#storyQuizChoices button').filter({hasText:answer}).click();assert.equal(await page.evaluate(()=>__qaGame.sides.player.flags.ultimateUnlocked),true);
-   for(const [i,name] of ['메롱 날갯짓','숙제 날려버리기','거꾸로 회오리'].entries()){
+   for(const [i,name] of ['코딱지 튕기기','구름사다리 매달리기','바이킹 그네 밀기'].entries()){
     await page.goto(base+'/cards/?card=jaewing&battle=1');
     await page.locator('#playerCardSlot img').evaluate(img=>img.decode());
     if(i===0)await page.screenshot({animations:'disabled',path:path.join(output,viewport.width+'-battle.png')});

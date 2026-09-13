@@ -3143,12 +3143,12 @@
     {
       "id": "jaewing", "name": "재윙", "element": "water", "type": "monster",
       "emoji": "🪽", "rarity": 3, "summonCost": 4, "hp": 120,
-      "lore": "재이 이름을 닮은 장난꾸러기 날개 악당 재윙이에요. 깃털을 빵빵하게 부풀려 공격을 버티고, 숙제를 바람에 훨훨 날려 버려요. 별사탕을 모으면 방 안을 거꾸로 뒤집는 회오리를 일으켜요.",
-      "passive": {"name": "빵빵 깃털", "fx": "reduce_dmg_10", "desc": "깃털을 빵빵하게 부풀려 받는 피해가 10 줄어요"},
+      "lore": "재이의 귀여운 악마 모드, 재윙이에요. 장난꾸러기로 변하면 작은 뿔과 박쥐 날개가 돋아나요. 코딱지를 튕기고, 구름사다리에 매달려 요리조리 피하고, 별사탕을 모으면 바이킹 그네를 힘껏 밀어 상대를 날려 버려요.",
+      "passive": {"name": "박쥐 날개 망토", "fx": "reduce_dmg_10", "desc": "박쥐 날개로 몸을 감싸 받는 피해가 10 줄어요"},
       "attacks": [
-        {"name": "메롱 날갯짓", "cost": 1, "dmg": 20, "fx": null, "desc": "", "vfx": {"kind": "strike", "emoji": "🪽"}},
-        {"name": "숙제 날려버리기", "cost": 2, "dmg": 30, "fx": "weaken_next_20", "desc": "숙제가 날아가 허둥지둥! 상대의 다음 공격 피해가 20 줄어요", "vfx": {"kind": "projectile", "emoji": "📝"}},
-        {"name": "거꾸로 회오리", "cost": 4, "dmg": 80, "fx": null, "desc": "방 안을 거꾸로 뒤집는 커다란 회오리예요", "vfx": {"kind": "burst", "emoji": "🌪️", "big": true}}
+        {"name": "코딱지 튕기기", "cost": 1, "dmg": 20, "fx": null, "desc": "", "vfx": {"kind": "projectile", "emoji": "🤧"}},
+        {"name": "구름사다리 매달리기", "cost": 2, "dmg": 30, "fx": "weaken_next_20", "desc": "구름사다리에 매달려 요리조리! 상대의 다음 공격 피해가 20 줄어요", "vfx": {"kind": "debuff", "emoji": "🪜"}},
+        {"name": "바이킹 그네 밀기", "cost": 4, "dmg": 80, "fx": null, "desc": "바이킹 그네를 힘껏 밀어 상대를 날려 버려요", "vfx": {"kind": "burst", "emoji": "🎢", "big": true}}
       ],
       "unlock": "game:math/streak7", "art": "art/jaewing.png", "stats": {"attack": 4, "defense": 4, "spirit": 4}
     }
