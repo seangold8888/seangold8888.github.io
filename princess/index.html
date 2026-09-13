@@ -17,6 +17,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 <meta name="apple-mobile-web-app-title" content="공주 옷장">
 <link rel="apple-touch-icon" href="../icon.png">
 <title>공주 옷장: 마음대로 꾸며요!</title>
+<link rel="stylesheet" href="outings.css?v=1">
 <style>
   :root{
     --rose:#ff74b8; --rose-deep:#d83e8a; --lilac:#a88cff; --cream:#fff8fc; --ink:#432449; --ink-soft:#806484;
@@ -231,6 +232,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 <div id="toast"></div>
 
 <script src="studio.js?v=36"></script>
+<script src="outings.js?v=1"></script>
 <script>
 'use strict';
 /* =========================================================
@@ -1293,6 +1295,7 @@ function renderStage(){
   const parts=[];
   if(state.dress) parts.push(itemOf('dress',state.dress.id).name);
   document.getElementById('nameTag').innerHTML=`${p.name}<small>${parts.join(' · ')||'기본 옷'}</small>`;
+  globalThis.princessOutingUI?.refresh();
 }
 
 // 썸네일
@@ -1468,6 +1471,22 @@ let last='snow';try{last=localStorage.getItem('princess:last')||'snow'}catch(e){
 if(!PRINCESSES.some(p=>p.id===last))last='snow';
 loadPrincess(last);
 renderTabs();renderStage();renderPanel();
+globalThis.princessOutingUI=PrincessOutings.mount({
+  snapshot:()=>({state:JSON.parse(JSON.stringify(state)),princess:princess()}),
+  render:dollSVG,exportSvg:buildExportSvg,
+  background:id=>PrincessStudio.path('bg',id),
+  selectTab:key=>{tab=key;renderTabs();renderPanel();},
+  petName:id=>PETS.find(p=>p.id===id)?.name||'동물',
+  sound:kind=>({click,tada,shutter}[kind]||click)(),notify:toast,
+  photo:async svg=>{
+    const png=await svgToPng(svg,336,544),img=new Image();img.src=png;await img.decode();
+    const canvas=document.createElement('canvas');canvas.width=336;canvas.height=544;
+    canvas.getContext('2d').drawImage(img,0,0);return canvas.toDataURL('image/jpeg',.84);
+  }
+});
+if('serviceWorker' in navigator)window.addEventListener('load',()=>{
+  navigator.serviceWorker.register('../sw.js').catch(()=>{});
+});
 </script>
 </body>
 </html>
