@@ -9,6 +9,7 @@ const os = require("node:os");
 const C = require("../js/campaign.js");
 const SW = require("../../sw.js");
 const root = path.resolve(__dirname,"../..");
+const campaignScript = "/cards/"+fs.readFileSync(path.join(root,"cards/index.html"),"utf8").match(/js\/campaign\.js\?v=\d+/)[0];
 const output = fs.mkdtempSync(path.join(os.tmpdir(),"campaign-s3-offline-"));
 const mime = {".html":"text/html; charset=utf-8",".js":"application/javascript",".css":"text/css",".json":"application/json",".webp":"image/webp",".png":"image/png",".svg":"image/svg+xml",".mp3":"audio/mpeg",".wav":"audio/wav"};
 const server = http.createServer((req,res)=>{
@@ -48,11 +49,11 @@ function ending() {
     },ending());
     await page.waitForFunction(()=>navigator.serviceWorker.controller,null,{timeout:60000});
     await page.waitForFunction(async name=>(await caches.keys()).includes(name),SW.STATIC_CACHE);
-    const cached=await page.evaluate(async name=>{
+    const cached=await page.evaluate(async ({name,script})=>{
       const cache=await caches.open(name);
-      const files=["/cards/js/campaign.js?v=57","/cards/art/sseugumi.webp",...["appa","eomma","jaei","taeo"].map(id=>"/cards/art/"+id+".webp")];
+      const files=[script,"/cards/art/sseugumi.webp",...["appa","eomma","jaei","taeo"].map(id=>"/cards/art/"+id+".webp")];
       return Promise.all(files.map(async file=>Boolean(await cache.match(file))));
-    },SW.STATIC_CACHE);
+    },{name:SW.STATIC_CACHE,script:campaignScript});
     assert.deepEqual(cached,[true,true,true,true,true,true]);
     await page.evaluate(async name=>{
       const cache=await caches.open(name);
