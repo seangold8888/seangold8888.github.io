@@ -1,29 +1,50 @@
-# 재이의 괴물 친구 재윙
+# 장난꾸러기 날개 악당 재윙
 
-사용자 확정: 이름은 **재윙**, 재이의 괴물이다. 쓰구미는 태오의 괴물로 그대로 둔다.
-아래 외형과 기술은 Codex의 첫 제안이다. 아이가 실제로 정한 생김새·말버릇이라고 주장하지 않는다. 별도 말버릇이나 가족의 실제 일화는 지어내지 않았다. 기존 원정 이야기와 쓰구미 카드/보스는 변경하지 않는다.
+## 사용자 결정 (2026-09-13)
 
-## 첫 카드
+- 이름은 **재윙**. 재이 이름을 닮은 괴물이다.
+- 첫 구현은 "재이의 괴물 친구"로 착하고 약한 카드(48.3%, 85장 중 41위, C등급)였다.
+- 사용자 정정: **재윙은 쓰구미처럼 재밌고 강한 악당**이다.
+- 쓰구미 대마왕 카드·보스, 원정 이야기는 바꾸지 않는다. 재윙을 원정에 넣는 것은 별도 결정이다.
+- 아이가 실제로 정한 생김새·말버릇·일화라고 주장하지 않는다. 가족 사실을 지어내지 않는다.
 
-- id jaewing, 물 속성 / 괴물 타입, 체력 110.
-- 폭신한 날개: 처음 받는 공격 피해를 한 번 막음.
-- 날개 툭: 별사탕 1, 피해 20.
-- 장난 바람: 별사탕 2, 피해 30 + 상대 다음 공격 피해 20 감소.
-- 재윙 회오리: 별사탕 4, 피해 70.
-- 회복/무한 회피/턴 봉쇄를 추가하지 않음. 기존 엔진으로 전부 구현.
-- 카드 소개 + 카드 능력을 묻는 문제 5개. legend:jaewing 경로라 없는 오디오로 보내지 않음.
-- family-balance.cjs: 85장 기준 재윙 48.3%, C등급. 가족은 재이 85.6%, 태오 80.7%, 엄마 80.6%, 아빠 78.7%, 상위 4명/재이 1위/태오 2위 유지, 교착 0.
-- 획득: C등급 수학 카드 규칙인 누적 2일 + 10문제. 기존 unlock 토큰은 과거 기록 보존용이며 tierUnlockGoals가 우선. 가족의 높은 조건은 그대로.
-- 새 기술 이모지 🦢/🍃/🌪️는 기존 84장의 기술에 없는 것을 확인하고 air 재질 연결. 기존 570개 명중/약점/빗나감 소리 계획을 해시로 고정.
+## 카드 (Claude 확정, 구현 완료)
 
-## 원화
+- id jaewing, 물 속성 / 괴물 타입, 체력 120. stats 4/4/4 유지.
+- 자동 능력 빵빵 깃털: 받는 피해 10 감소 (reduce_dmg_10).
+- 메롱 날갯짓: 별사탕 1, 피해 20. 🪽 strike, air 소리.
+- 숙제 날려버리기: 별사탕 2, 피해 30 + 상대 다음 공격 피해 20 감소. 📝 projectile, paper 소리 (📝는 기존 84장 미사용, audio 매핑 추가).
+- 거꾸로 회오리: 별사탕 4, 피해 80. 🌪️ burst big, air 소리.
+- 실전 등급 C → **S**. 획득은 수학 S 규칙(누적 7일 + 70문제) + 기존 math/streak7 토큰.
+- 퀴즈 5문항을 새 소개·능력·기술로 교체.
 
-내장 image_gen으로 생성. 1024×1536 PNG + WebP(품질 88). art/jaewing.png, art/jaewing.webp.
-밝은 공중 배경, 큰 날개와 풍성한 털, 자신감 있는 장난스러운 표정. 캐릭터가 잘 보이도록 기존 카드 비율 유지. 글자/숫자/프레임 없음. 기존 그림 재생성 없음.
+## 밸런스 근거 (family-balance.cjs와 같은 방식, 85장, 교착 0)
 
-### 사용한 생성 프롬프트 전문
+| 안 | 체력 | 자동 능력 | 기술 피해 | 재윙 | 가족 순서 |
+|---|---|---|---|---|---|
+| 기존 | 110 | 첫 공격 막기 | 20/30/70 | 48.3% 41위 | 통과 |
+| A | 120 | 첫 공격 막기 | 20/30/80 | 54.7% 27위 | 태오<엄마 실패 |
+| B | 120 | 첫 공격 막기 | 30/30/70 | 74.6% 8위 | 실패 |
+| D | 110 | 첫 공격 막기 | 30/40/80 | 76.2% 5위 | 실패 |
+| **E 채택** | 120 | 피해 10 감소 | 20/30/80 | **76.2% 6위** | **통과** |
+| F | 130 | 첫 공격 막기 | 30/30/60(3별) | 80.1% 3위 | 실패 |
 
-Use case: stylized-concept. Create one original premium painted character illustration for a children's fantasy collectible card game. New character called Jaewing (재윙), the personal imaginary monster companion of a young girl; illustrate ONLY the monster, not the girl. It is a small winged monster, cute but confidently mischievous, clever expressive eyes, a strong memorable silhouette, rounded soft features, no frightening teeth or menacing violence. This is an initial proposed creature design, not a depiction of a real child. Show the whole creature in an active playful pose with both wings readable and face unobstructed. Rich painterly storybook fantasy rendering with exquisite material detail, dimensional lighting, believable weight, atmospheric magical backdrop secondary to the creature. A collectible fantasy portrait that feels lovingly crafted rather than flat mascot clipart. Portrait 1024 x 1536 PNG, full bleed illustration only, no card frame, absolutely no words letters numbers UI symbols watermark or logos. Safe and welcoming for ages five to eight, yet visually sophisticated. One character only. Leave comfortable margins around head, wings and feet so game crops work.
+가족보다 세면 안 된다(재이 1위, 태오 2위, 가족 상위 4위). 대부분의 강한 안은 재윙이 태오를 많이 이겨 태오가 엄마 아래로 떨어졌다. E안만 재윙을 가족 바로 아래 최상위권에 두면서 가족 순서를 지킨다.
+
+## 원화 교체 (Codex 작업)
+
+현재 art/jaewing.png는 "착한 친구" 시안(웃는 흰 날개 동물, 밝은 하늘)이라 악당 설정과 맞지 않는다. 다시 그린다.
+
+- 같은 캐릭터로 보이게: 흰 털 + 파랑·보라 깃털 날개, 큰 귀, 긴 깃털 꼬리 실루엣은 유지.
+- 표정과 자세를 악당으로: 한쪽 눈썹 올린 약 올리는 웃음, 메롱 혀, 팔짱 또는 허리에 손, 거만하게 떠 있는 자세.
+- 장난 소품: 바람에 흩날리는 숙제 종이 여러 장(글자·숫자 없는 빈 줄 종이), 작은 회오리, 망토나 작은 눈가리개 가면 중 하나.
+- 배경: 거꾸로 뒤집힌 아이 방 또는 해 질 녘 보라빛 하늘. 쓰구미 원화처럼 소품이 많은 개그 악당 느낌.
+- 무섭지 않게: 날카로운 이빨, 피, 어두운 공포 분위기 금지. 5~8세 대상.
+- 실제 아이 얼굴이나 사람 모습이 아니다. 괴물 한 마리만.
+- 규격: 1024×1536 PNG + WebP(품질 88), art/jaewing.png·art/jaewing.webp만 교체. 다른 원화 재생성 금지.
+- 글자·숫자·프레임·워터마크 없음. 머리·날개·발 주변 여백 유지(현재 crop 50% 40%, 필요하면 card-view.js ART_POSITION과 IMAGE_PROMPTS.md 표 함께 수정).
+- IMAGE_PROMPTS.md의 재윙 설명을 악당판으로 고치고, 사용한 프롬프트 전문을 이 문서 아래에 덧붙인다.
+- 원화 교체 뒤 CACHE_VERSION과 카드 자산 ?v=를 한 단계 올리고 테스트 고정값을 맞춘다.
 
 ## 검증
 
@@ -33,8 +54,6 @@ node cards/tools/family-balance.cjs
 
 node cards/tools/jaewing-smoke.cjs
 
-카드 모듈 v59 / 캐시 v100. 공개 배포 별도.
+node cards/tools/tier-unlocks-smoke.cjs
 
-최종 검증: 카드 테스트 320/320 통과. 브라우저 스모크는 390×844, 820×1180, 1180×820에서 획득 전/후, 원화 로드, 퀴즈 정답과 필살기 개방, 세 기술 실제 실행 및 효과음 호출, 오프라인 재접속을 통과했다. 이미지 디코딩/진입 애니메이션 완료 후 상세·전투 스크린샷도 확인했다. 실물 iPad Safari와 아이 취향 검수는 별도다.
-
-가족 시뮬레이션의 정수 반올림으로 태오와 엄마가 둘 다 81%로 보여 잘못 동점 판정되던 검사는 소수 둘째 자리 출력/파싱으로 수정했다. 실제 승률 순서와 기존 수치는 바꾸지 않았다. 기존 84장의 데이터 및 두 획득 정책을 이전 커밋과 직접 비교해 동일함도 확인했다.
+node cards/tools/campaign-ending-smoke.cjs

@@ -8,19 +8,20 @@ test('Jaewing appends exactly one card and preserves all 84 existing cards and t
  assert.equal(sha(data.cards.slice(0,84)),'10e78e90ad191f1206ceeb421c6aad61c643b775d366b112b8c143bd2b867c60');
  assert.equal(sha(data.collection.slice(0,84)),'c52eafbffcc49f068e5378763d301bd4551f6513242296a3a539b357f89f751f');
 });
-test('all 570 legacy sound plans are unchanged; three new unused emoji route to air',()=>{
+test('all 570 legacy sound plans are unchanged; Jaewing moves route to air, paper and air',()=>{
  const audio=runtime('audio.js').CardAudio;
  const plans=data.cards.slice(0,84).flatMap(card=>card.attacks.flatMap(a=>['hit','weakness','miss'].map(outcome=>audio.soundPlanForTechnique({type:card.type,attack:a.name,kind:a.vfx.kind,emoji:a.vfx.emoji,big:a.vfx.big,outcome,impactAtMs:220,totalMs:500}))));
  assert.equal(plans.length,570);assert.equal(sha(plans),'35ce3a62ebc9da448979e57a9f91568c289f1ec3f364149d6a1e8d50fdbf9451');
- const used=new Set(data.cards.slice(0,84).flatMap(card=>card.attacks.map(a=>a.vfx.emoji)));
- for(const a of c.attacks){assert.ok(!used.has(a.vfx.emoji));const plan=audio.soundPlanForTechnique({type:c.type,attack:a.name,...a.vfx,outcome:'hit',impactAtMs:220,totalMs:500});assert.equal(plan.material,'air');assert.ok(plan.tailMs<=1000);}
+ const plansNew=c.attacks.map(a=>audio.soundPlanForTechnique({type:c.type,attack:a.name,...a.vfx,outcome:'hit',impactAtMs:220,totalMs:500}));
+ assert.deepEqual(plansNew.map(p=>p.material),['air','paper','air']);for(const plan of plansNew)assert.ok(plan.tailMs<=1000);
+ assert.ok(!data.cards.slice(0,84).some(card=>card.attacks.some(a=>a.vfx.emoji==='📝')));
 });
-test('Jaewing has safe complete mechanics, a lore introduction, crop, earned math goal and one offline portrait',()=>{
- assert.ok(E.isBattleCard(c));assert.equal(c.hp,110);assert.equal(c.element,'water');assert.equal(c.passive.fx,'first_hit_zero');
- assert.deepEqual(c.attacks.map(a=>[a.cost,a.dmg,a.fx]),[[1,20,null],[2,30,'weaken_next_20'],[4,70,null]]);
- assert.match(c.lore,/재이의 괴물 친구/);assert.equal(c.unlock,'game:math/streak7');
- const view=runtime('card-view.js').CardView;assert.equal(view.battleTier(c),'C');assert.equal(view.artPosition.jaewing,'50% 40%');
- assert.deepEqual(data.tierUnlockGoals.math.C,{studyDays:2,problems:10});
+test('Jaewing is a strong prank villain with safe mechanics, crop, earned math goal and one offline portrait',()=>{
+ assert.ok(E.isBattleCard(c));assert.equal(c.hp,120);assert.equal(c.element,'water');assert.equal(c.passive.fx,'reduce_dmg_10');
+ assert.deepEqual(c.attacks.map(a=>[a.cost,a.dmg,a.fx]),[[1,20,null],[2,30,'weaken_next_20'],[4,80,null]]);
+ assert.match(c.lore,/날개 악당/);assert.equal(c.unlock,'game:math/streak7');
+ const view=runtime('card-view.js').CardView;assert.equal(view.battleTier(c),'S');assert.equal(view.artPosition.jaewing,'50% 40%');
+ assert.deepEqual(data.tierUnlockGoals.math.S,{studyDays:7,problems:70});
  assert.equal(sw.CARD_ART_FILES.filter(p=>p==='./cards/art/jaewing.webp').length,1);
  const png=fs.readFileSync(path.join(root,c.art));assert.equal(png.readUInt32BE(16),1024);assert.equal(png.readUInt32BE(20),1536);
  assert.equal(fs.readFileSync(path.join(root,'art/jaewing.webp')).toString('ascii',8,12),'WEBP');

@@ -968,11 +968,11 @@
   ].forEach(item => all.push(item));
 
   [
-    question("jaewing-friend", "jaewing", "재윙은 누구의 괴물 친구인가요?", [["yes","재이"],["no","태오"],["other","쓰구미"]], "yes", ["카드: 재윙 친구 소개"]),
-    question("jaewing-wings", "jaewing", "폭신한 날개는 무엇을 하나요?", [["yes","첫 공격 피해를 한 번 막아요"],["no","모든 공격을 계속 막아요"],["other","매턴 체력을 채워요"]], "yes", ["카드: 재윙"]),
-    question("jaewing-tap", "jaewing", "별사탕 1개로 쓸 수 있는 기술은?", [["yes","날개 툭"],["no","장난 바람"],["other","재윙 회오리"]], "yes", ["카드: 재윙"]),
-    question("jaewing-wind", "jaewing", "장난 바람을 맞으면 상대의 다음 공격은?", [["yes","피해가 20 줄어요"],["no","피해가 20 늘어요"],["other","아무것도 달라지지 않아요"]], "yes", ["카드: 재윙"]),
-    question("jaewing-twirl", "jaewing", "재윙 회오리를 쓰려면 별사탕 몇 개가 필요할까요?", [["yes","4개"],["no","1개"],["other","2개"]], "yes", ["카드: 재윙"])
+    question("jaewing-villain", "jaewing", "재윙은 어떤 카드인가요?", [["yes","장난꾸러기 날개 악당"],["no","재이를 지키는 기사"],["other","쓰구미의 애완 새"]], "yes", ["카드: 재윙 소개"]),
+    question("jaewing-feathers", "jaewing", "빵빵 깃털은 무엇을 하나요?", [["yes","받는 피해를 10 줄여요"],["no","매턴 체력을 채워요"],["other","별사탕을 훔쳐요"]], "yes", ["카드: 재윙"]),
+    question("jaewing-tap", "jaewing", "별사탕 1개로 쓸 수 있는 기술은?", [["yes","메롱 날갯짓"],["no","숙제 날려버리기"],["other","거꾸로 회오리"]], "yes", ["카드: 재윙"]),
+    question("jaewing-homework", "jaewing", "숙제 날려버리기를 맞으면 상대의 다음 공격은?", [["yes","피해가 20 줄어요"],["no","피해가 20 늘어요"],["other","아무것도 달라지지 않아요"]], "yes", ["카드: 재윙"]),
+    question("jaewing-twirl", "jaewing", "거꾸로 회오리를 쓰려면 별사탕 몇 개가 필요할까요?", [["yes","4개"],["no","1개"],["other","2개"]], "yes", ["카드: 재윙"])
   ].forEach(item => all.push(item));
 
   function deepFreeze(value) {

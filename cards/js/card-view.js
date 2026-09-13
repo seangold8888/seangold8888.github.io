@@ -27,10 +27,10 @@
   // family-balance.cjs의 전체 75장 맞대결 결과를 등급으로 고정한다.
   // 수치가 바뀌면 검사 도구를 다시 돌리고 이 묶음도 함께 갱신한다.
   const BATTLE_TIERS = Object.freeze({
-    S: new Set(["jaei", "taeo", "eomma", "appa", "scylla", "siren", "baigujing", "zhaoyun", "mermaid"]),
+    S: new Set(["jaei", "taeo", "eomma", "appa", "jaewing", "scylla", "siren", "baigujing", "zhaoyun", "mermaid"]),
     A: new Set(["jeongyakyong", "kimhongdo", "yugwansun", "perseus", "beanstalkgiant", "circe", "hades", "simayi"]),
     B: new Set(["jangyeongsil", "heojun", "kimgu", "poseidon", "zhugeliang", "doctorwatson", "wumawang", "hydra", "redknot", "jack", "nezha", "heracles", "zeus", "erlangshen", "polyphemus", "atalanta", "helios", "tiger"]),
-    C: new Set(["jaewing", "sejong", "shinsaimdang", "sseugumi", "zhangfei", "athena", "sunwukong", "ppungdetective", "wolf", "achilles", "kwonyul", "guanyu", "hermes", "sphinx", "witch", "prometheus", "honggildong", "starshield", "moriarty", "redhood", "ganggamchan", "odysseus", "euljimundeok", "apollo", "cinderella", "neonjumper", "arthur", "moonmoth", "threepigs", "thunderguard", "medusa", "theseus", "arsenelupin", "fairygodmother", "gearwing", "sherlockholmes", "tortoisehare", "yisunshin", "pinocchio", "orpheus"]),
+    C: new Set(["sejong", "shinsaimdang", "sseugumi", "zhangfei", "athena", "sunwukong", "ppungdetective", "wolf", "achilles", "kwonyul", "guanyu", "hermes", "sphinx", "witch", "prometheus", "honggildong", "starshield", "moriarty", "redhood", "ganggamchan", "odysseus", "euljimundeok", "apollo", "cinderella", "neonjumper", "arthur", "moonmoth", "threepigs", "thunderguard", "medusa", "theseus", "arsenelupin", "fairygodmother", "gearwing", "sherlockholmes", "tortoisehare", "yisunshin", "pinocchio", "orpheus"]),
     D: new Set(["midas", "snowqueen", "honghaier", "cerberus", "bremen", "caocao", "artemis", "minotaur", "walllizard", "genie"])
   });
   const TIER_WIDTH = Object.freeze({ S: 100, A: 82, B: 64, C: 46, D: 28 });
@@ -424,7 +424,7 @@
     const details = el("div", "card-details");
     if (card.lore && !options.compact && !options.collectionCompact) {
       const lore = el("section", "card-history");
-      lore.append(el("h4", "", "친구 소개"), el("p", "", card.lore));
+      lore.append(el("h4", "", "카드 소개"), el("p", "", card.lore));
       details.appendChild(lore);
     }
     const history = window.CardStoryGates && window.CardStoryGates.historyForCard && window.CardStoryGates.historyForCard(card);

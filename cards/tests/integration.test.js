@@ -171,9 +171,9 @@ test("손패·원정 UI와 캐시 버전 43이 함께 배포되도록 묶여 있
   ["fragmentTray", "fragmentHand", "fragmentPreview"].forEach((id) => {
     assert.match(html, new RegExp('id="' + id + '"'));
   });
-  assert.match(html, /styles\.css\?v=59/);
+  assert.match(html, /styles\.css\?v=60/);
   ["engine", "audio", "card-view", "vfx-recipes", "story-gates", "campaign", "campaign-ui", "combat-cinema", "app"].forEach((file) => {
-    assert.match(html, new RegExp("js/" + file + "\\.js\\?v=59"));
+    assert.match(html, new RegExp("js/" + file + "\\.js\\?v=60"));
   });
   assert.doesNotMatch(html, /\?v=(?:19|20|21|22|23|24|25|26|27|28|29|30|31)/);
 
@@ -611,11 +611,11 @@ test("재윙 확장 193개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가�
   assert.deepEqual(materialCounts, {
     body: 30,
     fire: 8,
-    air: 33,
+    air: 32,
     wood: 7,
     metal: 21,
     stone: 7,
-    paper: 21,
+    paper: 22,
     hollow: 7,
     glass: 2,
     crystal: 33,
@@ -629,8 +629,8 @@ test("재윙 확장 193개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가�
   assert.deepEqual(counts, {
     strike: 44,
     burst: 45,
-    debuff: 29,
-    projectile: 35,
+    debuff: 28,
+    projectile: 36,
     aura: 30,
     summon: 10
   });
