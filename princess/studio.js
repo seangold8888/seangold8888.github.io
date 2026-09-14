@@ -3,6 +3,17 @@
 // independently of the retired vector figure's coordinates.
 globalThis.PrincessStudio=(()=>{
   const ROOT='assets/studio-v3/';
+  // Preview the jointly painted heads without deleting saved hairstyle choices.
+  const naturalHeads=/(?:[?&])heads=natural(?:&|$)/.test(globalThis.location?.search||'');
+  // Uniform scaling only: width, facial center X and eye row on the original square.
+  const headFits={
+    snow:[120,.507,580/1254],cinder:[120,.510,594/1254],
+    rapunzel:[146,.502,418/1254],mermaid:[116,.503,521/1254],
+    thumb:[120,.500,590/1254],kongjwi:[120,.500,550/1254],
+    briar:[118,.500,510/1254],moon:[116,.500,650/1254],
+    frost:[120,.500,.485],sahara:[120,.500,.452],
+    lotus:[120,.500,.485],sunny:[116,.500,.455]
+  };
   const NEW_CHARACTERS=new Set(['frost','sahara','lotus','sunny']);
   const wearGeometry={"shoes":{"pumps":[[0.01042,0.00463,0.48958,0.99074],[0.50521,0.00463,0.48958,0.99074]],"glass":[[0.00521,0.0045,0.47396,0.99099],[0.52083,0.0045,0.47396,0.99099]],"boots":[[0.00649,0.00781,0.46753,0.99219],[0.50649,0.00391,0.48701,0.99609]],"sneakers":[[0.00521,0.00478,0.49479,0.99522],[0.5,0.00478,0.49479,0.99522]],"sandals":[[0.00521,0.00926,0.48958,0.98611],[0.51042,0.00463,0.48438,0.99074]],"ballet":[[0.00521,0,0.49479,0.9919],[0.5,0,0.49479,0.9919]],"rain":[[0.00524,0,0.48691,0.99609],[0.50262,0,0.49215,0.99609]],"slippers":[[0.01042,0.01935,0.48958,0.96774],[0.5,0.0129,0.49479,0.98065]],"kkotsin":[[0.00521,0.00515,0.48438,0.98969],[0.51042,0.00515,0.48438,0.98969]]},"bodies":{"snow":{"wrist":[299.66,278],"feet":[[177.34,26.72],[213.56,27.31]]},"cinder":{"wrist":[304.41,278],"feet":[[183.28,24.34],[211.78,24.34]]},"rapunzel":{"wrist":[307.97,278],"feet":[[177.94,26.13],[214.75,26.13]]},"mermaid":{"wrist":[307.67,278],"feet":[[183.28,25.53],[214.75,26.13]]},"thumb":{"wrist":[308.86,278],"feet":[[182.09,26.13],[213.56,26.13]]},"kongjwi":{"wrist":[307.97,278],"feet":[[180.91,26.13],[217.72,26.13]]},"briar":{"wrist":[311.23,278],"feet":[[174.97,28.5],[211.78,29.09]]},"moon":{"wrist":[304.41,278],"feet":[[177.34,27.31],[211.19,27.31]]}}};
   // Attachment points measured from the four new transparent body sprites.
@@ -86,11 +97,11 @@ globalThis.PrincessStudio=(()=>{
   };
   const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
   const key=(cat,id)=>cat+'/'+id;
-  const path=(cat,id)=>NEW_CHARACTERS.has(id)&&['body','grip'].includes(cat)?'assets/characters-v36/'+cat+'-'+id+'.webp':cat==='hair'&&id==='bob'?'assets/hair-v35/hair-bob.webp':cat==='grip'?'assets/wear-v5/grip-'+id+'.webp':cat==='body'?'assets/bodies-v4/body-'+id+'.webp':ROOT+cat+'-'+id+(cat==='bg'?'.jpg':'.webp');
+  const path=(cat,id)=>cat==='head'?'assets/heads-v43/'+id+'.webp':NEW_CHARACTERS.has(id)&&['body','grip'].includes(cat)?'assets/characters-v36/'+cat+'-'+id+'.webp':cat==='hair'&&id==='bob'?'assets/hair-v35/hair-bob.webp':cat==='grip'?'assets/wear-v5/grip-'+id+'.webp':cat==='body'?'assets/bodies-v4/body-'+id+'.webp':ROOT+cat+'-'+id+(cat==='bg'?'.jpg':'.webp');
   const selectedHair=(st,p)=>Object.hasOwn(rects.hair,st.hairStyle)?st.hairStyle:p.hair;
   const href=(cat,id,embedded)=>embedded===undefined?path(cat,id):embedded[key(cat,id)];
   const fileKeys=(st,p)=>{
-    const list=[key('bg',st.bg),key('hair',selectedHair(st,p)),key('body',p.id)];
+    const list=[key('bg',st.bg),naturalHeads?key('head',p.id):key('hair',selectedHair(st,p)),key('body',p.id)];
     if(st.hand)list.push(key('grip',p.id));
     for(const cat of ['back','dress','shoes','crown','neck','hand','pet']){
       if(st[cat]&&!(cat==='shoes'&&st.dress?.id==='tail'))list.push(key(cat,st[cat].id));
@@ -139,7 +150,7 @@ globalThis.PrincessStudio=(()=>{
   }
   function body(p,bodyHref,scope,tail,dressColor,shoeId=null,holding=false,trousers=false,liningSrc=null){
     const wx=wearGeometry.bodies[p.id].wrist[0],wear=shoeId&&shoeWear[shoeId];
-    const cuts=(tail?'<rect x="140" y="250" width="140" height="430" fill="black"/>':'')+
+    const cuts=(naturalHeads?'<rect data-hide-old-head="true" width="420" height="104" fill="black"/>':'')+(tail?'<rect x="140" y="250" width="140" height="430" fill="black"/>':'')+
       (trousers?`<rect x="140" y="250" width="140" height="${wear?wear[0]-250:430}" fill="black"/>`:'')+
       (wear?`<rect x="145" y="${wear[0]+wear[1]*wear[2]}" width="140" height="150" fill="black"/>`:'')+
       (holding?`<path d="M${wx-10} 278L${wx+9} 270L380 350H285Z" fill="black"/>`:'');
@@ -204,6 +215,15 @@ globalThis.PrincessStudio=(()=>{
     return {x:(left+right)/2+bodyOffset-(a[2]+a[3])/2*width,width,
       knots:[[0,top-shape.crown],[a[0],top+18],[a[1],57.5],[1,shape.length+top-18]]};
   }
+  function naturalHead(p,scope,embedded,bodyOffset=identities[p.id].dx){
+    const src=href('head',p.id,embedded);
+    if(!src)throw new Error('Missing natural head '+p.id);
+    const [width,center,eye]=headFits[p.id],a=headAnchors[p.id],cx=(a[1]+a[2])/2+bodyOffset;
+    const mask=scope+'-neck-blend',fade=scope+'-neck-fade';
+    // Blend only the short painted neck into the retained body. No mask cuts
+    // into the face or hair, and no recoloring filter touches the new portrait.
+    return `<g data-studio-part="head/${p.id}" data-wear-layer="natural-head"><defs><linearGradient id="${fade}" x1="0" y1="0" x2="0" y2="1"><stop stop-color="white"/><stop offset=".4" stop-color="black"/></linearGradient><mask id="${mask}" maskUnits="userSpaceOnUse" x="0" y="-30" width="420" height="710"><rect x="0" y="-30" width="420" height="710" fill="white"/><rect x="${cx-22}" y="106" width="44" height="40" fill="url(#${fade})"/></mask></defs><image href="${escape(src)}" x="${cx-width*center}" y="${65-width*eye}" width="${width}" height="${width}" preserveAspectRatio="xMidYMid meet" mask="url(#${mask})"/></g>`;
+  }
   function hair(p,color,scope,embedded,front=false,bodyOffset=identities[p.id].dx){
     const fit=hairPlacement(p,bodyOffset),asset=scope+'-source',tid=scope+'-tone';
     if(p.hair==='bob')return `<g data-studio-part="hair/bob" data-hair-fit="compact-bob-v39" data-contact-shading="${front}" data-wear-layer="${front?'hair-front':'hair-back'}" filter="url(#${tid})"><defs>${tone(tid,color,'hair-bob',front)}</defs><image href="${escape(href('hair','bob',embedded))}" x="${fit.x}" y="${fit.y}" width="${fit.width}" height="${fit.height}" preserveAspectRatio="xMidYMid meet"/></g>`;
@@ -260,13 +280,13 @@ globalThis.PrincessStudio=(()=>{
       <ellipse cx="210" cy="603" rx="97" ry="21" fill="url(#${scope}-shade)"/>
       <g data-body-identity="${p.id}" transform="translate(210 ${604-580*identity.sy}) scale(${identity.sx} ${identity.sy}) translate(-210 0)">
       ${part('back')}${crown(false)}
-      ${hair(p,st.hairColor,scope+'-hair-back',embedded)}
+      ${naturalHeads?'':hair(p,st.hairColor,scope+'-hair-back',embedded)}
       ${neck(false)}${fittedShoes(st,p,scope,embedded,false)}
       <g data-studio-part="body/${p.id}" transform="translate(${identity.dx} 0)">${body(p,bodyHref,scope,tail,st.dress?.color,tail?null:st.shoes?.id,!!st.hand,st.dress?.id==='adventure',st.dress?href('dress',st.dress.id,embedded):null)}</g>
       ${st.dress?.id==='adventure'?'':fittedShoes(st,p,scope,embedded,true)}
       ${part('dress')}${st.dress?.id==='adventure'?fittedShoes(st,p,scope,embedded,true):''}${frontArms(st,p,scope)}
-      ${neck(true)}
-      ${hair(p,st.hairColor,scope+'-hair-front',embedded,true)}
+      ${naturalHeads?naturalHead(p,scope,embedded):''}${neck(true)}
+      ${naturalHeads?'':hair(p,st.hairColor,scope+'-hair-front',embedded,true)}
       ${crown(true)}${heldProp(st,p,scope,embedded)}
       </g><g transform="translate(0 24)">${part('pet')}</g></g>
     </svg>`;
@@ -278,7 +298,7 @@ globalThis.PrincessStudio=(()=>{
   function portrait(p,color,embedded,bodyHref='assets/fashion-doll-base-v1.png'){
     const scope='portrait-'+p.id;
     bodyHref=href('body',p.id,embedded);
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="125 -24 170 208" preserveAspectRatio="xMidYMid meet" data-art-version="studio-v3">${hair(p,color,scope+'-back',embedded,false,0)}${body(p,bodyHref,scope,false)}${hair(p,color,scope+'-front',embedded,true,0)}</svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="125 -24 170 208" preserveAspectRatio="xMidYMid meet" data-art-version="${naturalHeads?'natural-head-v43':'studio-v3'}">${naturalHeads?'':hair(p,color,scope+'-back',embedded,false,0)}${body(p,bodyHref,scope,false)}${naturalHeads?naturalHead(p,scope,embedded,0):hair(p,color,scope+'-front',embedded,true,0)}</svg>`;
   }
   function loadFile(k){
     if(cache.has(k))return Promise.resolve(cache.get(k));
@@ -297,5 +317,5 @@ globalThis.PrincessStudio=(()=>{
     const values=await Promise.all(keys.map(loadFile));
     return Object.fromEntries(keys.map((k,i)=>[k,values[i]]));
   }
-  return {render,thumb,portrait,background,exportAssets,fileKeys,path,rects,identities,headAnchors,hairAnchors,hairSilhouettes,hairPlacement,accessoryPlacement};
+  return {render,thumb,portrait,background,exportAssets,fileKeys,path,rects,identities,headAnchors,hairAnchors,hairSilhouettes,hairPlacement,accessoryPlacement,naturalHeads,headFits};
 })();

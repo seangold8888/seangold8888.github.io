@@ -233,7 +233,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 </div>
 <div id="toast"></div>
 
-<script src="studio.js?v=42"></script>
+<script src="studio.js?v=43"></script>
 <script src="icons.js?v=1"></script>
 <script src="outings.js?v=1"></script>
 <script>
@@ -1329,9 +1329,11 @@ function renderPanel(){
   const items=document.getElementById('items'), sw=document.getElementById('swatches'), intro=document.getElementById('intro');
   const p=princess();
   if(tab==='princess'){
+    // Natural-head preview leaves legacy hair/color saves untouched.
     intro.textContent=`${p.name} — ${p.intro}`;
     sw.innerHTML=`<span class="lbl">머리 색</span>`+HAIR_PALETTE.map(c=>`<button class="sw ${c===state.hairColor?'on':''}" style="background:${c}" data-c="${c}" aria-label="머리색"></button>`).join('');
     sw.querySelectorAll('.sw').forEach(b=>b.addEventListener('click',()=>{state.hairColor=b.dataset.c;persist();click();renderStage();rerenderPanelKeepingPosition();}));
+    if(PrincessStudio.naturalHeads)sw.innerHTML='<span class="lbl">새 얼굴 · 자연스러운 고유 머리 미리보기</span>';
     items.innerHTML=PRINCESSES.map(q=>`<button class="item pr ${q.id===cur?'on':''}" data-id="${q.id}">${princessThumb(q,outfits[q.id]?.hairColor||q.hairColor,outfits[q.id]?.hairStyle||q.hair)}<span class="nm">${q.name}</span></button>`).join('');
     items.querySelectorAll('.item').forEach(b=>b.addEventListener('click',()=>{loadPrincess(b.dataset.id);tada();renderStage();renderPanel();popStage();}));
     return;
@@ -1339,6 +1341,11 @@ function renderPanel(){
   intro.textContent='';
   const cat=CATS.find(c=>c.key===tab);
   if(tab==='hair'){
+    if(PrincessStudio.naturalHeads){
+      intro.textContent='새 얼굴과 머리를 함께 그렸어요. 왕관·리본·옷은 그대로 꾸밀 수 있어요.';
+      sw.innerHTML='';items.innerHTML='<p>이 미리보기에서는 공주마다 고유한 머리를 사용해요. 기존 머리 모양과 색 저장은 그대로 보관돼요. <a href="?v=43">기존 머리 꾸미기로 돌아가기</a></p>';
+      return;
+    }
     intro.textContent='머리 모양과 색을 골라 보세요. 공주마다 따로 저장돼요.';
     sw.innerHTML=`<span class="lbl">머리 색</span>`+HAIR_PALETTE.map(c=>`<button class="sw ${c===state.hairColor?'on':''}" style="background:${c}" data-c="${c}" aria-label="머리색"></button>`).join('');
     sw.querySelectorAll('.sw').forEach(b=>b.addEventListener('click',()=>{state.hairColor=b.dataset.c;persist();click();renderStage();rerenderPanelKeepingPosition();}));
@@ -1386,7 +1393,7 @@ function randomize(){
   }
   if(state.dress&&itemOf('dress',state.dress.id).tail) state.shoes=null;
   state.bg=rnd(BGS).id;
-  state.hairStyle=rnd(HAIR_STYLES).id;
+  if(!PrincessStudio.naturalHeads)state.hairStyle=rnd(HAIR_STYLES).id;
   persist();tada();renderStage();renderPanel();popStage();
   sparkleAt(document.getElementById('stage'));
 }

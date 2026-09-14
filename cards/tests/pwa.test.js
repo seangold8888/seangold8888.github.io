@@ -114,19 +114,25 @@ test("all story episode mp3 files match the service worker fallback list", () =>
   }
 });
 
-test("cache generation v113 preserves exact v63 card assets and canonical navigation aliases", () => {
-  assert.equal(sw.CACHE_VERSION, "v113");
-  assert.match(sw.STATIC_CACHE, /^adventure-box-v113-/);
+test("cache generation v114 preserves exact v63 card assets and canonical navigation aliases", () => {
+  assert.equal(sw.CACHE_VERSION, "v114");
+  assert.match(sw.STATIC_CACHE, /^adventure-box-v114-/);
   const studioImages = fs.readdirSync(path.join(siteRoot, "princess/assets/studio-v3")).filter(name => /\.(webp|jpg)$/.test(name));
   assert.equal(studioImages.length, 95);
   for (const name of studioImages) assert.ok(sw.OPTIONAL_SHELL.includes("./princess/assets/studio-v3/" + name), name);
-  assert.ok(sw.OPTIONAL_SHELL.includes("./princess/studio.js?v=42"));
+  assert.ok(sw.OPTIONAL_SHELL.includes("./princess/studio.js?v=43"));
   for(const id of ["frost","sahara","lotus","sunny"])for(const part of ["body","grip"]){
     const asset="./princess/assets/characters-v36/"+part+"-"+id+".webp";
     assert.ok(sw.OPTIONAL_SHELL.includes(asset));
     assert.ok(fs.existsSync(path.join(siteRoot,asset)));
   }
   assert.ok(sw.OPTIONAL_SHELL.includes("./princess/assets/hair-v35/hair-bob.webp"));
+  for (const id of "snow cinder rapunzel mermaid thumb kongjwi briar moon frost sahara lotus sunny".split(" ")) {
+    const asset="./princess/assets/heads-v43/"+id+".webp";
+    assert.ok(sw.OPTIONAL_SHELL.includes(asset));
+    assert.ok(fs.existsSync(path.join(siteRoot,asset)));
+    assert.equal(sw.OPTIONAL_SHELL.filter(item=>item===asset).length,1);
+  }
   for (const id of "snow cinder rapunzel mermaid thumb kongjwi briar moon".split(" ")) {
     assert.ok(sw.OPTIONAL_SHELL.includes("./princess/assets/wear-v5/grip-" + id + ".webp"));
     assert.ok(sw.OPTIONAL_SHELL.includes("./princess/assets/bodies-v4/body-" + id + ".webp"));
