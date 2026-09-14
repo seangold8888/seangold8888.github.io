@@ -1,0 +1,122 @@
+{
+  "status": "blocked-pending-API-authorization",
+  "mode": "built-in",
+  "reason": "Local-reference loading failed due Windows sandbox preparation. Inline-reference editing returned opaque RGB checkerboard backgrounds on three attempts; rejected, not installed.",
+  "planned": [
+    {
+      "id": "snow",
+      "style": "half",
+      "prompt": "Use case: identity-preserve. Image 1 is the EDIT TARGET: the exact fictional princess identity. Create ONE hairstyle variant of this same woman for a dress-up game. Change ONLY the hair. Preserve face, eye and chin coordinates, facial shape, expression, original hair color, skin tone, lighting, neck, pose, head size and square canvas. Professional salon half-up styling: sweep temple sections back into a low small twist, remaining hair in soft natural waves. For short hair use a half-up bob; for coily hair keep natural coils in a half-up puff. Believable roots and fine baby hairs, restrained volume, ears and eyes visible, no wig edge. Keep face size and position exactly unchanged; do not shrink head for the hair. Transparent background with actual PNG alpha, not a painted checkerboard. Only head, hair and existing short neck. No shoulders, clothes, jewelry, symbols or text."
+    },
+    {
+      "id": "snow",
+      "style": "braid",
+      "prompt": "Use case: identity-preserve. Image 1 is the EDIT TARGET: the exact fictional princess identity. Create ONE hairstyle variant of this same woman for a dress-up game. Change ONLY the hair. Preserve face, eye and chin coordinates, facial shape, expression, original hair color, skin tone, lighting, neck, pose, head size and square canvas. Professional salon side braid: hair swept cleanly away from both cheeks, one neat braid beside the neck on viewer right. For coily hair use a natural textured braided style. Believable roots and fine baby hairs, restrained volume, ears and eyes visible, no wig edge. Keep face size and position exactly unchanged; do not shrink head for the hair. Transparent background with actual PNG alpha, not a painted checkerboard. Only head, hair and existing short neck. No shoulders, clothes, jewelry, symbols or text."
+    },
+    {
+      "id": "cinder",
+      "style": "half",
+      "prompt": "Use case: identity-preserve. Image 1 is the EDIT TARGET: the exact fictional princess identity. Create ONE hairstyle variant of this same woman for a dress-up game. Change ONLY the hair. Preserve face, eye and chin coordinates, facial shape, expression, original hair color, skin tone, lighting, neck, pose, head size and square canvas. Professional salon half-up styling: sweep temple sections back into a low small twist, remaining hair in soft natural waves. For short hair use a half-up bob; for coily hair keep natural coils in a half-up puff. Believable roots and fine baby hairs, restrained volume, ears and eyes visible, no wig edge. Keep face size and position exactly unchanged; do not shrink head for the hair. Transparent background with actual PNG alpha, not a painted checkerboard. Only head, hair and existing short neck. No shoulders, clothes, jewelry, symbols or text."
+    },
+    {
+      "id": "cinder",
+      "style": "braid",
+      "prompt": "Use case: identity-preserve. Image 1 is the EDIT TARGET: the exact fictional princess identity. Create ONE hairstyle variant of this same woman for a dress-up game. Change ONLY the hair. Preserve face, eye and chin coordinates, facial shape, expression, original hair color, skin tone, lighting, neck, pose, head size and square canvas. Professional salon side braid: hair swept cleanly away from both cheeks, one neat braid beside the neck on viewer right. For coily hair use a natural textured braided style. Believable roots and fine baby hairs, restrained volume, ears and eyes visible, no wig edge. Keep face size and position exactly unchanged; do not shrink head for the hair. Transparent background with actual PNG alpha, not a painted checkerboard. Only head, hair and existing short neck. No shoulders, clothes, jewelry, symbols or text."
+    },
+    {
+      "id": "rapunzel",
+      "style": "half",
+      "prompt": "Use case: identity-preserve. Image 1 is the EDIT TARGET: the exact fictional princess identity. Create ONE hairstyle variant of this same woman for a dress-up game. Change ONLY the hair. Preserve face, eye and chin coordinates, facial shape, expression, original hair color, skin tone, lighting, neck, pose, head size and square canvas. Professional salon half-up styling: sweep temple sections back into a low small twist, remaining hair in soft natural waves. For short hair use a half-up bob; for coily hair keep natural coils in a half-up puff. Believable roots and fine baby hairs, restrained volume, ears and eyes visible, no wig edge. Keep face size and position exactly unchanged; do not shrink head for the hair. Transparent background with actual PNG alpha, not a painted checkerboard. Only head, hair and existing short neck. No shoulders, clothes, jewelry, symbols or text."
+    },
+    {
+      "id": "rapunzel",
+      "style": "braid",
+      "prompt": "Use case: identity-preserve. Image 1 is the EDIT TARGET: the exact fictional princess identity. Create ONE hairstyle variant of this same woman for a dress-up game. Change ONLY the hair. Preserve face, eye and chin coordinates, facial shape, expression, original hair color, skin tone, lighting, neck, pose, head size and square canvas. Professional salon side braid: hair swept cleanly away from both cheeks, one neat braid beside the neck on viewer right. For coily hair use a natural textured braided style. Believable roots and fine baby hairs, restrained volume, ears and eyes visible, no wig edge. Keep face size and position exactly unchanged; do not shrink head for the hair. Transparent background with actual PNG alpha, not a painted checkerboard. Only head, hair and existing short neck. No shoulders, clothes, jewelry, symbols or text."
+    },
+    {
+      "id": "thumb",
+      "style": "half",
+      "prompt": "Use case: identity-preserve. Image 1 is the EDIT TARGET: the exact fictional princess identity. Create ONE hairstyle variant of this same woman for a dress-up game. Change ONLY the hair. Preserve face, eye and chin coordinates, facial shape, expression, original hair color, skin tone, lighting, neck, pose, head size and square canvas. Professional salon half-up styling: sweep temple sections back into a low small twist, remaining hair in soft natural waves. For short hair use a half-up bob; for coily hair keep natural coils in a half-up puff. Believable roots and fine baby hairs, restrained volume, ears and eyes visible, no wig edge. Keep face size and position exactly unchanged; do not shrink head for the hair. Transparent background with actual PNG alpha, not a painted checkerboard. Only head, hair and existing short neck. No shoulders, clothes, jewelry, symbols or text."
+    },
+    {
+      "id": "thumb",
+      "style": "braid",
+      "prompt": "Use case: identity-preserve. Image 1 is the EDIT TARGET: the exact fictional princess identity. Create ONE hairstyle variant of this same woman for a dress-up game. Change ONLY the hair. Preserve face, eye and chin coordinates, facial shape, expression, original hair color, skin tone, lighting, neck, pose, head size and square canvas. Professional salon side braid: hair swept cleanly away from both cheeks, one neat braid beside the neck on viewer right. For coily hair use a natural textured braided style. Believable roots and fine baby hairs, restrained volume, ears and eyes visible, no wig edge. Keep face size and position exactly unchanged; do not shrink head for the hair. Transparent background with actual PNG alpha, not a painted checkerboard. Only head, hair and existing short neck. No shoulders, clothes, jewelry, symbols or text."
+    },
+    {
+      "id": "kongjwi",
+      "style": "half",
+      "prompt": "Use case: identity-preserve. Image 1 is the EDIT TARGET: the exact fictional princess identity. Create ONE hairstyle variant of this same woman for a dress-up game. Change ONLY the hair. Preserve face, eye and chin coordinates, facial shape, expression, original hair color, skin tone, lighting, neck, pose, head size and square canvas. Professional salon half-up styling: sweep temple sections back into a low small twist, remaining hair in soft natural waves. For short hair use a half-up bob; for coily hair keep natural coils in a half-up puff. Believable roots and fine baby hairs, restrained volume, ears and eyes visible, no wig edge. Keep face size and position exactly unchanged; do not shrink head for the hair. Transparent background with actual PNG alpha, not a painted checkerboard. Only head, hair and existing short neck. No shoulders, clothes, jewelry, symbols or text."
+    },
+    {
+      "id": "kongjwi",
+      "style": "braid",
+      "prompt": "Use case: identity-preserve. Image 1 is the EDIT TARGET: the exact fictional princess identity. Create ONE hairstyle variant of this same woman for a dress-up game. Change ONLY the hair. Preserve face, eye and chin coordinates, facial shape, expression, original hair color, skin tone, lighting, neck, pose, head size and square canvas. Professional salon side braid: hair swept cleanly away from both cheeks, one neat braid beside the neck on viewer right. For coily hair use a natural textured braided style. Believable roots and fine baby hairs, restrained volume, ears and eyes visible, no wig edge. Keep face size and position exactly unchanged; do not shrink head for the hair. Transparent background with actual PNG alpha, not a painted checkerboard. Only head, hair and existing short neck. No shoulders, clothes, jewelry, symbols or text."
+    },
+    {
+      "id": "briar",
+      "style": "half",
+      "prompt": "Use case: identity-preserve. Image 1 is the EDIT TARGET: the exact fictional princess identity. Create ONE hairstyle variant of this same woman for a dress-up game. Change ONLY the hair. Preserve face, eye and chin coordinates, facial shape, expression, original hair color, skin tone, lighting, neck, pose, head size and square canvas. Professional salon half-up styling: sweep temple sections back into a low small twist, remaining hair in soft natural waves. For short hair use a half-up bob; for coily hair keep natural coils in a half-up puff. Believable roots and fine baby hairs, restrained volume, ears and eyes visible, no wig edge. Keep face size and position exactly unchanged; do not shrink head for the hair. Transparent background with actual PNG alpha, not a painted checkerboard. Only head, hair and existing short neck. No shoulders, clothes, jewelry, symbols or text."
+    },
+    {
+      "id": "briar",
+      "style": "braid",
+      "prompt": "Use case: identity-preserve. Image 1 is the EDIT TARGET: the exact fictional princess identity. Create ONE hairstyle variant of this same woman for a dress-up game. Change ONLY the hair. Preserve face, eye and chin coordinates, facial shape, expression, original hair color, skin tone, lighting, neck, pose, head size and square canvas. Professional salon side braid: hair swept cleanly away from both cheeks, one neat braid beside the neck on viewer right. For coily hair use a natural textured braided style. Believable roots and fine baby hairs, restrained volume, ears and eyes visible, no wig edge. Keep face size and position exactly unchanged; do not shrink head for the hair. Transparent background with actual PNG alpha, not a painted checkerboard. Only head, hair and existing short neck. No shoulders, clothes, jewelry, symbols or text."
+    },
+    {
+      "id": "moon",
+      "style": "half",
+      "prompt": "Use case: identity-preserve. Image 1 is the EDIT TARGET: the exact fictional princess identity. Create ONE hairstyle variant of this same woman for a dress-up game. Change ONLY the hair. Preserve face, eye and chin coordinates, facial shape, expression, original hair color, skin tone, lighting, neck, pose, head size and square canvas. Professional salon half-up styling: sweep temple sections back into a low small twist, remaining hair in soft natural waves. For short hair use a half-up bob; for coily hair keep natural coils in a half-up puff. Believable roots and fine baby hairs, restrained volume, ears and eyes visible, no wig edge. Keep face size and position exactly unchanged; do not shrink head for the hair. Transparent background with actual PNG alpha, not a painted checkerboard. Only head, hair and existing short neck. No shoulders, clothes, jewelry, symbols or text."
+    },
+    {
+      "id": "moon",
+      "style": "braid",
+      "prompt": "Use case: identity-preserve. Image 1 is the EDIT TARGET: the exact fictional princess identity. Create ONE hairstyle variant of this same woman for a dress-up game. Change ONLY the hair. Preserve face, eye and chin coordinates, facial shape, expression, original hair color, skin tone, lighting, neck, pose, head size and square canvas. Professional salon side braid: hair swept cleanly away from both cheeks, one neat braid beside the neck on viewer right. For coily hair use a natural textured braided style. Believable roots and fine baby hairs, restrained volume, ears and eyes visible, no wig edge. Keep face size and position exactly unchanged; do not shrink head for the hair. Transparent background with actual PNG alpha, not a painted checkerboard. Only head, hair and existing short neck. No shoulders, clothes, jewelry, symbols or text."
+    },
+    {
+      "id": "frost",
+      "style": "half",
+      "prompt": "Use case: identity-preserve. Image 1 is the EDIT TARGET: the exact fictional princess identity. Create ONE hairstyle variant of this same woman for a dress-up game. Change ONLY the hair. Preserve face, eye and chin coordinates, facial shape, expression, original hair color, skin tone, lighting, neck, pose, head size and square canvas. Professional salon half-up styling: sweep temple sections back into a low small twist, remaining hair in soft natural waves. For short hair use a half-up bob; for coily hair keep natural coils in a half-up puff. Believable roots and fine baby hairs, restrained volume, ears and eyes visible, no wig edge. Keep face size and position exactly unchanged; do not shrink head for the hair. Transparent background with actual PNG alpha, not a painted checkerboard. Only head, hair and existing short neck. No shoulders, clothes, jewelry, symbols or text."
+    },
+    {
+      "id": "frost",
+      "style": "braid",
+      "prompt": "Use case: identity-preserve. Image 1 is the EDIT TARGET: the exact fictional princess identity. Create ONE hairstyle variant of this same woman for a dress-up game. Change ONLY the hair. Preserve face, eye and chin coordinates, facial shape, expression, original hair color, skin tone, lighting, neck, pose, head size and square canvas. Professional salon side braid: hair swept cleanly away from both cheeks, one neat braid beside the neck on viewer right. For coily hair use a natural textured braided style. Believable roots and fine baby hairs, restrained volume, ears and eyes visible, no wig edge. Keep face size and position exactly unchanged; do not shrink head for the hair. Transparent background with actual PNG alpha, not a painted checkerboard. Only head, hair and existing short neck. No shoulders, clothes, jewelry, symbols or text."
+    },
+    {
+      "id": "sahara",
+      "style": "half",
+      "prompt": "Use case: identity-preserve. Image 1 is the EDIT TARGET: the exact fictional princess identity. Create ONE hairstyle variant of this same woman for a dress-up game. Change ONLY the hair. Preserve face, eye and chin coordinates, facial shape, expression, original hair color, skin tone, lighting, neck, pose, head size and square canvas. Professional salon half-up styling: sweep temple sections back into a low small twist, remaining hair in soft natural waves. For short hair use a half-up bob; for coily hair keep natural coils in a half-up puff. Believable roots and fine baby hairs, restrained volume, ears and eyes visible, no wig edge. Keep face size and position exactly unchanged; do not shrink head for the hair. Transparent background with actual PNG alpha, not a painted checkerboard. Only head, hair and existing short neck. No shoulders, clothes, jewelry, symbols or text."
+    },
+    {
+      "id": "sahara",
+      "style": "braid",
+      "prompt": "Use case: identity-preserve. Image 1 is the EDIT TARGET: the exact fictional princess identity. Create ONE hairstyle variant of this same woman for a dress-up game. Change ONLY the hair. Preserve face, eye and chin coordinates, facial shape, expression, original hair color, skin tone, lighting, neck, pose, head size and square canvas. Professional salon side braid: hair swept cleanly away from both cheeks, one neat braid beside the neck on viewer right. For coily hair use a natural textured braided style. Believable roots and fine baby hairs, restrained volume, ears and eyes visible, no wig edge. Keep face size and position exactly unchanged; do not shrink head for the hair. Transparent background with actual PNG alpha, not a painted checkerboard. Only head, hair and existing short neck. No shoulders, clothes, jewelry, symbols or text."
+    },
+    {
+      "id": "lotus",
+      "style": "half",
+      "prompt": "Use case: identity-preserve. Image 1 is the EDIT TARGET: the exact fictional princess identity. Create ONE hairstyle variant of this same woman for a dress-up game. Change ONLY the hair. Preserve face, eye and chin coordinates, facial shape, expression, original hair color, skin tone, lighting, neck, pose, head size and square canvas. Professional salon half-up styling: sweep temple sections back into a low small twist, remaining hair in soft natural waves. For short hair use a half-up bob; for coily hair keep natural coils in a half-up puff. Believable roots and fine baby hairs, restrained volume, ears and eyes visible, no wig edge. Keep face size and position exactly unchanged; do not shrink head for the hair. Transparent background with actual PNG alpha, not a painted checkerboard. Only head, hair and existing short neck. No shoulders, clothes, jewelry, symbols or text."
+    },
+    {
+      "id": "lotus",
+      "style": "braid",
+      "prompt": "Use case: identity-preserve. Image 1 is the EDIT TARGET: the exact fictional princess identity. Create ONE hairstyle variant of this same woman for a dress-up game. Change ONLY the hair. Preserve face, eye and chin coordinates, facial shape, expression, original hair color, skin tone, lighting, neck, pose, head size and square canvas. Professional salon side braid: hair swept cleanly away from both cheeks, one neat braid beside the neck on viewer right. For coily hair use a natural textured braided style. Believable roots and fine baby hairs, restrained volume, ears and eyes visible, no wig edge. Keep face size and position exactly unchanged; do not shrink head for the hair. Transparent background with actual PNG alpha, not a painted checkerboard. Only head, hair and existing short neck. No shoulders, clothes, jewelry, symbols or text."
+    },
+    {
+      "id": "sunny",
+      "style": "half",
+      "prompt": "Use case: identity-preserve. Image 1 is the EDIT TARGET: the exact fictional princess identity. Create ONE hairstyle variant of this same woman for a dress-up game. Change ONLY the hair. Preserve face, eye and chin coordinates, facial shape, expression, original hair color, skin tone, lighting, neck, pose, head size and square canvas. Professional salon half-up styling: sweep temple sections back into a low small twist, remaining hair in soft natural waves. For short hair use a half-up bob; for coily hair keep natural coils in a half-up puff. Believable roots and fine baby hairs, restrained volume, ears and eyes visible, no wig edge. Keep face size and position exactly unchanged; do not shrink head for the hair. Transparent background with actual PNG alpha, not a painted checkerboard. Only head, hair and existing short neck. No shoulders, clothes, jewelry, symbols or text."
+    },
+    {
+      "id": "sunny",
+      "style": "braid",
+      "prompt": "Use case: identity-preserve. Image 1 is the EDIT TARGET: the exact fictional princess identity. Create ONE hairstyle variant of this same woman for a dress-up game. Change ONLY the hair. Preserve face, eye and chin coordinates, facial shape, expression, original hair color, skin tone, lighting, neck, pose, head size and square canvas. Professional salon side braid: hair swept cleanly away from both cheeks, one neat braid beside the neck on viewer right. For coily hair use a natural textured braided style. Believable roots and fine baby hairs, restrained volume, ears and eyes visible, no wig edge. Keep face size and position exactly unchanged; do not shrink head for the hair. Transparent background with actual PNG alpha, not a painted checkerboard. Only head, hair and existing short neck. No shoulders, clothes, jewelry, symbols or text."
+    }
+  ],
+  "attempts": [
+    "C:/Users/김시현/.codex/generated_images/01a05219-86c8-7d13-86e3-0697aed74889/exec-12ec38bc-147e-4091-8661-9a655181066a.png",
+    "C:/Users/김시현/.codex/generated_images/01a05219-86c8-7d13-86e3-0697aed74889/exec-10f6e850-55a0-4519-a15e-a1f7f52b160f.png",
+    "C:/Users/김시현/.codex/generated_images/01a05219-86c8-7d13-86e3-0697aed74889/exec-2b1ff968-93f9-487e-91a3-309dfeca088c.png"
+  ]
+}

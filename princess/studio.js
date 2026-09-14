@@ -227,11 +227,11 @@ globalThis.PrincessStudio=(()=>{
   function naturalHead(p,scope,embedded,bodyOffset=identities[p.id].dx){
     const id=headId(p),src=href('head',id,embedded);
     if(!src)throw new Error('Missing natural head '+p.id);
-    const [width,center,eye]=headFits[id],a=headAnchors[p.id],cx=(a[1]+a[2])/2+bodyOffset;
+    const [originalWidth,center,eye]=headFits[id],width=originalWidth*(fullWardrobe ? .90 : 1),a=headAnchors[p.id],cx=(a[1]+a[2])/2+bodyOffset;
     const mask=scope+'-neck-blend',fade=scope+'-neck-fade';
     // Blend only the short painted neck into the retained body. No mask cuts
     // into the face or hair, and no recoloring filter touches the new portrait.
-    return `<g data-studio-part="head/${p.id}" data-wear-layer="natural-head"><defs><linearGradient id="${fade}" x1="0" y1="0" x2="0" y2="1"><stop stop-color="white"/><stop offset=".4" stop-color="black"/></linearGradient><mask id="${mask}" maskUnits="userSpaceOnUse" x="0" y="-30" width="420" height="710"><rect x="0" y="-30" width="420" height="710" fill="white"/><rect x="${cx-22}" y="106" width="44" height="40" fill="url(#${fade})"/></mask></defs><image href="${escape(src)}" x="${cx-width*center}" y="${65-width*eye}" width="${width}" height="${width}" preserveAspectRatio="xMidYMid meet" mask="url(#${mask})"/></g>`;
+    return `<g data-studio-part="head/${p.id}" data-wear-layer="natural-head"><defs><linearGradient id="${fade}" gradientUnits="userSpaceOnUse" x1="0" y1="${fullWardrobe?100:106}" x2="0" y2="${fullWardrobe?110:122}"><stop stop-color="white"/><stop offset="1" stop-color="black"/></linearGradient><mask id="${mask}" maskUnits="userSpaceOnUse" x="0" y="-30" width="420" height="710"><rect x="0" y="-30" width="420" height="710" fill="white"/><rect x="${cx-27}" y="${fullWardrobe?100:106}" width="54" height="50" fill="url(#${fade})"/></mask></defs><image href="${escape(src)}" x="${cx-width*center}" y="${65-width*eye}" width="${width}" height="${width}" preserveAspectRatio="xMidYMid meet" mask="url(#${mask})"/></g>`;
   }
   function hair(p,color,scope,embedded,front=false,bodyOffset=identities[p.id].dx){
     const fit=hairPlacement(p,bodyOffset),asset=scope+'-source',tid=scope+'-tone';
@@ -295,7 +295,7 @@ globalThis.PrincessStudio=(()=>{
       return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 680" width="420" height="680" role="img" aria-label="${escape(p.name)} 실제 착용 코디" data-art-version="wardrobe-v45">
         <defs><filter id="${scope}-skin-contact" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy=".5" stdDeviation=".4" flood-opacity=".15"/></filter></defs>
         ${background(st.bg,embedded)}<g data-photo-safe="true" transform="translate(0 24) scale(1 .96)">
-        <g data-body-identity="${p.id}" transform="translate(210 ${604-580*identity.sy}) scale(${identity.sx} ${identity.sy}) translate(-210 0)">
+        <g data-body-identity="${p.id}" data-proportions="unified-v46" transform="translate(0 24)">
         ${part('back')}${bodyArt}${shoeLayer}${naturalHead(p,scope,embedded)}${neck(false)}${neck(true)}${crown(true)}${prop}
         </g><g transform="translate(0 24)">${part('pet')}</g></g></svg>`;
     }

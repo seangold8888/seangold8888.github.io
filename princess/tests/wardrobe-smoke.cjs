@@ -28,7 +28,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
  const pixels=await page.evaluate(async()=>{
  const p=PRINCESSES.find(p=>p.id==='moon'),w=PrincessWardrobe,base={...defaultState(p),hand:null,crown:null,neck:null,pet:null,back:null};
  const g=w.geometry('party',p,PrincessStudio.identities,PrincessStudio.headAnchors),identity=PrincessStudio.identities[p.id];
- const point=(x,y)=>[Math.round(210+(g.x+x*g.scale-210)*identity.sx),Math.round(24+.96*(604-580*identity.sy+(g.y+y*g.scale)*identity.sy))];
+ const point=(x,y)=>[Math.round(g.x+x*g.scale),Math.round(24+.96*(24+g.y+y*g.scale))];
  const coords=[point(335,330),point(740,520),point(512,450)],samples=[];
  for(const color of ['#ff0000','#0000ff']){
  const svg=await buildExportSvg({...base,dress:{id:'party',color}},p),url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'}));
@@ -54,4 +54,3 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
  }console.log('SCREENSHOTS',out);
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
-

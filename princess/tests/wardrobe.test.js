@@ -45,3 +45,17 @@ test('scoped review/export SVGs also update local use href references',()=>{
  const a=e.qa.scopeSvgIds(svg,'one'),b=e.qa.scopeSvgIds(svg,'two');check(a);check(b);
  const ids=[...(a+b).matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);assert.equal(ids.length,new Set(ids).size);
 });
+
+test('natural wardrobe uses common body proportions and calibrated neck materials',()=>{
+ const e=env();
+ for(const p of e.qa.PRINCESSES){
+  const svg=e.PrincessStudio.render({...e.qa.defaultState(p),dress:{id:'tail',color:'#ff80aa'}},p);
+  assert(svg.includes('data-proportions="unified-v46" transform="translate(0 24)"'));
+  assert(svg.includes('gradientUnits="userSpaceOnUse" x1="0" y1="100" x2="0" y2="110"'));
+  const skinFilter=svg.match(/<filter id="[^"]*-worn-tone"[\s\S]*?<\/filter>/)[0];
+  assert(!skinFilter.includes('type="saturate"'));assert(skinFilter.includes('type="linear" slope='));
+  const head=svg.slice(svg.indexOf('data-wear-layer="natural-head"'));
+  const width=Number(head.match(/<image[^>]* width="([\d.]+)"/)[1]);
+  assert(Math.abs(width-e.PrincessStudio.headFits[p.id][0]*.9)<.001);
+ }
+});
