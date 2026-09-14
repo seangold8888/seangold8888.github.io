@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v114";
+const CACHE_VERSION = "v115";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -233,12 +233,13 @@ const OPTIONAL_SHELL = [
   "./princess/",
   "./princess/cover.svg",
   "./princess/cover.jpg?v=31",
-  "./princess/studio.js?v=43",
+  "./princess/studio.js?v=44",
   "./princess/icons.js?v=1",
   "./princess/outings.js?v=1",
   "./princess/outings.css?v=1",
   ..."frost sahara lotus sunny".split(" ").flatMap(id => ["body","grip"].map(part => `./princess/assets/characters-v36/${part}-${id}.webp`)),
   "./princess/assets/hair-v35/hair-bob.webp",
+  ..."half braid tail-body".split(" ").map(id => `./princess/assets/salon-v44/mermaid-${id}.webp`),
   ..."snow cinder rapunzel mermaid thumb kongjwi briar moon frost sahara lotus sunny".split(" ").map(id => `./princess/assets/heads-v43/${id}.webp`),
   ..."snow cinder rapunzel mermaid thumb kongjwi briar moon".split(" ").map(id => `./princess/assets/wear-v5/grip-${id}.webp`),
   ...PRINCESS_STUDIO_ASSETS,

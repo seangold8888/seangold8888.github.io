@@ -233,7 +233,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 </div>
 <div id="toast"></div>
 
-<script src="studio.js?v=43"></script>
+<script src="studio.js?v=44"></script>
 <script src="icons.js?v=1"></script>
 <script src="outings.js?v=1"></script>
 <script>
@@ -1306,7 +1306,7 @@ function thumbSVG(key,item,color){
   return PrincessStudio.thumb(key,item,color);
 }
 function princessThumb(p,hairColor,hairStyle=p.hair){
-  return PrincessStudio.portrait({...p,hair:HAIR_STYLES.some(h=>h.id===hairStyle)?hairStyle:p.hair},hairColor);
+  return PrincessStudio.portrait({...p,hair:HAIR_STYLES.some(h=>h.id===hairStyle)?hairStyle:p.hair,salonStyle:outfits[p.id]?.salonStyle},hairColor);
 }
 
 function renderTabs(){
@@ -1341,8 +1341,16 @@ function renderPanel(){
   intro.textContent='';
   const cat=CATS.find(c=>c.key===tab);
   if(tab==='hair'){
+    if(PrincessStudio.naturalHeads&&p.id==='mermaid'){
+      intro.textContent='인어공주 미용실 — 같은 얼굴로 머리 모양을 바꿔 보세요.';
+      sw.innerHTML='<span class="lbl">바다빛 머리 · 스타일 3종</span>';
+      const selected=PrincessStudio.salonStyle(state);
+      items.innerHTML=PrincessStudio.salonStyles.map(s=>`<button class="item ${s.id===selected?'on':''}" data-salon="${s.id}" aria-pressed="${s.id===selected}">${PrincessStudio.portrait({...p,salonStyle:s.id,salonScope:true},p.hairColor)}<span class="nm">${s.name}</span></button>`).join('');
+      items.querySelectorAll('[data-salon]').forEach(b=>b.addEventListener('click',()=>{state.salonStyle=b.dataset.salon;persist();click();renderStage();rerenderPanelKeepingPosition();}));
+      return;
+    }
     if(PrincessStudio.naturalHeads){
-      intro.textContent='새 얼굴과 머리를 함께 그렸어요. 왕관·리본·옷은 그대로 꾸밀 수 있어요.';
+      intro.textContent='새 얼굴과 머리를 함께 그렸어요. 인어공주에게는 미용실 스타일 3종이 있어요.';
       sw.innerHTML='';items.innerHTML='<p>이 미리보기에서는 공주마다 고유한 머리를 사용해요. 기존 머리 모양과 색 저장은 그대로 보관돼요. <a href="?v=43">기존 머리 꾸미기로 돌아가기</a></p>';
       return;
     }
@@ -1368,6 +1376,10 @@ function renderPanel(){
     if(state[tab]) state[tab].color=c; else state[tab]={id:cat.list[0].id,color:c};
     persist();click();renderStage();rerenderPanelKeepingPosition();
   }));
+  if(tab==='dress'&&PrincessStudio.wornTail(state,p)){
+    sw.innerHTML='<span class="lbl">몸에 맞춰 그린 바다빛 복장 · 원래 색</span>';
+    intro.textContent='인어 꼬리는 몸과 옷을 함께 그렸어요. 다른 옷도 고를 수 있어요.';
+  }
   const none=`<button class="item ${!curSel?'on':''}" data-id=""><svg viewBox="0 0 100 100"><text x="50" y="62" text-anchor="middle" font-size="40">🚫</text></svg><span class="nm">없음</span></button>`;
   items.innerHTML=none+cat.list.map(it=>`<button class="item ${curSel&&curSel.id===it.id?'on':''}" data-id="${it.id}">${thumbSVG(tab,it,curColor)}<span class="nm">${it.name}</span></button>`).join('');
   items.querySelectorAll('.item').forEach(b=>b.addEventListener('click',()=>{
@@ -1394,6 +1406,7 @@ function randomize(){
   if(state.dress&&itemOf('dress',state.dress.id).tail) state.shoes=null;
   state.bg=rnd(BGS).id;
   if(!PrincessStudio.naturalHeads)state.hairStyle=rnd(HAIR_STYLES).id;
+  else if(princess().id==='mermaid')state.salonStyle=rnd(PrincessStudio.salonStyles).id;
   persist();tada();renderStage();renderPanel();popStage();
   sparkleAt(document.getElementById('stage'));
 }
@@ -1478,6 +1491,8 @@ document.getElementById('soundIc').textContent=muted?'🔇':'🔊';
 document.getElementById('stage').addEventListener('click',()=>{popStage();tone(660,0,.12,'sine',.1);});
 
 let last='snow';try{last=localStorage.getItem('princess:last')||'snow'}catch(e){}
+const requestedPrincess=new URLSearchParams(location.search).get('princess');
+if(PRINCESSES.some(p=>p.id===requestedPrincess))last=requestedPrincess;
 if(!PRINCESSES.some(p=>p.id===last))last='snow';
 loadPrincess(last);
 renderTabs();renderStage();renderPanel();

@@ -24,7 +24,7 @@ test('preview replaces both old face and wig with one unfiltered natural head',(
  const svg=studio.render(state,p),portrait=studio.portrait(p,p.hairColor);
  for(const s of [svg,portrait]){
  assert.equal((s.match(/data-wear-layer="natural-head"/g)||[]).length,1,p.id);
- assert(s.includes('data-hide-old-head="true"'));
+ assert(s.includes('data-hide-old-head="true"')||s.includes('data-art-version="salon-worn-v44"'));
  assert(!/data-wear-layer="hair-(?:front|back)"/.test(s));
  assert(s.includes('assets/heads-v43/'+p.id+'.webp'));
  assert(!s.includes('NaN'));const ids=[...s.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
@@ -34,6 +34,23 @@ test('preview replaces both old face and wig with one unfiltered natural head',(
  assert.equal(JSON.stringify(state),before,'outfit state untouched');
  const [w,c,e]=studio.headFits[p.id];assert(w>=110&&w<=150);assert(c>.45&&c<.55);assert(e>.3&&e<.6);
  assert(studio.fileKeys(state,p).includes('head/'+p.id));assert(!studio.fileKeys(state,p).some(k=>k.startsWith('hair/')));
+ }
+});
+test('salon preserves outfit state across all three heads and embeds the worn body',async()=>{
+ const ctx=env(true),studio=ctx.PrincessStudio,p=ctx.qa.PRINCESSES.find(p=>p.id==='mermaid');
+ assert.equal(studio.salonStyles.length,3);
+ for(const style of studio.salonStyles){
+ const st=ctx.qa.defaultState(p);st.salonStyle=style.id;const before=JSON.stringify(st);
+ const assets=await studio.exportAssets(st,p),svg=studio.render(st,p,undefined,assets);
+ assert.equal(JSON.stringify(st),before);
+ assert(svg.includes('data-art-version="salon-worn-v44"'));
+ for(const old of ['fabric-lining','arms-over-clothes','data-studio-part="dress/tail"','body-source','hair-front'])assert(!svg.includes(old),old);
+ assert.equal((svg.match(/data-studio-part="outfit\/mermaid-tail"/g)||[]).length,1);
+ assert(!/<image\b[^>]*href="(?!data:image\/)/.test(svg));
+ const k=style.id==='wave'?'head/mermaid':'head/mermaid-'+style.id;assert(assets[k]);
+ st.dress={id:'party',color:'#ff8fc1'};
+ const other=studio.render(st,p);assert(other.includes('data-studio-part="dress/party"'));
+ assert(!other.includes('data-art-version="salon-worn-v44"'));assert.equal(st.salonStyle,style.id);
  }
 });
 test('photo exports embed new heads with no external image references',async()=>{
@@ -46,4 +63,21 @@ test('normal game keeps saved hairstyle and color behavior until user decides',(
  for(const p of ctx.qa.PRINCESSES){const st=ctx.qa.defaultState(p);st.hairStyle='braid';st.hairColor='#ff8fc1';
  const svg=studio.render(st,p);assert(svg.includes('data-studio-part="hair/braid"'));assert(!svg.includes('data-wear-layer="natural-head"'));
  assert.equal(st.hairStyle,'braid');assert.equal(st.hairColor,'#ff8fc1');}
+});
+test('salon delivery PNGs really have alpha, not painted checkerboards',()=>{
+ for(const id of ['half','braid','tail-body']){
+ const png=fs.readFileSync(path.join(root,'assets/salon-v44/mermaid-'+id+'.png'));
+ assert.equal(png[25],6,'RGBA required '+id);
+ assert(fs.statSync(path.join(root,'assets/salon-v44/mermaid-'+id+'.webp')).size>10000);
+ }
+ const sw=fs.readFileSync(path.join(root,'..','sw.js'),'utf8');
+ assert(sw.includes('assets/salon-v44/mermaid-'));
+});
+test('octet-stream WebP responses export with a truthful image MIME',async()=>{
+ const ctx=env(true),p=ctx.qa.PRINCESSES.find(p=>p.id==='mermaid');
+ ctx.fetch=async url=>({ok:true,blob:async()=>new Blob([fs.readFileSync(path.join(root,url))],{type:'application/octet-stream'})});
+ ctx.FileReader=class{readAsDataURL(blob){blob.arrayBuffer().then(b=>{this.result='data:'+blob.type+';base64,'+Buffer.from(b).toString('base64');this.onload();});}};
+ const assets=await ctx.PrincessStudio.exportAssets(ctx.qa.defaultState(p),p);
+ assert(assets['outfit/mermaid-tail'].startsWith('data:image/webp;base64,'));
+ assert(assets['head/mermaid'].startsWith('data:image/webp;base64,'));
 });

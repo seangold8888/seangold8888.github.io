@@ -5,6 +5,10 @@ globalThis.PrincessStudio=(()=>{
   const ROOT='assets/studio-v3/';
   // Preview the jointly painted heads without deleting saved hairstyle choices.
   const naturalHeads=/(?:[?&])heads=natural(?:&|$)/.test(globalThis.location?.search||'');
+  const salonStyles=[{id:'wave',name:'바다 웨이브'},{id:'half',name:'단정한 반묶음'},{id:'braid',name:'옆으로 땋기'}];
+  const salonStyle=st=>salonStyles.some(s=>s.id===st?.salonStyle)?st.salonStyle:'wave';
+  const headId=(p,st=p)=>p.id==='mermaid'&&salonStyle(st)!=='wave'?'mermaid-'+salonStyle(st):p.id;
+  const wornTail=(st,p)=>naturalHeads&&p.id==='mermaid'&&st.dress?.id==='tail';
   // Uniform scaling only: width, facial center X and eye row on the original square.
   const headFits={
     snow:[120,.507,580/1254],cinder:[120,.510,594/1254],
@@ -12,6 +16,7 @@ globalThis.PrincessStudio=(()=>{
     thumb:[120,.500,590/1254],kongjwi:[120,.500,550/1254],
     briar:[118,.500,510/1254],moon:[116,.500,650/1254],
     frost:[120,.500,.485],sahara:[120,.500,.452],
+    'mermaid-half':[116,.503,521/1254],'mermaid-braid':[116,.503,521/1254],
     lotus:[120,.500,.485],sunny:[116,.500,.455]
   };
   const NEW_CHARACTERS=new Set(['frost','sahara','lotus','sunny']);
@@ -97,11 +102,12 @@ globalThis.PrincessStudio=(()=>{
   };
   const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
   const key=(cat,id)=>cat+'/'+id;
-  const path=(cat,id)=>cat==='head'?'assets/heads-v43/'+id+'.webp':NEW_CHARACTERS.has(id)&&['body','grip'].includes(cat)?'assets/characters-v36/'+cat+'-'+id+'.webp':cat==='hair'&&id==='bob'?'assets/hair-v35/hair-bob.webp':cat==='grip'?'assets/wear-v5/grip-'+id+'.webp':cat==='body'?'assets/bodies-v4/body-'+id+'.webp':ROOT+cat+'-'+id+(cat==='bg'?'.jpg':'.webp');
+  const path=(cat,id)=>cat==='outfit'?'assets/salon-v44/'+id+'-body.webp':cat==='head'&&id.startsWith('mermaid-')?'assets/salon-v44/'+id+'.webp':cat==='head'?'assets/heads-v43/'+id+'.webp':NEW_CHARACTERS.has(id)&&['body','grip'].includes(cat)?'assets/characters-v36/'+cat+'-'+id+'.webp':cat==='hair'&&id==='bob'?'assets/hair-v35/hair-bob.webp':cat==='grip'?'assets/wear-v5/grip-'+id+'.webp':cat==='body'?'assets/bodies-v4/body-'+id+'.webp':ROOT+cat+'-'+id+(cat==='bg'?'.jpg':'.webp');
   const selectedHair=(st,p)=>Object.hasOwn(rects.hair,st.hairStyle)?st.hairStyle:p.hair;
   const href=(cat,id,embedded)=>embedded===undefined?path(cat,id):embedded[key(cat,id)];
   const fileKeys=(st,p)=>{
-    const list=[key('bg',st.bg),naturalHeads?key('head',p.id):key('hair',selectedHair(st,p)),key('body',p.id)];
+    const list=[key('bg',st.bg),naturalHeads?key('head',headId(p,st)):key('hair',selectedHair(st,p)),key('body',p.id)];
+    if(wornTail(st,p))list.push(key('outfit','mermaid-tail'));
     if(st.hand)list.push(key('grip',p.id));
     for(const cat of ['back','dress','shoes','crown','neck','hand','pet']){
       if(st[cat]&&!(cat==='shoes'&&st.dress?.id==='tail'))list.push(key(cat,st[cat].id));
@@ -216,9 +222,9 @@ globalThis.PrincessStudio=(()=>{
       knots:[[0,top-shape.crown],[a[0],top+18],[a[1],57.5],[1,shape.length+top-18]]};
   }
   function naturalHead(p,scope,embedded,bodyOffset=identities[p.id].dx){
-    const src=href('head',p.id,embedded);
+    const id=headId(p),src=href('head',id,embedded);
     if(!src)throw new Error('Missing natural head '+p.id);
-    const [width,center,eye]=headFits[p.id],a=headAnchors[p.id],cx=(a[1]+a[2])/2+bodyOffset;
+    const [width,center,eye]=headFits[id],a=headAnchors[p.id],cx=(a[1]+a[2])/2+bodyOffset;
     const mask=scope+'-neck-blend',fade=scope+'-neck-fade';
     // Blend only the short painted neck into the retained body. No mask cuts
     // into the face or hair, and no recoloring filter touches the new portrait.
@@ -252,7 +258,7 @@ globalThis.PrincessStudio=(()=>{
     return {sx:scale,sy:scale,dx:center-210*scale,dy:Math.max(-18-r[1]*scale,base-(r[1]+(id==='veil'?34:r[3]))*scale)};
   }
   function render(st,p,bodyHref='assets/fashion-doll-base-v1.png',embedded){
-    p={...p,hair:selectedHair(st,p)};
+    p={...p,hair:selectedHair(st,p),salonStyle:salonStyle(st)};
     const scope='studio-'+p.id,tail=st.dress?.id==='tail',identity=identities[p.id];
     bodyHref=href('body',p.id,embedded);if(!bodyHref)throw new Error('Missing body '+p.id);
     const part=cat=>{
@@ -271,6 +277,21 @@ globalThis.PrincessStudio=(()=>{
       const cut=id==='veil'?42:['crown','tiara','flowers','pearls','moon'].includes(id)?r[1]+r[3]*.80:680;
       return `<defs><clipPath id="${sid}-clip"><rect x="0" y="-30" width="420" height="${front?cut+30:710}"/></clipPath></defs><g data-wear-layer="headwear-${front?'front':'back'}" data-attachment="head" transform="matrix(${fit.sx} 0 0 ${fit.sy} ${fit.dx} ${fit.dy})" filter="url(#${scope}-skin-contact)"><g clip-path="url(#${sid}-clip)">${sprite('crown',id,color,sid,embedded)}</g></g>`;
     };
+    if(wornTail(st,p)){
+      const src=href('outfit','mermaid-tail',embedded);
+      if(!src)throw new Error('Missing worn mermaid outfit');
+      // The complete clothed body has its own real anatomy; never draw the old
+      // mannequin, lining patch, stretched dress mesh or jointed arms underneath.
+      const bodyImage=`<image data-studio-part="outfit/mermaid-tail" href="${escape(src)}" x="40" y="95" width="340" height="510" preserveAspectRatio="xMidYMid meet"/>`;
+      const prop=st.hand?`<g data-wear-layer="held-prop" transform="translate(-23 -7)">${sprite('hand',st.hand.id,st.hand.color,scope+'-hand',embedded)}</g>`:'';
+      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 680" width="420" height="680" role="img" aria-label="${escape(p.name)} 실제 착용 코디" data-art-version="salon-worn-v44">
+        <defs><filter id="${scope}-skin-contact" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy=".5" stdDeviation=".4" flood-opacity=".15"/></filter></defs>
+        ${background(st.bg,embedded)}
+        <g data-photo-safe="true" transform="translate(0 24) scale(1 .96)">
+        <g data-body-identity="${p.id}" transform="translate(210 ${604-580*identity.sy}) scale(${identity.sx} ${identity.sy}) translate(-210 0)">
+        ${part('back')}${bodyImage}${naturalHead(p,scope,embedded)}${neck(false)}${neck(true)}${crown(true)}${prop}
+        </g><g transform="translate(0 24)">${part('pet')}</g></g></svg>`;
+    }
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 680" width="420" height="680" role="img" aria-label="${escape(p.name)} 인형 꾸미기" data-art-version="wear-v5">
       <defs><filter id="${scope}-skin-contact" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB"><feDropShadow dx="0" dy=".65" stdDeviation=".45" flood-color="#291827" flood-opacity=".26"/></filter></defs>
       <defs><filter id="${scope}-contact" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB"><feDropShadow dx=".5" dy="1.2" stdDeviation=".85" flood-color="#2a1823" flood-opacity=".30"/></filter><radialGradient id="${scope}-shade"><stop offset="0" stop-color="#17111f" stop-opacity=".34"/><stop offset="1" stop-color="#17111f" stop-opacity="0"/></radialGradient></defs>
@@ -296,7 +317,7 @@ globalThis.PrincessStudio=(()=>{
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${cat==='bg'?'0 0 420 680':'0 0 160 180'}" preserveAspectRatio="xMidYMid meet" data-art-version="studio-v3">${inner}</svg>`;
   }
   function portrait(p,color,embedded,bodyHref='assets/fashion-doll-base-v1.png'){
-    const scope='portrait-'+p.id;
+    const scope='portrait-'+p.id+(p.salonScope?'-'+salonStyle(p):'');
     bodyHref=href('body',p.id,embedded);
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="125 -24 170 208" preserveAspectRatio="xMidYMid meet" data-art-version="${naturalHeads?'natural-head-v43':'studio-v3'}">${naturalHeads?'':hair(p,color,scope+'-back',embedded,false,0)}${body(p,bodyHref,scope,false)}${naturalHeads?naturalHead(p,scope,embedded,0):hair(p,color,scope+'-front',embedded,true,0)}</svg>`;
   }
@@ -307,6 +328,14 @@ globalThis.PrincessStudio=(()=>{
     const promise=fetch(path(cat,id),{cache:'force-cache'}).then(r=>{
       if(!r.ok)throw new Error('Asset download failed: '+k);
       return r.blob();
+    }).then(blob=>{
+      // Some static preview servers label new WebP files as octet-stream.
+      // SVG photo exports need a truthful image MIME type in their data URLs.
+      if((!blob.type||blob.type==='application/octet-stream')&&typeof blob.slice==='function'){
+        const ext=path(cat,id).split('.').pop();
+        return blob.slice(0,blob.size,ext==='jpg'?'image/jpeg':'image/'+ext);
+      }
+      return blob;
     }).then(blob=>new Promise((resolve,reject)=>{
       const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(blob);
     })).then(data=>{cache.set(k,data);return data}).finally(()=>pending.delete(k));
@@ -317,5 +346,5 @@ globalThis.PrincessStudio=(()=>{
     const values=await Promise.all(keys.map(loadFile));
     return Object.fromEntries(keys.map((k,i)=>[k,values[i]]));
   }
-  return {render,thumb,portrait,background,exportAssets,fileKeys,path,rects,identities,headAnchors,hairAnchors,hairSilhouettes,hairPlacement,accessoryPlacement,naturalHeads,headFits};
+  return {render,thumb,portrait,background,exportAssets,fileKeys,path,rects,identities,headAnchors,hairAnchors,hairSilhouettes,hairPlacement,accessoryPlacement,naturalHeads,headFits,salonStyles,salonStyle,wornTail};
 })();
