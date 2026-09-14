@@ -28,6 +28,7 @@ function environment(seed = {}, options = {}) {
   };
   vm.createContext(ctx);
   vm.runInContext(studioSource,ctx,{filename:'studio.js'});
+  vm.runInContext(fs.readFileSync(path.join(dir,'icons.js'),'utf8'),ctx,{filename:'icons.js'});
   vm.runInContext(appSource,ctx,{filename:'index.html-inline'});
   vm.runInContext('globalThis.QA={PRINCESSES,CATS,SLOTS,defaultState,loadPrincess,princess,dollSVG,thumbSVG,princessThumb,buildExportSvg,ensureDollBaseData,renderPanel,renderTabs,randomize,setTab:value=>tab=value,getState:()=>state,getOutfits:()=>outfits}',ctx);
   return {ctx, api: ctx.QA, studio: ctx.PrincessStudio, calls, stored};
