@@ -15,7 +15,8 @@ globalThis.PrincessWardrobe=(()=>{
   const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
   function geometry(id,p,identities,anchors){
     const a=anchors[p.id],cx=(a[1]+a[2])/2+identities[p.id].dx,scale=1/3;
-    return {x:cx-512*scale,y:101-fits[id].neckY*scale,scale,cx};
+    // The painted neck must start underneath the chin, before the portrait fades.
+    return {x:cx-512*scale,y:94-fits[id].neckY*scale,scale,cx};
   }
   function skinTone(id,color,garment){
     const rgb=[1,3,5].map(i=>parseInt(color.slice(i,i+2),16));

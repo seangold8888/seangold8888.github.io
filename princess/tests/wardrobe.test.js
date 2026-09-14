@@ -59,3 +59,39 @@ test('natural wardrobe uses common body proportions and calibrated neck material
   assert(Math.abs(width-e.PrincessStudio.headFits[p.id][0]*.9)<.001);
  }
 });
+
+test('all painted necks overlap the portrait fade and use a tapered neck mask',()=>{
+ const e=env();
+ for(const p of e.qa.PRINCESSES)for(const id of e.PrincessWardrobe.ids){
+  const g=e.PrincessWardrobe.geometry(id,p,e.PrincessStudio.identities,e.PrincessStudio.headAnchors);
+  assert(Math.abs(g.y+e.PrincessWardrobe.fits[id].neckY*g.scale-94)<.001);
+  for(const style of ['wave','half','braid']){
+   const svg=e.PrincessStudio.render({...e.qa.defaultState(p),salonStyle:style,dress:{id,color:null}},p);
+   assert(svg.includes(' 98H'));assert(svg.includes('V124H'));assert(!svg.includes('NaN'));check(svg);
+  }
+ }
+});
+
+test('necklaces render a single front drape, not a clasp and rear loop on the throat',()=>{
+ const e=env();
+ for(const p of e.qa.PRINCESSES)for(const id of Object.keys(e.PrincessStudio.rects.neck)){
+  const svg=e.PrincessStudio.render({...e.qa.defaultState(p),neck:{id,color:null}},p);check(svg);
+  assert(!svg.includes('data-wear-layer="neck-back"'));
+  if(id!=='norigae'){assert.equal((svg.match(/data-neck-fit="front-drape-v48"/g)||[]).length,1);assert(svg.includes('-drape'));}
+ }
+});
+
+test('natural headwear follows hairstyle roots and keeps tiaras in front of hair',()=>{
+ const e=env();
+ for(const p of e.qa.PRINCESSES)for(const style of ['wave','half','braid']){
+  for(const id of Object.keys(e.PrincessStudio.rects.crown)){
+   const fit=e.PrincessStudio.accessoryPlacement('crown',id,{...p,salonStyle:style});
+   assert(Object.values(fit).every(Number.isFinite));assert(fit.sx>0&&fit.sy>0);
+   const svg=e.PrincessStudio.render({...e.qa.defaultState(p),salonStyle:style,crown:{id,color:null}},p);check(svg);
+   assert(svg.includes('data-headwear-fit="hair-root-v48"'));
+   if(['tiara','pearls'].includes(id))assert(!svg.includes('data-wear-layer="headwear-back"'));
+   if(['crown','flowers'].includes(id))assert(svg.indexOf('headwear-back')<svg.indexOf('natural-head'));
+   if(id==='veil'){assert(!svg.includes('data-wear-layer="headwear-front"'));assert(svg.indexOf('headwear-back')<svg.indexOf('painted-outfit'));}
+  }
+ }
+});
