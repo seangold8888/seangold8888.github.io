@@ -7,6 +7,8 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
  const context=await browser.newContext({viewport,serviceWorkers:'block'}),page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('http://127.0.0.1:8765/princess/?heads=natural&princess=mermaid&v=45');
  await page.waitForFunction(()=>PrincessStudio.fullWardrobe);
+ const labelBox=await page.locator('#nameTag').boundingBox(),stageBox=await page.locator('#stage').boundingBox();
+ assert(labelBox.y+labelBox.height<=stageBox.y,'outfit name must not cover head or crown');
  await page.locator('#tabs [data-key="dress"]').click();
  for(const id of 'ballgown aline party mermaidline hanbok tutu tail winter star rainbow summer rose adventure'.split(' ')){
  await page.locator('#items [data-id="'+id+'"]').click();
@@ -41,12 +43,14 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
  console.log('PASS pixel check: two skin samples stable, fabric changes');
  }
  // Warm every dress for this princess, disable networking, then change dresses/export.
- await page.evaluate(async()=>{for(const d of DRESSES)await PrincessStudio.exportAssets({...state,dress:{id:d.id,color:'#ff8fc1'}},princess());});
+ await page.evaluate(async()=>{for(const d of DRESSES)await PrincessStudio.exportAssets({...state,dress:{id:d.id,color:'#ff8fc1'}},princess());for(const s of SHOES)await PrincessStudio.exportAssets({...state,dress:{id:'party',color:'#439cdd'},shoes:{id:s.id,color:'#439cdd'}},princess());});
  await context.setOffline(true);
  for(const id of ['rainbow','hanbok','party']){
  await page.locator('#items [data-id="'+id+'"]').click();
  const ok=await page.evaluate(async()=>{const s=await buildExportSvg(state,princess());const doc=new DOMParser().parseFromString(s,'image/svg+xml');return [...doc.querySelectorAll('image')].every(i=>i.getAttribute('href').startsWith('data:image/'));});assert(ok);
  }
+ await page.locator('#tabs [data-key="shoes"]').click();
+ for(const s of ['pumps','glass','boots','sneakers','sandals','ballet','rain','slippers','kkotsin']){await page.locator('#items [data-id="'+s+'"]').click();assert.equal(await page.locator('#stage [data-studio-part="footwear/'+s+'"]').count(),1);assert(await page.evaluate(async()=>!(await buildExportSvg(state,princess())).match(/<image\b[^>]*href="(?!data:image\/)/)));}
  assert.deepEqual(errors,[]);
  await page.waitForTimeout(1500);await page.screenshot({path:path.join(out,viewport.width+'.png')});
  console.log('PASS',viewport.width,'13 dress taps, 12 princesses, saves, hair, warm-offline exports');

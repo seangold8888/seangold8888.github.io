@@ -29,7 +29,7 @@ globalThis.PrincessWardrobe=(()=>{
     const matrix=values=>`<feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  ${values}"/>`;
     const skinFilter=`<filter id="${s}-skin-only" color-interpolation-filters="sRGB">${matrix('80 -80 0 0 -3.6').replace('/>',' result="rg"/>')}${matrix('0 80 -80 0 -1.6').replace('/>',' result="gb"/>')}<feComposite in="rg" in2="gb" operator="in"/><feComponentTransfer><feFuncA type="linear" slope="2" intercept="0"/></feComponentTransfer></filter>`;
     const regions={
-      rainbow:'<path fill="white" d="M450 0H580L610 100L555 160H475L420 100Z M0 0H390V300L360 850H0Z M634 0H1024V850H664L634 300Z"/><rect y="1400" width="1024" height="136" fill="white"/>',
+      rainbow:'<path fill="white" d="M450 0H580L610 100L555 160H475L420 100Z M0 0H390V300L360 850H0Z M634 0H1024V850H664L634 300Z M439 1445L445 1431L451 1417L460 1416L472 1417L476 1429L490 1434L499 1439L502 1433L515 1439L529 1443L541 1443L553 1448L566 1451L585 1536H400Z"/>',
       hanbok:'<path fill="white" d="M460 0H565L550 60L510 100L474 60Z"/><rect x="210" y="580" width="145" height="210" fill="white"/><rect x="680" y="580" width="145" height="210" fill="white"/><rect y="1430" width="1024" height="106" fill="white"/>'
     };
     const region=regions[id]||'<rect width="1024" height="1536" fill="white"/>';
@@ -37,9 +37,11 @@ globalThis.PrincessWardrobe=(()=>{
     const skinClip=`<mask id="${s}-region" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1536">${region}</mask>`;
     const recolor=id!=='rainbow'&&st.dress.color;
     // Hide only skin under the shoe, never chop a hole out of a long skirt.
-    const footCut=id!=='tail'&&shoeCut!=null?`<g mask="url(#${s}-skin)"><rect x="0" y="${(shoeCut-g.y)/g.scale}" width="1024" height="1536" fill="black"/></g>`:'';
+    const cutY=shoeCut==null?0:(shoeCut-g.y)/g.scale;
+    const footCut=id!=='tail'&&shoeCut!=null?`<g mask="url(#${s}-region)"><g mask="url(#${s}-skin)"><rect x="0" y="${cutY}" width="1024" height="1536" fill="black"/></g></g>`:'';
+    const occlusion=`<filter id="${s}-silhouette"><feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/></filter><mask id="${s}-cloth-occlusion" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1536"><rect width="1024" height="1536" fill="white"/><use href="#${asset}" filter="url(#${s}-silhouette)"/><g mask="url(#${s}-region)"><use href="#${asset}" filter="url(#${s}-skin-only)"/></g></mask>`;
     return `<g data-studio-part="wardrobe/${id}" data-wear-layer="painted-outfit" data-skin-tone="${p.id}">
-      <defs><image id="${asset}" href="${esc(src)}" width="1024" height="1536" preserveAspectRatio="xMidYMid meet"/>${skinFilter}${skinMask}${skinClip}${skinTone(s+'-tone',skin[p.id],id)}${tone(s+'-cloth',st.dress.color,'dress')}<mask id="${s}-feet" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1536"><rect width="1024" height="1536" fill="white"/>${footCut}</mask></defs>
+      <defs><image id="${asset}" href="${esc(src)}" width="1024" height="1536" preserveAspectRatio="xMidYMid meet"/>${skinFilter}${skinMask}${skinClip}${occlusion}${skinTone(s+'-tone',skin[p.id],id)}${tone(s+'-cloth',st.dress.color,'dress')}<mask id="${s}-feet" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1536"><rect width="1024" height="1536" fill="white"/>${footCut}</mask></defs>
       <g transform="translate(${g.x} ${g.y}) scale(${g.scale})" mask="url(#${s}-feet)">
       <use href="#${asset}" ${recolor?`filter="url(#${s}-cloth)"`:''}/>
       <g mask="url(#${s}-region)"><g mask="url(#${s}-skin)"><use href="#${asset}" filter="url(#${s}-tone)"/></g></g>

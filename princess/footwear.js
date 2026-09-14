@@ -1,0 +1,68 @@
+'use strict';
+// Coordinates are measured in the 1024 x 1536 painted OUTFIT, never on the retired doll.
+globalThis.PrincessFootwear=(()=>{
+ const soles={ballgown:1489,aline:1507,party:1471,mermaidline:1508,hanbok:1512,tutu:1487,winter:1487,star:1484,rainbow:1517,summer:1491,rose:1507,adventure:1488};
+ // [source y, left leg center/width, right leg center/width]. Knees, calf, ankle and forefoot.
+ const profiles={
+  party:[[1140,450,89,569,88],[1200,454,66,564,66],[1280,467,49,551,49],[1360,473,58,545,59],[1435,466,82,552,84]],
+  tutu:[[1140,446,101,576,100],[1200,449,78,572,78],[1280,457,51,561,51],[1360,467,56,551,55],[1450,459,85,560,85]],
+  winter:[[1140,454,94,567,95],[1200,457,73,563,73],[1280,466,47,554,47],[1360,478,53,542,53],[1450,470,79,552,79]],
+  summer:[[1140,454,100,576,99],[1200,459,78,571,76],[1280,469,52,560,51],[1360,481,52,548,52],[1460,471,81,554,79]],
+  adventure:[[1160,453,82,569,82],[1240,455,70,565,70],[1320,465,60,547,60],[1380,467,60,545,59],[1460,456,86,556,86]]
+ };
+ const toes={ballgown:[466,80,556,80],aline:[466,83,560,78],mermaidline:[466,80,556,80],hanbok:[473,76,551,75],star:[471,75,551,74],rainbow:[458,78,539,78],rose:[467,74,540,70]};
+ for(const [id,[l,lw,r,rw]] of Object.entries(toes)){const y=soles[id];profiles[id]=[[y-330,l-12,lw*1.05,r+12,rw*1.05],[y-160,l+5,lw*.65,r-5,rw*.65],[y-80,l+4,lw*.72,r-4,rw*.72],[y-35,l,lw,r,rw]];}
+ const boxes={pumps:[[.01042,.00463,.48958,.99074],[.50521,.00463,.48958,.99074]],glass:[[.00521,.0045,.47396,.99099],[.52083,.0045,.47396,.99099]],boots:[[.00649,.00781,.46753,.99219],[.50649,.00391,.48701,.99609]],sneakers:[[.00521,.00478,.49479,.99522],[.5,.00478,.49479,.99522]],sandals:[[.00521,.00926,.48958,.98611],[.51042,.00463,.48438,.98969]],ballet:[[.00521,0,.49479,.9919],[.5,0,.49479,.9919]],rain:[[.00524,0,.48691,.99609],[.50262,0,.49215,.99609]],slippers:[[.01042,.01935,.48958,.96774],[.5,.0129,.49479,.98065]],kkotsin:[[.00521,.00515,.48438,.98969],[.51042,.00515,.48438,.98969]]};
+ // Height in outfit pixels; aperture depth; source center and span at forefoot (per shoe).
+ const specs={
+  pumps:{h:126,open:.62,foot:[[.49,.86],[.48,.84]]},glass:{h:126,open:.62,foot:[[.51,.91],[.46,.91]]},
+  boots:{h:315,open:.065,shaft:true,foot:[[.60,.70],[.36,.69]],rim:[[.54,.75],[.49,.74]],ankle:[[.59,.62],[.41,.61]]},
+  sneakers:{h:108,open:.24,foot:[[.50,.84],[.48,.83]]},sandals:{h:133,open:.70,foot:[[.52,.88],[.47,.87]]},
+  ballet:{h:162,open:.62,foot:[[.54,.80],[.41,.81]]},rain:{h:224,open:.055,shaft:true,foot:[[.51,.94],[.49,.94]],rim:[[.56,.84],[.44,.84]],ankle:[[.58,.65],[.42,.65]]},
+  slippers:{h:96,open:.46,foot:[[.52,.87],[.48,.87]]},kkotsin:{h:120,open:.49,foot:[[.53,.86],[.46,.85]]}
+ };
+ function legAt(garment,side,y){const a=profiles[garment],i=1+side*2;let k=0;while(k<a.length-2&&a[k+1][0]<y)k++;const p=a[k],q=a[k+1],t=Math.max(0,Math.min(1,(y-p[0])/(q[0]-p[0])));return [p[i]+(q[i]-p[i])*t,p[i+1]+(q[i+1]-p[i+1])*t];}
+ function layout(garment,shoe){
+  if(garment==='tail'||!specs[shoe])return null;
+  const spec=specs[shoe],sole=soles[garment],top=sole-spec.h;
+  const feet=[0,1].map(side=>{const toe=legAt(garment,side,sole-35),rim=legAt(garment,side,top+spec.h*.035),ankle=legAt(garment,side,top+spec.h*.60);
+   const points=spec.shaft?[[0,rim[0],(rim[1]+8)/spec.rim[side][1],spec.rim[side][0]],[.60,ankle[0],(ankle[1]+10)/spec.ankle[side][1],spec.ankle[side][0]],[.86,toe[0],(toe[1]+6)/spec.foot[side][1],spec.foot[side][0]],[1,toe[0],(toe[1]+6)/spec.foot[side][1],spec.foot[side][0]]]:[[0,toe[0],(toe[1]+6)/spec.foot[side][1],spec.foot[side][0]],[1,toe[0],(toe[1]+6)/spec.foot[side][1],spec.foot[side][0]]];
+   return {side,box:boxes[shoe][side],points,toe,rim};});
+  return {garment,shoe,top,sole,height:spec.h,opening:spec.open,shaft:!!spec.shaft,cutY:top+spec.h*(spec.open+.035),feet};
+ }
+ function rowAt(points,f){let k=0;while(k<points.length-2&&points[k+1][0]<f)k++;const a=points[k],b=points[k+1],t=(f-a[0])/(b[0]-a[0]);return a.slice(1).map((v,i)=>v+(b[i+1]-v)*t);}
+ const worn={
+  "pumps":{"size":1254,"sole":1172,"start":570,"forefoot":1072,"height":185,"skin":[253,188,143],"rows":[[400,484,187,768.5,188],[500,495,153,757,153],[570,505,135,747.5,136],[600,509.5,132,743,131],[700,527,153,725.5,152],[800,536,171,718,171],[900,519.5,192,733.5,192],[1000,503.5,218,749.5,218],[1072,496.5,238,756.5,238],[1172,487.5,30,768,31]]},
+  "glass":{"size":1254,"sole":1114,"start":570,"forefoot":1014,"height":185,"skin":[252,174,130],"rows":[[400,484,185,769.5,186],[500,495,149,758.5,150],[570,504,129,749.5,130],[600,508,131,745.5,130],[700,518.5,148,735,149],[800,519.5,188,733.5,188],[900,495,197,758.5,198],[1000,488,237,765.5,238],[1014,487.5,236,765,237],[1114,491,35,763.5,34]]},
+  "boots":{"size":1254,"sole":1171,"start":140,"forefoot":1071,"height":320,"skin":[254,196,155],"rows":[[140,467.5,290,785,289],[400,486.5,212,764,215],[500,500.5,178,750,179],[570,511,155,740,157],[600,516,149,735,149],[700,529,143,723,143],[800,537,153,717,153],[900,526.5,178,727.5,178],[1000,509,203,746.5,202],[1071,502.5,228,752,229],[1171,490,23,764,19]]},
+  "sneakers":{"size":1254,"sole":1166,"start":570,"forefoot":1066,"height":185,"skin":[252,170,121],"rows":[[400,483.5,186,769.5,186],[500,495,151,758,151],[570,505.5,132,747.5,132],[600,511.5,126,742,127],[700,532,143,721,143],[800,535.5,158,717.5,158],[900,524,183,729,183],[1000,505.5,210,748.5,208],[1066,501,235,752.5,234],[1166,502,23,752,33]]},
+  "sandals":{"size":1254,"sole":1145,"start":570,"forefoot":1045,"height":185,"skin":[253,174,125],"rows":[[400,482.5,186,770,187],[500,495,151,758,151],[570,505.5,132,747.5,132],[600,511,127,742,127],[700,532,143,721,143],[800,538,145,715,145],[900,526,165,727,165],[1000,506,211,746,211],[1045,503.5,226,748.5,226],[1145,527,39,725.5,38]]},
+  "ballet":{"size":1254,"sole":1146,"start":570,"forefoot":1046,"height":185,"skin":[253,176,127],"rows":[[400,482.5,186,770.5,186],[500,495,151,758,151],[570,505.5,132,747,131],[600,511.5,126,741.5,126],[700,515.5,160,738.5,160],[800,535.5,148,718,149],[900,522.5,184,731,183],[1000,508.5,228,744.5,228],[1046,507.5,232,745.5,232],[1146,519,35,733,33]]},
+  "rain":{"size":1254,"sole":1142,"start":340,"forefoot":1042,"height":255,"skin":[254,201,168],"rows":[[340,479,207,774.5,208],[400,484,185,769.5,186],[500,496.5,192,757.5,192],[570,503,177,750,177],[600,505.5,170,747.5,170],[700,516.5,146,736.5,146],[800,524.5,160,729.5,160],[900,520,179,734,179],[1000,507,221,747,221],[1042,504.5,228,748.5,228],[1142,511,27,742,29]]},
+  "slippers":{"size":1254,"sole":1115,"start":570,"forefoot":1015,"height":185,"skin":[253,177,135],"rows":[[400,484,185,769.5,186],[500,495,149,758.5,150],[570,504,129,749.5,130],[600,508.5,130,745.5,130],[700,518.5,148,735,149],[800,508.5,236,745,237],[900,492.5,258,761.5,258],[1000,484,279,769.5,280],[1015,484,275,769.5,274],[1115,491,37,763.5,36]]},
+  "kkotsin":{"size":1254,"sole":1109,"start":570,"forefoot":1009,"height":185,"skin":[253,179,139],"rows":[[400,484,185,770,187],[500,495,149,758.5,150],[570,503.5,130,749.5,130],[600,507.5,130,745.5,130],[700,518,149,735,149],[800,514.5,206,737.5,206],[900,500,241,753,241],[1000,494,259,759,259],[1009,493.5,256,759.5,256],[1109,494.5,6,759,7]]}
+ };
+ const has=id=>!!worn[id];
+ const path=id=>'assets/footwear-v49/'+id+'.webp';
+ function wornLayout(garment,shoe){const f=layout(garment,shoe);if(!f||!has(shoe))return f;const a=worn[shoe],height=a.height||185,top=f.sole-height,sourceCollar={pumps:740,glass:690,boots:220,sneakers:760,sandals:700,ballet:620,rain:440,slippers:710,kkotsin:700}[shoe],collar=top+height*(sourceCollar-a.start)/(a.sole-a.start);return {...f,worn:true,top,height,collar,cutY:f.shaft?collar+12:f.sole-30};}
+ function wornRender(fit,src,color,scope,g,tone,front,skinColor){
+  if(!front)return '';const a=worn[fit.shoe],id=scope+'-worn-shoes',esc=s=>String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+  const rgb=[1,3,5].map(i=>parseInt(skinColor.slice(i,i+2),16));
+  const rows=a.rows,at=(side,y)=>{let k=0;while(k<rows.length-2&&rows[k+1][0]<y)k++;const p=rows[k],q=rows[k+1],t=(y-p[0])/(q[0]-p[0]),j=1+side*2;return [p[j]+(q[j]-p[j])*t,p[j+1]+(q[j+1]-p[j+1])*t];};
+  const start=a.start||600,pieces=[0,1].map(side=>{const [sourceX]=at(side,start),[sourceToe,sourceWidth]=at(side,a.forefoot||1070),leg=legAt(fit.garment,side,fit.top),toe=legAt(fit.garment,side,fit.sole-35),sx=(toe[1]+8)/sourceWidth,sy=fit.height/(a.sole-start),shear=(toe[0]-leg[0]-sx*(sourceToe-sourceX))/(a.sole-start),dx=leg[0]-sx*sourceX-shear*start,dy=fit.top-sy*start;return `<g transform="matrix(${sx} 0 ${shear} ${sy} ${dx} ${dy})" clip-path="url(#${id}-side-${side})"><svg y="${start}" width="${a.size}" height="${a.sole-start}" viewBox="0 ${start} ${a.size} ${a.sole-start}" overflow="hidden"><use href="#${id}-colored"/></svg></g>`;}).join('');
+  const end=Math.max(fit.top+1,fit.collar+(fit.shaft?10:-2)),ys=Array.from({length:12},(_,i)=>fit.top-1+(end-fit.top+1)*i/11),legClip=`<clipPath id="${id}-tuck"><rect y="${fit.collar+8}" width="1024" height="1536"/></clipPath><clipPath id="${id}-leg-fit">${[0,1].map(side=>`<path d="M${ys.map(y=>{const [x,w]=legAt(fit.garment,side,y);return `${x-w/2-1},${y}`;}).join('L')}L${[...ys].reverse().map(y=>{const [x,w]=legAt(fit.garment,side,y);return `${x+w/2+1},${y}`;}).join('L')}Z"/>`).join('')}<rect y="${end-.5}" width="1024" height="1536"/></clipPath>`;
+  return `<g data-studio-part="footwear/${fit.shoe}" data-wear-layer="fitted-shoe-front" data-foot-fit="worn-v49" data-garment="${fit.garment}"><defs>${legClip}${PrincessSalon.filter(id+'-key')}${tone(id+'-dye',color,'shoes',true)}<filter id="${id}-skin-test" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 40 -40 0 0 -1.5"/></filter><filter id="${id}-skin-tone" color-interpolation-filters="sRGB"><feComponentTransfer>${['R','G','B'].map((c,i)=>`<feFunc${c} type="linear" slope="${rgb[i]/a.skin[i]}"/>`).join('')}</feComponentTransfer></filter><image id="${id}-raw" href="${esc(src)}" width="${a.size}" height="${a.size}"/><g id="${id}-keyed" filter="url(#${id}-key)"><use href="#${id}-raw"/></g><mask id="${id}-skin" maskUnits="userSpaceOnUse" x="0" y="0" width="${a.size}" height="${a.size}"><use href="#${id}-keyed" filter="url(#${id}-skin-test)"/></mask><g id="${id}-colored"><use href="#${id}-keyed" filter="url(#${id}-dye)"/><g mask="url(#${id}-skin)"><use href="#${id}-keyed" filter="url(#${id}-skin-tone)"/></g></g>${[0,1].map(side=>`<clipPath id="${id}-side-${side}"><rect x="${side*a.size/2}" width="${a.size/2}" height="${a.size}"/></clipPath>`).join('')}<linearGradient id="${id}-fade" x1="0" y1="${fit.top}" x2="0" y2="${fit.top+30}" gradientUnits="userSpaceOnUse"><stop stop-color="black"/><stop offset="1" stop-color="white"/></linearGradient><mask id="${id}-join" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1536"><rect width="1024" height="1536" fill="url(#${id}-fade)"/></mask></defs><g transform="translate(${g.x} ${g.y}) scale(${g.scale})" ${fit.garment==="adventure"&&fit.shaft?`clip-path="url(#${id}-tuck)"`:`mask="url(#${scope}-worn-cloth-occlusion)"`}><g mask="url(#${id}-join)" clip-path="url(#${id}-leg-fit)">${pieces}</g></g></g>`;
+ }
+ function render(fit,src,color,scope,g,tone,front,skinColor){
+  if(fit?.worn)return wornRender(fit,src,color,scope,g,tone,front,skinColor);
+  if(!fit)return '';const sid=scope+'-footwear-'+(front?'front':'back'),source=sid+'-source',spec=specs[fit.shoe];
+  const esc=s=>String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+  const holes=fit.feet.map(({box:[x,y,w,h]})=>fit.shaft?`<ellipse cx="${x+w*.52}" cy="${y+h*.030}" rx="${w*.31}" ry="${h*.024}" fill="black"/>`:`<path fill="black" d="M${x+w*.39} ${y+h*.07}Q${x+w*.51} ${y+h*.025} ${x+w*.63} ${y+h*.07}L${x+w*.73} ${y+h*spec.open}Q${x+w*.5} ${y+h*(spec.open+.055)} ${x+w*.27} ${y+h*spec.open}Z"/>`).join('');
+  const pieces=fit.feet.map(({box:[x,y,w,h],points,side})=>{const n=fit.shaft?24:1;return `<g data-foot="${side}">`+Array.from({length:n},(_,i)=>{const a=i/n,b=(i+1)/n,[cx,width,origin]=rowAt(points,(a+b)/2);return `<svg x="${cx-width*origin}" y="${fit.top+a*fit.height}" width="${width}" height="${(b-a)*fit.height+.3}" viewBox="${x} ${y+a*h} ${w} ${(b-a)*h}" preserveAspectRatio="none" overflow="hidden"><use href="#${source}"/></svg>`;}).join('')+'</g>';}).join('');
+  // Only trousers tuck into tall boots; skirts always occlude their shafts naturally.
+  const tuck=fit.garment==='adventure'&&fit.shaft;
+  return `<g data-studio-part="shoes/${fit.shoe}" data-wear-layer="fitted-shoe-${front?'front':'back'}" data-foot-fit="outfit-v49" data-garment="${fit.garment}"><defs>${tone(sid+'-tone',color,'shoes',front)}<mask id="${sid}-aperture" maskUnits="userSpaceOnUse" x="0" y="0" width="1" height="1"><rect width="1" height="1" fill="white"/>${front?holes:''}</mask><image id="${source}" href="${esc(src)}" width="1" height="1" preserveAspectRatio="none" mask="url(#${sid}-aperture)"/></defs><g transform="translate(${g.x} ${g.y}) scale(${g.scale})" ${front&&!tuck?`mask="url(#${scope}-worn-cloth-occlusion)"`:''} filter="url(#${sid}-tone)">${pieces}</g></g>`;
+ }
+ function thumb(shoe,color,scope,tone){const fit=wornLayout('party',shoe),y=fit.collar-12;return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="350 ${y} 325 ${fit.sole-y+20}" data-art-version="worn-shoes-v49"><defs><mask id="${scope}-worn-cloth-occlusion" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1536"><rect width="1024" height="1536" fill="white"/></mask></defs>${wornRender(fit,path(shoe),color,scope,{x:0,y:0,scale:1},tone,true,'#d99f7b')}</svg>`;}
+ return {profiles,soles,specs,layout:wornLayout,legAt,render,has,path,worn,thumb};
+})();

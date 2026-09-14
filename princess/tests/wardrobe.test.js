@@ -3,7 +3,7 @@ const {test}=require('node:test'),assert=require('node:assert/strict'),fs=requir
 const dir=path.resolve(__dirname,'..'),html=fs.readFileSync(path.join(dir,'index.html'),'utf8');
 function env(){
  const ctx={console,setTimeout,clearTimeout,URL,location:{search:'?heads=natural'},localStorage:{getItem:()=>null,setItem:()=>{}},fetch:async url=>({ok:true,blob:async()=>({bytes:fs.readFileSync(path.join(dir,url))})}),FileReader:class{readAsDataURL(b){this.result='data:image/webp;base64,'+b.bytes.toString('base64');this.onload();}}};
- vm.createContext(ctx);for(const f of ['wardrobe.js','salon.js','studio.js'])vm.runInContext(fs.readFileSync(path.join(dir,f),'utf8'),ctx);
+ vm.createContext(ctx);for(const f of ['wardrobe.js','footwear.js','salon.js','studio.js'])vm.runInContext(fs.readFileSync(path.join(dir,f),'utf8'),ctx);
  const s=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(m=>m[1]).find(s=>s.includes('const PRINCESSES='));
  vm.runInContext(s.slice(0,s.indexOf('// ---------- 시작 ----------')),ctx);vm.runInContext('globalThis.qa={PRINCESSES,DRESSES,defaultState,scopeSvgIds}',ctx);return ctx;
 }
@@ -60,14 +60,19 @@ test('natural wardrobe uses common body proportions and calibrated neck material
  }
 });
 
-test('all painted necks overlap the portrait fade and use a tapered neck mask',()=>{
+test('all painted necks overlap the portrait fade and fit only the local neck band',()=>{
  const e=env();
  for(const p of e.qa.PRINCESSES)for(const id of e.PrincessWardrobe.ids){
   const g=e.PrincessWardrobe.geometry(id,p,e.PrincessStudio.identities,e.PrincessStudio.headAnchors);
   assert(Math.abs(g.y+e.PrincessWardrobe.fits[id].neckY*g.scale-94)<.001);
   for(const style of ['wave','half','braid']){
    const svg=e.PrincessStudio.render({...e.qa.defaultState(p),salonStyle:style,dress:{id,color:null}},p);
-   assert(svg.includes(' 98H'));assert(svg.includes('V124H'));assert(!svg.includes('NaN'));check(svg);
+   assert(svg.includes('y="98"'));assert(svg.includes('height="26"'));
+   assert(svg.includes('<feDisplacementMap'));assert(svg.includes('scale="14"'));
+   const map=decodeURIComponent(svg.match(/<feImage href="data:image\/svg\+xml,([^"]+)"/)[1]);
+   assert(map.includes('y="97"'));assert(map.includes('height="18"'));
+   assert(map.includes('offset="1" stop-color="rgb(128,128,128)"'));
+   assert(!svg.includes('NaN'));check(svg);
   }
  }
 });

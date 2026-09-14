@@ -1,7 +1,7 @@
 'use strict';
 const {chromium}=require('playwright'),assert=require('node:assert/strict');
 (async()=>{const b=await chromium.launch({channel:'msedge',headless:true});try{const page=await b.newPage({serviceWorkers:'block'});await page.goto('http://127.0.0.1:8765/princess/?heads=natural&v=48');
-const rows=await page.evaluate(async()=>{const rows=[];for(const p of PRINCESSES)for(const salonStyle of ['wave','half','braid'])for(const id of ['star','ballgown']){
+const rows=await page.evaluate(async()=>{const rows=[];for(const p of PRINCESSES)for(const salonStyle of ['wave','half','braid'])for(const id of PrincessWardrobe.ids){
  const st={...defaultState(p),salonStyle,dress:{id,color:null},crown:null,neck:null,hand:null,back:null,pet:null},svg=await buildExportSvg(st,p),doc=new DOMParser().parseFromString(svg,'image/svg+xml');doc.querySelector('[data-studio-background]').remove();const url=URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(doc)],{type:'image/svg+xml'})),im=new Image();im.src=url;await im.decode();const c=document.createElement('canvas');c.width=420;c.height=680;const ctx=c.getContext('2d');ctx.drawImage(im,0,0);URL.revokeObjectURL(url);
  const g=PrincessWardrobe.geometry(id,p,PrincessStudio.identities,PrincessStudio.headAnchors);let alpha=255;for(let y=99;y<=113;y++)for(let dx=-4;dx<=4;dx++){const px=ctx.getImageData(Math.round(g.cx+dx),Math.round(24+.96*(24+y)),1,1).data;alpha=Math.min(alpha,px[3]);}rows.push({id:p.id,style:salonStyle,dress:id,alpha});
 }return rows;});for(const r of rows)assert(r.alpha>=245,JSON.stringify(r));console.log('PASS',rows.length,'exported head/body joins: no transparent neck gaps');}finally{await b.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

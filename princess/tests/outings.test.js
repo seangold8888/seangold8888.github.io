@@ -42,5 +42,5 @@ test("corrupt or unsafe storybook records are not rendered",()=>{
 test("offline worker includes both outing modules; photo album keys and studio version remain unchanged",()=>{
  const sw=require("../../sw.js"),html=fs.readFileSync(path.join(dir,"index.html"),"utf8");
  for(const f of ["outings.js?v=1","outings.css?v=1"]){assert.ok(sw.OPTIONAL_SHELL.includes("./princess/"+f));assert.ok(html.includes(f));}
- assert.ok(html.includes("studio.js?v=48"));assert.ok(html.includes("ALBUM_KEY='princess:album'"));
+ assert.ok(html.includes("studio.js?v=49"));assert.ok(html.includes("ALBUM_KEY='princess:album'"));
 });

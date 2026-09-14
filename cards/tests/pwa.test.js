@@ -114,13 +114,13 @@ test("all story episode mp3 files match the service worker fallback list", () =>
   }
 });
 
-test("cache generation v119 preserves exact v63 card assets and canonical navigation aliases", () => {
-  assert.equal(sw.CACHE_VERSION, "v119");
-  assert.match(sw.STATIC_CACHE, /^adventure-box-v119-/);
+test("cache generation v120 preserves exact v63 card assets and canonical navigation aliases", () => {
+  assert.equal(sw.CACHE_VERSION, "v120");
+  assert.match(sw.STATIC_CACHE, /^adventure-box-v120-/);
   const studioImages = fs.readdirSync(path.join(siteRoot, "princess/assets/studio-v3")).filter(name => /\.(webp|jpg)$/.test(name));
   assert.equal(studioImages.length, 95);
   for (const name of studioImages) assert.ok(sw.OPTIONAL_SHELL.includes("./princess/assets/studio-v3/" + name), name);
-  assert.ok(sw.OPTIONAL_SHELL.includes("./princess/studio.js?v=48"));
+  assert.ok(sw.OPTIONAL_SHELL.includes("./princess/studio.js?v=49"));
   for(const id of ["frost","sahara","lotus","sunny"])for(const part of ["body","grip"]){
     const asset="./princess/assets/characters-v36/"+part+"-"+id+".webp";
     assert.ok(sw.OPTIONAL_SHELL.includes(asset));

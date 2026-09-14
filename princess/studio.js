@@ -108,13 +108,14 @@ globalThis.PrincessStudio=(()=>{
   };
   const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
   const key=(cat,id)=>cat+'/'+id;
-  const path=(cat,id)=>cat==='head'&&globalThis.PrincessSalon?.has(id)?PrincessSalon.path(id):cat==='wardrobe'?PrincessWardrobe.path(id):cat==='outfit'?'assets/salon-v44/'+id+'-body.webp':cat==='head'&&id.startsWith('mermaid-')?'assets/salon-v44/'+id+'.webp':cat==='head'?'assets/heads-v43/'+id+'.webp':NEW_CHARACTERS.has(id)&&['body','grip'].includes(cat)?'assets/characters-v36/'+cat+'-'+id+'.webp':cat==='hair'&&id==='bob'?'assets/hair-v35/hair-bob.webp':cat==='grip'?'assets/wear-v5/grip-'+id+'.webp':cat==='body'?'assets/bodies-v4/body-'+id+'.webp':ROOT+cat+'-'+id+(cat==='bg'?'.jpg':'.webp');
+  const path=(cat,id)=>cat==='footwear'?PrincessFootwear.path(id):cat==='head'&&globalThis.PrincessSalon?.has(id)?PrincessSalon.path(id):cat==='wardrobe'?PrincessWardrobe.path(id):cat==='outfit'?'assets/salon-v44/'+id+'-body.webp':cat==='head'&&id.startsWith('mermaid-')?'assets/salon-v44/'+id+'.webp':cat==='head'?'assets/heads-v43/'+id+'.webp':NEW_CHARACTERS.has(id)&&['body','grip'].includes(cat)?'assets/characters-v36/'+cat+'-'+id+'.webp':cat==='hair'&&id==='bob'?'assets/hair-v35/hair-bob.webp':cat==='grip'?'assets/wear-v5/grip-'+id+'.webp':cat==='body'?'assets/bodies-v4/body-'+id+'.webp':ROOT+cat+'-'+id+(cat==='bg'?'.jpg':'.webp');
   const selectedHair=(st,p)=>Object.hasOwn(rects.hair,st.hairStyle)?st.hairStyle:p.hair;
   const href=(cat,id,embedded)=>embedded===undefined?path(cat,id):embedded[key(cat,id)];
   const fileKeys=(st,p)=>{
     const list=[key('bg',st.bg),naturalHeads?key('head',headId(p,st)):key('hair',selectedHair(st,p)),key('body',p.id)];
     if(paintedDress(st))list.push(key('wardrobe',st.dress.id));
     else if(wornTail(st,p))list.push(key('outfit','mermaid-tail'));
+    if(paintedDress(st)&&st.dress.id!=='tail'&&st.shoes&&globalThis.PrincessFootwear?.has(st.shoes.id))list.push(key('footwear',st.shoes.id));
     if(st.hand)list.push(key('grip',p.id));
     for(const cat of ['back','dress','shoes','crown','neck','hand','pet']){
       if(st[cat]&&!(cat==='shoes'&&st.dress?.id==='tail'))list.push(key(cat,st[cat].id));
@@ -228,19 +229,25 @@ globalThis.PrincessStudio=(()=>{
     return {x:(left+right)/2+bodyOffset-(a[2]+a[3])/2*width,width,
       knots:[[0,top-shape.crown],[a[0],top+18],[a[1],57.5],[1,shape.length+top-18]]};
   }
-  function naturalHead(p,scope,embedded,bodyOffset=identities[p.id].dx){
+  function naturalHead(p,scope,embedded,bodyOffset=identities[p.id].dx,fitNeck=false){
     const id=headId(p),src=href('head',id,embedded);
     if(!src)throw new Error('Missing natural head '+p.id);
     const [originalWidth,center,eye]=headFits[id]||headFits[p.id],width=originalWidth*(fullWardrobe ? .90 : 1),a=headAnchors[p.id],cx=(a[1]+a[2])/2+bodyOffset;
     const keyed=globalThis.PrincessSalon?.has(id),keyFilter=scope+'-chroma';
     const neckWidth=44;
+    // Compress only the neck join into the painted body's contour. Neutral map
+    // values outside this small band leave the face and outer hair untouched.
+    // Unlike an early alpha cut, this never opens a transparent slit under the chin.
+    const fitFilter=scope+'-neck-fit';
+    const map=`<svg xmlns="http://www.w3.org/2000/svg" width="420" height="680"><defs><linearGradient id="x" gradientUnits="userSpaceOnUse" x1="${cx-30}" x2="${cx+30}"><stop stop-color="rgb(128,128,128)"/><stop offset=".25" stop-color="rgb(64,128,128)"/><stop offset=".5" stop-color="rgb(128,128,128)"/><stop offset=".75" stop-color="rgb(192,128,128)"/><stop offset="1" stop-color="rgb(128,128,128)"/></linearGradient><linearGradient id="y" gradientUnits="userSpaceOnUse" x1="0" y1="97" x2="0" y2="115"><stop stop-color="black"/><stop offset=".4" stop-color="white"/><stop offset=".65" stop-color="white"/><stop offset="1" stop-color="black"/></linearGradient><mask id="m"><rect x="0" y="97" width="420" height="18" fill="url(#y)"/></mask></defs><rect width="420" height="680" fill="rgb(128,128,128)"/><rect x="0" y="97" width="420" height="18" fill="url(#x)" mask="url(#m)"/></svg>`;
+    const fitDef=fitNeck?`<filter id="${fitFilter}" filterUnits="userSpaceOnUse" x="0" y="-30" width="420" height="710" color-interpolation-filters="sRGB"><feImage href="data:image/svg+xml,${encodeURIComponent(map)}" x="0" y="0" width="420" height="680" result="map"/><feDisplacementMap in="SourceGraphic" in2="map" scale="14" xChannelSelector="R" yChannelSelector="B"/></filter>`:'';
     const mask=scope+'-neck-blend',fade=scope+'-neck-fade';
     const narrowNeck=['kongjwi','briar'].includes(p.id)||(p.id==='rapunzel'&&salonStyle(p)!=='wave');
     const leftNeck=narrowNeck?14:23,rightNeck=narrowNeck||p.id==='rapunzel'?14:23;
-    const neckCut=fullWardrobe?`<path d="M${cx-Math.min(leftNeck,19)} 98H${cx+Math.min(rightNeck,19)}L${cx+rightNeck} 115V124H${cx-leftNeck}V115Z" fill="url(#${fade})"/>`:'';
+    const neckCut=fullWardrobe?`<rect x="${cx-leftNeck}" y="98" width="${leftNeck+rightNeck}" height="26" fill="url(#${fade})"/>`:'';
     // Blend only the short painted neck into the retained body. No mask cuts
     // into the face. Keyed salon art only receives selective green-spill correction.
-    return `<g data-studio-part="head/${p.id}" data-wear-layer="natural-head"><defs>${keyed?PrincessSalon.filter(keyFilter):''}<linearGradient id="${fade}" gradientUnits="userSpaceOnUse" x1="0" y1="${fullWardrobe?100:106}" x2="0" y2="${fullWardrobe?110:122}"><stop stop-color="white"/><stop offset="1" stop-color="black"/></linearGradient><mask id="${mask}" maskUnits="userSpaceOnUse" x="0" y="-30" width="420" height="710"><rect x="0" y="-30" width="420" height="710" fill="white"/>${fullWardrobe?neckCut:`<rect x="${cx-neckWidth/2}" y="106" width="${neckWidth}" height="50" fill="url(#${fade})"/>`}</mask></defs><image href="${escape(src)}" x="${cx-width*center}" y="${65-width*eye}" width="${width}" height="${width}" preserveAspectRatio="xMidYMid meet" ${keyed?`filter="url(#${keyFilter})"`:''} mask="url(#${mask})"/></g>`;
+    return `<g data-studio-part="head/${p.id}" data-wear-layer="natural-head"><defs>${fitDef}${keyed?PrincessSalon.filter(keyFilter):''}<linearGradient id="${fade}" gradientUnits="userSpaceOnUse" x1="0" y1="${fullWardrobe?100:106}" x2="0" y2="${fullWardrobe?110:122}"><stop stop-color="white"/><stop offset="1" stop-color="black"/></linearGradient><mask id="${mask}" maskUnits="userSpaceOnUse" x="0" y="-30" width="420" height="710"><rect x="0" y="-30" width="420" height="710" fill="white"/>${fullWardrobe?neckCut:`<rect x="${cx-neckWidth/2}" y="106" width="${neckWidth}" height="50" fill="url(#${fade})"/>`}</mask></defs><g ${fitNeck?`filter="url(#${fitFilter})"`:''}><image href="${escape(src)}" x="${cx-width*center}" y="${65-width*eye}" width="${width}" height="${width}" preserveAspectRatio="xMidYMid meet" ${keyed?`filter="url(#${keyFilter})"`:''} mask="url(#${mask})"/></g></g>`;
   }
   function hair(p,color,scope,embedded,front=false,bodyOffset=identities[p.id].dx){
     const fit=hairPlacement(p,bodyOffset),asset=scope+'-source',tid=scope+'-tone';
@@ -295,7 +302,7 @@ globalThis.PrincessStudio=(()=>{
       if(!st.neck)return '';const {id,color}=st.neck,sid=scope+'-neck-'+front,fit=accessoryPlacement('neck',id,p);
       if(fullWardrobe&&id!=='norigae'){
         if(!front)return '';
-        const [x,y,w,h]=rects.neck[id],side=id==='scarf'?.19:.22,mid=id==='scarf'?.48:id==='choker'?1.02:.88;
+        const [x,y,w,h]=rects.neck[id],side=id==='scarf'?.19:id==='choker'?.52:.22,mid=id==='scarf'?.48:id==='choker'?.55:.88;
         // Only the front drape is visible. Hide the rear chain, clasp and extender,
         // rather than displaying a flat-lay product loop on top of the throat.
         const shape=`M${x} ${y+h*side} Q${x+w/2} ${y+h*mid} ${x+w} ${y+h*side} V${y+h}H${x}Z`;
@@ -321,12 +328,12 @@ globalThis.PrincessStudio=(()=>{
     if(paintedDress(st)){
       const id=st.dress.id,w=globalThis.PrincessWardrobe,src=href('wardrobe',id,embedded);
       if(!src)throw new Error('Missing painted wardrobe '+id);
-      const shoes=id!=='tail'&&st.shoes,wear=shoes&&shoeWear[st.shoes.id];
-      const geom=w.geometry(id,p,identities,headAnchors),footY=geom.y+w.fits[id].feet*geom.scale,shoeDy=footY-579;
-      const cut=wear?wear[0]+wear[1]*wear[2]+shoeDy:null;
-      // Full skirts cover the shoe shaft; the toe still belongs in front of bare feet.
-      const shoeLayer=shoes?`<defs><clipPath id="${scope}-worn-shoe-hem"><rect x="0" y="${w.short.has(id)?0:footY-22}" width="420" height="680"/></clipPath></defs><g clip-path="url(#${scope}-worn-shoe-hem)"><g transform="translate(0 ${shoeDy})">${fittedShoes(st,p,scope,embedded,true)}</g></g>`:'';
+      const shoes=id!=='tail'&&st.shoes,geom=w.geometry(id,p,identities,headAnchors);
+      const footwear=globalThis.PrincessFootwear,fit=shoes?footwear.layout(id,st.shoes.id):null;
+      const cut=fit?geom.y+fit.cutY*geom.scale:null;
+      const shoeLayer=front=>fit?footwear.render(fit,href(fit.worn?'footwear':'shoes',st.shoes.id,embedded),st.shoes.color,scope,geom,tone,front,w.skin[p.id]):'';
       const bodyArt=w.render(st,p,scope,src,identities,headAnchors,tone,cut);
+      const ground=id==='tail'?'':`<defs><radialGradient id="${scope}-ground"><stop stop-color="#302339" stop-opacity=".22"/><stop offset="1" stop-color="#302339" stop-opacity="0"/></radialGradient></defs><ellipse data-wear-layer="ground-contact" cx="${geom.cx}" cy="${geom.y+w.fits[id].feet*geom.scale+1}" rx="${w.short.has(id)?34:64}" ry="6" fill="url(#${scope}-ground)"/>`;
       let prop='';
       if(st.hand){const a=w.hand(id,p,identities,headAnchors),r=rects.hand[st.hand.id],gp=gripPoints[st.hand.id];
         prop=`<g data-wear-layer="held-prop" transform="translate(${a[0]-(r[0]+r[2]*gp[0])} ${a[1]-(r[1]+r[3]*gp[1])})">${sprite('hand',st.hand.id,st.hand.color,scope+'-hand',embedded)}</g>`;}
@@ -334,7 +341,7 @@ globalThis.PrincessStudio=(()=>{
         <defs><filter id="${scope}-skin-contact" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy=".5" stdDeviation=".4" flood-opacity=".15"/></filter></defs>
         ${background(st.bg,embedded)}<g data-photo-safe="true" transform="translate(0 24) scale(1 .96)">
         <g data-body-identity="${p.id}" data-proportions="unified-v46" transform="translate(0 24)">
-        ${part('back')}${crown(false)}${bodyArt}${shoeLayer}${naturalHead(p,scope,embedded)}${neck(false)}${neck(true)}${crown(true)}${prop}
+        ${ground}${part('back')}${crown(false)}${shoeLayer(false)}${bodyArt}${shoeLayer(true)}${naturalHead(p,scope,embedded,identities[p.id].dx,true)}${neck(false)}${neck(true)}${crown(true)}${prop}
         </g><g transform="translate(0 24)">${part('pet')}</g></g></svg>`;
     }
     if(wornTail(st,p)){
@@ -373,6 +380,7 @@ globalThis.PrincessStudio=(()=>{
     </svg>`;
   }
   function thumb(cat,item,color,embedded){
+    if(fullWardrobe&&cat==='shoes'&&globalThis.PrincessFootwear?.has(item.id))return PrincessFootwear.thumb(item.id,color,'shoe-thumb-'+item.id,tone);
     if(fullWardrobe&&cat==='dress'){
       const id='wardrobe-thumb-'+item.id;
       return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1536" data-art-version="wardrobe-v45"><defs>${tone(id,color,'dress')}</defs><image href="${escape(path('wardrobe',item.id))}" width="1024" height="1536"/></svg>`;
@@ -389,7 +397,7 @@ globalThis.PrincessStudio=(()=>{
     if(cache.has(k))return Promise.resolve(cache.get(k));
     if(pending.has(k))return pending.get(k);
     const [cat,id]=k.split('/');
-    const promise=fetch(path(cat,id),{cache:'force-cache'}).then(r=>{
+    const promise=fetch(path(cat,id),{cache:'force-cache',...(typeof AbortSignal!=='undefined'&&AbortSignal.timeout?{signal:AbortSignal.timeout(15000)}:{})}).then(r=>{
       if(!r.ok)throw new Error('Asset download failed: '+k);
       return r.blob();
     }).then(blob=>{
