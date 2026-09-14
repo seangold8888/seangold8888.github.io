@@ -233,7 +233,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 </div>
 <div id="toast"></div>
 
-<script src="studio.js?v=44"></script>
+<script src="wardrobe.js?v=1"></script>
+<script src="studio.js?v=45"></script>
 <script src="icons.js?v=1"></script>
 <script src="outings.js?v=1"></script>
 <script>
@@ -1140,7 +1141,8 @@ function itemOf(key,id){const c=CATS.find(x=>x.key===key);return c.list.find(i=>
 function scopeSvgIds(svg,scope){
   return svg
     .replace(/\bid="([^"]+)"/g,(m,id)=>'id="'+scope+'-'+id+'"')
-    .replace(/url\(#([^)]+)\)/g,(m,id)=>'url(#'+scope+'-'+id+')');
+    .replace(/url\(#([^)]+)\)/g,(m,id)=>'url(#'+scope+'-'+id+')')
+    .replace(/href="#([^"]+)"/g,(m,id)=>'href="#'+scope+'-'+id+'"');
 }
 function materialDefs(){
   return `<defs>
@@ -1376,7 +1378,10 @@ function renderPanel(){
     if(state[tab]) state[tab].color=c; else state[tab]={id:cat.list[0].id,color:c};
     persist();click();renderStage();rerenderPanelKeepingPosition();
   }));
-  if(tab==='dress'&&PrincessStudio.wornTail(state,p)){
+  if(tab==='dress'&&PrincessStudio.fullWardrobe){
+    intro.textContent='모든 공주가 입을 수 있는 맞춤 드레스 13종이에요. 옷만 색을 바꿔요.';
+    if(state.dress?.id==='rainbow'){sw.innerHTML='<span class="lbl">무지개 드레스 · 원래 무지개색</span>';}
+  }else if(tab==='dress'&&PrincessStudio.wornTail(state,p)){
     sw.innerHTML='<span class="lbl">몸에 맞춰 그린 바다빛 복장 · 원래 색</span>';
     intro.textContent='인어 꼬리는 몸과 옷을 함께 그렸어요. 다른 옷도 고를 수 있어요.';
   }

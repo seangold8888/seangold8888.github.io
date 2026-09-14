@@ -6,14 +6,14 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
  try{for(const viewport of [{width:1180,height:820},{width:820,height:1180},{width:390,height:844}]){
  const context=await browser.newContext({viewport,serviceWorkers:'block'}),page=await context.newPage(),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
- await page.goto('http://127.0.0.1:8765/princess/?heads=natural&princess=mermaid&v=44');
+ await page.goto('http://127.0.0.1:8765/princess/?heads=natural&princess=mermaid&v=45');
  await page.locator('#tabs [data-key="hair"]').click();
  assert.equal(await page.locator('[data-salon]').count(),3);
  for(const style of ['half','braid','wave']){
  await page.locator('[data-salon="'+style+'"]').click();
  assert.equal(await page.locator('[data-salon="'+style+'"]').getAttribute('aria-pressed'),'true');
  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('princess:outfits')).mermaid.salonStyle),style);
- assert.equal(await page.locator('#stage [data-art-version="salon-worn-v44"]').count(),1);
+ assert.equal(await page.locator('#stage [data-art-version="wardrobe-v45"]').count(),1);
  await page.waitForTimeout(700);
  if(viewport.width===820)await page.locator('#stage').screenshot({path:path.join(out,style+'.png')});
  }
@@ -21,9 +21,9 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
  await page.locator('#tabs [data-key="hair"]').click();
  assert.equal(await page.locator('[data-salon="braid"]').getAttribute('aria-pressed'),'true');
  await page.locator('#tabs [data-key="dress"]').click();
- assert.equal(await page.locator('#swatches .sw').count(),0,'no fake recoloring of skin/body');
+ assert(await page.locator('#swatches .sw').count()>0,'separate cloth material permits recoloring without changing skin');
  await page.locator('#items [data-id="party"]').click();
- assert.equal(await page.locator('#stage [data-studio-part="dress/party"]').count(),1);
+ assert.equal(await page.locator('#stage [data-studio-part="wardrobe/party"]').count(),1);
  assert(await page.locator('#swatches .sw').count()>0);
  await page.locator('#items [data-id="tail"]').click();
  await page.locator('#tabs [data-key="hair"]').click();
