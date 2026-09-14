@@ -1,0 +1,137 @@
+{
+  "mode": "built-in image generation; runtime SVG chroma-key compositing",
+  "rows": [
+    {
+      "prompt": "Edit the referenced fictional princess portrait. Preserve her identical face, expression, skin tone, hair color, front view, head size, eye/chin position and short neck. Change only her hairstyle to a natural salon HALF-UP BOB: sweep side sections back into a small low twist, loose short bob beneath, ears and cheeks unobscured, real roots and fine strands. Replace background with perfectly uniform flat chroma-key GREEN #00FF00, no lighting on background, no shadow or green spill on subject, no checkerboard. Head and short neck only; no shoulders, jewelry, outline, text or props. Square composition matching reference. This is a chroma-key game sprite: green is only the background.",
+      "id": "snow",
+      "style": "half",
+      "source": "C:\\Users\\김시현\\.codex\\generated_images\\01a05219-86c8-7d13-86e3-0697aed74889\\exec-25bbbd3f-1a62-44f2-ba71-d2017d8565d3.png"
+    },
+    {
+      "id": "snow",
+      "style": "braid",
+      "prompt": "Use case: identity-preserve. Edit the reference fictional princess portrait. Preserve IDENTICAL face, expression, skin tone, eye color, natural hair color, front view, head size, eye/chin coordinates and short neck. Change ONLY hairstyle: one neat side braid beside the neck on viewer right, with swept-back roots. For coily hair use natural textured braiding. Forehead, eyes and cheeks remain unobscured. Preserve original face size and placement; do NOT shrink face to fit hair. Original square canvas. Head and existing short neck only, no shoulders, clothes, jewelry, props, text or outlines. Background must be perfectly uniform flat vivid chroma-key GREEN #00FF00, with no pattern, shading or shadow. No green spill or green accessories on subject. Green is only the background. This game sprite is composited by removing the green, so maintain crisp fine hair edges.",
+      "source": "C:\\Users\\김시현\\.codex\\generated_images\\01a05219-86c8-7d13-86e3-0697aed74889\\exec-52577247-f159-4dec-87ac-6ce542611cb1.png"
+    },
+    {
+      "id": "cinder",
+      "style": "half",
+      "prompt": "Use case: identity-preserve. Edit the reference fictional princess portrait. Preserve IDENTICAL face, expression, skin tone, eye color, natural hair color, front view, head size, eye/chin coordinates and short neck. Change ONLY hairstyle: salon half-up style, side sections swept back into a small low twist, loose waves below (for tightly coiled hair retain natural coils in a half-up puff). Natural rooted hair, not a wig. Forehead, eyes and cheeks remain unobscured. Preserve original face size and placement; do NOT shrink face to fit hair. Original square canvas. Head and existing short neck only, no shoulders, clothes, jewelry, props, text or outlines. Background must be perfectly uniform flat vivid chroma-key GREEN #00FF00, with no pattern, shading or shadow. No green spill or green accessories on subject. Green is only the background. This game sprite is composited by removing the green, so maintain crisp fine hair edges.",
+      "source": "C:\\Users\\김시현\\.codex\\generated_images\\01a05219-86c8-7d13-86e3-0697aed74889\\exec-215d6f1f-50a6-4c7e-a21b-54c0e34bdcfa.png"
+    },
+    {
+      "id": "cinder",
+      "style": "braid",
+      "prompt": "Use case: identity-preserve. Edit the reference fictional princess portrait. Preserve IDENTICAL face, expression, skin tone, eye color, natural hair color, front view, head size, eye/chin coordinates and short neck. Change ONLY hairstyle: one neat side braid beside the neck on viewer right, with swept-back roots. For coily hair use natural textured braiding. Forehead, eyes and cheeks remain unobscured. Preserve original face size and placement; do NOT shrink face to fit hair. Original square canvas. Head and existing short neck only, no shoulders, clothes, jewelry, props, text or outlines. Background must be perfectly uniform flat vivid chroma-key GREEN #00FF00, with no pattern, shading or shadow. No green spill or green accessories on subject. Green is only the background. This game sprite is composited by removing the green, so maintain crisp fine hair edges.",
+      "source": "C:\\Users\\김시현\\.codex\\generated_images\\01a05219-86c8-7d13-86e3-0697aed74889\\exec-3d9a2a3d-e293-4cf8-a2c2-27c6464e0dc0.png"
+    },
+    {
+      "id": "rapunzel",
+      "style": "half",
+      "prompt": "Use case: identity-preserve. Edit the reference fictional princess portrait. Preserve IDENTICAL face, expression, skin tone, eye color, natural hair color, front view, head size, eye/chin coordinates and short neck. Change ONLY hairstyle: salon half-up style, side sections swept back into a small low twist, loose waves below (for tightly coiled hair retain natural coils in a half-up puff). Natural rooted hair, not a wig. Forehead, eyes and cheeks remain unobscured. Preserve original face size and placement; do NOT shrink face to fit hair. Original square canvas. Head and existing short neck only, no shoulders, clothes, jewelry, props, text or outlines. Background must be perfectly uniform flat vivid chroma-key GREEN #00FF00, with no pattern, shading or shadow. No green spill or green accessories on subject. Green is only the background. This game sprite is composited by removing the green, so maintain crisp fine hair edges.",
+      "source": "C:\\Users\\김시현\\.codex\\generated_images\\01a05219-86c8-7d13-86e3-0697aed74889\\exec-ca59a6fa-372a-4ab1-bdd6-c30982c36f76.png"
+    },
+    {
+      "id": "rapunzel",
+      "style": "braid",
+      "prompt": "Use case: identity-preserve. Edit the reference fictional princess portrait. Preserve IDENTICAL face, expression, skin tone, eye color, natural hair color, front view, head size, eye/chin coordinates and short neck. Change ONLY hairstyle: two tidy loose braids over the shoulders, with natural swept-back roots, clearly different from the existing single braid. Forehead, eyes and cheeks remain unobscured. Preserve original face size and placement; do NOT shrink face to fit hair. Original square canvas. Head and existing short neck only, no shoulders, clothes, jewelry, props, text or outlines. Background must be perfectly uniform flat vivid chroma-key GREEN #00FF00, with no pattern, shading or shadow. No green spill or green accessories on subject. Green is only the background. This game sprite is composited by removing the green, so maintain crisp fine hair edges.",
+      "source": "C:\\Users\\김시현\\.codex\\generated_images\\01a05219-86c8-7d13-86e3-0697aed74889\\exec-9459b0a3-aa4a-4028-8d1d-682cda04720c.png"
+    },
+    {
+      "id": "thumb",
+      "style": "half",
+      "prompt": "Use case: identity-preserve. Edit the reference fictional princess portrait. Preserve IDENTICAL face, expression, skin tone, eye color, natural hair color, front view, head size, eye/chin coordinates and short neck. Change ONLY hairstyle: salon half-up style, side sections swept back into a small low twist, loose waves below (for tightly coiled hair retain natural coils in a half-up puff). Natural rooted hair, not a wig. Forehead, eyes and cheeks remain unobscured. Preserve original face size and placement; do NOT shrink face to fit hair. Original square canvas. Head and existing short neck only, no shoulders, clothes, jewelry, props, text or outlines. Background must be perfectly uniform flat vivid chroma-key GREEN #00FF00, with no pattern, shading or shadow. No green spill or green accessories on subject. Green is only the background. This game sprite is composited by removing the green, so maintain crisp fine hair edges.",
+      "source": "C:\\Users\\김시현\\.codex\\generated_images\\01a05219-86c8-7d13-86e3-0697aed74889\\exec-cc809541-49cb-4d3a-91b1-6978696dee67.png"
+    },
+    {
+      "id": "thumb",
+      "style": "braid",
+      "prompt": "Use case: identity-preserve. Edit the reference fictional princess portrait. Preserve IDENTICAL face, expression, skin tone, eye color, natural hair color, front view, head size, eye/chin coordinates and short neck. Change ONLY hairstyle: one neat side braid beside the neck on viewer right, with swept-back roots. For coily hair use natural textured braiding. Forehead, eyes and cheeks remain unobscured. Preserve original face size and placement; do NOT shrink face to fit hair. Original square canvas. Head and existing short neck only, no shoulders, clothes, jewelry, props, text or outlines. Background must be perfectly uniform flat vivid chroma-key GREEN #00FF00, with no pattern, shading or shadow. No green spill or green accessories on subject. Green is only the background. This game sprite is composited by removing the green, so maintain crisp fine hair edges.",
+      "source": "C:\\Users\\김시현\\.codex\\generated_images\\01a05219-86c8-7d13-86e3-0697aed74889\\exec-e5435f11-5dee-4cc1-a374-fe5918b6ebbc.png"
+    },
+    {
+      "id": "kongjwi",
+      "style": "half",
+      "prompt": "Use case: identity-preserve. Edit the reference fictional princess portrait. Preserve IDENTICAL face, expression, skin tone, eye color, natural hair color, front view, head size, eye/chin coordinates and short neck. Change ONLY hairstyle: salon half-up style, side sections swept back into a small low twist, loose waves below (for tightly coiled hair retain natural coils in a half-up puff). Natural rooted hair, not a wig. Forehead, eyes and cheeks remain unobscured. Preserve original face size and placement; do NOT shrink face to fit hair. Original square canvas. Head and existing short neck only, no shoulders, clothes, jewelry, props, text or outlines. Background must be perfectly uniform flat vivid chroma-key GREEN #00FF00, with no pattern, shading or shadow. No green spill or green accessories on subject. Green is only the background. This game sprite is composited by removing the green, so maintain crisp fine hair edges.",
+      "source": "C:\\Users\\김시현\\.codex\\generated_images\\01a05219-86c8-7d13-86e3-0697aed74889\\exec-650ea89b-bee8-4a0b-aef4-cd5f0714478e.png"
+    },
+    {
+      "id": "kongjwi",
+      "style": "braid",
+      "prompt": "Use case: identity-preserve. Edit the reference fictional princess portrait. Preserve IDENTICAL face, expression, skin tone, eye color, natural hair color, front view, head size, eye/chin coordinates and short neck. Change ONLY hairstyle: two tidy loose braids over the shoulders, with natural swept-back roots, clearly different from the existing single braid. Forehead, eyes and cheeks remain unobscured. Preserve original face size and placement; do NOT shrink face to fit hair. Original square canvas. Head and existing short neck only, no shoulders, clothes, jewelry, props, text or outlines. Background must be perfectly uniform flat vivid chroma-key GREEN #00FF00, with no pattern, shading or shadow. No green spill or green accessories on subject. Green is only the background. This game sprite is composited by removing the green, so maintain crisp fine hair edges.",
+      "source": "C:\\Users\\김시현\\.codex\\generated_images\\01a05219-86c8-7d13-86e3-0697aed74889\\exec-06453d40-4fc9-41ae-bf40-191d8bcb35c8.png"
+    },
+    {
+      "id": "briar",
+      "style": "half",
+      "prompt": "Use case: identity-preserve. Edit the reference fictional princess portrait. Preserve IDENTICAL face, expression, skin tone, eye color, natural hair color, front view, head size, eye/chin coordinates and short neck. Change ONLY hairstyle: salon half-up style, side sections swept back into a small low twist, loose waves below (for tightly coiled hair retain natural coils in a half-up puff). Natural rooted hair, not a wig. Forehead, eyes and cheeks remain unobscured. Preserve original face size and placement; do NOT shrink face to fit hair. Original square canvas. Head and existing short neck only, no shoulders, clothes, jewelry, props, text or outlines. Background must be perfectly uniform flat vivid chroma-key GREEN #00FF00, with no pattern, shading or shadow. No green spill or green accessories on subject. Green is only the background. This game sprite is composited by removing the green, so maintain crisp fine hair edges.",
+      "source": "C:\\Users\\김시현\\.codex\\generated_images\\01a05219-86c8-7d13-86e3-0697aed74889\\exec-39719c63-9cd6-410a-aaab-29253ac48f2a.png"
+    },
+    {
+      "id": "briar",
+      "style": "braid",
+      "prompt": "Use case: identity-preserve. Edit the reference fictional princess portrait. Preserve IDENTICAL face, expression, skin tone, eye color, natural hair color, front view, head size, eye/chin coordinates and short neck. Change ONLY hairstyle: one neat side braid beside the neck on viewer right, with swept-back roots. For coily hair use natural textured braiding. Forehead, eyes and cheeks remain unobscured. Preserve original face size and placement; do NOT shrink face to fit hair. Original square canvas. Head and existing short neck only, no shoulders, clothes, jewelry, props, text or outlines. Background must be perfectly uniform flat vivid chroma-key GREEN #00FF00, with no pattern, shading or shadow. No green spill or green accessories on subject. Green is only the background. This game sprite is composited by removing the green, so maintain crisp fine hair edges.",
+      "source": "C:\\Users\\김시현\\.codex\\generated_images\\01a05219-86c8-7d13-86e3-0697aed74889\\exec-5131abe0-9d74-4310-84b3-658702f74b9c.png"
+    },
+    {
+      "id": "moon",
+      "style": "half",
+      "prompt": "Use case: identity-preserve. Edit the reference fictional princess portrait. Preserve IDENTICAL face, expression, skin tone, eye color, natural hair color, front view, head size, eye/chin coordinates and short neck. Change ONLY hairstyle: salon half-up style, side sections swept back into a small low twist, loose waves below (for tightly coiled hair retain natural coils in a half-up puff). Natural rooted hair, not a wig. Forehead, eyes and cheeks remain unobscured. Preserve original face size and placement; do NOT shrink face to fit hair. Original square canvas. Head and existing short neck only, no shoulders, clothes, jewelry, props, text or outlines. Background must be perfectly uniform flat vivid chroma-key GREEN #00FF00, with no pattern, shading or shadow. No green spill or green accessories on subject. Green is only the background. This game sprite is composited by removing the green, so maintain crisp fine hair edges.",
+      "source": "C:\\Users\\김시현\\.codex\\generated_images\\01a05219-86c8-7d13-86e3-0697aed74889\\exec-087849a3-d579-42c5-8182-0f33fbef56be.png"
+    },
+    {
+      "id": "moon",
+      "style": "braid",
+      "prompt": "Use case: identity-preserve. Edit the reference fictional princess portrait. Preserve IDENTICAL face, expression, skin tone, eye color, natural hair color, front view, head size, eye/chin coordinates and short neck. Change ONLY hairstyle: one neat side braid beside the neck on viewer right, with swept-back roots. For coily hair use natural textured braiding. Forehead, eyes and cheeks remain unobscured. Preserve original face size and placement; do NOT shrink face to fit hair. Original square canvas. Head and existing short neck only, no shoulders, clothes, jewelry, props, text or outlines. Background must be perfectly uniform flat vivid chroma-key GREEN #00FF00, with no pattern, shading or shadow. No green spill or green accessories on subject. Green is only the background. This game sprite is composited by removing the green, so maintain crisp fine hair edges.",
+      "source": "C:\\Users\\김시현\\.codex\\generated_images\\01a05219-86c8-7d13-86e3-0697aed74889\\exec-af79f2f6-9a2f-4850-b6de-71d111dd332a.png"
+    },
+    {
+      "id": "frost",
+      "style": "half",
+      "prompt": "Use case: identity-preserve. Edit the reference fictional princess portrait. Preserve IDENTICAL face, expression, skin tone, eye color, natural hair color, front view, head size, eye/chin coordinates and short neck. Change ONLY hairstyle: salon half-up style, side sections swept back into a small low twist, loose waves below (for tightly coiled hair retain natural coils in a half-up puff). Natural rooted hair, not a wig. Forehead, eyes and cheeks remain unobscured. Preserve original face size and placement; do NOT shrink face to fit hair. Original square canvas. Head and existing short neck only, no shoulders, clothes, jewelry, props, text or outlines. Background must be perfectly uniform flat vivid chroma-key GREEN #00FF00, with no pattern, shading or shadow. No green spill or green accessories on subject. Green is only the background. This game sprite is composited by removing the green, so maintain crisp fine hair edges.",
+      "source": "C:\\Users\\김시현\\.codex\\generated_images\\01a05219-86c8-7d13-86e3-0697aed74889\\exec-ede316a5-d7fd-463b-96ce-217610b5efec.png"
+    },
+    {
+      "id": "frost",
+      "style": "braid",
+      "prompt": "Use case: identity-preserve. Edit the reference fictional princess portrait. Preserve IDENTICAL face, expression, skin tone, eye color, natural hair color, front view, head size, eye/chin coordinates and short neck. Change ONLY hairstyle: one neat side braid beside the neck on viewer right, with swept-back roots. For coily hair use natural textured braiding. Forehead, eyes and cheeks remain unobscured. Preserve original face size and placement; do NOT shrink face to fit hair. Original square canvas. Head and existing short neck only, no shoulders, clothes, jewelry, props, text or outlines. Background must be perfectly uniform flat vivid chroma-key GREEN #00FF00, with no pattern, shading or shadow. No green spill or green accessories on subject. Green is only the background. This game sprite is composited by removing the green, so maintain crisp fine hair edges.",
+      "source": "C:\\Users\\김시현\\.codex\\generated_images\\01a05219-86c8-7d13-86e3-0697aed74889\\exec-c95df5eb-c0e7-427a-8206-05d46c7f1bed.png"
+    },
+    {
+      "id": "sahara",
+      "style": "half",
+      "prompt": "Use case: identity-preserve. Edit the reference fictional princess portrait. Preserve IDENTICAL face, expression, skin tone, eye color, natural hair color, front view, head size, eye/chin coordinates and short neck. Change ONLY hairstyle: salon half-up style, side sections swept back into a small low twist, loose waves below (for tightly coiled hair retain natural coils in a half-up puff). Natural rooted hair, not a wig. Forehead, eyes and cheeks remain unobscured. Preserve original face size and placement; do NOT shrink face to fit hair. Original square canvas. Head and existing short neck only, no shoulders, clothes, jewelry, props, text or outlines. Background must be perfectly uniform flat vivid chroma-key GREEN #00FF00, with no pattern, shading or shadow. No green spill or green accessories on subject. Green is only the background. This game sprite is composited by removing the green, so maintain crisp fine hair edges.",
+      "source": "C:\\Users\\김시현\\.codex\\generated_images\\01a05219-86c8-7d13-86e3-0697aed74889\\exec-e0c1aa98-8dea-4ac5-80e0-49be262ec0c5.png"
+    },
+    {
+      "id": "sahara",
+      "style": "braid",
+      "prompt": "Use case: identity-preserve. Edit the reference fictional princess portrait. Preserve IDENTICAL face, expression, skin tone, eye color, natural hair color, front view, head size, eye/chin coordinates and short neck. Change ONLY hairstyle: one neat side braid beside the neck on viewer right, with swept-back roots. For coily hair use natural textured braiding. Forehead, eyes and cheeks remain unobscured. Preserve original face size and placement; do NOT shrink face to fit hair. Original square canvas. Head and existing short neck only, no shoulders, clothes, jewelry, props, text or outlines. Background must be perfectly uniform flat vivid chroma-key GREEN #00FF00, with no pattern, shading or shadow. No green spill or green accessories on subject. Green is only the background. This game sprite is composited by removing the green, so maintain crisp fine hair edges.",
+      "source": "C:\\Users\\김시현\\.codex\\generated_images\\01a05219-86c8-7d13-86e3-0697aed74889\\exec-65780c47-2b9c-4e7c-919d-6d4cc16b1e68.png"
+    },
+    {
+      "id": "lotus",
+      "style": "half",
+      "prompt": "Use case: identity-preserve. Edit the reference fictional princess portrait. Preserve IDENTICAL face, expression, skin tone, eye color, natural hair color, front view, head size, eye/chin coordinates and short neck. Change ONLY hairstyle: salon half-up style, side sections swept back into a small low twist, loose waves below (for tightly coiled hair retain natural coils in a half-up puff). Natural rooted hair, not a wig. Forehead, eyes and cheeks remain unobscured. Preserve original face size and placement; do NOT shrink face to fit hair. Original square canvas. Head and existing short neck only, no shoulders, clothes, jewelry, props, text or outlines. Background must be perfectly uniform flat vivid chroma-key GREEN #00FF00, with no pattern, shading or shadow. No green spill or green accessories on subject. Green is only the background. This game sprite is composited by removing the green, so maintain crisp fine hair edges.",
+      "source": "C:\\Users\\김시현\\.codex\\generated_images\\01a05219-86c8-7d13-86e3-0697aed74889\\exec-e8151c68-f0e9-46ff-9768-864dc58d3053.png"
+    },
+    {
+      "id": "lotus",
+      "style": "braid",
+      "prompt": "Use case: identity-preserve. Edit the reference fictional princess portrait. Preserve IDENTICAL face, expression, skin tone, eye color, natural hair color, front view, head size, eye/chin coordinates and short neck. Change ONLY hairstyle: one neat side braid beside the neck on viewer right, with swept-back roots. For coily hair use natural textured braiding. Forehead, eyes and cheeks remain unobscured. Preserve original face size and placement; do NOT shrink face to fit hair. Original square canvas. Head and existing short neck only, no shoulders, clothes, jewelry, props, text or outlines. Background must be perfectly uniform flat vivid chroma-key GREEN #00FF00, with no pattern, shading or shadow. No green spill or green accessories on subject. Green is only the background. This game sprite is composited by removing the green, so maintain crisp fine hair edges.",
+      "source": "C:\\Users\\김시현\\.codex\\generated_images\\01a05219-86c8-7d13-86e3-0697aed74889\\exec-a917f698-40ab-485e-b0fa-4af662a45782.png"
+    },
+    {
+      "id": "sunny",
+      "style": "half",
+      "prompt": "Use case: identity-preserve. Edit the reference fictional princess portrait. Preserve IDENTICAL face, expression, skin tone, eye color, natural hair color, front view, head size, eye/chin coordinates and short neck. Change ONLY hairstyle: salon half-up style, side sections swept back into a small low twist, loose waves below (for tightly coiled hair retain natural coils in a half-up puff). Natural rooted hair, not a wig. Forehead, eyes and cheeks remain unobscured. Preserve original face size and placement; do NOT shrink face to fit hair. Original square canvas. Head and existing short neck only, no shoulders, clothes, jewelry, props, text or outlines. Background must be perfectly uniform flat vivid chroma-key GREEN #00FF00, with no pattern, shading or shadow. No green spill or green accessories on subject. Green is only the background. This game sprite is composited by removing the green, so maintain crisp fine hair edges.",
+      "source": "C:\\Users\\김시현\\.codex\\generated_images\\01a05219-86c8-7d13-86e3-0697aed74889\\exec-6e3fb983-8dc6-4ea5-a87d-02f4fcd3f5b4.png"
+    },
+    {
+      "id": "sunny",
+      "style": "braid",
+      "prompt": "Use case: identity-preserve. Edit the reference fictional princess portrait. Preserve IDENTICAL face, expression, skin tone, eye color, natural hair color, front view, head size, eye/chin coordinates and short neck. Change ONLY hairstyle: one neat side braid beside the neck on viewer right, with swept-back roots. For coily hair use natural textured braiding. Forehead, eyes and cheeks remain unobscured. Preserve original face size and placement; do NOT shrink face to fit hair. Original square canvas. Head and existing short neck only, no shoulders, clothes, jewelry, props, text or outlines. Background must be perfectly uniform flat vivid chroma-key GREEN #00FF00, with no pattern, shading or shadow. No green spill or green accessories on subject. Green is only the background. This game sprite is composited by removing the green, so maintain crisp fine hair edges.",
+      "source": "C:\\Users\\김시현\\.codex\\generated_images\\01a05219-86c8-7d13-86e3-0697aed74889\\exec-5e57ce3c-2f80-4ab5-a996-cba4050bc5d2.png"
+    }
+  ]
+}

@@ -7,9 +7,9 @@ globalThis.PrincessStudio=(()=>{
   const naturalHeads=/(?:[?&])heads=natural(?:&|$)/.test(globalThis.location?.search||'');
   const fullWardrobe=naturalHeads&&!!globalThis.PrincessWardrobe;
   const paintedDress=st=>fullWardrobe&&PrincessWardrobe.has(st.dress?.id);
-  const salonStyles=[{id:'wave',name:'바다 웨이브'},{id:'half',name:'단정한 반묶음'},{id:'braid',name:'옆으로 땋기'}];
+  const salonStyles=[{id:'wave',name:'기본 스타일'},{id:'half',name:'단정한 반묶음'},{id:'braid',name:'땋은 머리'}];
   const salonStyle=st=>salonStyles.some(s=>s.id===st?.salonStyle)?st.salonStyle:'wave';
-  const headId=(p,st=p)=>p.id==='mermaid'&&salonStyle(st)!=='wave'?'mermaid-'+salonStyle(st):p.id;
+  const headId=(p,st=p)=>salonStyle(st)!=='wave'&&(p.id==='mermaid'||globalThis.PrincessSalon?.has(p.id+'-'+salonStyle(st)))?p.id+'-'+salonStyle(st):p.id;
   const wornTail=(st,p)=>naturalHeads&&p.id==='mermaid'&&st.dress?.id==='tail';
   // Uniform scaling only: width, facial center X and eye row on the original square.
   const headFits={
@@ -19,6 +19,7 @@ globalThis.PrincessStudio=(()=>{
     briar:[118,.500,510/1254],moon:[116,.500,650/1254],
     frost:[120,.500,.485],sahara:[120,.500,.452],
     'mermaid-half':[116,.503,521/1254],'mermaid-braid':[116,.503,521/1254],
+    'moon-braid':[116,.500,600/1254],
     lotus:[120,.500,.485],sunny:[116,.500,.455]
   };
   const NEW_CHARACTERS=new Set(['frost','sahara','lotus','sunny']);
@@ -104,7 +105,7 @@ globalThis.PrincessStudio=(()=>{
   };
   const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
   const key=(cat,id)=>cat+'/'+id;
-  const path=(cat,id)=>cat==='wardrobe'?PrincessWardrobe.path(id):cat==='outfit'?'assets/salon-v44/'+id+'-body.webp':cat==='head'&&id.startsWith('mermaid-')?'assets/salon-v44/'+id+'.webp':cat==='head'?'assets/heads-v43/'+id+'.webp':NEW_CHARACTERS.has(id)&&['body','grip'].includes(cat)?'assets/characters-v36/'+cat+'-'+id+'.webp':cat==='hair'&&id==='bob'?'assets/hair-v35/hair-bob.webp':cat==='grip'?'assets/wear-v5/grip-'+id+'.webp':cat==='body'?'assets/bodies-v4/body-'+id+'.webp':ROOT+cat+'-'+id+(cat==='bg'?'.jpg':'.webp');
+  const path=(cat,id)=>cat==='head'&&globalThis.PrincessSalon?.has(id)?PrincessSalon.path(id):cat==='wardrobe'?PrincessWardrobe.path(id):cat==='outfit'?'assets/salon-v44/'+id+'-body.webp':cat==='head'&&id.startsWith('mermaid-')?'assets/salon-v44/'+id+'.webp':cat==='head'?'assets/heads-v43/'+id+'.webp':NEW_CHARACTERS.has(id)&&['body','grip'].includes(cat)?'assets/characters-v36/'+cat+'-'+id+'.webp':cat==='hair'&&id==='bob'?'assets/hair-v35/hair-bob.webp':cat==='grip'?'assets/wear-v5/grip-'+id+'.webp':cat==='body'?'assets/bodies-v4/body-'+id+'.webp':ROOT+cat+'-'+id+(cat==='bg'?'.jpg':'.webp');
   const selectedHair=(st,p)=>Object.hasOwn(rects.hair,st.hairStyle)?st.hairStyle:p.hair;
   const href=(cat,id,embedded)=>embedded===undefined?path(cat,id):embedded[key(cat,id)];
   const fileKeys=(st,p)=>{
@@ -227,11 +228,13 @@ globalThis.PrincessStudio=(()=>{
   function naturalHead(p,scope,embedded,bodyOffset=identities[p.id].dx){
     const id=headId(p),src=href('head',id,embedded);
     if(!src)throw new Error('Missing natural head '+p.id);
-    const [originalWidth,center,eye]=headFits[id],width=originalWidth*(fullWardrobe ? .90 : 1),a=headAnchors[p.id],cx=(a[1]+a[2])/2+bodyOffset;
+    const [originalWidth,center,eye]=headFits[id]||headFits[p.id],width=originalWidth*(fullWardrobe ? .90 : 1),a=headAnchors[p.id],cx=(a[1]+a[2])/2+bodyOffset;
+    const keyed=globalThis.PrincessSalon?.has(id),keyFilter=scope+'-chroma';
+    const neckWidth=fullWardrobe?({rapunzel:28,kongjwi:28,briar:30,moon:32}[p.id]||34):44;
     const mask=scope+'-neck-blend',fade=scope+'-neck-fade';
     // Blend only the short painted neck into the retained body. No mask cuts
-    // into the face or hair, and no recoloring filter touches the new portrait.
-    return `<g data-studio-part="head/${p.id}" data-wear-layer="natural-head"><defs><linearGradient id="${fade}" gradientUnits="userSpaceOnUse" x1="0" y1="${fullWardrobe?100:106}" x2="0" y2="${fullWardrobe?110:122}"><stop stop-color="white"/><stop offset="1" stop-color="black"/></linearGradient><mask id="${mask}" maskUnits="userSpaceOnUse" x="0" y="-30" width="420" height="710"><rect x="0" y="-30" width="420" height="710" fill="white"/><rect x="${cx-27}" y="${fullWardrobe?100:106}" width="54" height="50" fill="url(#${fade})"/></mask></defs><image href="${escape(src)}" x="${cx-width*center}" y="${65-width*eye}" width="${width}" height="${width}" preserveAspectRatio="xMidYMid meet" mask="url(#${mask})"/></g>`;
+    // into the face. Keyed salon art only receives selective green-spill correction.
+    return `<g data-studio-part="head/${p.id}" data-wear-layer="natural-head"><defs>${keyed?PrincessSalon.filter(keyFilter):''}<linearGradient id="${fade}" gradientUnits="userSpaceOnUse" x1="0" y1="${fullWardrobe?100:106}" x2="0" y2="${fullWardrobe?110:122}"><stop stop-color="white"/><stop offset="1" stop-color="black"/></linearGradient><mask id="${mask}" maskUnits="userSpaceOnUse" x="0" y="-30" width="420" height="710"><rect x="0" y="-30" width="420" height="710" fill="white"/><rect x="${cx-neckWidth/2}" y="${fullWardrobe?100:106}" width="${neckWidth}" height="50" fill="url(#${fade})"/></mask></defs><image href="${escape(src)}" x="${cx-width*center}" y="${65-width*eye}" width="${width}" height="${width}" preserveAspectRatio="xMidYMid meet" ${keyed?`filter="url(#${keyFilter})"`:''} mask="url(#${mask})"/></g>`;
   }
   function hair(p,color,scope,embedded,front=false,bodyOffset=identities[p.id].dx){
     const fit=hairPlacement(p,bodyOffset),asset=scope+'-source',tid=scope+'-tone';

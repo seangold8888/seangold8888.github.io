@@ -234,7 +234,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 <div id="toast"></div>
 
 <script src="wardrobe.js?v=2"></script>
-<script src="studio.js?v=46"></script>
+<script src="salon.js?v=1"></script>
+<script src="studio.js?v=47"></script>
 <script src="icons.js?v=1"></script>
 <script src="outings.js?v=1"></script>
 <script>
@@ -1343,9 +1344,9 @@ function renderPanel(){
   intro.textContent='';
   const cat=CATS.find(c=>c.key===tab);
   if(tab==='hair'){
-    if(PrincessStudio.naturalHeads&&p.id==='mermaid'){
-      intro.textContent='인어공주 미용실 — 같은 얼굴로 머리 모양을 바꿔 보세요.';
-      sw.innerHTML='<span class="lbl">바다빛 머리 · 스타일 3종</span>';
+    if(PrincessStudio.naturalHeads&&(p.id==='mermaid'||globalThis.PrincessSalon?.has(p.id+'-half'))){
+      intro.textContent=p.name+' 미용실 — 머리 모양을 바꿔 보세요.';
+      sw.innerHTML='<span class="lbl">고유한 머리색 · 스타일 3종</span>';
       const selected=PrincessStudio.salonStyle(state);
       items.innerHTML=PrincessStudio.salonStyles.map(s=>`<button class="item ${s.id===selected?'on':''}" data-salon="${s.id}" aria-pressed="${s.id===selected}">${PrincessStudio.portrait({...p,salonStyle:s.id,salonScope:true},p.hairColor)}<span class="nm">${s.name}</span></button>`).join('');
       items.querySelectorAll('[data-salon]').forEach(b=>b.addEventListener('click',()=>{state.salonStyle=b.dataset.salon;persist();click();renderStage();rerenderPanelKeepingPosition();}));
@@ -1411,7 +1412,7 @@ function randomize(){
   if(state.dress&&itemOf('dress',state.dress.id).tail) state.shoes=null;
   state.bg=rnd(BGS).id;
   if(!PrincessStudio.naturalHeads)state.hairStyle=rnd(HAIR_STYLES).id;
-  else if(princess().id==='mermaid')state.salonStyle=rnd(PrincessStudio.salonStyles).id;
+  else if(princess().id==='mermaid'||globalThis.PrincessSalon?.has(princess().id+'-half'))state.salonStyle=rnd(PrincessStudio.salonStyles).id;
   persist();tada();renderStage();renderPanel();popStage();
   sparkleAt(document.getElementById('stage'));
 }

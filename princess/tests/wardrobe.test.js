@@ -3,7 +3,7 @@ const {test}=require('node:test'),assert=require('node:assert/strict'),fs=requir
 const dir=path.resolve(__dirname,'..'),html=fs.readFileSync(path.join(dir,'index.html'),'utf8');
 function env(){
  const ctx={console,setTimeout,clearTimeout,URL,location:{search:'?heads=natural'},localStorage:{getItem:()=>null,setItem:()=>{}},fetch:async url=>({ok:true,blob:async()=>({bytes:fs.readFileSync(path.join(dir,url))})}),FileReader:class{readAsDataURL(b){this.result='data:image/webp;base64,'+b.bytes.toString('base64');this.onload();}}};
- vm.createContext(ctx);for(const f of ['wardrobe.js','studio.js'])vm.runInContext(fs.readFileSync(path.join(dir,f),'utf8'),ctx);
+ vm.createContext(ctx);for(const f of ['wardrobe.js','salon.js','studio.js'])vm.runInContext(fs.readFileSync(path.join(dir,f),'utf8'),ctx);
  const s=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(m=>m[1]).find(s=>s.includes('const PRINCESSES='));
  vm.runInContext(s.slice(0,s.indexOf('// ---------- 시작 ----------')),ctx);vm.runInContext('globalThis.qa={PRINCESSES,DRESSES,defaultState,scopeSvgIds}',ctx);return ctx;
 }
