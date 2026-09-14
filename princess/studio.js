@@ -212,7 +212,13 @@ globalThis.PrincessStudio=(()=>{
       const b=fit.knots[i+1];
       return `<svg x="${fit.x}" y="${a[1]}" width="${fit.width}" height="${b[1]-a[1]+.35}" viewBox="0 ${a[0]} 1 ${b[0]-a[0]}" preserveAspectRatio="none" overflow="hidden"><use href="#${asset}"/></svg>`;
     });
-    return `<g data-studio-part="hair/${p.hair}" data-hair-fit="tailored-hair-v41" data-contact-shading="${front}" data-wear-layer="${front?'hair-front':'hair-back'}" filter="url(#${tid})"><defs>${tone(tid,color,'hair',front)}<image id="${asset}" href="${escape(href('hair',p.hair,embedded))}" width="1" height="1" preserveAspectRatio="none"/></defs>${slices.join('')}</g>`;
+    const guard=scope+'-face-opening',soft=guard+'-soft';
+    const [top,left,right]=headAnchors[p.id],l=left+bodyOffset,r=right+bodyOffset,c=(l+r)/2;
+    // Protect the face independently of the hairstyle's outer silhouette.
+    // Only the foreground hair is cleared; the original head still covers the back layer.
+    const face=`M${c} ${top+20} C${c-14} ${top+20} ${l+3} ${top+27} ${l+2} ${top+43} C${l+1} 78 ${l+8} 96 ${c} 102 C${r-8} 96 ${r-1} 78 ${r-2} ${top+43} C${r-3} ${top+27} ${c+14} ${top+20} ${c} ${top+20}Z`;
+    const opening=front?`<filter id="${soft}" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation=".8"/></filter><mask id="${guard}" maskUnits="userSpaceOnUse" x="0" y="-30" width="420" height="710"><rect x="0" y="-30" width="420" height="710" fill="white"/><path d="${face}" fill="black" filter="url(#${soft})"/></mask>`:'';
+    return `<g data-studio-part="hair/${p.hair}" data-hair-fit="face-clear-v42" data-contact-shading="${front}" data-wear-layer="${front?'hair-front':'hair-back'}" filter="url(#${tid})"><defs>${tone(tid,color,'hair',front)}<image id="${asset}" href="${escape(href('hair',p.hair,embedded))}" width="1" height="1" preserveAspectRatio="none"/>${opening}</defs><g ${front?`data-face-opening="true" mask="url(#${guard})"`:''}>${slices.join('')}</g></g>`;
   }
   function accessoryPlacement(cat,id,p){
     const [top,left,right]=headAnchors[p.id],center=(left+right)/2+identities[p.id].dx,r=rects[cat][id];

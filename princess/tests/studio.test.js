@@ -310,7 +310,9 @@ require('node:test')('all hairstyles attach to measured foreheads and temples, i
     assert(24+.96*(604-580*identity.sy+fit.knots[0][1]*identity.sy)>=16,'hair clipped by photo');
     const portrait=studio.hairPlacement(q,0);assert(Math.abs(portrait.x+dx-fit.x)<.001);
     const st={...json(api.defaultState(p)),hairStyle:id};
-    const svg=api.dollSVG(st,p);checkSvg(svg);assert(svg.includes('data-hair-fit="tailored-hair-v41"'));
+    const svg=api.dollSVG(st,p);checkSvg(svg);assert(svg.includes('data-hair-fit="face-clear-v42"'));
+    assert.equal((svg.match(/data-face-opening="true"/g)||[]).length,1,'only foreground hair should clear the face');
+    assert(svg.includes('feGaussianBlur stdDeviation=".8"'),'face edge should stay soft');
     checkSvg(api.princessThumb(p,p.hairColor,id));combinations++;
   }
   assert.equal(combinations,api.PRINCESSES.length*8);
