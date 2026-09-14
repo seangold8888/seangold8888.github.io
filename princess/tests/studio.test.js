@@ -283,11 +283,12 @@ require('node:test')('all hairstyles attach to measured foreheads and temples, i
     const [top,left,right]=studio.headAnchors[p.id],dx=studio.identities[p.id].dx;
     if(id==='bob'){
       assert(Math.abs(fit.height/fit.width-694/640)<.000001,'bob aspect ratio distorted');
-      assert(fit.width<(right-left)*2.1,'bob still too wide');
+      assert(Math.abs(fit.width/(right-left)-1.75)<.000001,'bob side volume regressed');
+      assert(top-fit.y<16,'bob crown floats too far above scalp');
       assert(Math.abs(fit.y+fit.height*.292-(top+18))<.001,'bob forehead detached');
       const portrait=studio.hairPlacement(q,0);assert(Math.abs(portrait.x+dx-fit.x)<.001);
       const svg=api.dollSVG({...json(api.defaultState(p)),hairStyle:id},p);checkSvg(svg);
-      assert(svg.includes('data-hair-fit="natural-bob-v35"'));
+      assert(svg.includes('data-hair-fit="compact-bob-v39"'));
       const pieces=[...svg.matchAll(/<g data-studio-part="hair\/bob"[\s\S]*?<\/g>/g)];
       assert.equal(pieces.length,2);
       for(const piece of pieces){assert(!piece[0].includes('<svg '),'bob was sliced');assert.equal((piece[0].match(/<image /g)||[]).length,1);}
@@ -309,6 +310,17 @@ require('node:test')('all hairstyles attach to measured foreheads and temples, i
   }
   assert.equal(combinations,api.PRINCESSES.length*8);
   assert.equal(studio.path('hair','bob'),'assets/hair-v35/hair-bob.webp');
+});
+require('node:test')('dark bob retains strand highlights without changing other hairstyles',()=>{
+  const {api}=environment(),p=api.PRINCESSES.find(p=>p.id==='snow');
+  const curve=style=>{
+    const svg=api.dollSVG({...json(api.defaultState(p)),hairStyle:style},p);
+    const hair=svg.match(new RegExp('<g data-studio-part="hair/'+style+'"[\\s\\S]*?</g>'))[0];
+    return hair.match(/<feFuncR type="table" tableValues="([^"]+)"/)[1].split(' ').map(Number);
+  };
+  const bob=curve('bob'),bun=curve('bun');
+  assert(bob[1]>=.13&&bob[2]>=.24,'black bob lost painted highlights');
+  assert.deepEqual(bun,[.0118,.0641,.1450,.3318],'unrelated hair palette changed');
 });
 require('node:test')('original v37 presets migrate once without changing any customized outfit',()=>{
   const {api}=environment();

@@ -102,7 +102,9 @@ globalThis.PrincessStudio=(()=>{
     const raw=/^#[a-f0-9]{6}$/i.test(color)?color:'#ffffff';
     const channels=[1,3,5].map(i=>parseInt(raw.slice(i,i+2),16)/255);
     const curves=channels.map(v=>{
-      if(type==='hair')return [v*.07,v*.38,v*.86,Math.min(1,v*.9+.18)];
+      // Dark bob colors still need the painted strand highlights, not a black silhouette.
+      if(type==='hair-bob'&&Math.max(...channels)<.35)return [v*.13,v*.60+.035,v*.92+.09,Math.min(1,v*.9+.28)];
+      if(type==='hair'||type==='hair-bob')return [v*.07,v*.38,v*.86,Math.min(1,v*.9+.18)];
       // Keep deep folds and near-white silk/metal glints when fabric is recolored.
       return [.008,v*.18,v*.52,v*.88,Math.min(1,.94+v*.06)];
     });
@@ -181,8 +183,9 @@ globalThis.PrincessStudio=(()=>{
   function hairPlacement(p,bodyOffset=identities[p.id].dx){
     const [top,left,right]=headAnchors[p.id],a=hairAnchors[p.hair];
     if(p.hair==='bob'){
-      // One undistorted image: fit its transparent face opening, not the wig's outer edge.
-      const width=(right-left)*2.06,height=width*694/640;
+      // Compact cheek-length silhouette; keep the forehead opening anchored while
+      // reducing crown/side volume together, without squashing the painted strands.
+      const width=(right-left)*1.75,height=width*694/640;
       return {x:(left+right)/2+bodyOffset-width*.505,y:top+18-height*.292,width,height};
     }
     const width=(right-left-4)/(a[3]-a[2]);
@@ -191,7 +194,7 @@ globalThis.PrincessStudio=(()=>{
   }
   function hair(p,color,scope,embedded,front=false,bodyOffset=identities[p.id].dx){
     const fit=hairPlacement(p,bodyOffset),asset=scope+'-source',tid=scope+'-tone';
-    if(p.hair==='bob')return `<g data-studio-part="hair/bob" data-hair-fit="natural-bob-v35" data-contact-shading="${front}" data-wear-layer="${front?'hair-front':'hair-back'}" filter="url(#${tid})"><defs>${tone(tid,color,'hair',front)}</defs><image href="${escape(href('hair','bob',embedded))}" x="${fit.x}" y="${fit.y}" width="${fit.width}" height="${fit.height}" preserveAspectRatio="xMidYMid meet"/></g>`;
+    if(p.hair==='bob')return `<g data-studio-part="hair/bob" data-hair-fit="compact-bob-v39" data-contact-shading="${front}" data-wear-layer="${front?'hair-front':'hair-back'}" filter="url(#${tid})"><defs>${tone(tid,color,'hair-bob',front)}</defs><image href="${escape(href('hair','bob',embedded))}" x="${fit.x}" y="${fit.y}" width="${fit.width}" height="${fit.height}" preserveAspectRatio="xMidYMid meet"/></g>`;
     // Three continuous sections preserve strands without thin-strip alpha seams.
     const slices=fit.knots.slice(0,-1).map((a,i)=>{
       const b=fit.knots[i+1];
