@@ -104,7 +104,10 @@ globalThis.PrincessStudio=(()=>{
     const curves=channels.map(v=>{
       // Dark bob colors still need the painted strand highlights, not a black silhouette.
       if(type==='hair-bob'&&Math.max(...channels)<.35)return [v*.13,v*.60+.035,v*.92+.09,Math.min(1,v*.9+.28)];
-      if(type==='hair'||type==='hair-bob')return [v*.07,v*.38,v*.86,Math.min(1,v*.9+.18)];
+      if(type==='hair-bob')return [v*.07,v*.38,v*.86,Math.min(1,v*.9+.18)];
+      if(type==='hair')return Math.max(...channels)<.35
+        ?[v*.13,v*.60+.035,v*.92+.09,Math.min(1,v*.9+.28)]
+        :[v*.10,v*.52,Math.min(1,v*.94+.02),Math.min(1,v*.9+.18)];
       // Keep deep folds and near-white silk/metal glints when fabric is recolored.
       return [.008,v*.18,v*.52,v*.88,Math.min(1,.94+v*.06)];
     });
@@ -180,6 +183,14 @@ globalThis.PrincessStudio=(()=>{
     pigtails:[.2061,.356,.362,.6329,10,192],daenggi:[.1533,.3021,.25,.755,5,225],
     curls:[.1583,.3073,.3581,.5934,8,202],afro:[.3081,.4569,.3816,.6276,16,158]
   };
+  // Silhouette tuning is separate from the measured face openings. The old
+  // temple fit made full waves/twin tails nearly four face-widths across.
+  const hairSilhouettes={
+    bun:{width:.80,crown:18,length:112},braid:{width:.85,crown:4,length:205},
+    wavy:{width:.64,crown:4,length:185},pigtails:{width:.66,crown:6,length:152},
+    daenggi:{width:.84,crown:4,length:198},curls:{width:.64,crown:5,length:165},
+    afro:{width:.65,crown:8,length:126}
+  };
   function hairPlacement(p,bodyOffset=identities[p.id].dx){
     const [top,left,right]=headAnchors[p.id],a=hairAnchors[p.hair];
     if(p.hair==='bob'){
@@ -188,9 +199,10 @@ globalThis.PrincessStudio=(()=>{
       const width=(right-left)*1.75,height=width*694/640;
       return {x:(left+right)/2+bodyOffset-width*.505,y:top+18-height*.292,width,height};
     }
-    const width=(right-left-4)/(a[3]-a[2]);
+    const shape=hairSilhouettes[p.hair];
+    const width=(right-left-4)/(a[3]-a[2])*shape.width;
     return {x:(left+right)/2+bodyOffset-(a[2]+a[3])/2*width,width,
-      knots:[[0,top-a[4]],[a[0],top+18],[a[1],57.5],[1,a[5]+top-18]]};
+      knots:[[0,top-shape.crown],[a[0],top+18],[a[1],57.5],[1,shape.length+top-18]]};
   }
   function hair(p,color,scope,embedded,front=false,bodyOffset=identities[p.id].dx){
     const fit=hairPlacement(p,bodyOffset),asset=scope+'-source',tid=scope+'-tone';
@@ -200,7 +212,7 @@ globalThis.PrincessStudio=(()=>{
       const b=fit.knots[i+1];
       return `<svg x="${fit.x}" y="${a[1]}" width="${fit.width}" height="${b[1]-a[1]+.35}" viewBox="0 ${a[0]} 1 ${b[0]-a[0]}" preserveAspectRatio="none" overflow="hidden"><use href="#${asset}"/></svg>`;
     });
-    return `<g data-studio-part="hair/${p.hair}" data-hair-fit="head-anchors-v33" data-contact-shading="${front}" data-wear-layer="${front?'hair-front':'hair-back'}" filter="url(#${tid})"><defs>${tone(tid,color,'hair',front)}<image id="${asset}" href="${escape(href('hair',p.hair,embedded))}" width="1" height="1" preserveAspectRatio="none"/></defs>${slices.join('')}</g>`;
+    return `<g data-studio-part="hair/${p.hair}" data-hair-fit="tailored-hair-v41" data-contact-shading="${front}" data-wear-layer="${front?'hair-front':'hair-back'}" filter="url(#${tid})"><defs>${tone(tid,color,'hair',front)}<image id="${asset}" href="${escape(href('hair',p.hair,embedded))}" width="1" height="1" preserveAspectRatio="none"/></defs>${slices.join('')}</g>`;
   }
   function accessoryPlacement(cat,id,p){
     const [top,left,right]=headAnchors[p.id],center=(left+right)/2+identities[p.id].dx,r=rects[cat][id];
@@ -279,5 +291,5 @@ globalThis.PrincessStudio=(()=>{
     const values=await Promise.all(keys.map(loadFile));
     return Object.fromEntries(keys.map((k,i)=>[k,values[i]]));
   }
-  return {render,thumb,portrait,background,exportAssets,fileKeys,path,rects,identities,headAnchors,hairAnchors,hairPlacement,accessoryPlacement};
+  return {render,thumb,portrait,background,exportAssets,fileKeys,path,rects,identities,headAnchors,hairAnchors,hairSilhouettes,hairPlacement,accessoryPlacement};
 })();

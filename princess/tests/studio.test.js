@@ -297,8 +297,12 @@ require('node:test')('all hairstyles attach to measured foreheads and temples, i
       assert(24+.96*(604-580*identity.sy+fit.y*identity.sy)>=16,'bob clipped in photo');
       checkSvg(api.princessThumb(p,p.hairColor,id));combinations++;continue;
     }
-    assert(Math.abs(fit.x+anchor[2]*fit.width-(left+dx+2))<.001,'left temple detached');
-    assert(Math.abs(fit.x+anchor[3]*fit.width-(right+dx-2))<.001,'right temple detached');
+    const shape=studio.hairSilhouettes[id];
+    assert(Math.abs(fit.x+(anchor[2]+anchor[3])/2*fit.width-((left+right)/2+dx))<.001,'hair shifted off face');
+    assert(Math.abs(fit.width-(right-left-4)/(anchor[3]-anchor[2])*shape.width)<.001,'style-specific width lost');
+    assert(fit.width<(right-left)*2.65,'hair exceeds compact silhouette');
+    assert.equal(fit.knots[0][1],top-shape.crown);
+    assert.equal(fit.knots[3][1],shape.length+top-18);
     assert.equal(fit.knots[1][1],top+18,'forehead root mismatch');
     assert.equal(fit.knots[2][1],57.5,'temple height mismatch');
     for(let i=1;i<fit.knots.length;i++)assert(fit.knots[i][1]>fit.knots[i-1][1],'folded hair mesh');
@@ -306,13 +310,13 @@ require('node:test')('all hairstyles attach to measured foreheads and temples, i
     assert(24+.96*(604-580*identity.sy+fit.knots[0][1]*identity.sy)>=16,'hair clipped by photo');
     const portrait=studio.hairPlacement(q,0);assert(Math.abs(portrait.x+dx-fit.x)<.001);
     const st={...json(api.defaultState(p)),hairStyle:id};
-    const svg=api.dollSVG(st,p);checkSvg(svg);assert(svg.includes('data-hair-fit="head-anchors-v33"'));
+    const svg=api.dollSVG(st,p);checkSvg(svg);assert(svg.includes('data-hair-fit="tailored-hair-v41"'));
     checkSvg(api.princessThumb(p,p.hairColor,id));combinations++;
   }
   assert.equal(combinations,api.PRINCESSES.length*8);
   assert.equal(studio.path('hair','bob'),'assets/hair-v35/hair-bob.webp');
 });
-require('node:test')('dark bob retains strand highlights without changing other hairstyles',()=>{
+require('node:test')('dark hair keeps strand highlights and the accepted bob tone stays unchanged',()=>{
   const {api}=environment(),p=api.PRINCESSES.find(p=>p.id==='snow');
   const curve=style=>{
     const svg=api.dollSVG({...json(api.defaultState(p)),hairStyle:style},p);
@@ -321,7 +325,8 @@ require('node:test')('dark bob retains strand highlights without changing other 
   };
   const bob=curve('bob'),bun=curve('bun');
   assert(bob[1]>=.13&&bob[2]>=.24,'black bob lost painted highlights');
-  assert.deepEqual(bun,[.0118,.0641,.1450,.3318],'unrelated hair palette changed');
+  assert.deepEqual(bob,[.0219,.1362,.2451,.4318],'accepted bob tone changed');
+  assert.deepEqual(bun,bob,'other dark hair should retain the same strand detail');
 });
 require('node:test')('original v37 presets migrate once without changing any customized outfit',()=>{
   const {api}=environment();
