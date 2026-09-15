@@ -320,6 +320,8 @@
     env = env || root;
     callbacks = callbacks || {};
     const doc = env.document;
+    const nav = env.navigator || {};
+    const touchIOS = /iPad|iPhone|iPod/.test(nav.userAgent || '') || (nav.platform === 'MacIntel' && nav.maxTouchPoints > 1);
     if (!sessions.has(env)) sessions.set(env, createFeedbackSession());
     const session = sessions.get(env);
     // Silent recovery is temporary. A fresh question gets another chance to
@@ -374,7 +376,7 @@
       record(env, session, event);
       if (logNode && !disposed) logNode.textContent = session.log.join("\n");
     }
-    log("mount");
+    log("mount-v14" + (touchIOS ? " ios-separated-audio" : ""));
 
     function controls() {
       nodes.mic.disabled = disposed || awarded || recovering || !!active || soundActive || !Recognition || env.isSecureContext === false || env.navigator.onLine === false;
@@ -407,6 +409,7 @@
     // live microphone, so a missing end event calls after(false) instead.
     function stop(message, after) {
       serial++;
+      Array.from(actions.children).forEach(function (node) { if (node.className === 'reading-word-listen') node.hidden = true; });
       recovering = false;
       env.clearTimeout(healthTimer); healthTimer = null;
       env.clearTimeout(timer); timer = null;
@@ -548,6 +551,7 @@
       }).catch(function () { finish("error"); });
     }
     function praise() {
+      let manualPraise = false;
       const clip = choosePraise(session, !retried);
       nodes.status.textContent = "";
       nodes.status.appendChild(element("span", "reading-praise", (clip === "threeinarow" ? "🌟 " : "⭐ ") + PRAISE_TEXT[clip]));
@@ -556,6 +560,23 @@
       stars.setAttribute("aria-hidden", "true"); nodes.status.appendChild(stars);
       log("pass " + clip + (retried ? " retry" : " first"));
       stop(null, function (safe) {
+        if (safe && (session.silent || touchIOS) && (env.AudioContext || env.webkitAudioContext) && env.fetch) {
+          manualPraise = true;
+          env.clearTimeout(soundTimer); soundTimer = null;
+          soundActive = false; controls();
+          const listen = element('button', 'reading-praise-listen', '🔊 칭찬 듣기');
+          const next = element('button', 'reading-praise-next', '다음 문제');
+          listen.type = next.type = 'button'; actions.appendChild(listen); actions.appendChild(next);
+          nodes.status.appendChild(element('span', 'reading-praise-detail', touchIOS ? '아이패드는 마이크와 소리를 나눠 써요. 눌러서 칭찬을 들어요!' : '마이크 복구로 소리를 잠깐 껐어요. 눌러서 칭찬을 들어요!'));
+          const hide = function () { listen.hidden = next.hidden = true; };
+          listen.addEventListener('click', function () {
+            if (disposed || passDone || listen.hidden) return;
+            hide(); session.silent = false; unlockAudio(); soundActive = true; controls();
+            playClip(praiseFile(clip), STALL_MS, function (how) { log('praise-tap-' + how); completePass(); }, {praise:true,big:clip==='threeinarow'});
+          });
+          next.addEventListener('click', function () { if (!disposed && !passDone && !next.hidden) { hide(); completePass(); } });
+          return;
+        }
         if (!safe || !canPlay()) { soundActive = false; controls(); if (!soundTimer) armWatchdog(NO_AUDIO_MS, completePass); return; }
         soundActive = true;
         controls();
@@ -568,13 +589,23 @@
         }, { praise: true, big: clip === "threeinarow" });
       });
       // Visible praise without any playable audio still moves on.
-      if (!disposed && !passDone && !soundTimer) armWatchdog(NO_AUDIO_MS, completePass);
+      if (!disposed && !passDone && !manualPraise && !soundTimer) armWatchdog(NO_AUDIO_MS, completePass);
     }
     // Reads back only the misread words, once each, from recorded clips.
-    function speakWords(words, safe) {
+    function speakWords(words, safe, tapped) {
       soundActive = false;
       const clips = words.filter(function (word) { return !!WORD_CLIPS[word]; });
       if (!safe || !clips.length || !canPlay()) { controls(); return; }
+      if (touchIOS && tapped !== true) {
+        controls();
+        const listen = element('button', 'reading-word-listen', '🔊 틀린 단어 듣기');listen.type='button';actions.appendChild(listen);
+        const requestId=serial;
+        listen.addEventListener('click',function(){
+          if(disposed || awarded || listen.hidden || requestId!==serial)return;
+          listen.hidden=true;unlockAudio();speakWords(words,true,true);
+        });
+        return;
+      }
       const id = serial;
       let index = 0;
       soundActive = true; controls();
@@ -629,6 +660,11 @@
       log(reason);
       resetFlow();
       releasePrimedAudio();
+      if (touchIOS) {
+        stop('마이크 응답이 멈췄어요. 마이크 다시 켜기를 눌러 연결을 새로 준비해 주세요. 오답으로 세지 않아요.');
+        showRecoveryButton();
+        return;
+      }
       // 소리를 낸 뒤 마이크가 먹통이 되는 기기(iOS WebKit 321436)가 있다.
       // 처음 막히면 묻지 않고 소리를 끈 뒤 마이크를 새로 켠다. 오답으로 세지 않는다.
       if (!session.silent) {
@@ -650,6 +686,9 @@
         return;
       }
       stop("마이크가 응답하지 않아요. 아래 ‘마이크 다시 켜기’를 눌러 주세요. 오답으로 세지 않아요.");
+      showRecoveryButton();
+    }
+    function showRecoveryButton() {
       if (!recoveryButton) {
         recoveryButton = element("button", "reading-recovery", "🎤 마이크 다시 켜기");
         recoveryButton.type = "button";
@@ -685,7 +724,7 @@
         env.clearTimeout(healthTimer);
         healthTimer = env.setTimeout(function () {
           if (disposed || id !== serial) return;
-          recovering = false; controls(); read();
+          recovering = false; controls(); read(true);
         }, 350);
       }, function () {
         if (disposed || id !== serial) return;
@@ -696,10 +735,12 @@
         nodes.status.textContent = "마이크 권한을 확인한 뒤 다시 눌러 주세요. 정답 기록은 그대로예요.";
       });
     }
-    function read() {
+    function read(rearmed) {
       if (nodes.mic.disabled) return;
+      if (touchIOS && session.lastClip && rearmed !== true && env.navigator.mediaDevices && env.navigator.mediaDevices.getUserMedia) { recoverMicrophone(); return; }
       stop();
-      unlockAudio();
+      if (!touchIOS) unlockAudio();
+      else session.silent = false;
       finalText = "";
       feedback("");
       const id = serial;

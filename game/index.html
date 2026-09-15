@@ -1153,7 +1153,7 @@
         <span class="go">모험 떠나기 ▶</span>
       </span>
     </a>
-    <a class="card princess" href="princess/?heads=natural&amp;v=picnic-1" data-play-key="princess" style="--cover:url('princess/cover.jpg?v=31')">
+    <a class="card princess" href="princess/?heads=natural&amp;v=picnic-1" data-play-key="princess" style="--cover:url('princess/cover-natural-v50.png');--cover-size:cover;--cover-pos:center 25%">
       <span class="padlock">🔒</span>
       <span class="badge">👗</span>
       <span class="meta">
@@ -1231,7 +1231,7 @@
 <script src="math/learning.js?v=29"></script>
 <script src="math/store.js?v=32"></script>
 <script src="assets/study/math-bridge.js?v=2"></script>
-<script src="assets/study/english-reading.js?v=12"></script>
+<script src="assets/study/english-reading.js?v=14"></script>
 <script>
 (function () {
   'use strict';
@@ -2026,10 +2026,6 @@
         pick(target.answer, null);
       }, window, {
         silent: readingSilent,
-        onSilent: function () {
-          // 소리 뒤 마이크가 막히는 기기 → 현재 페이지에서만 잠시 소리 없이 복구
-          readingSilent = true;
-        },
         onRetry: function (words) { readingMistake(target, words); },
         onUnavailable: function () {
           if (current !== target || target.answered || isFree() || hasTicket()) return;

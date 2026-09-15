@@ -100,6 +100,31 @@ test("silent recovery closes the primed context and partial results remain watch
  s.tick(500);assert.equal(s.recognizers.length,2);
 });
 
+test("a recovered correct answer offers audible praise without overlapping the microphone", () => {
+ const s=setup(),v=s.mount();v.mic.fire('click');s.tick(12000);s.tick(500);
+ s.result('I like apples');s.recognizers.at(-1).end();s.tick(3000);
+ assert.equal(s.passes(),0);assert.equal(s.audios.length,0);
+ const listen=v.container.children[3].children.find(n=>n.className==='reading-praise-listen');assert(listen);listen.fire('click');
+ assert.equal(s.audios.length,1);s.audios[0].onended();assert.equal(s.passes(),1);
+ v.view.destroy();const next=s.mount();next.mic.fire('click');s.result('I like apples');s.recognizers.at(-1).end();assert.equal(s.audios.length,2);
+});
+
+test("iPad separates three microphone/praise turns and releases rearmed tracks", async () => {
+ const s=setup();Object.assign(s.env.navigator,{platform:'MacIntel',maxTouchPoints:5});let released=0,requested=0;
+ s.env.navigator.mediaDevices={getUserMedia:()=>{requested++;return Promise.resolve({getTracks:()=>[{stop(){released++;}}]});}};
+ for(let i=0;i<3;i++){
+  const v=s.mount();v.mic.fire('click');await Promise.resolve();s.tick(350);
+  assert(s.contexts.every(c=>c.closed),'no live speaker context during recognition');
+  s.result('I like apples');s.recognizers.at(-1).end();s.tick(2000);assert.equal(s.passes(),i);
+  const listen=v.container.children[3].children.find(n=>n.className==='reading-praise-listen');listen.fire('click');s.audios.at(-1).onended();assert.equal(s.passes(),i+1);v.view.destroy();
+ }assert.equal(requested,2);assert.equal(released,2);
+});
+test("iPhone stalls offer a gesture recovery immediately without timed restart loops",()=>{
+ const s=setup({neverStarts:true});s.env.navigator.userAgent='iPhone';const v=s.mount();v.mic.fire('click');s.tick(30000);
+ assert.equal(s.recognizers.length,1);assert.equal(s.contexts.length,0);assert.equal(s.passes(),0);
+ assert(v.container.children[3].children.some(n=>n.className==='reading-recovery'&&!n.hidden));
+});
+
 test("Perfect uses the energetic replacement recording", () => {
   assert.equal(reading.praiseFile("perfect"), "assets/study/praise/perfect-v2.wav");
   assert.equal(reading.praiseFile("awesome"), "assets/study/praise/awesome.mp3");
@@ -320,13 +345,14 @@ test("recognizer alternatives can pass; display uses the first guess; session sh
 
 test("the hub clears stale permanent silence and the worker precaches every clip", () => {
   const sw = require("../../sw.js"), html = fs.readFileSync(path.join(__dirname, "../../game/index.html"), "utf8");
-  assert.equal(sw.CACHE_VERSION, "v123");
-  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=12"));
+  assert.equal(sw.CACHE_VERSION, "v124");
+  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=14"));
   assert.ok(sw.CORE_SHELL.includes("./assets/study/praise/perfect-v2.wav"));
-  assert.match(html, /english-reading\.js\?v=12/);
+  assert.match(html, /english-reading\.js\?v=14/);
   assert.match(html, /removeItem\('hub2_reading_silent'\)/);
   assert.doesNotMatch(html, /setItem\('hub2_reading_silent'/);
   assert.match(html, /silent: readingSilent/);
+  assert.doesNotMatch(html, /readingSilent\s*=\s*true/);
   const clips = sw.CORE_SHELL.filter(p => p.includes("/praise/"));
   assert.equal(clips.length, 9);
   for (const clip of clips) assert.ok(fs.statSync(path.join(__dirname, "../..", clip)).size > 0);
