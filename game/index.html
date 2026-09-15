@@ -1019,6 +1019,7 @@
       </div>
       <img class="study-family-art" src="assets/study/picnic-scene.jpg" width="1152" height="768" alt="가족이 함께 소풍을 즐기는 그림" fetchpriority="high" decoding="async">
     </div>
+    <div id="princessGrowthHub" aria-label="공주 성장 기록"></div>
     <div class="quest-head">
       <div>
         <div class="eyebrow" id="studyEyebrow">문제 풀고 티켓 받기</div>
@@ -1152,14 +1153,14 @@
         <span class="go">모험 떠나기 ▶</span>
       </span>
     </a>
-    <a class="card princess" href="princess/" style="--cover:url('princess/cover.jpg?v=31')">
+    <a class="card princess" href="princess/?heads=natural&amp;v=picnic-1" data-play-key="princess" style="--cover:url('princess/cover.jpg?v=31')">
       <span class="padlock">🔒</span>
       <span class="badge">👗</span>
       <span class="meta">
         <span class="name">공주 옷장</span>
-        <span class="tags"><span class="genre">👑 꾸미기</span></span>
-        <span class="desc">옛이야기 공주 8명 · 드레스·왕관·신발·친구 마음대로 · 사진 앨범</span>
-        <span class="go">꾸미러 가기 ▶</span>
+        <span class="tags"><span class="genre">👑 꾸미기 · 성장 모험</span></span>
+        <span class="desc">공주 12명 · 공부로 성장하고 숲속 소풍에서 토끼 친구를 만나요</span>
+        <span class="go">공주와 놀러 가기 ▶</span>
       </span>
     </a>
   </nav>
@@ -1224,6 +1225,8 @@
   </div>
 </div>
 
+<link rel="stylesheet" href="assets/study/princess-growth.css?v=1">
+<script src="assets/study/princess-growth.js?v=1"></script>
 <script src="math/curriculum.js?v=20"></script>
 <script src="math/learning.js?v=29"></script>
 <script src="math/store.js?v=32"></script>
@@ -2096,6 +2099,16 @@
          수학 난이도 단계(streak/missRow)는 수학 문제로만 움직인다. */
       var isPlaygroundMath = !!current.mathProblem;
       var isMath = isPlaygroundMath || !BANK_SIZES[current.seed.type];
+      if (typeof window !== 'undefined' && window.PrincessGrowth) {
+        var growthResult = window.PrincessGrowth.record(localStorage, {
+          day: todayKey(), ordinal: state.solved, parentMode: state.parentMode,
+          subject: current.reading || current.seed.type === 'english' ? 'reading' : isMath || current.seed.type === 'clock' ? 'math' : 'discovery'
+        });
+        if (!growthResult.ok) {
+          var growthNotice = document.getElementById('princessGrowthHub');
+          if (growthNotice) growthNotice.textContent = '공부는 반영됐지만 공주 성장 저장은 실패했어요. 저장 공간을 확인해 주세요.';
+        }
+      }
       if (isPlaygroundMath) {
         if (firstTry) {
           var growth = window.HubMath.record(localStorage, mathState, current.mathProblem, true, studyAge);
@@ -2255,7 +2268,7 @@
     try { localStorage.setItem('hub2_plays', JSON.stringify(plays)); } catch (_) {}
   }
   function gameKey(link) {
-    return (link.getAttribute('href') || '').replace(/\W/g, '');
+    return link.getAttribute('data-play-key') || (link.getAttribute('href') || '').replace(/\W/g, '');
   }
   function playCount(link) {
     var e = plays[gameKey(link)];

@@ -13,7 +13,7 @@ function fn(name) {
 function setup(initial = {}) {
   const stored = new Map(Object.entries({hub2_date: "2026-9-6", hub2_parent_mode: "0", ...initial}));
   const ctx = {
-    window: {EnglishReading: require("../../assets/study/english-reading.js")},
+    window: {EnglishReading: require("../../assets/study/english-reading.js"), PrincessGrowth: require("../../assets/study/princess-growth.js")},
     BOOK_MAX: 24, BANK_SIZES: {reading: 16}, SKILL_INFO: {reading: {name: "영어 읽기"}},
     todayKey: () => "2026-9-6", dayNum: () => 100, MASTER_AT: 9, CHEERS: ["정답"],
     localStorage: {getItem: k => stored.get(k) ?? null, setItem: (k,v) => stored.set(k,v)},
@@ -32,6 +32,18 @@ function setup(initial = {}) {
   };
   return {ctx, stored};
 }
+test("accepted hub answers grow the selected princess once without altering tickets", () => {
+  const {ctx}=setup(),g=ctx.window.PrincessGrowth;
+  for(let i=0;i<10;i++)ctx.answer();
+  assert.equal(g.read(ctx.localStorage).children.jaei.reading,10);
+  assert.equal(g.summary(g.read(ctx.localStorage).children.jaei).stars,1);
+  ctx.pick(ctx.current.answer,null);
+  assert.equal(g.read(ctx.localStorage).children.jaei.reading,10);
+  g.select(ctx.localStorage,'taeo');ctx.consumeGameTicket();ctx.restoreStudyProgress();ctx.answer();
+  assert.equal(g.read(ctx.localStorage).children.taeo.reading,1);
+  assert.equal(ctx.state.solved,11);
+});
+
 test("ten-answer rounds preserve today's total across entry, reload and cached back navigation; answer 100 unlocks", () => {
   const {ctx, stored} = setup();
   assert.equal(ctx.DAILY, 100);

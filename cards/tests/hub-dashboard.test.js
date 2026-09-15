@@ -105,7 +105,8 @@ test("기존 게임 링크·티켓 게임과 상시 개방 구분을 보존한�
     "sanguo/", "hogwarts/", "kedehun/", "bori/", "princess/"
   ];
   ticketRoutes.forEach((route) => {
-    assert.match(html, new RegExp('class="card [^"]*" href="' + route.replace("/", "\\/") + '"'));
+    const query=route==='princess/'?'\\?heads=natural&amp;v=picnic-1':'';
+    assert.match(html, new RegExp('class="card [^"]*" href="' + route.replace("/", "\\/") + query + '"'));
   });
   assert.match(html, /class="shop story" href="story\//);
   assert.doesNotMatch(html, /키캡|href="keycap\//);

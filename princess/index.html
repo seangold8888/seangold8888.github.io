@@ -18,6 +18,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 <link rel="apple-touch-icon" href="../icon.png">
 <title>공주 옷장: 마음대로 꾸며요!</title>
 <link rel="stylesheet" href="outings.css?v=1">
+<link rel="stylesheet" href="journey.css?v=1">
 <style>
   :root{
     --rose:#ff74b8; --rose-deep:#d83e8a; --lilac:#a88cff; --cream:#fff8fc; --ink:#432449; --ink-soft:#806484;
@@ -239,6 +240,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 <script src="studio.js?v=49"></script>
 <script src="icons.js?v=1"></script>
 <script src="outings.js?v=1"></script>
+<script src="../assets/study/princess-growth.js?v=1"></script>
+<script src="journey.js?v=1"></script>
 <script>
 'use strict';
 /* =========================================================
@@ -1515,6 +1518,11 @@ globalThis.princessOutingUI=PrincessOutings.mount({
     const canvas=document.createElement('canvas');canvas.width=336;canvas.height=544;
     canvas.getContext('2d').drawImage(img,0,0);return canvas.toDataURL('image/jpeg',.84);
   }
+});
+globalThis.princessJourneyUI=PrincessJourney.mount({
+  snapshot:()=>({state:JSON.parse(JSON.stringify(state)),princess:princess()}),
+  exportSvg:buildExportSvg,sound:kind=>({click,tada}[kind]||click)(),notify:toast,
+  photo:async svg=>{const png=await svgToPng(svg,420,680),img=new Image();img.src=png;await img.decode();const canvas=document.createElement('canvas');canvas.width=420;canvas.height=680;canvas.getContext('2d').drawImage(img,0,0);return canvas.toDataURL('image/jpeg',.82);}
 });
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{
   navigator.serviceWorker.register('../sw.js').catch(()=>{});
