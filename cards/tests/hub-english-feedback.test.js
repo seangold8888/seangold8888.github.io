@@ -47,7 +47,7 @@ function setup(options={}) {
     createGain(){const param={value:1,setValueAtTime(){},exponentialRampToValueAtTime(){}};const gain={gain:param,connect(){}};gains.push(gain);return gain;}
     createOscillator(){return {type:"",frequency:{value:0},connect(){},start(){events.push("chime")},stop(){}};}
     createDynamicsCompressor(){return {threshold:{value:0},knee:{value:0},ratio:{value:0},attack:{value:0},release:{value:0},connect(){}};}
-    close(){this.closed=true;events.push("release");return settled();}
+    close(){this.closed=true;events.push("release");if(options.deferredClose)return {then:fn=>{this.finishClose=fn;}};return settled();}
   }
   const synth={ getVoices:()=>options.voices || [{lang:"ko-KR",localService:true},{lang:"en-US",localService:false},{name:"Samantha",lang:"en-US",localService:true}],
     speak(u) { assert.ok(recognizers.every(r=>!r.live)); events.push("speak:"+u.text);utterances.push(u); },
@@ -88,6 +88,18 @@ test("first/retry praise pools, every third first-attempt pass and 100 nonrepeat
     assert.ok(retry.includes(clip));assert.notEqual(clip,previous);assert.equal(session.streak,0);
   }
 });
+test("next question waits for asynchronous audio hardware release", () => {
+ const s=setup({deferredClose:true}),v=s.mount();v.mic.fire('click');s.result('I like apples');s.recognizers[0].end();s.audios[0].onended();
+ assert.equal(s.passes(),0);s.contexts[0].finishClose();assert.equal(s.passes(),1);
+ v.view.destroy();const next=s.mount();next.mic.fire('click');assert.equal(s.recognizers.length,2);
+});
+test("silent recovery closes the primed context and partial results remain watched", () => {
+ const s=setup(),v=s.mount();v.mic.fire('click');
+ s.recognizers[0].onresult({results:[Object.assign([{transcript:'I'}],{isFinal:false})]});
+ s.tick(12000);assert.equal(s.contexts[0].closed,true);assert.equal(s.passes(),0);assert.equal(s.retries.length,0);
+ s.tick(500);assert.equal(s.recognizers.length,2);
+});
+
 test("Perfect uses the energetic replacement recording", () => {
   assert.equal(reading.praiseFile("perfect"), "assets/study/praise/perfect-v2.wav");
   assert.equal(reading.praiseFile("awesome"), "assets/study/praise/awesome.mp3");
@@ -308,10 +320,10 @@ test("recognizer alternatives can pass; display uses the first guess; session sh
 
 test("the hub clears stale permanent silence and the worker precaches every clip", () => {
   const sw = require("../../sw.js"), html = fs.readFileSync(path.join(__dirname, "../../game/index.html"), "utf8");
-  assert.equal(sw.CACHE_VERSION, "v122");
-  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=11"));
+  assert.equal(sw.CACHE_VERSION, "v123");
+  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=12"));
   assert.ok(sw.CORE_SHELL.includes("./assets/study/praise/perfect-v2.wav"));
-  assert.match(html, /english-reading\.js\?v=11/);
+  assert.match(html, /english-reading\.js\?v=12/);
   assert.match(html, /removeItem\('hub2_reading_silent'\)/);
   assert.doesNotMatch(html, /setItem\('hub2_reading_silent'/);
   assert.match(html, /silent: readingSilent/);

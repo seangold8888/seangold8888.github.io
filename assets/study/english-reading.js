@@ -390,7 +390,7 @@
     function detachAudio() {
       if (playing) { try { playing.onended = null; playing.stop(0); } catch (_) {} playing = null; }
       const ctx = audioCtx; audioCtx = null;
-      if (ctx && ctx.close) { try { ctx.close(); } catch (_) {} }
+      if (ctx && ctx.close) { try { return ctx.close(); } catch (_) {} }
     }
     function releasePrimedAudio() {
       const ctx = primedCtx; primedCtx = null;
@@ -494,9 +494,19 @@
         done = true;
         if (reservedCtx && reservedCtx !== audioCtx && reservedCtx.close) { try { reservedCtx.close(); } catch (_) {} }
         reservedCtx = null;
-        detachAudio();
+        const closed = detachAudio();
         env.clearTimeout(soundTimer); soundTimer = null;
-        onDone(how);
+        const released = function () {
+          env.clearTimeout(soundTimer); soundTimer = null;
+          if (!disposed && id === serial) onDone(how);
+        };
+        if (closed && closed.then) {
+          // close() releases audio hardware asynchronously, not when it is called.
+          let notified = false;
+          const once = function () { if (notified) return; notified = true; released(); };
+          armWatchdog(STALL_MS, function () { session.silent = true; log('audio-close-timeout'); once(); });
+          closed.then(once, function () { session.silent = true; log('audio-close-failed'); once(); });
+        } else released();
       };
       if (!canPlay()) { finish("no-audio"); return; }
       reservedCtx = primedCtx; primedCtx = null;
@@ -618,6 +628,7 @@
       if (disposed || awarded || recovering) return;
       log(reason);
       resetFlow();
+      releasePrimedAudio();
       // 소리를 낸 뒤 마이크가 먹통이 되는 기기(iOS WebKit 321436)가 있다.
       // 처음 막히면 묻지 않고 소리를 끈 뒤 마이크를 새로 켠다. 오답으로 세지 않는다.
       if (!session.silent) {
@@ -651,6 +662,7 @@
       if (disposed || awarded || recovering || active || soundActive) return;
       stop();
       session.silent = true;
+      releasePrimedAudio();
       log("recovery-tap");
       const devices = env.navigator.mediaDevices;
       if (!devices || !devices.getUserMedia) { read(); return; }
@@ -711,7 +723,8 @@
       };
       recognizer.onresult = function (event) {
         if (!valid()) return;
-        env.clearTimeout(healthTimer); healthTimer = null;
+        env.clearTimeout(healthTimer);
+        healthTimer = env.setTimeout(function () { if (valid()) offerRecovery("result-stalled"); }, 12000);
         const finals = [], visible = [];
         for (let i = 0; i < event.results.length; i++) {
           const result = event.results[i];
