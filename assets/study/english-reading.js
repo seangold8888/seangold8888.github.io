@@ -293,6 +293,42 @@
   }
   const LOG_LIMIT = 40;
   const sessions = new WeakMap();
+  const completionPlayed = new WeakSet();
+  function mountCelebration(container, env) {
+    env = env || root;
+    const button = env.document.createElement('button');button.type='button';button.textContent='🔊 10문제 성공! 칭찬 듣기';container.appendChild(button);
+    let disposed=false,ctx=null,node=null,timer=null,started=false;
+    function close() {
+      if(node){node.onended=null;try{node.stop();}catch(_){}node=null;}
+      const old=ctx;ctx=null;if(old&&old.close)try{return old.close();}catch(_){}
+    }
+    function finish(label) {
+      env.clearTimeout(timer);const closing=close();
+      const done=()=>{if(!disposed)button.textContent=label;};
+      if(closing&&closing.then)closing.then(done,done);else done();
+    }
+    button.addEventListener('click',function(){
+      if(disposed||started)return;started=true;button.disabled=true;
+      const AC=env.AudioContext||env.webkitAudioContext;
+      if(!AC||!env.fetch){button.textContent='🌟 열 문제를 해냈어! 정말 멋져!';return;}
+      completionPlayed.add(env);
+      try{ctx=new AC();const ready=ctx.resume?ctx.resume():null;
+        button.textContent='칭찬을 준비하고 있어요…';
+        timer=env.setTimeout(()=>finish('🌟 열 문제 성공! 소리는 재생하지 못했어요.'),10000);
+        Promise.resolve(ready).then(()=>disposed?null:loadClip(env,praiseFile('perfect'))).then(bytes=>{
+          if(disposed||!ctx)return;return ctx.decodeAudioData(bytes.slice(0));
+        }).then(sound=>{
+          if(disposed||!ctx||!sound)return;node=ctx.createBufferSource();node.buffer=sound;node.connect(ctx.destination);
+          node.onended=()=>finish('🌟 정말 잘했어! 신나게 놀고 와!');
+          button.textContent='🌟 열 문제 성공! 정말 잘했어!';node.start(0);
+        }).catch(()=>finish('🌟 열 문제 성공! 소리는 재생하지 못했어요.'));
+      }catch(_){finish('🌟 열 문제 성공! 소리는 재생하지 못했어요.');}
+    });
+    const leave=()=>{disposed=true;env.clearTimeout(timer);close();};
+    const hide=()=>{if(env.document.hidden)leave();};
+    env.addEventListener('pagehide',leave);env.document.addEventListener('visibilitychange',hide);
+    return {destroy(){leave();env.removeEventListener('pagehide',leave);env.document.removeEventListener('visibilitychange',hide);}};
+  }
   // One session per window: praise streak, last clip and a diagnostic log.
   function createFeedbackSession() { return { streak: 0, lastClip: null, log: [], silent: false, autoRetries: 0 }; }
   function choosePraise(session, firstTry, random) {
@@ -376,7 +412,7 @@
       record(env, session, event);
       if (logNode && !disposed) logNode.textContent = session.log.join("\n");
     }
-    log("mount-v14" + (touchIOS ? " ios-separated-audio" : ""));
+    log("mount-v15" + (touchIOS ? " ios-quiet-round" : ""));
 
     function controls() {
       nodes.mic.disabled = disposed || awarded || recovering || !!active || soundActive || !Recognition || env.isSecureContext === false || env.navigator.onLine === false;
@@ -560,6 +596,7 @@
       stars.setAttribute("aria-hidden", "true"); nodes.status.appendChild(stars);
       log("pass " + clip + (retried ? " retry" : " first"));
       stop(null, function (safe) {
+        if (touchIOS) { soundActive=false;controls();armWatchdog(NO_AUDIO_MS,completePass);return; }
         if (safe && (session.silent || touchIOS) && (env.AudioContext || env.webkitAudioContext) && env.fetch) {
           manualPraise = true;
           env.clearTimeout(soundTimer); soundTimer = null;
@@ -594,6 +631,7 @@
     // Reads back only the misread words, once each, from recorded clips.
     function speakWords(words, safe, tapped) {
       soundActive = false;
+      if(touchIOS){controls();return;}
       const clips = words.filter(function (word) { return !!WORD_CLIPS[word]; });
       if (!safe || !clips.length || !canPlay()) { controls(); return; }
       if (touchIOS && tapped !== true) {
@@ -724,7 +762,7 @@
         env.clearTimeout(healthTimer);
         healthTimer = env.setTimeout(function () {
           if (disposed || id !== serial) return;
-          recovering = false; controls(); read(true);
+          completionPlayed.delete(env);recovering = false; controls(); read(true);
         }, 350);
       }, function () {
         if (disposed || id !== serial) return;
@@ -737,7 +775,7 @@
     }
     function read(rearmed) {
       if (nodes.mic.disabled) return;
-      if (touchIOS && session.lastClip && rearmed !== true && env.navigator.mediaDevices && env.navigator.mediaDevices.getUserMedia) { recoverMicrophone(); return; }
+      if (touchIOS && completionPlayed.has(env) && rearmed !== true && env.navigator.mediaDevices && env.navigator.mediaDevices.getUserMedia) { recoverMicrophone(); return; }
       stop();
       if (!touchIOS) unlockAudio();
       else session.silent = false;
@@ -843,6 +881,7 @@
     };
   }
   const api = { sentences: sentences, normalize: normalize, matches: matches, sameWord: sameWord, aliases: ALIASES, isPrefix: isPrefix, alternativeTexts: alternativeTexts, anyMatches: anyMatches, wordClips: WORD_CLIPS, praiseFile: praiseFile, matchedWords: matchedWords, cleanWordScores: cleanWordScores, chooseSentence: chooseSentence, recentLimit: RECENT_LIMIT, createFeedbackSession: createFeedbackSession, choosePraise: choosePraise, retryWords: retryWords, mount: mount };
+  api.mountCelebration = mountCelebration;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.EnglishReading = api;
 })(typeof window !== "undefined" ? window : globalThis);

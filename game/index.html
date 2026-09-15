@@ -1231,7 +1231,7 @@
 <script src="math/learning.js?v=29"></script>
 <script src="math/store.js?v=32"></script>
 <script src="assets/study/math-bridge.js?v=2"></script>
-<script src="assets/study/english-reading.js?v=14"></script>
+<script src="assets/study/english-reading.js?v=15"></script>
 <script>
 (function () {
   'use strict';
@@ -1542,6 +1542,7 @@
   var setCorrect = state.solved % SET;
   var current = null;
   var lastReadingIndex = -1, readingView = null, answerTimer = null, readingFallback = false;
+  var celebrationView = null;
   /* 최근 읽은 문장 번호(최대 12개) — 같은 문장이 금방 다시 나오지 않도록. 기기에만 저장. */
   var readingSilent = false;
   /* v9: 예전 마이크 복구가 남긴 영구 무음을 지운다. 복구 무음은 현재 페이지에서만 유지. */
@@ -1553,6 +1554,7 @@
     try { localStorage.setItem('hub2_reading_recent', JSON.stringify(readingRecent)); } catch (_) {}
   }
   function stopReading() {
+    if (typeof celebrationView !== 'undefined' && celebrationView) { celebrationView.destroy(); celebrationView=null; }
     clearTimeout(answerTimer);
     if (readingView) { readingView.destroy(); readingView = null; }
   }
@@ -2250,6 +2252,9 @@
       renderProblem();
     }
     syncGameCardAccess();
+    if (!state.parentMode && state.solved >= SET && (isFree() || hasTicket()) && typeof window !== 'undefined' && window.EnglishReading && window.EnglishReading.mountCelebration) {
+      celebrationView = window.EnglishReading.mountCelebration(choicesEl,window);
+    }
   }
 
   /* ---- 게임 놀이 기록: 무엇을 얼마나 자주 하는지 ---- */
