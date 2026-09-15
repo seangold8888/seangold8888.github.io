@@ -12,7 +12,7 @@
     layout.append(art,story);dialog.append(head,profile,layout,status);d.body.append(dialog);
     let child='jaei',snapshot=null,token=0,hint='',renderedArtKey='';
     function apply(action,detail){const r=G.quest(storage,child,action,detail);if(!r.ok){status.textContent='저장하지 못했어요. 기존 기록은 그대로예요. 공간을 확인하고 다시 눌러 주세요.';return;}if(!r.changed){hint=action==='share'?'세 친구에게 두 개씩 나눠 주세요. 다시 담아도 괜찮아요.':action==='trail'?'갈라진 길 옆에 작은 발자국이 이어져 있어요.':action==='greet'?'같이 가자고 부르는 말은 “Come with me.”예요.':'사과는 모두 여섯 개예요. 다시 담아 볼까요?';}else{hint='';api.sound('click');}draw();}
-    function show(){try{child=G.read(storage).active;snapshot=api.snapshot();hint='';dialog.showModal();draw();}catch(_){api.notify('성장 기록을 읽지 못했어요. 기존 기록은 그대로예요.');}}
+    function show(){try{G.read(storage);child='jaei';snapshot=api.snapshot();hint='';dialog.showModal();draw();}catch(_){api.notify('성장 기록을 읽지 못했어요. 기존 기록은 그대로예요.');}}
     async function finish(){
       const mine=token,owner=child;for(const b of story.querySelectorAll('button'))b.disabled=true;status.textContent='소풍 사진과 일기를 담고 있어요…';
       try{
@@ -26,7 +26,7 @@
     async function draw(){
       const mine=++token;let s;try{s=G.read(storage);}catch(e){status.textContent=e.message;return;}
       const p=s.children[child],q=p.quest,t=G.summary(p);profile.replaceChildren();
-      for(const [id,name] of Object.entries(G.CHILDREN)){const b=button(name,()=>{const r=G.select(storage,id);if(!r.ok){status.textContent='아이 선택을 저장하지 못했어요.';return;}child=id;hint='';draw();});b.setAttribute('aria-pressed',String(id===child));profile.append(b);}
+      profile.append(el('strong','','재이의 공주 키우기'));
       profile.append(el('span','pj-growth','성장별 '+t.stars+' · 지혜 '+p.math+' · 말하기 '+p.reading));
       story.replaceChildren();status.textContent=hint;
       story.append(el('p','pj-kicker','첫 번째 모험 · '+G.CHILDREN[child]+'의 이야기'));

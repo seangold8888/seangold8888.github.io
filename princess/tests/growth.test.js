@@ -1,13 +1,13 @@
 'use strict';
 const {test}=require('node:test'),assert=require('node:assert/strict'),G=require('../../assets/study/princess-growth.js');
 const memory=()=>{const data=new Map();return {getItem:k=>data.get(k)||null,setItem:(k,v)=>data.set(k,v),data};};
-test('new answers belong to selected child; dedup survives refresh, child switch and next day',()=>{
+test('new answers belong to Jaei even with an old Taeo selection; old records are preserved',()=>{
  const s=memory();for(let ordinal=1;ordinal<=10;ordinal++)assert(G.record(s,{day:'2026-9-15',ordinal,subject:ordinal===5?'math':'reading'}).ok);
  assert.equal(G.summary(G.read(s).children.jaei).stars,1);G.select(s,'taeo');
  assert.equal(G.record(s,{day:'2026-9-15',ordinal:10,subject:'reading'}).changed,false);
  assert.equal(G.record(s,{day:'2026-9-14',ordinal:1,subject:'math',parentMode:true}).ok,false);
  G.record(s,{day:'2026-9-16',ordinal:1,subject:'math'});
- assert.equal(G.read(s).children.taeo.math,1);assert.equal(G.read(s).children.jaei.math,1);
+ assert.equal(G.read(s).children.taeo.math,0);assert.equal(G.read(s).children.jaei.math,2);
  assert.equal(G.select(s,'__proto__').ok,false);assert.equal(s.getItem('hub2_solved'),null);
 });
 test('picnic is resumable, requires equal sharing, preserves wardrobe and only rewards once',()=>{
@@ -35,8 +35,14 @@ test('learning unlocks optional assistance without making the adventure require 
  assert.equal(G.read(s).children.jaei.math,3);assert.equal(G.summary(G.read(s).children.jaei).total,3);
 });
 
+test('player names remain separate from the princess companion',()=>{
+ const fs=require('fs'),path=require('path'),source=fs.readFileSync(path.resolve(__dirname,'../../assets/study/princess-growth.js'),'utf8');
+ assert(source.includes('재이의 공주 키우기'));assert(!source.includes('pg-children'));
+ assert(!source.includes('누구의 공주를 키울까요?'));
+});
+
 test('worker caches integration, and hub records only inside its accepted-answer branch',()=>{
  const fs=require('fs'),path=require('path'),root=path.resolve(__dirname,'../..'),sw=require('../../sw.js');
- for(const file of ['assets/study/princess-growth.js','assets/study/princess-growth.css','princess/journey.js','princess/journey.css'])assert(sw.OPTIONAL_SHELL.includes('./'+file+'?v=1'));
+ for(const file of ['assets/study/princess-growth.js','assets/study/princess-growth.css','princess/journey.js','princess/journey.css'])assert(sw.OPTIONAL_SHELL.includes('./'+file+'?v='+(file.endsWith('.js')?2:1)));
  const h=fs.readFileSync(path.join(root,'game/index.html'),'utf8');assert(h.indexOf('window.PrincessGrowth.record')>h.indexOf('current.answered = true'));assert(h.includes('parentMode: state.parentMode'));assert(h.includes('var SET = 10, DAILY = 100;'));
 });

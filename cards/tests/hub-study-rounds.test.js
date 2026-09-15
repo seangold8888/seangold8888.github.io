@@ -40,7 +40,8 @@ test("accepted hub answers grow the selected princess once without altering tick
   ctx.pick(ctx.current.answer,null);
   assert.equal(g.read(ctx.localStorage).children.jaei.reading,10);
   g.select(ctx.localStorage,'taeo');ctx.consumeGameTicket();ctx.restoreStudyProgress();ctx.answer();
-  assert.equal(g.read(ctx.localStorage).children.taeo.reading,1);
+  assert.equal(g.read(ctx.localStorage).children.taeo.reading,0);
+  assert.equal(g.read(ctx.localStorage).children.jaei.reading,11);
   assert.equal(ctx.state.solved,11);
 });
 

@@ -26,7 +26,7 @@
   function select(storage,id){if(!Object.hasOwn(CHILDREN,id))return {ok:false,error:'아이를 골라 주세요.'};return update(storage,s=>{s.active=id;});}
   function record(storage,{day,ordinal,subject,parentMode=false}){
     if(parentMode||!/^\d{4}-\d{1,2}-\d{1,2}$/.test(day)||!Number.isSafeInteger(ordinal)||ordinal<1||!['math','reading','discovery'].includes(subject))return {ok:false,error:'학습 기록 형식 오류'};
-    return update(storage,s=>{if((s.seen[day]||0)>=ordinal)return false;s.seen[day]=ordinal;s.children[s.active][subject]++;});
+    return update(storage,s=>{if((s.seen[day]||0)>=ordinal)return false;s.seen[day]=ordinal;s.children.jaei[subject]++;});
   }
   function quest(storage,id,action,detail){
     if(!Object.hasOwn(CHILDREN,id))return {ok:false,error:'아이를 골라 주세요.'};
@@ -46,13 +46,11 @@
   }
   function summary(p){const total=p.math+p.reading+p.discovery;return {total,stars:Math.floor(total/10),next:10-total%10};}
   function mountHub(node,storage){
-    if(!node)return;let note='지금부터 푸는 문제를 선택한 아이의 공주 성장에 담아요.';
+    if(!node)return;const note='지금부터 푸는 문제를 재이의 공주 성장 기록에 담아요.';
     function draw(){
       node.replaceChildren();try{
-        const s=read(storage),p=s.children[s.active],t=summary(p),head=document.createElement('strong');head.textContent='누구의 공주를 키울까요?';node.append(head);
-        const controls=document.createElement('div');controls.className='pg-children';
-        for(const [id,name] of Object.entries(CHILDREN)){const b=document.createElement('button');b.type='button';b.textContent=name;b.setAttribute('aria-pressed',String(id===s.active));b.onclick=()=>{const r=select(storage,id);if(!r.ok){note='성장 기록을 저장하지 못했어요. 공부는 계속할 수 있어요.';draw();}};controls.append(b);}node.append(controls);
-        const line=document.createElement('p');line.textContent=CHILDREN[s.active]+'의 성장별 '+t.stars+'개 · 다음 별까지 '+t.next+'문제';node.append(line);
+        const s=read(storage),p=s.children.jaei,t=summary(p),head=document.createElement('strong');head.textContent='재이의 공주 키우기';node.append(head);
+        const line=document.createElement('p');line.textContent='재이의 성장별 '+t.stars+'개 · 다음 별까지 '+t.next+'문제';node.append(line);
         const small=document.createElement('small');small.textContent=note+' 기존 학습 진도·게임 티켓은 가족 공용 그대로예요.';node.append(small);
       }catch(e){node.textContent=e.message;}
     }
