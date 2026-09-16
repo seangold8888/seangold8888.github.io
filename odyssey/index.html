@@ -122,7 +122,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     <small>걱정 마세요. 모험은 잠시 멈춰요.</small>
   </div>
   <noscript>이 게임은 자바스크립트가 필요해요.</noscript>
-  <script>
+  <script src="../assets/bgm/bgm-player.js?v=64"></script>
+<script>
 /* src/audio.js */
 // 오디세이아 — 외부 파일 없이 합성하는 오리지널 그리스풍 OST
 // 고대 리라·아울로스·프레임드럼·청동 공의 질감을 Web Audio로 재해석한다.
@@ -1025,7 +1026,23 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     requestContextResume();
   };
 
+  // 공용 파일 배경음악(assets/bgm/odyssey.mp3). 있으면 합성곡 대신 이것을 튼다.
+  let fileBgm = null;
+  function fileBgmPlayer() {
+    if (fileBgm !== null) return fileBgm;
+    fileBgm = window.HubBgm ? window.HubBgm.create({ basePath: '../assets/bgm/', volume: 0.28 }) : false;
+    if (fileBgm) fileBgm.setMuted(muted);
+    return fileBgm;
+  }
+
   S.startBgm = function (mode, options) {
+    const file = fileBgmPlayer();
+    if (file) {
+      musicWanted = true;
+      stopScheduler();
+      file.setTrack('odyssey');
+      return;
+    }
     const nextMode = TRACKS[mode] ? mode : 'title';
     const opts = typeof options === 'number' ? { intensity: options } : (options || {});
     const sameTrack = musicWanted && musicMode === nextMode;
@@ -1057,6 +1074,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 
   S.stopBgm = function () {
     musicWanted = false;
+    if (fileBgm) fileBgm.stop();
     stopScheduler();
     if (ctx) musicBuses.forEach(bus => fadeParam(bus.gain, 0.0001, 0.42));
   };
@@ -1064,6 +1082,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   S.muted = function () { return muted; };
   S.toggleMute = function () {
     muted = !muted;
+    if (fileBgm) fileBgm.setMuted(muted);
     try { localStorage.setItem('ody_muted', muted ? '1' : '0'); } catch (_) {}
     if (ensure()) {
       fadeParam(master.gain, muted ? 0.0001 : 0.7, 0.09);

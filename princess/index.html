@@ -242,6 +242,27 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 <script src="outings.js?v=1"></script>
 <script src="../assets/study/princess-growth.js?v=2"></script>
 <script src="journey.js?v=2"></script>
+<script src="../assets/bgm/bgm-player.js?v=64"></script>
+<script>
+(function () {
+  'use strict';
+  // 배경음악. 기존 소리 끄기 버튼(princess:mute)을 그대로 따른다.
+  if (!window.HubBgm) return;
+  var bgm = window.HubBgm.create({ basePath: '../assets/bgm/', storageKey: 'princess:mute', volume: 0.28 });
+  bgm.setTrack('princess');
+  var button = document.getElementById('btnSound');
+  if (button) {
+    button.addEventListener('click', function () {
+      window.setTimeout(function () {
+        var stored = '0';
+        try { stored = localStorage.getItem('princess:mute') || '0'; } catch (error) {}
+        bgm.setMuted(stored === '1');
+      }, 0);
+    });
+  }
+})();
+</script>
+
 <script>
 'use strict';
 /* =========================================================

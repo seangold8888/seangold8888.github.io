@@ -395,6 +395,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 </main>
 <script src="combat-v2.js?v=2"></script>
 <script src="attack-motion.js?v=1"></script>
+<script src="../assets/bgm/bgm-player.js?v=64"></script>
 <script>
 'use strict';
 const COMBAT = globalThis.KedehunCombat;
@@ -750,7 +751,20 @@ class Music {
       { bpm: 116, chords: [[50, 53, 57], [46, 50, 53], [53, 57, 60], [48, 52, 55]] },  // Dm Bb F C
     ];
   }
+  filePlayer() {
+    if (this.file !== undefined) return this.file;
+    this.file = window.HubBgm ? window.HubBgm.create({ basePath: '../assets/bgm/', volume: 0.3 }) : false;
+    if (this.file) this.file.setMuted(Boolean(this.audio.muted));
+    return this.file;
+  }
   start(stageIndex) {
+    const file = this.filePlayer();
+    if (file) {
+      this.stop();
+      this.running = true;
+      file.setTrack('kedehun');
+      return;
+    }
     const ctx = this.audio.context;
     if (!ctx || !this.audio.master) return;
     this.stop();
@@ -769,6 +783,7 @@ class Music {
     if (this.gain && ctx) this.gain.gain.setTargetAtTime(on ? 0.14 : 0.55, ctx.currentTime, 0.12);
   }
   stop() {
+    if (this.file) this.file.stop();
     if (this.timer) { clearInterval(this.timer); this.timer = 0; }
     this.running = false;
     this.boss = false;
@@ -1065,7 +1080,7 @@ class Game {
     this.publish();
   }
 
-  toggleMute() { this.audio.toggle(); this.publish(); }
+  toggleMute() { this.audio.toggle(); if (this.music && this.music.file) this.music.file.setMuted(this.audio.muted); this.publish(); }
 
   setAction(action, source, down) {
     if (this.phase === 'playing') this.input.set(action, source, down, this.playTime);

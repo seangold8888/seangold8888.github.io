@@ -47,5 +47,24 @@ const look=page=>page.evaluate(()=>Object.assign(window.CardBgm.state(),{suspend
    await context.close();
    console.log("PASS",viewport,"메뉴곡 재생 · 전투곡 전환 · 끄기 유지 · 합성음 대체");
   }
+  // 모험 상자 첫 화면
+  {
+   const context=await browser.newContext({viewport:{width:820,height:1180}});const page=await context.newPage();const errors=[];
+   page.on("pageerror",e=>errors.push(String(e)));
+   await page.goto(base+"/game/");
+   await page.waitForSelector("#hubMusic");
+   await page.mouse.click(5,5);
+   await page.waitForFunction(()=>window.HubBgm&&document.getElementById("hubMusic"),null,{timeout:15000});
+   await page.waitForFunction(()=>performance.getEntriesByType("resource").some(r=>r.name.includes("hub.mp3")),null,{timeout:15000});
+   await page.locator("#hubMusic").click();
+   assert.equal(await page.evaluate(()=>localStorage.getItem("hub_bgm_muted")),"1");
+   assert.equal(await page.locator("#hubMusic").getAttribute("aria-pressed"),"true");
+   await page.reload();
+   await page.waitForSelector("#hubMusic");
+   assert.equal(await page.locator("#hubMusic").getAttribute("aria-pressed"),"true","끈 설정은 새로고침 뒤에도 지켜야 한다");
+   assert.deepEqual(errors,[]);
+   await context.close();
+   console.log("PASS 모험 상자 첫 화면 곡 요청 · 끄기 버튼 · 설정 유지");
+  }
  }finally{await browser.close();if(server.closeAllConnections)server.closeAllConnections();await new Promise(r=>server.close(r));}
 })().catch(e=>{console.error(e);process.exitCode=1;});

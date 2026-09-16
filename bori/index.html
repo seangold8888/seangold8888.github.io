@@ -1314,3 +1314,22 @@ if(route==='quiz'&&!quiz) route='hub'; if(route==='ladder'&&!ladder) route='hub'
 render();
 </script>
 
+<script src="../assets/bgm/bgm-player.js?v=64"></script>
+<script>
+(function () {
+  'use strict';
+  // 배경음악. 보리의 소리 끄기 설정(bori-gems:v3:muted)을 그대로 따른다.
+  if (!window.HubBgm) return;
+  var KEY = 'bori-gems:v3:muted';
+  var read = function () {
+    try { return localStorage.getItem(KEY) === 'true'; } catch (error) { return false; }
+  };
+  var bgm = window.HubBgm.create({ basePath: '../assets/bgm/', volume: 0.28 });
+  bgm.setMuted(read());
+  bgm.setTrack('bori');
+  document.addEventListener('click', function (event) {
+    if (!event.target || !event.target.closest || !event.target.closest('[data-a="mute"]')) return;
+    window.setTimeout(function () { bgm.setMuted(read()); }, 0);
+  });
+})();
+</script>

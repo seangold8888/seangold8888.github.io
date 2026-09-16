@@ -500,6 +500,7 @@
     gap: clamp(20px, 3vw, 34px);
     padding-top: calc(18px + env(safe-area-inset-top, 0px));
   }
+  .hub-music[aria-pressed="true"] { opacity: .45; filter: grayscale(1); }
   .topbar {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
@@ -996,6 +997,7 @@
       <span class="hud-chip ticket"><small>게임 티켓</small><strong id="hubTicketStat">준비 중</strong></span>
       <span class="hud-chip crown"><small>숙달 왕관</small><strong id="hubCrownStat">0개</strong></span>
       <span class="hud-chip offline"><small>기기 저장</small><strong id="hubOfflineStat">확인 중</strong></span>
+      <button class="book-open hub-music" id="hubMusic" type="button" aria-pressed="false" aria-label="배경음악 끄기">🎵</button>
       <button class="book-open parent-entry" id="bookOpen" type="button" aria-label="부모님용 학습 리포트 열기">📖</button>
     </div>
   </header>
@@ -1233,6 +1235,28 @@
 <script src="math/store.js?v=32"></script>
 <script src="assets/study/math-bridge.js?v=2"></script>
 <script src="assets/study/english-reading.js?v=16"></script>
+<script src="assets/bgm/bgm-player.js?v=64"></script>
+<script>
+(function () {
+  'use strict';
+  // 모험 상자 첫 화면 배경음악. 첫 조작 뒤에 시작하고, 버튼으로 끄면 다음에도 꺼진 채로 연다.
+  var button = document.getElementById('hubMusic');
+  if (!window.HubBgm || !button) return;
+  var bgm = window.HubBgm.create({ basePath: '../assets/bgm/', storageKey: 'hub_bgm_muted', volume: 0.3 });
+  function paint() {
+    var muted = bgm.isMuted();
+    button.textContent = muted ? '🔈' : '🎵';
+    button.setAttribute('aria-pressed', muted ? 'true' : 'false');
+    button.setAttribute('aria-label', muted ? '배경음악 켜기' : '배경음악 끄기');
+  }
+  button.addEventListener('click', function () {
+    bgm.setMuted(!bgm.isMuted());
+    paint();
+  });
+  bgm.setTrack('hub');
+  paint();
+})();
+</script>
 <script>
 (function () {
   'use strict';

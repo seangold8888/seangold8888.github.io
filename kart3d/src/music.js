@@ -232,7 +232,25 @@ export function createAudio() {
       .catch(() => null);
   }
 
+  // 공용 파일 배경음악(assets/bgm). Lyria 곡이 있으면 합성곡 대신 그것을 튼다.
+  let fileBgm = null;
+  function fileBgmPlayer() {
+    if (fileBgm !== null) return fileBgm;
+    fileBgm = (typeof window !== 'undefined' && window.HubBgm)
+      ? window.HubBgm.create({ basePath: '../assets/bgm/', volume: 0.3 })
+      : false;
+    if (fileBgm) fileBgm.setMuted(muted);
+    return fileBgm;
+  }
+
   function startMusic(trackIndex) {
+    const file = fileBgmPlayer();
+    if (file && !userBuf) {
+      stopMusic(true);
+      playing = true;
+      file.setTrack('kart3d');
+      return;
+    }
     if (!ensure()) return;
     resume();
     stopMusic(true);
@@ -262,6 +280,7 @@ export function createAudio() {
 
   function stopMusic(silent) {
     playing = false;
+    if (fileBgm) fileBgm.stop();
     if (timer) { clearTimeout(timer); timer = null; }
     if (!ctx) return;
     const now = ctx.currentTime;
@@ -400,6 +419,7 @@ export function createAudio() {
 
   function setMuted(m) {
     muted = !!m;
+    if (fileBgm) fileBgm.setMuted(muted);
     try { localStorage.setItem('kart3d_music', muted ? 'off' : 'on'); } catch (_) {}
     if (!ctx) return;
     const now = ctx.currentTime;

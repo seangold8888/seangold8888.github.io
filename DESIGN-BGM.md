@@ -44,7 +44,26 @@ python tools/loopify-bgm.py <원본.mp3> <출력.mp3> 40 2  # 40초 반복본으
 - "demon hunter" 같은 표현은 정책 차단(400)이 난다. 케데헌 곡은 "K-pop stage action"으로 우회했다.
 - 60초 원본은 저장소 밖 `game-hub/bgm-masters/`에 있다. 다시 다듬을 때 쓴다.
 
-## 붙이는 규칙 (Codex 구현)
+## 붙인 상태 (2026-09-16 완료)
+
+| 게임 | 상태 |
+|---|---|
+| 모험 상자 첫 화면 | hub.mp3 재생, 머리글에 🎵 끄기 버튼(`hub_bgm_muted`) |
+| J&T Adventure | 모음·전투·보스·결말 네 곡 전환, 기존 배경음악 버튼이 파일과 합성음 모두 끔 |
+| 공주 옷장 | princess.mp3, 기존 소리 버튼(`princess:mute`) 따름 |
+| 보리 젬 | bori.mp3, 기존 소리 설정(`bori-gems:v3:muted`) 따름 |
+| 오디세이 | odyssey.mp3가 합성 배경음을 대신함, `ody_muted` 따름 |
+| 호그와트 | hogwarts.mp3, 가족이 직접 고른 곡이 있으면 그 곡이 우선 |
+| 케데헌 | kedehun.mp3, 무대 시작 때 재생 |
+| 카트 · 3D 카트 | kart.mp3 / kart3d.mp3, 사용자가 넣은 곡이 있으면 그 곡이 우선 |
+| 삼국지 | 기존 `audio/the_final_battle.ogg` 유지(이미 파일 음악) |
+| 이야기 극장 | 넣지 않음. 낭독과 겹친다 |
+| 어벤져스 | 넣지 않음. `audio/bgm/` 슬롯 8개용 곡이 따로 필요하다 |
+| 매일 수학 | 넣지 않음. 집중 음악이 따로 있다 |
+
+검증: `node tools/bgm-games-smoke.cjs`(9개 게임에서 곡 요청 확인), `node cards/tools/bgm-smoke.cjs`(장면 전환·끄기 유지·합성음 대체).
+
+## 붙이는 규칙
 
 1. **기존 합성 음악을 대체한다.** cards, odyssey, hogwarts, kedehun, kart, kart3d, princess, math 등은 WebAudio로 합성한 배경음이 있다. 파일 재생으로 바꾸되 **기존 음악 끄기 버튼과 저장된 설정 키를 그대로 쓴다.** 효과음 합성 코드는 건드리지 않는다.
 2. **재생은 사용자 조작 뒤에 시작한다.** iOS는 자동재생을 막는다. 첫 탭·버튼 입력에서 시작하고, 실패하면 조용히 넘어간다.
