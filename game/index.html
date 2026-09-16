@@ -1034,6 +1034,7 @@
     <div class="question" id="question"></div>
     <div class="choices" id="choices"></div>
     <div class="cheer" id="cheer"></div>
+    <div id="studyCelebration"></div>
   </section>
 
     <article class="feature-stage">
@@ -1231,7 +1232,7 @@
 <script src="math/learning.js?v=29"></script>
 <script src="math/store.js?v=32"></script>
 <script src="assets/study/math-bridge.js?v=2"></script>
-<script src="assets/study/english-reading.js?v=15"></script>
+<script src="assets/study/english-reading.js?v=16"></script>
 <script>
 (function () {
   'use strict';
@@ -1554,7 +1555,6 @@
     try { localStorage.setItem('hub2_reading_recent', JSON.stringify(readingRecent)); } catch (_) {}
   }
   function stopReading() {
-    if (typeof celebrationView !== 'undefined' && celebrationView) { celebrationView.destroy(); celebrationView=null; }
     clearTimeout(answerTimer);
     if (readingView) { readingView.destroy(); readingView = null; }
   }
@@ -2004,6 +2004,8 @@
   function renderProblem() {
     // A pending answer timer must not reopen questions while parent mode is on.
     if (isFree() || hasTicket()) return;
+    if (typeof celebrationView !== 'undefined' && celebrationView) { celebrationView.destroy(); celebrationView=null; }
+    var celebrationBox=document.getElementById('studyCelebration');if(celebrationBox)celebrationBox.textContent='';
     stopReading();
     var seed = nextStudySeed();
     current = makeProblem(seed);
@@ -2149,9 +2151,11 @@
       drawSetStars();
       drawDaily();
       if (state.solved >= DAILY) {
+        celebrateRound();
         saveState();
         answerTimer = setTimeout(applyState, current.reading ? 0 : 650);
       } else if (setCorrect >= SET) {
+        celebrateRound();
         state.credit = 1;
         setCorrect = 0;
         saveState();
@@ -2209,6 +2213,12 @@
     });
   }
 
+  function celebrateRound() {
+    if (typeof window==='undefined' || !window.EnglishReading || !window.EnglishReading.mountCelebration) return;
+    var box=document.getElementById('studyCelebration');if(!box)return;
+    if(celebrationView)celebrationView.destroy();box.textContent='';
+    celebrationView=window.EnglishReading.mountCelebration(box,window);
+  }
   function applyState() {
     stopReading();
     drawDaily();
@@ -2217,6 +2227,7 @@
     var moon = document.getElementById('moon');
     moon.setAttribute('aria-pressed', state.parentMode ? 'true' : 'false');
     if (state.parentMode) {
+      if(typeof celebrationView!=='undefined' && celebrationView){celebrationView.destroy();celebrationView=null;}
       document.body.classList.remove('locked');
       studyEl.classList.add('done');
       eyebrowEl.textContent = '부모님 모드 켜짐';
@@ -2252,9 +2263,6 @@
       renderProblem();
     }
     syncGameCardAccess();
-    if (!state.parentMode && state.solved >= SET && (isFree() || hasTicket()) && typeof window !== 'undefined' && window.EnglishReading && window.EnglishReading.mountCelebration) {
-      celebrationView = window.EnglishReading.mountCelebration(choicesEl,window);
-    }
   }
 
   /* ---- 게임 놀이 기록: 무엇을 얼마나 자주 하는지 ---- */

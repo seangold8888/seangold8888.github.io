@@ -296,7 +296,7 @@
   const completionPlayed = new WeakSet();
   function mountCelebration(container, env) {
     env = env || root;
-    const button = env.document.createElement('button');button.type='button';button.textContent='🔊 10문제 성공! 칭찬 듣기';container.appendChild(button);
+    const button = env.document.createElement('p');button.setAttribute('role','status');button.textContent='🌟 열 문제 성공!';container.appendChild(button);
     let disposed=false,ctx=null,node=null,timer=null,started=false;
     function close() {
       if(node){node.onended=null;try{node.stop();}catch(_){}node=null;}
@@ -307,7 +307,7 @@
       const done=()=>{if(!disposed)button.textContent=label;};
       if(closing&&closing.then)closing.then(done,done);else done();
     }
-    button.addEventListener('click',function(){
+    function play(){
       if(disposed||started)return;started=true;button.disabled=true;
       const AC=env.AudioContext||env.webkitAudioContext;
       if(!AC||!env.fetch){button.textContent='🌟 열 문제를 해냈어! 정말 멋져!';return;}
@@ -323,10 +323,11 @@
           button.textContent='🌟 열 문제 성공! 정말 잘했어!';node.start(0);
         }).catch(()=>finish('🌟 열 문제 성공! 소리는 재생하지 못했어요.'));
       }catch(_){finish('🌟 열 문제 성공! 소리는 재생하지 못했어요.');}
-    });
+    }
     const leave=()=>{disposed=true;env.clearTimeout(timer);close();};
     const hide=()=>{if(env.document.hidden)leave();};
     env.addEventListener('pagehide',leave);env.document.addEventListener('visibilitychange',hide);
+    play();
     return {destroy(){leave();env.removeEventListener('pagehide',leave);env.document.removeEventListener('visibilitychange',hide);}};
   }
   // One session per window: praise streak, last clip and a diagnostic log.
@@ -412,7 +413,7 @@
       record(env, session, event);
       if (logNode && !disposed) logNode.textContent = session.log.join("\n");
     }
-    log("mount-v15" + (touchIOS ? " ios-quiet-round" : ""));
+    log("mount-v16" + (touchIOS ? " ios-quiet-round" : ""));
 
     function controls() {
       nodes.mic.disabled = disposed || awarded || recovering || !!active || soundActive || !Recognition || env.isSecureContext === false || env.navigator.onLine === false;

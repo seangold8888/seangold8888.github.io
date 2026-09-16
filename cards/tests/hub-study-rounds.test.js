@@ -10,6 +10,14 @@ function fn(name) {
   assert.ok(start >= 0, name);
   return html.slice(start, html.indexOf("\n  }", start) + 4);
 }
+test('completion praise runs once at each earned tenth answer, never on duplicate answers',()=>{
+ const {ctx}=setup();
+ for(let round=0;round<10;round++){
+  for(let i=0;i<9;i++)ctx.answer();assert.equal(ctx.celebrations,round);
+  ctx.answer();assert.equal(ctx.celebrations,round+1);ctx.pick(ctx.current.answer,null);assert.equal(ctx.celebrations,round+1);
+  if(round<9){ctx.consumeGameTicket();ctx.restoreStudyProgress();}
+ }
+});
 function setup(initial = {}) {
   const stored = new Map(Object.entries({hub2_date: "2026-9-6", hub2_parent_mode: "0", ...initial}));
   const ctx = {
@@ -18,6 +26,7 @@ function setup(initial = {}) {
     todayKey: () => "2026-9-6", dayNum: () => 100, MASTER_AT: 9, CHEERS: ["정답"],
     localStorage: {getItem: k => stored.get(k) ?? null, setItem: (k,v) => stored.set(k,v)},
     cheerEl: {}, drawSetStars() {}, drawDaily() {}, applyState() {}, renderProblem() {},
+    celebrations:0,celebrateRound(){ctx.celebrations++;},
     stopReading() {}, annotatePlays() {}, setTimeout: () => 1,
     mathProfile: null, mathState: null, studyAge: 7,
   };

@@ -241,6 +241,7 @@ test("a reading success advances progress once and earns the tenth-answer ticket
     CHEERS: ["잘했어요"], BANK_SIZES: { reading: 16 }, MASTER_AT: 9, cheerEl: {},
     skillOf: () => skill, dayNum: () => 100, drawSetStars() {}, drawDaily() {}, saveState() {},
     setTimeout: () => 1, applyState() {}, renderProblem() {} };
+  ctx.celebrateRound=()=>{};
   vm.runInNewContext(fn("pick"), ctx);
   ctx.pick("I like apples.", null); ctx.pick("I like apples.", null);
   assert.equal(ctx.state.solved, 10); assert.equal(ctx.state.credit, 1); assert.equal(ctx.setCorrect, 0);
@@ -248,8 +249,8 @@ test("a reading success advances progress once and earns the tenth-answer ticket
 });
 test("reading support is cached and its script loads before the study controller", () => {
   const sw = require("../../sw.js");
-  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=15"));
-  assert.ok(html.indexOf('src="assets/study/english-reading.js?v=15"') < html.indexOf("var BANK_SIZES"));
+  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=16"));
+  assert.ok(html.indexOf('src="assets/study/english-reading.js?v=16"') < html.indexOf("var BANK_SIZES"));
   assert.match(html, /\.reading-word\.retry\s*\{[^}]*text-decoration:underline wavy/);
   assert.match(html, /if \(current !== target \|\| isFree\(\) \|\| hasTicket\(\) \|\| target\.answered\) return/);
   assert.match(html, /function stopReading\(\)[\s\S]*?clearTimeout\(answerTimer\)/);
