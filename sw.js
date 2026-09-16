@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v126";
+const CACHE_VERSION = "v130";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -179,6 +179,17 @@ const PRINCESS_STUDIO_ASSETS = Object.entries({
   `./princess/assets/studio-v3/${category}-${id}.${category === "bg" ? "jpg" : "webp"}`
 ));
 const OPTIONAL_SHELL = [
+  "./math/party/",
+  "./math/party/party.css?v=2",
+  "./math/party/extra.css?v=1",
+  "./math/party/dance.css?v=1",
+  "./math/party/dance.js?v=3",
+  "./math/party/family-rear-dance-v1.png",
+  "./math/party/engine.js?v=1",
+  "./math/party/music.js?v=1",
+  "./math/party/extra.js?v=2",
+  "./math/party/party.js?v=5",
+  "./math/party/parity.js?v=1",
   "./princess/cover-natural-v50.png",
   "./assets/study/princess-growth.js?v=2",
   "./assets/study/princess-growth.css?v=1",

@@ -2,10 +2,12 @@
 'use strict';
 const E=window.PartyEngine,$=id=>document.getElementById(id);let storage;
 try{storage=window.localStorage;}catch(_){storage={getItem:()=>null,setItem:()=>{throw Error('unavailable');}};}
-let state=E.load(storage),sound=false,ctx=null,blown=false,danceTimer;
+let state=E.create(undefined,E.load(storage).history),blown=false,danceTimer;
+const music=PartyMusic.create(window,(on,message)=>{$('sound').textContent=on?'음악 끄기':'음악 켜기';$('sound').setAttribute('aria-pressed',String(on));$('musicNote').textContent=message||(on?'재이의 생일 왈츠 ♪':'음악은 눌러서 켜요. 화면을 떠나면 꺼져요.');});
 const colors=['#f5aec4','#a9d8e3','#f5d68e','#b9ddb8','#d1bcef','#f4bea1'];
 function persist(){if(!E.save(storage,state))$('saveNote').textContent='지금은 저장이 어려워. 이 화면에서 계속 놀 수 있어.';}
-function tone(notes=[523,659,784]){if(!sound)return;try{ctx=ctx||new(window.AudioContext||window.webkitAudioContext)();ctx.resume();notes.forEach((f,i)=>{const o=ctx.createOscillator(),g=ctx.createGain(),t=ctx.currentTime+i*.12;o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(.08,t);g.gain.exponentialRampToValueAtTime(.001,t+.22);o.connect(g);g.connect(ctx.destination);o.start(t);o.stop(t+.24);});}catch(_){sound=false;$('sound').textContent='소리 켜기';$('sound').setAttribute('aria-pressed','false');}}
+function tone(notes=[523,659,784]){music.effect(notes);}
+document.addEventListener('party-dance-note',()=>tone([784,784]));
 function announce(text){$('feedback').textContent=text;}
 function scene(){
  document.body.dataset.theme=state.theme;
@@ -19,7 +21,7 @@ function scene(){
  document.querySelectorAll('[data-cake]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.cake===state.cake)));
 }
 function render(){
- scene();$('welcome').hidden=state.started;$('play').hidden=!state.started;if(!state.started)return;
+ scene();document.dispatchEvent(new CustomEvent('party-stage',{detail:{ready:state.started&&state.stage===3}}));$('welcome').hidden=state.started;$('play').hidden=!state.started;if(!state.started)return;
  const stage=state.stage,done=stage<3&&E.completed(state)[stage];
  $('play').classList.toggle('is-party',stage===3);
  $('parityInPlay').hidden=stage!==1&&stage!==3;
@@ -44,12 +46,14 @@ function confetti(){for(let i=0;i<20;i++){const e=document.createElement('i');e.
 $('themes').addEventListener('click',e=>{const b=e.target.closest('[data-theme]');if(b)dispatch('theme',b.dataset.theme);});
 $('start').onclick=()=>dispatch('start');$('next').onclick=()=>dispatch('next');$('help').onclick=()=>dispatch('help');
 $('activity').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;for(const [key,action] of [['power','power'],['cookie','cookie'],['balloon','balloon'],['pack','pack']])if(b.dataset[key]!==undefined){dispatch(action,Number(b.dataset[key]),'[data-'+key+'="'+b.dataset[key]+'"]');break;}});
-$('sound').onclick=()=>{sound=!sound;$('sound').textContent=sound?'소리 끄기':'소리 켜기';$('sound').setAttribute('aria-pressed',String(sound));tone();};
+$('sound').onclick=()=>{if(music.playing)music.stop();else music.start();};
 $('blow').onclick=()=>{revealScene();blown=!blown;scene();$('blow').textContent=blown?'촛불 다시 켜기':'후~ 촛불 끄기';announce(blown?'후우~! 재이의 소원이 이루어지길!':'다시 반짝! 소원을 하나 더 빌어볼까?');if(blown){confetti();tone([784,659,523]);}};
 $('dance').onclick=()=>{revealScene();clearTimeout(danceTimer);document.querySelector('.scene').classList.remove('dancing');void $('cake').offsetWidth;document.querySelector('.scene').classList.add('dancing');danceTimer=setTimeout(()=>document.querySelector('.scene').classList.remove('dancing'),3000);tone([523,659,784,659,523]);announce('아빠, 태오, 재이, 엄마! 다 같이 들썩들썩 ♪');};
 $('pop').onclick=()=>{revealScene();const existing=$('sparks').querySelectorAll('.toy-balloon');if(existing.length>=6)existing[0].remove();const b=document.createElement('button');b.className='toy-balloon';b.style.cssText='left:'+(8+Math.random()*72)+'%;--c:'+colors[Math.floor(Math.random()*6)];b.setAttribute('aria-label','떠오르는 풍선 터뜨리기');b.textContent='♥';b.onclick=()=>{b.remove();tone([880]);announce('톡! 하트가 퐁!');};$('sparks').append(b);setTimeout(()=>b.remove(),7500);announce('풍선을 눌러 톡 터뜨려 봐!');};
 document.querySelectorAll('[data-cake]').forEach(b=>b.onclick=()=>dispatch('cake',b.dataset.cake));
-$('replay').onclick=()=>{state=E.create(undefined,state.history);blown=false;$('blow').textContent='후~ 촛불 끄기';$('sparks').replaceChildren();persist();render();$('start').focus({preventScroll:true});$('welcome').scrollIntoView({block:'nearest'});};
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&ctx)ctx.suspend();});
+function freshParty(){state=E.create(undefined,state.history);blown=false;clearTimeout(danceTimer);document.querySelector('.scene').classList.remove('dancing');$('blow').textContent='후~ 촛불 끄기';$('sparks').replaceChildren();document.dispatchEvent(new Event('party-reset'));persist();render();}
+$('replay').onclick=()=>{freshParty();$('start').focus({preventScroll:true});$('welcome').scrollIntoView({block:'nearest'});};
+window.addEventListener('pageshow',e=>{if(e.persisted){music.stop();freshParty();}});
+document.addEventListener('click',e=>{if(e.target.closest('a[href]'))music.stop();});
 persist();render();
 })();
