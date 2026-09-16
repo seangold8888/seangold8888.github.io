@@ -175,6 +175,7 @@
       scene.dataset.sceneKey = key;
       scene.dataset.page = String(pageIndex);
       scene.dataset.pageCount = String(pageCount);
+      if (window.CardBgm) window.CardBgm.setTrack(kind === "ending" ? "cards-ending" : "cards-menu");
       const familyEnding = kind === "ending" && progress.endingScene === 2;
       if (familyEnding) scene.className += " is-family-ending";
       if (familyEnding) {

@@ -21,6 +21,8 @@
   let lastSelectAt = -Infinity;
   let muted = false;
   let musicMuted = false;
+  // 파일 배경음악(공용 재생기)이 실제로 울리는 동안에는 합성 배경음을 멈춘다.
+  let synthBgmSuspended = false;
   let desiredScene = null;
   let musicTimer = 0;
   let nextMusicTime = 0;
@@ -1441,6 +1443,7 @@
       desiredScene &&
       !muted &&
       !musicMuted &&
+      !synthBgmSuspended &&
       !pageHidden &&
       !needsAudioRecovery
     );
@@ -1910,6 +1913,12 @@
       ensureMusicScheduler();
       return muted;
     },
+    setSynthBgmSuspended: function (value) {
+      synthBgmSuspended = Boolean(value);
+      ensureMusicScheduler();
+      return synthBgmSuspended;
+    },
+    isSynthBgmSuspended: function () { return synthBgmSuspended; },
     isBgmMuted: function () { return musicMuted; },
     setBgmMuted: function (value) {
       musicMuted = Boolean(value);

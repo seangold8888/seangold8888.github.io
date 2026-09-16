@@ -564,7 +564,31 @@
     if (window.CardAudio.setScene) {
       window.CardAudio.setScene(battle ? "battle" : "collection");
     }
+    if (window.CardBgm) window.CardBgm.setTrack(battle ? battleBgmTrack() : "cards-menu");
     scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  // 원정 마지막 보스(쓰구미)는 전용 곡을 쓴다.
+  function battleBgmTrack() {
+    const enemy = campaignBattle && campaignBattle.enemy;
+    return enemy && enemy.id === "sseugumi" ? "cards-boss" : "cards-battle";
+  }
+
+  function setupBgm() {
+    if (!window.HubBgm || window.CardBgm) return;
+    window.CardBgm = window.HubBgm.create({
+      basePath: "../assets/bgm/",
+      storageKey: "cards_bgm_muted",
+      volume: 0.32
+    });
+    window.CardBgm.setMuted(window.CardAudio.isBgmMuted());
+    window.CardBgm.onChange(function (state) {
+      // 파일이 없거나 막히면 기존 합성 배경음이 그대로 울린다.
+      if (window.CardAudio.setSynthBgmSuspended) {
+        window.CardAudio.setSynthBgmSuspended(Boolean(state.playing));
+      }
+    });
+    window.CardBgm.setTrack("cards-menu");
   }
 
   function pickEnemy() {
@@ -3221,6 +3245,7 @@
     dom.musicButton.addEventListener("click", function () {
       const next = !window.CardAudio.isBgmMuted();
       window.CardAudio.setBgmMuted(next);
+      if (window.CardBgm) window.CardBgm.setMuted(next);
       updateMusicButton();
     });
 
@@ -3284,6 +3309,7 @@
 
   async function init() {
     cacheDom();
+    setupBgm();
     ensureTechniquePool();
     warmTechniqueAssets();
     bindEvents();
