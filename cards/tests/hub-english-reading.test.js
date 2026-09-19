@@ -97,19 +97,25 @@ test("unsupported and offline devices offer fallback without requesting micropho
   }
 });
 
-test("three reading levels keep the first 68 sentences and grow longer by level", () => {
-  assert.equal(reading.sentences.length, 118);
-  assert.equal(new Set(reading.sentences.map(s => s.text)).size, 118);
-  const count = { 1: 0, 2: 0, 3: 0 };
-  const limit = { 1: [3, 6], 2: [5, 8], 3: [7, 10] };
-  reading.sentences.forEach((s, idx) => {
+test("eight reading levels keep old indexes and grow from short lines to a picture-book page", () => {
+  assert.equal(reading.sentences.length, 276);
+  assert.equal(new Set(reading.sentences.map(s => s.text)).size, 276);
+  assert.equal(reading.sentences[0].text, "I like apples.", "기존 번호가 그대로여야 오답노트가 안 깨진다");
+  assert.equal(reading.sentences[67].text, "The bird is small.");
+  const count = {}, words = {}, lines = {};
+  reading.sentences.forEach((s) => {
     assert.ok(s.meaning, s.text);
-    count[s.level]++;
-    if (idx < 68) assert.equal(s.level, 1, "기존 번호는 1단계 그대로여야 오답노트가 안 깨진다");
-    const words = reading.normalize(s.text).split(" ").length;
-    assert.ok(words >= limit[s.level][0] && words <= limit[s.level][1], s.text);
+    count[s.level] = (count[s.level] || 0) + 1;
+    const n = reading.normalize(s.text).split(" ").length, k = (s.text.match(/[.!?](\s|$)/g) || []).length;
+    words[s.level] = [Math.min(n, (words[s.level] || [99])[0]), Math.max(n, (words[s.level] || [0, 0])[1])];
+    lines[s.level] = [Math.min(k, (lines[s.level] || [99])[0]), Math.max(k, (lines[s.level] || [0, 0])[1])];
   });
-  assert.deepEqual(count, { 1: 68, 2: 30, 3: 20 });
+  assert.deepEqual(count, { 1: 63, 2: 32, 3: 31, 4: 30, 5: 30, 6: 30, 7: 30, 8: 30 });
+  assert.deepEqual(words[1], [3, 4]); assert.deepEqual(words[2], [5, 6]); assert.deepEqual(words[3], [7, 8]);
+  assert.deepEqual(lines[4], [2, 2]); assert.deepEqual(lines[5], [2, 2]); assert.deepEqual(lines[6], [1, 1]);
+  assert.deepEqual(lines[7], [3, 3]); assert.deepEqual(lines[8], [4, 4]);
+  assert.ok(reading.sentences.filter(s => s.level === 5).every(s => s.text.includes("?")), "5단계는 묻고 답하기");
+  assert.equal(reading.levelNames.length, 9);
 });
 test("every word in every level has a recorded clip that the worker precaches", () => {
   const root = path.resolve(__dirname, "../..");
@@ -125,15 +131,16 @@ test("levels: level one alone by default, higher levels mostly new with some rev
   let seq = 0;
   const cycle = [0.1, 0.9, 0.3, 0.5];
   const random = () => cycle[seq++ % cycle.length];
-  const seen = { 1: 0, 2: 0, 3: 0 };
-  for (let i = 0; i < 400; i++) seen[reading.sentences[reading.chooseSentence({}, i, -1, random, [], 3)].level]++;
-  assert.ok(seen[3] > seen[1] + seen[2], JSON.stringify(seen));
-  assert.ok(seen[1] + seen[2] > 0, "아래 단계 복습이 섞여야 한다");
+  const seen = {};
+  for (let i = 0; i < 400; i++) { const lv = reading.sentences[reading.chooseSentence({}, i, -1, random, [], 8)].level; seen[lv] = (seen[lv] || 0) + 1; }
+  assert.ok(seen[8] > (seen[6] || 0) + (seen[7] || 0), JSON.stringify(seen));
+  assert.ok((seen[6] || 0) + (seen[7] || 0) > 0, "바로 아래 두 단계 복습이 섞여야 한다");
+  assert.deepEqual(Object.keys(seen).map(Number).sort(), [6, 7, 8], "너무 쉬운 단계는 복습으로 나오지 않는다");
   for (let i = 0; i < 100; i++) assert.ok(reading.sentences[reading.chooseSentence({}, i, -1, Math.random, [], 2)].level <= 2);
   assert.equal(reading.clampLevel(9), 1);
-  assert.equal(reading.clampLevel(2), 2);
-  assert.equal(reading.passesToLevelUp, 20);
-  assert.equal(reading.maxLevel, 3);
+  assert.equal(reading.clampLevel(8), 8);
+  assert.equal(reading.passesToLevelUp, 30);
+  assert.equal(reading.maxLevel, 8);
 });
 test("matching tolerates casing, punctuation and I'm, not missing, extra or reordered words", () => {
   assert.equal(reading.matches("I like apples.", " I LIKE apples! "), true);
@@ -282,8 +289,8 @@ test("a reading success advances progress once and earns the tenth-answer ticket
 });
 test("reading support is cached and its script loads before the study controller", () => {
   const sw = require("../../sw.js");
-  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=18"));
-  assert.ok(html.indexOf('src="assets/study/english-reading.js?v=18"') < html.indexOf("var BANK_SIZES"));
+  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=19"));
+  assert.ok(html.indexOf('src="assets/study/english-reading.js?v=19"') < html.indexOf("var BANK_SIZES"));
   assert.match(html, /\.reading-word\.retry\s*\{[^}]*text-decoration:underline wavy/);
   assert.match(html, /if \(current !== target \|\| isFree\(\) \|\| hasTicket\(\) \|\| target\.answered\) return/);
   assert.match(html, /function stopReading\(\)[\s\S]*?clearTimeout\(answerTimer\)/);

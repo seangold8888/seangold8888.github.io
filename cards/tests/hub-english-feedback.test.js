@@ -361,10 +361,10 @@ test("recognizer alternatives can pass; display uses the first guess; session sh
 
 test("the hub clears stale permanent silence and the worker precaches every clip", () => {
   const sw = require("../../sw.js"), html = fs.readFileSync(path.join(__dirname, "../../game/index.html"), "utf8");
-  assert.equal(sw.CACHE_VERSION, "v135");
-  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=18"));
+  assert.equal(sw.CACHE_VERSION, "v136");
+  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=19"));
   assert.ok(sw.CORE_SHELL.includes("./assets/study/praise/perfect-v2.wav"));
-  assert.match(html, /english-reading\.js\?v=18/);
+  assert.match(html, /english-reading\.js\?v=19/);
   assert.match(html, /removeItem\('hub2_reading_silent'\)/);
   assert.doesNotMatch(html, /setItem\('hub2_reading_silent'/);
   assert.match(html, /silent: readingSilent/);
@@ -374,7 +374,7 @@ test("the hub clears stale permanent silence and the worker precaches every clip
   for (const clip of clips) assert.ok(fs.statSync(path.join(__dirname, "../..", clip)).size > 0);
   const words = sw.CORE_SHELL.filter(p => p.includes("/words/"));
   assert.equal(words.length, Object.keys(reading.wordClips).length);
-  assert.equal(words.length, 132);
+  assert.equal(words.length, 504);
   const source = fs.readFileSync(path.join(__dirname, "../../assets/study/english-reading.js"), "utf8");
   assert.doesNotMatch(source, /speechSynthesis|SpeechSynthesisUtterance|new Audio|MediaRecorder|localStorage|sessionStorage/);
   assert.match(source, /AudioContext/);

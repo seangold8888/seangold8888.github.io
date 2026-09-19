@@ -1186,6 +1186,16 @@
       <span class="go">극장 들어가기 ▶</span>
     </span>
   </a>
+  <a class="shop story" href="story/english/" aria-label="영어 그림책 — 언제나 열려 있어요" style="--cover:url('cards/art/threepigs.webp')">
+    <span class="open-sign">영어로 읽기</span>
+    <span class="badge">📚</span>
+    <span class="meta">
+      <span class="name">영어 그림책</span>
+        <span class="tags"><span class="genre">📚 English</span></span>
+      <span class="desc">그림 보며 영어 이야기를 듣고 직접 읽어요 · 6권 · 공부 없이도 입장 OK</span>
+      <span class="go">그림책 펴기 ▶</span>
+    </span>
+  </a>
 
     </div>
   </section>
@@ -1217,6 +1227,12 @@
       <strong id="mathStage">수학 단계 불러오는 중</strong>
       <p>나이에 맞는 범위에서 시작하고, 여러 문제를 정확히 풀면 다음 단계로 성장해요. 수학놀이터와 진도를 함께 써요.</p>
     </section>
+    <section class="study-settings" aria-labelledby="readingSettingTitle">
+      <label id="readingSettingTitle" for="readingLevelSelect">영어 읽기 단계</label>
+      <select id="readingLevelSelect"></select>
+      <strong id="readingStage">영어 단계 불러오는 중</strong>
+      <p>그 단계 문장을 한 번에 30번 맞히면 다음 단계로 올라가요. 너무 어렵거나 쉬우면 여기서 바꿔 주세요.</p>
+    </section>
     <h3 class="book-sub">실력 지도</h3>
     <p class="book-hint">문제 유형별 실력이에요. 약한 유형이 더 자주 나오고, 👑 숙달한 유형도 며칠 지나면 잊기 전에 다시 나와요.</p>
     <ul id="skillList"></ul>
@@ -1235,7 +1251,7 @@
 <script src="math/learning.js?v=29"></script>
 <script src="math/store.js?v=32"></script>
 <script src="assets/study/math-bridge.js?v=2"></script>
-<script src="assets/study/english-reading.js?v=18"></script>
+<script src="assets/study/english-reading.js?v=19"></script>
 <script src="assets/bgm/bgm-player.js?v=64"></script>
 <script src="assets/study/play-timer.js?v=1" data-mode="hub"></script>
 <script>
@@ -1601,6 +1617,34 @@
     saveReadingLevel();
     return promoted;
   }
+  function paintReadingSetting() {
+    var select = document.getElementById('readingLevelSelect');
+    var stage = document.getElementById('readingStage');
+    if (!select || !window.EnglishReading) return;
+    var names = window.EnglishReading.levelNames || [];
+    if (!select.options.length) {
+      for (var lv = 1; lv <= window.EnglishReading.maxLevel; lv++) {
+        var option = document.createElement('option');
+        option.value = String(lv);
+        option.textContent = lv + '단계 · ' + (names[lv] || '');
+        select.appendChild(option);
+      }
+      select.addEventListener('change', function () {
+        readingLevel.level = window.EnglishReading.clampLevel(select.value);
+        readingLevel.passes = 0;
+        saveReadingLevel();
+        paintReadingSetting();
+        drawDaily();
+      });
+    }
+    select.value = String(readingLevel.level);
+    if (stage) {
+      stage.textContent = readingLevel.level >= window.EnglishReading.maxLevel
+        ? readingLevel.level + '단계 · ' + (names[readingLevel.level] || '') + ' · 마지막 단계'
+        : readingLevel.level + '단계 · ' + (names[readingLevel.level] || '') + ' · 다음 단계까지 ' +
+          readingLevel.passes + '/' + window.EnglishReading.passesToLevelUp;
+    }
+  }
   function rememberReading(idx) {
     readingRecent = readingRecent.filter(function (n) { return n !== idx; }).concat([idx]).slice(-12);
     try { localStorage.setItem('hub2_reading_recent', JSON.stringify(readingRecent)); } catch (_) {}
@@ -1814,6 +1858,7 @@
     }
   }
   function renderBook() {
+    paintReadingSetting();
     renderStudySettings();
     renderSkills();
     renderGames();
@@ -2206,7 +2251,7 @@
         }
       }
 
-      if (readingPromoted) msg = '🎉 영어 읽기 ' + readingLevel.level + '단계로 올라갔어요! 이제 더 긴 문장이에요.';
+      if (readingPromoted) msg = '🎉 영어 읽기 ' + readingLevel.level + '단계 「' + ((window.EnglishReading.levelNames || [])[readingLevel.level] || '') + '」로 올라갔어요!';
       cheerEl.textContent = msg;
       drawSetStars();
       drawDaily();

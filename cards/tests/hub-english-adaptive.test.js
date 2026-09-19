@@ -121,10 +121,11 @@ test("fallback still permits non-reading reviews, and parent or ticket states ca
   assert.equal(ctx.state.wrong.length,0);
 });
 test("recent sentences are skipped in order and under word weighting; the hub remembers 12 on this device only",()=>{
-  const n=reading.sentences.filter(s=>s.level===1).length;
-  assert.equal(n,68);
-  assert.equal(reading.chooseSentence({},0,-1,()=>0,[0,1,2]),3);
-  assert.equal(reading.chooseSentence({},67,-1,()=>0,[67,0]),1);
+  const pool=reading.sentences.map((s,i)=>s.level===1?i:-1).filter(i=>i>=0);
+  const n=pool.length;
+  assert.equal(n,63);
+  assert.equal(reading.chooseSentence({},0,-1,()=>0,[pool[0],pool[1],pool[2]]),pool[3]);
+  assert.equal(reading.chooseSentence({},n-1,-1,()=>0,[pool[n-1],pool[0]]),pool[1]);
   for(let k=0;k<200;k++){
     const idx=reading.chooseSentence({apples:5,like:5},k,0,()=>k/200,[0,5,22,23]);
     assert.ok(![0,5,22,23].includes(idx),String(idx));
@@ -141,18 +142,18 @@ test("recent sentences are skipped in order and under word weighting; the hub re
   const seed=ctx.nextStudySeed();
   assert.equal(seed.type,"reading");assert.notEqual(seed.idx,2);assert.ok(![0,1,2,3].includes(seed.idx));
 });
-test("twenty first-try passes at the current level raise the reading level once, up to three",()=>{
+test("thirty first-try passes at the current level raise the reading level once, up to eight",()=>{
   const stored=new Map();
   const ctx={window:{EnglishReading:reading},readingLevel:{level:1,passes:0},
     localStorage:{getItem:k=>stored.get(k)??null,setItem:(k,v)=>stored.set(k,v)}};
   vm.createContext(ctx);
   vm.runInContext(["saveReadingLevel","recordReadingPass"].map(fn).join("\n"),ctx);
-  const l1=reading.sentences.find(s=>s.level===1),l2=reading.sentences.find(s=>s.level===2),l3=reading.sentences.find(s=>s.level===3);
+  const l1=reading.sentences.find(s=>s.level===1),l2=reading.sentences.find(s=>s.level===2),l8=reading.sentences.find(s=>s.level===8);
   assert.equal(ctx.recordReadingPass(l2),false);assert.equal(ctx.readingLevel.passes,0,"다른 단계 문장은 세지 않는다");
-  for(let i=0;i<19;i++)assert.equal(ctx.recordReadingPass(l1),false);
+  for(let i=0;i<29;i++)assert.equal(ctx.recordReadingPass(l1),false);
   assert.equal(ctx.recordReadingPass(l1),true);assert.equal(ctx.readingLevel.level,2);
   assert.deepEqual(JSON.parse(stored.get("hub2_reading_level")),{level:2,passes:0});
-  ctx.readingLevel.level=3;ctx.readingLevel.passes=0;
-  for(let i=0;i<40;i++)ctx.recordReadingPass(l3);
-  assert.equal(ctx.readingLevel.level,3,"3단계가 끝이다");
+  ctx.readingLevel.level=8;ctx.readingLevel.passes=0;
+  for(let i=0;i<70;i++)ctx.recordReadingPass(l8);
+  assert.equal(ctx.readingLevel.level,8,"8단계가 끝이다");
 });
