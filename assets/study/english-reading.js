@@ -506,6 +506,20 @@
     });
     return texts;
   }
+  // 결과 조각이 앞 조각들을 그대로 다시 담고 있으면(안드로이드 크롬) 앞 조각을 버리고 새 조각만 남긴다.
+  // 아이패드·컴퓨터처럼 조각이 이어지는 경우("I like" · "apples")는 그대로 둔다.
+  function collapseRepeats(finals) {
+    const out = [];
+    finals.forEach(function (alts) {
+      const head = normalize(alts[0] || "");
+      const before = normalize(out.map(function (a) { return a[0]; }).join(" "));
+      const last = out.length ? normalize(out[out.length - 1][0] || "") : "";
+      if (before && (head === before || head.indexOf(before + " ") === 0)) out.length = 0;
+      else if (last && (head === last || head.indexOf(last + " ") === 0)) out.pop();
+      out.push(alts);
+    });
+    return out;
+  }
   function anyMatches(expected, finals) {
     return alternativeTexts(finals).some(function (text) { return matches(expected, text); });
   }
@@ -1113,8 +1127,13 @@
           visible.push(alts[0]);
           if (result.isFinal) finals.push(alts);
         }
+        // 안드로이드 크롬은 앞에서 들은 말을 다음 결과에 다시 넣어 준다("I" · "I like" · "I like apples").
+        // 그대로 이으면 "I I like I like apples"가 되어 맞게 읽어도 틀린다. 겹친 앞 조각은 버린다.
+        const merged = collapseRepeats(finals);
+        finals.length = 0;
+        merged.forEach(function (alts) { finals.push(alts); });
         finalText = finals.map(function (alts) { return alts[0]; }).join(" ");
-        feedback(visible.join(" "));
+        feedback(collapseRepeats(visible.map(function (text) { return [text]; })).map(function (alts) { return alts[0]; }).join(" "));
         if (finals.length) log("result " + finals.length + "/" + event.results.length);
         if (finals.length && anyMatches(sentence.text, finals)) {
           awarded = true;
@@ -1163,7 +1182,8 @@
     env.addEventListener("offline", offline);
     env.addEventListener("online", online);
     controls();
-    if (!Recognition || env.isSecureContext === false) { fallback.hidden = false; nodes.status.textContent = "이 환경에서는 음성 인식을 쓸 수 없어요. HTTPS 모험보드를 Safari 또는 Chrome에서 열어 주세요. 다른 공부는 계속할 수 있어요."; }
+    if (!Recognition && /SamsungBrowser/i.test(nav.userAgent || "")) { fallback.hidden = false; nodes.status.textContent = "삼성 인터넷에서는 음성 인식이 안 돼요. 갤럭시 탭은 Chrome으로 모험 상자를 열어 주세요."; }
+    else if (!Recognition || env.isSecureContext === false) { fallback.hidden = false; nodes.status.textContent = "이 환경에서는 음성 인식을 쓸 수 없어요. HTTPS 모험보드를 Safari 또는 Chrome에서 열어 주세요. 다른 공부는 계속할 수 있어요."; }
     else if (env.navigator.onLine === false) offline();
     return {
       stop: function () { stop("잠시 멈췄어요. 읽어 보기를 눌러 다시 시작해요."); },
@@ -1179,7 +1199,7 @@
       }
     };
   }
-  const api = { sentences: sentences, normalize: normalize, matches: matches, sameWord: sameWord, aliases: ALIASES, isPrefix: isPrefix, alternativeTexts: alternativeTexts, anyMatches: anyMatches, wordClips: WORD_CLIPS, praiseFile: praiseFile, matchedWords: matchedWords, cleanWordScores: cleanWordScores, chooseSentence: chooseSentence, recentLimit: RECENT_LIMIT, maxLevel: MAX_LEVEL, levelNames: LEVEL_NAMES, passesToLevelUp: PASSES_TO_LEVEL_UP, clampLevel: clampLevel, createFeedbackSession: createFeedbackSession, choosePraise: choosePraise, retryWords: retryWords, mount: mount };
+  const api = { sentences: sentences, normalize: normalize, matches: matches, sameWord: sameWord, aliases: ALIASES, isPrefix: isPrefix, alternativeTexts: alternativeTexts, anyMatches: anyMatches, collapseRepeats: collapseRepeats, wordClips: WORD_CLIPS, praiseFile: praiseFile, matchedWords: matchedWords, cleanWordScores: cleanWordScores, chooseSentence: chooseSentence, recentLimit: RECENT_LIMIT, maxLevel: MAX_LEVEL, levelNames: LEVEL_NAMES, passesToLevelUp: PASSES_TO_LEVEL_UP, clampLevel: clampLevel, createFeedbackSession: createFeedbackSession, choosePraise: choosePraise, retryWords: retryWords, mount: mount };
   api.mountCelebration = mountCelebration;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.EnglishReading = api;

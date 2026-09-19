@@ -142,6 +142,22 @@ test("levels: level one alone by default, higher levels mostly new with some rev
   assert.equal(reading.passesToLevelUp, 30);
   assert.equal(reading.maxLevel, 8);
 });
+test("Android-style cumulative results (each final repeats the earlier ones) still pass once", () => {
+  const s = setup();
+  s.mic.fire("click");
+  s.result([["I", true], ["I like", true], ["I like apples", true]]);
+  assert.equal(s.passes(), 1);
+  const plain = setup();
+  plain.mic.fire("click");
+  plain.result([["I like", true], ["apples", true]]);
+  assert.equal(plain.passes(), 1, "아이패드처럼 이어지는 조각은 그대로 잇는다");
+  assert.deepEqual(reading.collapseRepeats([["I like apples"], ["I like apples"]]), [["I like apples"]]);
+});
+test("Samsung Internet without speech recognition tells the family to open Chrome", () => {
+  const s = setup({ SpeechRecognition: null, navigator: { onLine: true, userAgent: "Mozilla/5.0 (Linux; Android 14; SM-X710) SamsungBrowser/26.0 Chrome/122" } });
+  assert.match(s.status.textContent, /Chrome/);
+  assert.match(s.status.textContent, /삼성 인터넷/);
+});
 test("long sentences forgive one or two misheard or dropped words; ten words or fewer stay exact", () => {
   const seven = "I plant a seed. I give it water. It grows into a flower.";
   const eight = "The hare was very fast. The tortoise was very slow. The hare took a nap. The tortoise won the race.";
@@ -300,8 +316,8 @@ test("a reading success advances progress once and earns the tenth-answer ticket
 });
 test("reading support is cached and its script loads before the study controller", () => {
   const sw = require("../../sw.js");
-  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=20"));
-  assert.ok(html.indexOf('src="assets/study/english-reading.js?v=20"') < html.indexOf("var BANK_SIZES"));
+  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=21"));
+  assert.ok(html.indexOf('src="assets/study/english-reading.js?v=21"') < html.indexOf("var BANK_SIZES"));
   assert.match(html, /\.reading-word\.retry\s*\{[^}]*text-decoration:underline wavy/);
   assert.match(html, /if \(current !== target \|\| isFree\(\) \|\| hasTicket\(\) \|\| target\.answered\) return/);
   assert.match(html, /function stopReading\(\)[\s\S]*?clearTimeout\(answerTimer\)/);
