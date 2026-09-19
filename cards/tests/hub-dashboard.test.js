@@ -26,7 +26,7 @@ test("메인 바로가기는 티켓을 소비하지 않고 현재 상태에 맞�
     const state = { solved: scenario.solved, credit: scenario.ticket ? 1 : 0 };
     const context = {
       state, DAILY: 100, SET: 10, setCorrect: scenario.correct,
-      isFree: () => scenario.free, hasTicket: () => scenario.ticket, masteredCount: () => 0,
+      isFree: () => scenario.free, hasTicket: () => scenario.ticket, playTimeLeft: () => false, masteredCount: () => 0,
       document: { getElementById: id => nodes[id] },
       hubDailyStat: {}, hubCrownStat: {}, hubTicketStat: {}, questRingLabel: {},
       studyEl: { style: { setProperty() {} } },

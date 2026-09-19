@@ -1064,7 +1064,7 @@
   <section class="world-deck" id="adventureWorlds">
     <div class="section-heading">
       <div><div class="section-kicker">게임 골라 보기</div><h2>어디로 떠날까?</h2></div>
-      <p id="worldAccessHint">티켓 한 장으로 좋아하는 게임 한 판!</p>
+      <p id="worldAccessHint">티켓 한 장으로 좋아하는 게임 5분!</p>
     </div>
     <nav class="games" aria-label="게임 목록">
     <a class="card hero" href="avengers/" style="--cover:url('avengers/icons/multiverse-icon-512.png')">
@@ -1237,6 +1237,7 @@
 <script src="assets/study/math-bridge.js?v=2"></script>
 <script src="assets/study/english-reading.js?v=18"></script>
 <script src="assets/bgm/bgm-player.js?v=64"></script>
+<script src="assets/study/play-timer.js?v=1" data-mode="hub"></script>
 <script>
 (function () {
   'use strict';
@@ -1690,13 +1691,18 @@
   function hasTicket() { return state.credit > 0; }
 
   // Spend only the entry ticket. Daily answers and learning records survive the trip.
+  function playTimeLeft() {
+    return !!(window.HubPlayTimer && window.HubPlayTimer.active());
+  }
   function consumeGameTicket() {
-    if (isFree()) return true;
+    if (isFree()) { if (window.HubPlayTimer) window.HubPlayTimer.grantFree(); return true; }
+    if (playTimeLeft()) return true;
     if (!hasTicket()) return false;
     stopReading();
     state.credit = 0;
     setCorrect = 0;
     saveState();
+    if (window.HubPlayTimer) window.HubPlayTimer.grant(window.HubPlayTimer.minutesPerTicket);
     return true;
   }
 
@@ -1734,11 +1740,12 @@
     if (hubTicketStat) {
       hubTicketStat.textContent = state.parentMode ? '부모님 모드' : isFree()
         ? '자유 모험'
-        : (hasTicket() ? '1장 준비' : Math.max(1, SET - setCorrect) + '문제 남음');
+        : (playTimeLeft() ? '게임 ' + window.HubPlayTimer.format(window.HubPlayTimer.remainingMs()) + ' 남음'
+        : (hasTicket() ? '1장 · 5분' : Math.max(1, SET - setCorrect) + '문제 남음'));
     }
     var nextAdventure = document.getElementById('nextAdventure');
     var worldAccessHint = document.getElementById('worldAccessHint');
-    var canPlay = isFree() || hasTicket();
+    var canPlay = isFree() || hasTicket() || playTimeLeft();
     if (nextAdventure) {
       nextAdventure.setAttribute('href', canPlay ? '#adventureWorlds' : '#study');
       nextAdventure.textContent = canPlay ? '게임 고르러 가기 →' : '문제 풀고 티켓 받기 →';
@@ -2254,7 +2261,7 @@
   }
 
   function syncGameCardAccess() {
-    var locked = !isFree() && !hasTicket();
+    var locked = !isFree() && !hasTicket() && !playTimeLeft();
     document.querySelectorAll('.card').forEach(function (card) {
       if (locked) {
         card.setAttribute('aria-disabled', 'true');
@@ -2396,7 +2403,7 @@
      티켓을 소모하는 핸들러보다 먼저 등록해야 소모 전 상태로 판단한다. */
   document.querySelectorAll('.card, .shop, .feature-shop').forEach(function (link) {
     link.addEventListener('click', function () {
-      if (link.classList.contains('card') && !isFree() && !hasTicket()) return;
+      if (link.classList.contains('card') && !isFree() && !hasTicket() && !playTimeLeft()) return;
       var k = gameKey(link);
       var e = plays[k] || { n: 0, d: 0 };
       e.n++; e.d = dayNum();

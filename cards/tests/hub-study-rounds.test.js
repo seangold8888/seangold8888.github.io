@@ -33,7 +33,7 @@ function setup(initial = {}) {
   };
   vm.createContext(ctx);
   vm.runInContext(html.match(/var SET = \d+, DAILY = \d+;/)[0] + "\n" +
-    ["loadState", "saveState", "isFree", "hasTicket", "consumeGameTicket", "restoreStudyProgress", "loadPlays", "skillOf", "pick"].map(fn).join("\n"), ctx);
+    ["loadState", "saveState", "isFree", "hasTicket", "playTimeLeft", "consumeGameTicket", "restoreStudyProgress", "loadPlays", "skillOf", "pick"].map(fn).join("\n"), ctx);
   ctx.state = ctx.loadState();
   ctx.setCorrect = ctx.state.solved % ctx.SET;
   ctx.answer = () => {

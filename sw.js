@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v134";
+const CACHE_VERSION = "v135";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -185,6 +185,7 @@ const CORE_SHELL = [
   "./cards/campaign.css?v=64",
   "./cards/cards.json",
   "./assets/bgm/bgm-player.js?v=64",
+  "./assets/study/play-timer.js?v=1",
   "./cards/js/engine.js?v=64",
   "./cards/js/audio.js?v=64",
   "./cards/js/card-view.js?v=64",
