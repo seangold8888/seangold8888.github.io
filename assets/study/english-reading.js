@@ -386,7 +386,10 @@
     sentence.text.split(/\s+/).forEach(function (word) {
       line.appendChild(element("span", "reading-word", word));
     });
+    // 한글 뜻은 읽기 전에 보여 주지 않는다. 맞게 읽으면 칭찬과 함께 나타난다.
     const meaning = element("p", "reading-meaning", sentence.meaning);
+    meaning.hidden = true;
+    nodes.meaning = meaning;
     const actions = element("div", "reading-actions");
     nodes.mic = element("button", "", "🎤 읽어 보기");
     nodes.stop = element("button", "", "그만하기");
@@ -589,6 +592,7 @@
     }
     function praise() {
       let manualPraise = false;
+      if (nodes.meaning) nodes.meaning.hidden = false;
       const clip = choosePraise(session, !retried);
       nodes.status.textContent = "";
       nodes.status.appendChild(element("span", "reading-praise", (clip === "threeinarow" ? "🌟 " : "⭐ ") + PRAISE_TEXT[clip]));

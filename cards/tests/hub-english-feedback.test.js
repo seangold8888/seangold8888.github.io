@@ -93,6 +93,15 @@ test("next question waits for asynchronous audio hardware release", () => {
  assert.equal(s.passes(),0);s.contexts[0].finishClose();assert.equal(s.passes(),1);
  v.view.destroy();const next=s.mount();next.mic.fire('click');assert.equal(s.recognizers.length,2);
 });
+test("Korean meaning stays hidden until the sentence is read correctly", () => {
+ const s=setup({deferredClose:true}),v=s.mount(),meaning=v.container.children[2];
+ assert.equal(meaning.className,"reading-meaning");
+ assert.equal(meaning.hidden,true,"뜻은 읽기 전에 보이지 않아야 한다");
+ v.mic.fire('click');s.result('I like apples');s.recognizers[0].end();
+ assert.equal(meaning.hidden,false,"맞게 읽으면 칭찬과 함께 뜻이 보여야 한다");
+ assert.equal(s.passes(),0,"뜻은 다음 문제로 넘어가기 전에 나타난다");
+ v.view.destroy();
+});
 test("silent recovery closes the primed context and partial results remain watched", () => {
  const s=setup(),v=s.mount();v.mic.fire('click');
  s.recognizers[0].onresult({results:[Object.assign([{transcript:'I'}],{isFinal:false})]});
@@ -352,10 +361,10 @@ test("recognizer alternatives can pass; display uses the first guess; session sh
 
 test("the hub clears stale permanent silence and the worker precaches every clip", () => {
   const sw = require("../../sw.js"), html = fs.readFileSync(path.join(__dirname, "../../game/index.html"), "utf8");
-  assert.equal(sw.CACHE_VERSION, "v132");
-  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=16"));
+  assert.equal(sw.CACHE_VERSION, "v133");
+  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=17"));
   assert.ok(sw.CORE_SHELL.includes("./assets/study/praise/perfect-v2.wav"));
-  assert.match(html, /english-reading\.js\?v=16/);
+  assert.match(html, /english-reading\.js\?v=17/);
   assert.match(html, /removeItem\('hub2_reading_silent'\)/);
   assert.doesNotMatch(html, /setItem\('hub2_reading_silent'/);
   assert.match(html, /silent: readingSilent/);
