@@ -28,6 +28,7 @@ const server = http.createServer((req, res) => {
     for (const page of book.pages) {
       assert.ok(fs.existsSync(path.join(root, "cards/art", page.art + ".webp")), book.id + " 그림 " + page.art);
       assert.ok(fs.existsSync(path.join(root, "story/english", page.audio)), "낭독 " + page.audio);
+      assert.ok(fs.existsSync(path.join(root, "story/english", page.image)), "삽화 " + page.image);
     }
   }
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
@@ -48,6 +49,8 @@ const server = http.createServer((req, res) => {
       await page.waitForSelector(".page .text");
       assert.equal(await page.locator(".page .text").innerText(), books[0].pages[0].text);
       assert.equal(await page.locator(".page .meaning").isHidden(), true, "뜻은 처음에 숨는다");
+      assert.match(await page.locator(".page img").getAttribute("src"), /^art\/picnic-1\.webp$/);
+      await page.waitForFunction(() => { const i = document.querySelector(".page img"); return i.complete && i.naturalWidth > 0 && !i.src.includes("/cards/art/"); });
       await page.locator(".page .show").click();
       assert.equal(await page.locator(".page .meaning").innerText(), books[0].pages[0].meaning);
       await page.locator(".page .listen").click();

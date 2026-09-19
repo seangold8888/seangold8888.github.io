@@ -1,4 +1,4 @@
-// 영어 그림책. 쉬운 책부터 차례로 놓는다. 그림은 카드 원화를 다시 쓴다.
+// 영어 그림책. 쉬운 책부터 차례로 놓는다. 쪽마다 전용 삽화(art/<책>-<쪽>.webp), 없으면 카드 원화.
 // 낭독 음성: english/audio/<책 id>-<쪽 번호>.mp3 (Gemini TTS Leda, 천천히).
 (function (root) {
   "use strict";
@@ -85,7 +85,8 @@
     return {
       id: book.id, title: book.title, titleKo: book.titleKo, stars: book.stars, cover: book.cover,
       pages: book.pages.map(function (page, index) {
-        return { art: page[0], text: page[1], meaning: page[2], audio: "audio/" + book.id + "-" + (index + 1) + ".mp3" };
+        return { art: page[0], text: page[1], meaning: page[2], audio: "audio/" + book.id + "-" + (index + 1) + ".mp3",
+          image: "art/" + book.id + "-" + (index + 1) + ".webp" };
       })
     };
   });

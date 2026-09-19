@@ -142,6 +142,17 @@ test("levels: level one alone by default, higher levels mostly new with some rev
   assert.equal(reading.passesToLevelUp, 30);
   assert.equal(reading.maxLevel, 8);
 });
+test("long sentences forgive one or two misheard or dropped words; ten words or fewer stay exact", () => {
+  const seven = "I plant a seed. I give it water. It grows into a flower.";
+  const eight = "The hare was very fast. The tortoise was very slow. The hare took a nap. The tortoise won the race.";
+  assert.equal(reading.matches(seven, "I plant a seat I give it water it grows into a flower"), true);
+  assert.equal(reading.matches(seven, "I plant seed I give it water it grows into a flower"), true);
+  assert.equal(reading.matches(seven, "I plant a seat I give water it grows into a flower"), false);
+  assert.equal(reading.matches(eight, "the hair was very fast the tortoise was so slow the hare took a nap the tortoise won the race"), true);
+  assert.equal(reading.matches(eight, "the hair was very fast the tortoise was slow the hare took nap the tortoise won the race"), false);
+  assert.equal(reading.matches(eight, "the hare was very fast"), false);
+  assert.equal(reading.matches("Where is my cat? It is under the bed.", "where is my cat it is under a bed"), false, "10단어는 정확히");
+});
 test("matching tolerates casing, punctuation and I'm, not missing, extra or reordered words", () => {
   assert.equal(reading.matches("I like apples.", " I LIKE apples! "), true);
   assert.equal(reading.matches("I am happy.", "I'm happy."), true);
@@ -289,8 +300,8 @@ test("a reading success advances progress once and earns the tenth-answer ticket
 });
 test("reading support is cached and its script loads before the study controller", () => {
   const sw = require("../../sw.js");
-  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=19"));
-  assert.ok(html.indexOf('src="assets/study/english-reading.js?v=19"') < html.indexOf("var BANK_SIZES"));
+  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=20"));
+  assert.ok(html.indexOf('src="assets/study/english-reading.js?v=20"') < html.indexOf("var BANK_SIZES"));
   assert.match(html, /\.reading-word\.retry\s*\{[^}]*text-decoration:underline wavy/);
   assert.match(html, /if \(current !== target \|\| isFree\(\) \|\| hasTicket\(\) \|\| target\.answered\) return/);
   assert.match(html, /function stopReading\(\)[\s\S]*?clearTimeout\(answerTimer\)/);

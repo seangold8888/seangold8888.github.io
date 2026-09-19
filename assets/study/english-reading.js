@@ -442,10 +442,36 @@
     const list = ALIASES[expected];
     return !!list && list.indexOf(got) >= 0;
   }
+  // 긴 문장(7·8단계 등)은 인식기가 한두 단어를 잘못 듣거나 빼먹어도 통과시킨다.
+  // 10단어 이하는 예전처럼 한 단어도 틀리면 안 된다.
+  function allowedSlips(wordCount) {
+    return wordCount >= 17 ? 2 : wordCount >= 11 ? 1 : 0;
+  }
+  function tokenDistance(words, got, limit) {
+    let prev = [];
+    for (let j = 0; j <= got.length; j++) prev.push(j);
+    for (let i = 1; i <= words.length; i++) {
+      const row = [i];
+      let best = row[0];
+      for (let j = 1; j <= got.length; j++) {
+        const cost = sameWord(words[i - 1], got[j - 1]) ? 0 : 1;
+        row.push(Math.min(prev[j] + 1, row[j - 1] + 1, prev[j - 1] + cost));
+        if (row[j] < best) best = row[j];
+      }
+      if (best > limit) return limit + 1;
+      prev = row;
+    }
+    return prev[got.length];
+  }
   function matches(expected, heard) {
     const words = normalize(expected) ? normalize(expected).split(" ") : [], got = heardTokens(heard);
-    if (!words.length || words.length !== got.length) return false;
-    return words.every(function (word, i) { return sameWord(word, got[i]); });
+    if (!words.length || !got.length) return false;
+    const slips = allowedSlips(words.length);
+    if (!slips) {
+      if (words.length !== got.length) return false;
+      return words.every(function (word, i) { return sameWord(word, got[i]); });
+    }
+    return tokenDistance(words, got, slips) <= slips;
   }
   // True while the heard words are still a valid beginning of the sentence.
   function isPrefix(expected, heard) {

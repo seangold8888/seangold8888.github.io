@@ -34,7 +34,7 @@
     padding:5px 9px; border-radius:999px; }
   .reader[hidden], .shelf-view[hidden] { display:none; }
   .page { background:var(--paper); color:var(--ink); border-radius:22px; overflow:hidden; box-shadow:0 16px 40px rgba(0,0,0,.4); }
-  .page img { width:100%; max-height:52vh; object-fit:cover; object-position:50% 25%; display:block; background:#e9dfc9; }
+  .page img { width:100%; aspect-ratio:4/3; max-height:52vh; object-fit:cover; object-position:50% 40%; display:block; background:#e9dfc9; }
   .page .body { padding:18px 18px 20px; display:grid; gap:14px; }
   .count { color:#8a7fb0; font-weight:800; font-size:14px; }
   .text { font-size:clamp(28px,5vw,42px); font-weight:900; line-height:1.35; }
@@ -103,8 +103,8 @@
   </section>
 </div>
 
-<script src="../../assets/study/english-reading.js?v=19"></script>
-<script src="books.js?v=1"></script>
+<script src="../../assets/study/english-reading.js?v=20"></script>
+<script src="books.js?v=2"></script>
 <script>
 (function () {
   "use strict";
@@ -150,7 +150,9 @@
     BOOKS.forEach(function (item) {
       var card = el("button", "book");
       card.type = "button";
-      var img = el("img"); img.src = art(item.cover); img.alt = ""; img.loading = "lazy";
+      var img = el("img"); img.alt = ""; img.loading = "lazy";
+      img.addEventListener("error", function () { if (img.src.indexOf("/cards/art/") < 0) img.src = art(item.cover); });
+      img.src = item.pages[0].image;
       var meta = el("span", "meta");
       meta.append(el("span", "en", item.title), el("span", "ko", item.titleKo + " · " + item.pages.length + "쪽"),
         el("span", "stars", "★".repeat(item.stars) + "☆".repeat(3 - item.stars)));
@@ -207,7 +209,10 @@
     }
     nextBtn.textContent = index === book.pages.length - 1 ? "끝 →" : "다음 →";
     var page = book.pages[index];
-    var img = el("img"); img.src = art(page.art); img.alt = "";
+    var img = el("img"); img.alt = "";
+    // 쪽 전용 삽화가 없으면 카드 원화로 대신한다.
+    img.addEventListener("error", function () { if (img.src.indexOf("/cards/art/") < 0) img.src = art(page.art); });
+    img.src = page.image;
     var body = el("div", "body");
     var text = el("p", "text", page.text); text.lang = "en";
     var meaning = el("p", "meaning", page.meaning); meaning.hidden = true;
