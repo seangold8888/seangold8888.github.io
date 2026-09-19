@@ -72,6 +72,8 @@ async function poke(page, starters, selectors) {
         const name = new URL(response.url()).pathname.split("/").pop();
         if (/\.mp3$/i.test(name) && response.status() === 200) played.add(name);
       });
+      // 모험 상자는 문제를 푸는 동안 음악을 멈추므로 티켓을 받은 상태로 연다.
+      if (game.url === "/game/") await page.addInitScript(()=>{const d=new Date();if(!sessionStorage.getItem("seeded")){localStorage.setItem("hub2_date",d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate());localStorage.setItem("hub2_solved","10");localStorage.setItem("hub2_credit","1");localStorage.setItem("hub2_parent_mode","0");sessionStorage.setItem("seeded","1");}});
       await page.goto(base + game.url, { waitUntil: "domcontentloaded" });
       await page.waitForTimeout(1200);
       for (let round = 0; round < 6 && !played.has(game.track); round += 1) {

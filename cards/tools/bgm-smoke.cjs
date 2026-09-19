@@ -51,10 +51,22 @@ const look=page=>page.evaluate(()=>Object.assign(window.CardBgm.state(),{suspend
   {
    const context=await browser.newContext({viewport:{width:820,height:1180}});const page=await context.newPage();const errors=[];
    page.on("pageerror",e=>errors.push(String(e)));
+   // 문제를 푸는 동안은 음악을 멈춘다: 마이크로 영어를 읽을 때 음악 재생이 음성 인식을 방해한다.
    await page.goto(base+"/game/");
    await page.waitForSelector("#hubMusic");
+   await page.waitForSelector(".reading-sentence",{timeout:15000});
    await page.mouse.click(5,5);
-   await page.waitForFunction(()=>window.HubBgm&&document.getElementById("hubMusic"),null,{timeout:15000});
+   await page.waitForTimeout(1500);
+   assert.equal(await page.evaluate(()=>window.HubMusic.isHeld()),true,"영어 문제가 떠 있으면 음악을 멈춘다");
+   const quiet=await page.evaluate(()=>window.HubMusic.state());
+   assert.equal(quiet.paused,true,"문제 푸는 동안은 재생하지 않는다(미리 받기는 괜찮다)");
+   assert.equal(quiet.playing,false);
+   // 티켓을 받으면 다시 음악이 나온다.
+   await page.evaluate(()=>{const d=new Date();localStorage.setItem("hub2_date",d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate());localStorage.setItem("hub2_solved","10");localStorage.setItem("hub2_credit","1");});
+   await page.reload();
+   await page.waitForSelector("#hubMusic");
+   await page.mouse.click(5,5);
+   assert.equal(await page.evaluate(()=>window.HubMusic.isHeld()),false);
    await page.waitForFunction(()=>performance.getEntriesByType("resource").some(r=>r.name.includes("hub.mp3")),null,{timeout:15000});
    await page.locator("#hubMusic").click();
    assert.equal(await page.evaluate(()=>localStorage.getItem("hub_bgm_muted")),"1");
@@ -64,7 +76,7 @@ const look=page=>page.evaluate(()=>Object.assign(window.CardBgm.state(),{suspend
    assert.equal(await page.locator("#hubMusic").getAttribute("aria-pressed"),"true","끈 설정은 새로고침 뒤에도 지켜야 한다");
    assert.deepEqual(errors,[]);
    await context.close();
-   console.log("PASS 모험 상자 첫 화면 곡 요청 · 끄기 버튼 · 설정 유지");
+   console.log("PASS 모험 상자 · 문제 푸는 동안 음악 멈춤 · 티켓 받으면 재생 · 끄기 버튼 · 설정 유지");
   }
  }finally{await browser.close();if(server.closeAllConnections)server.closeAllConnections();await new Promise(r=>server.close(r));}
 })().catch(e=>{console.error(e);process.exitCode=1;});

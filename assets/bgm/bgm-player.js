@@ -25,6 +25,8 @@
     var unlocked = false;
     var started = false;
     var failed = false;
+    // 잠시 멈춤(예: 마이크로 영어를 읽는 동안). 끄기 설정과 달리 저장하지 않는다.
+    var held = false;
     var fadeTimer = 0;
     var listeners = [];
 
@@ -59,7 +61,7 @@
     }
 
     function canPlay() {
-      return Boolean(unlocked && currentName && !muted && !hidden);
+      return Boolean(unlocked && currentName && !muted && !hidden && !held);
     }
 
     function stepFade() {
@@ -135,6 +137,16 @@
       isMuted: function () {
         return muted;
       },
+      setHeld: function (value) {
+        var next = Boolean(value);
+        if (next === held) return held;
+        held = next;
+        apply();
+        return held;
+      },
+      isHeld: function () {
+        return held;
+      },
       setHidden: function (value) {
         hidden = Boolean(value);
         apply();
@@ -159,6 +171,7 @@
           playing: player.isPlaying(),
           muted: muted,
           hidden: hidden,
+          held: held,
           unlocked: unlocked,
           failed: failed,
           time: current ? current.currentTime : 0,

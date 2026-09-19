@@ -22,3 +22,10 @@ Added regressions for retained media source across question mounts, missing star
 Final handoff: all 47 English tests passed on published commit 0c830bb (module v7, cache v44). The other ongoing task completed all 62 new MP3s and included these microphone edits in that commit from the shared workspace. Verified the public English module, worker and index against the validated files, plus sample new MP3s (HTTP 200). The final published set has 68 sentences and 100 word clips. The initially prepared microphone-only commit 466fd8b was not pushed because the upstream update already included the same fix; no force push or sentence rollback occurred.
 
 Device check: pass at least 10 sentences, including a full Wonderful and third-pass praise, then intentionally misread a word and retry. If stalled, use the recovery button and confirm progress continues silently. With ?readinglog=1, check start / mic-on / result / mic-off / praise-ended / next. A remaining hardware hang after recovery must be reported as unresolved, not scored as a reading error.
+
+## 2026-09-19 대시보드 배경음악과 충돌
+
+- 증상(사용자): "영어읽기 음성인식이 또 잘 안돼".
+- 원인 추정: 09-16에 넣은 대시보드 배경음악(hub.mp3)이 첫 터치에 재생을 시작한다. 첫 터치가 대개 "🎤 읽어 보기"라 마이크 시작과 음악 재생이 같은 순간 겹친다. 아이패드는 재생과 녹음이 동시에 시작되면 인식이 죽는 일이 있고(speechSynthesis 때와 같은 계열), 흐르는 음악이 인식기에 섞여 들어간다.
+- 조치: 공용 재생기에 `setHeld`를 추가하고, 대시보드는 문제를 푸는 동안(티켓 없음·자유 모험 아님) 음악을 멈춘다. 티켓을 받거나 자유 모험이면 다시 나온다. bgm-player v65, 캐시 v139.
+- 실기기 확인 전이다. 계속 안 되면 `?readinglog=1`로 열어 진단 기록을 받는다.

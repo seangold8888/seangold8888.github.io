@@ -1252,7 +1252,7 @@
 <script src="math/store.js?v=32"></script>
 <script src="assets/study/math-bridge.js?v=2"></script>
 <script src="assets/study/english-reading.js?v=20"></script>
-<script src="assets/bgm/bgm-player.js?v=64"></script>
+<script src="assets/bgm/bgm-player.js?v=65"></script>
 <script src="assets/study/play-timer.js?v=1" data-mode="hub"></script>
 <script>
 (function () {
@@ -1271,6 +1271,8 @@
     bgm.setMuted(!bgm.isMuted());
     paint();
   });
+  // 문제를 푸는 동안(특히 마이크로 영어를 읽을 때)은 음악을 멈춘다. 음악 재생이 아이패드 음성 인식을 방해한다.
+  window.HubMusic = bgm;
   bgm.setTrack('hub');
   paint();
 })();
@@ -2324,8 +2326,12 @@
     if(celebrationView)celebrationView.destroy();box.textContent='';
     celebrationView=window.EnglishReading.mountCelebration(box,window);
   }
+  function syncHubMusic() {
+    if (window.HubMusic) window.HubMusic.setHeld(!(isFree() || hasTicket()));
+  }
   function applyState() {
     stopReading();
+    syncHubMusic();
     drawDaily();
     cheerEl.textContent = '';
     document.getElementById('formula').textContent = '';
