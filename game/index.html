@@ -1235,7 +1235,7 @@
 <script src="math/learning.js?v=29"></script>
 <script src="math/store.js?v=32"></script>
 <script src="assets/study/math-bridge.js?v=2"></script>
-<script src="assets/study/english-reading.js?v=17"></script>
+<script src="assets/study/english-reading.js?v=18"></script>
 <script src="assets/bgm/bgm-player.js?v=64"></script>
 <script>
 (function () {
@@ -1575,6 +1575,31 @@
   try { localStorage.removeItem('hub2_reading_silent'); } catch (_) {}
   var readingRecent = [];
   try { readingRecent = (JSON.parse(localStorage.getItem('hub2_reading_recent') || '[]') || []).filter(function (n) { return typeof n === 'number' && n >= 0; }).slice(-12); } catch (_) { readingRecent = []; }
+  /* 영어 읽기 단계: 그 단계 문장을 한 번에 맞힌 횟수가 쌓이면 다음 단계로 오른다. */
+  var readingLevel = { level: 1, passes: 0 };
+  try {
+    var savedLevel = JSON.parse(localStorage.getItem('hub2_reading_level') || 'null');
+    if (savedLevel && window.EnglishReading) {
+      readingLevel.level = window.EnglishReading.clampLevel(savedLevel.level);
+      readingLevel.passes = Math.max(0, parseInt(savedLevel.passes, 10) || 0);
+    }
+  } catch (_) {}
+  function saveReadingLevel() {
+    try { localStorage.setItem('hub2_reading_level', JSON.stringify(readingLevel)); } catch (_) {}
+  }
+  /* 한 번에 맞힌 읽기 한 문장을 기록한다. 단계가 오르면 true. */
+  function recordReadingPass(sentence) {
+    if (!window.EnglishReading || !sentence || sentence.level !== readingLevel.level) return false;
+    readingLevel.passes++;
+    var promoted = false;
+    if (readingLevel.passes >= window.EnglishReading.passesToLevelUp && readingLevel.level < window.EnglishReading.maxLevel) {
+      readingLevel.level++;
+      readingLevel.passes = 0;
+      promoted = true;
+    }
+    saveReadingLevel();
+    return promoted;
+  }
   function rememberReading(idx) {
     readingRecent = readingRecent.filter(function (n) { return n !== idx; }).concat([idx]).slice(-12);
     try { localStorage.setItem('hub2_reading_recent', JSON.stringify(readingRecent)); } catch (_) {}
@@ -1651,7 +1676,7 @@
     if (review) return review;
     if (!reading) return null;
     var ordinal = state.solved - Math.floor(state.solved / 5);
-    return { type: 'reading', idx: window.EnglishReading.chooseSentence(state.readingWords, ordinal, lastReadingIndex, null, readingRecent) };
+    return { type: 'reading', idx: window.EnglishReading.chooseSentence(state.readingWords, ordinal, lastReadingIndex, null, readingRecent, readingLevel.level) };
   }
 
   function makePlaygroundProblem() {
@@ -1696,7 +1721,8 @@
     dailyEl.textContent = '오늘 푼 문제 ' + Math.min(state.solved, DAILY) + ' / ' + DAILY +
       (state.wrong.length ? ' · 오답노트 ' + state.wrong.length + '개' : '') +
       (crowns ? ' · 왕관 👑 ' + crowns + '개' : '') +
-      (mathState ? ' · 수학 ' + mathState.level + '단계' : '');
+      (mathState ? ' · 수학 ' + mathState.level + '단계' : '') +
+      (window.EnglishReading ? ' · 영어 ' + readingLevel.level + '단계' : '');
     updateLobbyHud(crowns);
   }
   function updateLobbyHud(crowns) {
@@ -2107,6 +2133,7 @@
     if (n === current.answer) {
       current.answered = true;
       var firstTry = !current.missed;
+      var readingPromoted = !!(current.reading && firstTry && recordReadingPass(current.reading));
       if (current.reading && firstTry && state.readingWords) {
         window.EnglishReading.normalize(current.answer).split(' ').forEach(function (word) {
           if (state.readingWords[word]) {
@@ -2172,6 +2199,7 @@
         }
       }
 
+      if (readingPromoted) msg = '🎉 영어 읽기 ' + readingLevel.level + '단계로 올라갔어요! 이제 더 긴 문장이에요.';
       cheerEl.textContent = msg;
       drawSetStars();
       drawDaily();

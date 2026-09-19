@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v133";
+const CACHE_VERSION = "v134";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -26,7 +26,7 @@ const CORE_SHELL = [
   "./math/learning.js?v=29",
   "./math/store.js?v=32",
   "./assets/study/math-bridge.js?v=2",
-  "./assets/study/english-reading.js?v=17",
+  "./assets/study/english-reading.js?v=18",
   "./assets/study/praise/excellent.mp3",
   "./assets/study/praise/perfect-v2.wav",
   "./assets/study/praise/awesome.mp3",
@@ -113,6 +113,38 @@ const CORE_SHELL = [
   "./assets/study/words/school.mp3",
   "./assets/study/words/bus.mp3",
   "./assets/study/words/yellow.mp3",
+  "./assets/study/words/fast.mp3",
+  "./assets/study/words/friends.mp3",
+  "./assets/study/words/and.mp3",
+  "./assets/study/words/me.mp3",
+  "./assets/study/words/at.mp3",
+  "./assets/study/words/little.mp3",
+  "./assets/study/words/on.mp3",
+  "./assets/study/words/bed.mp3",
+  "./assets/study/words/in.mp3",
+  "./assets/study/words/tree.mp3",
+  "./assets/study/words/for.mp3",
+  "./assets/study/words/want.mp3",
+  "./assets/study/words/has.mp3",
+  "./assets/study/words/before.mp3",
+  "./assets/study/words/there.mp3",
+  "./assets/study/words/likes.mp3",
+  "./assets/study/words/with.mp3",
+  "./assets/study/words/new.mp3",
+  "./assets/study/words/well.mp3",
+  "./assets/study/words/up.mp3",
+  "./assets/study/words/every.mp3",
+  "./assets/study/words/day.mp3",
+  "./assets/study/words/look.mp3",
+  "./assets/study/words/not.mp3",
+  "./assets/study/words/fun.mp3",
+  "./assets/study/words/read.mp3",
+  "./assets/study/words/hungry.mp3",
+  "./assets/study/words/your.mp3",
+  "./assets/study/words/then.mp3",
+  "./assets/study/words/now.mp3",
+  "./assets/study/words/stars.mp3",
+  "./assets/study/words/they.mp3",
   "./assets/study/words/pink.mp3",
   "./assets/study/words/hat.mp3",
   "./assets/study/words/eat.mp3",

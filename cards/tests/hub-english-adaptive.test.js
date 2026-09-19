@@ -11,7 +11,7 @@ function fn(name) {
 function setup() {
   const stored = new Map();
   const ctx = {
-    window: {EnglishReading: reading}, readingFallback: false, lastReadingIndex: -1, readingRecent: [], rememberReading() {},
+    window: {EnglishReading: reading}, readingLevel: {level:1,passes:0}, recordReadingPass: () => false, readingFallback: false, lastReadingIndex: -1, readingRecent: [], rememberReading() {},
     sinceReview: 0, lastReviewKey: "", REVIEW_GAP: 2, BOOK_MAX: 24,
     SET: 10, DAILY: 100, BANK_SIZES: {reading:16}, SKILL_INFO: {reading:{name:"영어"}},
     todayKey: () => "2026-9-6", dayNum: () => 100, MASTER_AT:9,
@@ -94,7 +94,8 @@ test("word trouble raises selection frequency, spans sentences, and never immedi
     const idx=reading.chooseSentence({like:5},n,-1,()=>n/1000);
     if(reading.sentences[idx].text.includes("like")) seen.add(idx);
   }
-  assert.equal(seen.size,reading.sentences.filter(s=>/\blike\b/i.test(s.text)).length);
+  // 단계를 주지 않으면 1단계 문장만 나온다.
+  assert.equal(seen.size,reading.sentences.filter(s=>s.level===1&&/\blike\b/i.test(s.text)).length);
 });
 test("review and vocabulary survive reload and date rollover with bounded, allowlisted data",()=>{
   const {ctx,stored,question}=setup();
@@ -120,7 +121,7 @@ test("fallback still permits non-reading reviews, and parent or ticket states ca
   assert.equal(ctx.state.wrong.length,0);
 });
 test("recent sentences are skipped in order and under word weighting; the hub remembers 12 on this device only",()=>{
-  const n=reading.sentences.length;
+  const n=reading.sentences.filter(s=>s.level===1).length;
   assert.equal(n,68);
   assert.equal(reading.chooseSentence({},0,-1,()=>0,[0,1,2]),3);
   assert.equal(reading.chooseSentence({},67,-1,()=>0,[67,0]),1);
@@ -139,4 +140,19 @@ test("recent sentences are skipped in order and under word weighting; the hub re
   ctx.state.wrong=[{type:"reading",idx:2,miss:1}];ctx.sinceReview=5;
   const seed=ctx.nextStudySeed();
   assert.equal(seed.type,"reading");assert.notEqual(seed.idx,2);assert.ok(![0,1,2,3].includes(seed.idx));
+});
+test("twenty first-try passes at the current level raise the reading level once, up to three",()=>{
+  const stored=new Map();
+  const ctx={window:{EnglishReading:reading},readingLevel:{level:1,passes:0},
+    localStorage:{getItem:k=>stored.get(k)??null,setItem:(k,v)=>stored.set(k,v)}};
+  vm.createContext(ctx);
+  vm.runInContext(["saveReadingLevel","recordReadingPass"].map(fn).join("\n"),ctx);
+  const l1=reading.sentences.find(s=>s.level===1),l2=reading.sentences.find(s=>s.level===2),l3=reading.sentences.find(s=>s.level===3);
+  assert.equal(ctx.recordReadingPass(l2),false);assert.equal(ctx.readingLevel.passes,0,"다른 단계 문장은 세지 않는다");
+  for(let i=0;i<19;i++)assert.equal(ctx.recordReadingPass(l1),false);
+  assert.equal(ctx.recordReadingPass(l1),true);assert.equal(ctx.readingLevel.level,2);
+  assert.deepEqual(JSON.parse(stored.get("hub2_reading_level")),{level:2,passes:0});
+  ctx.readingLevel.level=3;ctx.readingLevel.passes=0;
+  for(let i=0;i<40;i++)ctx.recordReadingPass(l3);
+  assert.equal(ctx.readingLevel.level,3,"3단계가 끝이다");
 });

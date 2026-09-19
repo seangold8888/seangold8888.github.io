@@ -69,7 +69,69 @@
     ["I love you.", "사랑해요."],
     ["See you soon.", "곧 만나요."],
     ["The bird is small.", "새는 작아요."]
-  ].map(function (pair) { return { text: pair[0], meaning: pair[1] }; });
+  ].map(function (pair) { return { text: pair[0], meaning: pair[1], level: 1 }; });
+  // 2단계: 5~8단어 한 문장. 3단계: 짧은 두 문장 이어 읽기.
+  const LEVEL_TWO = [
+    ["I like to eat red apples.", "나는 빨간 사과 먹는 걸 좋아해요."],
+    ["The big dog can run fast.", "큰 강아지는 빨리 달릴 수 있어요."],
+    ["My mom and dad love me.", "엄마 아빠는 나를 사랑해요."],
+    ["I can see the moon at night.", "밤에 달이 보여요."],
+    ["The little cat is on the bed.", "작은 고양이가 침대 위에 있어요."],
+    ["We go to school in the morning.", "우리는 아침에 학교에 가요."],
+    ["I have a blue bag and a pen.", "나는 파란 가방과 펜이 있어요."],
+    ["The birds sing in the tree.", "새들이 나무에서 노래해요."],
+    ["Please open the door for me.", "문 좀 열어 주세요."],
+    ["I want to drink cold water.", "차가운 물을 마시고 싶어요."],
+    ["The frog can jump very high.", "개구리는 아주 높이 뛸 수 있어요."],
+    ["My friend has a pink hat.", "내 친구는 분홍 모자가 있어요."],
+    ["We can play ball together.", "우리는 같이 공놀이를 할 수 있어요."],
+    ["The sun is hot and bright.", "해가 뜨겁고 밝아요."],
+    ["I wash my hands before I eat.", "나는 먹기 전에 손을 씻어요."],
+    ["There are three fish in the water.", "물속에 물고기 세 마리가 있어요."],
+    ["The rabbit likes to eat grass.", "토끼는 풀 먹는 걸 좋아해요."],
+    ["I sing a happy song with Mom.", "엄마랑 신나는 노래를 불러요."],
+    ["The bus is big and yellow.", "버스는 크고 노란색이에요."],
+    ["We swim in the blue water.", "우리는 파란 물에서 수영해요."],
+    ["I see two white birds in the sky.", "하늘에 하얀 새 두 마리가 보여요."],
+    ["This is my new green book.", "이건 내 새 초록색 책이에요."],
+    ["The ice cream is very cold.", "아이스크림이 아주 차가워요."],
+    ["Come here and sit with me.", "이리 와서 나랑 같이 앉아요."],
+    ["My dad can swim very well.", "아빠는 수영을 아주 잘해요."],
+    ["I like the star in the sky.", "나는 하늘의 별이 좋아요."],
+    ["The pig and the cat are friends.", "돼지랑 고양이는 친구예요."],
+    ["I am happy to see you.", "만나서 기뻐요."],
+    ["Thank you for the red flower.", "빨간 꽃 고마워요."],
+    ["We eat an egg in the morning.", "우리는 아침에 달걀을 먹어요."]
+  ];
+  const LEVEL_THREE = [
+    ["I see a cat. It is very small.", "고양이가 보여요. 아주 작아요."],
+    ["The sun is up. Good morning, Mom!", "해가 떴어요. 엄마, 좋은 아침이에요!"],
+    ["I have a dog. We play every day.", "나는 강아지가 있어요. 우리는 날마다 놀아요."],
+    ["It is cold. I want a hot drink.", "추워요. 따뜻한 음료를 마시고 싶어요."],
+    ["Look at the sky. The moon is round.", "하늘을 봐요. 달이 둥글어요."],
+    ["I can swim. The water is not cold.", "나는 수영할 수 있어요. 물이 차갑지 않아요."],
+    ["My bag is blue. My hat is red.", "내 가방은 파란색이에요. 내 모자는 빨간색이에요."],
+    ["We sing a song. It is fun!", "우리는 노래를 불러요. 재미있어요!"],
+    ["The frog is green. It can jump high.", "개구리는 초록색이에요. 높이 뛸 수 있어요."],
+    ["Open the book. We can read together.", "책을 펴요. 우리 같이 읽을 수 있어요."],
+    ["I am hungry. Can I eat an apple?", "배고파요. 사과 먹어도 돼요?"],
+    ["Wash your hands. Then we can eat.", "손을 씻어요. 그다음에 먹을 수 있어요."],
+    ["The birds can fly. I can run.", "새는 날 수 있어요. 나는 달릴 수 있어요."],
+    ["It is my birthday. I am seven now!", "내 생일이에요. 이제 일곱 살이에요!"],
+    ["Mom is home. I run to the door.", "엄마가 집에 왔어요. 나는 문으로 달려가요."],
+    ["The ice cream is pink. I love it!", "아이스크림이 분홍색이에요. 너무 좋아요!"],
+    ["I see three stars. They are bright.", "별 세 개가 보여요. 밝게 빛나요."],
+    ["Good night, Dad. See you in the morning.", "아빠, 잘 자요. 아침에 만나요."],
+    ["My friend is here. We play ball.", "친구가 왔어요. 우리는 공놀이를 해요."],
+    ["The pig is pink. The cat is white.", "돼지는 분홍색이에요. 고양이는 하얀색이에요."]
+  ];
+  LEVEL_TWO.forEach(function (pair) { sentences.push({ text: pair[0], meaning: pair[1], level: 2 }); });
+  LEVEL_THREE.forEach(function (pair) { sentences.push({ text: pair[0], meaning: pair[1], level: 3 }); });
+  const MAX_LEVEL = 3;
+  // 한 번에 맞힌 문장이 이만큼 쌓이면 다음 단계로 올라간다.
+  const PASSES_TO_LEVEL_UP = 20;
+  // 2단계 이상에서 새 단계 문장을 낼 확률. 나머지는 아래 단계 복습.
+  const FOCUS_SHARE = 0.75;
 
   function normalize(text) {
     return String(text || "").toLowerCase().replace(/[’‘]/g, "'")
@@ -250,21 +312,41 @@
   // `previous` is offered again while other sentences remain. Without trouble
   // words the pick walks forward from the ordinal so the book is read in order.
   const RECENT_LIMIT = 12;
-  function chooseSentence(scores, ordinal, previous, random, recent) {
+  function clampLevel(level) {
+    const n = Math.floor(Number(level));
+    return n >= 1 && n <= MAX_LEVEL ? n : 1;
+  }
+  function levelPool(level, random) {
+    const top = clampLevel(level);
+    const open = [];
+    sentences.forEach(function (sentence, idx) { if (sentence.level <= top) open.push(idx); });
+    if (top === 1) return open;
+    const focus = open.filter(function (idx) { return sentences[idx].level === top; });
+    const review = open.filter(function (idx) { return sentences[idx].level < top; });
+    return (random || Math.random)() < FOCUS_SHARE ? focus : review;
+  }
+  function chooseSentence(scores, ordinal, previous, random, recent, level) {
+    const pool = levelPool(level, random);
+    const picked = chooseFromPool(pool, scores, ordinal, previous, random, recent);
+    return pool[picked];
+  }
+  // pool 안의 위치를 돌려준다. 아래 본문은 예전 전체 목록용 규칙을 그대로 쓴다.
+  function chooseFromPool(pool, scores, ordinal, previous, random, recent) {
     scores = cleanWordScores(scores);
-    const n = sentences.length;
+    const n = pool.length;
     const avoid = {};
-    (Array.isArray(recent) ? recent.slice(-RECENT_LIMIT) : []).forEach(function (idx) { if (Number.isInteger(idx)) avoid[idx] = true; });
-    if (Number.isInteger(previous)) avoid[previous] = true;
-    if (Object.keys(avoid).length >= n) { const only = ((ordinal % n) + n) % n; return only === previous ? (only + 1) % n : only; }
+    (Array.isArray(recent) ? recent.slice(-RECENT_LIMIT) : []).forEach(function (idx) { const at = pool.indexOf(idx); if (at >= 0) avoid[at] = true; });
+    const previousAt = Number.isInteger(previous) ? pool.indexOf(previous) : -1;
+    if (previousAt >= 0) avoid[previousAt] = true;
+    if (Object.keys(avoid).length >= n) { const only = ((ordinal % n) + n) % n; return only === previousAt ? (only + 1) % n : only; }
     const base = ((ordinal % n) + n) % n;
     if (!Object.keys(scores).length) {
       for (let step = 0; step < n; step++) { const idx = (base + step) % n; if (!avoid[idx]) return idx; }
       return base;
     }
-    const weights = sentences.map(function (sentence, idx) {
+    const weights = pool.map(function (sentenceIdx, idx) {
       if (avoid[idx]) return 0;
-      return 1 + Math.min(8, normalize(sentence.text).split(" ").reduce(function (sum, word) { return sum + (scores[word] || 0); }, 0));
+      return 1 + Math.min(8, normalize(sentences[sentenceIdx].text).split(" ").reduce(function (sum, word) { return sum + (scores[word] || 0); }, 0));
     });
     const total = weights.reduce(function (sum, weight) { return sum + weight; }, 0);
     let draw = (random || Math.random)() * total;
@@ -885,7 +967,7 @@
       }
     };
   }
-  const api = { sentences: sentences, normalize: normalize, matches: matches, sameWord: sameWord, aliases: ALIASES, isPrefix: isPrefix, alternativeTexts: alternativeTexts, anyMatches: anyMatches, wordClips: WORD_CLIPS, praiseFile: praiseFile, matchedWords: matchedWords, cleanWordScores: cleanWordScores, chooseSentence: chooseSentence, recentLimit: RECENT_LIMIT, createFeedbackSession: createFeedbackSession, choosePraise: choosePraise, retryWords: retryWords, mount: mount };
+  const api = { sentences: sentences, normalize: normalize, matches: matches, sameWord: sameWord, aliases: ALIASES, isPrefix: isPrefix, alternativeTexts: alternativeTexts, anyMatches: anyMatches, wordClips: WORD_CLIPS, praiseFile: praiseFile, matchedWords: matchedWords, cleanWordScores: cleanWordScores, chooseSentence: chooseSentence, recentLimit: RECENT_LIMIT, maxLevel: MAX_LEVEL, passesToLevelUp: PASSES_TO_LEVEL_UP, clampLevel: clampLevel, createFeedbackSession: createFeedbackSession, choosePraise: choosePraise, retryWords: retryWords, mount: mount };
   api.mountCelebration = mountCelebration;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.EnglishReading = api;
