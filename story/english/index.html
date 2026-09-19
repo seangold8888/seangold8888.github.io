@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1d1636">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="영어 그림책">
+<link rel="apple-touch-icon" href="../../icon.png">
+<link rel="icon" type="image/png" href="../../icon.png">
+<link rel="manifest" href="../../manifest.json">
+<title>영어 그림책</title>
+<style>
+  :root { --night:#1d1636; --deep:#120d26; --star:#ffd93d; --paper:#fff6e6; --ink:#2b2350; --soft:#c6cee6; --mint:#6bcb77; }
+  * { box-sizing:border-box; margin:0; }
+  html { background:var(--deep); -webkit-text-size-adjust:100%; }
+  body { min-height:100vh; background:linear-gradient(180deg,var(--deep),var(--night) 55%,#2a2050); color:var(--paper);
+    font-family:"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif; -webkit-tap-highlight-color:transparent; }
+  button { font:inherit; cursor:pointer; }
+  .wrap { max-width:820px; margin:0 auto; padding:calc(18px + env(safe-area-inset-top,0px)) 16px calc(40px + env(safe-area-inset-bottom,0px)); }
+  .top { display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+  .back { color:var(--paper); text-decoration:none; font-weight:800; padding:10px 14px; border-radius:12px; background:rgba(255,255,255,.08); border:0; }
+  .top h1 { font-size:clamp(22px,4vw,30px); }
+  .lead { color:var(--soft); margin:-6px 0 18px; line-height:1.5; }
+  .shelf { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px; }
+  .book { position:relative; display:flex; flex-direction:column; text-align:left; padding:0; border:0; border-radius:18px; overflow:hidden;
+    background:#2f2560; color:var(--paper); box-shadow:0 10px 26px rgba(0,0,0,.35); }
+  .book img { width:100%; aspect-ratio:4/3; object-fit:cover; object-position:50% 25%; display:block; }
+  .book .meta { padding:12px 14px 14px; display:grid; gap:4px; }
+  .book .en { font-size:18px; font-weight:900; line-height:1.25; }
+  .book .ko { color:var(--soft); font-size:14px; }
+  .book .stars { color:var(--star); font-size:14px; letter-spacing:.1em; }
+  .book .done { position:absolute; top:10px; right:10px; background:var(--mint); color:#10321a; font-weight:900; font-size:13px;
+    padding:5px 9px; border-radius:999px; }
+  .reader[hidden], .shelf-view[hidden] { display:none; }
+  .page { background:var(--paper); color:var(--ink); border-radius:22px; overflow:hidden; box-shadow:0 16px 40px rgba(0,0,0,.4); }
+  .page img { width:100%; max-height:52vh; object-fit:cover; object-position:50% 25%; display:block; background:#e9dfc9; }
+  .page .body { padding:18px 18px 20px; display:grid; gap:14px; }
+  .count { color:#8a7fb0; font-weight:800; font-size:14px; }
+  .text { font-size:clamp(28px,5vw,42px); font-weight:900; line-height:1.35; }
+  .text.playing { color:#7a3fd1; }
+  .meaning { font-size:18px; color:#5d547e; }
+  .meaning[hidden] { display:none; }
+  .row { display:flex; flex-wrap:wrap; gap:10px; }
+  .row button { flex:1; min-width:120px; min-height:52px; border:0; border-radius:14px; font-weight:900; font-size:17px; }
+  .listen { background:#ffd93d; color:#3a2a00; box-shadow:0 4px 0 #c9a21a; }
+  .show { background:#e5ddff; color:#3b2a78; }
+  .read { background:#c6f28a; color:#1f3a05; box-shadow:0 4px 0 #8ab653; }
+  .nav { display:flex; align-items:center; gap:10px; margin-top:16px; }
+  .nav button { min-height:54px; padding:0 20px; border:0; border-radius:14px; font-weight:900; font-size:18px; background:rgba(255,255,255,.12); color:var(--paper); }
+  .nav button:disabled { opacity:.35; }
+  .nav .next { margin-left:auto; background:#ffd93d; color:#3a2a00; }
+  .dots { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; flex:1; }
+  .dots span { width:9px; height:9px; border-radius:50%; background:rgba(255,255,255,.25); }
+  .dots span.on { background:var(--star); }
+  .practice { background:#241c4a; color:var(--paper); border-radius:16px; padding:16px; }
+  .practice[hidden] { display:none; }
+  .finish { text-align:center; padding:26px 18px; display:grid; gap:12px; }
+  .finish .big { font-size:48px; }
+  .finish h2 { font-size:26px; }
+  /* 영어 읽기(마이크) 기능 스타일: 대시보드와 같은 모양 */
+  .reading-practice { display:flex; flex-direction:column; gap:12px; }
+  .reading-label, .reading-meaning, .reading-status { font-size:16px; line-height:1.5; }
+  .reading-sentence { display:flex; flex-wrap:wrap; gap:0 .22em; font-size:clamp(24px,4vw,34px); line-height:1.4; font-weight:900; color:#fff; }
+  .reading-word { border-bottom:3px solid #65719d; overflow-wrap:anywhere; }
+  .reading-word.heard { color:#c6f28a; border-color:#c6f28a; }
+  .reading-word.retry { color:#ffb4b4; border-color:#ff8686; text-decoration:underline wavy; text-underline-offset:7px; }
+  .reading-word.listening { color:#342300; background:#ffe680; border-color:#ffe680; border-radius:6px; }
+  .reading-praise { display:block; font-size:clamp(26px,4vw,36px); font-weight:900; color:#ffe680; }
+  .reading-praise-detail { display:block; color:#e0d5ff; }
+  .reading-star-burst { display:block; color:#ffe680; font-size:28px; }
+  .reading-status.retry, .reading-heard.retry { color:#ffb4b4; }
+  .reading-meaning, .reading-label { color:var(--soft); }
+  .reading-meaning[hidden] { display:none; }
+  .reading-actions { display:flex; flex-wrap:wrap; gap:8px; }
+  .reading-actions button { flex:1; min-height:48px; padding:12px; border:0; border-radius:12px; font-weight:800; font-size:16px; }
+  .reading-actions button:disabled { opacity:.5; }
+  .reading-actions button[hidden] { display:none; }
+  .reading-privacy { font-size:13px; line-height:1.6; color:#bbc5df; }
+  .reading-heard { font-size:16px; color:#e0d5ff; overflow-wrap:anywhere; }
+  .reading-log { display:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="back" id="backLink" href="../">← 이야기 극장</a>
+    <h1>📚 영어 그림책</h1>
+  </div>
+
+  <section class="shelf-view" id="shelfView">
+    <p class="lead">그림을 보며 영어 이야기를 들어요. 🔊로 듣고, 🎤로 직접 읽어 봐요. 별이 적은 책부터 시작해요.</p>
+    <div class="shelf" id="shelf"></div>
+  </section>
+
+  <section class="reader" id="reader" hidden>
+    <article class="page" id="page"></article>
+    <div class="nav">
+      <button type="button" id="prevBtn">← 앞</button>
+      <div class="dots" id="dots" aria-hidden="true"></div>
+      <button type="button" class="next" id="nextBtn">다음 →</button>
+    </div>
+  </section>
+</div>
+
+<script src="../../assets/study/english-reading.js?v=19"></script>
+<script src="books.js?v=1"></script>
+<script>
+(function () {
+  "use strict";
+  var BOOKS = window.EnglishBooks.books;
+  var DONE_KEY = "story_english_done";
+  var shelfView = document.getElementById("shelfView");
+  var shelf = document.getElementById("shelf");
+  var reader = document.getElementById("reader");
+  var pageEl = document.getElementById("page");
+  var dots = document.getElementById("dots");
+  var prevBtn = document.getElementById("prevBtn");
+  var nextBtn = document.getElementById("nextBtn");
+  var backLink = document.getElementById("backLink");
+  var book = null, index = 0, audio = null, practiceView = null;
+
+  function art(id) { return "../../cards/art/" + id + ".webp"; }
+  function readDone() {
+    try { return JSON.parse(localStorage.getItem(DONE_KEY) || "{}") || {}; } catch (error) { return {}; }
+  }
+  function markDone(id) {
+    var done = readDone(); done[id] = true;
+    try { localStorage.setItem(DONE_KEY, JSON.stringify(done)); } catch (error) {}
+  }
+  function el(tag, cls, text) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+  function stopAudio() {
+    if (audio) { try { audio.pause(); } catch (error) {} audio = null; }
+    var text = pageEl.querySelector(".text");
+    if (text) text.classList.remove("playing");
+  }
+  function stopPractice() {
+    if (practiceView && practiceView.destroy) { try { practiceView.destroy(); } catch (error) {} }
+    practiceView = null;
+  }
+
+  function renderShelf() {
+    shelf.textContent = "";
+    var done = readDone();
+    BOOKS.forEach(function (item) {
+      var card = el("button", "book");
+      card.type = "button";
+      var img = el("img"); img.src = art(item.cover); img.alt = ""; img.loading = "lazy";
+      var meta = el("span", "meta");
+      meta.append(el("span", "en", item.title), el("span", "ko", item.titleKo + " · " + item.pages.length + "쪽"),
+        el("span", "stars", "★".repeat(item.stars) + "☆".repeat(3 - item.stars)));
+      card.append(img, meta);
+      if (done[item.id]) card.appendChild(el("span", "done", "다 읽었어요 ⭐"));
+      card.addEventListener("click", function () { openBook(item); });
+      shelf.appendChild(card);
+    });
+  }
+
+  function openBook(item) {
+    book = item; index = 0;
+    shelfView.hidden = true; reader.hidden = false;
+    backLink.textContent = "← 책장";
+    backLink.setAttribute("href", "#");
+    renderPage();
+    scrollTo(0, 0);
+  }
+  function closeBook() {
+    stopAudio(); stopPractice();
+    book = null;
+    reader.hidden = true; shelfView.hidden = false;
+    backLink.textContent = "← 이야기 극장";
+    backLink.setAttribute("href", "../");
+    renderShelf();
+  }
+  backLink.addEventListener("click", function (event) {
+    if (book) { event.preventDefault(); closeBook(); }
+  });
+
+  function renderDots() {
+    dots.textContent = "";
+    for (var i = 0; i <= book.pages.length; i++) {
+      var dot = el("span"); if (i === index) dot.className = "on"; dots.appendChild(dot);
+    }
+  }
+
+  function renderPage() {
+    stopAudio(); stopPractice();
+    pageEl.textContent = "";
+    renderDots();
+    prevBtn.disabled = index === 0;
+    if (index >= book.pages.length) {
+      markDone(book.id);
+      var finish = el("div", "finish");
+      finish.append(el("div", "big", "🌟"), el("h2", "", "The End"), el("p", "", "「" + book.titleKo + "」을 다 읽었어요! 멋져요!"));
+      var again = el("button", "listen", "처음부터 다시 읽기");
+      again.type = "button";
+      again.addEventListener("click", function () { index = 0; renderPage(); });
+      finish.appendChild(again);
+      pageEl.appendChild(finish);
+      nextBtn.textContent = "책장으로";
+      return;
+    }
+    nextBtn.textContent = index === book.pages.length - 1 ? "끝 →" : "다음 →";
+    var page = book.pages[index];
+    var img = el("img"); img.src = art(page.art); img.alt = "";
+    var body = el("div", "body");
+    var text = el("p", "text", page.text); text.lang = "en";
+    var meaning = el("p", "meaning", page.meaning); meaning.hidden = true;
+    var row = el("div", "row");
+    var listen = el("button", "listen", "🔊 들어 보기"); listen.type = "button";
+    var show = el("button", "show", "한글 뜻 보기"); show.type = "button";
+    var read = el("button", "read", "🎤 내가 읽기"); read.type = "button";
+    var practice = el("div", "practice"); practice.hidden = true;
+    row.append(listen, show, read);
+    body.append(el("span", "count", (index + 1) + " / " + book.pages.length), text, meaning, row, practice);
+    pageEl.append(img, body);
+
+    listen.addEventListener("click", function () {
+      stopPractice(); practice.hidden = true;
+      stopAudio();
+      audio = new Audio(page.audio);
+      text.classList.add("playing");
+      audio.addEventListener("ended", function () { text.classList.remove("playing"); });
+      audio.addEventListener("error", function () { text.classList.remove("playing"); listen.textContent = "🔊 소리를 못 찾았어요"; });
+      var playing = audio.play();
+      if (playing && playing.catch) playing.catch(function () { text.classList.remove("playing"); });
+    });
+    show.addEventListener("click", function () {
+      meaning.hidden = !meaning.hidden;
+      show.textContent = meaning.hidden ? "한글 뜻 보기" : "한글 뜻 숨기기";
+    });
+    read.addEventListener("click", function () {
+      stopAudio();
+      if (!practice.hidden) { stopPractice(); practice.hidden = true; return; }
+      practice.hidden = false;
+      practiceView = window.EnglishReading.mount(practice, { text: page.text, meaning: page.meaning }, function () {
+        // 다 읽으면 칭찬이 끝난 뒤 다음 쪽으로 넘어간다.
+        stopPractice();
+        index += 1; renderPage();
+      }, window, {});
+    });
+  }
+
+  prevBtn.addEventListener("click", function () { if (index > 0) { index -= 1; renderPage(); } });
+  nextBtn.addEventListener("click", function () {
+    if (index >= book.pages.length) { closeBook(); return; }
+    index += 1; renderPage();
+  });
+  document.addEventListener("visibilitychange", function () { if (document.hidden) stopAudio(); });
+
+  var start = new URLSearchParams(location.search).get("book");
+  renderShelf();
+  var first = BOOKS.find(function (item) { return item.id === start; });
+  if (first) openBook(first);
+})();
+</script>
+</body>
+</html>

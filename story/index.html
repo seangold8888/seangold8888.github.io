@@ -235,6 +235,12 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   .small { width: clamp(52px, 12vw, 62px); height: clamp(52px, 12vw, 62px); font-size: clamp(13px, 3vw, 15px); }
   #playBtn { width: clamp(72px, 16vw, 86px); height: clamp(72px, 16vw, 86px); font-size: clamp(30px, 7vw, 38px); background: var(--star); }
   footer { text-align: center; color: var(--cloud); font-size: clamp(12px, 2.8vw, 14px); font-weight: 700; }
+  .english-books { display:flex; align-items:center; gap:14px; margin:0 0 18px; padding:16px 18px; border-radius:18px; text-decoration:none;
+    background:linear-gradient(135deg,#ffd93d,#ffb86b); color:#3a2a00; box-shadow:0 6px 0 rgba(10,6,24,.45); }
+  .english-books .eb-icon { font-size:34px; }
+  .english-books b { display:block; font-size:clamp(18px,4vw,22px); }
+  .english-books small { display:block; font-size:14px; font-weight:700; opacity:.8; }
+  .english-books .eb-go { margin-left:auto; font-size:22px; font-weight:900; }
 </style>
 </head>
 <body>
@@ -244,6 +250,12 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     <h1>이야기 극장 🌙</h1>
     <p class="sub">세계의 옛이야기를 귀로 떠나는 여행</p>
   </header>
+
+  <a class="english-books" href="english/">
+    <span class="eb-icon" aria-hidden="true">📚</span>
+    <span><b>영어 그림책</b><small>그림 보며 듣고, 직접 소리 내어 읽어요 · 6권</small></span>
+    <span class="eb-go" aria-hidden="true">▶</span>
+  </a>
 
   <section class="offline-panel" id="offlinePanel" aria-labelledby="offlineTitle">
     <div class="offline-copy">
