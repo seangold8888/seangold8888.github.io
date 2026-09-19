@@ -10,4 +10,5 @@
 - 티켓 없이 들어가는 곳이라 게임 시간 제한(play-timer)을 싣지 않는다.
 - 이름(Jaei, Taeo)은 음성 인식이 잘 못 알아들을 수 있어 허용어(jay, tao, teo 등)를 넣었다. 그래도 틀리면 다음 쪽 버튼으로 넘어갈 수 있다.
 - 점검: `node tools/english-books-smoke.cjs`
-- 신데렐라 5쪽은 금발·파란 드레스로 나와 다른 쪽(갈색 곱슬머리·분홍 드레스)과 다르다. 09-19 다시 그리려 했으나 API 선불 크레딧 소진으로 보류. 7쪽은 사람 없이 유리 구두만 그렸다(왕자+유리 구두 장면이 계속 정책 거절).
+- 신데렐라 5쪽은 처음에 금발·파란 드레스로 나와 09-19 구글 클라우드 Vertex AI(크레딧 프로젝트, gemini-3-pro-image, location global)로 다시 그렸다(갈색 곱슬머리·분홍 드레스). 7쪽은 사람 없이 유리 구두만 있다: 왕자+유리 구두 장면은 제미나이 API와 Vertex 모두 IMAGE_PROHIBITED_CONTENT로 거절.
+- 다시 그리기: `python tools/vertex-page-art.py <책-쪽> "<장면>" <참고그림>...` (gcloud ADC 인증, API 키 사용 안 함).
