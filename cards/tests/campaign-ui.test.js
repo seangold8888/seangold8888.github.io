@@ -142,8 +142,8 @@ test("S2 module and styles are cached exactly once and load before the app",()=>
   const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
   const sw=require("../../sw.js");
   for(const name of ["campaign.css","js/campaign.js","js/campaign-ui.js"]){
-    assert.equal(sw.CORE_SHELL.filter(item=>item==="./cards/"+name+"?v=65").length,1);
-    assert.ok(html.indexOf(name+"?v=65")<html.indexOf("js/app.js?v=65"));
+    assert.equal(sw.CORE_SHELL.filter(item=>item==="./cards/"+name+"?v=66").length,1);
+    assert.ok(html.indexOf(name+"?v=66")<html.indexOf("js/app.js?v=66"));
   }
 });
 
@@ -170,4 +170,45 @@ test("a party saved with a collected card survives a reload while that card is s
   assert.deepEqual(saved.party,["jaei","taeo","mermaid"]);
   const again=setup(saved,["mermaid"]);
   assert.deepEqual(again.progress.party,saved.party);
+});
+
+test("a big collection is narrowed by element chips and can be picked for the child",()=>{
+  const owned=data.cards.filter(card=>Engine.isBattleCard(card)).slice(0,24).map(card=>card.id);
+  const qa=setup(chapterOne(),owned);qa.ui.resume();qa.scene();
+  const chips=qa.find("expedition-filters").children.map(n=>n.textContent);
+  assert.ok(chips[0].startsWith("전체"),chips.join("|"));
+  assert.ok(chips.length>2,"one chip per element in the collection");
+  const water=qa.find("expedition-filters").children.find(n=>n.textContent.startsWith("💧"));
+  water.click();
+  const cards=qa.find("expedition-candidates").children;
+  const shown=cards.map(n=>n.dataset.cardId);
+  const total=Number(qa.find("expedition-filters").children[0].textContent.split(" ").pop());
+  assert.ok(shown.length>0 && shown.length<total,shown.length+"/"+total);
+  // 물 카드이거나, 이미 고른 카드(재이·태오)만 남는다.
+  shown.forEach(id=>assert.ok(data.cards.find(card=>card.id===id).element==="water" ||
+    cards.find(n=>n.dataset.cardId===id).attrs["aria-pressed"]==="true",id));
+  const picked=cards.find(n=>n.attrs["aria-pressed"]==="true").dataset.cardId;
+  qa.find("expedition-filters").children.find(n=>n.textContent.startsWith("🔥")).click();
+  assert.ok(qa.find("expedition-candidates").children.some(n=>n.dataset.cardId===picked),"a picked card stays visible");
+});
+
+test("the recommend button fills three friends that suit the chapter",()=>{
+  const owned=data.cards.filter(card=>Engine.isBattleCard(card)).slice(0,24).map(card=>card.id);
+  const qa=setup(chapterOne(),owned);qa.ui.resume();qa.scene();
+  qa.find("expedition-recommend").click();
+  const chosen=qa.root.querySelectorAll(".expedition-card").filter(n=>n.attrs["aria-pressed"]==="true")
+    .map(n=>n.dataset.cardId);
+  const party=Array.from(new Set(chosen));
+  assert.equal(party.length,3,"three different friends");
+  const elements=new Set(party.map(id=>data.cards.find(card=>card.id===id).element));
+  assert.ok(elements.size>=2,"the picks do not all share one element");
+  const foes=C.encounterIds(1).map((id,stage)=>C.encounter(1,stage,data.cards).card);
+  const good=party.filter(id=>{
+    const element=data.cards.find(card=>card.id===id).element;
+    return foes.some(foe=>Engine.ELEMENT_CHART[foe.element] && Engine.ELEMENT_CHART[foe.element].weakTo===element);
+  });
+  assert.ok(good.length>=1,"at least one pick beats an enemy of this chapter");
+  assert.equal(qa.find("expedition-go").disabled,false);
+  qa.find("expedition-go").click();
+  assert.deepEqual(qa.progress.party.slice().sort(),party.slice().sort());
 });

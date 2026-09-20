@@ -31,6 +31,7 @@
     let sceneLine = 0;
     let sceneDone = null;
     let selected = [];
+    let partyFilter = "";
     let restoredNow = null;
     const seen = new Set();
     const cardById = id => options.cards.find(card => card.id === id);
@@ -140,6 +141,42 @@
       });
       return list;
     }
+    function chapterOpponents() {
+      return C.encounterIds(progress.chapter).map((id, stage) => C.encounter(progress.chapter, stage, options.cards).card);
+    }
+    function tierRank(card) {
+      const tier = window.CardView.battleTier ? window.CardView.battleTier(card) : "";
+      const rank = ["S", "A", "B", "C", "D"].indexOf(tier);
+      return rank < 0 ? 9 : rank;
+    }
+    // 이번 장 상대에게 얼마나 잘 맞는 카드인지. 유리한 상대가 많을수록, 등급이 높을수록 앞에 온다.
+    function chapterFit(card, opponents) {
+      let good = 0;
+      let bad = 0;
+      opponents.forEach(enemy => {
+        const enemyChart = window.CardEngine.ELEMENT_CHART[enemy.element];
+        const myChart = window.CardEngine.ELEMENT_CHART[card.element];
+        if (enemyChart && enemyChart.weakTo === card.element) good += 1;
+        if (myChart && myChart.weakTo === enemy.element) bad += 1;
+      });
+      return {good, bad, score: good * 3 - bad + (5 - tierRank(card)) + card.hp / 100};
+    }
+    // 다섯 살이 셋을 고르기 힘들 때 쓴다. 상성이 좋은 카드를 속성이 겹치지 않게 고른다.
+    function recommendParty(ids) {
+      const chapterFoes = chapterOpponents();
+      const pool = ids.map(cardById).filter(Boolean)
+        .map(card => ({card, fit: chapterFit(card, chapterFoes)}))
+        .sort((a, b) => b.fit.score - a.fit.score || a.card.name.localeCompare(b.card.name, "ko"));
+      const picked = [];
+      const elements = [];
+      [true, false].forEach(fresh => pool.forEach(entry => {
+        if (picked.length === 3 || picked.includes(entry.card.id)) return;
+        if (fresh && entry.card.element && elements.includes(entry.card.element)) return;
+        picked.push(entry.card.id);
+        if (entry.card.element) elements.push(entry.card.element);
+      }));
+      return picked;
+    }
     function showParty() {
       shell("함께 갈 친구 셋을 골라요", progress.chapter + "장 · " + C.CHAPTERS[progress.chapter].name);
       root.append(opponents());
@@ -153,16 +190,36 @@
       syncOwned();
       const friends = expeditionFriends(progress.chapter);
       const ids = C.candidatesForChapter(progress.chapter);
+      const chapterFoes = chapterOpponents();
       // 모은 카드는 센 카드부터 보여 준다. 줄이 길어도 앞쪽에서 고를 수 있게.
-      const tierRank = card => {
-        const tier = window.CardView.battleTier ? window.CardView.battleTier(card) : "";
-        const rank = ["S", "A", "B", "C", "D"].indexOf(tier);
-        return rank < 0 ? 9 : rank;
-      };
       const extras = ids.filter(id => !friends.includes(id) && cardById(id)).map(cardById)
         .sort((a, b) => tierRank(a) - tierRank(b) || b.hp - a.hp || a.name.localeCompare(b.name, "ko"))
         .map(card => card.id);
-      const ordered = friends.filter(id => ids.includes(id)).concat(extras);
+      const all = friends.filter(id => ids.includes(id)).concat(extras);
+      // 카드가 많아지면 줄이 길어진다. 속성으로 줄이고, 고른 카드는 늘 남겨 둔다.
+      const elements = Object.keys(window.CardEngine.ELEMENT_CHART)
+        .filter(key => all.some(id => cardById(id).element === key));
+      if (partyFilter && !elements.includes(partyFilter)) partyFilter = "";
+      if (elements.length > 1 && all.length > 8) {
+        const tools = el("div", "expedition-tools");
+        const filters = el("div", "expedition-filters");
+        filters.setAttribute("aria-label", "속성으로 카드 고르기");
+        [""].concat(elements).forEach(key => {
+          const meta = window.CardEngine.ELEMENT_CHART[key];
+          const count = all.filter(id => !key || cardById(id).element === key).length;
+          const chip = button((meta ? meta.icon + " " + meta.label : "전체") + " " + count,
+            "expedition-filter" + (partyFilter === key ? " is-on" : ""),
+            () => {partyFilter = key; showParty();});
+          chip.setAttribute("aria-pressed", String(partyFilter === key));
+          filters.append(chip);
+        });
+        tools.append(button("✨ 추천 3장", "ghost-button expedition-recommend", () => {
+          selected = recommendParty(all);
+          showParty();
+        }), filters);
+        root.append(tools);
+      }
+      const ordered = all.filter(id => !partyFilter || selected.includes(id) || cardById(id).element === partyFilter);
       ordered.forEach(id => {
         const chosen = selected.includes(id);
         const node = portraitButton(cardById(id), () => {
@@ -171,6 +228,8 @@
           showParty();
         }, chosen ? " is-picked" : "");
         if (!friends.includes(id)) node.append(el("span", "expedition-card-badge", "모은 카드"));
+        const fit = chapterFit(cardById(id), chapterFoes);
+        if (fit.good) node.append(el("span", "expedition-card-hint", "이번 장 유리 " + fit.good));
         node.setAttribute("aria-pressed", String(chosen));
         node.disabled = !chosen && selected.length === 3;
         choices.append(node);
