@@ -25,6 +25,7 @@
     const root = document.getElementById("campaignScreen");
     const entry = document.getElementById("campaignButton");
     const notice = document.getElementById("campaignSaveNotice");
+    C.setOwned(typeof options.ownedIds === "function" ? options.ownedIds() : []);
     let progress = C.load();
     let sceneKey = "";
     let sceneLine = 0;
@@ -33,7 +34,15 @@
     let restoredNow = null;
     const seen = new Set();
     const cardById = id => options.cards.find(card => card.id === id);
+    // 모아 둔 카드도 원정에 데려간다. 앱이 획득 여부를 알려 준다.
+    function syncOwned() {
+      C.setOwned(typeof options.ownedIds === "function" ? options.ownedIds() : []);
+    }
+    function expeditionFriends(chapter) {
+      return ["jaei", "taeo"].concat(C.CHAPTERS.slice(0, chapter).map(row => row.recruit));
+    }
     function persist() {
+      syncOwned();
       notice.hidden = C.save(progress);
       updateEntry();
     }
@@ -139,15 +148,29 @@
         const card = cardById(selected[i]);
         slots.append(card ? portraitButton(card, () => {selected = selected.filter(id => id !== card.id); showParty();}, " is-picked") : el("div", "expedition-empty-slot", "+ 친구 " + (i + 1)));
       }
-      root.append(slots, el("p", "expedition-help", "상대 색을 보고 골라요. 진 친구는 이번 장에서 쉬어요."));
+      root.append(slots, el("p", "expedition-help", "상대 색을 보고 골라요. 진 친구는 이번 장에서 쉬어요. 모은 카드도 데려갈 수 있어요."));
       const choices = el("div", "expedition-candidates");
-      C.candidatesForChapter(progress.chapter).forEach(id => {
+      syncOwned();
+      const friends = expeditionFriends(progress.chapter);
+      const ids = C.candidatesForChapter(progress.chapter);
+      // 모은 카드는 센 카드부터 보여 준다. 줄이 길어도 앞쪽에서 고를 수 있게.
+      const tierRank = card => {
+        const tier = window.CardView.battleTier ? window.CardView.battleTier(card) : "";
+        const rank = ["S", "A", "B", "C", "D"].indexOf(tier);
+        return rank < 0 ? 9 : rank;
+      };
+      const extras = ids.filter(id => !friends.includes(id) && cardById(id)).map(cardById)
+        .sort((a, b) => tierRank(a) - tierRank(b) || b.hp - a.hp || a.name.localeCompare(b.name, "ko"))
+        .map(card => card.id);
+      const ordered = friends.filter(id => ids.includes(id)).concat(extras);
+      ordered.forEach(id => {
         const chosen = selected.includes(id);
         const node = portraitButton(cardById(id), () => {
           if (chosen) selected = selected.filter(item => item !== id);
           else if (selected.length < 3) selected.push(id);
           showParty();
         }, chosen ? " is-picked" : "");
+        if (!friends.includes(id)) node.append(el("span", "expedition-card-badge", "모은 카드"));
         node.setAttribute("aria-pressed", String(chosen));
         node.disabled = !chosen && selected.length === 3;
         choices.append(node);

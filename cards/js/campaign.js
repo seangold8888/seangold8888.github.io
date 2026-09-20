@@ -8,6 +8,18 @@
 
   const STORAGE_KEY = "card_campaign";
   const STARTERS = ["jaei", "taeo"];
+  // 모아 둔 카드도 원정에 데려간다. 앱이 획득한 카드 목록을 넣어 준다.
+  let ownedExtra = [];
+  function setOwned(ids) {
+    ownedExtra = Array.isArray(ids)
+      ? Array.from(new Set(ids.filter(id => typeof id === "string" && id)))
+      : [];
+    return ownedExtra.slice();
+  }
+  function partyPool(recruited) {
+    const pool = STARTERS.concat(recruited);
+    return pool.concat(ownedExtra.filter(id => !pool.includes(id)));
+  }
   const clone = value => JSON.parse(JSON.stringify(value));
   function freeze(value) {
     if (value && typeof value === "object") {
@@ -301,7 +313,7 @@
   }
   function candidatesForChapter(chapter) {
     chapterAt(chapter);
-    return STARTERS.concat(CHAPTERS.slice(0, chapter).map(row => row.recruit));
+    return partyPool(CHAPTERS.slice(0, chapter).map(row => row.recruit));
   }
   function createProgress() {
     return {version: 1, chapter: 0, stage: 0, party: STARTERS.slice(), resting: [],
@@ -325,7 +337,7 @@
     const recruited = cleared.map(i => CHAPTERS[i].recruit);
     if (JSON.stringify(raw.cleared) !== JSON.stringify(cleared) ||
         JSON.stringify(raw.recruited) !== JSON.stringify(recruited)) return fresh;
-    const available = STARTERS.concat(recruited);
+    const available = partyPool(recruited);
     const size = raw.chapter === 0 ? 2 : 3;
     const phase = raw.phase || (last ? "complete" : raw.stage === 4 ? "restore" : "encounter");
     if (!["intro", "party", "encounter", "battle", "restore", "complete"].includes(phase) ||
@@ -369,7 +381,7 @@
   function selectParty(progress, ids) {
     const next = normaliseProgress(progress, false);
     if (next.phase !== "party" || !uniqueStrings(ids) || ids.length !== 3 ||
-        ids.some(id => !STARTERS.concat(next.recruited).includes(id))) return next;
+        ids.some(id => !partyPool(next.recruited).includes(id))) return next;
     next.party = ids.slice();
     next.phase = "encounter";
     return next;
@@ -451,5 +463,5 @@
   }
   return Object.freeze({STORAGE_KEY, CHAPTERS, SCENES: ALL_SCENES, SCENE_PAGE_SIZE, ENDING, advanceEnding, FINAL_BOSS, createProgress,
     normaliseProgress, load, save, finishIntro, selectParty, availableParty,
-    beginBattle, finishBattle, finishChapter, encounter, encounterIds, candidatesForChapter});
+    beginBattle, finishBattle, finishChapter, encounter, encounterIds, candidatesForChapter, setOwned});
 });

@@ -3340,7 +3340,11 @@
       battleCards = cards.filter(isPlayableCard);
       if (!isPreviewMode()) loadCollectionLedger();
       campaignUi = window.CardCampaignUI.create({cards: cards, showScreen: showScreen,
-        onBattle: startBattle, onExit: returnToCollection});
+        onBattle: startBattle, onExit: returnToCollection,
+        // 이야기를 듣거나 수학을 해서 얻은 카드도 원정에 데려간다.
+        ownedIds: function () {
+          return battleCards.filter(isUnlocked).map(function (card) { return card.id; });
+        }});
       const requested = new URLSearchParams(location.search).get("card");
       selectedCard = cards.find(function (card) {
         return card.id === requested && isUnlocked(card) && isPlayableCard(card);

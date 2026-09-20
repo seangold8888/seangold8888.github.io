@@ -272,3 +272,25 @@ test("breadth and duration guards reject the former single-choice and long bosse
   assert.equal(guanyu.durationOk, false);
   assert.equal(guanyu.pass, false);
 });
+
+test("collected cards widen the party pool without loosening anything else", () => {
+  try {
+    let chapterOne = Campaign.finishIntro(Campaign.createProgress());
+    chapterOne = Campaign.finishChapter(resolve(chapterOne, "jaei"));
+    chapterOne = Campaign.finishIntro(chapterOne);
+    assert.equal(chapterOne.phase, "party");
+    assert.deepEqual(Campaign.candidatesForChapter(1), ["jaei", "taeo", "redhood"]);
+    Campaign.setOwned(["mermaid", "redhood", "", 7]);
+    assert.deepEqual(Campaign.candidatesForChapter(1), ["jaei", "taeo", "redhood", "mermaid"],
+      "an owned card is offered once, after the recruits");
+    const joined = Campaign.selectParty(chapterOne, ["jaei", "taeo", "mermaid"]);
+    assert.deepEqual(joined.party, ["jaei", "taeo", "mermaid"]);
+    assert.equal(joined.phase, "encounter");
+    assert.deepEqual(Campaign.selectParty(chapterOne, ["jaei", "taeo", "zeus"]), chapterOne,
+      "a card that is neither recruited nor collected is still refused");
+    Campaign.setOwned([]);
+    assert.deepEqual(Campaign.candidatesForChapter(1), ["jaei", "taeo", "redhood"]);
+  } finally {
+    Campaign.setOwned([]);
+  }
+});

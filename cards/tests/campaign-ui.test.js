@@ -8,6 +8,7 @@ const C = require("../js/campaign.js");
 const Engine = require("../js/engine.js");
 const data = require("../cards.json");
 const source = fs.readFileSync(path.join(__dirname,"../js/campaign-ui.js"),"utf8");
+const cardViewSource = fs.readFileSync(path.join(__dirname,"../js/card-view.js"),"utf8");
 const walk = node => [node,...node.children.flatMap(walk)];
 const hasClass = (node,name) => node.className.split(" ").includes(name);
 class Node {
@@ -25,15 +26,18 @@ class Node {
   querySelectorAll(selector) {return walk(this).slice(1).filter(n=>selector.startsWith(".")?hasClass(n,selector.slice(1)):n.tag===selector);}
   click() {if(!this.disabled&&this.events.click)this.events.click();}
 }
-function setup(initial) {
+function setup(initial,owned) {
   let raw=initial?JSON.stringify(initial):null;
   const storage={getItem:()=>raw,setItem:(key,value)=>raw=value};
   const nodes=Object.fromEntries(["campaignScreen","campaignButton","campaignSaveNotice"].map(id=>[id,new Node("div")]));
   const document={createElement:tag=>new Node(tag),getElementById:id=>nodes[id]};
-  const window={CardCampaign:{...C,load:()=>C.load(storage),save:p=>C.save(p,storage)},CardEngine:Engine,CardView:{artPosition:{}},CardAudio:{prime(){}}};
-  vm.runInNewContext(source,{window,document});
+  const window={CardCampaign:{...C,load:()=>C.load(storage),save:p=>C.save(p,storage)},CardEngine:Engine,CardAudio:{prime(){}}};
+  const context={window,document};
+  vm.runInNewContext(cardViewSource,context);   // 실전 등급으로 모은 카드를 정렬한다
+  vm.runInNewContext(source,context);
   let battle=null;
-  const ui=window.CardCampaignUI.create({cards:data.cards,showScreen(){},onExit(){},onBattle:request=>battle=request});
+  const ui=window.CardCampaignUI.create({cards:data.cards,showScreen(){},onExit(){},onBattle:request=>battle=request,
+    ownedIds:()=>(owned||[]).slice()});
   const root=nodes.campaignScreen;
   const find=(className)=>walk(root).find(n=>hasClass(n,className));
   function scene() {
@@ -81,7 +85,7 @@ test("UI saves battle serial, ignores duplicate results and unlocks a recruit on
   const snapshot=JSON.stringify(qa.progress);qa.ui.settle(serial,"enemy");assert.equal(JSON.stringify(qa.progress),snapshot);
   qa.ui.resume();qa.scene();assert.equal(qa.progress.chapter,1);assert.equal(qa.ui.hasRecruited("redhood"),true);
 });
-test("S2 party only offers starters and recruits, and records a lost card as resting",()=>{
+test("S2 party offers starters and recruits when nothing else is collected, and records a lost card as resting",()=>{
   const qa=setup(chapterOne());qa.ui.resume();qa.scene();
   const choices=qa.find("expedition-candidates");
   assert.deepEqual(choices.children.map(n=>n.dataset.cardId),["jaei","taeo","redhood"]);
@@ -138,7 +142,32 @@ test("S2 module and styles are cached exactly once and load before the app",()=>
   const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
   const sw=require("../../sw.js");
   for(const name of ["campaign.css","js/campaign.js","js/campaign-ui.js"]){
-    assert.equal(sw.CORE_SHELL.filter(item=>item==="./cards/"+name+"?v=64").length,1);
-    assert.ok(html.indexOf(name+"?v=64")<html.indexOf("js/app.js?v=64"));
+    assert.equal(sw.CORE_SHELL.filter(item=>item==="./cards/"+name+"?v=65").length,1);
+    assert.ok(html.indexOf(name+"?v=65")<html.indexOf("js/app.js?v=65"));
   }
+});
+
+test("collected cards join the expedition after the starters and recruits",()=>{
+  const qa=setup(chapterOne(),["taeo","mermaid","zhangfei"]);qa.ui.resume();qa.scene();
+  const choices=qa.find("expedition-candidates");
+  assert.deepEqual(choices.children.map(n=>n.dataset.cardId),["jaei","taeo","redhood","mermaid","zhangfei"],
+    "expedition friends first, then collected cards with the strongest tier in front");
+  choices.children.filter(n=>["mermaid","zhangfei"].includes(n.dataset.cardId))
+    .forEach(n=>assert.ok(walk(n).some(child=>child.textContent==="모은 카드"),n.dataset.cardId));
+  choices.children.find(n=>n.dataset.cardId==="mermaid").click();
+  qa.find("expedition-go").click();
+  assert.deepEqual(qa.progress.party,["jaei","taeo","mermaid"]);
+  assert.equal(qa.progress.phase,"encounter");
+  qa.find("expedition-deploy").children.find(n=>n.dataset.cardId==="mermaid").click();
+  assert.equal(qa.battle.player.id,"mermaid","a collected card can be sent into an expedition battle");
+});
+
+test("a party saved with a collected card survives a reload while that card is still owned",()=>{
+  const first=setup(chapterOne(),["mermaid"]);first.ui.resume();first.scene();
+  first.find("expedition-candidates").children.find(n=>n.dataset.cardId==="mermaid").click();
+  first.find("expedition-go").click();
+  const saved=first.progress;
+  assert.deepEqual(saved.party,["jaei","taeo","mermaid"]);
+  const again=setup(saved,["mermaid"]);
+  assert.deepEqual(again.progress.party,saved.party);
 });
