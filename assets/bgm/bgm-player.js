@@ -15,7 +15,7 @@
   function createPlayer(options) {
     var settings = options || {};
     var basePath = settings.basePath || "assets/bgm/";
-    var volume = typeof settings.volume === "number" ? clamp(settings.volume, 0, 1) : 0.35;
+    var volume = typeof settings.volume === "number" ? clamp(settings.volume, 0, 1) : 0.7;
     var storageKey = settings.storageKey || "";
     var players = Object.create(null);
     var currentName = "";

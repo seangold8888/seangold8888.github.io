@@ -1315,7 +1315,7 @@ if(route==='quiz'&&!quiz) route='hub'; if(route==='ladder'&&!ladder) route='hub'
 render();
 </script>
 
-<script src="../assets/bgm/bgm-player.js?v=65"></script>
+<script src="../assets/bgm/bgm-player.js?v=66"></script>
 <script>
 (function () {
   'use strict';
@@ -1325,7 +1325,7 @@ render();
   var read = function () {
     try { return localStorage.getItem(KEY) === 'true'; } catch (error) { return false; }
   };
-  var bgm = window.HubBgm.create({ basePath: '../assets/bgm/', volume: 0.28 });
+  var bgm = window.HubBgm.create({ basePath: '../assets/bgm/', volume: 0.62 });
   bgm.setMuted(read());
   bgm.setTrack('bori');
   document.addEventListener('click', function (event) {

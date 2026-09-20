@@ -579,7 +579,7 @@
     window.CardBgm = window.HubBgm.create({
       basePath: "../assets/bgm/",
       storageKey: "cards_bgm_muted",
-      volume: 0.32
+      volume: 0.66
     });
     window.CardBgm.setMuted(window.CardAudio.isBgmMuted());
     window.CardBgm.onChange(function (state) {

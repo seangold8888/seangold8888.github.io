@@ -236,7 +236,7 @@ SK.createAudio = function () {
   function fileBgmPlayer() {
     if (fileBgm !== null) return fileBgm;
     fileBgm = (typeof window !== 'undefined' && window.HubBgm)
-      ? window.HubBgm.create({ basePath: '../assets/bgm/', volume: 0.3 })
+      ? window.HubBgm.create({ basePath: '../assets/bgm/', volume: 0.66 })
       : false;
     if (fileBgm) fileBgm.setMuted(muted);
     return fileBgm;

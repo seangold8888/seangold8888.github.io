@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v140";
+const CACHE_VERSION = "v141";
 const CACHE_PREFIX = "adventure-box-";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
@@ -559,7 +559,7 @@ const CORE_SHELL = [
   "./math/assets/jaei-family-v4.webp",
   "./cards/campaign.css?v=64",
   "./cards/cards.json",
-  "./assets/bgm/bgm-player.js?v=65",
+  "./assets/bgm/bgm-player.js?v=66",
   "./assets/study/play-timer.js?v=1",
   "./cards/js/engine.js?v=64",
   "./cards/js/audio.js?v=64",

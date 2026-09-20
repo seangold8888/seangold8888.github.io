@@ -123,7 +123,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     <small>걱정 마세요. 모험은 잠시 멈춰요.</small>
   </div>
   <noscript>이 게임은 자바스크립트가 필요해요.</noscript>
-  <script src="../assets/bgm/bgm-player.js?v=65"></script>
+  <script src="../assets/bgm/bgm-player.js?v=66"></script>
 <script>
 /* src/audio.js */
 // 오디세이아 — 외부 파일 없이 합성하는 오리지널 그리스풍 OST
@@ -1031,7 +1031,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   let fileBgm = null;
   function fileBgmPlayer() {
     if (fileBgm !== null) return fileBgm;
-    fileBgm = window.HubBgm ? window.HubBgm.create({ basePath: '../assets/bgm/', volume: 0.28 }) : false;
+    fileBgm = window.HubBgm ? window.HubBgm.create({ basePath: '../assets/bgm/', volume: 0.62 }) : false;
     if (fileBgm) fileBgm.setMuted(muted);
     return fileBgm;
   }
