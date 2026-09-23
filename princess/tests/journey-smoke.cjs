@@ -1,9 +1,13 @@
 'use strict';
-const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=require('fs'),os=require('os'),path=require('path');
-(async()=>{const out=fs.mkdtempSync(path.join(os.tmpdir(),'princess-picnic-')),b=await chromium.launch({channel:'msedge',headless:true});try{
+const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=require('fs'),os=require('os'),path=require('path'),http=require('http');
+// 따로 서버를 켜 두지 않아도 돌도록 사이트 뿌리를 직접 띄운다.
+const site=path.resolve(__dirname,'../..'),types={'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css','.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg','.json':'application/json','.mp3':'audio/mpeg','.svg':'image/svg+xml'};
+const server=http.createServer((q,r)=>{const u=decodeURIComponent(new URL(q.url,'http://x').pathname);const f=path.resolve(site,'.'+u+(u.endsWith('/')?'index.html':''));if(!f.startsWith(site+path.sep)||!fs.existsSync(f)){r.writeHead(404);return r.end();}r.writeHead(200,{'Content-Type':types[path.extname(f)]||'application/octet-stream'});r.end(fs.readFileSync(f));});
+let base='';
+(async()=>{await new Promise(r=>server.listen(0,'127.0.0.1',r));base='http://127.0.0.1:'+server.address().port;const out=fs.mkdtempSync(path.join(os.tmpdir(),'princess-picnic-')),b=await chromium.launch({channel:'msedge',headless:true});try{
  for(const viewport of [{width:390,height:844},{width:820,height:1180},{width:1180,height:820}]){
   const c=await b.newContext({viewport,serviceWorkers:'block'}),p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
-  await p.goto('http://127.0.0.1:8765/princess/?heads=natural&princess=cinder&v=picnic-1');
+  await p.goto(base+'/princess/?heads=natural&princess=cinder&v=picnic-1');
   const saved=await p.evaluate(()=>JSON.stringify(outfits));
   await p.getByRole('button',{name:'숲속 소풍 · 공주 키우기'}).click();
   const dialog=p.locator('.pj-dialog');await dialog.getByRole('button',{name:'이 옷을 입고 출발'}).click();
@@ -36,7 +40,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
   assert.deepEqual(errors,[]);console.log('PASS',viewport.width,'resume, retries, complete, photo offline, independent children, wardrobe unchanged');await c.close();
  }
  const c=await b.newContext({viewport:{width:820,height:1180},serviceWorkers:'block'}),p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
- await p.goto('http://127.0.0.1:8765/game/');
+ await p.goto(base+'/game/');
  await p.evaluate(()=>{const t=new Date();localStorage.setItem('hub2_date',t.getFullYear()+'-'+(t.getMonth()+1)+'-'+t.getDate());localStorage.setItem('hub2_solved','10');localStorage.setItem('hub2_credit','1');localStorage.setItem('hub2_parent_mode','0');localStorage.setItem('hub2_plays',JSON.stringify({princess:{n:3,d:0}}));});
  await p.evaluate(()=>{PrincessGrowth.select(localStorage,'taeo');const old=JSON.parse(localStorage.getItem(PrincessGrowth.KEY));old.children.taeo.math=7;localStorage.setItem(PrincessGrowth.KEY,JSON.stringify(old));});
  await p.reload();assert.equal(await p.locator('#princessGrowthHub').getByRole('button').count(),0);assert.match(await p.locator('#princessGrowthHub').textContent(),/재이의 공주 키우기/);
@@ -53,4 +57,4 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
  assert.match(await p.locator('.pj-status').textContent(),/영어 경험/);
  assert.deepEqual(errors,[]);await c.close();console.log('PASS hub profile, preserved play history, ticket entry, natural mode, shared child, earned helpers');
  console.log('SCREENSHOTS',out);
-}finally{await b.close();}})().catch(e=>{console.error(e);process.exitCode=1;});
+}finally{await b.close();server.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

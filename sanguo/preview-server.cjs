@@ -1,12 +1,14 @@
 const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
-const local=__dirname,fallback=process.env.SANGUO_ASSET_ROOT || __dirname;
+const local=__dirname,fallback=process.env.SANGUO_ASSET_ROOT || __dirname,site=path.resolve(__dirname,'..');
 const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css','.json':'application/json','.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg','.svg':'image/svg+xml','.ogg':'audio/ogg','.woff2':'font/woff2'};
 function createServer(){
  return http.createServer((req,res)=>{
   let pathname;
   try{pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);}catch{res.writeHead(400).end();return;}
   const suffix=pathname==='/'?'/index.html':pathname;
-  const candidates=[local,fallback].map(root=>({root,file:path.resolve(root,'.'+suffix)}));
+  // 게임 시간 파일 같은 공용 자산(../assets/)은 사이트 뿌리에 있다.
+  const roots=suffix.startsWith('/assets/')?[local,fallback,site]:[local,fallback];
+  const candidates=roots.map(root=>({root,file:path.resolve(root,'.'+suffix)}));
   if(candidates.some(({root,file})=>!file.startsWith(root+path.sep))){res.writeHead(403).end();return;}
   const entry=candidates.find(({file})=>fs.existsSync(file)&&fs.statSync(file).isFile());
   if(!entry){res.writeHead(404).end();return;}

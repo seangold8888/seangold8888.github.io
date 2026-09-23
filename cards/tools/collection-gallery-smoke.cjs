@@ -95,7 +95,7 @@ const server=http.createServer((req,res)=>{
      assert.ok((await page.locator("#detailUnlockLink").getAttribute("href")).endsWith(destination));
      assert.ok(await page.locator("#cardDetailCard .attack-row").count()>=2);
      if(id==="jaei"){
-       assert.match(await page.locator("#cardDetailStatus").innerText(),/7일/);
+       assert.match(await page.locator("#cardDetailStatus").innerText(),/30일/);  // DESIGN-FAMILY-UNLOCKS: 재이 30일 + 400문제
        assert.match(await page.locator("#detailUnlockLink").innerText(),/수학/);
        const wrapping=await page.locator("#cardDetailCard .attack-copy small").first().evaluate(n=>({whiteSpace:getComputedStyle(n).whiteSpace,overflow:getComputedStyle(n).overflow}));
        assert.equal(wrapping.whiteSpace,"normal");assert.equal(wrapping.overflow,"visible");

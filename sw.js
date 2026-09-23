@@ -1,11 +1,17 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v143";
+const CACHE_VERSION = "v144";
 const CACHE_PREFIX = "adventure-box-";
+// 큰 그림과 소리(삼국지 배경 200MB+, 저장한 이야기 오디오)는 배포 번호와 따로 둔다.
+// 배포마다 이 캐시를 버리면 기기가 236MB를 다시 받고, "여행 전에 이야기 저장"도 지워졌다.
+// 같은 이름의 그림·소리 파일을 새 내용으로 덮어썼을 때만 이 번호를 올린다.
+const MEDIA_REVISION = "r1";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-static`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-runtime`;
-const AUDIO_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}-audio`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}media-${MEDIA_REVISION}`;
+const AUDIO_CACHE = `${CACHE_PREFIX}audio-${MEDIA_REVISION}`;
+// 예전 배포 번호가 붙은 미디어 캐시. 지우기 전에 새 캐시로 옮겨 담는다.
+const LEGACY_MEDIA_CACHE = /^adventure-box-v\d+-(runtime|audio)$/;
 
 // Resolve every relative asset against this worker's directory. On GitHub Pages
 // that directory is the repository subpath, not the origin root.
@@ -1098,15 +1104,16 @@ async function staleWhileRevalidate(request, event) {
 async function cacheFirst(request, cacheName = RUNTIME_CACHE) {
   const cache = await openCacheSafely(cacheName);
   let cached = null;
-  if (cache) {
+  // 이번 배포의 정적 캐시가 오래 남는 미디어 캐시보다 먼저다. 설치 때 새로 받은 판이 이긴다.
+  if (cacheName !== STATIC_CACHE) {
+    cached = await matchCacheSafely(STATIC_CACHE, request);
+  }
+  if (!cached && cache) {
     try {
       cached = await cache.match(request, { ignoreVary: true });
     } catch (_) {
       cached = null;
     }
-  }
-  if (!cached && cacheName !== STATIC_CACHE) {
-    cached = await matchCacheSafely(STATIC_CACHE, request);
   }
   if (cached) return cached;
   const response = await fetch(request);
@@ -1161,8 +1168,9 @@ async function rangeResponse(fullResponse, rangeHeader) {
 async function cachedAudioResponse(url) {
   const request = new Request(url, { method: "GET", credentials: "same-origin" });
   // Praise MP3s are installed in the core static cache, including Safari ranges.
-  return await matchCacheSafely(AUDIO_CACHE, request)
-    || await matchCacheSafely(STATIC_CACHE, request);
+  // The static copy belongs to this deploy, so it wins over the long-lived audio cache.
+  return await matchCacheSafely(STATIC_CACHE, request)
+    || await matchCacheSafely(AUDIO_CACHE, request);
 }
 
 async function fetchWithTimeout(request, timeoutMs = AUDIO_FETCH_TIMEOUT_MS) {
@@ -1222,7 +1230,7 @@ async function handleGenericRangeRequest(request) {
   const rangeHeader = request.headers.get("Range");
   if (!rangeHeader || rangeHeader.includes(",")) return fetch(request);
   let cached = null;
-  for (const cacheName of [RUNTIME_CACHE, STATIC_CACHE, AUDIO_CACHE]) {
+  for (const cacheName of [STATIC_CACHE, RUNTIME_CACHE, AUDIO_CACHE]) {
     cached = await matchCacheSafely(cacheName, request);
     if (cached) break;
   }
@@ -1376,6 +1384,31 @@ async function writeBackgroundWarmupState(state) {
   );
 }
 
+// 예전 배포 번호 캐시에 받아 둔 그림·소리를 오래 남는 캐시로 옮긴다. 옮긴 것은 다시 받지 않는다.
+async function migrateLegacyMediaCaches(keys) {
+  const legacy = keys.filter((key) => LEGACY_MEDIA_CACHE.test(key));
+  for (const name of legacy) {
+    const kind = LEGACY_MEDIA_CACHE.exec(name)[1];
+    const target = await openCacheSafely(kind === "audio" ? AUDIO_CACHE : RUNTIME_CACHE);
+    const source = await openCacheSafely(name);
+    if (!target || !source) continue;
+    let requests = [];
+    try { requests = await source.keys(); } catch (_) { requests = []; }
+    for (const request of requests) {
+      if (new URL(request.url).pathname.includes("/__pwa/")) continue;
+      try {
+        if (await target.match(request, { ignoreVary: true })) continue;
+        const response = await source.match(request, { ignoreVary: true });
+        if (response && response.status === 200) await target.put(request, response);
+      } catch (_) {
+        // 저장 공간이 부족하면 옮기기를 멈춘다. 남은 것은 필요할 때 다시 받는다.
+        break;
+      }
+    }
+  }
+  return legacy.length;
+}
+
 async function performBackgroundWarmup() {
   const previous = await readBackgroundWarmupState();
   if (previous && previous.complete) {
@@ -1425,6 +1458,7 @@ if (typeof self !== "undefined" && typeof self.addEventListener === "function") 
     event.waitUntil((async () => {
       const current = new Set([STATIC_CACHE, RUNTIME_CACHE, AUDIO_CACHE]);
       const keys = await caches.keys();
+      await migrateLegacyMediaCaches(keys).catch(() => 0);
       await Promise.all(keys
         .filter((key) => key.startsWith(CACHE_PREFIX) && !current.has(key))
         .map((key) => caches.delete(key)));
@@ -1508,6 +1542,9 @@ if (typeof module !== "undefined" && module.exports) {
     STATIC_CACHE,
     RUNTIME_CACHE,
     AUDIO_CACHE,
+    MEDIA_REVISION,
+    LEGACY_MEDIA_CACHE,
+    migrateLegacyMediaCaches,
     CORE_SHELL,
     OPTIONAL_SHELL,
     APP_SHELL,

@@ -45,7 +45,7 @@ function instrument(html){
 (async()=>{
  runnerTests();
  for(const m of source.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))new vm.Script(m[1]);
- const errors=[],server=http.createServer((req,res)=>{res.setHeader('Content-Type','text/html; charset=utf-8');res.end(source);});
+ const errors=[],server=http.createServer((req,res)=>{const u=decodeURIComponent(new URL(req.url,'http://x').pathname);if(u==='/'||u==='/index.html'){res.setHeader('Content-Type','text/html; charset=utf-8');return res.end(source);}/* 게임 시간·배경음악 같은 공용 파일(../assets)은 사이트 뿌리에서 준다. */const hit=[root,site].map(dir=>path.resolve(dir,'.'+u)).find(f=>(f.startsWith(root+path.sep)||f.startsWith(site+path.sep))&&fs.existsSync(f)&&fs.statSync(f).isFile());if(!hit){res.statusCode=404;return res.end();}res.setHeader('Content-Type',{'.js':'text/javascript','.css':'text/css','.png':'image/png','.webp':'image/webp','.mp3':'audio/mpeg','.json':'application/json'}[path.extname(hit)]||'application/octet-stream');res.end(fs.readFileSync(hit));});
  await new Promise(r=>server.listen(0,'127.0.0.1',r));let browser;
  try{
   browser=await chromium.launch({headless:true});

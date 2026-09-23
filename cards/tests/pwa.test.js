@@ -114,9 +114,9 @@ test("all story episode mp3 files match the service worker fallback list", () =>
   }
 });
 
-test("cache generation v143 preserves exact v66 card assets and canonical navigation aliases", () => {
-  assert.equal(sw.CACHE_VERSION, "v143");
-  assert.match(sw.STATIC_CACHE, /^adventure-box-v143-/);
+test("cache generation v144 preserves exact v66 card assets and canonical navigation aliases", () => {
+  assert.equal(sw.CACHE_VERSION, "v144");
+  assert.match(sw.STATIC_CACHE, /^adventure-box-v144-/);
   const studioImages = fs.readdirSync(path.join(siteRoot, "princess/assets/studio-v3")).filter(name => /\.(webp|jpg)$/.test(name));
   assert.equal(studioImages.length, 95);
   for (const name of studioImages) assert.ok(sw.OPTIONAL_SHELL.includes("./princess/assets/studio-v3/" + name), name);
@@ -404,4 +404,66 @@ test("Avengers migrates the legacy child scope before its bundle and tombstones 
   const tombstone = fs.readFileSync(path.join(siteRoot, "avengers", "sw.js"), "utf8");
   assert.doesNotMatch(tombstone, /registration\.unregister|importScripts|caches\.|addEventListener\("fetch"/);
   assert.match(swSource, /key\.startsWith\(CACHE_PREFIX\)/);
+});
+
+test("big media and saved stories live in caches that survive a deploy", () => {
+  assert.match(sw.STATIC_CACHE, /^adventure-box-v144-static$/);
+  assert.equal(sw.RUNTIME_CACHE, "adventure-box-media-" + sw.MEDIA_REVISION);
+  assert.equal(sw.AUDIO_CACHE, "adventure-box-audio-" + sw.MEDIA_REVISION);
+  assert.doesNotMatch(sw.RUNTIME_CACHE, /v\d+/, "the media cache name must not carry the deploy number");
+  assert.doesNotMatch(sw.AUDIO_CACHE, /v\d+/, "saved stories must not carry the deploy number");
+  assert.ok(sw.LEGACY_MEDIA_CACHE.test("adventure-box-v143-runtime"));
+  assert.ok(sw.LEGACY_MEDIA_CACHE.test("adventure-box-v99-audio"));
+  assert.ok(!sw.LEGACY_MEDIA_CACHE.test("adventure-box-v143-static"));
+  assert.ok(!sw.LEGACY_MEDIA_CACHE.test(sw.RUNTIME_CACHE));
+});
+
+test("old deploy media is copied into the long-lived caches before it is deleted", async () => {
+  const originalCaches = global.caches;
+  const store = new Map();
+  const cacheFor = name => {
+    if (!store.has(name)) store.set(name, new Map());
+    const map = store.get(name);
+    return {
+      keys: async () => [...map.keys()].map(url => new Request(url)),
+      match: async request => map.has(request.url || request) ? map.get(request.url || request).clone() : undefined,
+      put: async (request, response) => { map.set(request.url || request, response); },
+    };
+  };
+  try {
+    global.caches = { open: async name => cacheFor(name) };
+    const oldRuntime = cacheFor("adventure-box-v143-runtime");
+    await oldRuntime.put(new Request("https://example.test/sanguo/art/far.png"), new Response("art", { status: 200 }));
+    await oldRuntime.put(new Request("https://example.test/__pwa/v143-warmup.json"), new Response("{}", { status: 200 }));
+    const oldAudio = cacheFor("adventure-box-v143-audio");
+    await oldAudio.put(new Request("https://example.test/story/audio/mermaid.mp3"), new Response("story", { status: 200 }));
+    const kept = cacheFor(sw.RUNTIME_CACHE);
+    await kept.put(new Request("https://example.test/sanguo/art/far.png"), new Response("newer", { status: 200 }));
+    const moved = await sw.migrateLegacyMediaCaches(["adventure-box-v143-static", "adventure-box-v143-runtime", "adventure-box-v143-audio", sw.RUNTIME_CACHE]);
+    assert.equal(moved, 2);
+    const media = store.get(sw.RUNTIME_CACHE), audio = store.get(sw.AUDIO_CACHE);
+    assert.equal(await media.get("https://example.test/sanguo/art/far.png").text(), "newer", "an existing copy is not overwritten");
+    assert.ok(!media.has("https://example.test/__pwa/v143-warmup.json"), "warmup bookkeeping is not carried over");
+    assert.equal(await audio.get("https://example.test/story/audio/mermaid.mp3").text(), "story", "saved stories survive the deploy");
+  } finally {
+    global.caches = originalCaches;
+  }
+});
+
+test("this deploy's static copy wins over an older long-lived media copy", async () => {
+  const originalCaches = global.caches;
+  const originalFetch = global.fetch;
+  try {
+    global.caches = {
+      open: async name => ({
+        match: async () => name === sw.STATIC_CACHE ? new Response("fresh", { status: 200 })
+          : name === sw.RUNTIME_CACHE ? new Response("old", { status: 200 }) : undefined,
+      }),
+    };
+    global.fetch = async () => { throw new Error("offline"); };
+    assert.equal(await (await sw.cacheFirst(new Request("https://example.test/assets/study/jaei.jpg"))).text(), "fresh");
+  } finally {
+    global.caches = originalCaches;
+    global.fetch = originalFetch;
+  }
 });

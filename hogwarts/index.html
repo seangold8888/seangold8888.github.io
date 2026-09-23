@@ -182,24 +182,6 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       pickButton.setAttribute('aria-label','지난번에 고른 영화 음악을 다시 켜요');
     }catch(_){}
   })();
-  /* default soundtrack: any theme.* the family drops into assets/music/
-     becomes the game's base music. Nothing is bundled into the HTML; the
-     LAN server streams it, and without the file the synth tunes play. */
-  (async()=>{
-    if(location.protocol==='file:')return;
-    for(const name of ['theme.mp3','theme.m4a','theme.wav','theme.ogg']){
-      try{
-        const r=await fetch('music/'+name,{method:'HEAD'});
-        if(!r.ok)continue;
-        if(customAudio)return;                       /* a picked track wins */
-        stopMusicClock();
-        customAudio=new Audio('music/'+name);customAudio.loop=true;customAudio.preload='auto';customAudio.volume=.34;
-        if(unlocked&&!S.muted)customAudio.play().catch(()=>{});
-        labelFor(name);
-        return;
-      }catch(_){}
-    }
-  })();
 })();
 
 </script>
