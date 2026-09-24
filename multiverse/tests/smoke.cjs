@@ -76,6 +76,47 @@ const out = fs.mkdtempSync(path.join(os.tmpdir(), "multiverse-"));
         await page.waitForSelector("#result:not([hidden])", { timeout: 5000 });
         await page.screenshot({ path: path.join(out, tag + "-result" + mission + ".png") });
       }
+      // 드론 비눗방울은 화면에 그려지고, 때리면 터진다. 새 무기(축구공·잠자리채)도 실제로 맞힌다.
+      const shots = await page.evaluate(() => {
+        const s = __MV.state; s.best = { "city:boss": 1 }; s.owned.push("weapon-ball", "weapon-net");
+        s.outfit[s.hero].weapon = "weapon-ball"; __MV.setState(s);
+        __MV.start(1, 0);
+        return true;
+      });
+      await page.waitForFunction(() => __MV.game && __MV.game.running, null, { timeout: 8000 });
+      const bubble = await page.evaluate(() => {
+        const g = __MV.game;
+        g.enemies.length = 0; g.cages.forEach(c => { c.freed = true; });
+        g.spawnT = 99; g.maxEnemies = 0;
+        const d = { kind: "enemy", type: "drone", def: __MV.data.ENEMIES.drone, x: 900, y: 640, z: 120, vx: 0, facing: -1, hp: 999, maxHp: 999, st: "windup", t: 0.59, cd: 0, flash: 0, slow: 0, kbx: 0, dmg: 5, dead: 0 };
+        g.enemies.push(d);
+        __MV.step(0.05);
+        const shot = g.shots.find(x => x.owner === "enemy");
+        if (!shot) return { made: false };
+        const info = { made: true, kind: shot.kind, type: shot.type };
+        // 주인공을 방울 앞에 세우고 때린다(드론은 치운다).
+        g.enemies.length = 0;
+        const p = g.player; p.x = shot.x - 60; p.y = shot.y; p.facing = 1; p.st = "idle";
+        window.dispatchEvent(new KeyboardEvent("keydown", { code: "KeyJ" }));
+        __MV.step(0.4);
+        info.popped = !g.shots.includes(shot);
+        // 축구공: 멀리 있는 적에게 날아가 맞힌다.
+        const target = { kind: "enemy", type: "tin", def: __MV.data.ENEMIES.tin, x: p.x + 500, y: p.y, z: 0, vx: 0, facing: -1, hp: 500, maxHp: 500, st: "walk", t: 0, cd: 9, flash: 0, slow: 0, kbx: 0, dmg: 1, dead: 0 };
+        g.enemies.push(target); p.st = "idle"; p.comboT = 0;
+        window.dispatchEvent(new KeyboardEvent("keydown", { code: "KeyJ" }));
+        __MV.step(0.2);
+        info.ball = g.shots.some(x => x.type === "ball") || target.hp < 500;
+        __MV.step(1);
+        info.ballHit = target.hp < 500;
+        return info;
+      });
+      console.log(tag, "bubble/ball", JSON.stringify(bubble));
+      assert.ok(bubble.made && bubble.kind === "shot" && bubble.type === "bubble", "드론이 비눗방울을 쏜다");
+      assert.ok(bubble.popped, "비눗방울은 때리면 터진다");
+      assert.ok(bubble.ball && bubble.ballHit, "불꽃 축구공이 날아가 맞힌다");
+      await page.screenshot({ path: path.join(out, tag + "-ball.png") });
+      await page.evaluate(() => { const g = __MV.game; g.time = 0; });
+      await page.waitForSelector("#result:not([hidden])", { timeout: 8000 });
       // 별을 넉넉히 주고 캡슐 → 옷장
       await page.evaluate(() => { const s = __MV.state; s.stars = 12; __MV.setState(s); });
       await page.locator("#goCapsule").click();

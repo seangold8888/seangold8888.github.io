@@ -84,7 +84,8 @@
   };
 
   // 꾸미기 조각. 캡슐은 아직 없는 것만 준다(같은 게 두 번 나오지 않는다).
-  // 무기는 공격 방식이 달라진다: 방패=밀어내기, 망치=충격파, 빛검=긴 베기, 거미줄=멀리 쏘기.
+  // 무기는 공격 방식이 달라진다: 방패=밀어내기, 망치=충격파, 빛검=긴 베기, 거미줄=멀리 쏘기,
+  // 잠자리채=넓게 휘둘러 느리게 만들기, 불꽃 축구공=세게 차서 멀리 날리기.
   var ITEMS = [
     { id: "cape-red", slot: "cape", name: "빨강 망토", color: "#ff4d5e" },
     { id: "cape-blue", slot: "cape", name: "파랑 망토", color: "#3f8cff" },
@@ -92,26 +93,42 @@
     { id: "cape-purple", slot: "cape", name: "보라 망토", color: "#9b5cff" },
     { id: "cape-rainbow", slot: "cape", name: "무지개 망토", color: "rainbow" },
     { id: "cape-star", slot: "cape", name: "별밤 망토", color: "#26306b", stars: true },
+    { id: "cape-green", slot: "cape", name: "숲 망토", color: "#3fbf6b" },
+    { id: "cape-pink", slot: "cape", name: "분홍 망토", color: "#ff7ec8" },
+    { id: "cape-silver", slot: "cape", name: "은빛 망토", color: "#c9d3e6", stars: true },
     { id: "mask-hero", slot: "mask", name: "영웅 마스크", color: "#1d2440" },
     { id: "mask-red", slot: "mask", name: "빨강 마스크", color: "#e2344a" },
     { id: "mask-gold", slot: "mask", name: "황금 마스크", color: "#f0b429" },
     { id: "mask-cat", slot: "mask", name: "고양이 마스크", color: "#ff8fc7", ears: true },
     { id: "mask-star", slot: "mask", name: "별 고글", color: "#58d6ff", goggle: true },
+    { id: "mask-bug", slot: "mask", name: "곤충 더듬이", color: "#2a2a3a", antenna: true },
+    { id: "mask-green", slot: "mask", name: "초록 마스크", color: "#2fae5a" },
     { id: "emblem-star", slot: "emblem", name: "별 마크", icon: "⭐" },
     { id: "emblem-heart", slot: "emblem", name: "하트 마크", icon: "💖" },
     { id: "emblem-bolt", slot: "emblem", name: "번개 마크", icon: "⚡" },
     { id: "emblem-spider", slot: "emblem", name: "거미 마크", icon: "🕷️" },
     { id: "emblem-crown", slot: "emblem", name: "왕관 마크", icon: "👑" },
     { id: "emblem-moon", slot: "emblem", name: "달 마크", icon: "🌙" },
+    { id: "emblem-bug", slot: "emblem", name: "장수풍뎅이 마크", icon: "🪲" },
+    { id: "emblem-ball", slot: "emblem", name: "축구공 마크", icon: "⚽" },
+    { id: "emblem-dino", slot: "emblem", name: "공룡 마크", icon: "🦖" },
+    { id: "emblem-butterfly", slot: "emblem", name: "나비 마크", icon: "🦋" },
+    { id: "emblem-fire", slot: "emblem", name: "불꽃 마크", icon: "🔥" },
+    { id: "emblem-rainbow", slot: "emblem", name: "무지개 마크", icon: "🌈" },
     { id: "weapon-shield", slot: "weapon", name: "별 방패", icon: "🛡️", kind: "shield" },
     { id: "weapon-hammer", slot: "weapon", name: "번개 망치", icon: "🔨", kind: "hammer" },
     { id: "weapon-blade", slot: "weapon", name: "빛검", icon: "⚔️", kind: "blade" },
     { id: "weapon-web", slot: "weapon", name: "거미줄 발사기", icon: "🕸️", kind: "web" },
+    { id: "weapon-net", slot: "weapon", name: "잠자리채", icon: "🦋", kind: "net" },
+    { id: "weapon-ball", slot: "weapon", name: "불꽃 축구공", icon: "⚽", kind: "ball" },
     { id: "fx-fire", slot: "fx", name: "불꽃 필살기", icon: "🔥", color: "#ff7a2f" },
     { id: "fx-ice", slot: "fx", name: "얼음 필살기", icon: "❄️", color: "#7fe3ff" },
     { id: "fx-thunder", slot: "fx", name: "번개 필살기", icon: "⚡", color: "#ffe45c" },
     { id: "fx-heart", slot: "fx", name: "하트 필살기", icon: "💗", color: "#ff7ec8" },
-    { id: "fx-galaxy", slot: "fx", name: "은하 필살기", icon: "🌌", color: "#b18cff" }
+    { id: "fx-galaxy", slot: "fx", name: "은하 필살기", icon: "🌌", color: "#b18cff" },
+    { id: "fx-leaf", slot: "fx", name: "나뭇잎 필살기", icon: "🍃", color: "#5ee07a" },
+    { id: "fx-sun", slot: "fx", name: "햇살 필살기", icon: "☀️", color: "#ffb347" },
+    { id: "fx-candy", slot: "fx", name: "사탕 필살기", icon: "🍭", color: "#ff9be0" }
   ];
 
   var SLOTS = [

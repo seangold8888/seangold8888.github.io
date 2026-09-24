@@ -186,6 +186,8 @@
     if (kind === "hammer") { p.reach = 128; p.dur = 0.32; p.hitAt = 0.14; p.dmg = 1.35; p.kb = 280; }
     if (kind === "blade") { p.reach = 180; p.dmg = 1.15; p.kb = 220; }
     if (kind === "web") { p.reach = 620; p.dmg = 0.9; p.kb = 90; p.ranged = true; }
+    if (kind === "net") { p.reach = 160; p.dmg = 1.05; p.kb = 140; p.slow = 1.2; }
+    if (kind === "ball") { p.reach = 700; p.dur = 0.3; p.hitAt = 0.12; p.dmg = 1.2; p.kb = 260; p.ranged = true; p.shot = "ball"; }
     return p;
   }
 
@@ -399,8 +401,9 @@
     var power = D.HEROES[h.kid].power * prof.dmg * (h.isPlayer ? 1 : 0.6) * (third ? 1.8 : 1);
     var fx = wearing(h.kid, "fx");
     if (prof.ranged) {
-      game.shots.push({ owner: "hero", from: h, x: h.x + h.facing * 60, y: h.y, z: 120, vx: h.facing * 950, vy: 0,
-        dmg: Math.round(power), life: 0.8, r: 40, kind: "web", big: third });
+      var ball = prof.shot === "ball";
+      game.shots.push({ owner: "hero", from: h, x: h.x + h.facing * 60, y: h.y, z: ball ? 40 : 120, vx: h.facing * (ball ? 1100 : 950), vy: 0,
+        dmg: Math.round(power), life: 0.8, r: 40, kind: "shot", type: ball ? "ball" : "web", big: third, slow: ball ? 0 : 1.5 });
       return;
     }
     var hits = 0;
@@ -410,7 +413,7 @@
       if (dx > -30 && dx < prof.reach + bw && dy < yr) {
         hits++;
         hurtTarget(t, Math.round(power), h, { big: third, kb: prof.kb * (third ? 1.8 : 1), breakGuard: third || prof.kind === "hammer",
-          slow: prof.kind === "web" ? 1.5 : 0, color: fx ? fx.color : null });
+          slow: prof.slow || 0, color: fx ? fx.color : null });
       }
     });
     if (prof.kind === "hammer" && third) {
@@ -541,7 +544,7 @@
       if (e.st === "windup" && e.t > 0.6) {
         var ang = Math.atan2((target.y - e.y) * 0.6, target.x - e.x);
         game.shots.push({ owner: "enemy", x: e.x + e.facing * 50, y: e.y, z: e.z - 20, vx: Math.cos(ang) * 260, vy: Math.sin(ang) * 160,
-          dmg: e.dmg, life: 3, r: 26, kind: "bubble", poppable: true, facing: 1 });
+          dmg: e.dmg, life: 3, r: 26, kind: "shot", type: "bubble", poppable: true, facing: 1 });
         e.st = "walk"; e.t = 0; e.cd = rand(2.2, 3);
       }
     } else {
@@ -719,7 +722,7 @@
       } else {
         targetsFor().forEach(function (t) {
           if (s.life > 0 && t.kind !== "shot" && Math.abs(t.x - s.x) < bodyWidth(t) + 30 && Math.abs(t.y - s.y) < (t.kind === "boss" ? 110 : 70)) {
-            s.life = 0; hurtTarget(t, s.dmg, s.from, { big: s.big, kb: 120, slow: 1.5, color: "#ffffff" });
+            s.life = 0; hurtTarget(t, s.dmg, s.from, { big: s.big, kb: s.type === "ball" ? 320 : 120, slow: s.slow, color: s.type === "ball" ? "#ff9a3c" : "#ffffff" });
           }
         });
       }
@@ -826,6 +829,16 @@
         g.beginPath(); g.moveTo(x + s[0] * mw * 0.22, y - h * 0.09); g.lineTo(x + s[0] * mw * 0.48, y - h * 0.19); g.lineTo(x + s[0] * mw * 0.5, y - h * 0.08); g.closePath(); g.fill();
       });
     }
+    if (mask.antenna) {
+      // 곤충 더듬이: 머리 위로 휘어진 두 줄과 끝 방울
+      g.strokeStyle = mask.color; g.lineWidth = h * 0.012; g.lineCap = "round";
+      [[-1], [1]].forEach(function (s) {
+        g.beginPath(); g.moveTo(x + s[0] * mw * 0.18, y - h * 0.08);
+        g.quadraticCurveTo(x + s[0] * mw * 0.5, y - h * 0.2, x + s[0] * mw * 0.7, y - h * 0.22); g.stroke();
+        g.fillStyle = "#ff5e7a"; g.beginPath(); g.arc(x + s[0] * mw * 0.7, y - h * 0.22, h * 0.02, 0, Math.PI * 2); g.fill();
+      });
+      return;
+    }
     if (mask.goggle) {
       g.strokeStyle = "#2a2140"; g.lineWidth = h * 0.012;
       g.beginPath(); g.moveTo(x - mw * 0.55, y); g.lineTo(x + mw * 0.55, y); g.stroke();
@@ -868,6 +881,18 @@
       g.strokeStyle = "#e9fbff"; g.lineWidth = h * 0.028; g.lineCap = "round";
       g.beginPath(); g.moveTo(0, 0); g.lineTo(h * 0.42, 0); g.stroke();
       g.shadowBlur = 0; g.fillStyle = "#555"; g.fillRect(-h * 0.05, -h * 0.02, h * 0.06, h * 0.04);
+    } else if (weapon.kind === "net") {
+      var an = pose === "attack" ? -0.3 : -1.2;
+      g.rotate(an);
+      g.strokeStyle = "#b07a3c"; g.lineWidth = h * 0.014; g.lineCap = "round";
+      g.beginPath(); g.moveTo(0, 0); g.lineTo(h * 0.36, 0); g.stroke();
+      g.strokeStyle = "#e8f6ff"; g.lineWidth = h * 0.01;
+      g.beginPath(); g.ellipse(h * 0.44, 0, h * 0.08, h * 0.06, 0, 0, Math.PI * 2); g.stroke();
+      g.fillStyle = "rgba(200,235,255,0.35)"; g.fill();
+    } else if (weapon.kind === "ball") {
+      g.fillStyle = "#ffffff"; g.strokeStyle = "#2a2140"; g.lineWidth = h * 0.008;
+      g.beginPath(); g.arc(h * 0.03, h * 0.05, h * 0.045, 0, Math.PI * 2); g.fill(); g.stroke();
+      g.fillStyle = "#2a2140"; g.beginPath(); g.arc(h * 0.03, h * 0.05, h * 0.015, 0, Math.PI * 2); g.fill();
     } else if (weapon.kind === "web") {
       g.fillStyle = "#e2344a"; g.beginPath(); g.arc(0, 0, h * 0.03, 0, Math.PI * 2); g.fill();
       g.strokeStyle = "#ffffff"; g.lineWidth = h * 0.006; g.beginPath(); g.arc(0, 0, h * 0.02, 0, Math.PI * 2); g.stroke();
@@ -1006,9 +1031,18 @@
       if (o.z < 30) { g.fillStyle = "rgba(255,230,120,0.25)"; g.beginPath(); g.ellipse(o.x, o.y, 26, 8, 0, 0, Math.PI * 2); g.fill(); }
       g.save(); g.translate(o.x, o.y - 26 - o.z); g.rotate(t * 2); g.globalAlpha = glow; star(g, 0, 0, 24, "#ffe45c"); g.restore(); g.globalAlpha = 1;
     } else if (o.kind === "shot") {
-      if (o.kind === "shot" && o.owner === "enemy") {
+      // 총알: bubble(드론 비눗방울, 때려서 터뜨림) · web(거미줄) · ball(불꽃 축구공)
+      if (o.type === "bubble") {
         g.fillStyle = "rgba(170,235,255,0.55)"; g.strokeStyle = "#ffffff"; g.lineWidth = 3;
         g.beginPath(); g.arc(o.x, o.y - o.z, o.r, 0, Math.PI * 2); g.fill(); g.stroke();
+      } else if (o.type === "ball") {
+        // 불꽃 축구공: 흰 공 + 주황 꼬리
+        var tail = g.createLinearGradient(o.x - Math.sign(o.vx) * 110, 0, o.x, 0);
+        tail.addColorStop(0, "rgba(255,120,40,0)"); tail.addColorStop(1, "rgba(255,150,50,0.9)");
+        g.fillStyle = tail; g.beginPath(); g.ellipse(o.x - Math.sign(o.vx) * 55, o.y - o.z, 60, 14, 0, 0, Math.PI * 2); g.fill();
+        g.fillStyle = "#ffffff"; g.strokeStyle = "#2a2140"; g.lineWidth = 3;
+        g.beginPath(); g.arc(o.x, o.y - o.z, 18, 0, Math.PI * 2); g.fill(); g.stroke();
+        g.fillStyle = "#2a2140"; g.beginPath(); g.arc(o.x, o.y - o.z, 6, 0, Math.PI * 2); g.fill();
       } else {
         g.strokeStyle = "#ffffff"; g.lineWidth = 3;
         g.beginPath(); g.moveTo(o.x - Math.sign(o.vx) * 80, o.y - o.z); g.lineTo(o.x, o.y - o.z); g.stroke();
