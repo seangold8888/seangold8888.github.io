@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#1b1640">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>재이와 태오의 멀티버스</title>
+<link rel="icon" href="../favicon.ico">
+<link rel="stylesheet" href="style.css?v=1">
+<script src="../assets/study/play-timer.js?v=1"></script>
+</head>
+<body>
+<canvas id="stage" aria-label="게임 화면"></canvas>
+
+<!-- 게임 중 조작: 왼쪽은 끌어서 이동, 오른쪽은 공격·필살기 -->
+<div id="controls" hidden>
+  <div id="stickZone" aria-label="끌어서 움직이기"><div id="stickBase"><div id="stickKnob"></div></div></div>
+  <button id="attackBtn" type="button" aria-label="공격">👊</button>
+  <button id="specialBtn" type="button" aria-label="필살기" disabled>💥</button>
+  <button id="pauseBtn" type="button" aria-label="잠깐 멈춤">⏸</button>
+</div>
+
+<!-- 첫 화면 -->
+<section id="home" class="screen">
+  <a class="back-hub" href="../game/">← 모험 상자</a>
+  <button id="muteBtn" class="corner-btn" type="button" aria-label="소리 끄고 켜기">🔊</button>
+  <h1>재이와 태오의<br><span>멀티버스</span></h1>
+  <p class="lead">누구로 출동할까?</p>
+  <div class="hero-pick">
+    <button class="hero-card" data-kid="jaei" type="button"><img src="art/jaei-idle.webp" alt=""><strong>재이</strong></button>
+    <button class="hero-card" data-kid="taeo" type="button"><img src="art/taeo-idle.webp" alt=""><strong>태오</strong></button>
+  </div>
+  <p class="buddy-note" id="buddyNote"></p>
+  <div class="home-actions">
+    <button id="goMap" class="big-btn primary" type="button">🚀 출동!</button>
+    <button id="goWardrobe" class="big-btn" type="button">👕 영웅 옷장</button>
+    <button id="goCapsule" class="big-btn" type="button">🎁 캡슐 <span id="starCount">⭐ 0</span></button>
+  </div>
+</section>
+
+<!-- 세계 지도 -->
+<section id="map" class="screen" hidden>
+  <div class="screen-top"><button class="back-btn" data-go="home" type="button">←</button><h2>어디로 갈까?</h2><span class="star-pill" id="mapStars">⭐ 0</span></div>
+  <div id="worldList" class="world-list"></div>
+</section>
+
+<!-- 미션 시작 알림 -->
+<section id="intro" class="screen dim" hidden>
+  <div class="intro-card">
+    <div class="intro-icon" id="introIcon"></div>
+    <h2 id="introTitle"></h2>
+    <p id="introGoal"></p>
+    <div class="intro-count" id="introCount"></div>
+  </div>
+</section>
+
+<!-- 결과 -->
+<section id="result" class="screen dim" hidden>
+  <div class="result-card">
+    <h2 id="resultTitle"></h2>
+    <div class="result-stars" id="resultStars"></div>
+    <p id="resultText"></p>
+    <div class="result-actions">
+      <button id="againBtn" class="big-btn" type="button">🔁 다시</button>
+      <button id="nextBtn" class="big-btn primary" type="button">다음 ▶</button>
+      <button id="resultCapsule" class="big-btn" type="button" hidden>🎁 캡슐 열기</button>
+      <button class="big-btn" data-go="map" type="button">🗺️ 지도</button>
+    </div>
+  </div>
+</section>
+
+<!-- 멈춤 -->
+<section id="pause" class="screen dim" hidden>
+  <div class="result-card">
+    <h2>잠깐 쉬는 중</h2>
+    <div class="result-actions">
+      <button id="resumeBtn" class="big-btn primary" type="button">▶ 계속</button>
+      <button id="quitBtn" class="big-btn" type="button">🗺️ 그만하기</button>
+    </div>
+  </div>
+</section>
+
+<!-- 영웅 옷장 -->
+<section id="wardrobe" class="screen" hidden>
+  <div class="screen-top"><button class="back-btn" data-go="home" type="button">←</button><h2>영웅 옷장</h2><span class="star-pill" id="wardrobeStars">⭐ 0</span></div>
+  <div class="wardrobe-body">
+    <div class="wardrobe-preview">
+      <div class="kid-tabs" id="kidTabs">
+        <button type="button" data-kid="jaei">재이</button>
+        <button type="button" data-kid="taeo">태오</button>
+      </div>
+      <canvas id="previewCanvas" width="520" height="620" aria-label="꾸민 영웅"></canvas>
+    </div>
+    <div class="wardrobe-items">
+      <div class="slot-tabs" id="slotTabs"></div>
+      <div class="item-grid" id="itemGrid"></div>
+      <p class="collect-count" id="collectCount"></p>
+    </div>
+  </div>
+</section>
+
+<!-- 캡슐 -->
+<section id="capsule" class="screen" hidden>
+  <div class="screen-top"><button class="back-btn" data-go="home" type="button">←</button><h2>캡슐 뽑기</h2><span class="star-pill" id="capsuleStars">⭐ 0</span></div>
+  <div class="capsule-stage">
+    <div class="capsule" id="capsuleBall"><span class="capsule-top"></span><span class="capsule-bottom"></span></div>
+    <div class="capsule-prize" id="capsulePrize" hidden><div class="prize-icon" id="prizeIcon"></div><strong id="prizeName"></strong></div>
+    <p id="capsuleHint"></p>
+    <div class="result-actions">
+      <button id="openCapsule" class="big-btn primary" type="button">🎁 열기 (⭐ 3)</button>
+      <button id="wearPrize" class="big-btn" type="button" hidden>👕 입혀 보기</button>
+    </div>
+  </div>
+</section>
+
+<script src="../assets/bgm/bgm-player.js?v=66"></script>
+<script src="data.js?v=1"></script>
+<script src="save.js?v=1"></script>
+<script src="game.js?v=1"></script>
+</body>
+</html>

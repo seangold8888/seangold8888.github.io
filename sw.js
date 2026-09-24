@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v144";
+const CACHE_VERSION = "v145";
 const CACHE_PREFIX = "adventure-box-";
 // 큰 그림과 소리(삼국지 배경 200MB+, 저장한 이야기 오디오)는 배포 번호와 따로 둔다.
 // 배포마다 이 캐시를 버리면 기기가 236MB를 다시 받고, "여행 전에 이야기 저장"도 지워졌다.
@@ -21,6 +21,15 @@ const workerScriptUrl = typeof self === "undefined"
 const SITE_ROOT_URL = new URL("./", workerScriptUrl);
 
 const CORE_SHELL = [
+  "./multiverse/",
+  "./multiverse/index.html",
+  "./multiverse/style.css?v=1",
+  "./multiverse/data.js?v=1",
+  "./multiverse/save.js?v=1",
+  "./multiverse/game.js?v=1",
+  "./multiverse/art/cover.webp",
+  "./multiverse/art/jaei-idle.webp",
+  "./multiverse/art/taeo-idle.webp",
   "./",
   "./index.html",
   // 허브(모험 상자)는 /game/ 에 있다. 뿌리 index.html 은 여기로 보내는 작은 페이지다.
@@ -594,6 +603,25 @@ const PRINCESS_STUDIO_ASSETS = Object.entries({
   `./princess/assets/studio-v3/${category}-${id}.${category === "bg" ? "jpg" : "webp"}`
 ));
 const OPTIONAL_SHELL = [
+  "./multiverse/art/bg-city.webp",
+  "./multiverse/art/bg-core.webp",
+  "./multiverse/art/bg-sky.webp",
+  "./multiverse/art/bg-web.webp",
+  "./multiverse/art/boss-golem.webp",
+  "./multiverse/art/boss-jaewing.webp",
+  "./multiverse/art/boss-mecha.webp",
+  "./multiverse/art/boss-spider.webp",
+  "./multiverse/art/enemy-drone.webp",
+  "./multiverse/art/enemy-shield.webp",
+  "./multiverse/art/enemy-tin.webp",
+  "./multiverse/art/jaei-attack.webp",
+  "./multiverse/art/jaei-hurt.webp",
+  "./multiverse/art/jaei-run.webp",
+  "./multiverse/art/jaei-special.webp",
+  "./multiverse/art/taeo-attack.webp",
+  "./multiverse/art/taeo-hurt.webp",
+  "./multiverse/art/taeo-run.webp",
+  "./multiverse/art/taeo-special.webp",
   "./math/party/",
   "./math/party/party.css?v=2",
   "./math/party/extra.css?v=1",
@@ -940,7 +968,7 @@ const BACKGROUND_WARM_CONCURRENCY = 2;
 const BACKGROUND_RETRY_MS = 5 * 60 * 1000;
 const AUDIO_FETCH_TIMEOUT_MS = 45000;
 const NAVIGATION_ROUTES = [
-  "game", "cards", "story", "avengers", "bori", "hogwarts", "kart", "kart3d",
+  "game", "cards", "story", "multiverse", "avengers", "bori", "hogwarts", "kart", "kart3d",
   "kedehun", "odyssey", "princess", "sanguo",
 ];
 

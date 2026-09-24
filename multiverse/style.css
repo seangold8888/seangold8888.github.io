@@ -1,0 +1,135 @@
+:root {
+  --ink: #fff8ea;
+  --night: #1b1640;
+  --panel: rgba(34, 26, 78, 0.92);
+  --line: rgba(255, 255, 255, 0.18);
+  --gold: #ffcf4a;
+  --gold-dark: #c9951a;
+  --pink: #ff7ec8;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--night); color: var(--ink);
+  font-family: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+  -webkit-user-select: none; user-select: none; touch-action: none; overscroll-behavior: none; }
+button { font: inherit; color: inherit; cursor: pointer; touch-action: manipulation; }
+[hidden] { display: none !important; }
+
+#stage { position: fixed; inset: 0; width: 100%; height: 100%; display: block; background: #120e2c; }
+
+/* 화면들 */
+.screen { position: fixed; inset: 0; z-index: 10; overflow-y: auto; padding: max(16px, env(safe-area-inset-top)) 16px 24px;
+  background: radial-gradient(circle at 50% 18%, #4a3aa0 0%, #241c5c 45%, #120e2c 100%); }
+.screen.dim { background: rgba(10, 8, 30, 0.72); display: grid; place-items: center; }
+h1 { margin: 34px 0 6px; text-align: center; font-size: clamp(30px, 6vw, 56px); line-height: 1.1;
+  text-shadow: 0 4px 0 #0d0a26, 0 0 24px #7f63ff; letter-spacing: -0.02em; }
+h1 span { color: var(--gold); }
+h2 { margin: 0; font-size: clamp(22px, 4vw, 32px); }
+.lead { text-align: center; font-size: 20px; margin: 6px 0 12px; opacity: 0.9; }
+.back-hub { position: absolute; left: 16px; top: max(16px, env(safe-area-inset-top)); color: var(--ink); text-decoration: none;
+  padding: 10px 14px; border-radius: 14px; background: rgba(255,255,255,0.1); font-weight: 700; }
+.corner-btn { position: absolute; right: 16px; top: max(16px, env(safe-area-inset-top)); border: 0; width: 48px; height: 48px;
+  border-radius: 14px; background: rgba(255,255,255,0.12); font-size: 22px; }
+
+.hero-pick { display: flex; justify-content: center; gap: clamp(12px, 4vw, 40px); margin: 8px auto; }
+.hero-card { position: relative; width: clamp(140px, 26vw, 230px); padding: 12px 10px 14px; border: 3px solid var(--line);
+  border-radius: 26px; background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04)); transition: transform .15s; }
+.hero-card img { display: block; width: 100%; height: clamp(170px, 30vw, 280px); object-fit: contain; filter: drop-shadow(0 10px 12px rgba(0,0,0,.45)); }
+.hero-card strong { display: block; margin-top: 6px; font-size: 26px; }
+.hero-card.is-on { border-color: var(--gold); background: linear-gradient(180deg, rgba(255,207,74,0.28), rgba(255,207,74,0.06));
+  transform: translateY(-6px) scale(1.03); box-shadow: 0 0 0 6px rgba(255,207,74,0.18); }
+.buddy-note { text-align: center; min-height: 24px; font-size: 17px; opacity: 0.85; margin: 6px 0; }
+.home-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 12px; }
+
+.big-btn { min-width: 150px; padding: 16px 22px; border: 0; border-radius: 20px; background: rgba(255,255,255,0.14);
+  font-size: 21px; font-weight: 800; box-shadow: 0 5px 0 rgba(0,0,0,0.35); }
+.big-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.35); }
+.big-btn.primary { background: var(--gold); color: #2a2140; box-shadow: 0 5px 0 var(--gold-dark); }
+.big-btn:disabled { opacity: 0.45; }
+
+.screen-top { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.screen-top h2 { flex: 1; }
+.back-btn { width: 52px; height: 52px; border: 0; border-radius: 16px; background: rgba(255,255,255,0.14); font-size: 24px; font-weight: 800; }
+.star-pill { padding: 8px 14px; border-radius: 999px; background: rgba(255,207,74,0.2); font-weight: 800; font-size: 19px; }
+
+/* 세계 지도 */
+.world-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.world { position: relative; overflow: hidden; min-height: 190px; border-radius: 24px; border: 2px solid var(--line);
+  background-size: cover; background-position: center; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; }
+.world::before { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,8,30,0.15), rgba(10,8,30,0.82)); }
+.world > * { position: relative; }
+.world h3 { margin: 0; font-size: 24px; text-shadow: 0 2px 6px #000; }
+.world.is-locked { filter: grayscale(0.9) brightness(0.6); }
+.missions { display: flex; gap: 8px; }
+.mission-btn { flex: 1; min-height: 76px; border: 0; border-radius: 16px; background: rgba(255,255,255,0.9); color: #2a2140;
+  font-weight: 800; font-size: 15px; display: grid; place-items: center; padding: 6px 4px; box-shadow: 0 4px 0 rgba(0,0,0,0.3); }
+.mission-btn .m-icon { font-size: 26px; line-height: 1; }
+.mission-btn .m-stars { font-size: 13px; letter-spacing: 1px; }
+.mission-btn:disabled { background: rgba(255,255,255,0.25); color: rgba(255,255,255,0.7); }
+
+/* 알림·결과 */
+.intro-card, .result-card { width: min(520px, 92vw); padding: 26px 22px; border-radius: 28px; background: var(--panel);
+  border: 2px solid var(--line); text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+.intro-icon { font-size: 64px; }
+.intro-card p { font-size: 20px; margin: 10px 0 0; }
+.intro-count { font-size: 64px; font-weight: 900; color: var(--gold); min-height: 76px; margin-top: 10px; }
+.result-stars { font-size: 58px; letter-spacing: 6px; margin: 12px 0; }
+.result-stars .off { filter: grayscale(1) opacity(0.3); }
+.result-stars span { display: inline-block; animation: pop .45s cubic-bezier(.2,1.6,.4,1) both; }
+.result-card p { font-size: 20px; }
+.result-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 16px; }
+@keyframes pop { from { transform: scale(0) rotate(-40deg); } to { transform: scale(1) rotate(0); } }
+
+/* 옷장 */
+.wardrobe-body { display: grid; grid-template-columns: minmax(240px, 0.9fr) 1.1fr; gap: 16px; align-items: start; }
+@media (max-width: 760px) { .wardrobe-body { grid-template-columns: 1fr; } }
+.wardrobe-preview { background: rgba(255,255,255,0.06); border-radius: 24px; padding: 10px; text-align: center; }
+#previewCanvas { width: 100%; max-width: 360px; height: auto; aspect-ratio: 520 / 620; }
+.kid-tabs, .slot-tabs { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.kid-tabs button, .slot-tabs button { border: 2px solid var(--line); background: rgba(255,255,255,0.08); border-radius: 999px;
+  padding: 9px 16px; font-size: 18px; font-weight: 800; }
+.kid-tabs button.is-on, .slot-tabs button.is-on { border-color: var(--gold); background: rgba(255,207,74,0.22); }
+.item-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; margin-top: 14px; }
+.item { min-height: 108px; border: 3px solid transparent; border-radius: 18px; background: rgba(255,255,255,0.1);
+  display: grid; place-items: center; padding: 8px 4px; font-weight: 700; font-size: 14px; }
+.item .i-icon { font-size: 36px; line-height: 1.1; }
+.item .swatch { width: 40px; height: 40px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.8); }
+.item.is-on { border-color: var(--gold); background: rgba(255,207,74,0.2); }
+.item.is-locked { opacity: 0.4; }
+.collect-count { text-align: center; opacity: 0.8; }
+
+/* 캡슐 */
+.capsule-stage { display: grid; justify-items: center; gap: 12px; padding-top: 10px; }
+.capsule { position: relative; width: 170px; height: 170px; }
+.capsule span { position: absolute; left: 0; width: 170px; height: 85px; border: 5px solid #fff; }
+.capsule-top { top: 0; border-radius: 85px 85px 0 0; background: linear-gradient(135deg, #ff7ec8, #9b5cff); border-bottom-width: 3px !important; }
+.capsule-bottom { bottom: 0; border-radius: 0 0 85px 85px; background: #fff8ea; border-top-width: 3px !important; }
+.capsule.is-shaking { animation: shake .5s ease-in-out 2; }
+.capsule.is-open .capsule-top { transform: translateY(-60px) rotate(-25deg); transition: transform .35s; }
+.capsule.is-open .capsule-bottom { transform: translateY(40px); opacity: 0; transition: .35s; }
+@keyframes shake { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-12deg); } 75% { transform: rotate(12deg); } }
+.capsule-prize { text-align: center; animation: pop .5s cubic-bezier(.2,1.6,.4,1) both; }
+.prize-icon { font-size: 82px; display: grid; place-items: center; min-height: 100px; }
+.prize-icon .swatch { width: 90px; height: 90px; border-radius: 50%; border: 5px solid #fff; }
+.capsule-prize strong { font-size: 28px; }
+#capsuleHint { font-size: 19px; min-height: 28px; text-align: center; }
+
+/* 조작 */
+#controls { position: fixed; inset: 0; z-index: 5; pointer-events: none; }
+#stickZone { position: absolute; left: 0; top: 18%; bottom: 0; width: 50%; pointer-events: auto; touch-action: none; }
+#stickBase { position: absolute; width: clamp(96px, 19vmin, 150px); height: clamp(96px, 19vmin, 150px); transform: translate(-50%, -50%); border-radius: 50%;
+  background: rgba(255,255,255,0.12); border: 3px solid rgba(255,255,255,0.35); left: clamp(80px, 16vmin, 130px); top: calc(100% - clamp(70px, 15vmin, 120px)); }
+#stickKnob { position: absolute; left: 50%; top: 50%; width: 46%; height: 46%; margin: -23% 0 0 -23%; border-radius: 50%;
+  background: rgba(255,255,255,0.6); box-shadow: 0 4px 12px rgba(0,0,0,0.35); }
+#attackBtn, #specialBtn { position: absolute; pointer-events: auto; border: 0; border-radius: 50%; font-size: 44px;
+  box-shadow: 0 6px 0 rgba(0,0,0,0.35); touch-action: none; }
+/* 아이패드는 크게, 폰 가로 화면은 화면 높이에 맞춰 줄인다. */
+#attackBtn { right: max(22px, env(safe-area-inset-right)); bottom: 3.5vh; width: clamp(78px, 17vmin, 132px); height: clamp(78px, 17vmin, 132px);
+  font-size: clamp(30px, 6vmin, 46px); background: rgba(255,207,74,0.92); }
+#specialBtn { right: calc(max(22px, env(safe-area-inset-right)) + clamp(90px, 19vmin, 148px)); bottom: 4.5vh;
+  width: clamp(64px, 13.5vmin, 106px); height: clamp(64px, 13.5vmin, 106px); font-size: clamp(26px, 5vmin, 40px);
+  background: rgba(255,126,200,0.35); color: rgba(255,255,255,0.5); }
+#specialBtn:not(:disabled) { background: #ff7ec8; color: #fff; animation: glow 0.9s ease-in-out infinite alternate; }
+#attackBtn.is-down, #specialBtn.is-down { transform: translateY(4px) scale(0.96); }
+@keyframes glow { from { box-shadow: 0 6px 0 rgba(0,0,0,.35), 0 0 0 0 rgba(255,126,200,.7); } to { box-shadow: 0 6px 0 rgba(0,0,0,.35), 0 0 0 18px rgba(255,126,200,0); } }
+#pauseBtn { position: absolute; pointer-events: auto; right: 14px; top: max(12px, env(safe-area-inset-top)); width: 52px; height: 52px;
+  border: 0; border-radius: 14px; background: rgba(0,0,0,0.35); font-size: 22px; }
