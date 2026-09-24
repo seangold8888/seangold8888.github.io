@@ -96,3 +96,11 @@
 - 숫자 허용어 one→1, five→5, too→to/two/2 추가.
 - 단어 발음 504개. 이번 372개 중 60개는 gemini-2.5-flash-preview-tts, 나머지는 gemini-3.1-flash-tts-preview로 10개씩 묶어 읽힌 뒤 침묵 구간에서 잘랐다(Leda 목소리). 잘린 수가 단어 수와 다르면 다시 요청했다. 표본은 gemini-flash-latest 받아쓰기로 확인했다.
 - 주의: TTS 미리보기 모델은 하루 100회 제한이 있다(09-19에 2.5-flash-preview-tts 소진). 대량 생성은 묶음으로 한다.
+
+## 소리 만들기 도구 (2026-09-25 Vertex로 옮김)
+
+제미나이 API 크레딧이 끝나 단어 클립·그림책 낭독은 `tools/vertex-tts.py`로 만든다(Vertex `gemini-2.5-flash-tts`, us-central1, 목소리 Leda, ADC 인증). 규격은 전과 같다: 앞뒤 무음 제거, loudnorm -16, 48kHz 모노 mp3(단어 40k, 낭독 48k). 제미나이 API의 하루 100회 한도가 없고 크레딧 프로젝트로 청구된다.
+
+- 단어: `python tools/vertex-tts.py word assets/study/words apple ball`
+- 그림책: `python tools/vertex-tts.py page` (없는 쪽만)
+- 확인: 새 apple 클립을 받아쓰기로 되돌려 "Apple" 확인(1.15초, 옛 클립 0.70초).

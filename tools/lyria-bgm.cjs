@@ -1,3 +1,4 @@
+// 옛 도구(제미나이 API 키). 크레딧이 끝나 2026-09-25부터 새 곡은 tools/vertex-lyria.py(Vertex lyria-002)를 쓴다.
 // Lyria 3.5로 게임 배경음악을 만든다. 사용법: node lyria.cjs <출력이름> "<프롬프트>"
 const fs=require("fs");
 const [,,name,prompt]=process.argv;
