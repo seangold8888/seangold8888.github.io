@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v147";
+const CACHE_VERSION = "v148";
 const CACHE_PREFIX = "adventure-box-";
 // 큰 그림과 소리(삼국지 배경 200MB+, 저장한 이야기 오디오)는 배포 번호와 따로 둔다.
 // 배포마다 이 캐시를 버리면 기기가 236MB를 다시 받고, "여행 전에 이야기 저장"도 지워졌다.
@@ -24,7 +24,7 @@ const CORE_SHELL = [
   "./multiverse/",
   "./multiverse/index.html",
   "./multiverse/style.css?v=2",
-  "./multiverse/data.js?v=2",
+  "./multiverse/data.js?v=3",
   "./multiverse/save.js?v=2",
   "./multiverse/game.js?v=2",
   "./multiverse/art/cover.webp",
@@ -603,12 +603,12 @@ const PRINCESS_STUDIO_ASSETS = Object.entries({
   `./princess/assets/studio-v3/${category}-${id}.${category === "bg" ? "jpg" : "webp"}`
 ));
 const OPTIONAL_SHELL = [
-  "./multiverse/art/yunchan-attack.webp",
+  "./multiverse/art/yunchan-attack.webp?v=2",
   "./multiverse/art/yunchan-hurt.webp",
   "./multiverse/art/yunchan-idle.webp",
   "./multiverse/art/yunchan-run.webp",
   "./multiverse/art/yunchan-special.webp",
-  "./multiverse/art/yungeon-attack.webp",
+  "./multiverse/art/yungeon-attack.webp?v=2",
   "./multiverse/art/yungeon-hurt.webp",
   "./multiverse/art/yungeon-idle.webp",
   "./multiverse/art/yungeon-run.webp",

@@ -65,7 +65,7 @@ test("모든 그림 파일이 있다", () => {
   Object.values(D.ENEMIES).forEach(e => files.push(e.src));
   Object.values(D.BOSSES).forEach(b => files.push(b.src));
   D.WORLDS.forEach(w => files.push(w.bg));
-  files.forEach(f => assert.ok(fs.existsSync(path.join(__dirname, "..", f)), f));
+  files.forEach(f => assert.ok(fs.existsSync(path.join(__dirname, "..", f.split("?")[0])), f));
 });
 
 test("사촌 넷 중 주인공과 동료를 고르고, 옛 저장도 새 아이 옷차림을 받는다", () => {

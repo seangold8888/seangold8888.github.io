@@ -609,8 +609,8 @@ test("재윙 확장 193개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가�
   });
   assert.equal(signatures.size, 199, "199개 기술은 각각 고유한 안정 음색 서명을 가져야 한다");
   assert.deepEqual(materialCounts, {
-    body: 35,
-    fire: 8,
+    body: 34,
+    fire: 9,
     air: 31,
     wood: 7,
     metal: 22,

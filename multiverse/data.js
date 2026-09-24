@@ -35,7 +35,7 @@
       poses: {
         idle:    { src: "art/yunchan-idle.webp",    head: [0.550, 0.250], chest: [0.500, 0.430], back: [0.200, 0.370], hand: [0.890, 0.330] },
         run:     { src: "art/yunchan-run.webp",     head: [0.640, 0.250], chest: [0.500, 0.430], back: [0.130, 0.360], hand: [0.920, 0.375] },
-        attack:  { src: "art/yunchan-attack.webp",  head: [0.390, 0.250], chest: [0.350, 0.430], back: [0.150, 0.360], hand: [0.820, 0.360] },
+        attack:  { src: "art/yunchan-attack.webp?v=2",  head: [0.460, 0.250], chest: [0.450, 0.440], back: [0.290, 0.370], hand: [0.680, 0.400] },
         special: { src: "art/yunchan-special.webp", head: [0.500, 0.240], chest: [0.500, 0.460], back: [0.320, 0.370], hand: [0.890, 0.140] },
         hurt:    { src: "art/yunchan-hurt.webp",    head: [0.420, 0.230], chest: [0.480, 0.430], back: [0.220, 0.360], hand: [0.690, 0.150] }
       } },
@@ -51,7 +51,7 @@
       poses: {
         idle:    { src: "art/yungeon-idle.webp",    head: [0.540, 0.240], chest: [0.500, 0.460], back: [0.260, 0.380], hand: [0.890, 0.360] },
         run:     { src: "art/yungeon-run.webp",     head: [0.570, 0.230], chest: [0.500, 0.460], back: [0.210, 0.380], hand: [0.910, 0.420] },
-        attack:  { src: "art/yungeon-attack.webp",  head: [0.420, 0.230], chest: [0.340, 0.460], back: [0.160, 0.380], hand: [0.860, 0.360] },
+        attack:  { src: "art/yungeon-attack.webp?v=2",  head: [0.480, 0.310], chest: [0.340, 0.500], back: [0.160, 0.470], hand: [0.470, 0.460] },
         special: { src: "art/yungeon-special.webp", head: [0.500, 0.240], chest: [0.500, 0.480], back: [0.380, 0.400], hand: [0.870, 0.160] },
         hurt:    { src: "art/yungeon-hurt.webp",    head: [0.440, 0.240], chest: [0.490, 0.460], back: [0.220, 0.390], hand: [0.770, 0.200] }
       } },
