@@ -32,7 +32,12 @@ const out = fs.mkdtempSync(path.join(os.tmpdir(), "multiverse-"));
       // 태오로 바꿔 보고 다시 재이
       await page.locator('.hero-card[data-kid="taeo"]').click();
       assert.equal(await page.evaluate(() => __MV.state.hero), "taeo");
-      await page.locator('.hero-card[data-kid="jaei"]').click();
+      await page.locator('.hero-card[data-kid="yunchan"]').click();
+      assert.equal(await page.evaluate(() => __MV.state.buddy), "yungeon", "윤찬의 짝꿍은 윤건");
+      await page.locator('.buddy-chip[data-kid="taeo"]').click();
+      assert.equal(await page.evaluate(() => __MV.state.buddy), "taeo");
+      assert.equal(await page.locator(".hero-card").count(), 4);
+      await page.screenshot({ path: path.join(out, tag + "-home4.png") });
       await page.locator("#goMap").click();
       assert.equal(await page.locator(".world").count(), 4);
       assert.equal(await page.locator(".mission-btn:not([disabled])").count(), 1, "처음엔 첫 미션만 열린다");

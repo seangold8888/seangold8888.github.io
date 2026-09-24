@@ -26,8 +26,20 @@
 
   // 영웅 그림의 기준점(그림 크기에 대한 비율). 발바닥 가운데가 서 있는 자리다.
   // head: 마스크(눈 높이), chest: 가슴 마크, back: 망토 붙는 어깨, hand: 무기 잡는 손.
+  // 사촌 넷: 윤찬 10세, 재이 8세, 윤건 7세, 태오 5세. scale은 화면 속 키(나이 차이).
+  var HERO_ORDER = ["yunchan", "jaei", "yungeon", "taeo"];
+  // 동료를 따로 고르지 않으면 짝꿍이 따라온다.
+  var BUDDY = { jaei: "taeo", taeo: "jaei", yunchan: "yungeon", yungeon: "yunchan" };
   var HEROES = {
-    jaei: { name: "재이", color: "#c79bff", hp: 120, speed: 330, power: 12,
+    yunchan: { name: "윤찬", age: 10, color: "#58c8ff", hp: 125, speed: 330, power: 13, scale: 1.06,
+      poses: {
+        idle:    { src: "art/yunchan-idle.webp",    head: [0.550, 0.250], chest: [0.500, 0.430], back: [0.200, 0.370], hand: [0.890, 0.330] },
+        run:     { src: "art/yunchan-run.webp",     head: [0.640, 0.250], chest: [0.500, 0.430], back: [0.130, 0.360], hand: [0.920, 0.375] },
+        attack:  { src: "art/yunchan-attack.webp",  head: [0.390, 0.250], chest: [0.350, 0.430], back: [0.150, 0.360], hand: [0.820, 0.360] },
+        special: { src: "art/yunchan-special.webp", head: [0.500, 0.240], chest: [0.500, 0.460], back: [0.320, 0.370], hand: [0.890, 0.140] },
+        hurt:    { src: "art/yunchan-hurt.webp",    head: [0.420, 0.230], chest: [0.480, 0.430], back: [0.220, 0.360], hand: [0.690, 0.150] }
+      } },
+    jaei: { name: "재이", age: 8, color: "#c79bff", hp: 120, speed: 330, power: 12, scale: 1,
       poses: {
         idle:    { src: "art/jaei-idle.webp",    head: [0.560, 0.165], chest: [0.510, 0.400], back: [0.320, 0.320], hand: [0.880, 0.280] },
         run:     { src: "art/jaei-run.webp",     head: [0.610, 0.175], chest: [0.520, 0.400], back: [0.250, 0.320], hand: [0.930, 0.330] },
@@ -35,7 +47,15 @@
         special: { src: "art/jaei-special.webp", head: [0.530, 0.195], chest: [0.500, 0.470], back: [0.380, 0.350], hand: [0.900, 0.100] },
         hurt:    { src: "art/jaei-hurt.webp",    head: [0.420, 0.175], chest: [0.500, 0.420], back: [0.260, 0.330], hand: [0.720, 0.120] }
       } },
-    taeo: { name: "태오", color: "#ff6b5b", hp: 110, speed: 350, power: 11,
+    yungeon: { name: "윤건", age: 7, color: "#ffb13b", hp: 115, speed: 355, power: 11, scale: 0.96,
+      poses: {
+        idle:    { src: "art/yungeon-idle.webp",    head: [0.540, 0.240], chest: [0.500, 0.460], back: [0.260, 0.380], hand: [0.890, 0.360] },
+        run:     { src: "art/yungeon-run.webp",     head: [0.570, 0.230], chest: [0.500, 0.460], back: [0.210, 0.380], hand: [0.910, 0.420] },
+        attack:  { src: "art/yungeon-attack.webp",  head: [0.420, 0.230], chest: [0.340, 0.460], back: [0.160, 0.380], hand: [0.860, 0.360] },
+        special: { src: "art/yungeon-special.webp", head: [0.500, 0.240], chest: [0.500, 0.480], back: [0.380, 0.400], hand: [0.870, 0.160] },
+        hurt:    { src: "art/yungeon-hurt.webp",    head: [0.440, 0.240], chest: [0.490, 0.460], back: [0.220, 0.390], hand: [0.770, 0.200] }
+      } },
+    taeo: { name: "태오", age: 5, color: "#ff6b5b", hp: 110, speed: 350, power: 11, scale: 0.92,
       poses: {
         idle:    { src: "art/taeo-idle.webp",    head: [0.550, 0.270], chest: [0.490, 0.480], back: [0.230, 0.420], hand: [0.890, 0.380] },
         run:     { src: "art/taeo-run.webp",     head: [0.550, 0.270], chest: [0.500, 0.480], back: [0.190, 0.420], hand: [0.900, 0.450] },
@@ -104,13 +124,15 @@
 
   // 처음에는 하나씩 주고 시작한다. 빈손이면 꾸미는 재미를 모른다.
   var STARTER = {
+    yunchan: { cape: "cape-blue", mask: null, emblem: "emblem-bolt", weapon: null, fx: "fx-ice" },
     jaei: { cape: "cape-purple", mask: null, emblem: "emblem-star", weapon: null, fx: "fx-heart" },
+    yungeon: { cape: "cape-gold", mask: null, emblem: "emblem-crown", weapon: null, fx: "fx-thunder" },
     taeo: { cape: "cape-red", mask: null, emblem: "emblem-bolt", weapon: null, fx: "fx-fire" }
   };
 
   window.MV_DATA = {
     MISSION_SECONDS: MISSION_SECONDS, CAPSULE_COST: CAPSULE_COST,
-    WORLDS: WORLDS, MISSIONS: MISSIONS, HEROES: HEROES, ENEMIES: ENEMIES, BOSSES: BOSSES,
+    WORLDS: WORLDS, MISSIONS: MISSIONS, HEROES: HEROES, HERO_ORDER: HERO_ORDER, BUDDY: BUDDY, ENEMIES: ENEMIES, BOSSES: BOSSES,
     ITEMS: ITEMS, SLOTS: SLOTS, STARTER: STARTER
   };
 })();

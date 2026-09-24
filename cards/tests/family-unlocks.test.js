@@ -15,7 +15,7 @@ function setup(initial={},opts={}){
 function stamps(n,start="2026-10-01"){return Object.fromEntries(Array.from({length:n},(_,i)=>[S.addDays(start,i),1]));}
 function state(days,problems){return JSON.stringify({stamps:stamps(days),garden:problems});}
 test("stronger family members require strictly more study days AND problems",()=>{
- assert.deepEqual(data.familyUnlockGoals,{appa:{studyDays:10,problems:100},eomma:{studyDays:15,problems:180},taeo:{studyDays:20,problems:260},jaei:{studyDays:30,problems:400}});
+ assert.deepEqual(data.familyUnlockGoals,{appa:{studyDays:10,problems:100},eomma:{studyDays:15,problems:180},taeo:{studyDays:20,problems:260},yunchan:{studyDays:12,problems:140},yungeon:{studyDays:8,problems:80},jaei:{studyDays:30,problems:400}});
  for(const [id,goal] of Object.entries(data.familyUnlockGoals)){
   for(const [days,count,expected] of [[goal.studyDays-1,goal.problems,false],[goal.studyDays,goal.problems-1,false],[goal.studyDays,goal.problems,true]]){
    const q=setup({math10_state:state(days,count)});
@@ -41,7 +41,9 @@ test("newly earned family ownership survives a break, reload and unavailable sto
 });
 test("legacy eligibility before rollout is preserved once, but a later 3/7-day streak is not a shortcut",()=>{
  const old=setup({math10_state:JSON.stringify({stamps:stamps(7,"2026-09-01"),planDays:7})});
- for(const id of Object.keys(data.familyUnlockGoals)) assert.equal(old.api.isUnlocked(old.card(id)),true,id);
+ for(const id of ["jaei","taeo","appa","eomma"]) assert.equal(old.api.isUnlocked(old.card(id)),true,id);
+ // 사촌은 롤아웃 뒤에 왔으니 옛 연속 기록으로 받지 않는다.
+ for(const id of ["yunchan","yungeon"]) assert.equal(old.api.isUnlocked(old.card(id)),false,id);
  assert.equal(JSON.parse(old.map.get(KEY)).unlocked.length,4);
  const fresh=setup({math10_state:JSON.stringify({stamps:stamps(7),planDays:7})});
  for(const id of Object.keys(data.familyUnlockGoals)) assert.equal(fresh.api.isUnlocked(fresh.card(id)),false,id);

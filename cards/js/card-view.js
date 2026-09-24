@@ -28,7 +28,7 @@
   // 수치가 바뀌면 검사 도구를 다시 돌리고 이 묶음도 함께 갱신한다.
   const BATTLE_TIERS = Object.freeze({
     S: new Set(["jaei", "taeo", "eomma", "appa", "jaewing", "scylla", "siren", "baigujing", "zhaoyun", "mermaid"]),
-    A: new Set(["jeongyakyong", "kimhongdo", "yugwansun", "perseus", "beanstalkgiant", "circe", "hades", "simayi"]),
+    A: new Set(["yunchan", "yungeon", "jeongyakyong", "kimhongdo", "yugwansun", "perseus", "beanstalkgiant", "circe", "hades", "simayi"]),
     B: new Set(["jangyeongsil", "heojun", "kimgu", "poseidon", "zhugeliang", "doctorwatson", "wumawang", "hydra", "redknot", "jack", "nezha", "heracles", "zeus", "erlangshen", "polyphemus", "atalanta", "helios", "tiger"]),
     C: new Set(["sejong", "shinsaimdang", "sseugumi", "zhangfei", "athena", "sunwukong", "ppungdetective", "wolf", "achilles", "kwonyul", "guanyu", "hermes", "sphinx", "witch", "prometheus", "honggildong", "starshield", "moriarty", "redhood", "ganggamchan", "odysseus", "euljimundeok", "apollo", "cinderella", "neonjumper", "arthur", "moonmoth", "threepigs", "thunderguard", "medusa", "theseus", "arsenelupin", "fairygodmother", "gearwing", "sherlockholmes", "tortoisehare", "yisunshin", "pinocchio", "orpheus"]),
     D: new Set(["midas", "snowqueen", "honghaier", "cerberus", "bremen", "caocao", "artemis", "minotaur", "walllizard", "genie"])
@@ -95,6 +95,7 @@
     baigujing: "50% 20%",
     jaei: "50% 24%",
     taeo: "50% 22%",
+    yunchan: "50% 30%", yungeon: "50% 30%",
     appa: "50% 20%",
     eomma: "50% 22%",
     yisunshin: "50% 20%",

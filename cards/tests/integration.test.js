@@ -171,9 +171,9 @@ test("손패·원정 UI와 캐시 버전 43이 함께 배포되도록 묶여 있
   ["fragmentTray", "fragmentHand", "fragmentPreview"].forEach((id) => {
     assert.match(html, new RegExp('id="' + id + '"'));
   });
-  assert.match(html, /styles\.css\?v=67/);
+  assert.match(html, /styles\.css\?v=68/);
   ["engine", "audio", "card-view", "vfx-recipes", "story-gates", "campaign", "campaign-ui", "combat-cinema", "app"].forEach((file) => {
-    assert.match(html, new RegExp("js/" + file + "\\.js\\?v=67"));
+    assert.match(html, new RegExp("js/" + file + "\\.js\\?v=68"));
   });
   assert.doesNotMatch(html, /\?v=(?:19|20|21|22|23|24|25|26|27|28|29|30|31)/);
 
@@ -573,7 +573,7 @@ test("재윙 확장 193개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가�
   const materialCounts = {};
   const signatures = new Set();
 
-  assert.equal(attacks.length, 193);
+  assert.equal(attacks.length, 199);
   attacks.forEach(({ card, cardType, attack }) => {
     assert.ok(attack.vfx, card + " / " + attack.name);
     assert.ok(attack.vfx.emoji, card + " / " + attack.name);
@@ -607,9 +607,9 @@ test("재윙 확장 193개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가�
     materialCounts[soundPlan.material] = (materialCounts[soundPlan.material] || 0) + 1;
     assert.ok(["brave", "wise", "magic", "monster"].includes(soundPlan.type));
   });
-  assert.equal(signatures.size, 193, "193개 기술은 각각 고유한 안정 음색 서명을 가져야 한다");
+  assert.equal(signatures.size, 199, "199개 기술은 각각 고유한 안정 음색 서명을 가져야 한다");
   assert.deepEqual(materialCounts, {
-    body: 30,
+    body: 35,
     fire: 8,
     air: 31,
     wood: 7,
@@ -618,7 +618,7 @@ test("재윙 확장 193개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가�
     paper: 21,
     hollow: 7,
     glass: 2,
-    crystal: 33,
+    crystal: 34,
     earth: 16,
     flick: 2,
     belch: 1,
@@ -627,14 +627,14 @@ test("재윙 확장 193개 기술은 §9의 6종 VFX 매핑을 빠짐없이 가�
   });
 
   assert.deepEqual(counts, {
-    strike: 43,
-    burst: 45,
-    debuff: 29,
-    projectile: 36,
+    strike: 45,
+    burst: 47,
+    debuff: 30,
+    projectile: 37,
     aura: 30,
     summon: 10
   });
-  assert.equal(attacks.filter(({ attack }) => attack.vfx.big).length, 68);
+  assert.equal(attacks.filter(({ attack }) => attack.vfx.big).length, 70);
 
   const redhood = data.cards.find((card) => card.id === "redhood");
   assert.deepEqual(redhood.attacks[0].vfx, {

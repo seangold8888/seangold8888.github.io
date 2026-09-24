@@ -14,7 +14,7 @@ const server=http.createServer((req,res)=>{
  try{
   const expedition=await browser.newContext({viewport:{width:820,height:1180},serviceWorkers:"block",reducedMotion:"reduce"});
   const battle=await expedition.newPage();
-  await battle.goto(base+"/cards/");await battle.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===85);
+  await battle.goto(base+"/cards/");await battle.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===87);
   assert.match(await battle.locator('#collectionGrid [data-card-id="jaei"]').getAttribute("class"),/is-locked/);
   await battle.locator("#campaignButton").click();await battle.locator(".expedition-map-footer .primary-button").click();
   for(let i=0;i<20 && await battle.locator(".expedition-scene").isVisible();i++)await battle.locator(".expedition-scene .primary-button").click();
@@ -27,7 +27,7 @@ const server=http.createServer((req,res)=>{
   for(const viewport of [{width:820,height:1180},{width:1180,height:820},{width:390,height:844}]){
    const context=await browser.newContext({viewport,reducedMotion:"reduce"}),page=await context.newPage(),errors=[];
    page.on("pageerror",e=>errors.push(String(e)));
-   await page.goto(base+"/cards/");await page.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===85);
+   await page.goto(base+"/cards/");await page.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===87);
    assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.card_family_unlocks_v1).unlocked),[]);
    await page.locator('#collectionGrid [data-card-id="jaei"]').click();
    assert.match(await page.locator("#cardDetailStatus").innerText(),/30일.*400문제/);
@@ -38,13 +38,13 @@ const server=http.createServer((req,res)=>{
    await page.waitForFunction(()=>navigator.serviceWorker.controller,null,{timeout:60000});
    await page.waitForFunction(async name=>(await caches.keys()).includes(name),SW.STATIC_CACHE);
    await context.setOffline(true);
-   for(const [id,goal] of Object.entries(data.familyUnlockGoals)){
+   for(const [id,goal] of Object.entries(data.familyUnlockGoals).sort((a,b)=>a[1].studyDays-b[1].studyDays)){ // 약한 목표부터: 앞 단계 기록이 뒤 카드를 미리 열지 않게
     for(const [days,problems,locked] of [[goal.studyDays-1,goal.problems,true],[goal.studyDays,goal.problems-1,true],[goal.studyDays,goal.problems,false]]){
      await page.evaluate(({days,problems})=>{
       const stamps={};for(let i=0;i<days;i++){const d=new Date();d.setDate(d.getDate()-i*2);const date=[d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");stamps[date]=1;}
       localStorage.setItem("math10_state",JSON.stringify({stamps,garden:problems}));
      },{days,problems});
-     await page.reload();await page.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===85);
+     await page.reload();await page.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===87);
      await page.locator('#collectionGrid [data-card-id="'+id+'"]').click();
      assert.equal(await page.locator("#detailSelectButton").isDisabled(),locked,id);
      if(locked)assert.match(await page.locator("#detailUnlockLink").getAttribute("href"),/math/);
@@ -53,7 +53,7 @@ const server=http.createServer((req,res)=>{
     }
    }
    await page.evaluate(()=>localStorage.setItem("math10_state","{}"));await page.reload();
-   await page.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===85);
+   await page.waitForFunction(()=>document.querySelectorAll(".card-gallery-item").length===87);
    for(const id of Object.keys(data.familyUnlockGoals))assert.doesNotMatch(await page.locator('#collectionGrid [data-card-id="'+id+'"]').getAttribute("class"),/is-locked/);
    assert.deepEqual(errors,[]);
    await context.close();console.log("PASS",viewport,"goals, AND thresholds, skipped days, permanent ownership and offline");

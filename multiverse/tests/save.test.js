@@ -67,3 +67,15 @@ test("모든 그림 파일이 있다", () => {
   D.WORLDS.forEach(w => files.push(w.bg));
   files.forEach(f => assert.ok(fs.existsSync(path.join(__dirname, "..", f)), f));
 });
+
+test("사촌 넷 중 주인공과 동료를 고르고, 옛 저장도 새 아이 옷차림을 받는다", () => {
+  assert.equal(D.HERO_ORDER.join(","), "yunchan,jaei,yungeon,taeo");
+  const old = S.normalise({ version: 1, stars: 4, owned: [], outfit: { jaei: {}, taeo: {} }, best: {}, hero: "taeo" }, D);
+  assert.equal(old.hero, "taeo");
+  assert.equal(old.buddy, "jaei", "동료를 고른 적 없으면 짝꿍");
+  assert.ok(old.outfit.yunchan && old.outfit.yungeon, "새로 온 아이도 처음 옷을 입는다");
+  const picked = S.normalise(Object.assign({}, old, { hero: "yunchan", buddy: "taeo" }), D);
+  assert.equal(picked.buddy, "taeo");
+  const same = S.normalise(Object.assign({}, old, { hero: "yungeon", buddy: "yungeon" }), D);
+  assert.equal(same.buddy, "yunchan", "주인공과 같은 동료는 짝꿍으로 바꾼다");
+});

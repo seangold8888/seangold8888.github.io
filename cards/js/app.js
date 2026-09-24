@@ -45,6 +45,7 @@
   let familyLedger = null;
   const FAMILY_UNLOCK_KEY = "card_family_unlocks_v1";
   const FAMILY_MIGRATION_DAY = "2026-09-13";
+  const LEGACY_FAMILY = ["jaei", "taeo", "appa", "eomma"];
   let battleCards = [];
   let fragments = [];
   let selectedCard = null;
@@ -269,7 +270,8 @@
       const previousDates=Object.keys(stamps).filter(date=>stamps[date] &&
         /^\d{4}-\d{2}-\d{2}$/.test(date) && date<=FAMILY_MIGRATION_DAY &&
         addCalendarDays(date,0)===date).sort().reverse();
-      cards.filter(familyGoal).forEach(card => {
+      // 옛 연속 조건은 롤아웃 때 있던 가족 넷에게만 있었다. 뒤에 온 사촌(윤찬·윤건)은 새 목표로만 얻는다.
+      cards.filter(card => familyGoal(card) && LEGACY_FAMILY.includes(card.id)).forEach(card => {
         if (card.unlock && previousDates.some(date=>isGameDone(card.unlock.slice(5),date))) familyLedger.unlocked.push(card.id);
       });
       saveFamilyLedger();

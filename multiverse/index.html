@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>재이와 태오의 멀티버스</title>
 <link rel="icon" href="../favicon.ico">
-<link rel="stylesheet" href="style.css?v=1">
+<link rel="stylesheet" href="style.css?v=2">
 <script src="../assets/study/play-timer.js?v=1"></script>
 </head>
 <body>
@@ -27,11 +27,9 @@
   <button id="muteBtn" class="corner-btn" type="button" aria-label="소리 끄고 켜기">🔊</button>
   <h1>재이와 태오의<br><span>멀티버스</span></h1>
   <p class="lead">누구로 출동할까?</p>
-  <div class="hero-pick">
-    <button class="hero-card" data-kid="jaei" type="button"><img src="art/jaei-idle.webp" alt=""><strong>재이</strong></button>
-    <button class="hero-card" data-kid="taeo" type="button"><img src="art/taeo-idle.webp" alt=""><strong>태오</strong></button>
-  </div>
+  <div class="hero-pick" id="heroPick"></div>
   <p class="buddy-note" id="buddyNote"></p>
+  <div class="buddy-pick" id="buddyPick" aria-label="같이 갈 동료 고르기"></div>
   <div class="home-actions">
     <button id="goMap" class="big-btn primary" type="button">🚀 출동!</button>
     <button id="goWardrobe" class="big-btn" type="button">👕 영웅 옷장</button>
@@ -87,8 +85,6 @@
   <div class="wardrobe-body">
     <div class="wardrobe-preview">
       <div class="kid-tabs" id="kidTabs">
-        <button type="button" data-kid="jaei">재이</button>
-        <button type="button" data-kid="taeo">태오</button>
       </div>
       <canvas id="previewCanvas" width="520" height="620" aria-label="꾸민 영웅"></canvas>
     </div>
@@ -115,8 +111,8 @@
 </section>
 
 <script src="../assets/bgm/bgm-player.js?v=66"></script>
-<script src="data.js?v=1"></script>
-<script src="save.js?v=1"></script>
-<script src="game.js?v=1"></script>
+<script src="data.js?v=2"></script>
+<script src="save.js?v=2"></script>
+<script src="game.js?v=2"></script>
 </body>
 </html>

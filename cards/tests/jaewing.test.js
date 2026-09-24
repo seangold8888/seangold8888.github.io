@@ -4,7 +4,7 @@ const data=require("../cards.json"),E=require("../js/engine.js"),sw=require("../
 const sha=o=>crypto.createHash('sha256').update(JSON.stringify(o)).digest('hex');
 function runtime(file){const box={window:{},document:{hidden:false},localStorage:{getItem(){return null},setItem(){}},setTimeout,clearTimeout};box.Math=Object.create(Math);box.Math.random=()=>.25;vm.runInNewContext(fs.readFileSync(path.join(root,'js',file),'utf8'),box);return box.window;}
 test('Jaewing appends exactly one card and preserves all 84 existing cards and their order',()=>{
- assert.equal(data.cards.length,85);assert.equal(data.collection.length,85);assert.equal(data.cards.at(-1).id,'jaewing');assert.equal(data.collection.at(-1),'jaewing');
+ assert.equal(data.cards.length,87);assert.equal(data.collection.length,87);assert.equal(data.cards[84].id,'jaewing');assert.equal(data.collection[84],'jaewing');
  assert.equal(sha(data.cards.slice(0,84)),'10e78e90ad191f1206ceeb421c6aad61c643b775d366b112b8c143bd2b867c60');
  assert.equal(sha(data.collection.slice(0,84)),'c52eafbffcc49f068e5378763d301bd4551f6513242296a3a539b357f89f751f');
 });

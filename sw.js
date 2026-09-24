@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v146";
+const CACHE_VERSION = "v147";
 const CACHE_PREFIX = "adventure-box-";
 // 큰 그림과 소리(삼국지 배경 200MB+, 저장한 이야기 오디오)는 배포 번호와 따로 둔다.
 // 배포마다 이 캐시를 버리면 기기가 236MB를 다시 받고, "여행 전에 이야기 저장"도 지워졌다.
@@ -23,10 +23,10 @@ const SITE_ROOT_URL = new URL("./", workerScriptUrl);
 const CORE_SHELL = [
   "./multiverse/",
   "./multiverse/index.html",
-  "./multiverse/style.css?v=1",
-  "./multiverse/data.js?v=1",
-  "./multiverse/save.js?v=1",
-  "./multiverse/game.js?v=1",
+  "./multiverse/style.css?v=2",
+  "./multiverse/data.js?v=2",
+  "./multiverse/save.js?v=2",
+  "./multiverse/game.js?v=2",
   "./multiverse/art/cover.webp",
   "./multiverse/art/jaei-idle.webp",
   "./multiverse/art/taeo-idle.webp",
@@ -570,21 +570,21 @@ const CORE_SHELL = [
   "./story/english/books.js?v=2",
   "./cards/",
   "./cards/index.html",
-  "./cards/styles.css?v=67",
+  "./cards/styles.css?v=68",
   "./math/assets/jaei-family-v4.webp",
-  "./cards/campaign.css?v=67",
+  "./cards/campaign.css?v=68",
   "./cards/cards.json",
   "./assets/bgm/bgm-player.js?v=66",
   "./assets/study/play-timer.js?v=1",
-  "./cards/js/engine.js?v=67",
-  "./cards/js/audio.js?v=67",
-  "./cards/js/card-view.js?v=67",
-  "./cards/js/vfx-recipes.js?v=67",
-  "./cards/js/story-gates.js?v=67",
-  "./cards/js/campaign.js?v=67",
-  "./cards/js/campaign-ui.js?v=67",
-  "./cards/js/app.js?v=67",
-  "./cards/js/combat-cinema.js?v=67",
+  "./cards/js/engine.js?v=68",
+  "./cards/js/audio.js?v=68",
+  "./cards/js/card-view.js?v=68",
+  "./cards/js/vfx-recipes.js?v=68",
+  "./cards/js/story-gates.js?v=68",
+  "./cards/js/campaign.js?v=68",
+  "./cards/js/campaign-ui.js?v=68",
+  "./cards/js/app.js?v=68",
+  "./cards/js/combat-cinema.js?v=68",
 ];
 
 // Existing games are precached as best-effort shells. A missing optional asset
@@ -603,6 +603,16 @@ const PRINCESS_STUDIO_ASSETS = Object.entries({
   `./princess/assets/studio-v3/${category}-${id}.${category === "bg" ? "jpg" : "webp"}`
 ));
 const OPTIONAL_SHELL = [
+  "./multiverse/art/yunchan-attack.webp",
+  "./multiverse/art/yunchan-hurt.webp",
+  "./multiverse/art/yunchan-idle.webp",
+  "./multiverse/art/yunchan-run.webp",
+  "./multiverse/art/yunchan-special.webp",
+  "./multiverse/art/yungeon-attack.webp",
+  "./multiverse/art/yungeon-hurt.webp",
+  "./multiverse/art/yungeon-idle.webp",
+  "./multiverse/art/yungeon-run.webp",
+  "./multiverse/art/yungeon-special.webp",
   "./multiverse/art/bg-city.webp",
   "./multiverse/art/bg-core.webp",
   "./multiverse/art/bg-sky.webp",
@@ -988,7 +998,7 @@ const CARD_ART_FILES = [
   "gearwing", "starshield", "thunderguard", "redknot",
   "walllizard", "neonjumper", "moonmoth", "ppungdetective",
   "circe", "siren", "scylla", "helios",
-  "sseugumi", "jaewing",
+  "sseugumi", "jaewing", "yunchan", "yungeon",
   "sejong", "jangyeongsil", "heojun", "shinsaimdang",
   "jeongyakyong", "kimhongdo", "yugwansun", "kimgu",
 ].map((id) => `./cards/art/${id}.webp`);

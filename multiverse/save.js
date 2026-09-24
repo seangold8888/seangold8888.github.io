@@ -19,7 +19,7 @@
         if (id && owned.indexOf(id) < 0) owned.push(id);
       });
     });
-    return { version: 1, stars: 0, owned: owned, outfit: outfit, best: {}, hero: "jaei", capsules: 0 };
+    return { version: 1, stars: 0, owned: owned, outfit: outfit, best: {}, hero: "jaei", buddy: "taeo", capsules: 0 };
   }
 
   // 망가진 값은 버리고 쓸 수 있는 것만 남긴다. 아이 기기라 저장이 깨져도 게임은 떠야 한다.
@@ -54,7 +54,9 @@
         if (/^[a-z]+:[a-z]+$/.test(key) && Number.isInteger(v) && v >= 0 && v <= 3) out.best[key] = v;
       });
     }
-    if (raw.hero === "jaei" || raw.hero === "taeo") out.hero = raw.hero;
+    if (data.HEROES[raw.hero]) out.hero = raw.hero;
+    // 동료는 주인공과 다른 아이. 없거나 같으면 짝꿍으로.
+    out.buddy = data.HEROES[raw.buddy] && raw.buddy !== out.hero ? raw.buddy : data.BUDDY[out.hero];
     return out;
   }
 

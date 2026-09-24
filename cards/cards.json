@@ -8,6 +8,8 @@
     "appa": {"studyDays": 10, "problems": 100},
     "eomma": {"studyDays": 15, "problems": 180},
     "taeo": {"studyDays": 20, "problems": 260},
+    "yunchan": {"studyDays": 12, "problems": 140},
+    "yungeon": {"studyDays": 8, "problems": 80},
     "jaei": {"studyDays": 30, "problems": 400}
   },
   "collection": [
@@ -71,7 +73,7 @@
     "gearwing", "starshield", "thunderguard", "redknot",
     "walllizard", "neonjumper", "moonmoth", "ppungdetective",
     "circe", "siren", "scylla", "helios", "sseugumi",
-    "sejong", "jangyeongsil", "heojun", "shinsaimdang", "jeongyakyong", "kimhongdo", "yugwansun", "kimgu", "jaewing"
+    "sejong", "jangyeongsil", "heojun", "shinsaimdang", "jeongyakyong", "kimhongdo", "yugwansun", "kimgu", "jaewing", "yunchan", "yungeon"
   ],
   "types": {
     "brave": {
@@ -3151,6 +3153,8 @@
         {"name": "바이킹 그네 밀기", "cost": 4, "dmg": 80, "fx": null, "desc": "바이킹 그네를 힘껏 밀어 상대를 날려 버려요", "vfx": {"kind": "burst", "emoji": "🎢", "big": true}}
       ],
       "unlock": "game:math/streak7", "art": "art/jaewing.png", "stats": {"attack": 4, "defense": 4, "spirit": 4}
-    }
+    },
+    {"id": "yunchan", "name": "윤찬", "element": "metal", "type": "brave", "emoji": "⚽", "rarity": 3, "summonCost": 3, "hp": 120, "lore": "열 살 윤찬 형아예요. 축구장에서 번개처럼 달리고, 동생들을 챙기는 든든한 주장이에요.", "passive": {"name": "주장 완장", "fx": "no_weakness", "desc": "약점의 추가 피해 10을 받지 않아요"}, "attacks": [{"name": "번개 드리블", "cost": 1, "dmg": 20, "fx": null, "desc": "", "vfx": {"kind": "strike", "emoji": "⚽"}}, {"name": "헤딩 패스", "cost": 2, "dmg": 20, "fx": "gain_star_1", "desc": "별사탕 1개를 돌려받아요", "vfx": {"kind": "projectile", "emoji": "🥅"}}, {"name": "번개 슛", "cost": 3, "dmg": 60, "fx": null, "desc": "", "vfx": {"kind": "burst", "emoji": "⚡", "big": true}}], "unlock": "game:math/streak7", "art": "art/yunchan.png", "stats": {"attack": 5, "defense": 4, "spirit": 3}},
+    {"id": "yungeon", "name": "윤건", "element": "earth", "type": "brave", "emoji": "🦕", "rarity": 2, "summonCost": 3, "hp": 120, "lore": "일곱 살 윤건이는 공룡 탐험가예요. 손전등을 들고 동굴에서 아기 공룡 친구를 찾아냈어요.", "passive": {"name": "공룡 알 방패", "fx": "first_hit_zero", "desc": "처음 받는 공격 피해를 한 번 막아요"}, "attacks": [{"name": "손전등 번쩍", "cost": 1, "dmg": 10, "fx": "weaken_next_20", "desc": "상대의 다음 공격 피해를 20 줄여요", "vfx": {"kind": "debuff", "emoji": "🔦"}}, {"name": "아기 공룡 박치기", "cost": 2, "dmg": 30, "fx": null, "desc": "", "vfx": {"kind": "strike", "emoji": "🦕"}}, {"name": "티라노 으르렁", "cost": 3, "dmg": 50, "fx": "skip_next_enemy", "desc": "깜짝 놀란 상대는 다음 턴에 기술을 못 써요", "vfx": {"kind": "burst", "emoji": "🦖", "big": true}}], "unlock": "game:math/streak3", "art": "art/yungeon.png", "stats": {"attack": 4, "defense": 5, "spirit": 3}}
   ]
 }

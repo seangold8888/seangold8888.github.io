@@ -19,7 +19,8 @@
   function itemById(id) { return D.ITEMS.filter(function (it) { return it.id === id; })[0] || null; }
   function wearing(kid, slot) { var o = state.outfit[kid]; return o && o[slot] ? itemById(o[slot]) : null; }
   function persist() { Save.save(state); }
-  function other(kid) { return kid === "jaei" ? "taeo" : "jaei"; }
+  function other(kid) { return state.buddy && state.buddy !== kid ? state.buddy : D.BUDDY[kid]; }
+  function heroHeight(kid) { return HERO_H * (D.HEROES[kid].scale || 1); }
 
   var images = {};
   function image(src) {
@@ -224,6 +225,7 @@
       hitstop: 0, shake: 0, banner: null, clock: 0, won: false };
     var player = makeHero(state.hero, true, 360, 660);
     var buddy = makeHero(buddyKid, false, 240, 600);
+    player.maxHp = player.hp; buddy.maxHp = buddy.hp;
     game.heroes.push(player, buddy);
     game.player = player; game.buddy = buddy;
     if (mission.id === "rescue") {
@@ -960,14 +962,14 @@
       var bob = o.st === "idle" ? Math.sin(t * 4 + o.bob) * 3 : o.st === "run" ? Math.abs(Math.sin(t * 12 + o.bob)) * -8 : 0;
       var alpha = o.st === "rest" ? 0.55 : o.invul > 0 && Math.floor(t * 20) % 2 ? 0.55 : 1;
       var fx = wearing(o.kid, "fx");
-      drawHero(g, o.kid, pose, o.x, o.y + bob, HERO_H * s * (o.isPlayer ? 1 : 0.92), o.facing, state.outfit[o.kid], t,
+      drawHero(g, o.kid, pose, o.x, o.y + bob, heroHeight(o.kid) * s, o.facing, state.outfit[o.kid], t,
         { flash: o.flash, alpha: alpha, aura: o.st === "special" ? (fx ? fx.color : "#ffffff") : o.meter >= 100 && o.isPlayer ? "#ffd84a" : null });
       if (o.st === "attack") drawSwing(g, o, s);
       // 이름표
       g.font = "800 " + Math.round(20 * s) + "px system-ui"; g.textAlign = "center";
       g.fillStyle = o.isPlayer ? "#ffd84a" : "#ffffff"; g.strokeStyle = "rgba(0,0,0,0.6)"; g.lineWidth = 5;
       var label = o.isPlayer ? "▼ " + D.HEROES[o.kid].name : D.HEROES[o.kid].name + (o.st === "rest" ? " 💤" : "");
-      var ly = o.y - HERO_H * s - 14;
+      var ly = o.y - heroHeight(o.kid) * s - 14;
       g.strokeText(label, o.x, ly); g.fillText(label, o.x, ly);
     } else if (o.kind === "enemy") {
       var hgt = o.def.size * s;
@@ -1107,15 +1109,38 @@
   function paintStars() {
     ["starCount", "mapStars", "wardrobeStars", "capsuleStars"].forEach(function (id) { $(id).textContent = "⭐ " + state.stars; });
   }
+  // 네 명 중 주인공 한 명, 동료 한 명을 고른다. 주인공을 바꾸면 동료는 짝꿍으로 돌아간다.
   function paintHome() {
     paintStars();
-    document.querySelectorAll(".hero-card").forEach(function (c) { c.classList.toggle("is-on", c.getAttribute("data-kid") === state.hero); });
-    $("buddyNote").textContent = D.HEROES[other(state.hero)].name + "는 컴퓨터 동료로 같이 싸워요!";
+    var pickBox = $("heroPick"), buddyBox = $("buddyPick");
+    pickBox.replaceChildren(); buddyBox.replaceChildren();
+    D.HERO_ORDER.forEach(function (kid) {
+      var def = D.HEROES[kid];
+      var card = document.createElement("button");
+      card.type = "button"; card.className = "hero-card" + (kid === state.hero ? " is-on" : "");
+      card.setAttribute("data-kid", kid);
+      card.setAttribute("aria-pressed", String(kid === state.hero));
+      var img = document.createElement("img"); img.src = def.poses.idle.src; img.alt = "";
+      var name = document.createElement("strong"); name.textContent = def.name;
+      var age = document.createElement("small"); age.textContent = def.age + "살";
+      card.append(img, name, age);
+      card.addEventListener("click", function () {
+        state.hero = kid; state.buddy = D.BUDDY[kid]; persist(); paintHome(); Sfx.coin();
+      });
+      pickBox.appendChild(card);
+      if (kid === state.hero) return;
+      var chip = document.createElement("button");
+      chip.type = "button"; chip.className = "buddy-chip" + (kid === other(state.hero) ? " is-on" : "");
+      chip.setAttribute("data-kid", kid);
+      var face = document.createElement("img"); face.src = def.poses.idle.src; face.alt = "";
+      var label = document.createElement("span"); label.textContent = def.name;
+      chip.append(face, label);
+      chip.addEventListener("click", function () { state.buddy = kid; persist(); paintHome(); Sfx.coin(); });
+      buddyBox.appendChild(chip);
+    });
+    $("buddyNote").textContent = "같이 갈 동료: " + D.HEROES[other(state.hero)].name + " (컴퓨터가 조종해요)";
     $("muteBtn").textContent = muted ? "🔇" : "🔊";
   }
-  document.querySelectorAll(".hero-card").forEach(function (c) {
-    c.addEventListener("click", function () { state.hero = c.getAttribute("data-kid"); persist(); paintHome(); Sfx.coin(); });
-  });
   $("goMap").addEventListener("click", function () { showScreen("map"); });
   $("goWardrobe").addEventListener("click", function () { wardrobeKid = state.hero; showScreen("wardrobe"); });
   $("goCapsule").addEventListener("click", function () { showScreen("capsule"); });
@@ -1207,7 +1232,15 @@
   var pctx = $("previewCanvas").getContext("2d");
   function paintWardrobe() {
     paintStars();
-    document.querySelectorAll("#kidTabs button").forEach(function (b) { b.classList.toggle("is-on", b.getAttribute("data-kid") === wardrobeKid); });
+    var kidTabs = $("kidTabs");
+    kidTabs.replaceChildren();
+    D.HERO_ORDER.forEach(function (kid) {
+      var b = document.createElement("button"); b.type = "button"; b.setAttribute("data-kid", kid);
+      b.textContent = D.HEROES[kid].name;
+      b.classList.toggle("is-on", kid === wardrobeKid);
+      b.addEventListener("click", function () { wardrobeKid = kid; paintWardrobe(); });
+      kidTabs.appendChild(b);
+    });
     var tabs = $("slotTabs");
     tabs.replaceChildren();
     D.SLOTS.forEach(function (s) {
@@ -1244,9 +1277,6 @@
     sw.style.background = it.color === "rainbow" ? "linear-gradient(135deg,#ff5e7a,#ffe45c,#5ee07a,#58b8ff,#9b5cff)" : it.color;
     return sw;
   }
-  document.querySelectorAll("#kidTabs button").forEach(function (b) {
-    b.addEventListener("click", function () { wardrobeKid = b.getAttribute("data-kid"); paintWardrobe(); });
-  });
   function renderPreview(t) {
     var c = $("previewCanvas");
     pctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -1255,7 +1285,7 @@
     grd.addColorStop(0, "rgba(255,207,74,0.35)"); grd.addColorStop(1, "rgba(255,207,74,0)");
     pctx.fillStyle = grd; pctx.fillRect(0, 0, c.width, c.height);
     pctx.fillStyle = "rgba(0,0,0,0.3)"; pctx.beginPath(); pctx.ellipse(260, 590, 120, 22, 0, 0, Math.PI * 2); pctx.fill();
-    drawHero(pctx, wardrobeKid, "idle", 260, 588 + Math.sin(t * 3) * 4, 540, 1, state.outfit[wardrobeKid], t, {});
+    drawHero(pctx, wardrobeKid, "idle", 260, 588 + Math.sin(t * 3) * 4, 540 * Math.min(1, (D.HEROES[wardrobeKid].scale || 1) / 1.06), 1, state.outfit[wardrobeKid], t, {});
   }
 
   // ---------- 캡슐 ----------

@@ -30,11 +30,17 @@ h2 { margin: 0; font-size: clamp(22px, 4vw, 32px); }
 .corner-btn { position: absolute; right: 16px; top: max(16px, env(safe-area-inset-top)); border: 0; width: 48px; height: 48px;
   border-radius: 14px; background: rgba(255,255,255,0.12); font-size: 22px; }
 
-.hero-pick { display: flex; justify-content: center; gap: clamp(12px, 4vw, 40px); margin: 8px auto; }
-.hero-card { position: relative; width: clamp(140px, 26vw, 230px); padding: 12px 10px 14px; border: 3px solid var(--line);
+.hero-pick { display: flex; justify-content: center; flex-wrap: wrap; gap: clamp(8px, 2.4vw, 22px); margin: 8px auto; }
+.hero-card { position: relative; width: clamp(118px, 20vw, 196px); padding: 10px 8px 12px; border: 3px solid var(--line);
   border-radius: 26px; background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04)); transition: transform .15s; }
-.hero-card img { display: block; width: 100%; height: clamp(170px, 30vw, 280px); object-fit: contain; filter: drop-shadow(0 10px 12px rgba(0,0,0,.45)); }
-.hero-card strong { display: block; margin-top: 6px; font-size: 26px; }
+.hero-card img { display: block; width: 100%; height: clamp(140px, 24vw, 240px); object-fit: contain; filter: drop-shadow(0 10px 12px rgba(0,0,0,.45)); }
+.hero-card strong { display: block; margin-top: 6px; font-size: 24px; }
+.hero-card small { display: block; font-size: 15px; opacity: 0.75; }
+.buddy-pick { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
+.buddy-chip { display: flex; align-items: center; gap: 8px; padding: 6px 16px 6px 6px; border: 2px solid var(--line); border-radius: 999px;
+  background: rgba(255,255,255,0.08); font-size: 18px; font-weight: 800; }
+.buddy-chip img { width: 44px; height: 44px; object-fit: cover; object-position: 50% 8%; border-radius: 50%; background: rgba(255,255,255,0.15); }
+.buddy-chip.is-on { border-color: #8fe6ff; background: rgba(143,230,255,0.2); }
 .hero-card.is-on { border-color: var(--gold); background: linear-gradient(180deg, rgba(255,207,74,0.28), rgba(255,207,74,0.06));
   transform: translateY(-6px) scale(1.03); box-shadow: 0 0 0 6px rgba(255,207,74,0.18); }
 .buddy-note { text-align: center; min-height: 24px; font-size: 17px; opacity: 0.85; margin: 6px 0; }
