@@ -83,7 +83,7 @@ function ending() {
     const finalPages=Number(await page.locator(".expedition-scene").getAttribute("data-page-count"));
     for(let i=0;i<finalPages;i++)await page.locator(".expedition-scene .primary-button").click();
     assert.equal(await page.evaluate(()=>JSON.parse(localStorage.card_campaign).ending),1);
-    await page.locator(".expedition-map-footer .primary-button").click();
+    await page.locator(".expedition-map-footer button", {hasText: "친구가 된 카드"}).click();
     await page.locator('#collectionGrid [data-card-id="sseugumi"]').click();
     assert.ok(await page.locator("#cardDetailDialog").isVisible());
     await page.locator("#cardDetailDialog").screenshot({path:path.join(output,"ipad-offline-sseugumi.png")});

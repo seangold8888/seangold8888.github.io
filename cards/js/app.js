@@ -288,6 +288,7 @@
   }
 
   function originalCardUnlocked(card) {
+    // ending은 끝낸 원정 수라 새 원정을 떠나도 줄지 않는다.
     if (card.id === "sseugumi") return Boolean(window.CardCampaign &&
       (window.CardCampaign.load().ending >= 1 || (campaignUi && campaignUi.hasRecruited(card.id))));
     if (campaignUi ? campaignUi.hasRecruited(card.id) : window.CardCampaign && window.CardCampaign.load().recruited.includes(card.id)) return true;
@@ -3344,7 +3345,9 @@
         // 이야기를 듣거나 수학을 해서 얻은 카드도 원정에 데려간다.
         ownedIds: function () {
           return battleCards.filter(isUnlocked).map(function (card) { return card.id; });
-        }});
+        },
+        // 새 원정으로 영입 목록이 비기 전에, 합류했던 카드를 영구 장부에 올려 둔다.
+        keepRecruits: function () { cards.forEach(isUnlocked); }});
       const requested = new URLSearchParams(location.search).get("card");
       selectedCard = cards.find(function (card) {
         return card.id === requested && isUnlocked(card) && isPlayableCard(card);

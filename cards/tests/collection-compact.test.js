@@ -244,11 +244,10 @@ test("양쪽 전투 카드가 같은 전투 정보 렌더러를 사용하고 카
   assert.match(app, /syncBattleCard\(dom\.enemyCardSlot/);
   assert.match(app, /CardView\.create\(side\.card, \{[\s\S]*?compact: true/);
   assert.match(viewSource, /else if \(options\.compact\) \{[\s\S]*?crown, facts, art/);
-  // 카드 자산 11개에 공용 배경음악 재생기가 같은 번호를 쓰고 있어 12개다.
-  assert.equal((html.match(/\?v=66/g) || []).length, 12);
+  assert.equal((html.match(/\?v=67/g) || []).length, 11);
   assert.match(html, /bgm-player\.js\?v=66/);
   assert.doesNotMatch(html, /\?v=(?:25|26|27|28|29|30|31)/);
-  assert.equal((sw.match(/\.\/cards\/[^"\n]+\?v=66/g) || []).length, 11);
+  assert.equal((sw.match(/\.\/cards\/[^"\n]+\?v=67/g) || []).length, 11);
 });
 
 test("오행 속성이 카드 클래스, 원화 배지와 접근성 이름에 함께 드러난다", () => {

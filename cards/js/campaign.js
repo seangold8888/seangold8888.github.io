@@ -315,9 +315,25 @@
     chapterAt(chapter);
     return partyPool(CHAPTERS.slice(0, chapter).map(row => row.recruit));
   }
-  function createProgress() {
-    return {version: 1, chapter: 0, stage: 0, party: STARTERS.slice(), resting: [],
-      recruited: [], cleared: [], ending: 0, endingScene: 0, phase: "intro", activeCard: null, battleSerial: 0};
+  // 원정 다시 하기(S4). run은 지금 몇 번째 원정인지, ending은 끝낸 원정 수다.
+  // 다시 떠나면 세계는 처음부터지만 끝낸 수(ending)는 남아 쓰구미 카드와 메달이 유지된다.
+  const MAX_RUN = 99;
+  function createProgress(run, ending) {
+    return {version: 1, run: run || 1, chapter: 0, stage: 0, party: STARTERS.slice(), resting: [],
+      recruited: [], cleared: [], ending: ending || 0, endingScene: 0, phase: "intro", activeCard: null, battleSerial: 0};
+  }
+  // 다시 하는 원정은 상대가 조금씩 튼튼해진다: 두 번째 +20%, 세 번째 +40%, 그 뒤로는 +60%.
+  function runHpBonus(hp, run) {
+    const step = Math.min(3, Math.max(0, (run || 1) - 1));
+    return Math.round(hp * 0.2 * step / 10) * 10;
+  }
+  function runMistakeRate(run) {
+    return Math.max(0.1, 0.3 - 0.1 * Math.max(0, (run || 1) - 1));
+  }
+  function startNewRun(progress) {
+    const done = normaliseProgress(progress, false);
+    if (done.phase !== "complete" || done.run >= MAX_RUN) return done;
+    return createProgress(done.run + 1, done.ending);
   }
   function uniqueStrings(value) {
     return Array.isArray(value) && value.every(item => typeof item === "string") && new Set(value).size === value.length;
@@ -330,9 +346,12 @@
         !Number.isSafeInteger(raw.ending) || raw.ending < 0 ||
         !uniqueStrings(raw.party) || !uniqueStrings(raw.resting) || !uniqueStrings(raw.recruited) ||
         !Array.isArray(raw.cleared)) return fresh;
-    // S4 will define repeat runs. In S1 an ending belongs to a finished run.
-    if (raw.ending > 0 && raw.chapter !== 7) return fresh;
-    const last = raw.chapter === 7 && raw.ending >= 1;
+    const run = raw.run === undefined ? 1 : raw.run;
+    if (!Number.isInteger(run) || run < 1 || run > MAX_RUN) return fresh;
+    // 원정 중에는 앞선 원정만 끝나 있다. 마지막 장을 끝내면 이번 원정도 끝낸 수에 든다.
+    const last = raw.chapter === 7 && raw.ending >= run;
+    if (!last && raw.ending !== run - 1) return fresh;
+    if (last && raw.ending !== run) return fresh;
     const cleared = Array.from({length: raw.chapter + (last ? 1 : 0)}, (_, i) => i);
     const recruited = cleared.map(i => CHAPTERS[i].recruit);
     if (JSON.stringify(raw.cleared) !== JSON.stringify(cleared) ||
@@ -355,7 +374,7 @@
         (last && endingScene !== 3)) return fresh;
     if (!Number.isSafeInteger(serial) || serial < 0 ||
         (phase === "battle" && (!raw.party.includes(raw.activeCard) || raw.resting.includes(raw.activeCard) || serial === 0))) return fresh;
-    return {version: 1, chapter: raw.chapter, stage: raw.stage, party: raw.party.slice(),
+    return {version: 1, run, chapter: raw.chapter, stage: raw.stage, party: raw.party.slice(),
       resting: raw.resting.slice(), recruited, cleared, ending: raw.ending, endingScene,
       phase: resume && phase === "battle" ? "encounter" : phase,
       activeCard: !resume && phase === "battle" ? raw.activeCard : null, battleSerial: serial};
@@ -449,7 +468,9 @@
     const source = cards.find(card => card.id === id) || (id === FINAL_BOSS.id ? FINAL_BOSS : null);
     if (!source) throw new Error("원정 카드 누락: " + id);
     const enemy = clone(source);
-    const bonus = options && Number.isFinite(options.hpBonus) ? options.hpBonus : row.hpBonuses[stage];
+    const run = options && Number.isInteger(options.run) ? options.run : 1;
+    const bonus = (options && Number.isFinite(options.hpBonus) ? options.hpBonus : row.hpBonuses[stage]) +
+      runHpBonus(source.hp, run);
     enemy.hp = Math.max(10, enemy.hp + bonus);
     // Final encounter only: the recruited card and FINAL_BOSS template stay unchanged.
     if (chapter === 7 && id === row.boss && id === "sseugumi") {
@@ -459,9 +480,10 @@
       });
     }
     return {card: enemy, boss: id === row.boss, hpBonus: bonus,
-      options: {aiMistakeRate: id === row.boss ? 0 : 0.3}};
+      options: {aiMistakeRate: id === row.boss ? 0 : runMistakeRate(run)}};
   }
   return Object.freeze({STORAGE_KEY, CHAPTERS, SCENES: ALL_SCENES, SCENE_PAGE_SIZE, ENDING, advanceEnding, FINAL_BOSS, createProgress,
     normaliseProgress, load, save, finishIntro, selectParty, availableParty,
-    beginBattle, finishBattle, finishChapter, encounter, encounterIds, candidatesForChapter, setOwned});
+    beginBattle, finishBattle, finishChapter, encounter, encounterIds, candidatesForChapter, setOwned,
+    startNewRun, runHpBonus, MAX_RUN});
 });

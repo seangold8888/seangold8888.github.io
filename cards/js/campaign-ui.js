@@ -47,12 +47,22 @@
       notice.hidden = C.save(progress);
       updateEntry();
     }
+    function runName(run) { return run > 1 ? run + "번째 원정" : "원정"; }
+    function medals() { return progress.ending > 0 ? " " + "🏅".repeat(Math.min(progress.ending, 5)) + (progress.ending > 5 ? "×" + progress.ending : "") : ""; }
     function updateEntry() {
       entry.textContent = progress.phase === "complete"
-        ? "원정 완료 · 모두 친구가 됐어요!"
-        : progress.battleSerial || progress.phase !== "intro"
-          ? "원정 이어서 · " + progress.chapter + "장"
-          : "원정 떠나기";
+        ? "원정 완료" + medals() + " · 다시 떠나기"
+        : progress.battleSerial || progress.phase !== "intro" || progress.chapter > 0
+          ? runName(progress.run) + " 이어서 · " + progress.chapter + "장"
+          : progress.run > 1 ? runName(progress.run) + " 떠나기" + medals() : "원정 떠나기";
+    }
+    // 새 원정 전에, 이번 원정에서 합류한 카드를 컬렉션 장부에 확실히 남긴다.
+    function newRun() {
+      if (typeof options.keepRecruits === "function") options.keepRecruits(progress.recruited.slice());
+      progress = C.startNewRun(progress);
+      selected = [];
+      persist();
+      resume();
     }
     function art(card, className) {
       const img = el("img", className);
@@ -76,7 +86,7 @@
       root.append(head);
     }
     function showMap() {
-      shell("쓰구미 대마왕을 잡아라", "재이와 태오의 이야기 원정");
+      shell("쓰구미 대마왕을 잡아라", progress.run > 1 ? "재이와 태오의 " + runName(progress.run) + " · 상대가 더 튼튼해요" + medals() : "재이와 태오의 이야기 원정" + medals());
       root.querySelector(".expedition-header button").replaceWith(button("← 카드 컬렉션", "ghost-button", options.onExit));
       const intro = el("div", "expedition-map-intro");
       intro.append(el("p", "", "장난에 걸린 세계를 되돌리고, 친구를 모아요."),
@@ -110,8 +120,11 @@
       root.append(intro, map);
       const foot = el("div", "expedition-map-footer");
       if (progress.phase === "complete") {
-        foot.append(el("strong", "", "쓰구미 대마왕도 우리 친구!"), el("p", "", "여덟 세계를 모두 되돌렸어요. 쓰구미 카드가 컬렉션에서 기다려요."),
-          button("친구가 된 카드 보러 가기", "primary-button", options.onExit));
+        const again = button("🔁 " + runName(progress.run + 1) + " 떠나기", "primary-button expedition-new-run", newRun);
+        again.disabled = progress.run >= C.MAX_RUN;
+        foot.append(el("strong", "", "쓰구미 대마왕도 우리 친구!" + medals()),
+          el("p", "", "여덟 세계를 모두 되돌렸어요. 쓰구미가 또 장난을 칠지 몰라요. 다시 떠나면 상대가 더 튼튼해지고, 모은 카드를 모두 데려갈 수 있어요."),
+          again, button("친구가 된 카드 보러 가기", "ghost-button", options.onExit));
       } else {
         const chapter = C.CHAPTERS[progress.chapter];
         foot.append(el("span", "", chapter.name + " · " + Math.min(progress.stage + 1, C.encounterIds(chapter.id).length) + "/" + C.encounterIds(chapter.id).length),
@@ -133,7 +146,7 @@
       const list = el("div", "expedition-opponents");
       list.setAttribute("aria-label", "이번 장의 상대와 보스");
       C.encounterIds(progress.chapter).forEach((id, stage) => {
-        const opponent = C.encounter(progress.chapter, stage, options.cards);
+        const opponent = C.encounter(progress.chapter, stage, options.cards, {run: progress.run});
         const item = el("div", "expedition-opponent-chip");
         item.append(el("small", "", opponent.boss ? "보스" : "상대 " + (stage + 1)),
           el("strong", "", opponent.card.name), el("span", "", elementInfo(opponent.card) + " · ♥ " + opponent.card.hp));
@@ -142,7 +155,7 @@
       return list;
     }
     function chapterOpponents() {
-      return C.encounterIds(progress.chapter).map((id, stage) => C.encounter(progress.chapter, stage, options.cards).card);
+      return C.encounterIds(progress.chapter).map((id, stage) => C.encounter(progress.chapter, stage, options.cards, {run: progress.run}).card);
     }
     function tierRank(card) {
       const tier = window.CardView.battleTier ? window.CardView.battleTier(card) : "";
@@ -286,6 +299,12 @@
       scene.querySelectorAll("img").forEach(img => img.addEventListener("click", advance));
       text.addEventListener("click", advance);
       const controls = el("div", "expedition-page-controls");
+      // 다시 하는 원정에서는 이미 들은 이야기를 건너뛸 수 있다. 결말은 건너뛰지 않는다.
+      if (progress.run > 1 && kind !== "ending") {
+        controls.append(button("이야기 건너뛰기 ⏭", "ghost-button expedition-skip", () => {
+          const callback = sceneDone; sceneKey = ""; sceneDone = null; callback();
+        }));
+      }
       const previous = button("← 이전 쪽", "ghost-button expedition-previous", () => {
         if (sceneLine > 0) {sceneLine -= pageSize; showScene(kind, done);}
       });
@@ -299,7 +318,7 @@
       root.append(scene);
     }
     function showEncounter() {
-      const opponent = C.encounter(progress.chapter, progress.stage, options.cards);
+      const opponent = C.encounter(progress.chapter, progress.stage, options.cards, {run: progress.run});
       shell("누가 나설까요?", progress.chapter + "장 · " + C.CHAPTERS[progress.chapter].name + " · " + (progress.stage + 1) + "/" + C.encounterIds(progress.chapter).length);
       const target = el("div", "expedition-target");
       target.append(art(opponent.card, "expedition-target-art"));

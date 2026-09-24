@@ -261,7 +261,9 @@ async function main() {
       assert.equal(await q.locator(".expedition-world:not(:disabled)").count(),0);
       console.log("CHECK S3 free battle",viewport);
       await q.screenshot({path:path.join(output,viewport.width+"-complete.png"),fullPage:true});
-      await q.locator(".expedition-map-footer .primary-button").click();
+      // 끝낸 뒤 첫 버튼은 "새 원정 떠나기"다. 컬렉션은 옆 버튼으로 간다.
+      assert.match(await q.locator(".expedition-new-run").innerText(),/2번째 원정/);
+      await q.locator(".expedition-map-footer button",{hasText:"친구가 된 카드"}).click();
       await q.locator('#collectionGrid [data-card-id="sseugumi"]').click();
       assert.ok(await q.locator("#cardDetailDialog").isVisible());
       await q.locator("#detailSelectButton").click();

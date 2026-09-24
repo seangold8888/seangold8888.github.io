@@ -294,3 +294,59 @@ test("collected cards widen the party pool without loosening anything else", () 
     Campaign.setOwned([]);
   }
 });
+
+function completeRun(progress) {
+  for (let chapter = 0; chapter < 8; chapter++) {
+    progress = Campaign.finishIntro(progress);
+    if (chapter) progress = Campaign.selectParty(progress, ["jaei", "taeo", "redhood"]);
+    for (const id of Campaign.encounterIds(chapter)) progress = resolve(progress, "jaei");
+    if (chapter === 7) for (let i = 0; i < 3; i++) progress = Campaign.advanceEnding(progress);
+    progress = Campaign.finishChapter(progress);
+  }
+  return progress;
+}
+
+test("a finished expedition can start again and keeps the count of finished runs", () => {
+  const first = completeRun(Campaign.createProgress());
+  assert.equal(first.phase, "complete");
+  assert.equal(first.run, 1);
+  assert.equal(first.ending, 1);
+  const second = Campaign.startNewRun(first);
+  assert.equal(second.run, 2);
+  assert.equal(second.ending, 1, "the finished run still counts, so the Sseugumi card stays");
+  assert.equal(second.chapter, 0);
+  assert.equal(second.phase, "intro");
+  assert.deepEqual(second.recruited, []);
+  const storage = memoryStorage();
+  Campaign.save(second, storage);
+  assert.deepEqual(Campaign.load(storage), second, "a second run survives a reload");
+  const again = completeRun(second);
+  assert.equal(again.phase, "complete");
+  assert.equal(again.run, 2);
+  assert.equal(again.ending, 2);
+});
+
+test("only a finished expedition can start again, and broken run counts reset", () => {
+  const midway = Campaign.finishIntro(Campaign.createProgress());
+  assert.deepEqual(Campaign.startNewRun(midway), midway);
+  assert.deepEqual(Campaign.normaliseProgress({...Campaign.createProgress(), run: 3, ending: 0}), Campaign.createProgress(),
+    "a third run must follow two finished runs");
+  assert.deepEqual(Campaign.normaliseProgress({...Campaign.createProgress(), run: 0}), Campaign.createProgress());
+  const old = {...Campaign.createProgress()};
+  delete old.run;
+  assert.equal(Campaign.normaliseProgress(old).run, 1, "saves from before replays are the first run");
+});
+
+test("later runs make opponents sturdier and more careful, up to a cap", () => {
+  const cards = require("../cards.json").cards;
+  const base = Campaign.encounter(1, 0, cards);
+  const two = Campaign.encounter(1, 0, cards, {run: 2});
+  const four = Campaign.encounter(1, 0, cards, {run: 4});
+  const nine = Campaign.encounter(1, 0, cards, {run: 9});
+  assert.ok(two.card.hp > base.card.hp);
+  assert.ok(four.card.hp > two.card.hp);
+  assert.equal(nine.card.hp, four.card.hp, "the bonus stops growing after the fourth run");
+  assert.ok(two.options.aiMistakeRate < base.options.aiMistakeRate);
+  assert.equal(Campaign.runHpBonus(100, 1), 0);
+  assert.equal(Campaign.runHpBonus(100, 2), 20);
+});

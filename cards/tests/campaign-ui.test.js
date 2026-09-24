@@ -142,8 +142,8 @@ test("S2 module and styles are cached exactly once and load before the app",()=>
   const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
   const sw=require("../../sw.js");
   for(const name of ["campaign.css","js/campaign.js","js/campaign-ui.js"]){
-    assert.equal(sw.CORE_SHELL.filter(item=>item==="./cards/"+name+"?v=66").length,1);
-    assert.ok(html.indexOf(name+"?v=66")<html.indexOf("js/app.js?v=66"));
+    assert.equal(sw.CORE_SHELL.filter(item=>item==="./cards/"+name+"?v=67").length,1);
+    assert.ok(html.indexOf(name+"?v=67")<html.indexOf("js/app.js?v=67"));
   }
 });
 
@@ -211,4 +211,30 @@ test("the recommend button fills three friends that suit the chapter",()=>{
   assert.equal(qa.find("expedition-go").disabled,false);
   qa.find("expedition-go").click();
   assert.deepEqual(qa.progress.party.slice().sort(),party.slice().sort());
+});
+
+test("a finished expedition offers a new run with medals, sturdier foes and a story skip",()=>{
+  let p=C.createProgress();
+  for(let chapter=0;chapter<8;chapter++){
+    p=C.finishIntro(p);
+    if(chapter)p=C.selectParty(p,["jaei","taeo","redhood"]);
+    for(const id of C.encounterIds(chapter)){p=C.beginBattle(p,"jaei");p=C.finishBattle(p,p.battleSerial,"player");}
+    if(chapter===7)for(let i=0;i<3;i++)p=C.advanceEnding(p);
+    p=C.finishChapter(p);
+  }
+  let kept=null;
+  const qa=setup(p);
+  qa.ui.showMap();
+  assert.match(qa.nodes.campaignButton.textContent,/🏅/);
+  const again=qa.find("expedition-new-run");
+  assert.match(again.textContent,/2번째 원정/);
+  again.click();
+  assert.equal(qa.progress.run,2);
+  assert.equal(qa.progress.ending,1);
+  assert.equal(qa.progress.chapter,0);
+  const skip=qa.find("expedition-skip");
+  assert.ok(skip,"second runs can skip the story they already heard");
+  const key=qa.find("expedition-scene").dataset.sceneKey;
+  skip.click();
+  assert.notEqual(qa.find("expedition-scene")?.dataset.sceneKey,key);
 });
