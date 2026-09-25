@@ -88,7 +88,7 @@ test("UI saves battle serial, ignores duplicate results and unlocks a recruit on
 test("S2 party offers starters and recruits when nothing else is collected, and records a lost card as resting",()=>{
   const qa=setup(chapterOne());qa.ui.resume();qa.scene();
   const choices=qa.find("expedition-candidates");
-  assert.deepEqual(choices.children.map(n=>n.dataset.cardId),["jaei","taeo","redhood"]);
+  assert.deepEqual(choices.children.map(n=>n.dataset.cardId),["jaei","taeo","yunchan","yungeon","redhood"]);
   choices.children.find(n=>n.dataset.cardId==="redhood").click();qa.find("expedition-go").click();
   qa.find("expedition-deploy").children.find(n=>n.dataset.cardId==="taeo").click();
   qa.ui.settle(qa.battle.serial,"enemy");qa.ui.resume();
@@ -142,15 +142,15 @@ test("S2 module and styles are cached exactly once and load before the app",()=>
   const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
   const sw=require("../../sw.js");
   for(const name of ["campaign.css","js/campaign.js","js/campaign-ui.js"]){
-    assert.equal(sw.CORE_SHELL.filter(item=>item==="./cards/"+name+"?v=69").length,1);
-    assert.ok(html.indexOf(name+"?v=69")<html.indexOf("js/app.js?v=69"));
+    assert.equal(sw.CORE_SHELL.filter(item=>item==="./cards/"+name+"?v=70").length,1);
+    assert.ok(html.indexOf(name+"?v=70")<html.indexOf("js/app.js?v=70"));
   }
 });
 
 test("collected cards join the expedition after the starters and recruits",()=>{
   const qa=setup(chapterOne(),["taeo","mermaid","zhangfei"]);qa.ui.resume();qa.scene();
   const choices=qa.find("expedition-candidates");
-  assert.deepEqual(choices.children.map(n=>n.dataset.cardId),["jaei","taeo","redhood","mermaid","zhangfei"],
+  assert.deepEqual(choices.children.map(n=>n.dataset.cardId),["jaei","taeo","yunchan","yungeon","redhood","mermaid","zhangfei"],
     "expedition friends first, then collected cards with the strongest tier in front");
   choices.children.filter(n=>["mermaid","zhangfei"].includes(n.dataset.cardId))
     .forEach(n=>assert.ok(walk(n).some(child=>child.textContent==="모은 카드"),n.dataset.cardId));

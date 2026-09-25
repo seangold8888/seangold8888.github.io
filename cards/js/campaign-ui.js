@@ -40,7 +40,7 @@
       C.setOwned(typeof options.ownedIds === "function" ? options.ownedIds() : []);
     }
     function expeditionFriends(chapter) {
-      return ["jaei", "taeo"].concat(C.CHAPTERS.slice(0, chapter).map(row => row.recruit));
+      return ["jaei", "taeo"].concat(chapter > 0 ? C.COUSINS : [], C.CHAPTERS.slice(0, chapter).map(row => row.recruit));
     }
     function persist() {
       syncOwned();

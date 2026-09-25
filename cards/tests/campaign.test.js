@@ -241,7 +241,7 @@ test("approved campaign balance rewards good counters, differentiates bosses and
   for (const row of final.rates) { assert.ok(row.averageActions<=26); assert.ok(row.p95Actions<=36); }
   assert.equal(report.pass, true, JSON.stringify(report.rows.filter(row => !row.pass)));
   assert.equal(report.rows.length, 29);
-  assert.equal(report.parties.reduce((sum, row) => sum + row.combinations, 0), 211);
+  assert.equal(report.parties.reduce((sum, row) => sum + row.combinations, 0), 491); // 1장부터 사촌 둘이 후보에 들어 조합이 늘었다.
   assert.ok(report.rows.some(row => row.best.rate === 1), "good counter choices may guarantee victory");
   for (const row of report.rows) {
     assert.equal(row.stalls, 0);
@@ -279,9 +279,10 @@ test("collected cards widen the party pool without loosening anything else", () 
     chapterOne = Campaign.finishChapter(resolve(chapterOne, "jaei"));
     chapterOne = Campaign.finishIntro(chapterOne);
     assert.equal(chapterOne.phase, "party");
-    assert.deepEqual(Campaign.candidatesForChapter(1), ["jaei", "taeo", "redhood"]);
+    assert.deepEqual(Campaign.candidatesForChapter(1), ["jaei", "taeo", "yunchan", "yungeon", "redhood"]);
+    assert.deepEqual(Campaign.candidatesForChapter(0), ["jaei", "taeo"], "cousins are lost in the prologue");
     Campaign.setOwned(["mermaid", "redhood", "", 7]);
-    assert.deepEqual(Campaign.candidatesForChapter(1), ["jaei", "taeo", "redhood", "mermaid"],
+    assert.deepEqual(Campaign.candidatesForChapter(1), ["jaei", "taeo", "yunchan", "yungeon", "redhood", "mermaid"],
       "an owned card is offered once, after the recruits");
     const joined = Campaign.selectParty(chapterOne, ["jaei", "taeo", "mermaid"]);
     assert.deepEqual(joined.party, ["jaei", "taeo", "mermaid"]);
@@ -289,7 +290,7 @@ test("collected cards widen the party pool without loosening anything else", () 
     assert.deepEqual(Campaign.selectParty(chapterOne, ["jaei", "taeo", "zeus"]), chapterOne,
       "a card that is neither recruited nor collected is still refused");
     Campaign.setOwned([]);
-    assert.deepEqual(Campaign.candidatesForChapter(1), ["jaei", "taeo", "redhood"]);
+    assert.deepEqual(Campaign.candidatesForChapter(1), ["jaei", "taeo", "yunchan", "yungeon", "redhood"]);
   } finally {
     Campaign.setOwned([]);
   }
