@@ -667,6 +667,11 @@ class InputBuffer {
     }
   }
   cancel(action, source) { this.heldMap.get(action)?.delete(source); this.attackSources.delete(source); }
+  // 한 손가락(또는 모든 터치)이 누르고 있던 것을 공격 발동 없이 모두 뗀다.
+  release(match) {
+    for (const set of this.heldMap.values()) for (const source of [...set]) if (match(source)) set.delete(source);
+    for (const source of [...this.attackSources.keys()]) if (match(source)) this.attackSources.delete(source);
+  }
   holdProgress(now) { return Math.max(0, ...[...this.attackSources.values()].map((press) => Math.min(1, (now - press.at) / .26))); }
   held(action) { return (this.heldMap.get(action)?.size ?? 0) > 0; }
   consume(action, now) {
@@ -1084,7 +1089,9 @@ class Game {
   toggleMute() { this.audio.toggle(); if (this.music && this.music.file) this.music.file.setMuted(this.audio.muted); this.publish(); }
 
   setAction(action, source, down) {
-    if (this.phase === 'playing') this.input.set(action, source, down, this.playTime);
+    // 손을 뗀 신호는 게임이 멈춰 있어도 받는다. 보스 등장 장면·일시정지 중에 뗀 왼쪽 버튼이
+    // 무시되면, 다시 시작했을 때 아무것도 안 눌러도 계속 왼쪽으로 걸어갔다(2026-09-25 루미).
+    if (this.phase === 'playing' || !down) this.input.set(action, source, down, this.playTime);
   }
 
   clearInput() { this.input.clear(); }
@@ -1102,7 +1109,7 @@ class Game {
         return;
       }
     }
-    if (this.phase !== 'playing') return;
+    if (this.phase !== 'playing' && down) return;
     if (down && !repeat) {
       if (code === 'Digit1') this.switchGuardian('lumi');
       if (code === 'Digit2') this.switchGuardian('mira');
@@ -1198,6 +1205,8 @@ class Game {
 
   loop(now) {
     if (this.disposed) return;
+    // 진행 ↔ 장면·일시정지·결과로 바뀔 때마다 눌림 기억을 비운다. 멈춘 사이 뗀 손가락이 남지 않게.
+    if (this.phase !== this.inputPhase) { this.input.clear(); this.inputPhase = this.phase; }
     this.lastFrame ||= now;
     const dt = Math.min(0.05, (now - this.lastFrame) / 1e3);
     this.lastFrame = now;
@@ -3750,6 +3759,25 @@ function fileToPortraitDataUrl(file, size = 320) {
   }
   ['touchLeft:left', 'touchJump:jump', 'touchRight:right', 'touchDash:dash', 'touchUlt:ultimate', 'touchAttack:attack']
     .forEach((pair) => { const [id, action] = pair.split(':'); bindTouch(id, action); });
+
+  // 아이패드는 버튼을 누른 채 손가락이 화면 모서리로 미끄러지면(홈 제스처 등) 뗀 신호를 안 보낼 때가 있다.
+  // 그러면 왼쪽이 눌린 채 남아 아무것도 안 눌러도 계속 걸어갔다(2026-09-25 루미). 두 겹으로 막는다.
+  function releaseTouch(match) {
+    game?.input.release(match);
+    document.querySelectorAll('.touch-button.pressed').forEach((b) => b.classList.remove('pressed'));
+  }
+  // ① 버튼 밖에서 끝난 손가락도 그 손가락이 누른 것을 뗀다. 버블 단계라 버튼 자신의 처리(톡 공격)가 먼저 끝난다.
+  ['pointerup', 'pointercancel'].forEach((type) => window.addEventListener(type, (ev) => {
+    if (ev.pointerType === 'touch') game?.input.release((source) => source === 'touch:' + ev.pointerId);
+  }));
+  // ② 화면에 손가락이 하나도 남지 않으면 터치로 누른 것은 전부 뗀 것이다.
+  //    버튼의 뗌 처리가 먼저 끝나도록 잠깐 기다리고, 그사이 새 손가락이 닿았으면 건드리지 않는다.
+  let fingers = 0;
+  document.addEventListener('touchstart', (ev) => { fingers = ev.touches.length; }, { capture: true, passive: true });
+  ['touchend', 'touchcancel'].forEach((type) => document.addEventListener(type, (ev) => {
+    fingers = ev.touches.length;
+    if (fingers === 0) setTimeout(() => { if (fingers === 0) releaseTouch((source) => source.startsWith('touch:')); }, 60);
+  }, { capture: true, passive: true }));
 
   function focusDialog(menuEl) {
     requestAnimationFrame(() => {
