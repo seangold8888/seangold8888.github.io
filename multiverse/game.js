@@ -163,6 +163,22 @@
   }
   zone.addEventListener("pointerup", stickEnd);
   zone.addEventListener("pointercancel", stickEnd);
+  zone.addEventListener("lostpointercapture", stickEnd);
+  // 아이패드는 손가락이 화면 모서리로 미끄러지면(홈 제스처 등) 뗀 신호를 안 보낼 때가 있다.
+  // 케데헌에서 그 때문에 주인공이 혼자 걸어갔다(2026-09-25). 막대기가 끌린 채 남지 않게 두 겹으로 막는다.
+  function resetStick() { stick.id = null; stick.x = 0; stick.y = 0; knob.style.transform = ""; }
+  window.addEventListener("pointerup", stickEnd);
+  window.addEventListener("pointercancel", stickEnd);
+  var fingers = 0;
+  document.addEventListener("touchstart", function (e) { fingers = e.touches.length; }, { capture: true, passive: true });
+  ["touchend", "touchcancel"].forEach(function (type) {
+    document.addEventListener(type, function (e) {
+      fingers = e.touches.length;
+      if (fingers === 0) setTimeout(function () { if (fingers === 0) resetStick(); }, 60);
+    }, { capture: true, passive: true });
+  });
+  // 창을 벗어나면 눌린 키도 잊는다.
+  window.addEventListener("blur", function () { keys = {}; resetStick(); });
   function holdButton(el, onPress) {
     el.addEventListener("pointerdown", function (e) {
       Sfx.unlock(); e.preventDefault();
@@ -1128,6 +1144,8 @@
   var screens = ["home", "map", "intro", "result", "pause", "wardrobe", "capsule"];
   function showScreen(id, keepGame) {
     screens.forEach(function (s) { $(s).hidden = s !== id; });
+    // 화면이 바뀌면(멈춤·결과·지도) 끌던 막대기와 눌린 키를 놓는다.
+    resetStick(); keys = {};
     if (!keepGame && id && id !== "pause" && id !== "result" && id !== "intro") {
       game = null; $("controls").hidden = true;
     }

@@ -111,6 +111,22 @@ const out = fs.mkdtempSync(path.join(os.tmpdir(), "multiverse-"));
         return info;
       });
       console.log(tag, "bubble/ball", JSON.stringify(bubble));
+      // 막대기를 끄는 중에 뗌 신호를 놓쳐도(아이패드 모서리 제스처) 손가락이 다 떨어지면 멈춘다.
+      const stuck = await page.evaluate(async () => {
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        const zone = document.getElementById("stickZone"), r = zone.getBoundingClientRect();
+        const x = r.left + 120, y = r.bottom - 120;
+        zone.dispatchEvent(new PointerEvent("pointerdown", { pointerId: 31, pointerType: "touch", clientX: x, clientY: y, bubbles: true, cancelable: true }));
+        zone.dispatchEvent(new PointerEvent("pointermove", { pointerId: 31, pointerType: "touch", clientX: x - 60, clientY: y, bubbles: true }));
+        await wait(80);
+        const p = __MV.game.player, held = p.st;
+        document.dispatchEvent(new TouchEvent("touchend", { touches: [], bubbles: true }));
+        await wait(150);
+        const x0 = p.x; __MV.step(0.5);
+        return { whileHeld: held, dx: Math.round(p.x - x0) };
+      });
+      console.log(tag, "stick", JSON.stringify(stuck));
+      assert.ok(Math.abs(stuck.dx) < 5, "막대기가 끌린 채 남으면 안 된다: " + stuck.dx);
       assert.ok(bubble.made && bubble.kind === "shot" && bubble.type === "bubble", "드론이 비눗방울을 쏜다");
       assert.ok(bubble.popped, "비눗방울은 때리면 터진다");
       assert.ok(bubble.ball && bubble.ballHit, "불꽃 축구공이 날아가 맞힌다");
