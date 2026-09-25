@@ -4,6 +4,9 @@
   // 카드 → 해금 이야기(에피소드 id). 문제는 이 이야기의 오디오 내용만 묻는다.
   const cardStories = Object.freeze({
     jaewing: "legend:jaewing",
+    taeppul: "legend:taeppul",
+    chanppul: "legend:chanppul",
+    geonppul: "legend:geonppul",
     sejong: "legend:sejong",
     jangyeongsil: "legend:jangyeongsil",
     heojun: "legend:heojun",
@@ -1016,6 +1019,25 @@
     question("jaewing-tap", "jaewing", "별사탕 1개로 쓸 수 있는 기술은?", [["yes","코딱지 튕기기"],["no","구름사다리 매달리기"],["other","바이킹 그네 밀기"]], "yes", ["카드: 재윙"]),
     question("jaewing-monkeybars", "jaewing", "구름사다리 매달리기를 맞으면 상대의 다음 공격은?", [["yes","피해가 20 줄어요"],["no","피해가 20 늘어요"],["other","아무것도 달라지지 않아요"]], "yes", ["카드: 재윙"]),
     question("jaewing-twirl", "jaewing", "바이킹 그네 밀기를 쓰려면 별사탕 몇 개가 필요할까요?", [["yes","4개"],["no","1개"],["other","2개"]], "yes", ["카드: 재윙"])
+  ].forEach(item => all.push(item));
+
+  // 쓰구미의 장난 부하들(재윙과 같은 악마 모드). 원정 장면과 카드 내용만 묻는다.
+  [
+    question("taeppul-who", "taeppul", "태뿔은 누구의 악마 모드인가요?", [["yes","태오"],["no","윤찬"],["other","윤건"]], "yes", ["카드: 태뿔 소개"]),
+    question("taeppul-prank", "taeppul", "태뿔이 신데렐라 구두에 넣은 것은?", [["yes","방귀 쿠션"],["no","개구리"],["other","얼음"]], "yes", ["원정 1장"]),
+    question("taeppul-trap", "taeppul", "「방귀 쿠션 함정」에 걸린 상대는 어떻게 되나요?", [["yes","다음 턴에 기술을 못 써요"],["no","체력이 늘어요"],["other","별사탕을 받아요"]], "yes", ["카드: 태뿔"]),
+    question("taeppul-stubborn", "taeppul", "태뿔의 특성 「꼴통 고집」은 무엇을 하나요?", [["yes","받는 피해가 10 줄어요"],["no","매턴 체력을 채워요"],["other","피해가 두 배가 돼요"]], "yes", ["카드: 태뿔"]),
+    question("taeppul-sock", "taeppul", "태뿔이 별사탕 1개로 던지는 것은?", [["yes","구린 양말"],["no","축구공"],["other","잠자리채"]], "yes", ["카드: 태뿔"]),
+    question("chanppul-who", "chanppul", "찬뿔은 누구의 악마 모드인가요?", [["yes","윤찬"],["no","태오"],["other","재이"]], "yes", ["카드: 찬뿔 소개"]),
+    question("chanppul-power", "chanppul", "찬뿔의 별명은?", [["yes","번개맨 차니"],["no","헐크 거니"],["other","꼴통 태오"]], "yes", ["카드: 찬뿔 소개"]),
+    question("chanppul-zap", "chanppul", "「찌릿 손가락」은 상대에게서 무엇을 빼앗나요?", [["yes","별사탕 1개"],["no","체력 20"],["other","카드 한 장"]], "yes", ["카드: 찬뿔"]),
+    question("chanppul-cape", "chanppul", "찬뿔의 「번개 망토」는 무엇을 막나요?", [["yes","처음 받는 공격 한 번"],["no","모든 공격"],["other","아무것도 못 막아요"]], "yes", ["카드: 찬뿔"]),
+    question("chanppul-where", "chanppul", "찬뿔이 번개 장난을 친 곳은?", [["yes","신들의 산"],["no","동화 나라"],["other","세 나라 전장"]], "yes", ["원정 3장"]),
+    question("geonppul-who", "geonppul", "건뿔은 누구의 악마 모드인가요?", [["yes","윤건"],["no","윤찬"],["other","태오"]], "yes", ["카드: 건뿔 소개"]),
+    question("geonppul-name", "geonppul", "건뿔의 별명은?", [["yes","헐크 거니"],["no","번개맨 차니"],["other","꼴통 태오"]], "yes", ["카드: 건뿔 소개"]),
+    question("geonppul-rage", "geonppul", "건뿔의 「헐크 변신」은 언제 더 세지나요?", [["yes","체력이 절반 아래일 때"],["no","처음 시작할 때"],["other","별사탕이 없을 때"]], "yes", ["카드: 건뿔"]),
+    question("geonppul-cart", "geonppul", "건뿔이 세 나라 전장에서 번쩍 들어 던진 것은?", [["yes","수레"],["no","성문"],["other","배"]], "yes", ["원정 5장"]),
+    question("geonppul-big", "geonppul", "건뿔이 별사탕 4개로 쓰는 큰 기술은?", [["yes","헐크 박치기"],["no","쿵쿵 발구르기"],["other","수레 번쩍 던지기"]], "yes", ["카드: 건뿔"])
   ].forEach(item => all.push(item));
 
   function deepFreeze(value) {

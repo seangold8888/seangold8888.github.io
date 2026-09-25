@@ -96,9 +96,9 @@ test("all checked-in Sanguo PNG, OGG, MP3 and WAV assets are best-effort backgro
 
 test("all 75 collection cards have an install-time webp", () => {
   const data = JSON.parse(fs.readFileSync(path.join(siteRoot, "cards", "cards.json"), "utf8"));
-  assert.equal(data.collection.length, 87);
-  assert.equal(sw.CARD_ART_FILES.length, 87);
-  assert.equal(new Set(sw.CARD_ART_FILES).size, 87);
+  assert.equal(data.collection.length, 90);
+  assert.equal(sw.CARD_ART_FILES.length, 90);
+  assert.equal(new Set(sw.CARD_ART_FILES).size, 90);
   for (const id of data.collection) {
     assert.ok(sw.CARD_ART_FILES.includes(`./cards/art/${id}.webp`), id);
   }
@@ -114,9 +114,9 @@ test("all story episode mp3 files match the service worker fallback list", () =>
   }
 });
 
-test("cache generation v149 preserves exact v68 card assets and canonical navigation aliases", () => {
-  assert.equal(sw.CACHE_VERSION, "v149");
-  assert.match(sw.STATIC_CACHE, /^adventure-box-v149-/);
+test("cache generation v150 preserves exact v69 card assets and canonical navigation aliases", () => {
+  assert.equal(sw.CACHE_VERSION, "v150");
+  assert.match(sw.STATIC_CACHE, /^adventure-box-v150-/);
   const studioImages = fs.readdirSync(path.join(siteRoot, "princess/assets/studio-v3")).filter(name => /\.(webp|jpg)$/.test(name));
   assert.equal(studioImages.length, 95);
   for (const name of studioImages) assert.ok(sw.OPTIONAL_SHELL.includes("./princess/assets/studio-v3/" + name), name);
@@ -138,7 +138,7 @@ test("cache generation v149 preserves exact v68 card assets and canonical naviga
     assert.ok(sw.OPTIONAL_SHELL.includes("./princess/assets/bodies-v4/body-" + id + ".webp"));
   }
   for (const asset of ["styles.css", "campaign.css", "engine.js", "audio.js", "card-view.js", "vfx-recipes.js", "story-gates.js", "campaign.js", "campaign-ui.js", "combat-cinema.js", "app.js"]) {
-    assert.ok(sw.CORE_SHELL.some(entry => entry.endsWith(asset + "?v=68")), asset);
+    assert.ok(sw.CORE_SHELL.some(entry => entry.endsWith(asset + "?v=69")), asset);
   }
   assert.doesNotMatch(swSource, /\.\/cards\/[^"\n]+\?v=(?:19|2\d|30|31)|adventure-box-v(?:19|2\d|3\d|4\d|5\d|6[0-5])-/);
   assert.deepEqual(sw.VFX_ART_FILES, [
@@ -407,7 +407,7 @@ test("Avengers migrates the legacy child scope before its bundle and tombstones 
 });
 
 test("big media and saved stories live in caches that survive a deploy", () => {
-  assert.match(sw.STATIC_CACHE, /^adventure-box-v149-static$/);
+  assert.match(sw.STATIC_CACHE, /^adventure-box-v150-static$/);
   assert.equal(sw.RUNTIME_CACHE, "adventure-box-media-" + sw.MEDIA_REVISION);
   assert.equal(sw.AUDIO_CACHE, "adventure-box-audio-" + sw.MEDIA_REVISION);
   assert.doesNotMatch(sw.RUNTIME_CACHE, /v\d+/, "the media cache name must not carry the deploy number");

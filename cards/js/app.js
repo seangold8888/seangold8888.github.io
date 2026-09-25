@@ -289,7 +289,16 @@
     return true;
   }
 
+  // 쓰구미의 장난 부하들: 원정에서 그 장을 되돌리면(또는 원정을 한 번 끝내면) 친구가 된다.
+  const CAMPAIGN_CAPTURE = { taeppul: 1, chanppul: 3, geonppul: 5 };
+  function campaignCaptured(card) {
+    if (!window.CardCampaign || !(card.id in CAMPAIGN_CAPTURE)) return false;
+    const progress = window.CardCampaign.load();
+    return progress.ending >= 1 || progress.cleared.includes(CAMPAIGN_CAPTURE[card.id]);
+  }
+
   function originalCardUnlocked(card) {
+    if (card.id in CAMPAIGN_CAPTURE) return campaignCaptured(card);
     // ending은 끝낸 원정 수라 새 원정을 떠나도 줄지 않는다.
     if (card.id === "sseugumi") return Boolean(window.CardCampaign &&
       (window.CardCampaign.load().ending >= 1 || (campaignUi && campaignUi.hasRecruited(card.id))));
@@ -301,7 +310,7 @@
   }
 
   function tierGoal(card) {
-    if (familyGoal(card) || card.id === "sseugumi" || (!card.unlock && !card.unlockAll?.length)) return null;
+    if (familyGoal(card) || card.id === "sseugumi" || card.id in CAMPAIGN_CAPTURE || (!card.unlock && !card.unlockAll?.length)) return null;
     const tokens = card.unlockAll?.length ? card.unlockAll : [card.unlock];
     const mathOnly = tokens.every(token => /^game:math\/streak(?:3|7)$/.test(token));
     const tier = window.CardView?.battleTier?.(card);
@@ -386,6 +395,10 @@
         Math.min(p.problems,goal.problems) + "/" + goal.problems + "문제 · 하루 쉬어도 유지) ";
     }
     if (card.id === "sseugumi") return "원정을 끝까지 가면 만날 수 있어!";
+    if (card.id in CAMPAIGN_CAPTURE) {
+      const chapter = window.CardCampaign && window.CardCampaign.CHAPTERS[CAMPAIGN_CAPTURE[card.id]];
+      return "원정 " + CAMPAIGN_CAPTURE[card.id] + "장 「" + (chapter ? chapter.name : "") + "」에서 이 장난꾸러기를 이기면 ";
+    }
     const stories = Array.isArray(card.unlockAll) && card.unlockAll.length
       ? card.unlockAll : [card.unlock];
     const mathToken = stories.find(function (id) {
@@ -409,7 +422,7 @@
     if (familyGoal(card)) return {href:"../math/",label:"🔢 수학 공부하러 가기"};
     const goal=tierGoal(card);
     if (goal && (goal.mathOnly || originalCardUnlocked(card))) return {href:"../math/",label:"🔢 수학 공부하러 가기"};
-    if (card.id === "sseugumi") return null;
+    if (card.id === "sseugumi" || card.id in CAMPAIGN_CAPTURE) return null;
     const tokens = card.unlockAll && card.unlockAll.length ? card.unlockAll : [card.unlock];
     const token = tokens.find(id => !isUnlockDone(id)) || tokens[0] || "";
     if (token.startsWith("game:math/")) return {href:"../math/",label:"🔢 수학 공부하러 가기"};

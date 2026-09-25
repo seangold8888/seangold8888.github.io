@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v149";
+const CACHE_VERSION = "v150";
 const CACHE_PREFIX = "adventure-box-";
 // 큰 그림과 소리(삼국지 배경 200MB+, 저장한 이야기 오디오)는 배포 번호와 따로 둔다.
 // 배포마다 이 캐시를 버리면 기기가 236MB를 다시 받고, "여행 전에 이야기 저장"도 지워졌다.
@@ -570,21 +570,21 @@ const CORE_SHELL = [
   "./story/english/books.js?v=2",
   "./cards/",
   "./cards/index.html",
-  "./cards/styles.css?v=68",
+  "./cards/styles.css?v=69",
   "./math/assets/jaei-family-v4.webp",
-  "./cards/campaign.css?v=68",
+  "./cards/campaign.css?v=69",
   "./cards/cards.json",
   "./assets/bgm/bgm-player.js?v=66",
   "./assets/study/play-timer.js?v=1",
-  "./cards/js/engine.js?v=68",
-  "./cards/js/audio.js?v=68",
-  "./cards/js/card-view.js?v=68",
-  "./cards/js/vfx-recipes.js?v=68",
-  "./cards/js/story-gates.js?v=68",
-  "./cards/js/campaign.js?v=68",
-  "./cards/js/campaign-ui.js?v=68",
-  "./cards/js/app.js?v=68",
-  "./cards/js/combat-cinema.js?v=68",
+  "./cards/js/engine.js?v=69",
+  "./cards/js/audio.js?v=69",
+  "./cards/js/card-view.js?v=69",
+  "./cards/js/vfx-recipes.js?v=69",
+  "./cards/js/story-gates.js?v=69",
+  "./cards/js/campaign.js?v=69",
+  "./cards/js/campaign-ui.js?v=69",
+  "./cards/js/app.js?v=69",
+  "./cards/js/combat-cinema.js?v=69",
 ];
 
 // Existing games are precached as best-effort shells. A missing optional asset
@@ -998,7 +998,7 @@ const CARD_ART_FILES = [
   "gearwing", "starshield", "thunderguard", "redknot",
   "walllizard", "neonjumper", "moonmoth", "ppungdetective",
   "circe", "siren", "scylla", "helios",
-  "sseugumi", "jaewing", "yunchan", "yungeon",
+  "sseugumi", "jaewing", "yunchan", "yungeon", "taeppul", "chanppul", "geonppul",
   "sejong", "jangyeongsil", "heojun", "shinsaimdang",
   "jeongyakyong", "kimhongdo", "yugwansun", "kimgu",
 ].map((id) => `./cards/art/${id}.webp`);

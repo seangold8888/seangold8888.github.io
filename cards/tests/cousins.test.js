@@ -5,7 +5,7 @@ const root = path.resolve(__dirname, "..");
 const data = JSON.parse(fs.readFileSync(path.join(root, "cards.json"), "utf8"));
 
 test("윤찬·윤건은 가족 카드 뒤, 컬렉션 맨 끝에 온다", () => {
-  assert.deepEqual(data.collection.slice(-3), ["jaewing", "yunchan", "yungeon"]);
+  assert.deepEqual(data.collection.slice(-6, -3), ["jaewing", "yunchan", "yungeon"]);
   for (const id of ["yunchan", "yungeon"]) {
     const card = data.cards.find(c => c.id === id);
     assert.ok(card, id);

@@ -15,7 +15,7 @@ const server=http.createServer((req,res)=>{const url=new URL(req.url,'http://loc
     Object.defineProperty(window,'CardEngine',{configurable:true,get:()=>engine,set(value){engine={...value,createGame(...args){const s=value.createGame(...args);s.sides.player.stars=5;window.__qaGame=s;return s;},performAction(s,a,...args){const out=value.performAction(s,a,...args);window.__qaActions.push({actor:s.turn,...a});window.__qaGame=out;return out;}};}});
     Object.defineProperty(window,'CardAudio',{configurable:true,get:()=>audio,set(value){audio={...value,techniqueImpact(p){window.__qaSounds.push(p);return value.techniqueImpact(p);}};}});
    });
-   const ready=()=>page.waitForFunction(()=>document.querySelectorAll('.card-gallery-item').length===87);
+   const ready=()=>page.waitForFunction(()=>document.querySelectorAll('.card-gallery-item').length===90);
    await page.goto(base+'/cards/');await ready();await page.locator('#collectionGrid [data-card-id="jaewing"]').click();
    assert.match(await page.locator('#cardDetailStatus').innerText(),/7일.*70문제/);assert.equal(await page.locator('#detailSelectButton').isDisabled(),true);
    assert.equal(await page.locator('#detailUnlockLink').getAttribute('href'),'../math/');

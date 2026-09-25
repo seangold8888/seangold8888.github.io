@@ -5,7 +5,7 @@ const path = require("node:path");
 const vm = require("node:vm");
 
 const PLAYABLE_CARD_IDS = [
-  "yunchan", "yungeon",
+  "yunchan", "yungeon", "taeppul", "chanppul", "geonppul",
   "jaewing",
   "sejong", "jangyeongsil", "heojun", "shinsaimdang", "jeongyakyong", "kimhongdo", "yugwansun", "kimgu",
   "jaei",

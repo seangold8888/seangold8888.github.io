@@ -29,7 +29,7 @@
   const BATTLE_TIERS = Object.freeze({
     S: new Set(["jaei", "taeo", "eomma", "appa", "jaewing", "scylla", "siren", "baigujing", "zhaoyun", "mermaid"]),
     A: new Set(["yunchan", "yungeon", "jeongyakyong", "kimhongdo", "yugwansun", "perseus", "beanstalkgiant", "circe", "hades", "simayi"]),
-    B: new Set(["jangyeongsil", "heojun", "kimgu", "poseidon", "zhugeliang", "doctorwatson", "wumawang", "hydra", "redknot", "jack", "nezha", "heracles", "zeus", "erlangshen", "polyphemus", "atalanta", "helios", "tiger"]),
+    B: new Set(["taeppul", "chanppul", "geonppul", "jangyeongsil", "heojun", "kimgu", "poseidon", "zhugeliang", "doctorwatson", "wumawang", "hydra", "redknot", "jack", "nezha", "heracles", "zeus", "erlangshen", "polyphemus", "atalanta", "helios", "tiger"]),
     C: new Set(["sejong", "shinsaimdang", "sseugumi", "zhangfei", "athena", "sunwukong", "ppungdetective", "wolf", "achilles", "kwonyul", "guanyu", "hermes", "sphinx", "witch", "prometheus", "honggildong", "starshield", "moriarty", "redhood", "ganggamchan", "odysseus", "euljimundeok", "apollo", "cinderella", "neonjumper", "arthur", "moonmoth", "threepigs", "thunderguard", "medusa", "theseus", "arsenelupin", "fairygodmother", "gearwing", "sherlockholmes", "tortoisehare", "yisunshin", "pinocchio", "orpheus"]),
     D: new Set(["midas", "snowqueen", "honghaier", "cerberus", "bremen", "caocao", "artemis", "minotaur", "walllizard", "genie"])
   });
@@ -96,6 +96,7 @@
     jaei: "50% 24%",
     taeo: "50% 22%",
     yunchan: "50% 30%", yungeon: "50% 30%",
+    taeppul: "50% 30%", chanppul: "50% 28%", geonppul: "50% 34%",
     appa: "50% 20%",
     eomma: "50% 22%",
     yisunshin: "50% 20%",
