@@ -4,6 +4,7 @@
 
   const { panelSVG, drawChar, defs, background } = window.WebtoonArt;
   const { CHARACTERS, EPISODES } = window.WebtoonData;
+  const TAEO_WORDS = window.TaeoWords || [];
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
@@ -76,12 +77,18 @@
     $("cast").innerHTML = CHARACTERS.map(
       (c) => `<div class="cast-card">${portrait(c)}<div><div class="cast-name">${esc(c.name)}</div><div class="cast-tag">${esc(c.tag)}</div><p class="cast-line">${esc(c.line)}</p></div></div>`
     ).join("");
+    $("wordCount").textContent = `지금까지 ${TAEO_WORDS.length}개`;
+    $("taeoWords").innerHTML = TAEO_WORDS.map(wordCard).join("");
     $("episodeList").innerHTML = EPISODES.map((ep) => {
       const cover = ep.panels[ep.cover || 0];
       const chips = (state.read[ep.id] ? `<span class="chip">✔ 읽음</span>` : "") + (state.like[ep.id] ? `<span class="chip like">♥</span>` : "");
       return `<li><a class="ep-card" href="#ep=${ep.id}"><div class="ep-thumb">${panelSVG({ ...cover })}</div><div class="ep-info"><div class="ep-no">${ep.id}화 ${chips}</div><div class="ep-title">${esc(ep.title)}</div><p class="ep-sum">${esc(ep.summary)}</p></div></a></li>`;
     }).join("");
     document.querySelectorAll(".ep-thumb svg").forEach((svg) => svg.setAttribute("preserveAspectRatio", "xMidYMid slice"));
+  }
+
+  function wordCard(w) {
+    return `<li class="word"><span class="word-say">${esc(w.say)}</span><span class="word-real">= ${esc(w.real)}</span><span class="word-what">${esc(w.what)}</span></li>`;
   }
 
   // ── 읽기 ──
@@ -96,6 +103,7 @@
     $("epEnd").innerHTML =
       `<div class="lesson"><div class="label">오늘의 한 줄</div><div class="text">${esc(ep.lesson)}</div></div>` +
       `<div class="talk"><div class="label">💬 가족과 이야기해 봐요</div><div class="text">${esc(ep.talk)}</div></div>` +
+      (TAEO_WORDS.length ? `<div class="today-word"><div class="label">📖 오늘의 태오어</div><ul class="words">${wordCard(TAEO_WORDS[(ep.id * 7) % TAEO_WORDS.length])}</ul></div>` : "") +
       `<div class="actions"><button class="btn like" id="likeBtn" type="button" aria-pressed="${liked}">${liked ? "♥ 좋아요" : "♡ 좋아요"}</button></div>` +
       `<div class="actions">` +
       (prev ? `<a class="btn" href="#ep=${prev.id}">◀ ${prev.id}화</a>` : "") +

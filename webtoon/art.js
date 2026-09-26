@@ -464,6 +464,27 @@
     sock(x, y, o) {
       return `<g transform="translate(${x} ${y}) rotate(${o.rot || 0}) scale(${o.s || 1})"><path d="M-6 -24 L8 -24 L8 2 Q8 10 -2 10 L-16 10 Q-22 4 -16 -2 L-6 -2Z" fill="#e8344a" stroke="${INK}" stroke-width="2"/><rect x="-7" y="-24" width="16" height="6" fill="#fff" stroke="${INK}" stroke-width="1.6"/></g>`;
     },
+    // 공책. t = 제목, lines = 적힌 줄들.
+    notebook(x, y, o) {
+      const lines = o.lines || [];
+      let body = "";
+      lines.forEach((l, i) => {
+        body += `<text x="-54" y="${-10 + i * 15}" font-size="11" font-family="Jua, sans-serif" fill="#3d3a38">${l}</text>`;
+      });
+      for (let i = 0; i < 4; i++) body += `<path d="M-58 ${-6 + i * 15} H60" stroke="#bcd7f2" stroke-width="1"/>`;
+      return `<g transform="translate(${x} ${y}) rotate(${o.rot || 0}) scale(${o.s || 1})"><rect x="-66" y="-50" width="132" height="100" rx="6" fill="${o.c || "#ffd66b"}" stroke="${INK}" stroke-width="2.4"/><rect x="-62" y="-46" width="124" height="92" rx="3" fill="#fffdf5" stroke="${INK}" stroke-width="1.4"/><text x="0" y="-28" text-anchor="middle" font-size="15" font-family="Jua, sans-serif" fill="#d2462f">${o.t || ""}</text>${body}</g>`;
+    },
+    // 장난감 영웅 인형 세 개(특정 캐릭터가 아닌 둥근 로봇 인형).
+    figures(x, y, o) {
+      const one = (dx, c, visor) => `<g transform="translate(${dx} 0)"><rect x="-9" y="-30" width="18" height="22" rx="5" fill="${c}" stroke="${INK}" stroke-width="1.8"/><rect x="-8" y="-9" width="6" height="9" rx="2" fill="${c}" stroke="${INK}" stroke-width="1.5"/><rect x="2" y="-9" width="6" height="9" rx="2" fill="${c}" stroke="${INK}" stroke-width="1.5"/><circle cx="0" cy="-40" r="10" fill="${c}" stroke="${INK}" stroke-width="1.8"/><rect x="-7" y="-43" width="14" height="5" rx="2" fill="${visor}"/><path d="M-9 -26 l-8 10 M9 -26 l8 10" stroke="${INK}" stroke-width="3" stroke-linecap="round"/></g>`;
+      return `<g transform="translate(${x} ${y}) scale(${o.s || 1})">${one(-34, "#3a3550", "#b99ad9")}${one(0, "#e0443e", "#ffd34d")}${one(34, "#6cc27a", "#fff")}</g>`;
+    },
+    // 반찬 접시 (우엉조림)
+    banchan(x, y, o) {
+      let sticks = "";
+      for (let i = 0; i < 9; i++) sticks += `<path d="M${-22 + i * 5} ${-6 - (i % 3) * 3} l${10 - (i % 4) * 5} ${-6}" stroke="#7a4a2c" stroke-width="3" stroke-linecap="round"/>`;
+      return `<g transform="translate(${x} ${y}) scale(${o.s || 1})"><ellipse cx="0" cy="0" rx="30" ry="9" fill="#fff" stroke="${INK}" stroke-width="2"/>${sticks}<circle cx="-6" cy="-12" r="1.2" fill="#fff6c7"/><circle cx="6" cy="-10" r="1.2" fill="#fff6c7"/></g>`;
+    },
     toys(x, y, o) {
       return `<g transform="translate(${x} ${y})"><rect x="-120" y="-18" width="20" height="18" fill="#ff6b6b" stroke="${INK}" stroke-width="2"/><rect x="-96" y="-14" width="16" height="14" fill="#4c7fd0" stroke="${INK}" stroke-width="2"/><circle cx="-50" cy="-12" r="12" fill="#ffd34d" stroke="${INK}" stroke-width="2"/><rect x="40" y="-16" width="22" height="16" fill="#6cc27a" stroke="${INK}" stroke-width="2" transform="rotate(12 50 -8)"/><path d="M90 0 l10 -22 l10 22z" fill="#b99ad9" stroke="${INK}" stroke-width="2"/><rect x="-10" y="-8" width="30" height="8" rx="2" fill="#f0609d" stroke="${INK}" stroke-width="2"/><circle cx="120" cy="-8" r="8" fill="#ff8fb3" stroke="${INK}" stroke-width="2"/></g>`;
     },
