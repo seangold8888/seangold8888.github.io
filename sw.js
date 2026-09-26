@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v157";
+const CACHE_VERSION = "v158";
 const CACHE_PREFIX = "adventure-box-";
 // 큰 그림과 소리(삼국지 배경 200MB+, 저장한 이야기 오디오)는 배포 번호와 따로 둔다.
 // 배포마다 이 캐시를 버리면 기기가 236MB를 다시 받고, "여행 전에 이야기 저장"도 지워졌다.
@@ -569,11 +569,11 @@ const CORE_SHELL = [
   "./story/english/index.html",
   "./story/english/books.js?v=2",
   "./webtoon/",
-  "./webtoon/style.css?v=2",
+  "./webtoon/style.css?v=3",
   "./webtoon/art.js?v=3",
-  "./webtoon/taeo-words.js?v=1",
-  "./webtoon/episodes.js?v=3",
-  "./webtoon/app.js?v=3",
+  "./webtoon/words.js?v=1",
+  "./webtoon/episodes.js?v=4",
+  "./webtoon/app.js?v=4",
   "./webtoon/cover.webp",
   "./webtoon/faces/jaei.webp",
   "./webtoon/faces/halmeoni.webp",

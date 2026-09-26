@@ -5,6 +5,8 @@
   const { panelSVG, drawChar, defs, background } = window.WebtoonArt;
   const { CHARACTERS, EPISODES } = window.WebtoonData;
   const TAEO_WORDS = window.TaeoWords || [];
+  const TAEO_SAYINGS = window.TaeoSayings || [];
+  const JAEI_WORDS = window.JaeiWords || [];
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
@@ -79,6 +81,8 @@
     ).join("");
     $("wordCount").textContent = `지금까지 ${TAEO_WORDS.length}개`;
     $("taeoWords").innerHTML = TAEO_WORDS.map(wordCard).join("");
+    $("taeoSayings").innerHTML = TAEO_SAYINGS.map((w) => `<li class="word saying"><span class="word-say">“${esc(w.say)}”</span><span class="word-what">${esc(w.when)}</span></li>`).join("");
+    $("jaeiWords").innerHTML = JAEI_WORDS.map((w) => wordCard(w, "jaei")).join("");
     $("episodeList").innerHTML = EPISODES.map((ep) => {
       const cover = ep.panels[ep.cover || 0];
       const chips = (state.read[ep.id] ? `<span class="chip">✔ 읽음</span>` : "") + (state.like[ep.id] ? `<span class="chip like">♥</span>` : "");
@@ -87,8 +91,8 @@
     document.querySelectorAll(".ep-thumb svg").forEach((svg) => svg.setAttribute("preserveAspectRatio", "xMidYMid slice"));
   }
 
-  function wordCard(w) {
-    return `<li class="word"><span class="word-say">${esc(w.say)}</span><span class="word-real">= ${esc(w.real)}</span><span class="word-what">${esc(w.what)}</span></li>`;
+  function wordCard(w, who) {
+    return `<li class="word${who ? ` ${who}` : ""}"><span class="word-say">${esc(w.say)}</span><span class="word-real">= ${esc(w.real)}</span><span class="word-what">${esc(w.what)}</span></li>`;
   }
 
   // ── 읽기 ──

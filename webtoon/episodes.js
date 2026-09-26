@@ -15,11 +15,11 @@
 
   const CHARACTERS = [
     { id: "jaei", name: "재이", tag: "초등학생 · 우리 집 똑순이 누나", line: "누나는 다 알아. 머리띠에 동그란 올림머리, 옆으로 묶은 머리가 트레이드마크. 그림 그리기를 제일 좋아해요.", pose: "wave", e: "happy" },
-    { id: "halmeoni", name: "할머니", tag: "뽀글 파마 · 우리 집 따뜻한 품", line: "무엇이든 “괜찮다, 괜찮다” 해 주는 사람. 할머니 앞치마 주머니엔 언제나 사탕이 있어요.", pose: "stand", e: "smile" },
+    { id: "halmeoni", name: "할머니", tag: "뽀글 파마 · 우리 집 따뜻한 품", line: "무엇이든 “괜찮다, 괜찮다” 해 주는 사람. 할머니 앞치마 주머니엔 언제나 사탕이 있어요. 아빠를 “김서방~” 하고 불러요.", pose: "stand", e: "smile" },
     { id: "eomma", name: "엄마", tag: "똥머리 · 우리 집 CCTV급 눈썰미", line: "화나면 제일 무섭지만, 제일 먼저 안아 주는 사람. 엄마는 늘 가장 작은 조각을 가져가요.", pose: "stand", e: "smile" },
     { id: "appa", name: "아빠", tag: "퇴근하면 소파와 한 몸", line: "아재개그 담당, 목말 태우기 전문. 방귀는 아빠가 원조라는 소문이 있어요.", pose: "wave", e: "happy" },
     { id: "harabeoji", name: "할아버지", tag: "짙은 눈썹 · 반짝이는 머리", line: "말수는 적지만 손주들 앞에선 늘 허허 웃는 사람. 요즘 스마트폰 공부 중이에요.", pose: "stand", e: "proud" },
-    { id: "taeo", name: "태오", tag: "태권도 파란띠 · 우리 집 개구쟁이", line: "공룡과 어벤져스를 사랑하는 막내. 영웅 이름도 태오식으로 불러요(블루베리, 스테잌로저…). 누나 뒤에 잘 숨지만 마음만은 누구보다 용감해요.", pose: "fist", e: "happy" },
+    { id: "taeo", name: "태오", tag: "태권도 파란띠 · 우리 집 개구쟁이", line: "“맛있는 거 죠!”가 입버릇인 막내. 공룡과 어벤져스를 사랑해서 영웅 이름도 태오식으로 불러요(블루베리, 스테잌로저…). 누나 뒤에 잘 숨지만 마음만은 누구보다 용감해요.", pose: "fist", e: "happy" },
   ];
 
   const EPISODES = [
@@ -637,8 +637,20 @@
         {
           h: 400, bg: "halmae",
           chars: [C("eomma", 110, "smile", "hold"), C("jaei", 305, "surprised", "stand")],
-          fp: [["notebook", 110, 250, { t: "재이 말 모음", s: 0.6, c: "#ffb8d0", lines: ["", ""] }]],
+          fp: [["notebook", 110, 250, { t: "재이 말 모음", s: 0.6, c: "#ffb8d0", lines: ["짐방 = 김서방", ""] }]],
           b: [B("재이야, 이거 봐. 네가 어렸을 때 엄마가 적어 둔 ‘재이 말 모음’이야.", 150, 46, "bl", { w: 250 })],
+        },
+        {
+          h: 420, bg: "memory",
+          chars: [C("halmeoni", 90, "happy", "wave"), C("appa", 215, "surprised", "stand"), C("jaei", 330, "happy", "point", { s: 0.62, f: -1 })],
+          n: "재이가 아기였을 때.",
+          b: [B("김서방~ 왔는가!", 105, 96, "b", { w: 140 }), B("짐방!", 335, 232, "b", { k: "shout" })],
+          sfx: [FX("짐…방?!", 280, 92, { rot: 8, c: "#3b6fd6", size: 0.8 })],
+        },
+        {
+          h: 320, bg: "sparkle:ffe3ee",
+          chars: [bust("jaei", 115, 190, 1.2, "shy", "cheeks"), bust("appa", 300, 200, 1.15, "laugh", "stand")],
+          b: [B("내가… 아빠를 ‘짐방’이라고 불렀어?", 120, 50, "b", { w: 180 }), B("그래서 한동안 아빠 별명이 짐방이었지~", 300, 60, "b", { w: 160 })],
         },
         {
           h: 330, bg: "sparkle:fff0d6",
@@ -661,6 +673,104 @@
           fp: [["notebook", 200, 205, { t: "태오어 사전", s: 2.2, lines: ["쓰구미 = 익스큐즈미", "블루베리 = 블랙팬서", "우엉 = 웡 (마법사)", "포도 = 포비"] }], ["heart", 340, 80, {}]],
           n: "오늘도 태오어 사전은 한 장씩 늘어난다.",
           n2: "언젠가 이 말들이 그리워질 테니까.",
+        },
+      ],
+    },
+    // ───────────────────────── 7화 ─────────────────────────
+    {
+      id: 7,
+      title: "오늘 티비 보는 날이야?",
+      summary: "월요일부터 금요일까지, 태오의 아침 질문은 늘 똑같다. “오늘 티비 보는 날이야? 어린이집 안 가는 날이야? 맛있는 거 죠!”",
+      lesson: "아이가 매일 하는 말 속에는 ‘같이 있고 싶어’가 숨어 있어요.",
+      talk: "우리 가족이 매일 하는 말은 뭘까요? 그 말 속에 숨은 마음은 무엇일까요?",
+      cover: 3,
+      panels: [
+        {
+          h: 360, bg: "bedroom",
+          chars: [C("taeo", 130, "happy", "up", { o: "pajama" }), C("jaei", 300, "sleepy", "stand", { o: "pajama" })],
+          n: "월요일 아침. 태오가 눈 뜨자마자 하는 말.",
+          b: [B("오늘 티비 보는 날이야?", 140, 105, "b", { k: "shout", w: 210 })],
+        },
+        {
+          h: 400, bg: "kitchen",
+          chars: [C("taeo", 100, "sad", "stand", { o: "pajama" }), C("eomma", 290, "smile", "hold")],
+          b: [B("아니~ 오늘은 어린이집 가는 날.", 290, 50, "b", { w: 170 }), B("그럼 어린이집 안 가는 날이야?", 110, 150, "b", { w: 170 })],
+        },
+        {
+          h: 270, bg: "burst:dff3e4",
+          chars: [bust("eomma", 200, 170, 1.2, "blank", "stand")],
+          b: [B("…방금 가는 날이라고 했잖아.", 200, 40, "", { w: 260 })],
+        },
+        {
+          h: 290, bg: "burst:ffe27a",
+          chars: [bust("taeo", 200, 180, 1.45, "determined", "cheer", { o: "pajama" })],
+          b: [B("그럼 맛있는 거 죠!", 200, 40, "", { k: "shout", w: 260 })],
+        },
+        {
+          h: 260, bg: "speed:eef4ff",
+          chars: [C("taeo", 150, "happy", "up", { o: "pajama", s: 0.8 })],
+          n: "화요일 아침.",
+          b: [B("오늘 티비 보는 날이야?", 300, 130, "l", { w: 140 })],
+        },
+        {
+          h: 440, bg: "kitchen",
+          chars: [C("appa", 110, "sleepy", "hold", { o: "work" }), C("taeo", 300, "shock", "stand", { o: "pajama" })],
+          n: "수요일 아침.",
+          b: [B("아니, 어린이집 가는 날. 티비는 안 보는 날. 맛있는 건 저녁에.", 170, 96, "bl", { w: 250 }), B("아빠 어떻게 알았어?!", 310, 205, "b", { k: "shout", w: 140 })],
+        },
+        {
+          h: 390, bg: "living",
+          chars: [C("jaei", 110, "sly", "hip"), C("taeo", 300, "angry", "hip", { o: "pajama" })],
+          n: "목요일 아침.",
+          b: [B("오늘 티비 보는 날이야~? 맛있는 거 죠~!", 140, 100, "b", { w: 230 }), B("누나 따라 하지 마!", 310, 150, "b", { k: "shout", w: 140 })],
+        },
+        {
+          h: 420, bg: "living",
+          chars: [C("appa", 100, "proud", "give", { o: "work" }), C("taeo", 330, "blank", "stand", { o: "pajama" })],
+          fp: [["notebook", 222, 252, { t: "오늘은?", s: 0.9, c: "#bfe3ff", lines: ["어린이집 가는 날 ✔", "티비 없는 날", "맛있는 건 저녁에"] }]],
+          n: "금요일 아침.",
+          b: [B("짠! 이제 이거 보면 돼!", 120, 95, "b", { w: 190 })],
+        },
+        {
+          h: 280, bg: "burst:e6e0ff",
+          chars: [bust("taeo", 200, 175, 1.4, "blank", "stand", { o: "pajama" })],
+          b: [B("아빠… 나 글씨 못 읽어.", 200, 40, "", { w: 240 })],
+          sfx: [FX("앗", 340, 230, { rot: 10, c: "#3b6fd6", size: 1.2 })],
+        },
+        {
+          h: 340, bg: "bedroom-night",
+          chars: [C("taeo", 140, "smile", "stand", { o: "pajama" }), C("eomma", 290, "smile", "stand", { o: "sick" })],
+          n: "금요일 밤.",
+          b: [B("엄마, 내일은… 어린이집 안 가는 날이지?", 150, 92, "b", { k: "whisper", w: 180 })],
+        },
+        {
+          h: 320, bg: "sparkle:fff0d6",
+          chars: [bust("eomma", 200, 190, 1.25, "teary", "stand", { o: "sick" })],
+          b: [B("응. 내일은 하루 종일 엄마 아빠랑 있는 날.", 200, 44, "", { w: 280 })],
+        },
+        {
+          h: 320, bg: "sparkle:ffe3ee",
+          chars: [bust("taeo", 200, 190, 1.4, "happy", "stand", { o: "pajama" })],
+          b: [B("그럼 맛있는 거 안 죠도 돼.", 200, 44, "", { w: 260 })],
+        },
+        {
+          h: 360, bg: "sparkle:ffe3ee",
+          chars: [C("taeo", 160, "happy", "hug", { o: "pajama" }), C("eomma", 250, "teary", "hug", { o: "sick" })],
+          fp: [["heart", 330, 120, {}], ["heart", 70, 150, { s: 0.8 }]],
+          b: [B("엄마 아빠랑 노는 게 제일 맛있어.", 200, 38, "", { w: 270 })],
+          n2: "매일 아침 묻던 그 말은, 사실 ‘같이 있고 싶어’였다.",
+        },
+        {
+          h: 430, bg: "living",
+          chars: [C("appa", 55, "happy", "up"), C("taeo", 150, "laugh", "cheer"), C("jaei", 250, "happy", "cheer"), C("eomma", 345, "happy", "wave")],
+          n: "토요일 아침.",
+          b: [B("오늘 티비 보는 날이야?", 165, 176, "b", { w: 150 }), B("아니! 오늘은 놀이터 가는 날!", 130, 92, "bl", { k: "shout", w: 240 })],
+        },
+        {
+          h: 280, bg: "burst:ffe27a",
+          chars: [bust("taeo", 200, 180, 1.45, "laugh", "cheer")],
+          b: [B("그리고 맛있는 거 죠!", 200, 40, "", { k: "shout", w: 260 })],
+          sfx: [FX("하하하", 70, 230, { rot: -10, c: "#ff9f1c" }), FX("하하", 340, 240, { rot: 10, c: "#f0609d" })],
         },
       ],
     },

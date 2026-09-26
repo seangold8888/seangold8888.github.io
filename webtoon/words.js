@@ -1,8 +1,8 @@
-// 태오어 사전: 태오가 태오식으로 부르는 말 모음. 가족이 알려 줄 때마다 맨 아래에 한 줄씩 더한다.
-// say = 태오가 하는 말, real = 원래 말, what = 무엇인지(짧게).
+// 우리 집 말 사전. 가족이 알려 줄 때마다 해당 목록 맨 아래에 한 줄씩 더한다.
 (function (root) {
   "use strict";
 
+  // 태오어 사전: 태오가 태오식으로 부르는 말. say = 태오가 하는 말, real = 원래 말, what = 무엇인지(짧게).
   const TAEO_WORDS = [
     { say: "쓰구미", real: "익스큐즈미", what: "실례합니다 (영어)" },
     { say: "블레이뽀", real: "뷰티풀", what: "아름다워요 (영어)" },
@@ -16,5 +16,19 @@
     { say: "헬로키티", real: "마이멜로디", what: "산리오 친구" },
   ];
 
+  // 태오가 매일 하는 말(입버릇). say = 말, when = 언제 하는지.
+  const TAEO_SAYINGS = [
+    { say: "맛있는 거 죠!", when: "하루에도 몇 번씩" },
+    { say: "오늘 티비 보는 날이야?", when: "아침에 눈 뜨자마자" },
+    { say: "어린이집 안 가는 날이야?", when: "매일 아침" },
+  ];
+
+  // 재이가 아기 때 한 말. say = 재이가 한 말, real = 원래 말, what = 사연.
+  const JAEI_WORDS = [
+    { say: "짐방", real: "김서방", what: "할머니가 아빠를 “김서방~” 하고 부르시는 걸 따라서 아빠를 부른 말" },
+  ];
+
   root.TaeoWords = TAEO_WORDS;
+  root.TaeoSayings = TAEO_SAYINGS;
+  root.JaeiWords = JAEI_WORDS;
 })(typeof window !== "undefined" ? window : globalThis);
