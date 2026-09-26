@@ -114,9 +114,9 @@ test("all story episode mp3 files match the service worker fallback list", () =>
   }
 });
 
-test("cache generation v155 preserves exact v70 card assets and canonical navigation aliases", () => {
-  assert.equal(sw.CACHE_VERSION, "v155");
-  assert.match(sw.STATIC_CACHE, /^adventure-box-v155-/);
+test("cache generation v156 preserves exact v70 card assets and canonical navigation aliases", () => {
+  assert.equal(sw.CACHE_VERSION, "v156");
+  assert.match(sw.STATIC_CACHE, /^adventure-box-v156-/);
   const studioImages = fs.readdirSync(path.join(siteRoot, "princess/assets/studio-v3")).filter(name => /\.(webp|jpg)$/.test(name));
   assert.equal(studioImages.length, 95);
   for (const name of studioImages) assert.ok(sw.OPTIONAL_SHELL.includes("./princess/assets/studio-v3/" + name), name);
@@ -407,7 +407,7 @@ test("Avengers migrates the legacy child scope before its bundle and tombstones 
 });
 
 test("big media and saved stories live in caches that survive a deploy", () => {
-  assert.match(sw.STATIC_CACHE, /^adventure-box-v155-static$/);
+  assert.match(sw.STATIC_CACHE, /^adventure-box-v156-static$/);
   assert.equal(sw.RUNTIME_CACHE, "adventure-box-media-" + sw.MEDIA_REVISION);
   assert.equal(sw.AUDIO_CACHE, "adventure-box-audio-" + sw.MEDIA_REVISION);
   assert.doesNotMatch(sw.RUNTIME_CACHE, /v\d+/, "the media cache name must not carry the deploy number");

@@ -5,7 +5,8 @@
 (function (root) {
   "use strict";
 
-  const HEAD_Y = { jaei: -140, taeo: -116, eomma: -204, appa: -214, halmeoni: -196, harabeoji: -208 };
+  // 얼굴 가운데 높이(발 기준). art.js 의 CHARS.headY 와 같다.
+  const HEAD_Y = { jaei: -157, taeo: -126, eomma: -216, appa: -224, halmeoni: -209, harabeoji: -219 };
   const C = (c, x, e, p, more) => ({ c, x, e, p, ...more });
   // 가슴 위 클로즈업: 얼굴 가운데를 (x, hy) 에 두고 s 배로 키운다.
   const bust = (c, x, hy, s, e, p, more) => ({ c, x, e, p, s, y: Math.round(hy - HEAD_Y[c] * s * 0.98), ...more });
@@ -173,7 +174,7 @@
           bp: [["opendoor", 100, 316, {}], ["shoes", 250, 316, {}]],
           chars: [C("jaei", 100, "smile", "wave"), C("taeo", 290, "happy", "hold", { o: "dobok" })],
           b: [B("다녀왔습니다~", 100, 60, "b"), B("누나아~ 오늘 진짜 예쁘다! 가방 들어 줄까?", 290, 80, "b", { w: 160 })],
-          sfx: [FX("반짝반짝", 205, 200, { rot: 8, c: "#ff9f1c", size: 0.7 })],
+          sfx: [FX("반짝반짝", 290, 330, { rot: -6, c: "#ff9f1c", size: 0.7 })],
         },
         {
           h: 260, bg: "sparkle:e6e0ff",
@@ -213,7 +214,7 @@
         },
         {
           h: 360, bg: "sparkle:fff0d6",
-          chars: [C("taeo", 230, "cry", "hug", { o: "pajama" }), C("jaei", 180, "teary", "hug", { o: "pajama" })],
+          chars: [C("taeo", 255, "cry", "hug", { o: "pajama" }), C("jaei", 150, "teary", "hug", { o: "pajama" })],
           fp: [["heart", 200, 90, { s: 1.2 }]],
           b: [B("네가 먼저 말해 주길 기다렸어. 말해 줘서 고마워.", 200, 30, "", { w: 250 })],
           n2: "누나는 다 안다. 그리고… 다 안아 준다.",
@@ -283,10 +284,10 @@
         {
           h: 340, bg: "living",
           bp: [["sofa", 200, 316, { w: 320 }]],
-          chars: [C("appa", 320, "sleepy", "stand", { o: "work", rot: -90, x: 330, y: 236, s: 0.85 }), C("taeo", 170, "determined", "cheer", { o: "dobok", y: 250, s: 0.9 })],
+          chars: [C("appa", 320, "sleepy", "stand", { o: "work", rot: -90, x: 330, y: 236, s: 0.85 }), C("taeo", 240, "determined", "cheer", { o: "dobok", y: 250, s: 0.9 })],
           fp: [["sofafront", 200, 316, { w: 320 }]],
-          b: [B("태권도 안마 시작합니다! 얍! 얍!", 110, 40, "b", { w: 150 }), B("으음… 시원하다…", 300, 110, "b", { k: "whisper" })],
-          sfx: [FX("콩! 콩!", 240, 150, { rot: 8, c: "#3b6fd6" })],
+          b: [B("태권도 안마 시작합니다! 얍! 얍!", 150, 40, "br", { w: 170 }), B("으음… 시원하다…", 90, 160, "b", { k: "whisper", w: 110 })],
+          sfx: [FX("콩! 콩!", 330, 190, { rot: 8, c: "#3b6fd6" })],
         },
         {
           h: 330, bg: "living",
@@ -323,7 +324,7 @@
           h: 420, bg: "living-night",
           chars: [C("taeo", 200, "laugh", "up", { y: 214, s: 0.9 }), C("appa", 200, "happy", "hold", { o: "work", s: 0.95 }), C("jaei", 320, "happy", "cheer")],
           fp: [["battery", 70, 90, { lv: 4 }]],
-          b: [B("자, 이제 공룡 놀이 할 사람!", 100, 190, "r", { w: 110 }), B("저요!!", 330, 220, "b", { k: "shout" })],
+          b: [B("자, 이제 공룡 놀이 할 사람!", 100, 190, "r", { w: 110 }), B("저요!!", 335, 150, "b", { k: "shout" })],
           n2: "그날 밤, 우리 집 충전소는 늦게까지 불이 켜져 있었다.",
         },
       ],
@@ -470,7 +471,7 @@
         },
         {
           h: 360, bg: "plain:bfe7ff",
-          chars: [C("harabeoji", 200, "blank", "stand", { s: 3.6, y: 1079 })],
+          chars: [C("harabeoji", 200, "blank", "stand", { s: 3.6, y: 1150 })],
           fp: [["phoneframe", 0, 0, {}]],
           b: [B("할아버지! 머리만 보여요!", 200, 110, "", { k: "shout", w: 250 })],
           sfx: [FX("번쩍!", 300, 215, { rot: 10, c: "#ff9f1c", size: 1.2 })],
@@ -525,19 +526,19 @@
         },
         {
           h: 230, bg: "burst:c8f5c8",
-          fp: [["phone", 200, 120, { s: 2.2, screen: "#c9f5c9", face: true }]],
+          fp: [["phone", 200, 120, { s: 2.2, screen: "#c9f5c9", face: "harabeoji" }]],
           sfx: [FX("띠리리링~", 90, 60, { rot: -10, c: "#2fbf5b" }), FX("연결됐다!!", 300, 190, { rot: 8, c: "#ff6b6b" })],
         },
         {
           h: 420, bg: "plain:bfe7ff",
-          chars: [bust("harabeoji", 180, 220, 1.8, "laugh", "stand"), C("halmeoni", 335, "happy", "stand", { s: 2.4, y: 850 })],
+          chars: [bust("harabeoji", 180, 220, 1.8, "laugh", "stand"), C("halmeoni", 330, "happy", "stand", { s: 2.4, y: 935 })],
           fp: [["phoneframe", 0, 0, {}]],
           b: [B("재이야! 할아버지다! 혼자 했다!", 200, 80, "b", { w: 250 }), B("할머니~ 파마만 보여요!", 130, 330, "", { k: "shout", w: 190 })],
         },
         {
           h: 380, bg: "bedroom-night",
           chars: [C("jaei", 150, "laugh", "hold", { o: "pajama" }), C("taeo", 280, "laugh", "cheer", { o: "pajama" })],
-          fp: [["phone", 150, 256, { s: 0.8, face: true }], ["heart", 80, 90, {}]],
+          fp: [["phone", 150, 256, { s: 0.8, face: "harabeoji" }], ["heart", 80, 90, {}]],
           n: "우리가 천천히 배울 때, 기다려 준 사람들이 있다.",
           n2: "이번엔 우리가 기다려 줄 차례다.",
         },

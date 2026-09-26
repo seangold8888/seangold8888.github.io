@@ -2,7 +2,7 @@
 (function () {
   "use strict";
 
-  const { panelSVG, drawChar, background } = window.WebtoonArt;
+  const { panelSVG, drawChar, defs, background } = window.WebtoonArt;
   const { CHARACTERS, EPISODES } = window.WebtoonData;
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
@@ -53,15 +53,17 @@
   }
 
   // ── 목록 ──
+  // 등장인물 카드에는 아이가 그린 얼굴을 크게 그대로 보여 준다.
   function portrait(c) {
-    // 어른은 조금 줄여 아이와 얼굴 크기를 맞춘다.
-    const s = c.id === "taeo" || c.id === "jaei" ? 0.66 : 0.52;
-    return `<svg viewBox="0 0 120 150" aria-hidden="true"><circle cx="60" cy="80" r="56" fill="#fff4e4"/><g transform="translate(60 146) scale(${s})">${drawChar({ c: c.id, x: 0, y: 0, e: c.e, p: c.pose })}</g></svg>`;
+    const F = window.WebtoonArt.FACES[c.id];
+    const h = 112;
+    const w = (F.w / F.h) * h;
+    return `<svg viewBox="0 0 120 150" aria-hidden="true"><circle cx="60" cy="78" r="56" fill="#fff4e4"/><image href="faces/${c.id}.webp" x="${60 - w / 2}" y="${78 - h / 2}" width="${w}" height="${h}"/></svg>`;
   }
 
   function heroSVG() {
     const W = 400, H = 230;
-    let s = background("sparkle:ffe3ee", W, H);
+    let s = defs() + background("sparkle:ffe3ee", W, H);
     s += `<rect x="0" y="${H - 40}" width="${W}" height="40" fill="#f5d8b4"/>`;
     // 재이 · 할머니 · 엄마 · 아빠 · 할아버지 · 태오 순서
     const row = [["jaei", 36, "happy", "wave"], ["halmeoni", 98, "smile", "stand"], ["eomma", 163, "happy", "stand"], ["appa", 232, "happy", "wave"], ["harabeoji", 300, "proud", "stand"], ["taeo", 362, "laugh", "cheer"]];
