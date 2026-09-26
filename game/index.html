@@ -801,6 +801,7 @@
   .shop .go { color: var(--gold); background: transparent; padding: 2px 0; font-size: 11px; }
   .shop .open-sign { z-index: 4; top: 13px; right: 13px; color: #10152c; background: var(--lime); font-size: 9px; border-radius: 9px 3px; }
   .shop.story { --cover-pos: 50% 33%; background: #25204e; }
+  .shop.webtoon { grid-column: 1 / -1; --cover-pos: 50% 40%; }
   .shop.craft { --cover: repeating-linear-gradient(135deg, transparent 0 26px, rgba(255,255,255,.06) 27px 29px), radial-gradient(circle at 78% 28%, #ffd56a 0 9%, transparent 10%), linear-gradient(145deg, #66415f, #24335f); }
   .lock-notice { position: fixed; z-index: 80; left: 50%; bottom: calc(22px + env(safe-area-inset-bottom,0px)); width: min(440px, calc(100% - 28px)); transform: translateX(-50%); padding: 14px 15px; border: 1px solid rgba(255,213,106,.35); border-radius: 17px 6px; background: rgba(10,13,35,.96); color: var(--text); box-shadow: 0 22px 50px rgba(0,0,0,.45); display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 11px; }
   .lock-notice[hidden] { display: none; }
@@ -1173,7 +1174,7 @@
   <section class="open-deck" id="alwaysOpen">
     <div class="section-heading">
       <div><div class="section-kicker">언제든 환영해</div><h2>티켓 없이 바로!</h2></div>
-      <p>이야기 극장은 언제든 열려 있어요.</p>
+      <p>이야기 극장과 가족 웹툰은 언제든 열려 있어요.</p>
     </div>
     <div class="open-grid">
   <a class="shop story" href="story/" aria-label="이야기 극장 — 언제나 열려 있어요" style="--cover:url('cards/art/cinderella.webp')">
@@ -1194,6 +1195,16 @@
         <span class="tags"><span class="genre">📚 English</span></span>
       <span class="desc">그림 보며 영어 이야기를 듣고 직접 읽어요 · 6권 · 공부 없이도 입장 OK</span>
       <span class="go">그림책 펴기 ▶</span>
+    </span>
+  </a>
+  <a class="shop story webtoon" href="webtoon/" aria-label="오늘도 우리 집 — 가족 웹툰, 언제나 열려 있어요" style="--cover:url('webtoon/cover.webp')">
+    <span class="open-sign">새 웹툰</span>
+    <span class="badge">🏠</span>
+    <span class="meta">
+      <span class="name">오늘도 우리 집</span>
+        <span class="tags"><span class="genre">💛 가족 웹툰</span></span>
+      <span class="desc">재이네 여섯 식구의 웃기고 따뜻한 하루 · 5화 · 공부 없이도 입장 OK</span>
+      <span class="go">웹툰 보기 ▶</span>
     </span>
   </a>
 

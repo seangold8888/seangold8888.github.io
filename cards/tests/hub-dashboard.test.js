@@ -113,7 +113,8 @@ test("기존 게임 링크·티켓 게임과 상시 개방 구분을 보존한�
   assert.equal(count(/<a class="card /g), 10);
   assert.doesNotMatch(html, /href="starkart\//);
   assert.equal(fs.existsSync(path.join(root, "starkart", "index.html")), false);
-  assert.equal(count(/<a class="shop /g), 2);
+  assert.equal(count(/<a class="shop /g), 3);
+  assert.match(html, /class="shop story webtoon" href="webtoon\/"/);
   assert.match(html, /class="shop story" href="story\/english\/"/);
   assert.match(html, /class="feature-button secondary feature-shop" href="story\//);
   assert.match(html, /querySelectorAll\('\.card, \.shop, \.feature-shop'\)/);
