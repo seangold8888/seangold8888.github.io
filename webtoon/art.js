@@ -480,6 +480,14 @@
       const one = (dx, c, visor) => `<g transform="translate(${dx} 0)"><rect x="-9" y="-30" width="18" height="22" rx="5" fill="${c}" stroke="${INK}" stroke-width="1.8"/><rect x="-8" y="-9" width="6" height="9" rx="2" fill="${c}" stroke="${INK}" stroke-width="1.5"/><rect x="2" y="-9" width="6" height="9" rx="2" fill="${c}" stroke="${INK}" stroke-width="1.5"/><circle cx="0" cy="-40" r="10" fill="${c}" stroke="${INK}" stroke-width="1.8"/><rect x="-7" y="-43" width="14" height="5" rx="2" fill="${visor}"/><path d="M-9 -26 l-8 10 M9 -26 l8 10" stroke="${INK}" stroke-width="3" stroke-linecap="round"/></g>`;
       return `<g transform="translate(${x} ${y}) scale(${o.s || 1})">${one(-34, "#3a3550", "#b99ad9")}${one(0, "#e0443e", "#ffd34d")}${one(34, "#6cc27a", "#fff")}</g>`;
     },
+    // 영웅 보드게임 상자 (특정 상표 없이)
+    boardgame(x, y, o) {
+      return `<g transform="translate(${x} ${y}) rotate(${o.rot || 0}) scale(${o.s || 1})"><rect x="-34" y="-26" width="68" height="46" rx="4" fill="#e0443e" stroke="${INK}" stroke-width="2.2"/><rect x="-30" y="-22" width="60" height="16" rx="2" fill="#ffd34d" stroke="${INK}" stroke-width="1.4"/><text x="0" y="-10" text-anchor="middle" font-size="10" font-family="Jua, sans-serif" fill="#3d3a38">영웅 게임</text><circle cx="-16" cy="6" r="7" fill="#3b6fd6" stroke="${INK}" stroke-width="1.4"/><path d="M-16 1 l1.6 3.4 3.6.4 -2.7 2.4.8 3.6 -3.3-1.9 -3.3 1.9.8-3.6 -2.7-2.4 3.6-.4z" fill="#fff"/><rect x="0" y="0" width="10" height="13" rx="2" fill="#fff" stroke="${INK}" stroke-width="1.2"/><rect x="14" y="0" width="10" height="13" rx="2" fill="#fff" stroke="${INK}" stroke-width="1.2"/></g>`;
+    },
+    // 태블릿
+    tablet(x, y, o) {
+      return `<g transform="translate(${x} ${y}) rotate(${o.rot || 0}) scale(${o.s || 1})"><rect x="-30" y="-22" width="60" height="44" rx="6" fill="#2f3440" stroke="${INK}" stroke-width="2"/><rect x="-25" y="-17" width="50" height="34" rx="2" fill="#9fd8ff"/></g>`;
+    },
     // 누나 머리끈(분홍 곱창 끈)
     scrunchie(x, y, o) {
       let bumps = "";
