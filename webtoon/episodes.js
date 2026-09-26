@@ -1173,6 +1173,108 @@
         },
       ],
     },
+    // ───────────────────────── 11화 ─────────────────────────
+    {
+      id: 11,
+      title: "다리가 부러진 영웅",
+      summary: "장난감 영웅이 잔뜩인 태오. 그런데 다리가 부러진 초록 영웅은 늘 상자 구석에만 있다. 그러던 어느 날, 태오 다리가 삐끗했다.",
+      lesson: "다리가 아파도, 모양이 달라져도 소중한 친구예요. 아플 때 곁에 있어 주는 게 진짜 영웅이에요.",
+      talk: "우리 집에 오래 안 가지고 논 장난감이 있나요? 그 장난감에게 한마디 해 줄까요?",
+      cover: 12,
+      panels: [
+        {
+          h: 400, bg: "living",
+          chars: [C("taeo", 110, "laugh", "cheer")],
+          fp: [["figures", 280, 376, { s: 1.2 }], ["toybox", 330, 290, { s: 0.7 }]],
+          n: "태오에게는 장난감 영웅이 잔뜩 있다.",
+          b: [B("블루베리 출동! 쉬터맨도 출동!", 170, 110, "bl", { k: "shout", w: 240 })],
+        },
+        {
+          h: 280, bg: "gloom",
+          fp: [["toybox", 200, 250, { s: 1.6 }], ["brokentoy", 200, 200, { s: 1.4, fallen: true }]],
+          n: "그런데 상자 구석, 다리가 부러진 초록 영웅은…",
+          n2: "오늘도 출동하지 못했다.",
+        },
+        {
+          h: 360, bg: "living",
+          chars: [C("jaei", 110, "smile", "point"), C("taeo", 300, "blank", "stand")],
+          b: [B("태오야, 초록 영웅은 왜 안 데리고 놀아?", 120, 70, "b", { w: 170 }), B("걔는 다리 부러졌잖아. 못 뛰어.", 300, 90, "b", { w: 150 })],
+        },
+        {
+          h: 400, bg: "living",
+          chars: [C("taeo", 200, "surprised", "kick", { rot: -12 })],
+          n: "그다음 날, 태권도 발차기 연습을 하다가…",
+          sfx: [FX("얍!", 90, 110, { rot: -10, c: "#3b6fd6" }), FX("삐끗!", 300, 320, { rot: 10, c: "#e0443e", size: 1.2 })],
+        },
+        {
+          h: 300, bg: "burst:c9dcff",
+          chars: [bust("taeo", 200, 190, 1.45, "cry", "stand")],
+          b: [B("으아앙~ 다리 아파!", 200, 44, "", { k: "shout", w: 240 })],
+        },
+        {
+          h: 380, bg: "living",
+          chars: [C("taeo", 100, "sad", "stand"), C("eomma", 290, "worried", "stand")],
+          fp: [["bandage", 106, 356, { s: 0.9 }]],
+          b: [B("살짝 삐었네. 며칠은 뛰면 안 돼.", 290, 60, "b", { w: 160 }), B("그럼 나 이제 못 놀아?", 110, 110, "b", { w: 130 })],
+        },
+        {
+          h: 380, bg: "living",
+          chars: [C("appa", 150, "happy", "hold"), C("taeo", 150, "surprised", "up", { y: 214, s: 0.9 })],
+          fp: [["bandage", 172, 200, { s: 0.7 }]],
+          b: [B("무슨 소리! 오늘은 아빠가 태오 다리다!", 290, 90, "l", { w: 150 })],
+          sfx: [FX("번쩍!", 300, 250, { rot: 8, c: "#ff9f1c" })],
+        },
+        {
+          h: 360, bg: "living",
+          chars: [C("jaei", 110, "happy", "give"), C("taeo", 290, "smile", "stand")],
+          fp: [["boardgame", 200, 336, { s: 0.9 }], ["bandage", 296, 336, { s: 0.9 }]],
+          b: [B("누나는 앉아서 하는 패드 게임 해 줄게!", 120, 70, "b", { w: 170 })],
+        },
+        {
+          h: 420, bg: "halmae",
+          chars: [C("halmeoni", 110, "smile", "give", { o: "apron" }), C("harabeoji", 300, "happy", "stand")],
+          n: "할머니 할아버지도 달려오셨다.",
+          b: [B("아이고 우리 강아지, 할머니가 맛있는 거 해 왔다.", 150, 96, "b", { w: 230 })],
+        },
+        {
+          h: 300, bg: "sparkle:fff4c7",
+          chars: [bust("taeo", 200, 190, 1.45, "love", "stand")],
+          b: [B("다리 아파도… 다들 나랑 놀아 주네.", 200, 44, "", { w: 260 })],
+        },
+        {
+          h: 300, bg: "living-night",
+          chars: [bust("taeo", 110, 200, 1.1, "surprised", "stand", { o: "pajama" })],
+          fp: [["toybox", 300, 260, { s: 1.2 }], ["brokentoy", 300, 220, { s: 1.1, fallen: true }]],
+          n: "그날 밤, 장난감 상자를 보다가.",
+          b: [B("(…너도 심심했지?)", 150, 70, "br", { k: "think" })],
+        },
+        {
+          h: 340, bg: "living-night",
+          chars: [C("taeo", 130, "determined", "hold", { o: "pajama" })],
+          fp: [["brokentoy", 180, 300, { s: 1.1, band: true }]],
+          b: [B("내가 반창고 붙여 줄게. 이제 너도 출동이야!", 280, 90, "l", { w: 150 })],
+          sfx: [FX("찰칵", 250, 250, { rot: 8, c: "#8a6d52", size: 0.7 })],
+        },
+        {
+          h: 380, bg: "sparkle:ffe3ee",
+          chars: [C("taeo", 110, "laugh", "cheer", { o: "pajama" })],
+          fp: [["brokentoy", 260, 330, { s: 1.4, band: true }], ["figures", 330, 356, { s: 0.8 }], ["heart", 260, 130, {}]],
+          b: [B("다리 아파도 영웅이야! 제일 용감한 초록 영웅!", 140, 70, "b", { k: "shout", w: 220 })],
+        },
+        {
+          h: 400, bg: "bedroom-night",
+          chars: [C("jaei", 110, "teary", "stand", { o: "pajama" }), C("eomma", 290, "teary", "stand", { o: "sick" })],
+          b: [B("(태오가… 초록 영웅이랑 자네.)", 110, 70, "b", { k: "whisper", w: 150 }), B("(아파 보니까 알았나 봐.)", 290, 70, "b", { k: "whisper", w: 140 })],
+        },
+        {
+          h: 330, bg: "bedroom-night",
+          bp: [["bed", 200, 306, { w: 330 }], ["pillow", 90, 250, {}]],
+          chars: [C("taeo", 195, "sleepy", "stand", { o: "pajama", rot: -90, y: 262, s: 0.95 })],
+          fp: [["blanket", 215, 296, { w: 190, h: 56, c: "#bfe3ff" }], ["brokentoy", 160, 250, { s: 0.9, band: true }]],
+          n: "아플 때 곁에 있어 주는 게 진짜 영웅이다.",
+        },
+      ],
+    },
   ];
 
   root.WebtoonData = { CHARACTERS, EPISODES };
