@@ -1386,6 +1386,116 @@
         },
       ],
     },
+    // ───────────────────────── 13화 ─────────────────────────
+    {
+      id: 13,
+      title: "아빠 레몬 먹어!",
+      summary: "“싫어하는 것도 먹어야 튼튼해지고 근육도 생겨.” 아빠가 태오에게 한 말이, 레몬이 되어 아빠에게 돌아왔다.",
+      lesson: "내가 한 말은 아이가 그대로 돌려줘요. 먼저 해 보이는 게 최고의 잔소리예요.",
+      talk: "우리 가족이 제일 싫어하는 음식은 뭐예요? 오늘 한 입씩 같이 도전해 볼까요?",
+      cover: 4,
+      panels: [
+        {
+          h: 360, bg: "kitchen",
+          chars: [C("taeo", 130, "angry", "hip", { y: 300 })],
+          fp: [["table", 200, 262, { w: 400 }], ["broccoli", 150, 262, { s: 1.1 }]],
+          n: "저녁 식탁. 태오 접시엔 초록 나무가 세 그루.",
+          b: [B("브로콜리 싫어!", 280, 90, "bl", { k: "shout" })],
+        },
+        {
+          h: 380, bg: "kitchen",
+          chars: [C("appa", 120, "proud", "fist", { y: 380 }), C("taeo", 300, "sad", "stand", { y: 320 })],
+          fp: [["table", 200, 290, { w: 400 }], ["broccoli", 300, 290, {}]],
+          b: [B("태오야, 싫어하는 것도 먹어야 튼튼해지고 근육도 생겨.", 150, 60, "b", { w: 230 })],
+          sfx: [FX("불끈", 60, 200, { rot: -10, c: "#e0443e", size: 0.8 })],
+        },
+        {
+          h: 280, bg: "burst:e8f7c8",
+          chars: [bust("taeo", 200, 180, 1.45, "sick", "mouth")],
+          sfx: [FX("우웩…", 320, 90, { rot: 8, c: "#3f9a4a" }), FX("꿀꺽", 80, 240, { rot: -8, c: "#8a6d52", size: 0.8 })],
+        },
+        {
+          h: 340, bg: "kitchen",
+          chars: [C("taeo", 150, "sly", "hold")],
+          fp: [["lemon", 150, 290, { s: 1.1 }]],
+          n: "다음 날, 과일 바구니에서 태오가 발견한 것.",
+          b: [B("(흐흐흐…)", 290, 110, "l", { k: "think" })],
+          sfx: [FX("반짝", 250, 230, { rot: 8, c: "#e3b100", size: 0.8 })],
+        },
+        {
+          h: 320, bg: "burst:ffe27a",
+          chars: [bust("taeo", 180, 200, 1.4, "determined", "give")],
+          fp: [["lemon", 330, 270, { s: 1.4 }]],
+          b: [B("아빠 레몬 먹어!!", 200, 44, "", { k: "shout", w: 240 })],
+        },
+        {
+          h: 280, bg: "burst:c9dcff",
+          chars: [bust("appa", 200, 170, 1.35, "shock", "stand")],
+          b: [B("싫어! 그건 너무 시잖아!", 200, 40, "", { k: "shout", w: 240 })],
+        },
+        {
+          h: 400, bg: "living",
+          chars: [C("taeo", 110, "proud", "point"), C("appa", 300, "guilty", "stand")],
+          fp: [["lemon", 200, 250, { s: 0.9 }]],
+          b: [B("싫어하는 것도 먹어야 튼튼해지고 근육도 생겨!", 140, 70, "b", { k: "shout", w: 220 })],
+          sfx: [FX("똑같이!", 300, 110, { rot: 8, c: "#3b6fd6", size: 0.8 })],
+        },
+        {
+          h: 360, bg: "living",
+          chars: [C("jaei", 110, "laugh", "cover"), C("eomma", 290, "laugh", "hip")],
+          b: [B("아빠가 어제 한 말이랑 똑같아!", 110, 70, "b", { w: 150 }), B("태오는 다 듣고 있다니까~", 300, 70, "b", { w: 150 })],
+          sfx: [FX("깔깔깔", 200, 260, { rot: -8, c: "#ff9f1c" })],
+        },
+        {
+          h: 300, bg: "sparkle:e6e0ff",
+          chars: [bust("appa", 200, 190, 1.35, "determined", "hold")],
+          fp: [["lemon", 200, 290, { s: 1.2, cut: true }]],
+          b: [B("…그래. 아빠가 한 말이니까 아빠가 먼저 먹어야지.", 200, 44, "", { w: 290 })],
+        },
+        {
+          h: 300, bg: "burst:fff08a",
+          chars: [bust("appa", 200, 190, 1.5, "shock", "mouth")],
+          sfx: [FX("시큼!!!", 200, 50, { rot: -6, c: "#e3b100", size: 1.6 }), FX("부르르", 70, 250, { rot: -10, c: "#3b6fd6", size: 0.8 }), FX("부르르", 340, 250, { rot: 10, c: "#3b6fd6", size: 0.8 })],
+        },
+        {
+          h: 380, bg: "living",
+          chars: [C("appa", 130, "proud", "up"), C("taeo", 300, "love", "cheer")],
+          b: [B("크으… 아빠 근육 생겼다!", 140, 70, "b", { k: "shout", w: 170 }), B("진짜?!", 310, 120, "b", { k: "shout" })],
+          sfx: [FX("불끈불끈", 130, 330, { rot: -6, c: "#e0443e", size: 0.7 })],
+        },
+        {
+          h: 380, bg: "kitchen",
+          chars: [C("taeo", 130, "determined", "fist", { y: 320 }), C("appa", 300, "happy", "hip", { y: 380 })],
+          fp: [["table", 200, 290, { w: 400 }], ["broccoli", 140, 290, { one: true }]],
+          n: "그날 저녁.",
+          b: [B("그럼 나도! 브로콜리 먹을래!", 140, 90, "b", { k: "shout", w: 170 })],
+        },
+        {
+          h: 300, bg: "sparkle:fff4c7",
+          chars: [bust("taeo", 200, 190, 1.45, "eating", "fist")],
+          b: [B("나 근육 생겼어?", 200, 44, "", { w: 220 })],
+          sfx: [FX("우물우물", 330, 260, { rot: 8, c: "#8a6d52", size: 0.8 })],
+        },
+        {
+          h: 360, bg: "kitchen",
+          chars: [C("taeo", 110, "sly", "give"), C("jaei", 300, "shock", "stand")],
+          fp: [["lemon", 168, 286, { s: 0.9 }]],
+          b: [B("이제 누나 차례! 누나 레몬 먹어!", 130, 70, "b", { k: "shout", w: 180 })],
+        },
+        {
+          h: 300, bg: "burst:ff9f9f",
+          chars: [bust("jaei", 200, 200, 1.45, "angry", "hip")],
+          b: [B("김태오!!", 200, 50, "", { k: "shout", w: 220 })],
+          sfx: [FX("도망!", 330, 250, { rot: 10, c: "#3b6fd6" })],
+        },
+        {
+          h: 160, bg: "sparkle:fff0d6",
+          fp: [["lemon", 60, 110, { s: 0.8, cut: true }], ["heart", 345, 60, {}]],
+          n: "아빠가 한 말은 태오가 다 기억한다.",
+          n2: "그래서 아빠는 오늘도 먼저 한 입 먹는다.",
+        },
+      ],
+    },
   ];
 
   root.WebtoonData = { CHARACTERS, EPISODES };

@@ -505,6 +505,18 @@
     tablet(x, y, o) {
       return `<g transform="translate(${x} ${y}) rotate(${o.rot || 0}) scale(${o.s || 1})"><rect x="-30" y="-22" width="60" height="44" rx="6" fill="#2f3440" stroke="${INK}" stroke-width="2"/><rect x="-25" y="-17" width="50" height="34" rx="2" fill="#9fd8ff"/></g>`;
     },
+    // 레몬. cut = 반으로 자른 것
+    lemon(x, y, o) {
+      const body = o.cut
+        ? `<circle r="16" fill="#ffe14d" stroke="${INK}" stroke-width="2"/><circle r="12" fill="#fff6a8"/>${[0, 60, 120, 180, 240, 300].map((d) => `<path d="M0 0 L${(Math.cos((d * Math.PI) / 180) * 11).toFixed(1)} ${(Math.sin((d * Math.PI) / 180) * 11).toFixed(1)}" stroke="#ffe14d" stroke-width="1.6"/>`).join("")}`
+        : `<ellipse rx="20" ry="14" fill="#ffe14d" stroke="${INK}" stroke-width="2"/><path d="M-20 0 l-5 -2 M20 0 l5 2" stroke="${INK}" stroke-width="2" stroke-linecap="round"/><ellipse cx="-6" cy="-5" rx="6" ry="2.5" fill="#fff" opacity=".6"/><path d="M4 -13 q6 -8 14 -6 q-6 6 -14 6z" fill="#6cc27a" stroke="${INK}" stroke-width="1.2"/>`;
+      return `<g transform="translate(${x} ${y}) rotate(${o.rot || 0}) scale(${o.s || 1})">${body}</g>`;
+    },
+    // 브로콜리 접시
+    broccoli(x, y, o) {
+      const tree = (dx, dy, k) => `<g transform="translate(${dx} ${dy}) scale(${k})"><rect x="-3" y="-4" width="6" height="12" rx="2" fill="#a6d98a" stroke="${INK}" stroke-width="1.2"/><circle cx="-6" cy="-8" r="6" fill="#3f9a4a" stroke="${INK}" stroke-width="1.2"/><circle cx="6" cy="-8" r="6" fill="#3f9a4a" stroke="${INK}" stroke-width="1.2"/><circle cx="0" cy="-13" r="7" fill="#4caf50" stroke="${INK}" stroke-width="1.2"/></g>`;
+      return `<g transform="translate(${x} ${y}) scale(${o.s || 1})"><ellipse cx="0" cy="0" rx="34" ry="10" fill="#fff" stroke="${INK}" stroke-width="2"/>${tree(-12, -6, 1)}${tree(12, -5, 0.9)}${o.one ? "" : tree(0, -10, 1.1)}</g>`;
+    },
     // 누나 머리끈(분홍 곱창 끈)
     scrunchie(x, y, o) {
       let bumps = "";
