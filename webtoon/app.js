@@ -7,6 +7,7 @@
   const TAEO_WORDS = window.TaeoWords || [];
   const TAEO_SAYINGS = window.TaeoSayings || [];
   const JAEI_WORDS = window.JaeiWords || [];
+  const JAEI_SAYINGS = window.JaeiSayings || [];
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
@@ -82,6 +83,7 @@
     $("wordCount").textContent = `지금까지 ${TAEO_WORDS.length}개`;
     $("taeoWords").innerHTML = TAEO_WORDS.map(wordCard).join("");
     $("taeoSayings").innerHTML = TAEO_SAYINGS.map((w) => `<li class="word saying"><span class="word-say">“${esc(w.say)}”</span><span class="word-what">${esc(w.when)}</span></li>`).join("");
+    $("jaeiSayings").innerHTML = JAEI_SAYINGS.map((w) => `<li class="word saying jaei"><span class="word-say">“${esc(w.say)}”</span><span class="word-what">${esc(w.when)}</span></li>`).join("");
     $("jaeiWords").innerHTML = JAEI_WORDS.map((w) => wordCard(w, "jaei")).join("");
     $("episodeList").innerHTML = EPISODES.map((ep) => {
       const cover = ep.panels[ep.cover || 0];

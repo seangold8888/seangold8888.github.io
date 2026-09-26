@@ -406,6 +406,7 @@
       }).join("");
       art += `<circle cx="34" cy="-24" r="5" fill="#ffd34d"/><path d="M-42 20 H42" stroke="#6cc27a" stroke-width="3"/>`;
       if (o.v === "new") art += `<path d="M-44 16 q4 -12 10 -8 q5 -6 8 2 l-2 6z" fill="#6cc27a" stroke="#2b6b35" stroke-width="1.2"/><path d="M-6 -30 l2 4 4 1 -3 3 1 4 -4 -2 -4 2 1 -4 -3 -3 4 -1z" fill="#ff8fb3"/>`;
+      if (o.v === "scribble") art += `<path d="M-40 -24 l14 10 -12 8 16 6 -14 10 18 4 M8 -28 l10 14 8 -14 8 14 8 -14 M-20 10 q10 -20 20 0 t20 0 t18 0" stroke="#3b3b3b" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
       let stain = "";
       if (o.v === "stain") stain = `<path d="M-30 -20 Q-10 -30 6 -18 Q26 -24 30 -4 Q40 10 20 18 Q0 26 -18 16 Q-38 12 -30 -20Z" fill="#fffdf2" opacity=".85" stroke="#e8dcc0" stroke-width="2"/><path d="M-12 -6 q6 4 14 -2" stroke="#e8dcc0" stroke-width="2" fill="none"/><path d="M-44 -30 l4 60" stroke="#c8b98f" stroke-width="3" opacity=".5"/>`;
       return `<g transform="translate(${x} ${y}) rotate(${o.rot || 0}) scale(${s})"><rect x="-48" y="-36" width="96" height="66" rx="3" fill="#fff" stroke="${INK}" stroke-width="2"/>${art}${stain}</g>`;
@@ -478,6 +479,15 @@
     figures(x, y, o) {
       const one = (dx, c, visor) => `<g transform="translate(${dx} 0)"><rect x="-9" y="-30" width="18" height="22" rx="5" fill="${c}" stroke="${INK}" stroke-width="1.8"/><rect x="-8" y="-9" width="6" height="9" rx="2" fill="${c}" stroke="${INK}" stroke-width="1.5"/><rect x="2" y="-9" width="6" height="9" rx="2" fill="${c}" stroke="${INK}" stroke-width="1.5"/><circle cx="0" cy="-40" r="10" fill="${c}" stroke="${INK}" stroke-width="1.8"/><rect x="-7" y="-43" width="14" height="5" rx="2" fill="${visor}"/><path d="M-9 -26 l-8 10 M9 -26 l8 10" stroke="${INK}" stroke-width="3" stroke-linecap="round"/></g>`;
       return `<g transform="translate(${x} ${y}) scale(${o.s || 1})">${one(-34, "#3a3550", "#b99ad9")}${one(0, "#e0443e", "#ffd34d")}${one(34, "#6cc27a", "#fff")}</g>`;
+    },
+    // 누나 머리끈(분홍 곱창 끈)
+    scrunchie(x, y, o) {
+      let bumps = "";
+      for (let i = 0; i < 10; i++) {
+        const a = (i / 10) * Math.PI * 2;
+        bumps += `<circle cx="${(Math.cos(a) * 9).toFixed(1)}" cy="${(Math.sin(a) * 9).toFixed(1)}" r="5" fill="#ff6fa8" stroke="${INK}" stroke-width="1.2"/>`;
+      }
+      return `<g transform="translate(${x} ${y}) scale(${o.s || 1})">${bumps}<circle r="4.5" fill="#fff"/></g>`;
     },
     // 반찬 접시 (우엉조림)
     banchan(x, y, o) {

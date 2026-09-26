@@ -21,6 +21,13 @@
     { say: "맛있는 거 죠!", when: "하루에도 몇 번씩" },
     { say: "오늘 티비 보는 날이야?", when: "아침에 눈 뜨자마자" },
     { say: "어린이집 안 가는 날이야?", when: "매일 아침" },
+    { say: "아빠 내 말 안 들으면 피노키오야!", when: "아빠가 “이따가”만 할 때" },
+    { say: "엄마 맛있는 거 안 주면 소리 지른다!", when: "간식이 먹고 싶을 때" },
+  ];
+
+  // 재이가 요즘 하는 말. say = 말, when = 언제 하는지.
+  const JAEI_SAYINGS = [
+    { say: "김태오!", when: "참고 참다가 폭발했을 때 (그다음은 엉덩이 찰싹!)" },
   ];
 
   // 재이가 아기 때 한 말. say = 재이가 한 말, real = 원래 말, what = 사연.
@@ -31,4 +38,5 @@
   root.TaeoWords = TAEO_WORDS;
   root.TaeoSayings = TAEO_SAYINGS;
   root.JaeiWords = JAEI_WORDS;
+  root.JaeiSayings = JAEI_SAYINGS;
 })(typeof window !== "undefined" ? window : globalThis);
