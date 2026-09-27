@@ -285,7 +285,7 @@ h1,h2,.primary,.chips span,.puzzle-head h1,.stage-num,.badge-num,.step,.tag{font
 <script>
 'use strict';
 let route='hub'; try{route=localStorage.getItem('bori:route')||'hub';}catch(e){}
-function render(){ if(route==='mystery') renderMystery(); else if(route==='quiz') renderQuiz(); else if(route==='ladder') renderLadder(); else if(route==='onecard') renderOneCard(); else if(route==='memory') renderMemory(); else if(route==='whack') renderWhack(); else if(route==='simon') renderSimon(); else renderHub(); }
+function render(){ if(route==='room'){ if(typeof renderRoom==='function') renderRoom(); else renderHub(); } else if(route==='mystery') renderMystery(); else if(route==='quiz') renderQuiz(); else if(route==='ladder') renderLadder(); else if(route==='onecard') renderOneCard(); else if(route==='memory') renderMemory(); else if(route==='whack') renderWhack(); else if(route==='simon') renderSimon(); else renderHub(); }
 function go(r){route=r; try{localStorage.setItem('bori:route',r);}catch(e){} window.scrollTo(0,0); render();}
 /* ============ 데이터 (난이도 상향판) ============ */
 const STAGES=['room','cafe','garden','party'];
@@ -495,7 +495,7 @@ function stageProgress(){
 function winStage(stage){
   SFX.gem(); FX.burst(90,.3);
   feedback=GEMS[STAGE_GEM[stage]][0]+' 보석을 찾았어요!'; feedbackKind='good';
-  if(!state.completed.includes(stage)) state.completed.push(stage);
+  if(!state.completed.includes(stage)){ state.completed.push(stage); window.ribbonEarn&&ribbonEarn(5,'보석을 찾았어요','gem',1); }
   state.pendingReward=stage; set({});
 }
 function pickDecor(id){
@@ -559,7 +559,7 @@ function openBox(){
     return miss((n+1)+'번째 칸으로 돌아왔어요. '+(n===0?'맨 앞 단서를 확인해요.':n===3?'맨 뒤 단서를 확인해요.':'화살표로 붙은 보석을 살펴봐요.'));
   }
   SFX.win(); FX.burst(150,.25); setTimeout(()=>FX.burst(120,.15),400);
-  feedback=''; set({status:'finished'});
+  feedback=''; window.ribbonEarn&&ribbonEarn(15,'미스터리 해결!','mystery',1); set({status:'finished'});
 }
 
 /* ============ 뷰 ============ */
@@ -1043,7 +1043,7 @@ function ladderRoll(){
     else { L.pos[p]=np; L.msg=`${who}: ${d} 칸 앞으로! (${np}칸)`; L.kind=''; }
     renderLadder();
     setTimeout(()=>{
-      if(np===100){ L.winner=p; SFX.win(); FX.burst(160,.3); renderLadder(); return; }
+      if(np===100){ L.winner=p; SFX.win(); FX.burst(160,.3); window.ribbonEarn&&ribbonEarn(L.cpu?(p===0?8:3):6, L.cpu&&p!==0?'다음엔 이길 거예요':'사다리 도착!','ladder',p===0?1:0); renderLadder(); return; }
       if(LADDERS[np]){ L.pos[p]=LADDERS[np]; L.msg=`🪜 사다리! ${who}가 ${LADDERS[np]}칸으로 쑥 올라가요!`; L.kind='good'; SFX.gem(); }
       else if(SLIDES[np]){ L.pos[p]=SLIDES[np]; L.msg=`☁️ 구름 미끄럼틀~ ${who}가 ${SLIDES[np]}칸으로 미끄러졌어요.`; L.kind='bad'; SFX.no(); }
       if(d===6&&!LADDERS[np]&&!SLIDES[np]){ L.msg+=' 6이 나와서 한 번 더!'; } else L.turn=1-p;
@@ -1111,7 +1111,7 @@ function ocApply(c,who){ // who 0 me / 1 cpu ; returns 'again'|'skip'|'next'|'pi
 }
 function ocEndTurn(res,who){
   const O=oc; const hand=who===0?O.me:O.cpu;
-  if(!hand.length){ O.winner=who; if(who===0){SFX.win();FX.burst(160,.3);} else SFX.no(); renderOneCard(); return; }
+  if(!hand.length){ O.winner=who; if(who===0){SFX.win();FX.burst(160,.3);} else SFX.no(); window.ribbonEarn&&ribbonEarn(who===0?8:3, who===0?'원카드 승리!':'잘 싸웠어요','onecard',who===0?1:0); renderOneCard(); return; }
   if(res==='again'){ O.turn=who; O.msg=(who===0?'K! 한 번 더 내요.':'쿠로미가 K를 냈어요. 한 번 더!'); O.kind='info'; }
   else if(res==='skip'){ O.turn=who; O.msg=(who===0?'J! 쿠로미 차례를 건너뛰어요.':'쿠로미가 J! 내 차례를 건너뛰었어요.'); O.kind=who===0?'good':'bad'; }
   else { O.turn=1-who; }
@@ -1183,7 +1183,7 @@ function memFlip(i){
     M.tries++;
     const [a,b]=M.up.map(x=>M.cards[x]);
     if(a.k===b.k){ M.found.add(a.k); M.up=[]; SFX.ok(); FX.burst(24,.5);
-      if(M.found.size===8){ M.done=true; SFX.win(); FX.burst(130,.3);
+      if(M.found.size===8){ M.done=true; SFX.win(); FX.burst(130,.3); window.ribbonEarn&&ribbonEarn(3*(M.tries<=13?3:M.tries<=19?2:1),'짝 맞추기 완성','memory',1);
         try{const best=+localStorage.getItem('bori:membest')||0; if(!best||M.tries<best) localStorage.setItem('bori:membest',String(M.tries));}catch(e){} }
     } else { M.lock=true; renderMemory(); setTimeout(()=>{M.up=[];M.lock=false;SFX.no();renderMemory();},850); return; }
   }
@@ -1208,7 +1208,7 @@ function whackStart(){
   W.clockT=setInterval(()=>{
     if(route!=='whack'){newWhack();return;}
     W.time--;
-    if(W.time<=0){ clearInterval(W.spawnT); clearInterval(W.clockT); W.run=false; W.over=true; W.holes=Array(9).fill(null);
+    if(W.time<=0){ clearInterval(W.spawnT); clearInterval(W.clockT); W.run=false; W.over=true; W.holes=Array(9).fill(null); window.ribbonEarn&&ribbonEarn(Math.min(12,Math.floor(W.score/2)),'쿠로미 '+W.score+'마리!','whack',W.score);
       try{const b=+localStorage.getItem('bori:wkbest')||0; if(W.score>b) localStorage.setItem('bori:wkbest',String(W.score));}catch(e){}
       if(W.score>0){SFX.win();FX.burst(110,.3);} }
     renderWhack();
@@ -1277,7 +1277,7 @@ function siPress(g){
     if(S.idx===S.seq.length){ SFX.ok(); FX.burst(20,.5);
       try{const b=+localStorage.getItem('bori:sibest')||0; if(S.seq.length>b) localStorage.setItem('bori:sibest',String(S.seq.length));}catch(e){}
       setTimeout(()=>{ if(route!=='simon') return; S.seq.push(SI_GEMS[Math.floor(Math.random()*4)]); siPlaySeq(); },800); }
-  } else { S.phase='over'; SFX.no(); renderSimon(); }
+  } else { S.phase='over'; SFX.no(); window.ribbonEarn&&ribbonEarn(Math.min(12,S.seq.length-1),(S.seq.length-1)+'단계 성공','simon',S.seq.length-1); renderSimon(); }
 }
 
 /* ============ 허브/게임 이벤트 ============ */
@@ -1290,7 +1290,7 @@ document.addEventListener('click',e=>{
     case 'quiz': SFX.ok(); newQuiz(); go('quiz'); break;
     case 'quiz-new': SFX.ok(); newQuiz(); renderQuiz(); break;
     case 'quiz-pick': { if(quiz.picked!==null) return; const i=+b.dataset.i; quiz.picked=i; if(i===quiz.qs[quiz.i].a){quiz.score++;SFX.ok();FX.burst(30,.4);} else SFX.no(); renderQuiz(); break; }
-    case 'quiz-next': SFX.tap(); if(quiz.i===9){quiz.done=true; if(quiz.score>=6){SFX.win();FX.burst(120,.3);}} else {quiz.i++;quiz.picked=null;} renderQuiz(); break;
+    case 'quiz-next': SFX.tap(); if(quiz.i===9){quiz.done=true; if(quiz.score>=6){SFX.win();FX.burst(120,.3);} window.ribbonEarn&&ribbonEarn(quiz.score,quiz.score+'문제 맞혔어요','quiz',quiz.score);} else {quiz.i++;quiz.picked=null;} renderQuiz(); break;
     case 'ladder': SFX.ok(); newLadder(); go('ladder'); break;
     case 'ladder-new': SFX.tap(); newLadder(); renderLadder(); break;
     case 'ladder-roll': ladderRoll(); break;
@@ -1315,6 +1315,268 @@ if(route==='quiz'&&!quiz) route='hub'; if(route==='ladder'&&!ladder) route='hub'
 render();
 </script>
 
+<style>
+/* ===== 내 리본방(2026-09-28): 놀이마다 리본 🎀 → 방 꾸미기 · 친구 초대 · 오늘의 미션 ===== */
+@media (min-width:900px){
+  .game{width:min(100%,60rem)}
+  .tiles{grid-template-columns:repeat(4,1fr)}
+  .hub .hero-art{aspect-ratio:21/7;background-position:center 34%}
+}
+.rb-bar{display:flex;align-items:center;justify-content:center;gap:.6rem;flex-wrap:wrap;margin:.2rem 0 .8rem}
+.rb-count{font-family:var(--disp);font-size:1.3rem;color:#c0306a;background:#fff0f6;border:2px solid #ffc9dc;border-radius:99px;padding:.25rem .9rem}
+.room-wrap{position:relative;border-radius:1.5rem;overflow:hidden;border:3px solid #fff;box-shadow:0 .6rem 1.6rem #502e6f40;background:#fde9f2;cursor:pointer}
+.room-wrap svg{display:block;width:100%;height:auto}
+.room-wrap .edit-chip{position:absolute;right:.7rem;bottom:.7rem;background:#fff;color:#7b5cc4;font-family:var(--disp);border-radius:99px;padding:.35rem .9rem;box-shadow:0 .3rem .8rem #4a2c8a33}
+.room-wrap .friends-chip{position:absolute;left:.7rem;top:.7rem;background:#ffffffd9;color:#7b5cc4;font-weight:900;font-size:.8rem;border-radius:99px;padding:.25rem .7rem}
+.rb-row{display:grid;gap:.8rem;margin-bottom:.9rem}
+@media (min-width:900px){.rb-row{grid-template-columns:1.45fr 1fr;align-items:center}}
+.missions{margin:0;background:#fff8ec;border:2px dashed #eccf9c;border-radius:1.2rem;padding:.7rem .9rem}
+.missions h3{font-family:var(--disp);font-weight:400;color:#8a5a1c;font-size:1.05rem;margin-bottom:.4rem}
+.missions li{list-style:none;display:flex;align-items:center;gap:.5rem;font-weight:800;color:#6a5a4c;font-size:.9rem;padding:.2rem 0}
+.missions li b{display:grid;place-items:center;width:1.5rem;height:1.5rem;border-radius:50%;background:#fff;border:2px solid #e8cf9f;font-size:.8rem}
+.missions li.done{color:#2f7a52}.missions li.done b{background:#bff0d2;border-color:#7ad6a2}
+.missions li em{margin-left:auto;font-style:normal;color:#c0306a;font-size:.8rem}
+.tile .rb{position:absolute;bottom:.55rem;right:.6rem;background:#ffffffd9;color:#c0306a;border-radius:99px;padding:.1rem .45rem;font-size:.66rem;font-weight:900}
+#rb-toast{position:fixed;left:50%;top:1rem;transform:translate(-50%,-150%);z-index:80;background:#fff;border:3px solid #ffc9dc;color:#c0306a;
+  font-family:var(--disp);font-size:1.25rem;padding:.5rem 1.2rem;border-radius:99px;box-shadow:0 .6rem 1.4rem #4a2c8a44;transition:transform .35s cubic-bezier(.2,1.4,.4,1);pointer-events:none;white-space:nowrap}
+#rb-toast.show{transform:translate(-50%,0)}
+/* 꾸미기 화면 */
+.room-edit{padding:1rem 1rem 2rem;background:linear-gradient(170deg,#6f52b6 0,#9c7ad3 40%,#f5c1d6 100%)}
+.room-edit .panel{background:linear-gradient(#fffdfe,#fff5fa);border:3px solid #fff;border-radius:1.8rem;padding:1rem;box-shadow:0 1.6rem 3.6rem #2b165a55}
+.room-edit .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem}
+.room-edit .head h2{font-size:1.6rem;color:var(--deep)}
+.room-edit .home{background:#f3ebff;color:#6b52a3;border-radius:99px;padding:.45rem .9rem;font-weight:900}
+.slot-tabs{display:flex;flex-wrap:wrap;gap:.4rem;margin:.8rem 0 .6rem}
+.slot-tabs button{padding:.45rem .85rem;border-radius:99px;background:#fff;border:2px solid #e6d9f6;font-weight:900;color:#6b52a3;font-size:.9rem}
+.slot-tabs button.on{background:#ee5f9a;border-color:#ee5f9a;color:#fff}
+.shop{display:grid;grid-template-columns:repeat(auto-fill,minmax(8.5rem,1fr));gap:.55rem}
+.shop button{display:flex;flex-direction:column;align-items:center;gap:.25rem;padding:.55rem;border-radius:1.1rem;background:#fff;border:3px solid #eee3f7;box-shadow:0 .25rem 0 #e0d2ee}
+.shop button svg{width:100%;height:4.2rem}
+.shop button strong{font-size:.9rem;color:#4d3c6d}
+.shop button small{font-weight:900;font-size:.78rem;color:#8c8193}
+.shop button.on{border-color:#ee5f9a}.shop button.on small{color:#ee5f9a}
+.shop button.buy small{color:#c0306a}
+.shop button.poor{opacity:.5}
+.shop .fav{font-size:.68rem;color:#7b5cc4;font-weight:900}
+.room-msg{text-align:center;font-weight:900;color:#7a6a94;margin:.6rem 0 0;min-height:1.4rem}
+</style>
+<div id="rb-toast"></div>
+<script>
+'use strict';
+/* ---------- 지갑·방 저장 ---------- */
+const RB_KEY='bori:room:v1';
+function rbLoad(){
+  const d={ribbons:0,owned:{},equip:{},missions:{day:'',done:[]},partyDone:false,visits:{}};
+  try{const r=JSON.parse(localStorage.getItem(RB_KEY)||'null'); if(r&&typeof r==='object'){
+    d.ribbons=Number.isFinite(+r.ribbons)?Math.max(0,Math.min(99999,Math.floor(+r.ribbons))):0;
+    d.partyDone=!!r.partyDone;
+    for(const s of Object.keys(ROOM_ITEMS)){
+      const ids=ROOM_ITEMS[s].map(x=>x.id);
+      d.owned[s]=Array.from(new Set([ROOM_ITEMS[s][0].id].concat(Array.isArray(r.owned&&r.owned[s])?r.owned[s].filter(i=>ids.includes(i)):[])));
+      const eq=r.equip&&r.equip[s]; d.equip[s]=d.owned[s].includes(eq)?eq:ROOM_ITEMS[s][0].id;
+    }
+    if(r.missions&&typeof r.missions.day==='string'&&Array.isArray(r.missions.done)) d.missions={day:r.missions.day,done:r.missions.done.filter(x=>typeof x==='string').slice(0,4)};
+  }}catch(e){}
+  for(const s of Object.keys(ROOM_ITEMS)){ if(!d.owned[s]) d.owned[s]=[ROOM_ITEMS[s][0].id]; if(!d.equip[s]) d.equip[s]=ROOM_ITEMS[s][0].id; }
+  return d;
+}
+function rbSave(){try{localStorage.setItem(RB_KEY,JSON.stringify(RB));}catch(e){}}
+
+/* ---------- 가구 ---------- */
+// fav: 이 가구를 놓으면 놀러 오는 친구
+const ROOM_SLOTS=[['wall','벽지'],['window','창문'],['bed','침대'],['sofa','소파'],['table','탁자'],['lamp','조명'],['rug','러그'],['deco','장식']];
+const ROOM_ITEMS={
+  wall:[{id:'stripe',name:'분홍 줄무늬',price:0},{id:'hearts',name:'하트 벽지',price:12},{id:'stars',name:'별 벽지',price:12},{id:'clouds',name:'구름 벽지',price:18}],
+  window:[{id:'lace',name:'레이스 커튼',price:0},{id:'night',name:'별밤 창문',price:18},{id:'rainbow',name:'무지개 창문',price:24}],
+  bed:[{id:'wood',name:'나무 침대',price:0},{id:'ribbon',name:'리본 침대',price:22},{id:'cloud',name:'구름 침대',price:28,fav:'cinnamoroll'}],
+  sofa:[{id:'none',name:'비워 두기',price:0},{id:'pudding',name:'푸딩 쿠션',price:16},{id:'strawberry',name:'딸기 소파',price:28,fav:'myMelody'}],
+  table:[{id:'none',name:'비워 두기',price:0},{id:'tea',name:'티 테이블',price:14},{id:'applepie',name:'사과파이 테이블',price:28,fav:'helloKitty'}],
+  lamp:[{id:'none',name:'비워 두기',price:0},{id:'star',name:'별 조명',price:14},{id:'moon',name:'달 조명',price:26,fav:'kuromi'}],
+  rug:[{id:'none',name:'비워 두기',price:0},{id:'heart',name:'하트 러그',price:10},{id:'rainbow',name:'무지개 러그',price:18}],
+  deco:[{id:'none',name:'비워 두기',price:0},{id:'roses',name:'장미 화분',price:10},{id:'bear',name:'곰 인형 선반',price:18},{id:'piano',name:'작은 피아노',price:32}]
+};
+const FRIEND_SPOT={cinnamoroll:[215,330],myMelody:[790,340],helloKitty:[500,392],kuromi:[640,210]};
+const FRIEND_LINE={cinnamoroll:'구름 침대 폭신해!',myMelody:'딸기 소파 최고야!',helloKitty:'사과파이 냠냠!',kuromi:'달 조명 멋지잖아!'};
+let RB=rbLoad();
+
+const O='#5b3a6e';
+function svgWall(id){
+  let pat='';
+  if(id==='stripe') pat=`<pattern id="pw" width="60" height="60" patternUnits="userSpaceOnUse"><rect width="60" height="60" fill="#ffe3ef"/><rect width="30" height="60" fill="#ffd3e4"/></pattern>`;
+  else if(id==='hearts') pat=`<pattern id="pw" width="80" height="80" patternUnits="userSpaceOnUse"><rect width="80" height="80" fill="#ffe9f2"/><path d="M40 52 C22 38 26 24 40 32 C54 24 58 38 40 52Z" fill="#ffb3cf"/></pattern>`;
+  else if(id==='stars') pat=`<pattern id="pw" width="90" height="90" patternUnits="userSpaceOnUse"><rect width="90" height="90" fill="#ece4ff"/><path d="M45 22 L51 38 L68 38 L54 48 L59 64 L45 54 L31 64 L36 48 L22 38 L39 38Z" fill="#fff0a8"/></pattern>`;
+  else pat=`<pattern id="pw" width="160" height="110" patternUnits="userSpaceOnUse"><rect width="160" height="110" fill="#dff0ff"/><g fill="#fff"><circle cx="40" cy="50" r="18"/><circle cx="62" cy="42" r="22"/><circle cx="84" cy="52" r="16"/><rect x="40" y="50" width="46" height="16" rx="8"/></g></pattern>`;
+  return `<defs>${pat}</defs><rect width="1000" height="430" fill="url(#pw)"/><rect y="400" width="1000" height="30" fill="#fff" opacity=".7"/>`;
+}
+function svgFloor(){ return `<rect y="430" width="1000" height="170" fill="#e9c49a"/>${[0,1,2,3,4,5,6].map(i=>`<rect x="${i*150-20}" y="430" width="6" height="170" fill="#d6aa7c"/>`).join('')}<rect y="428" width="1000" height="8" fill="#c99b6c"/>`; }
+function svgWindow(id){
+  const sky=id==='night'?`<rect x="400" y="70" width="200" height="190" fill="#2e3570"/><circle cx="555" cy="110" r="18" fill="#fff6c4"/>${[[430,100],[470,150],[520,90],[450,210],[570,200]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="4" fill="#fff"/>`).join('')}`
+    :id==='rainbow'?`<rect x="400" y="70" width="200" height="190" fill="#bfe4ff"/>${['#ff7aa8','#ffd34d','#7fe0c4','#7fb8ff'].map((c,i)=>`<path d="M${420+i*12} 250 A${80-i*12} ${80-i*12} 0 0 1 ${580-i*12} 250" stroke="${c}" stroke-width="11" fill="none"/>`).join('')}`
+    :`<rect x="400" y="70" width="200" height="190" fill="#cfeaff"/><g fill="#fff"><circle cx="450" cy="130" r="18"/><circle cx="472" cy="120" r="22"/><circle cx="494" cy="132" r="15"/></g>`;
+  const curtain=id==='night'?'#8e7ad8':id==='rainbow'?'#ffb3cf':'#ffffff';
+  return `${sky}<rect x="400" y="70" width="200" height="190" fill="none" stroke="${O}" stroke-width="8"/><line x1="500" y1="70" x2="500" y2="260" stroke="${O}" stroke-width="5"/>
+  <path d="M380 60 Q420 170 400 270 L370 270 Z" fill="${curtain}" stroke="${O}" stroke-width="3"/><path d="M620 60 Q580 170 600 270 L630 270 Z" fill="${curtain}" stroke="${O}" stroke-width="3"/>
+  <rect x="370" y="52" width="260" height="14" rx="7" fill="#f0a8c8" stroke="${O}" stroke-width="3"/>`;
+}
+function svgBed(id){
+  if(id==='cloud') return `<g stroke="${O}" stroke-width="4"><rect x="60" y="360" width="300" height="80" rx="30" fill="#e6f4ff"/>
+    <g fill="#fff"><circle cx="90" cy="345" r="42"/><circle cx="150" cy="330" r="48"/><circle cx="220" cy="336" r="46"/><circle cx="290" cy="330" r="48"/><circle cx="340" cy="348" r="36"/></g>
+    <rect x="80" y="430" width="16" height="36" fill="#bfe4ff"/><rect x="324" y="430" width="16" height="36" fill="#bfe4ff"/></g>`;
+  const frame=id==='ribbon'?'#ff8fb4':'#c98b5a', sheet=id==='ribbon'?'#fff0f6':'#fffaf2', blanket=id==='ribbon'?'#ff5c8a':'#8fd0ff';
+  return `<g stroke="${O}" stroke-width="4"><rect x="60" y="270" width="60" height="190" rx="18" fill="${frame}"/>
+    <rect x="80" y="350" width="290" height="80" rx="14" fill="${sheet}"/><rect x="170" y="344" width="200" height="90" rx="16" fill="${blanket}"/>
+    <rect x="96" y="326" width="70" height="36" rx="16" fill="#fff"/><rect x="70" y="424" width="310" height="22" rx="8" fill="${frame}"/>
+    ${id==='ribbon'?`<path d="M92 262 L62 244 L62 280 Z M92 262 L122 244 L122 280 Z" fill="#ff5c8a"/><circle cx="92" cy="262" r="9" fill="#ffb3cf"/>`:''}</g>`;
+}
+function svgSofa(id){
+  if(id==='none') return '';
+  if(id==='pudding') return `<g stroke="${O}" stroke-width="4"><path d="M720 450 L740 380 L860 380 L880 450 Z" fill="#ffe27a"/><path d="M740 380 Q800 352 860 380 Z" fill="#9c6326"/><ellipse cx="800" cy="452" rx="92" ry="14" fill="#fff"/></g>`;
+  return `<g stroke="${O}" stroke-width="4"><rect x="660" y="330" width="280" height="90" rx="40" fill="#ff6b8a"/>
+    ${[[700,352],[770,366],[850,350],[905,368],[730,390],[880,392]].map(([x,y])=>`<ellipse cx="${x}" cy="${y}" rx="4" ry="6" fill="#fff5c4" stroke="none"/>`).join('')}
+    <path d="M760 330 Q800 300 840 330" fill="#4fbe6a"/><rect x="650" y="390" width="300" height="60" rx="24" fill="#ff8fa8"/><rect x="670" y="446" width="16" height="22" fill="#9c6326"/><rect x="914" y="446" width="16" height="22" fill="#9c6326"/></g>`;
+}
+function svgTable(id){
+  if(id==='none') return '';
+  const top=`<ellipse cx="500" cy="440" rx="90" ry="22" fill="#fff" stroke="${O}" stroke-width="4"/><rect x="490" y="440" width="20" height="60" fill="#c98b5a" stroke="${O}" stroke-width="4"/><ellipse cx="500" cy="502" rx="46" ry="10" fill="#c98b5a" stroke="${O}" stroke-width="4"/>`;
+  if(id==='tea') return top+`<g stroke="${O}" stroke-width="3"><path d="M470 430 L474 408 L500 408 L504 430 Z" fill="#ffc2dd"/><path d="M504 414 Q516 418 504 426" fill="none"/><rect x="520" y="414" width="30" height="16" rx="5" fill="#fff0a8"/></g>`;
+  return top+`<g stroke="${O}" stroke-width="3"><ellipse cx="500" cy="424" rx="52" ry="14" fill="#e8a454"/><path d="M452 424 Q500 400 548 424" fill="#f4c878"/>${[470,490,510,530].map(x=>`<line x1="${x}" y1="416" x2="${x+8}" y2="424"/>`).join('')}
+    <circle cx="560" cy="416" r="12" fill="#ff5c5c"/><path d="M560 404 L566 396" stroke="#4fbe6a"/></g>`;
+}
+function svgLamp(id){
+  if(id==='none') return '';
+  const glow=`<circle cx="760" cy="150" r="70" fill="#fff6b0" opacity=".45"/>`;
+  if(id==='star') return `${glow}<line x1="760" y1="0" x2="760" y2="112" stroke="${O}" stroke-width="3"/><path d="M760 112 L772 140 L802 140 L778 158 L788 188 L760 170 L732 188 L742 158 L718 140 L748 140Z" fill="#ffe066" stroke="${O}" stroke-width="3"/>`;
+  return `${glow}<line x1="760" y1="0" x2="760" y2="104" stroke="${O}" stroke-width="3"/><path d="M780 110 A46 46 0 1 0 780 192 A36 36 0 1 1 780 110Z" fill="#c9a8ff" stroke="${O}" stroke-width="3"/><circle cx="742" cy="140" r="6" fill="#ff5ca8"/>`;
+}
+function svgRug(id){
+  if(id==='none') return '';
+  if(id==='heart') return `<path d="M500 590 C360 540 380 470 500 510 C620 470 640 540 500 590Z" fill="#ffb3cf" stroke="#fff" stroke-width="6"/>`;
+  return ['#ff7aa8','#ffd34d','#7fe0c4','#7fb8ff'].map((c,i)=>`<ellipse cx="500" cy="540" rx="${300-i*44}" ry="${54-i*9}" fill="${c}"/>`).join('');
+}
+function svgDeco(id){
+  if(id==='none') return '';
+  if(id==='roses') return `<g stroke="${O}" stroke-width="3"><path d="M905 520 L915 460 L965 460 L975 520 Z" fill="#c98b5a"/><line x1="940" y1="460" x2="940" y2="400"/><line x1="925" y1="460" x2="915" y2="410"/><line x1="955" y1="460" x2="965" y2="408"/>
+    <circle cx="940" cy="394" r="16" fill="#ff5c8a"/><circle cx="913" cy="404" r="13" fill="#ff8fb4"/><circle cx="967" cy="402" r="13" fill="#ff5c8a"/></g>`;
+  if(id==='bear') return `<g stroke="${O}" stroke-width="3"><rect x="80" y="170" width="240" height="14" rx="6" fill="#c98b5a"/>
+    <circle cx="140" cy="140" r="26" fill="#d9a86a"/><circle cx="120" cy="118" r="10" fill="#d9a86a"/><circle cx="160" cy="118" r="10" fill="#d9a86a"/><circle cx="132" cy="138" r="3" fill="${O}"/><circle cx="148" cy="138" r="3" fill="${O}"/>
+    <rect x="200" y="130" width="22" height="40" fill="#7fb8ff"/><rect x="224" y="136" width="20" height="34" fill="#ffd34d"/><rect x="246" y="126" width="22" height="44" fill="#ff8fb4"/></g>`;
+  return `<g stroke="${O}" stroke-width="4"><rect x="870" y="400" width="110" height="70" rx="10" fill="#fff"/><rect x="870" y="400" width="110" height="26" rx="10" fill="#3d3350"/>
+    ${[0,1,2,3,4].map(i=>`<rect x="${878+i*20}" y="428" width="16" height="30" fill="#fff" stroke-width="2"/>`).join('')}<rect x="880" y="470" width="10" height="40" fill="#3d3350"/><rect x="960" y="470" width="10" height="40" fill="#3d3350"/>
+    <path d="M900 380 L900 360 L916 356" fill="none" stroke-width="3"/><circle cx="896" cy="382" r="6" fill="${O}"/></g>`;
+}
+function friendsHere(eq){
+  const out=[];
+  for(const s of Object.keys(ROOM_ITEMS)){ const it=ROOM_ITEMS[s].find(x=>x.id===eq[s]); if(it&&it.fav) out.push(it.fav); }
+  return out;
+}
+function roomSvg(eq,withFriends){
+  eq=eq||RB.equip;
+  const fr=withFriends?friendsHere(eq):[];
+  const friendSvg=fr.map((f,i)=>{const [x,y]=FRIEND_SPOT[f];return `<g class="rb-friend"><circle cx="${x}" cy="${y}" r="46" fill="#fff" stroke="#fff" stroke-width="8"/>
+    <foreignObject x="${x-42}" y="${y-42}" width="84" height="84"><div xmlns="http://www.w3.org/1999/xhtml" class="portrait ${f}" style="width:84px;height:84px;margin:0;border-width:0;box-shadow:none"></div></foreignObject>
+    <g transform="translate(${x+30},${y-70})"><rect x="0" y="-22" width="${FRIEND_LINE[f].length*17+20}" height="34" rx="17" fill="#fff" stroke="#ffc9dc" stroke-width="3"/><text x="10" y="2" font-size="17" font-weight="900" fill="#c0306a" font-family="Malgun Gothic,sans-serif">${FRIEND_LINE[f]}</text></g></g>`;}).join('');
+  return `<svg viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg">${svgWall(eq.wall)}${svgFloor()}${svgWindow(eq.window)}${svgLamp(eq.lamp)}${svgRug(eq.rug)}${svgDeco(eq.deco)}${svgBed(eq.bed)}${svgSofa(eq.sofa)}${svgTable(eq.table)}${friendSvg}</svg>`;
+}
+function itemSvg(slot,id){
+  const eq=Object.assign({},RB.equip,{[slot]:id});
+  const views={wall:'0 0 1000 430',window:'360 40 280 240',bed:'40 230 360 250',sofa:'640 300 320 180',table:'400 380 200 130',lamp:'680 0 160 210',rug:'180 460 640 140',deco:slot==='deco'&&id==='bear'?'70 90 260 110':'860 340 130 180'};
+  const part=slot==='wall'?svgWall(id):slot==='window'?svgWindow(id):slot==='bed'?svgBed(id):slot==='sofa'?svgSofa(id):slot==='table'?svgTable(id):slot==='lamp'?svgLamp(id):slot==='rug'?svgRug(id):svgDeco(id);
+  void eq;
+  return `<svg viewBox="${views[slot]}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${slot==='wall'?'':`<rect x="-100" y="-100" width="1200" height="800" fill="#fbf6ff"/>`}${part||'<text x="50%" y="50%" text-anchor="middle" font-size="40" fill="#b9a6d1">—</text>'}</svg>`;
+}
+
+/* ---------- 리본 벌기·미션 ---------- */
+function dayKey(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+const MISSION_POOL=[
+  {id:'quiz7',text:'산리오 퀴즈 7점 이상',test:(k,v)=>k==='quiz'&&v>=7},
+  {id:'mem',text:'같은 그림 찾기 끝내기',test:k=>k==='memory'},
+  {id:'wk15',text:'쿠로미 15마리 잡기',test:(k,v)=>k==='whack'&&v>=15},
+  {id:'si5',text:'보석 멜로디 5단계',test:(k,v)=>k==='simon'&&v>=5},
+  {id:'oc',text:'원카드에서 쿠로미 이기기',test:(k,v)=>k==='onecard'&&v===1},
+  {id:'ladder',text:'주사위 사다리 한 판',test:k=>k==='ladder'},
+  {id:'gem',text:'미스터리 보석 1개 찾기',test:k=>k==='gem'},
+  {id:'room',text:'리본방 가구 하나 사기',test:k=>k==='buy'}
+];
+function todayMissions(){
+  const key=dayKey(); let h=0; for(const c of key) h=(h*31+c.charCodeAt(0))>>>0;
+  const pool=MISSION_POOL.slice(), pick=[];
+  while(pick.length<3){ h=(h*1103515245+12345)>>>0; pick.push(pool.splice(h%pool.length,1)[0]); }
+  if(RB.missions.day!==key){ RB.missions={day:key,done:[]}; rbSave(); }
+  return pick;
+}
+let rbToastT=0;
+function rbToast(t){const el=document.getElementById('rb-toast'); if(!el) return; el.textContent=t; el.classList.add('show'); clearTimeout(rbToastT); rbToastT=setTimeout(()=>el.classList.remove('show'),2200);}
+// kind: quiz/memory/whack/simon/onecard/ladder/gem/mystery/buy
+function ribbonEarn(n,why,kind,value){
+  n=Math.max(0,Math.floor(n||0));
+  let bonus=0;
+  const ms=todayMissions();
+  for(const m of ms){
+    if(RB.missions.done.includes(m.id)) continue;
+    if(m.test(kind,value)){ RB.missions.done.push(m.id); bonus+=10; setTimeout(()=>rbToast('🌟 오늘의 미션 성공! 🎀 +10'),1300); }
+  }
+  if(bonus&&ms.every(m=>RB.missions.done.includes(m.id))&&!RB.missions.done.includes('all')){ RB.missions.done.push('all'); bonus+=10; setTimeout(()=>rbToast('🏅 미션 세 개 모두! 🎀 +10'),2600); }
+  RB.ribbons=Math.min(99999,RB.ribbons+n+bonus); rbSave();
+  if(n>0) rbToast('🎀 +'+n+'  '+(why||''));
+}
+window.ribbonEarn=ribbonEarn;
+
+/* ---------- 허브에 방 붙이기 ---------- */
+const _rbRenderHub=renderHub;
+renderHub=function(){
+  _rbRenderHub();
+  const card=document.querySelector('.hub-card'); if(!card) return;
+  const sub=card.querySelector('.sub');
+  const fr=friendsHere(RB.equip);
+  const ms=todayMissions();
+  const block=document.createElement('div');
+  block.innerHTML=`<div class="rb-bar"><span class="rb-count">🎀 ${RB.ribbons}</span><span style="font-weight:900;color:#7a6a94;font-size:.9rem">놀이를 하면 리본이 모여요 → 내 방을 꾸며요!</span></div>
+    <div class="rb-row"><div class="room-wrap" data-r="open" role="button" aria-label="내 리본방 꾸미기">${roomSvg(RB.equip,true)}
+      <span class="friends-chip">놀러 온 친구 ${fr.length}/4</span><span class="edit-chip">🛋️ 방 꾸미기</span></div>
+    <div class="missions"><h3>🌟 오늘의 미션 <small style="font-size:.8rem;color:#b08a4c">하나에 🎀 +10</small></h3><ul>${ms.map((m,i)=>`<li class="${RB.missions.done.includes(m.id)?'done':''}"><b>${RB.missions.done.includes(m.id)?'✓':i+1}</b>${m.text}${RB.missions.done.includes(m.id)?'<em>성공!</em>':''}</li>`).join('')}</ul></div></div>`;
+  sub.after(block);
+  const hints={mystery:'보석마다 +5',quiz:'맞힌 만큼',ladder:'이기면 +8',onecard:'이기면 +8',memory:'별×3',whack:'잡은 수÷2',simon:'단계만큼'};
+  card.querySelectorAll('.tile').forEach(t=>{ const h=hints[t.dataset.g]; if(h){ const s=document.createElement('span'); s.className='rb'; s.textContent='🎀 '+h; t.appendChild(s);} });
+};
+
+/* ---------- 꾸미기 화면 ---------- */
+let roomSlot='bed', roomMsg='';
+function renderRoom(){
+  const fr=friendsHere(RB.equip);
+  document.getElementById('app').innerHTML=`<main class="game room-edit"><section class="panel">
+    <div class="head"><h2>🛋️ 내 리본방</h2><button class="home" data-g="home">🏠 홈</button></div>
+    <div class="rb-bar"><span class="rb-count">🎀 ${RB.ribbons}</span><span style="font-weight:900;color:#7a6a94">놀러 온 친구 ${fr.length}/4 ${fr.length===4?'🎉':''}</span></div>
+    <div class="room-wrap" style="cursor:default">${roomSvg(RB.equip,true)}</div>
+    <div class="slot-tabs">${ROOM_SLOTS.map(([id,name])=>`<button class="${id===roomSlot?'on':''}" data-r="slot" data-s="${id}">${name}</button>`).join('')}</div>
+    <div class="shop">${ROOM_ITEMS[roomSlot].map(it=>{
+      const own=RB.owned[roomSlot].includes(it.id), on=RB.equip[roomSlot]===it.id;
+      const st=on?'on':own?'own':RB.ribbons>=it.price?'buy':'poor';
+      const tag=on?'✓ 놓여 있어요':own?'놓기':'🎀 '+it.price;
+      return `<button class="${st}" data-r="item" data-i="${it.id}">${itemSvg(roomSlot,it.id)}<strong>${it.name}</strong><small>${tag}</small>${it.fav?`<span class="fav">💌 ${NAMES[it.fav]}가 좋아해요</span>`:''}</button>`;}).join('')}</div>
+    <p class="room-msg">${roomMsg}</p>
+  </section></main>`;
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-r]'); if(!b) return;
+  const r=b.dataset.r;
+  if(r==='open'){ SFX.ok(); roomMsg='친구가 좋아하는 가구를 놓으면 놀러 와요!'; go('room'); }
+  else if(r==='slot'){ SFX.tap(); roomSlot=b.dataset.s; renderRoom(); }
+  else if(r==='item'){
+    const it=ROOM_ITEMS[roomSlot].find(x=>x.id===b.dataset.i); if(!it) return;
+    const before=friendsHere(RB.equip).length;
+    if(RB.owned[roomSlot].includes(it.id)){ RB.equip[roomSlot]=it.id; SFX.tap(); roomMsg=it.name+'을(를) 놓았어요.'; }
+    else if(RB.ribbons>=it.price){ RB.ribbons-=it.price; RB.owned[roomSlot].push(it.id); RB.equip[roomSlot]=it.id; SFX.gem(); FX.burst(60,.35); roomMsg=it.name+'을(를) 샀어요! 🎉'; rbSave(); ribbonEarn(0,'','buy'); }
+    else { SFX.no(); roomMsg='리본이 '+(it.price-RB.ribbons)+'개 더 필요해요. 놀이를 하고 와요!'; }
+    rbSave();
+    const after=friendsHere(RB.equip);
+    if(after.length>before){ const f=after.find(x=>x); roomMsg+=' 💌 친구가 놀러 왔어요!'; SFX.win(); FX.burst(120,.3); }
+    if(after.length===4&&!RB.partyDone){ RB.partyDone=true; RB.ribbons+=30; rbSave(); setTimeout(()=>rbToast('🎉 네 친구 모두 모였어요! 리본 파티 🎀 +30'),600); }
+    renderRoom();
+  }
+});
+// 앞 스크립트가 먼저 한 번 그렸으므로 방·미션을 붙여 다시 그린다
+render();
+</script>
 <script src="../assets/bgm/bgm-player.js?v=66"></script>
 <script>
 (function () {
