@@ -546,6 +546,28 @@
       g += node("jaei", -45, 62, "재이") + node("taeo", 45, 62, "태오");
       return `<g transform="translate(${x} ${y}) scale(${k})">${g}</g>`;
     },
+    // 피자. half = true 면 오른쪽 반은 치즈 없이(토마토와 채소만).
+    pizza(x, y, o) {
+      const k = o.s || 1;
+      let g = `<ellipse cx="0" cy="0" rx="46" ry="16" fill="#d9954a" stroke="${INK}" stroke-width="2.2"/><ellipse cx="0" cy="-1" rx="40" ry="12.5" fill="#e0533d"/>`;
+      const cheese = `<path d="M-40 -1 A40 12.5 0 0 1 ${o.half ? "0 -13.5 L0 11.5" : "40 -1 A40 12.5 0 0 1 -40 -1"} A40 12.5 0 0 1 -40 -1Z" fill="#ffd84d"/>` + `<path d="M-30 6 q2 8 5 0 M-12 10 q2 9 5 0" stroke="#ffd84d" stroke-width="4" stroke-linecap="round" fill="none"/>`;
+      g += cheese;
+      g += `<circle cx="-20" cy="-3" r="3.4" fill="#b8325a"/><circle cx="-6" cy="4" r="3.4" fill="#b8325a"/>`;
+      if (o.half) g += `<circle cx="14" cy="-4" r="3.4" fill="#b8325a"/><circle cx="26" cy="3" r="3.4" fill="#b8325a"/><path d="M18 5 l6 -3 M10 2 l4 4" stroke="#4caf50" stroke-width="2.6" stroke-linecap="round"/><path d="M0 -13.5 V11.5" stroke="${INK}" stroke-width="1.2" stroke-dasharray="2 2"/>`;
+      else g += `<circle cx="14" cy="-4" r="3.4" fill="#b8325a"/><circle cx="26" cy="3" r="3.4" fill="#b8325a"/>`;
+      return `<g transform="translate(${x} ${y}) scale(${k})">${g}</g>`;
+    },
+    // 냄새 물결 (치즈 냄새 등)
+    stink(x, y, o) {
+      const c = o.c || "#d9b63c";
+      let g = "";
+      for (let i = 0; i < 3; i++) g += `<path d="M${i * 14 - 14} 0 q-8 -10 0 -20 q8 -10 0 -20 q-8 -10 0 -20" stroke="${c}" stroke-width="3.2" fill="none" stroke-linecap="round" opacity=".85"/>`;
+      return `<g transform="translate(${x} ${y}) rotate(${o.rot || 0}) scale(${o.s || 1})">${g}</g>`;
+    },
+    // 책상 (숙제 끝!)
+    desk(x, y, o) {
+      return `<g transform="translate(${x} ${y}) scale(${o.s || 1})"><rect x="-60" y="-70" width="120" height="12" rx="3" fill="#c98f5c" stroke="${INK}" stroke-width="2.2"/><rect x="-54" y="-58" width="10" height="58" fill="#b27a4b" stroke="${INK}" stroke-width="1.8"/><rect x="44" y="-58" width="10" height="58" fill="#b27a4b" stroke="${INK}" stroke-width="1.8"/><rect x="-40" y="-82" width="44" height="12" rx="2" fill="#bfe3ff" stroke="${INK}" stroke-width="1.6"/><rect x="-36" y="-92" width="40" height="10" rx="2" fill="#ffb8d0" stroke="${INK}" stroke-width="1.6"/><rect x="12" y="-80" width="30" height="10" rx="2" fill="#fff" stroke="${INK}" stroke-width="1.4"/><text x="27" y="-72" text-anchor="middle" font-size="8" font-family="Jua, sans-serif" fill="#2fbf5b">숙제 ✔</text></g>`;
+    },
     // 신 과일 바구니: 레몬, 자두, 파인애플
     sourfruits(x, y, o) {
       const plum = (dx, dy) => `<g transform="translate(${dx} ${dy})"><circle r="11" fill="#b8325a" stroke="${INK}" stroke-width="1.8"/><path d="M0 -10 q2 -6 6 -7" stroke="#6b4a33" stroke-width="2" fill="none"/><ellipse cx="-4" cy="-4" rx="3" ry="2" fill="#fff" opacity=".5"/></g>`;
