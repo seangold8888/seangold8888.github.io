@@ -1496,6 +1496,114 @@
         },
       ],
     },
+    // ───────────────────────── 14화 ─────────────────────────
+    {
+      id: 14,
+      title: "아빠 레스테스통 알아?",
+      summary: "냠냠히어로 수퍼잭은 레시피 스톤이 있어야 변신한다. 태오도 변신하고 싶다. “아빠 레스테스통 알아?” …레스, 뭐?",
+      lesson: "진짜 변신의 돌은 가족이 함께 만든 밥 속에 있어요.",
+      talk: "우리 집만의 ‘레시피 스톤’(가족 비법 요리)은 뭐예요? 누구한테 배웠나요?",
+      cover: 2,
+      panels: [
+        {
+          h: 420, bg: "living",
+          chars: [C("taeo", 130, "love", "cheer")],
+          fp: [["stone", 310, 290, { s: 1.5, glow: true }]],
+          n: "냠냠히어로 수퍼잭을 보고 난 태오.",
+          b: [B("레스테스통이 있어야 변신할 수 있어!", 180, 120, "bl", { k: "shout", w: 250 })],
+        },
+        {
+          h: 380, bg: "living",
+          chars: [C("taeo", 110, "happy", "give"), C("appa", 300, "surprised", "stand")],
+          b: [B("아빠 레스테스통 알아?", 110, 90, "b", { w: 150 }), B("레스…테스…통?", 300, 60, "b")],
+        },
+        {
+          h: 280, bg: "burst:dff3e4",
+          chars: [bust("appa", 200, 170, 1.3, "blank", "scratch")],
+          b: [B("…레스토랑? 테스트? 아빠 머리통?", 200, 40, "", { w: 270 })],
+        },
+        {
+          h: 300, bg: "burst:ffd1e1",
+          chars: [bust("taeo", 190, 200, 1.45, "angry", "point")],
+          b: [B("아니! 레스테스통!! 아빠 그것도 몰라?!", 200, 44, "", { k: "shout", w: 280 })],
+        },
+        {
+          h: 360, bg: "living",
+          chars: [C("jaei", 110, "proud", "point"), C("appa", 300, "shock", "stand")],
+          b: [B("아빠, 레시피 스톤! 냠냠히어로가 변신할 때 쓰는 돌이야.", 140, 70, "b", { w: 210 })],
+          sfx: [FX("통역 완료", 300, 250, { rot: 8, c: "#2fbf5b", size: 0.6 })],
+        },
+        {
+          h: 280, bg: "sparkle:fff4c7",
+          chars: [bust("taeo", 200, 190, 1.45, "proud", "hip")],
+          b: [B("그니까! 레스테스통!", 200, 44, "", { w: 220 })],
+          sfx: [FX("당당", 330, 250, { rot: 8, c: "#8a6d52", size: 0.8 })],
+        },
+        {
+          h: 380, bg: "living",
+          chars: [C("taeo", 200, "determined", "carry")],
+          fp: [["toybox", 90, 356, { s: 0.8 }], ["pillow", 330, 346, {}]],
+          n: "그날부터 태오의 레스테스통 찾기가 시작됐다.",
+          sfx: [FX("뒤적뒤적", 200, 120, { rot: -6, c: "#8a6d52" })],
+        },
+        {
+          h: 280, bg: "gloom",
+          chars: [bust("taeo", 200, 180, 1.4, "cry", "stand")],
+          b: [B("레스테스통 없어… 나 변신 못 해…", 200, 40, "", { w: 260 })],
+        },
+        {
+          h: 380, bg: "halmae",
+          chars: [C("halmeoni", 110, "smile", "hold", { o: "apron" }), C("taeo", 300, "sad", "stand")],
+          fp: [["notebook", 110, 250, { t: "할머니 요리", s: 0.6, c: "#ffd66b", lines: ["", ""] }]],
+          b: [B("태오야, 할머니한테 레시피 스톤 있지.", 130, 80, "b", { w: 170 })],
+        },
+        {
+          h: 280, bg: "burst:c9dcff",
+          chars: [bust("taeo", 200, 180, 1.45, "shock", "cheeks")],
+          b: [B("진짜?! 할머니도 냠냠히어로야?!", 200, 44, "", { k: "shout", w: 270 })],
+        },
+        {
+          h: 330, bg: "sparkle:fff0d6",
+          fp: [["notebook", 200, 175, { t: "할머니 레시피", s: 2, lines: ["김밥: 밥, 단무지,", "계란, 시금치…", "사랑 한 스푼"] }]],
+          n: "할머니의 레시피 스톤은, 오래된 요리 공책이었다.",
+        },
+        {
+          h: 460, bg: "kitchen",
+          chars: [C("halmeoni", 80, "happy", "hold", { o: "apron", y: 460 }), C("taeo", 200, "determined", "hold", { y: 390 }), C("jaei", 320, "happy", "hold", { y: 396 })],
+          fp: [["table", 200, 360, { w: 400 }], ["kimbap", 200, 360, { n: 2 }]],
+          b: [B("그럼~ 싫어하는 것도 먹어야 튼튼해지지.", 120, 50, "b", { w: 200 }), B("시금치도 넣어야 해?", 255, 160, "bl", { w: 150 })],
+        },
+        {
+          h: 300, bg: "burst:ffe27a",
+          chars: [bust("taeo", 190, 200, 1.45, "sly", "stand")],
+          b: [B("…그거 아빠가 한 말인데?", 200, 44, "", { w: 240 })],
+          sfx: [FX("또 들었다", 330, 260, { rot: 8, c: "#3b6fd6", size: 0.6 })],
+        },
+        {
+          h: 380, bg: "kitchen",
+          chars: [C("taeo", 120, "eating", "mouth", { y: 330 }), C("appa", 300, "surprised", "stand", { y: 380 })],
+          fp: [["table", 200, 300, { w: 400 }], ["kimbap", 210, 300, {}]],
+          sfx: [FX("냠냠", 90, 110, { rot: -8, c: "#ff9f1c" }), FX("냠냠", 200, 150, { rot: 8, c: "#ff9f1c" })],
+        },
+        {
+          h: 320, bg: "sparkle:ffe3ee",
+          chars: [bust("taeo", 200, 200, 1.5, "determined", "up")],
+          b: [B("냠냠히어로 태오, 변신 완료!!", 200, 44, "", { k: "shout", w: 280 })],
+          sfx: [FX("번쩍!", 70, 250, { rot: -10, c: "#ff9f1c" }), FX("번쩍!", 340, 250, { rot: 10, c: "#ff9f1c" })],
+        },
+        {
+          h: 460, bg: "kitchen",
+          chars: [C("appa", 100, "happy", "stand"), C("halmeoni", 300, "happy", "stand", { o: "apron" })],
+          b: [B("장모님, 레스테스통 덕분에 태오가 시금치를 다 먹네요.", 120, 70, "b", { w: 180 }), B("김서방, 그건 레스테스통이 아니라 할미 사랑이여~", 290, 110, "b", { w: 160 })],
+        },
+        {
+          h: 160, bg: "sparkle:fff0d6",
+          fp: [["stone", 60, 100, { s: 0.8, glow: true }], ["heart", 345, 60, {}]],
+          n: "진짜 레스테스통은 할머니 공책 속에 있었다.",
+          n2: "그리고 오늘, 태오 배 속에도.",
+        },
+      ],
+    },
   ];
 
   root.WebtoonData = { CHARACTERS, EPISODES };

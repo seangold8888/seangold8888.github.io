@@ -517,6 +517,19 @@
       const tree = (dx, dy, k) => `<g transform="translate(${dx} ${dy}) scale(${k})"><rect x="-3" y="-4" width="6" height="12" rx="2" fill="#a6d98a" stroke="${INK}" stroke-width="1.2"/><circle cx="-6" cy="-8" r="6" fill="#3f9a4a" stroke="${INK}" stroke-width="1.2"/><circle cx="6" cy="-8" r="6" fill="#3f9a4a" stroke="${INK}" stroke-width="1.2"/><circle cx="0" cy="-13" r="7" fill="#4caf50" stroke="${INK}" stroke-width="1.2"/></g>`;
       return `<g transform="translate(${x} ${y}) scale(${o.s || 1})"><ellipse cx="0" cy="0" rx="34" ry="10" fill="#fff" stroke="${INK}" stroke-width="2"/>${tree(-12, -6, 1)}${tree(12, -5, 0.9)}${o.one ? "" : tree(0, -10, 1.1)}</g>`;
     },
+    // 반짝이는 돌 (태오가 상상하는 레스테스통). glow = 빛나는지
+    stone(x, y, o) {
+      const c = o.c || "#8fd0f5";
+      const glow = o.glow ? `<circle r="30" fill="#fff6a8" opacity=".55"/><circle r="22" fill="#fff" opacity=".5"/>` : "";
+      return `<g transform="translate(${x} ${y}) scale(${o.s || 1})">${glow}<path d="M0 -16 L14 -6 L10 12 L-10 12 L-14 -6Z" fill="${c}" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><path d="M0 -16 L0 12 M-14 -6 L14 -6" stroke="#fff" stroke-width="1.4" opacity=".7"/></g>`;
+    },
+    // 김밥 접시
+    kimbap(x, y, o) {
+      let rolls = "";
+      const spots = [[-20, -8], [0, -10], [20, -8], [-10, -18], [10, -18]].slice(0, o.n || 5);
+      for (const [dx, dy] of spots) rolls += `<g transform="translate(${dx} ${dy})"><circle r="8" fill="#2d3a2b" stroke="${INK}" stroke-width="1.2"/><circle r="6" fill="#fff"/><circle cx="-2" cy="-1" r="1.6" fill="#ffcf33"/><circle cx="2" cy="-1" r="1.6" fill="#ff8a3d"/><circle cx="0" cy="2" r="1.6" fill="#4caf50"/></g>`;
+      return `<g transform="translate(${x} ${y}) scale(${o.s || 1})"><ellipse cx="0" cy="0" rx="36" ry="10" fill="#fff" stroke="${INK}" stroke-width="2"/>${rolls}</g>`;
+    },
     // 누나 머리끈(분홍 곱창 끈)
     scrunchie(x, y, o) {
       let bumps = "";
