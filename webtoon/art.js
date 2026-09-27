@@ -512,6 +512,19 @@
         : `<ellipse rx="20" ry="14" fill="#ffe14d" stroke="${INK}" stroke-width="2"/><path d="M-20 0 l-5 -2 M20 0 l5 2" stroke="${INK}" stroke-width="2" stroke-linecap="round"/><ellipse cx="-6" cy="-5" rx="6" ry="2.5" fill="#fff" opacity=".6"/><path d="M4 -13 q6 -8 14 -6 q-6 6 -14 6z" fill="#6cc27a" stroke="${INK}" stroke-width="1.2"/>`;
       return `<g transform="translate(${x} ${y}) rotate(${o.rot || 0}) scale(${o.s || 1})">${body}</g>`;
     },
+    // 우리 가족 나무: 할머니·할아버지 → 엄마(+아빠) → 재이·태오. 아이 그림 얼굴을 작게 쓴다.
+    familytree(x, y, o) {
+      const k = o.s || 1;
+      const node = (id, cx, cy, label) => `<circle cx="${cx}" cy="${cy}" r="17" fill="#fff" stroke="${INK}" stroke-width="1.6"/>${miniFace(id, cx, cy, 28)}<text x="${cx < 0 ? cx - 22 : cx + 22}" y="${cy + 4}" text-anchor="${cx < 0 ? "end" : "start"}" font-size="10" font-family="Jua, sans-serif" fill="#3d3a38" stroke="#fffdf5" stroke-width="3" paint-order="stroke">${label}</text>`;
+      const line = (x1, y1, x2, y2) => `<path d="M${x1} ${y1} V${(y1 + y2) / 2} H${x2} V${y2}" stroke="#b27a4b" stroke-width="2.4" fill="none"/>`;
+      let g = `<rect x="-120" y="-110" width="240" height="220" rx="14" fill="#fffdf5" stroke="${INK}" stroke-width="2.4"/>`;
+      g += `<path d="M-30 -78 H30" stroke="#ff8fb3" stroke-width="2.4"/><path d="M-30 -8 H30" stroke="#ff8fb3" stroke-width="2.4"/>`;
+      g += `<path d="M0 -78 V-52 H-45 V-25" stroke="#b27a4b" stroke-width="2.4" fill="none"/><path d="M0 -8 V18 M-45 18 H45 M-45 18 V45 M45 18 V45" stroke="#b27a4b" stroke-width="2.4" fill="none"/>`;
+      g += node("halmeoni", -45, -78, "할머니") + node("harabeoji", 45, -78, "할아버지");
+      g += node("eomma", -45, -8, "엄마") + node("appa", 45, -8, "아빠");
+      g += node("jaei", -45, 62, "재이") + node("taeo", 45, 62, "태오");
+      return `<g transform="translate(${x} ${y}) scale(${k})">${g}</g>`;
+    },
     // 신 과일 바구니: 레몬, 자두, 파인애플
     sourfruits(x, y, o) {
       const plum = (dx, dy) => `<g transform="translate(${dx} ${dy})"><circle r="11" fill="#b8325a" stroke="${INK}" stroke-width="1.8"/><path d="M0 -10 q2 -6 6 -7" stroke="#6b4a33" stroke-width="2" fill="none"/><ellipse cx="-4" cy="-4" rx="3" ry="2" fill="#fff" opacity=".5"/></g>`;
