@@ -530,6 +530,18 @@
       for (const [dx, dy] of spots) rolls += `<g transform="translate(${dx} ${dy})"><circle r="8" fill="#2d3a2b" stroke="${INK}" stroke-width="1.2"/><circle r="6" fill="#fff"/><circle cx="-2" cy="-1" r="1.6" fill="#ffcf33"/><circle cx="2" cy="-1" r="1.6" fill="#ff8a3d"/><circle cx="0" cy="2" r="1.6" fill="#4caf50"/></g>`;
       return `<g transform="translate(${x} ${y}) scale(${o.s || 1})"><ellipse cx="0" cy="0" rx="36" ry="10" fill="#fff" stroke="${INK}" stroke-width="2"/>${rolls}</g>`;
     },
+    // 텔레비전. show = 화면 내용("news" 뉴스 / "kids" 만화 / 없으면 꺼짐)
+    tv(x, y, o) {
+      let screen = `<rect x="-44" y="-30" width="88" height="56" rx="3" fill="#2a2d36"/>`;
+      if (o.show === "news") screen = `<rect x="-44" y="-30" width="88" height="56" rx="3" fill="#cfe3f7"/><rect x="-44" y="12" width="88" height="14" fill="#1f4f99"/><text x="0" y="23" text-anchor="middle" font-size="10" font-family="Jua, sans-serif" fill="#fff">뉴스</text><rect x="-10" y="-20" width="20" height="26" rx="8" fill="#9aa0a8"/>`;
+      if (o.show === "kids") screen = `<rect x="-44" y="-30" width="88" height="56" rx="3" fill="#ffe27a"/><circle cx="-18" cy="0" r="10" fill="#6cc27a"/><circle cx="16" cy="-4" r="12" fill="#ff8fb3"/><path d="M-40 20 q20 -10 40 0 t40 0" stroke="#fff" stroke-width="3" fill="none"/>`;
+      return `<g transform="translate(${x} ${y}) scale(${o.s || 1})"><rect x="-50" y="-36" width="100" height="68" rx="6" fill="#3b3f47" stroke="${INK}" stroke-width="2.4"/>${screen}<rect x="-20" y="32" width="40" height="8" rx="2" fill="#3b3f47" stroke="${INK}" stroke-width="1.6"/></g>`;
+    },
+    // 보라색 고무장갑 (아빠의 타노스 장갑). 별 스티커가 붙어 있다.
+    glove(x, y, o) {
+      const stars = ["#ff4d4d", "#ffd34d", "#4c7fd0", "#6cc27a", "#ff9f1c", "#b99ad9"].map((c, i) => `<circle cx="${-9 + (i % 3) * 9}" cy="${-4 + Math.floor(i / 3) * 9}" r="3" fill="${c}" stroke="${INK}" stroke-width=".8"/>`).join("");
+      return `<g transform="translate(${x} ${y}) rotate(${o.rot || 0}) scale(${o.s || 1})"><path d="M-14 16 L-14 -6 L-16 -22 Q-16 -26 -12 -26 Q-9 -26 -9 -22 L-8 -12 L-7 -28 Q-7 -32 -3 -32 Q1 -32 1 -28 L1 -12 L3 -28 Q3 -32 7 -32 Q11 -32 11 -28 L10 -10 L13 -20 Q14 -24 18 -22 Q20 -20 19 -16 L14 6 L14 16Z" fill="#8e5cc7" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><rect x="-16" y="14" width="32" height="10" rx="3" fill="#8e5cc7" stroke="${INK}" stroke-width="2"/>${stars}</g>`;
+    },
     // 누나 머리끈(분홍 곱창 끈)
     scrunchie(x, y, o) {
       let bumps = "";
