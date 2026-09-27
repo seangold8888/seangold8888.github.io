@@ -39,6 +39,8 @@
 | 할아버지 | 훤한 정수리와 옆머리, 짙은 눈썹, 눈가 주름 | 갈색 카디건 |
 | 태오 | 까맣게 칠한 짧은 머리, 큰 귀 | 파란 옷, 태권도복은 파란띠에 초록 줄 |
 
+**태오의 트레이드마크는 반쪽 레몬이다.** 늘 손에 들고 다니며 핥아 먹는다. `art.js`가 태오의 왼손(핥는 몸짓 `lick`이면 입가의 오른손)에 자동으로 그린다. 손이 얼굴에 가 있거나 누워 있으면 그리지 않고, 특정 컷에서 빼려면 인물에 `nl: true`를 준다.
+
 ## 가족 말 추가하기
 
 `words.js`의 알맞은 목록 맨 아래에 한 줄을 더한다. 태오어 사전과 재이 말은 `say`(한 말), `real`(원래 말), `what`(설명), 입버릇(`TAEO_SAYINGS`, `JAEI_SAYINGS`)은 `say`, `when`.
@@ -78,7 +80,7 @@
   추가 옵션은 `o`(옷: `dobok pajama work apron pink sick`), `s`(크기), `y`(발 위치), `f: -1`(좌우 반전), `rot: -90`(눕기).
 - 가슴 위 클로즈업은 `bust(이름, x, 얼굴 y, 크기, 표정, 몸짓)`.
 - 표정: `smile happy laugh proud eating sad cry teary surprised shock angry sly love worried guilty sleepy sick determined blank shy wink blow`.
-- 몸짓: `stand wave up cheer point hold hip hug cover eyes think scratch cheeks nose give carry kick fist run hands`.
+- 몸짓: `lick stand wave up cheer point hold hip hug cover eyes think scratch cheeks nose give carry kick fist run hands`.
 - 배경: `kitchen living living-night halmae bedroom bedroom-night entrance entrance:evening street memory`,
   효과 배경 `burst:색 sparkle:색 speed:색 gloom plain:색`.
 - 소품: `art.js`의 `PROPS` 목록(딸기 접시, 소파, 이불, 침대, 그림, 쿠폰, 공룡, 프라이팬, 죽 그릇, 휴대폰, 영상통화 화면 등).

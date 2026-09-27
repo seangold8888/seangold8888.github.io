@@ -62,7 +62,7 @@
     const F = window.WebtoonArt.FACES[c.id];
     const h = 112;
     const w = (F.w / F.h) * h;
-    return `<svg viewBox="0 0 120 150" aria-hidden="true"><circle cx="60" cy="78" r="56" fill="#fff4e4"/><image href="faces/${c.id}.webp" x="${60 - w / 2}" y="${78 - h / 2}" width="${w}" height="${h}"/></svg>`;
+    return `<svg viewBox="0 0 120 150" aria-hidden="true"><circle cx="60" cy="78" r="56" fill="#fff4e4"/><image href="faces/${c.id}.webp" x="${60 - w / 2}" y="${78 - h / 2}" width="${w}" height="${h}"/>${c.id === "taeo" ? `<g transform="translate(100 124) rotate(-15)"><circle r="13" fill="#ffe14d" stroke="#3d3a38" stroke-width="2"/><circle r="10" fill="#fff6a8"/><path d="M0 0 L9 0 M0 0 L4.5 7.8 M0 0 L-4.5 7.8 M0 0 L-9 0 M0 0 L-4.5 -7.8 M0 0 L4.5 -7.8" stroke="#ffe14d" stroke-width="1.4"/></g>` : ""}</svg>`;
   }
 
   function heroSVG() {

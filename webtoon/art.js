@@ -100,7 +100,7 @@
       },
     },
     taeo: {
-      name: "태오", faceH: 104, headY: -126, armScale: 1, armW: 12,
+      name: "태오", faceH: 104, headY: -126, lemon: true, armScale: 1, armW: 12,
       outfits: {
         base: { top: ["#4c7fd0", -80, -34, 22, 25, "round", "pocket"], pants: ["#3c68b4", -38, -8, 9.5], shoes: ["#3f73d6", 9.5], sleeve: "long" },
         dobok: { top: ["#fbfbf7", -80, -32, 23, 26, "dobok"], belt: ["#2f6fe0", -40, "#2fbf5b"], pants: ["#fbfbf7", -38, -8, 10], shoes: [SKIN, 9], sleeve: "long", sleeveColor: "#fbfbf7" },
@@ -249,7 +249,7 @@
     give: [[18, 14], [36, 18]],
   };
   // 머리 기준 손 위치 (머리 좌표계)
-  const HEAD_ARM = { mouth: [9, 22], eyes: [14, 6], chin: [8, 36], head: [30, -30], cheek: [30, 14], nose: [4, 14] };
+  const HEAD_ARM = { mouth: [9, 22], eyes: [14, 6], chin: [8, 36], head: [30, -30], cheek: [30, 14], nose: [4, 14], lick: [36, 30] };
 
   function armPos(pose, side, c, sh, headPos) {
     if (HEAD_ARM[pose]) {
@@ -301,6 +301,7 @@
     shrug: ["out", "out"],
     hug: ["out", "out"],
     mouth: ["down", "mouth"],
+    lick: ["down", "lick"],
     cover: ["mouth", "mouth"],
     eyes: ["eyes", "eyes"],
     think: ["down", "chin"],
@@ -314,6 +315,24 @@
     run: ["swing", "up"],
     hands: ["none", "none"],
   };
+
+  // 손에 든 반쪽 레몬. 핥는 몸짓(lick)이면 입가의 오른손에, 아니면 왼손에 든다(손이 얼굴에 가 있으면 그리지 않는다).
+  function heldLemon(c, o, pose) {
+    let side = -1;
+    let p = pose[0];
+    if (pose[1] === "lick") {
+      side = 1;
+      p = "lick";
+    } else if (HEAD_ARM[p] || p === "none") return "";
+    const [, from, , wT] = o.top;
+    const sh = [side * (wT - 3), from + 9];
+    const [, h] = armPos(p, side, c, sh, c.headY);
+    const x = h[0] + side * 6;
+    const y = h[1] - 4;
+    let wedges = "";
+    for (let d = 0; d < 360; d += 60) wedges += `<path d="M0 0 L${(Math.cos((d * Math.PI) / 180) * 7).toFixed(1)} ${(Math.sin((d * Math.PI) / 180) * 7).toFixed(1)}" stroke="#ffe14d" stroke-width="1.2"/>`;
+    return `<g transform="translate(${r1(x)} ${r1(y)}) rotate(${side * 20})"><circle r="10" fill="#ffe14d" stroke="${INK}" stroke-width="1.8"/><circle r="7.6" fill="#fff6a8"/>${wedges}<circle r="1.4" fill="#fff"/></g>`;
+  }
 
   // 캐릭터 한 명을 그린다. 발 가운데가 (x, y). f = -1 이면 좌우를 뒤집는다(팔 방향만 바뀐다).
   const FACES_H = (c) => c.faceH / 90;
@@ -333,6 +352,8 @@
     const tilt = spec.tilt || 0;
     g += `<g transform="translate(0 ${neckY}) rotate(${tilt * f}) scale(${k * f} ${k}) translate(${-F.ax} ${-F.ay})"><image href="${FACE_DIR}${spec.c}.webp" width="${F.w}" height="${F.h}"/>${faceFx(spec.e, F)}</g>`;
     g += `<g filter="url(#wt-pencil)">${arm(c, o, pose[0], -1, c.headY) + arm(c, o, pose[1], 1, c.headY)}</g>`;
+    // 태오의 트레이드마크: 늘 들고 다니며 핥아 먹는 반쪽 레몬. nl: true 면 뺀다.
+    if (c.lemon && !spec.nl && !spec.rot) g += heldLemon(c, o, pose);
     const rot = spec.rot ? ` rotate(${spec.rot})` : "";
     return `<g transform="translate(${spec.x} ${spec.y})${rot} scale(${s * f} ${s})">${g}</g>`;
   }
