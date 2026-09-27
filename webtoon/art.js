@@ -512,6 +512,13 @@
         : `<ellipse rx="20" ry="14" fill="#ffe14d" stroke="${INK}" stroke-width="2"/><path d="M-20 0 l-5 -2 M20 0 l5 2" stroke="${INK}" stroke-width="2" stroke-linecap="round"/><ellipse cx="-6" cy="-5" rx="6" ry="2.5" fill="#fff" opacity=".6"/><path d="M4 -13 q6 -8 14 -6 q-6 6 -14 6z" fill="#6cc27a" stroke="${INK}" stroke-width="1.2"/>`;
       return `<g transform="translate(${x} ${y}) rotate(${o.rot || 0}) scale(${o.s || 1})">${body}</g>`;
     },
+    // 신 과일 바구니: 레몬, 자두, 파인애플
+    sourfruits(x, y, o) {
+      const plum = (dx, dy) => `<g transform="translate(${dx} ${dy})"><circle r="11" fill="#b8325a" stroke="${INK}" stroke-width="1.8"/><path d="M0 -10 q2 -6 6 -7" stroke="#6b4a33" stroke-width="2" fill="none"/><ellipse cx="-4" cy="-4" rx="3" ry="2" fill="#fff" opacity=".5"/></g>`;
+      const pine = `<g transform="translate(26 -14)"><ellipse rx="12" ry="16" fill="#f5b83d" stroke="${INK}" stroke-width="1.8"/><path d="M-9 -8 l18 12 M-10 2 l16 10 M9 -8 l-18 12 M10 2 l-16 10" stroke="#c98a1f" stroke-width="1.2"/><path d="M-6 -16 l-4 -12 l7 7 l3 -12 l3 12 l7 -7 l-4 12z" fill="#4caf50" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/></g>`;
+      const lemon = `<g transform="translate(-24 -10) rotate(-15)"><ellipse rx="16" ry="11" fill="#ffe14d" stroke="${INK}" stroke-width="1.8"/><path d="M-16 0 l-4 -1 M16 0 l4 1" stroke="${INK}" stroke-width="1.8" stroke-linecap="round"/></g>`;
+      return `<g transform="translate(${x} ${y}) scale(${o.s || 1})">${pine}${lemon}${plum(2, -8)}<path d="M-44 -4 L44 -4 L36 14 L-36 14Z" fill="#f0d19a" stroke="${INK}" stroke-width="2"/><path d="M-40 4 H40" stroke="#c9a468" stroke-width="1.6"/></g>`;
+    },
     // 브로콜리 접시
     broccoli(x, y, o) {
       const tree = (dx, dy, k) => `<g transform="translate(${dx} ${dy}) scale(${k})"><rect x="-3" y="-4" width="6" height="12" rx="2" fill="#a6d98a" stroke="${INK}" stroke-width="1.2"/><circle cx="-6" cy="-8" r="6" fill="#3f9a4a" stroke="${INK}" stroke-width="1.2"/><circle cx="6" cy="-8" r="6" fill="#3f9a4a" stroke="${INK}" stroke-width="1.2"/><circle cx="0" cy="-13" r="7" fill="#4caf50" stroke="${INK}" stroke-width="1.2"/></g>`;
