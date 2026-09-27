@@ -6,7 +6,7 @@ const html=read('hogwarts/index.html'),main=read('kart/src/main.js');
 const scripts=[...html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)].map(m=>m[1]);
 test('all magic school scripts and kart scripts compile',()=>{
   scripts.forEach(s=>new vm.Script(s));
-  for(const f of ['main','kart','track','mode7','sprites','music','track-art'])new vm.Script(read('kart/src/'+f+'.js'));
+  for(const f of ['main','kart','extras','track','mode7','sprites','music','track-art'])new vm.Script(read('kart/src/'+f+'.js'));
 });
 function forest(){
   const held=new Set(),pressed=new Set(),button={style:{}},reports=[],announcements=[];
@@ -59,6 +59,7 @@ function kart(){
   const storage=new Map(),win={SK:{},addEventListener(){}},audio=new Proxy({},{get:()=>()=>{}});
   const context=vm.createContext({window:win,console,localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},Math,setTimeout});
   context.SK=win.SK;context.navigator={maxTouchPoints:0};vm.runInContext(read('kart/src/track.js'),context);
+  vm.runInContext(read('kart/src/extras.js'),context);context.SK.paintPads=()=>{};
   vm.runInContext(read('kart/src/kart.js'),context);
   context.SK.createAudio=()=>audio;context.SK.buildTrackTexture=()=>({width:2048,height:2048});
   vm.runInContext(main.replace('SK._debug = {','SK._test={challenge:()=>challenge,useItem,earnedMedals,readRecords,best:()=>bestLap,medals:()=>medals};\n  SK._debug = {'),context);

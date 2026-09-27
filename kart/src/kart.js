@@ -13,7 +13,8 @@
     { id: 'gude',    name: '구데타마',  color: '#ffe27a', accent: '#fff3c4', fur: '#ffe27a', top: 380, accel: 3.0,  turn: 2.9 },
     { id: 'purin',   name: '폼폼푸린',  color: '#ffe27a', accent: '#8a5a33', fur: '#ffe27a', top: 412, accel: 2.45, turn: 2.55 }
   ];
-  SK.CHARACTERS = CHARACTERS;
+  // 우리 아이들(extras.js)이 먼저 읽혀 있으면 뒤에 붙인다
+  SK.CHARACTERS = CHARACTERS.concat(SK.KIDS || []);
 
   class Kart {
     constructor(spec, opts) {
@@ -34,7 +35,8 @@
     }
 
     get topSpeed() {
-      return this.baseTop * (this.boost > 0 ? 1.34 : 1);
+      // 코인 하나에 최고 속도 0.8%, 열 개까지
+      return this.baseTop * (this.boost > 0 ? 1.34 : 1) * (1 + Math.min(10, this.coins || 0) * 0.008);
     }
 
     // surface: 'road' | 'shortcut' | 'grass'
@@ -45,6 +47,7 @@
       this.spin = Math.max(0, this.spin - dt);
       this.slip = Math.max(0, this.slip - dt);
       this.itemCooldown = Math.max(0, this.itemCooldown - dt);
+      this.hop = Math.max(0, (this.hop || 0) - dt);
 
       // 지면에 따른 최고속 — 풀밭은 느려지기만 하고 멈추지는 않는다
       let cap = this.topSpeed;
