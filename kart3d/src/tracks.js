@@ -10,7 +10,7 @@ export const TRACKS = [
     tip: '넓은 길 · 처음이라면 여기',
     name: '산리오 테마파크',
     sky: 0xbfe4ff, fog: 0xd8ecff, ground: 0x8fd36f, road: 0xf0e4d4, rail: 0xff8fb4,
-    laps: 3,
+    laps: 2,
     roadHalf: 30,
     points: [
       [500, 22, 0], [412, 19, 146], [315, 12, 269], [192, 5, 395],
@@ -29,7 +29,7 @@ export const TRACKS = [
     tip: '하늘 위 · 조금 좁아요',
     name: '구름 성',
     sky: 0xa9d8ff, fog: 0xe6f3ff, ground: 0xbcdcf5, road: 0xfff3d6, rail: 0xffd34d,
-    laps: 3,
+    laps: 2,
     roadHalf: 28,
     points: [
       [456, 120, 0], [329, 106, 113], [268, 83, 212], [228, 65, 372],
@@ -47,7 +47,7 @@ export const TRACKS = [
     tip: '가장 넓어요',
     name: '사탕 숲',
     sky: 0xffd9ec, fog: 0xffe9f4, ground: 0xf7c9de, road: 0xffeacb, rail: 0xff7aa8,
-    laps: 3,
+    laps: 2,
     roadHalf: 32,
     points: [
       [576, 24, 0], [450, 14, 160], [257, 6, 220], [98, 5, 203],
@@ -65,7 +65,7 @@ export const TRACKS = [
     tip: '길고 완만해요 · 편한 코스',
     name: '노을 해변',
     sky: 0xffc79a, fog: 0xffdcc0, ground: 0xf0dcae, road: 0xfff0d8, rail: 0x5cc6d8,
-    laps: 3,
+    laps: 2,
     roadHalf: 36,
     points: [
       [598, 14, 0], [465, 13, 156], [303, 12, 245], [159, 9, 310],
@@ -83,7 +83,7 @@ export const TRACKS = [
     tip: '좁고 굽이 많아요 · 어려움',
     name: '별빛 밤길',
     sky: 0x1a2350, fog: 0x2a3468, ground: 0x33406e, road: 0x7d87c0, rail: 0xffd34d,
-    laps: 3,
+    laps: 2,
     roadHalf: 29,
     hemi: 0.62, sunI: 0.5,
     points: [
@@ -98,12 +98,12 @@ export const TRACKS = [
     scenery: 'night'
   },
   {
-    // 오르내림이 큰 하늘길. 한 바퀴가 길어서 2바퀴다.
+    // 오르내림이 큰 하늘길.
     id: 'rainbow',
     tip: '오르내림이 커요 · 아치 통과',
     name: '무지개 하늘길',
     sky: 0xffe4f6, fog: 0xfff0fa, ground: 0xd8c8ff, road: 0xfff8e8, rail: 0xff7aa8,
-    laps: 3,
+    laps: 2,
     roadHalf: 28,
     points: [
       [585, 195, 0], [493, 172, 156], [377, 150, 276], [236, 134, 357],
