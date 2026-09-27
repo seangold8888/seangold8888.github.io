@@ -568,6 +568,17 @@
     desk(x, y, o) {
       return `<g transform="translate(${x} ${y}) scale(${o.s || 1})"><rect x="-60" y="-70" width="120" height="12" rx="3" fill="#c98f5c" stroke="${INK}" stroke-width="2.2"/><rect x="-54" y="-58" width="10" height="58" fill="#b27a4b" stroke="${INK}" stroke-width="1.8"/><rect x="44" y="-58" width="10" height="58" fill="#b27a4b" stroke="${INK}" stroke-width="1.8"/><rect x="-40" y="-82" width="44" height="12" rx="2" fill="#bfe3ff" stroke="${INK}" stroke-width="1.6"/><rect x="-36" y="-92" width="40" height="10" rx="2" fill="#ffb8d0" stroke="${INK}" stroke-width="1.6"/><rect x="12" y="-80" width="30" height="10" rx="2" fill="#fff" stroke="${INK}" stroke-width="1.4"/><text x="27" y="-72" text-anchor="middle" font-size="8" font-family="Jua, sans-serif" fill="#2fbf5b">숙제 ✔</text></g>`;
     },
+    // 말 화살: 뾰족한 말이 화살이 되어 날아간다. t = 글자, rot = 방향(도). soft = 둥근 말(하트 끝).
+    wordarrow(x, y, o) {
+      const w = o.w || 120;
+      const col = o.soft ? "#ff8fb3" : "#6b6f7a";
+      const tip = o.soft
+        ? `<path d="M${w / 2 + 14} 0 C${w / 2 + 2} -12 ${w / 2 - 4} -2 ${w / 2 + 4} 4 C${w / 2 - 4} -2 ${w / 2 + 2} 12 ${w / 2 + 14} 0Z" fill="#ff5c7c" stroke="${INK}" stroke-width="1.4"/>`
+        : `<path d="M${w / 2 + 16} 0 L${w / 2} -9 L${w / 2 + 3} 0 L${w / 2} 9Z" fill="#9aa0a8" stroke="${INK}" stroke-width="1.6"/>`;
+      const shape = `<rect x="${-w / 2}" y="-12" width="${w}" height="24" rx="12" fill="#fff" stroke="${col}" stroke-width="2.4"/><path d="M${-w / 2 - 12} -8 l12 8 l-12 8" stroke="${col}" stroke-width="2.4" fill="none"/>${tip}`;
+      // left: 왼쪽으로 날아가는 화살. 모양만 뒤집고 글자는 바로 둔다.
+      return `<g transform="translate(${x} ${y}) rotate(${o.rot || 0}) scale(${o.s || 1})">${o.left ? `<g transform="scale(-1 1)">${shape}</g>` : shape}<text x="0" y="6" text-anchor="middle" font-size="15" font-family="Jua, sans-serif" fill="${o.soft ? "#d23f78" : "#3d3a38"}">${o.t || ""}</text></g>`;
+    },
     // 신 과일 바구니: 레몬, 자두, 파인애플
     sourfruits(x, y, o) {
       const plum = (dx, dy) => `<g transform="translate(${dx} ${dy})"><circle r="11" fill="#b8325a" stroke="${INK}" stroke-width="1.8"/><path d="M0 -10 q2 -6 6 -7" stroke="#6b4a33" stroke-width="2" fill="none"/><ellipse cx="-4" cy="-4" rx="3" ry="2" fill="#fff" opacity=".5"/></g>`;
