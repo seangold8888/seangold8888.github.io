@@ -1,0 +1,3 @@
+.element-theater{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:18;contain:strict}
+.ultimate-spotlight .battle-card-slot.is-cinematic-attack{z-index:21;filter:drop-shadow(0 0 14px #e4c5ff88)}
+@media(prefers-reduced-motion:reduce){.element-theater{display:none}.ultimate-spotlight .battle-card-slot.is-cinematic-attack{filter:none}}

@@ -114,9 +114,13 @@ test("all story episode mp3 files match the service worker fallback list", () =>
   }
 });
 
-test("cache generation v158 preserves exact v70 card assets and canonical navigation aliases", () => {
-  assert.equal(sw.CACHE_VERSION, "v158");
-  assert.match(sw.STATIC_CACHE, /^adventure-box-v158-/);
+test("cache generation v159 preserves versioned card assets and canonical navigation aliases", () => {
+  assert.equal(sw.CACHE_VERSION, "v159");
+  assert.match(sw.STATIC_CACHE, /^adventure-box-v159-/);
+  for (const asset of ["./cards/js/element-theater.js?v=1", "./cards/element-theater.css?v=1"]) {
+    assert.equal(sw.CORE_SHELL.filter(entry => entry === asset).length, 1);
+    assert.ok(fs.existsSync(path.join(siteRoot, asset.split("?")[0])));
+  }
   const studioImages = fs.readdirSync(path.join(siteRoot, "princess/assets/studio-v3")).filter(name => /\.(webp|jpg)$/.test(name));
   assert.equal(studioImages.length, 95);
   for (const name of studioImages) assert.ok(sw.OPTIONAL_SHELL.includes("./princess/assets/studio-v3/" + name), name);
@@ -138,7 +142,7 @@ test("cache generation v158 preserves exact v70 card assets and canonical naviga
     assert.ok(sw.OPTIONAL_SHELL.includes("./princess/assets/bodies-v4/body-" + id + ".webp"));
   }
   for (const asset of ["styles.css", "campaign.css", "engine.js", "audio.js", "card-view.js", "vfx-recipes.js", "story-gates.js", "campaign.js", "campaign-ui.js", "combat-cinema.js", "app.js"]) {
-    assert.ok(sw.CORE_SHELL.some(entry => entry.endsWith(asset + "?v=70")), asset);
+    assert.ok(sw.CORE_SHELL.some(entry => entry.endsWith(asset + (asset === "app.js" ? "?v=72" : "?v=70"))), asset);
   }
   assert.doesNotMatch(swSource, /\.\/cards\/[^"\n]+\?v=(?:19|2\d|30|31)|adventure-box-v(?:19|2\d|3\d|4\d|5\d|6[0-5])-/);
   assert.deepEqual(sw.VFX_ART_FILES, [
@@ -407,7 +411,7 @@ test("Avengers migrates the legacy child scope before its bundle and tombstones 
 });
 
 test("big media and saved stories live in caches that survive a deploy", () => {
-  assert.match(sw.STATIC_CACHE, /^adventure-box-v158-static$/);
+  assert.match(sw.STATIC_CACHE, /^adventure-box-v159-static$/);
   assert.equal(sw.RUNTIME_CACHE, "adventure-box-media-" + sw.MEDIA_REVISION);
   assert.equal(sw.AUDIO_CACHE, "adventure-box-audio-" + sw.MEDIA_REVISION);
   assert.doesNotMatch(sw.RUNTIME_CACHE, /v\d+/, "the media cache name must not carry the deploy number");

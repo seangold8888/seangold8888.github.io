@@ -71,6 +71,7 @@
   let combatParticleFrame = 0;
   let combatParticleContext = null;
   let combatCinema = null;
+  let elementTheater = null;
   let combatParticleMetrics = { width: 0, height: 0, dpr: 1 };
   let battleSession = 0;
   let pendingCoinAction = null;
@@ -79,6 +80,80 @@
   let tiltingCard = null;
   let campaignUi = null;
   let campaignBattle = null;
+  let tacticsProfile = window.CardTactics ? window.CardTactics.fresh() : null;
+  let tacticsGoal = null;
+  let tacticsSettled = false;
+  let tacticsStorage = null;
+  try { if (window.CardTactics) { tacticsStorage = localStorage; tacticsProfile = window.CardTactics.load(tacticsStorage); } } catch (_) {}
+
+  function renderTacticsCollection() {
+    if (!window.CardTactics || !tacticsProfile) return;
+    let panel = byId("tacticsCollection");
+    if (!panel) {
+      panel = document.createElement("details");
+      panel.id = "tacticsCollection";
+      panel.className = "tactics-collection";
+      byId("campaignButton").after(panel);
+    }
+    panel.replaceChildren();
+    const summary = document.createElement("summary");
+    summary.textContent = "나의 작전 배지 " + tacticsProfile.badges.length + "/4 · " + tacticsProfile.heroes.length + "명의 영웅과 도전";
+    panel.appendChild(summary);
+    const list = document.createElement("div");
+    list.className = "tactics-badges";
+    window.CardTactics.badges.forEach(function (badge) {
+      const earned = tacticsProfile.badges.includes(badge.id);
+      const item = document.createElement("p");
+      item.className = earned ? "tactics-badge earned" : "tactics-badge";
+      const title = document.createElement("strong");
+      title.textContent = (earned ? "✓ " : badge.icon + " ") + badge.name;
+      const hint = document.createElement("small");
+      hint.textContent = badge.goal;
+      item.append(title, hint);
+      list.appendChild(item);
+    });
+    panel.appendChild(list);
+  }
+
+  function renderTacticsGoal() {
+    if (!game || !tacticsGoal) return;
+    const achieved = window.CardTactics.analyze(game.log).earned.includes(tacticsGoal.id);
+    byId("actionHeading").textContent = achieved ? "✓ " + tacticsGoal.name + " 달성!" : "선택 작전 · " + tacticsGoal.goal;
+    byId("actionHeading").title = "선택 목표예요. 달성하지 않아도 불이익은 없어요.";
+  }
+
+  function settleTactics() {
+    if (!window.CardTactics || !tacticsProfile) return;
+    if (tacticsSettled) return;
+    tacticsSettled = true;
+    const result = window.CardTactics.settle(tacticsProfile, game.log, game.winner, selectedCard.id);
+    tacticsProfile = result.profile;
+    const saved = window.CardTactics.save(tacticsStorage, tacticsProfile);
+    let panel = byId("tacticsResult");
+    if (!panel) {
+      panel = document.createElement("section");
+      panel.id = "tacticsResult";
+      panel.className = "tactics-result";
+      dom.resultText.after(panel);
+    }
+    panel.replaceChildren();
+    const stats = document.createElement("p");
+    stats.textContent = "쓴 기술 " + result.stats.techniques + "종 · 막은 피해 " + result.stats.blocked + " · 가장 큰 피해 " + result.stats.best;
+    panel.appendChild(stats);
+    const badges = document.createElement("div");
+    badges.className = "tactics-badges";
+    result.stats.earned.forEach(function (id) {
+      const badge = window.CardTactics.badges.find(function (b) { return b.id === id; });
+      const chip = document.createElement("strong");
+      chip.className = "tactics-badge earned";
+      chip.textContent = (result.newBadges.includes(id) ? "NEW · " : "✓ ") + badge.name;
+      badges.appendChild(chip);
+    });
+    panel.appendChild(badges);
+    const note = document.createElement("small");
+    note.textContent = !saved ? "배지는 얻었지만 이 기기에 저장하지 못했어요." : result.stats.earned.length ? "승패와 관계없이 멋진 작전은 기록돼요!" : "다음 판에는 방어로 피해를 막거나 다른 기술도 써 봐요.";
+    panel.appendChild(note);
+  }
 
   function byId(id) {
     return document.getElementById(id);
@@ -466,6 +541,7 @@
   }
 
   function renderCollection() {
+    renderTacticsCollection();
     const focused = document.activeElement && document.activeElement.closest
       ? document.activeElement.closest("[data-card-id]")
       : null;
@@ -619,6 +695,7 @@
   }
 
   function resetBattleFlow() {
+    if (elementTheater) elementTheater.reset();
     if (combatCinema) combatCinema.reset();
     battleSession += 1;
     clearTimeout(effectTimer);
@@ -673,6 +750,8 @@
     dom.enemyCardSlot.parentElement.querySelector(".combat-label").textContent = expedition ? "장난에 걸린 " + enemy.name : "별그림자 상대";
     dom.rematchButton.textContent = "한 판 더!";
     const fragmentPool = getUnlockedFragmentPool();
+    tacticsGoal = window.CardTactics ? window.CardTactics.goal(tacticsProfile, selectedCard, fragmentPool.length > 0) : null;
+    tacticsSettled = false;
     storyChallenge = window.CardStoryGates &&
       typeof window.CardStoryGates.getForCard === "function"
       ? window.CardStoryGates.getForCard(selectedCard, Math.random, {
@@ -1092,6 +1171,11 @@
         return Boolean(event.weakness && Number(event.amount) > 0);
       }),
       type: side && side.card ? side.card.type : "magic",
+      element: side && side.card ? side.card.element : "",
+      ultimate: Boolean(attackEvent.ultimate),
+      targetImpact: damages.some(function (event) {
+        return event.type === "damage" && event.target !== actor;
+      }),
       hitStopMs: reduced || !contact
         ? 0
         : Math.max(
@@ -1876,7 +1960,7 @@
     const tilt = (dx < 0 ? -1 : 1) * (melee ? 7 : 3);
     return [
       { offset: 0, transform: pose(0, 1, 0) },
-      { offset: contact * 0.57, transform: pose(-22, 1.055, -tilt), easing: "cubic-bezier(.6,0,.9,.4)" },
+      { offset: contact * 0.57, transform: pose(plan.ultimate ? -34 : -28, plan.ultimate ? 1.16 : 1.08, -tilt), easing: "cubic-bezier(.6,0,.9,.4)" },
       { offset: contact, transform: pose(reach, melee ? 1.09 : 1.035, tilt) },
       { offset: hold, transform: pose(reach, melee ? 1.09 : 1.035, tilt), easing: "cubic-bezier(.12,.75,.2,1)" },
       { offset: Math.max(hold + 0.04, 0.9), transform: pose(-5, .99, -tilt * .18) },
@@ -2009,6 +2093,10 @@
     effect.classList.add("is-playing");
     effect._fxPoints = points;
     effect._journey = registerCombatJourney(plan, points);
+    if (window.CardElementTheater) {
+      if (!elementTheater) elementTheater = window.CardElementTheater.create(dom.arena);
+      elementTheater.start(plan, points);
+    }
     if (window.CardCombatCinema && dom.combatShaderCanvas) {
       if (!combatCinema) combatCinema = window.CardCombatCinema.create(dom.combatShaderCanvas);
       if (combatCinema.start(plan, points)) effect.classList.add("has-cinema");
@@ -2028,6 +2116,7 @@
     );
     triggerTechniqueContact(effect, plan);
     if (combatCinema) combatCinema.impact(plan);
+    if (elementTheater) elementTheater.impact(plan);
     spawnCombatImpact(plan, effect._fxPoints);
   }
 
@@ -2345,6 +2434,7 @@
   }
 
   function renderBattle(flags) {
+    renderTacticsGoal();
     flags = flags || {};
     if (!game) return;
     const displayGame = flags.displayState || game;
@@ -2983,7 +3073,7 @@
     }
     const contactTailMs = techniquePlan &&
       (techniquePlan.actualImpact || techniquePlan.outcome === "blocked")
-      ? (techniquePlan.big ? 340 : 280)
+      ? 460
       : 120;
     const actionSettleMs = techniquePlan
       ? Math.max(850, techniquePlan.totalMs + 60,
@@ -3085,6 +3175,7 @@
   }
 
   function finishBattle() {
+    settleTactics();
     const session = battleSession;
     busy = true;
     const victory = game.winner === "player";
@@ -3379,6 +3470,7 @@
   }
 
   window.CardBattleFx = Object.freeze({
+    elementStatus: function () { return elementTheater ? elementTheater.inspect() : {active:false}; },
     cinemaStatus: function () { return combatCinema ? combatCinema.inspect() : {backend: "idle", active: false}; },
     actionVisualsForEvents: actionVisualsForEvents,
     impactFlagsForVisuals: impactFlagsForVisuals,
