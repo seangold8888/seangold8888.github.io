@@ -17,6 +17,7 @@
 ## 놀이터 경험
 
 - 구름사다리가 기본 선택이다. 미끄럼틀·그네·시소·블록놀이·징검다리도 자유롭게 선택한다. 선택은 `playgroundSpot`에 저장하며 현재 단계 이하에서 집중하는 문제 유형을 바꾼다.
+- 홈의 ‘오늘의 이야기 놀이 · 짝꿍 그네’는 친구를 두 명씩 직접 태우기 → 친구의 짝수·홀수 설명 판단하기 → 새로운 수를 혼자 판단하고 이유 고르기의 짧은 이야기다. 날짜에 따라 친구 수가 바뀌며 중간 위치를 `math10_swing_story_v1`에 따로 저장한다. 하루를 마치면 홈에 완료 표시가 나온다. 이야기 놀이의 결과는 기존 독립 숙달·승급·코인·주간 시험에 합산하지 않는다.
 - 문제를 해결하면 진행 사다리의 한 칸이 채워진다. 틀려도 완료한 칸은 줄지 않는다. 중단 후에도 이어갈 수 있다.
 - 신규 선택·아이콘은 `playground.js`에 모은다. 그림 제작 프롬프트는 `assets/playground-art.md`에 기록한다.
 - 기존 누적 발견 수는 호환성을 위해 내부 `garden` 필드에 보관하며 화면에서는 탐험 도장으로 표시한다.
@@ -47,8 +48,9 @@
 - `node math/tests/browser-smoke.cjs`: 별도 임시 브라우저에서 전체 학습 흐름 및 모바일 화면 확인. Playwright 경로는 `PLAYWRIGHT_PATH`로 지정 가능. `TEST_BASE`는 공개 사이트 검증용.
 
 - `node math/tests/browser-responsive.cjs`: 아이패드 가로·세로·분할 화면, 휴대폰, 데스크톱 9개 화면의 전체 그림 표시·터치·회전·이어하기 확인. Chromium 터치 에뮬레이션이며 실기기 Safari 검증은 별도다.
+- `node math/tests/browser-story.cjs`: 짝꿍 그네의 직접 조작·오답 재시도·새로운 수·홈 완료 표시·기존 학습 기록 분리를 320px부터 데스크톱까지 확인한다.
 
-로그인 없이 이 기기의 브라우저에만 저장한다. 내보내기·가져오기는 부모 화면에 있다. 메인 화면 app.js·store.js·playground.css는 v33, focus-music.js는 v31, playground.js는 v30, learning.js는 v29 URL로 갱신되며 기존 서비스 워커의 HTML/JS/CSS 네트워크 우선 정책을 따른다.
+로그인 없이 이 기기의 브라우저에만 저장한다. 내보내기·가져오기는 부모 화면에 있다. 메인 화면 app.js·playground.css는 v34, store.js는 v33, focus-music.js는 v31, playground.js는 v30, learning.js는 v29 URL로 갱신되며 기존 서비스 워커의 HTML/JS/CSS 네트워크 우선 정책을 따른다.
 
 
 ## 생일파티 모험

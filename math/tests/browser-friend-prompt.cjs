@@ -29,7 +29,7 @@ const server=http.createServer((req,res)=>{
   await page.clock.fastForward(1100);
   assert.equal(await page.locator('#friendPrompt').isVisible(),true,'one gentle prompt appears after a pause');
   const purinText=await page.locator('#friendPromptText').textContent();
-  assert.match(purinText,/폼폼푸린.*도와줘/);assert.doesNotMatch(purinText,/빨리/);
+  assert.match(purinText,/폼폼푸린.*같이 갈 방법/);assert.doesNotMatch(purinText,/빨리|힘들어/);
   assert.equal(await page.locator('#questRungs .monkey-climber').evaluate(el=>el.classList.contains('waiting')),true);
   assert.ok(await page.locator('#friendHelpBtn').evaluate(el=>el.getBoundingClientRect().height)>=44,'help target is touch sized');
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'iPad layout does not overflow');

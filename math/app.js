@@ -62,8 +62,8 @@
     friendTimer = null;
     if (!friendPromptEligible()) return;
     $("friendPromptText").textContent = state.climber === "kitty"
-      ? "키티: 재이야, 다음 봉까지 같이 가자!"
-      : "폼폼푸린: 오래 매달리면 힘들어~ 다음 봉까지 도와줘!";
+      ? "키티: 재이야, 다음 봉까지 같이 갈 방법을 찾아볼까?"
+      : "폼폼푸린: 재이야, 다음 봉까지 같이 갈 방법을 찾아보자!";
     $("friendPrompt").hidden = false;
     const climber = $("questRungs").querySelector(".monkey-climber");
     if (climber) climber.classList.add("waiting");
@@ -638,6 +638,10 @@
   }
   function renderPlayground() {
     const spot=Play.byId(state.playgroundSpot), total=state.garden || 0;
+    const storyDone=window.MathSwingStory.load(storage,S.today(),state.climber).phase==="done";
+    const storyLink=document.querySelector(".story-launch");
+    storyLink.textContent=storyDone?"✓ 오늘의 짝꿍 그네 완료 · 다시 놀기 ↗":"오늘의 이야기 놀이 · 짝꿍 그네 ↗";
+    storyLink.classList.toggle("done",storyDone);
     $("missionTitle").textContent=spot.mission;
     $("playgroundChapter").textContent=(Math.floor(total/24)+1)+"번째 탐험";
     $("playgroundGreeting").textContent="재이의 놀이터에\n놀러 와!";
