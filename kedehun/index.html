@@ -250,7 +250,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       <div class="hud-panel score-panel">
         <div class="score-heading">
           <span class="score-label">CHEERS</span>
-          <span class="score-label" id="stageLabel">STAGE 1/2</span>
+          <span class="score-label" id="stageLabel">STAGE 1/4</span>
         </div>
         <div class="score-value" id="scoreValue">000000</div>
         <div class="combo" id="combo"></div>
@@ -585,6 +585,39 @@ const STAGES = [
       { x: 2650, y: 410, width: 290 }, { x: 3260, y: 460, width: 250 },
     ],
   },
+  // 2026-09-28 추가: 불꽃 다리와 마지막 대공연(귀마)
+  {
+    title: '한강 불꽃 다리', subtitle: 'STAGE 03 · FIREWORK BRIDGE', boss: '불꽃 도깨비',
+    worldWidth: 5000, bossGate: 3900, checkpoint: 1900, bossHealth: 600,
+    skyTop: '#12051f', skyBottom: '#5a1a3c', ground: '#2a1030', glow: '#ffb13b',
+    bossBody: '#4a1a10', bossEdge: '#ffb13b',
+    enemies: [
+      { kind: 'shade', x: 700 }, { kind: 'wisp', x: 1080 }, { kind: 'brute', x: 1450 },
+      { kind: 'saja', x: 1850, name: '애비', color: '#c9a3ff' }, { kind: 'wisp', x: 2250 }, { kind: 'shade', x: 2550 },
+      { kind: 'brute', x: 2950 }, { kind: 'saja', x: 3350, name: '베이비', color: '#7fd4ff' },
+    ],
+    shards: [[450, 520], [800, 400], [1180, 515], [1520, 350], [1880, 500], [2200, 380], [2520, 515], [2860, 340], [3200, 500], [3560, 380], [3780, 510]],
+    platforms: [
+      { x: 780, y: 470, width: 250 }, { x: 1500, y: 400, width: 260 }, { x: 2180, y: 455, width: 240 },
+      { x: 2820, y: 395, width: 280 }, { x: 3520, y: 450, width: 250 },
+    ],
+  },
+  {
+    title: '혼문 대공연', subtitle: 'STAGE 04 · FINAL · GWIMA', boss: '귀마',
+    worldWidth: 5200, bossGate: 4100, checkpoint: 2000, bossHealth: 760,
+    skyTop: '#050212', skyBottom: '#2a0f4a', ground: '#1a0b2e', glow: '#ffd166',
+    bossKind: 'gwima',
+    enemies: [
+      { kind: 'shade', x: 680 }, { kind: 'saja', x: 1050, name: '미스터리', color: '#9b6cff' }, { kind: 'brute', x: 1420 },
+      { kind: 'wisp', x: 1800 }, { kind: 'saja', x: 2200, name: '로맨스', color: '#ff7ab8' }, { kind: 'shade', x: 2560 },
+      { kind: 'brute', x: 2950 }, { kind: 'wisp', x: 3300 }, { kind: 'saja', x: 3650, name: '애비', color: '#c9a3ff' },
+    ],
+    shards: [[420, 520], [760, 390], [1130, 510], [1480, 340], [1840, 505], [2180, 385], [2520, 515], [2880, 345], [3240, 500], [3600, 380], [3920, 510]],
+    platforms: [
+      { x: 700, y: 455, width: 260 }, { x: 1380, y: 395, width: 280 }, { x: 2080, y: 450, width: 250 },
+      { x: 2760, y: 400, width: 290 }, { x: 3460, y: 455, width: 260 },
+    ],
+  },
 ];
 
 const WORLD_H = 720;
@@ -755,6 +788,8 @@ class Music {
     return [
       { bpm: 132, chords: [[57, 60, 64], [53, 57, 60], [60, 64, 67], [55, 59, 62]] },  // Am F C G
       { bpm: 116, chords: [[50, 53, 57], [46, 50, 53], [53, 57, 60], [48, 52, 55]] },  // Dm Bb F C
+      { bpm: 140, chords: [[52, 55, 59], [48, 52, 55], [55, 59, 62], [50, 54, 57]] },  // Em C G D
+      { bpm: 124, chords: [[57, 60, 64], [55, 59, 62], [53, 57, 60], [52, 56, 59]] },  // Am G F E
     ];
   }
   filePlayer() {
@@ -1013,11 +1048,13 @@ class Game {
     this.stageEntryScore = this.score;
     this.stageEntryMaxCombo = this.maxCombo;
     this.checkpointReached = false;
-    this.loadStage(1, false, energy);
-    this.playStory('stage2', () => {
+    const next = Math.min((STAGES.length - 1), this.stageIndex + 1);
+    this.loadStage(next, false, energy);
+    const missions = ['코랄 무대를 되찾아!', '달빛 옥상으로 출격!', '불꽃 다리를 건너!', '마지막 무대 · 귀마를 막아!'];
+    this.playStory('stage' + (next + 1), () => {
       this.phase = 'playing';
-      this.music.start(1);
-      this.announce('MISSION 02', '달빛 옥상으로 출격!');
+      this.music.start(next);
+      this.announce('MISSION 0' + (next + 1), missions[next]);
     });
   }
 
@@ -1131,7 +1168,8 @@ class Game {
     const stage = STAGES[index];
     this.stageIndex = index;
     this.player = this.makePlayer();
-    this.player.energy = index === 1 ? Math.min(35, carriedEnergy) : 0;
+    this.player.energy = index > 0 ? Math.min(35, carriedEnergy) : 0;
+    this.harmony = { clock: 3.2, ring: null, streak: 0, golden: 0, perfects: 0 };
     if (fromCheckpoint && stage.checkpoint) { this.player.x = stage.checkpoint; this.player.px = stage.checkpoint; }
     this.enemies = stage.enemies
       .filter((e) => !fromCheckpoint || !stage.checkpoint || e.x > stage.checkpoint - 140)
@@ -1187,7 +1225,7 @@ class Game {
   makeBoss() {
     const stage = STAGES[this.stageIndex];
     const x = stage.worldWidth - 590;
-    const bossHealth = this.hardMode ? [460, 640][this.stageIndex] : stage.bossHealth;
+    const bossHealth = this.hardMode ? [460, 640, 720, 840][this.stageIndex] : stage.bossHealth;
     return {
       id: this.nextId++, kind: 'boss', bossKind: stage.bossKind ?? 'cloud', name: stage.boss, x, y: GROUND_Y - 18, px: x, py: GROUND_Y - 18, vx: 0,
       width: 178, height: 182, health: Math.round(bossHealth * 0.75), maxHealth: Math.round(bossHealth * 0.75),
@@ -1265,6 +1303,7 @@ class Game {
     }
     if (this.hardMode) this.updateHype(dt);
     this.updatePlayer(dt);
+    this.updateHarmony(dt);
     this.updateEnemies(dt);
     this.updateProjectiles(dt);
     this.resolveAttack();
@@ -1315,6 +1354,7 @@ class Game {
     const attackReady = p.dash <= 0 && p.ultimate <= 0 && p.attack <= 0;
     const holdFinisher = attackReady && this.input.consume('heavy', this.playTime);
     if (attackReady && (holdFinisher || this.input.consume('attack', this.playTime))) {
+      this.harmonyTap();
       const step = holdFinisher ? 2 : p.chain > 0 ? (p.attackStep + 1) % 3 : 0;
       const spec = COMBO_STEPS[step];
       p.attackStep = step;
@@ -1661,8 +1701,51 @@ class Game {
     }
   }
 
+  // ---- 골든 하모니: 보스전에서 박자에 맞춰 조여 드는 금빛 고리. 고리가 딱 맞을 때 공격하면 PERFECT ----
+  updateHarmony(dt) {
+    const H = this.harmony;
+    if (!H) return;
+    H.golden = Math.max(0, H.golden - dt);
+    const boss = this.enemies.find((e) => e.kind === 'boss' && !e.dead && e.spawn <= 0);
+    if (!boss) { H.ring = null; return; }
+    if (H.ring) {
+      H.ring.t += dt;
+      if (H.ring.t > H.ring.dur + 0.24) {                       // 놓침
+        H.ring = null; H.streak = 0; H.clock = 3.4;
+        this.floaters.push({ x: boss.x, y: boss.y - 250, life: .7, text: '박자 놓침', color: '#c9c3dc', size: 16 });
+      }
+    } else {
+      H.clock -= dt;
+      if (H.clock <= 0) { H.ring = { t: 0, dur: 1.15 }; this.audio.play('dash'); }
+    }
+  }
+
+  harmonyTap() {
+    const H = this.harmony;
+    if (!H || !H.ring) return;
+    const off = Math.abs(H.ring.t - H.ring.dur);
+    const boss = this.enemies.find((e) => e.kind === 'boss' && !e.dead);
+    if (off > 0.22 || !boss) return;
+    H.ring = null; H.clock = 3.0; H.streak++; H.perfects++;
+    const dmg = Math.round(boss.maxHealth * 0.06);
+    boss.health -= dmg; boss.flash = 0.2;
+    this.player.energy = Math.min(MAX_ENERGY, this.player.energy + 18);
+    this.score += 120;
+    this.burst(boss.x, boss.y - 90, '#ffd166', 26, 'spark');
+    this.ring(boss.x, boss.y - 90, '#ffd166', 180);
+    this.floaters.push({ x: boss.x, y: boss.y - 240, life: .9, text: 'PERFECT! 하모니 -' + dmg, color: '#ffd166', size: 24 });
+    this.audio.play('clear');
+    if (H.streak >= 3) {
+      H.streak = 0; H.golden = 6;
+      this.flash = 0.6; this.zoomPulse = 0.4;
+      this.announce('GOLDEN HARMONY', '6초 동안 공격이 황금빛으로 세져요!');
+    }
+    if (boss.health <= 0) this.strike(boss, 0, 0, false);
+  }
+
   strike(e, damage, knockback, heavy) {
     const g = guardianOf(this.guardianId);
+    if (this.harmony && this.harmony.golden > 0) damage *= 1.6;
     if (heavy && e.kind !== 'boss' && e.telegraph > 0 && !e.attackFired) {
       e.telegraph = 0; e.attackFired = true; e.recovery = .7;
       this.floaters.push({ x: e.x, y: e.y - e.height - 25, life: .7, text: '공격 끊기!', color: '#70efb2', size: 18 });
@@ -1833,7 +1916,7 @@ class Game {
     const record = this.hardRecord;
     if (!record) return;
     if (this.hardMode) {
-      if (stage === 0) record.hardStage1 = true;
+      if (stage < (STAGES.length - 1)) record.hardStage1 = true;
       else {
         record.hardStage1 = true;
         record.hardWon = true;
@@ -1841,7 +1924,7 @@ class Game {
       }
     } else {
       record.normalStage1 = true;
-      if (stage === 1) record.normalWon = true;
+      if (stage === (STAGES.length - 1)) record.normalWon = true;
     }
     saveHardRecord(record);
   }
@@ -1891,8 +1974,8 @@ class Game {
       this.damageFlash = 0.4;
       this.music.setBoss(true);
       this.audio.play('boss');
-      if (this.stageIndex === 1) {
-        this.playStory('bossIntro2', () => {
+      if (this.stageIndex === 1 || this.stageIndex === (STAGES.length - 1)) {
+        this.playStory(this.stageIndex === 1 ? 'bossIntro2' : 'bossIntro4', () => {
           this.phase = 'playing';
           this.announce('BOSS ALERT', stage.boss + ' 등장!');
         });
@@ -1902,17 +1985,17 @@ class Game {
       this.clearTimer -= dt;
       if (this.clearTimer <= 0) {
         this.input.clear();
-        if (this.stageIndex === 0) {
+        if (this.stageIndex < (STAGES.length - 1)) {
           this.phase = 'stageClear';
           this.music.duck(true);
-          this.recordClear(0);
+          this.recordClear(this.stageIndex);
           this.publish();
         } else {
           this.music.stop();
           this.playStory('ending', () => {
             this.phase = 'victory';
             const grade = this.grade();
-            this.recordClear(1);
+            this.recordClear((STAGES.length - 1));
             // 혼문 무대 점수는 일반 최고 기록을 덮지 않는다.
             if (!this.hardMode && (!this.best || this.score > this.best.score)) {
               this.best = { score: this.score, maxCombo: this.maxCombo, time: this.playTime, grade, guardianId: this.guardianId };
@@ -1926,7 +2009,7 @@ class Game {
   }
 
   grade() {
-    return this.score >= 3800 ? 'S' : this.score >= 2600 ? 'A' : this.score >= 1500 ? 'B' : 'C';
+    return this.score >= 7600 ? 'S' : this.score >= 5200 ? 'A' : this.score >= 3000 ? 'B' : 'C';   // 네 무대 기준
   }
 
   updateAtmosphere(dt) {
@@ -2098,7 +2181,7 @@ Object.assign(Game.prototype, {
   drawBackground() {
     const ctx = this.context;
     const stage = STAGES[this.stageIndex];
-    if (COMBAT.drawBackground(ctx, this.viewWidth, WORLD_H, this.camera, this.stageIndex)) return;
+    if (COMBAT.drawBackground(ctx, this.viewWidth, WORLD_H, this.camera, this.stageIndex)) { this.drawStageMood(); return; }
     const sky = ctx.createLinearGradient(0, 0, 0, WORLD_H);
     sky.addColorStop(0, stage.skyTop);
     sky.addColorStop(0.68, stage.skyBottom);
@@ -2133,6 +2216,47 @@ Object.assign(Game.prototype, {
     this.skyline(0.13, 420, '#101435', 72);
     this.skyline(0.23, 480, '#0c1535', 120);
     this.skyline(0.38, 530, '#091127', 165);
+  },
+
+  /* 2026-09-28: 같은 배경 그림 위에 무대마다 분위기를 얹는다.
+     3무대 = 한강 불꽃놀이(주황 노을 + 터지는 폭죽), 4무대 = 하늘에 뜬 황금 혼문과 붉은 기운. */
+  drawStageMood() {
+    const ctx = this.context, w = this.viewWidth, t = this.ambient;
+    if (this.stageIndex === 2) {
+      ctx.save();
+      const g = ctx.createLinearGradient(0, 0, 0, WORLD_H);
+      g.addColorStop(0, 'rgba(255,120,60,.16)'); g.addColorStop(.6, 'rgba(255,90,120,.12)'); g.addColorStop(1, 'rgba(20,6,30,.1)');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, w, WORLD_H);
+      ctx.globalCompositeOperation = 'lighter';
+      const cols = ['#ffb13b', '#ff5c8a', '#7fe0ff', '#ffe066', '#c79bff'];
+      for (let i = 0; i < 6; i++) {
+        const period = 2.4 + (i % 3) * .5, k = ((t + i * .83) % period) / period;
+        if (this.reduced && k > .1) continue;
+        const cx = ((i * 331 + 140) % (w - 160)) + 80, cy = 90 + ((i * 137) % 190);
+        const r = 20 + k * 110, a = Math.max(0, 1 - k) * .9;
+        ctx.strokeStyle = cols[i % cols.length]; ctx.globalAlpha = a; ctx.lineWidth = 3;
+        for (let j = 0; j < 14; j++) {
+          const ang = j / 14 * Math.PI * 2;
+          ctx.beginPath(); ctx.moveTo(cx + Math.cos(ang) * r * .55, cy + Math.sin(ang) * r * .55 + k * 20); ctx.lineTo(cx + Math.cos(ang) * r, cy + Math.sin(ang) * r + k * 26); ctx.stroke();
+        }
+      }
+      ctx.restore();
+    } else if (this.stageIndex === 3) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(70,0,40,.22)'; ctx.fillRect(0, 0, w, WORLD_H);
+      ctx.globalCompositeOperation = 'lighter';
+      const cx = w * .5, cy = 170, pulse = this.reduced ? 0 : Math.sin(t * 2) * 6;
+      ctx.strokeStyle = '#ffd166'; ctx.shadowColor = '#ffd166'; ctx.shadowBlur = 34; ctx.globalAlpha = .55;
+      for (const rr of [118, 96]) { ctx.lineWidth = rr === 118 ? 7 : 3; ctx.beginPath(); ctx.arc(cx, cy, rr + pulse, 0, Math.PI * 2); ctx.stroke(); }
+      ctx.globalAlpha = .18; ctx.fillStyle = '#ffd166'; ctx.beginPath(); ctx.arc(cx, cy, 96 + pulse, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur = 0; ctx.globalAlpha = .22;
+      for (let i = 0; i < 5; i++) {
+        const sway = this.reduced ? 0 : Math.sin(t * .8 + i) * 60;
+        ctx.fillStyle = i % 2 ? '#ff3cac' : '#ffd166';
+        ctx.beginPath(); ctx.moveTo(cx + (i - 2) * 190, 0); ctx.lineTo(cx + (i - 2) * 190 + sway - 70, WORLD_H); ctx.lineTo(cx + (i - 2) * 190 + sway + 70, WORLD_H); ctx.closePath(); ctx.fill();
+      }
+      ctx.restore();
+    }
   },
 
   /* Concert spotlights sweeping from above the stage. */
@@ -2190,6 +2314,7 @@ Object.assign(Game.prototype, {
     this.drawShards();
     this.drawProjectiles();
     this.drawEnemies(frameAlpha);
+    this.drawHarmony(frameAlpha);
     this.drawPlayer(frameAlpha);
     this.drawParticles();
     this.drawFloaters();
@@ -2442,12 +2567,69 @@ Object.assign(Game.prototype, {
     ctx.restore();
   },
 
+  // 그림(아틀라스)으로 그린 보스에 무대별 표시를 얹는다: 불꽃 도깨비는 불꽃 기운, 귀마는 붉은 기운과 황금 왕관.
+  drawBossDeco(e, x, y) {
+    if (e.dead) return;
+    const ctx = this.context, t = this.ambient;
+    if (this.stageIndex === 2 && e.bossKind !== 'jinu') {
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = .45;
+      for (let i = 0; i < 7; i++) {
+        const fx = x + (i - 3) * 30, h = 50 + Math.sin(t * 9 + i * 1.7) * 18;
+        const g = ctx.createLinearGradient(0, y - h - 20, 0, y);
+        g.addColorStop(0, 'rgba(255,90,40,0)'); g.addColorStop(1, 'rgba(255,177,59,.85)');
+        ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(fx - 16, y); ctx.quadraticCurveTo(fx, y - h * 1.6, fx + 16, y); ctx.fill();
+      }
+      ctx.restore();
+    } else if (e.bossKind === 'gwima') {
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = .35 + Math.sin(t * 4) * .1;
+      const aura = ctx.createRadialGradient(x, y - 110, 20, x, y - 110, 190);
+      aura.addColorStop(0, 'rgba(255,60,172,.6)'); aura.addColorStop(1, 'rgba(255,60,172,0)');
+      ctx.fillStyle = aura; ctx.fillRect(x - 200, y - 320, 400, 330);
+      ctx.restore();
+      ctx.save(); ctx.translate(x, y - 228 + Math.sin(t * 2) * 3);
+      ctx.fillStyle = '#ffd166'; ctx.strokeStyle = '#7a4a10'; ctx.lineWidth = 3; ctx.shadowColor = '#ffd166'; ctx.shadowBlur = 18;
+      ctx.beginPath(); ctx.moveTo(-50, 0); ctx.lineTo(-50, -38); ctx.lineTo(-26, -18); ctx.lineTo(0, -50); ctx.lineTo(26, -18); ctx.lineTo(50, -38); ctx.lineTo(50, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.shadowBlur = 0; ctx.fillStyle = '#ff3cac';
+      for (const jx of [-30, 0, 30]) { ctx.beginPath(); ctx.arc(jx, -8, 6, 0, Math.PI * 2); ctx.fill(); }
+      ctx.restore();
+    }
+  },
+
+  drawHarmony(frameAlpha) {
+    const H = this.harmony;
+    if (!H) return;
+    const ctx = this.context;
+    const boss = this.enemies.find((e) => e.kind === 'boss' && !e.dead);
+    if (!boss) return;
+    const x = lerp(boss.px, boss.x, frameAlpha), y = lerp(boss.py, boss.y, frameAlpha) - 92;
+    if (H.golden > 0) {
+      const p = this.player;
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.35 + Math.sin(this.ambient * 10) * 0.15;
+      ctx.fillStyle = '#ffd166'; ctx.beginPath(); ctx.ellipse(lerp(p.px, p.x, frameAlpha), lerp(p.py, p.y, frameAlpha) - 60, 70, 90, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+    }
+    if (!H.ring) return;
+    const k = clamp(H.ring.t / H.ring.dur, 0, 1.2);
+    const target = 104, r = target + (1 - Math.min(1, k)) * 170;
+    const inWindow = Math.abs(H.ring.t - H.ring.dur) <= 0.22;
+    ctx.save();
+    ctx.lineWidth = 6; ctx.strokeStyle = 'rgba(255,209,102,.45)'; ctx.setLineDash([10, 10]);
+    ctx.beginPath(); ctx.arc(x, y, target, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+    ctx.strokeStyle = inWindow ? '#fff3b0' : '#ffd166'; ctx.lineWidth = inWindow ? 12 : 7;
+    ctx.shadowColor = '#ffd166'; ctx.shadowBlur = inWindow ? 32 : 14;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = inWindow ? '#fff3b0' : 'rgba(255,209,102,.8)'; ctx.font = '900 26px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(inWindow ? '지금! ♪' : '♪', x, y + target + 40);   // 아래에 둬야 왕관·이름과 안 겹친다
+    ctx.restore();
+  },
+
   drawEnemies(frameAlpha) {
     for (const e of this.enemies) {
       const x = lerp(e.px, e.x, frameAlpha);
       const y = lerp(e.py, e.y, frameAlpha);
       COMBAT.drawIntent(this.context, e, x, y, this.ambient, GROUND_Y);
-      if (COMBAT.drawEnemy(this.context, e, x, y, this.ambient, this.reduced)) continue;
+      if (COMBAT.drawEnemy(this.context, e, x, y, this.ambient, this.reduced)) { if (e.kind === 'boss') this.drawBossDeco(e, x, y); continue; }
       if (e.kind === 'boss') {
         if (e.bossKind === 'jinu') this.drawSaja(e, x, y, 1.55, true);
         else this.drawBoss(e, x, y);
@@ -2559,8 +2741,10 @@ Object.assign(Game.prototype, {
       ctx.stroke();
       ctx.setLineDash([]);
     }
-    const edge = e.phaseTwo ? '#ff3cac' : '#a66bff';
-    ctx.fillStyle = e.flash > 0 ? '#fff8ef' : e.phaseTwo ? '#4c174e' : '#302057';
+    const st = STAGES[this.stageIndex], gw = e.bossKind === 'gwima';
+    if (gw) ctx.scale(1.28, 1.28);
+    const edge = gw ? (e.phaseTwo ? '#ff3cac' : '#ffd166') : e.phaseTwo ? '#ff3cac' : (st.bossEdge || '#a66bff');
+    ctx.fillStyle = e.flash > 0 ? '#fff8ef' : gw ? (e.phaseTwo ? '#3a0a2a' : '#1a0820') : e.phaseTwo ? '#4c174e' : (st.bossBody || '#302057');
     ctx.strokeStyle = edge;
     ctx.lineWidth = 5;
     ctx.shadowColor = edge;
@@ -2578,8 +2762,15 @@ Object.assign(Game.prototype, {
     ctx.quadraticCurveTo(-39, 13, -76, -38);
     ctx.fill();
     ctx.stroke();
-    this.drawGat(150, -166, 2.1);
-    ctx.fillStyle = e.telegraph > 0 ? '#ffd166' : '#ff4fa3';
+    if (gw) {
+      // 귀마: 갓 대신 황금 왕관과 네 개의 뿔
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#ffd166'; ctx.strokeStyle = '#7a4a10'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(-46, -150); ctx.lineTo(-46, -186); ctx.lineTo(-24, -166); ctx.lineTo(0, -198); ctx.lineTo(24, -166); ctx.lineTo(46, -186); ctx.lineTo(46, -150); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#ff3cac';
+      for (const hx of [-84, -60, 60, 84]) { ctx.beginPath(); ctx.moveTo(hx - 9, -128); ctx.quadraticCurveTo(hx * 1.3, -176, hx * 1.1, -200); ctx.lineTo(hx + 9, -130); ctx.closePath(); ctx.fill(); }
+    } else this.drawGat(150, -166, 2.1);
+    ctx.fillStyle = e.telegraph > 0 ? '#ffd166' : gw ? '#ffd166' : '#ff4fa3';
     ctx.beginPath();
     ctx.ellipse(-26, -92, 12, 7, 0, 0, Math.PI * 2);
     ctx.ellipse(26, -92, 12, 7, 0, 0, Math.PI * 2);
@@ -3352,8 +3543,25 @@ const STORY = {
     { who: 'lumi', text: '진우, 마지막으로 묻는다. 그 목소리, 정말 네 거야?' },
     { who: 'joy', text: '대답 없으면 우리 노래로 대신할게!' },
   ],
+  stage3: [
+    { who: 'narr', text: '달빛 옥상의 진우는 쓰러졌다. 그런데 한강 위로 불꽃놀이가 터지는 순간, 다리 위 조명이 하나둘 검게 물들었다.' },
+    { who: 'joy', text: '불꽃 도깨비다! 폭죽 소리에 숨어서 팬들 목소리를 몰래 훔쳐 가고 있어!' },
+    { who: 'mira', text: '보스한테 금빛 고리가 보이면 박자를 세. 고리가 딱 맞을 때 베면 우리 노래가 직격이야.' },
+    { who: 'lumi', text: '세 번 연속 맞히면 골든 하모니! 다리를 건너자!' },
+  ],
+  stage4: [
+    { who: 'narr', text: '불꽃 다리의 빛이 돌아왔다. 이제 남은 건 단 하나 — 귀마가 직접 올라선 혼문 대공연 무대.' },
+    { who: 'gwima', text: '헌트릭스. 너희 노래가 아무리 커도, 이 무대의 마지막 조명은 내가 끈다.' },
+    { who: 'lumi', text: '우리 노래는 우리 것만이 아니야. 여기 모인 모든 팬의 목소리야.' },
+    { who: 'joy', text: '마지막 무대다. 박자 놓치지 마!' },
+  ],
+  bossIntro4: [
+    { who: 'gwima', text: '진우도, 도깨비도 너희 노래에 졌다고? 그렇다면 내가 직접 혼문을 찢어 주지.' },
+    { who: 'mira', text: '귀마의 고리가 반짝일 때가 기회야. 셋이 함께 맞춰!' },
+    { who: 'lumi', text: '헌트릭스 — 골든 하모니!' },
+  ],
   ending: [
-    { who: 'narr', text: '마지막 그림자가 흩어지자, 무대 위 혼문이 눈부신 황금빛으로 물들었다.' },
+    { who: 'narr', text: '귀마가 비명을 지르며 흩어지자, 무대 위 혼문이 눈부신 황금빛으로 물들었다.' },
     { who: 'joy', text: '골든 혼문… 우리 진짜 해냈어!' },
     { who: 'mira', text: '우리가 아니라, 끝까지 소리 질러 준 팬들이 해낸 거야.' },
     { who: 'lumi', text: '이건 끝이 아니야. 귀마가 다시 올 때까지 — 우린 계속 노래할 거야.' },
@@ -3835,7 +4043,7 @@ function fileToPortraitDataUrl(file, size = 320) {
         refs.bossBar.setAttribute('aria-valuenow', String(Math.max(0, Math.ceil(next.bossHealth))));
         refs.bossFill.style.setProperty('--bar-value', clamp(next.bossHealth / next.bossMaxHealth, 0, 1));
       }
-      refs.stageLabel.textContent = 'STAGE ' + next.stage + '/2';
+      refs.stageLabel.textContent = 'STAGE ' + next.stage + '/' + STAGES.length;
       refs.scoreValue.textContent = pad(next.score);
       refs.combo.innerHTML = '';
       if (next.combo >= 2) {
@@ -3882,7 +4090,8 @@ function fileToPortraitDataUrl(file, size = 320) {
     }
     if (next.phase !== lastPhase) {
       if (next.phase === 'stageClear') {
-        refs.menuClear.querySelector('.dialog-kicker').textContent = next.hard ? '🔥 HONMOON STAGE 01 CLEAR' : 'STAGE 01 CLEAR';
+        const no = 'STAGE ' + String(next.stage).padStart(2, '0') + ' CLEAR';
+        refs.menuClear.querySelector('.dialog-kicker').textContent = next.hard ? '🔥 HONMOON ' + no : no;
         refs.clearScore.textContent = pad(next.score);
         refs.clearCombo.textContent = next.maxCombo + '×';
         refs.clearTime.textContent = fmtTime(next.playTime);
