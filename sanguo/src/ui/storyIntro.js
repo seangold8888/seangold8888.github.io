@@ -8,7 +8,7 @@ function growthBrief(heroId, weaponName) {
   return `<div class="story-growth"><b>LV.${progress.level}</b><span>${weaponName} ${weaponEnhanceText(progress)}</span>${next ? `<small>다음 해금 · ${next.name}</small>` : '<small>모든 성장 기술 해금</small>'}</div>`;
 }
 
-/** 서유기·수호지 전장용 이야기 화면. 삼국지와 같은 뼈대(도입 → 인물 →
+/** 서유기·한국 명장 전장용 이야기 화면. 삼국지와 같은 뼈대(도입 → 인물 →
  *  장면 → 실제와 이야기 비교)를 쓰되 데이터 출처만 다르다. */
 function renderWorkIntro(root, heroId, stageKey, { onBegin, onBack }) {
   const info = workStage(stageKey);
@@ -28,7 +28,7 @@ function renderWorkIntro(root, heroId, stageKey, { onBegin, onBack }) {
           <div class="story-mission"><b>임무</b> ${info.mission}</div></section>
       </div>
       <section class="record-card"><span class="story-label">실제와 이야기</span><h3>어디까지가 사실일까?</h3>
-        <div class="record-grid"><p><b>실제 역사</b>${info.real}</p><p><b>이야기 속에서는</b>${info.fiction}</p></div></section>
+        <div class="record-grid"><p><b>실제 역사</b>${info.real}</p><p><b>${info.work === 'korea' ? '게임 속 연출' : '이야기 속에서는'}</b>${info.fiction}</p></div></section>
       <div class="story-actions"><button class="btn" id="story-back"><span class="btn-t">다시 선택</span></button><button class="btn primary" id="story-begin"><span class="btn-t">${hero.name} 출진 · 전투 시작</span><span class="btn-k">ENTER</span></button></div>
     </div></div>`;
   wire(root, heroId, onBegin, onBack);

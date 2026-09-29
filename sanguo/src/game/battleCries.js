@@ -25,6 +25,10 @@ const voice = (packId, rate, gain, lowpass, highpass, wet) =>
 // One explicit profile per playable hero. Rates stay in a natural range and
 // filters mostly remove rumble/hiss; they do not synthesize a different voice.
 export const BATTLE_CRY_PROFILES = Object.freeze({
+  euljimundeok: voice('noble', .96, .70, 5000, 80, .11),
+  ganggamchan: voice('heavy', .90, .72, 4200, 67, .10),
+  kwonyul: voice('fierce', .95, .74, 5000, 84, .09),
+  yisunsin: voice('noble', .93, .72, 4700, 75, .12),
   liubei: voice('noble', .98, .66, 5600, 82, .09),
   guanyu: voice('noble', .91, .74, 4500, 68, .12),
   zhangfei: voice('fierce', .88, .80, 4100, 62, .10),

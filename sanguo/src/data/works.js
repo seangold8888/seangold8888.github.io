@@ -1,5 +1,5 @@
 /**
- * 삼국지 외 고전 — 서유기·수호지 편.
+ * 삼국지 외 작품 — 서유기·한국 명장 편.
  *
  * 원본 gamedata.json 은 삼국지 전용이라 건드리지 않는다. 여기서 새 작품의
  * 인물·전장·이야기를 따로 정의하고, 같은 전투 엔진에 얹는다.
@@ -14,13 +14,13 @@
 /**
  * 전용 그림과 전투 시트가 준비된 작품만 플레이 가능하게 연다.
  *
- * 서유기·수호지는 인물별 기본·활·승마 시트를 모두 연결한 뒤
- * ready:true 로 공개한다. 새 작품을 추가할 때도 같은 검증을 거친다.
+ * 전용 인물·전장 그림과 전투 시트를 연결한 작품만 ready:true 로 공개한다.
+ * 수호지 데이터는 예전 저장 기록 호환을 위해 남기되 메뉴에서는 숨긴다.
  */
 export const WORKS = {
   sanguo: { id: 'sanguo', name: '삼국지', sub: '三國志演義', accent: '#c9762f', ready: true },
   xiyou: { id: 'xiyou', name: '서유기', sub: '西遊記', accent: '#ff8b3a', ready: true },
-  shuihu: { id: 'shuihu', name: '수호지', sub: '水滸傳', accent: '#8fae74', ready: true },
+  korea: { id: 'korea', name: '한국 명장', sub: '우리 역사', accent: '#79b9da', ready: true },
 };
 
 /** 플레이 가능한 작품만 */
@@ -77,6 +77,31 @@ export const WORK_PEOPLE = {
     weapon: 'firespear', head: 'circlet', beard: 'none',
     bio: '우마왕과 철선공주의 아들이에요. 삼매진화라는 불을 뿜는데 물로도 꺼지지 않아요. 나중에는 관음보살의 선재동자가 됩니다.',
   },
+  // ── 한국 명장 ───────────────────────────────────────────
+  euljimundeok: {
+    name: '을지문덕', work: 'korea', faction: '고구려 · 살수대첩',
+    robe: '#263b60', accent: '#b8c8da', skin: '#c99c7d', hair: '#1a1d25',
+    weapon: 'euljiSword', head: 'warrior', beard: 'short',
+    bio: '612년 수나라의 침공에 맞서 고구려군을 이끌었어요. 지형과 적의 움직임을 살피며 살수에서 큰 승리를 거두었습니다.',
+  },
+  ganggamchan: {
+    name: '강감찬', work: 'korea', faction: '고려 · 귀주대첩',
+    robe: '#703e36', accent: '#d8c7a5', skin: '#d1a588', hair: '#d6d0c5',
+    weapon: 'gangSword', head: 'warrior', beard: 'long',
+    bio: '고려의 문관이자 지휘관이에요. 거란의 침입 때 군대를 이끌고 1019년 귀주에서 승리를 거두었습니다.',
+  },
+  kwonyul: {
+    name: '권율', work: 'korea', faction: '조선 · 행주대첩',
+    robe: '#302f43', accent: '#b34e40', skin: '#d4a384', hair: '#25222b',
+    weapon: 'kwonSword', head: 'warrior', beard: 'short',
+    bio: '임진왜란 때 조선군을 이끈 장수예요. 1593년 행주산성에서 수많은 방어군과 함께 공격을 막아 냈습니다.',
+  },
+  yisunsin: {
+    name: '이순신', work: 'korea', faction: '조선 · 명량대첩',
+    robe: '#273d63', accent: '#bb5d49', skin: '#d1a07f', hair: '#232027',
+    weapon: 'yiSword', head: 'warrior', beard: 'short',
+    bio: '조선 수군을 이끈 장수예요. 1597년 명량에서 적은 수의 배와 병력을 모아 바다의 흐름을 살피며 싸웠습니다.',
+  },
   // ── 수호지 ──────────────────────────────────────────────
   wusong: {
     name: '무송', work: 'shuihu', faction: '수호지 · 행자',
@@ -114,6 +139,10 @@ export const WORK_STATS = {
   nezha: { hp: 116, power: 21, speed: 4.5, range: 108, style: '전체 최속', special: '풍화륜 질주', symbol: '🔥', sigil: '哪' },
   erlangshen: { hp: 140, power: 24, speed: 3.6, range: 118, style: '긴 사거리·강타', special: '천안 삼첨도', symbol: '👁', sigil: '二' },
   honghaier: { hp: 110, power: 23, speed: 4.3, range: 102, style: '유리 대포', special: '삼매진화', symbol: '🔴', sigil: '紅' },
+  euljimundeok: { hp: 136, power: 22, speed: 3.7, range: 105, style: '살수 유인검', special: '살수 역습', symbol: '🌊', sigil: '乙' },
+  ganggamchan: { hp: 144, power: 22, speed: 3.2, range: 106, style: '귀주 지휘검', special: '귀주 결진', symbol: '⭐', sigil: '姜' },
+  kwonyul: { hp: 140, power: 23, speed: 3.5, range: 102, style: '산성 방어검', special: '행주 호령', symbol: '🏯', sigil: '權' },
+  yisunsin: { hp: 142, power: 24, speed: 3.6, range: 108, style: '수군 지휘검', special: '명량 파도진', symbol: '⚓', sigil: '李' },
   wusong: { hp: 138, power: 23, speed: 3.6, range: 82, style: '근접 난타', special: '취권 난무', symbol: '🐯', sigil: '武' },
   linchong: { hp: 132, power: 21, speed: 3.3, range: 112, style: '긴 사거리', special: '표자두 연환창', symbol: '❄️', sigil: '林' },
   lizhishen: { hp: 166, power: 25, speed: 2.4, range: 92, style: '최고 체력', special: '선장 회오리', symbol: '🌸', sigil: '智' },
@@ -129,6 +158,10 @@ export const WORK_WEAPONS = {
   firespear: { name: '화첨창', style: 'spear', len: 1.14, width: .95 },
   // 삼첨양인도는 전용 리그가 없어 창 모션을 빌려 쓴다.
   trident: { name: '삼첨양인도', style: 'spear', len: 1.16, width: 1.20 },
+  euljiSword: { name: '고구려 환두대도', style: 'sword', len: 1.06, width: 1.0 },
+  gangSword: { name: '고려 지휘검', style: 'sword', len: 1.02, width: 1.0 },
+  kwonSword: { name: '행주 지휘검', style: 'sword', len: 1.04, width: 1.0 },
+  yiSword: { name: '조선 지휘검', style: 'sword', len: 1.05, width: 1.0 },
   twinblade: { name: '계도 두 자루', style: 'dual', len: .95, width: .9 },
   spear: { name: '장창', style: 'spear', len: 1.18, width: .9 },
   monkstaff: { name: '수마선장', style: 'monkstaff', len: 1.18, width: 1.25 },
@@ -230,6 +263,47 @@ export const WORK_STAGES = {
     scene_intro: '사타령에는 사자, 코끼리, 금시조 세 마왕이 있어요. 그중 대붕금시조는 한 번 날개를 치면 구만 리를 가서, 근두운으로도 달아날 수 없습니다.',
     real: '금시조는 인도 신화의 거대한 새 가루다예요. 불교와 함께 중국으로 들어와 《서유기》 속 마왕이 되었습니다.',
     fiction: '《서유기》는 인도에서 건너온 신화 속 새를 마지막 큰 적으로 삼아, 서쪽으로 가는 이야기의 끝을 장식했어요.',
+  },
+  // ── 한국 명장: 역사적 전투 순서. 개인 대결과 기술은 게임 연출이다. ──
+  salsu: {
+    work: 'korea', scene: 'salsu', chapter: 1, year: '612년 · 고구려',
+    title: '살수 · 물길을 읽은 을지문덕',
+    mission: '퇴로를 지키며 수나라 선봉의 진격을 막아요.',
+    bossName: '수나라 선봉장', bossId: 'suiVanguard', heroes: ['euljimundeok'],
+    lesson: '큰 승리는 혼자만의 힘이 아니라 지형을 읽고 함께 움직인 사람들에게서 나왔어요.',
+    scene_intro: '수나라 군대가 고구려 깊숙이 들어왔어요. 을지문덕은 적의 움직임과 퇴로를 살펴 살수 근처에서 맞설 때를 기다립니다.',
+    real: '612년 을지문덕이 이끈 고구려군은 살수에서 수나라 군대를 크게 물리쳤어요. 강물을 인위적으로 막았다가 풀었다는 이야기는 확실한 기록으로 확인되지 않습니다.',
+    fiction: '이 게임의 일대일 적장 대결과 물결 모양 필살기는 전투를 재미있게 만든 연출이에요. 실제 승리는 여러 병사의 작전과 협력으로 이루어졌습니다.',
+  },
+  gwiju: {
+    work: 'korea', scene: 'gwiju', chapter: 2, year: '1019년 · 고려',
+    title: '귀주 · 강감찬의 결진',
+    mission: '귀주로 물러나는 거란군의 선봉을 막아요.',
+    bossName: '거란 선봉장', bossId: 'khitanVanguard', heroes: ['ganggamchan'],
+    lesson: '위기를 넘길 때에는 용기와 함께 준비, 판단, 협력이 필요해요.',
+    scene_intro: '거란군이 고려에 침입했지만 뜻대로 되지 않아 북쪽으로 물러납니다. 강감찬이 이끄는 고려군은 귀주에서 길을 지키며 맞섭니다.',
+    real: '1019년 귀주에서 강감찬이 이끈 고려군이 거란군에 큰 승리를 거두었어요. 강감찬은 칼싸움만 하는 장수가 아니라 군대를 지휘한 인물이었습니다.',
+    fiction: '게임의 별빛 검격과 적장 한 명을 쓰러뜨리는 장면은 상상한 액션이에요. 실제 전투는 많은 사람이 함께 치른 싸움이었습니다.',
+  },
+  haengju: {
+    work: 'korea', scene: 'haengju', chapter: 3, year: '1593년 · 조선',
+    title: '행주 · 권율의 산성 방어',
+    mission: '행주산성의 길목을 지키며 공격을 막아요.',
+    bossName: '왜군 공격대장', bossId: 'haengjuVanguard', heroes: ['kwonyul'],
+    lesson: '함께 성을 지킨 사람들의 끈기와 협력이 어려운 시간을 버텨 냈어요.',
+    scene_intro: '행주산성으로 큰 공격이 밀려옵니다. 권율과 방어군은 높은 지형을 이용해 성을 지키려고 힘을 모아요.',
+    real: '1593년 권율이 이끈 조선군은 행주산성에서 일본군의 공격을 물리쳤어요. 여러 부대와 백성의 지원이 함께한 방어전이었습니다.',
+    fiction: '게임의 혼자 돌진하는 권율과 한 명의 적장 대결은 역사 장면을 단순화한 연출이에요.',
+  },
+  myeongnyang: {
+    work: 'korea', scene: 'myeongnyang', chapter: 4, year: '1597년 · 조선',
+    title: '명량 · 이순신의 바닷길',
+    mission: '배 위를 지키며 적의 선봉을 물리쳐요.',
+    bossName: '왜군 수군 선봉장', bossId: 'myeongnyangVanguard', heroes: ['yisunsin'],
+    lesson: '두려워도 서로 믿고 자기 자리를 지킨 사람들이 역사를 바꾸었어요.',
+    scene_intro: '전열을 다시 꾸린 조선 수군이 좁은 명량 해협에 섭니다. 이순신은 바다의 빠른 물살과 배들의 움직임을 살펴 지휘합니다.',
+    real: '1597년 이순신이 이끈 조선 수군은 명량 해전에서 더 큰 일본 수군을 물리쳤어요. 배와 물길을 활용한 지휘, 수군의 협력이 중요했습니다.',
+    fiction: '이 게임은 갑판 위 개인 전투로 바다 싸움을 표현했어요. 실제 승부의 중심은 함선끼리의 전투였지 검술 결투가 아니었습니다.',
   },
   // ── 수호지 ──────────────────────────────────────────────
   liangshan: {

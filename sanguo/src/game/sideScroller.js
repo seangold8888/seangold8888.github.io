@@ -16,6 +16,10 @@ const CANVAS_UI_FONT = '"Pretendard Variable", Pretendard, "Noto Sans KR", "Malg
 const CANVAS_IMPACT_FONT = CANVAS_UI_FONT;
 
 const HERO_ART = {
+  euljimundeok: { hero: 'art/side-scroller/euljimundeok-painted-sheet-v1.png', heroBow: 'art/side-scroller/euljimundeok-bow-painted-sheet-v1.png' },
+  ganggamchan: { hero: 'art/side-scroller/ganggamchan-painted-sheet-v1.png', heroBow: 'art/side-scroller/ganggamchan-bow-painted-sheet-v1.png' },
+  kwonyul: { hero: 'art/side-scroller/kwonyul-painted-sheet-v1.png', heroBow: 'art/side-scroller/kwonyul-bow-painted-sheet-v1.png' },
+  yisunsin: { hero: 'art/side-scroller/yisunsin-painted-sheet-v1.png', heroBow: 'art/side-scroller/yisunsin-bow-painted-sheet-v1.png' },
   erlangshen: { hero: 'art/side-scroller/erlangshen-hero-painted-sheet-v1.png', heroBow: 'art/side-scroller/erlangshen-hero-bow-painted-sheet-v1.png' },
   honghaier: { hero: 'art/side-scroller/honghaier-painted-sheet-v1.png', heroBow: 'art/side-scroller/honghaier-bow-painted-sheet-v1.png' },
   nezha: {
@@ -132,6 +136,10 @@ const MOUNT_ART = {
 for (const [id, profile] of Object.entries(MOUNT_PROFILES)) MOUNT_ART[id] = profile.horse;
 
 const BOSS_ART = {
+  suiVanguard: 'art/side-scroller/boss-sui-vanguard-painted-sheet-v1.png',
+  khitanVanguard: 'art/side-scroller/boss-khitan-vanguard-painted-sheet-v1.png',
+  haengjuVanguard: 'art/side-scroller/boss-haengju-vanguard-painted-sheet-v1.png',
+  myeongnyangVanguard: 'art/side-scroller/boss-myeongnyang-vanguard-painted-sheet-v1.png',
   yinjiao: 'art/side-scroller/boss-yinjiao-painted-sheet-v1.png',
   honghaier: 'art/side-scroller/boss-honghaier-painted-sheet-v1.png',
   dapeng: 'art/side-scroller/boss-dapeng-painted-sheet-v1.png',
@@ -178,6 +186,10 @@ const MOUNT_KINDS = {
 // 소설별 적장 프로필. 이름만 바뀌고 같은 화웅 스프라이트를 쓰지 않도록
 // 색상·무기·실루엣 장식·공격 사거리까지 보스마다 따로 둔다.
 const BOSS_PROFILES = {
+  suiVanguard: { kind: 'spear', tint: null, glow: '#bd7471', weapon: '수군 장창', attackRange: 235, hitRange: 218, damage: 20, actionDuration: 590, cooldownScale: 1.05, hpScale: .9 },
+  khitanVanguard: { kind: 'sword', tint: null, glow: '#c7a06f', weapon: '거란 곡도', attackRange: 225, hitRange: 210, damage: 22, actionDuration: 520, cooldownScale: .95, hpScale: 1.0 },
+  haengjuVanguard: { kind: 'spear', tint: null, glow: '#d5855b', weapon: '공성 장창', attackRange: 240, hitRange: 220, damage: 24, actionDuration: 540, cooldownScale: .92, hpScale: 1.06 },
+  myeongnyangVanguard: { kind: 'sword', tint: null, glow: '#93bddd', weapon: '수군 도검', attackRange: 225, hitRange: 212, damage: 26, actionDuration: 490, cooldownScale: .85, hpScale: 1.12 },
   huaxiong: { kind: 'halberd', tint: { from: 0, to: 0, width: 54, sat: 1.10, val: 1.04 }, glow: '#ff7048', weapon: '대감도', attackRange: 210, hitRange: 205, damage: 22, hpScale: 1.02 },
   zhangjiao: { kind: 'staff', tint: { from: 0, to: 46, width: 56, sat: 1.12, val: 1.10 }, glow: '#ffd35d', weapon: '구절장', attackRange: 190, hitRange: 190, damage: 20, hpScale: .98 },
   chunyuqiong: { kind: 'axe', tint: { from: 0, to: 205, width: 54, sat: .82, val: 1.00 }, glow: '#b8d4ff', weapon: '대부', attackRange: 220, hitRange: 210, damage: 24, hpScale: 1.08 },
@@ -208,6 +220,10 @@ const BOSS_PROFILES = {
 };
 
 const ENEMY_ROSTERS = {
+  salsu: { faction: '수나라 군', baseHue: 0, names: { soldier: '수나라 보병', archer: '수나라 궁수', heavy: '수나라 중갑병', captain: '수나라 선봉' }, hues: { soldier: 0, archer: 15, heavy: 345, captain: 28 }, weapons: { soldier: 'spear', archer: 'bow', heavy: 'axe', captain: 'halberd' }, accent: '#cf8172' },
+  gwiju: { faction: '거란군', baseHue: 42, names: { soldier: '거란 보병', archer: '거란 궁수', heavy: '거란 중갑병', captain: '거란 선봉' }, hues: { soldier: 42, archer: 28, heavy: 50, captain: 16 }, weapons: { soldier: 'blade', archer: 'bow', heavy: 'axe', captain: 'halberd' }, accent: '#c8a46d' },
+  haengju: { faction: '왜군 공격대', baseHue: 20, names: { soldier: '공성 보병', archer: '공성 궁수', heavy: '공성 중갑병', captain: '공격대 선봉' }, hues: { soldier: 20, archer: 8, heavy: 32, captain: 350 }, weapons: { soldier: 'spear', archer: 'bow', heavy: 'club', captain: 'halberd' }, accent: '#d8926a' },
+  myeongnyang: { faction: '왜군 수군', baseHue: 202, names: { soldier: '갑판 보병', archer: '수군 궁수', heavy: '갑판 중갑병', captain: '수군 선봉' }, hues: { soldier: 202, archer: 188, heavy: 220, captain: 236 }, weapons: { soldier: 'blade', archer: 'bow', heavy: 'spear', captain: 'halberd' }, accent: '#8bbbd3' },
   default: { faction: '적군', baseHue: 0, names: { soldier: '적 병졸', archer: '적 궁수', heavy: '적 중장', captain: '적 부장' }, hues: { soldier: 0, archer: 12, heavy: 28, captain: 345 }, weapons: { soldier: 'blade', archer: 'bow', heavy: 'axe', captain: 'halberd' }, accent: '#d56a45' },
   yellow: { faction: '황건적', baseHue: 46, names: { soldier: '황건 병졸', archer: '황건 궁수', heavy: '황건 장사', captain: '장각 호위대' }, hues: { soldier: 46, archer: 34, heavy: 20, captain: 8 }, weapons: { soldier: 'staff', archer: 'bow', heavy: 'club', captain: 'halberd' }, accent: '#e8bc4c' },
   hulao: { faction: '동탁군', baseHue: 0, names: { soldier: '서량 보병', archer: '서량 궁수', heavy: '서량 중갑', captain: '화웅 선봉대' }, hues: { soldier: 0, archer: 352, heavy: 338, captain: 18 }, weapons: { soldier: 'blade', archer: 'bow', heavy: 'axe', captain: 'halberd' }, accent: '#cf4d3d' },
@@ -233,6 +249,10 @@ const ENEMY_ROSTERS = {
 };
 
 const COMBAT_PROFILES = {
+  euljimundeok: { attackTheme: 'water', specialTheme: 'storm', whirlwindTheme: 'water', musouTheme: 'water', arrowColor: '#a1dbea', hitColor: '#78cde1', impactStyle: 'ribbon', audioStyle: 'dual', kinds: { 1: 'sweep', 2: 'reverse', 3: 'wide', special: 'spin' } },
+  ganggamchan: { attackTheme: 'solar', specialTheme: 'earth', whirlwindTheme: 'solar', musouTheme: 'solar', arrowColor: '#efd8a6', hitColor: '#e0c081', impactStyle: 'crescent', audioStyle: 'dual', kinds: { 1: 'sweep', 2: 'overhead', 3: 'wide', special: 'overhead' } },
+  kwonyul: { attackTheme: 'earth', specialTheme: 'flame', whirlwindTheme: 'earth', musouTheme: 'flame', arrowColor: '#e4b090', hitColor: '#d98b67', impactStyle: 'burst', audioStyle: 'dual', kinds: { 1: 'sweep', 2: 'thrust', 3: 'wide', special: 'wide' } },
+  yisunsin: { attackTheme: 'water', specialTheme: 'water', whirlwindTheme: 'storm', musouTheme: 'storm', arrowColor: '#a4d7f1', hitColor: '#80c5e9', impactStyle: 'ribbon', audioStyle: 'dual', kinds: { 1: 'sweep', 2: 'reverse', 3: 'wide', special: 'spin' } },
   liubei: { attackTheme: 'water', specialTheme: 'jade', whirlwindTheme: 'storm', musouTheme: 'solar', arrowColor: '#8ec8ff', hitColor: '#8ec8ff', impactStyle: 'ribbon', audioStyle: 'dual', kinds: { 1: 'sweep', 2: 'reverse', 3: 'wide', special: 'wide', mountedThrust: 'reverse' } },
   guanyu: { attackTheme: 'jade', specialTheme: 'water', whirlwindTheme: 'storm', musouTheme: 'water', arrowColor: '#78e8d0', hitColor: '#62e8c1', impactStyle: 'crescent', audioStyle: 'guandao', kinds: { 1: 'sweep', 2: 'overhead', 3: 'wide', heavy: 'overhead', mountedThrust: 'overhead' } },
   zhangfei: { attackTheme: 'flame', specialTheme: 'inferno', whirlwindTheme: 'flame', musouTheme: 'solar', arrowColor: '#ff9a4e', hitColor: '#ff7548', impactStyle: 'burst', audioStyle: 'spear', kinds: { 1: 'thrust', 2: 'thrust', 3: 'wide', heavy: 'thrust', mountedThrust: 'thrust' } },
@@ -269,6 +289,10 @@ const COMBAT_PROFILES = {
 };
 
 const SPECIAL_CALLOUTS = {
+  euljimundeok: { special: { name: '살수 역습', cry: '물길을 읽고 길을 연다' }, musou: { name: '살수 결진', cry: '고구려군이 함께 물러서지 않는다' } },
+  ganggamchan: { special: { name: '귀주 결진', cry: '흩어진 진형을 다시 모은다' }, musou: { name: '귀주 대승', cry: '고려의 진형이 길을 지킨다' } },
+  kwonyul: { special: { name: '행주 호령', cry: '산성의 방어선을 지킨다' }, musou: { name: '행주 수성진', cry: '함께 지킨 성은 무너지지 않는다' } },
+  yisunsin: { special: { name: '명량 파도진', cry: '좁은 바닷길을 지킨다' }, musou: { name: '명량 수군진', cry: '조선 수군이 함께 앞으로 나아간다' } },
   liubei: { special: { name: '덕의검기', cry: '백성을 지키는 쌍검의 기세' }, musou: { name: '인왕쌍룡참', cry: '인의로 난세를 가른다' } },
   guanyu: { special: { name: '청룡일섬', cry: '언월도의 단호한 일격' }, musou: { name: '청룡언월참', cry: '청룡이 전장을 가른다' } },
   zhangfei: { special: { name: '장판뇌후', cry: '함성으로 만군을 멈춘다' }, musou: { name: '만군벽력진', cry: '장팔사모의 폭풍' } },
@@ -1310,7 +1334,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   const usesSeatedMountSheet = !usesConsistentMount && supportsMount && ['horse', 'wheels'].includes(mountKind) && !!heroAssets.mounted;
   const supportsMountedRanged = usesSeatedMountSheet ? !!heroAssets.mountedBow : supportsMount && supportsRanged;
   const extra = workPerson(heroId), extraStats = workStats(heroId);
-  // 전장 정보. 서유기·수호지는 works.js, 삼국지는 원본 gamedata 에서 온다.
+  // 전장 정보. 서유기·한국 명장은 works.js, 삼국지는 원본 gamedata 에서 온다.
   const stageInfo = workStage(stageKey) || (() => {
     const s = stage(stageKey);
     if (!s || !s.title) return null;
@@ -1324,10 +1348,11 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   const heroName = extra?.name || person(heroId).name || '관우';
   const bossLabel = stageInfo?.bossName || '호로관 수문장';
   // 진영별 군복. gamedata 에 troop 이 6종 있는데 여태 쓰지 않아 12개 전장이
-  // 전부 같은 병사·같은 적장으로 보였다. 서유기·수호지는 대응 진영이 없어
+  // 전부 같은 병사·같은 적장으로 보였다. 삼국지 외 작품은 대응 진영이 없어
   // 전장 분위기에 맞는 것을 골라 준다.
   const WORK_TROOP = {
     flamemountain: 'yellow', heavenpalace: 'yuan', liangshan: 'wu', snowshrine: 'wei',
+    salsu: 'wei', gwiju: 'yuan', haengju: 'dong', myeongnyang: 'ship',
     huaguoshan: 'yellow', donghai: 'ship', baihuling: 'yuan', lianhuadong: 'wei', huoyundong: 'dong', shituoling: 'wu',
   };
   const troop = stage(stageKey)?.troop || WORK_TROOP[stageKey] || 'dong';
@@ -1936,7 +1961,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       try { localStorage.setItem('sanguo_clear_' + stageKey, '1'); } catch {}
     }
     const rewards = awardBattleProgress(heroId, { win, ko: player.ko, stageKey, difficultyId: diff.id });
-    setTimeout(() => { document.getElementById('ui').innerHTML = ''; showResult(document.getElementById('ui'), { win, heroName, enemyName: bossLabel, weaponName, rewards, story: stageInfo?.work === 'xiyou' ? stageInfo : null, onRetry: () => startSideBattle(heroId, stageKey, { onExit }), onMenu: () => onExit?.() }); }, 450);
+    setTimeout(() => { document.getElementById('ui').innerHTML = ''; showResult(document.getElementById('ui'), { win, heroName, enemyName: bossLabel, weaponName, rewards, story: stageInfo?.work === 'xiyou' || stageInfo?.work === 'korea' ? stageInfo : null, onRetry: () => startSideBattle(heroId, stageKey, { onExit }), onMenu: () => onExit?.() }); }, 450);
   }
 
   function update(dt, now) {
@@ -2243,7 +2268,42 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       return;
     }
     // 그림 한 장이라도 로드에 실패하면 기존 절차 배경이 안전한 폴백이다.
-    if (scenery) { scenery.draw(ctx, cameraX, width, height, performance.now(), q()); return; }
+    if (scenery) {
+      scenery.draw(ctx, cameraX, width, height, performance.now(), q());
+      if (['salsu', 'gwiju', 'haengju'].includes(stageKey)) {
+        // 강가·고개·산성 모두 발밑의 실제 전투 지면이 필요하다.
+        const floorTop = ground() - 108;
+        const [top, bottom] = scenery.scene.ground;
+        const earth = ctx.createLinearGradient(0, floorTop, 0, height);
+        earth.addColorStop(0, top); earth.addColorStop(1, bottom);
+        ctx.fillStyle = earth; ctx.fillRect(0, floorTop, width, height - floorTop);
+        ctx.fillStyle = 'rgba(222,211,175,.23)'; ctx.fillRect(0, floorTop, width, 3);
+        const shift = ((cameraX * .7) % 173 + 173) % 173;
+        for (let i = -1; i < Math.ceil(width / 173) + 1; i++) {
+          const x = i * 173 - shift;
+          ctx.fillStyle = 'rgba(20,22,19,.21)'; ctx.fillRect(x + 18, floorTop + 36 + (i % 3) * 21, 65, 2);
+          ctx.fillStyle = 'rgba(230,221,188,.11)'; ctx.fillRect(x + 96, floorTop + 95 + (i % 2) * 33, 46, 2);
+        }
+      } else if (stageKey === 'myeongnyang') {
+        // 실제 해전은 배 위 전투다. 원경의 바다는 남기고 발밑에는 갑판을 깐다.
+        const deckTop = ground() - 108;
+        const wood = ctx.createLinearGradient(0, deckTop, 0, height);
+        wood.addColorStop(0, '#80634a'); wood.addColorStop(.55, '#604632'); wood.addColorStop(1, '#35271f');
+        ctx.fillStyle = wood; ctx.fillRect(0, deckTop, width, height - deckTop);
+        ctx.fillStyle = '#2c2924'; ctx.fillRect(0, deckTop - 11, width, 13);
+        ctx.fillStyle = '#b0906d'; ctx.fillRect(0, deckTop + 1, width, 3);
+        const plankShift = ((cameraX % 180) + 180) % 180;
+        for (let row = 0; row < 12; row++) {
+          const y = deckTop + 18 + row * 29;
+          ctx.fillStyle = 'rgba(22,14,10,.29)'; ctx.fillRect(0, y, width, 2);
+          ctx.fillStyle = 'rgba(204,163,119,.12)'; ctx.fillRect(0, y + 3, width, 1);
+          for (let x = -180 - plankShift + (row % 2) * 90; x < width + 180; x += 180) {
+            ctx.fillStyle = 'rgba(19,11,8,.25)'; ctx.fillRect(x, y + 3, 2, 26);
+          }
+        }
+      }
+      return;
+    }
     const image = assets.background, scale = Math.max(width / image.width, height / image.height), drawW = image.width * scale, drawH = image.height * scale, parallax = (cameraX * 0.10) % drawW;
     ctx.fillStyle = '#171716'; ctx.fillRect(0, 0, width, height);
     // 배경 타일은 drawW >= width 라 화면에 최대 2장만 걸친다. 3장을 다 그리면

@@ -271,6 +271,45 @@ export const SCENES = {
     ],
     ground: ['#c8d3e0', '#8592a5'],
   },
+  // 한국 명장 — 살수의 강안. 물길과 낮은 기슭을 함께 보여 준다.
+  salsu: {
+    sky: ['#1c3046', '#526f84', '#bad5ce'], haze: 'rgba(145,195,205,.14)',
+    layers: [
+      { kind: 'ridge', depth: .05, color: '#203443', height: .32, rough: .52 },
+      { kind: 'water', depth: .22, color: '#4c7782' },
+    ],
+    ground: ['#687466', '#39463c'],
+  },
+  // 귀주 — 북방의 높은 고개와 서늘한 전장.
+  gwiju: {
+    sky: ['#1b283b', '#586d7e', '#b8b7a0'], haze: 'rgba(186,200,208,.16)',
+    layers: [
+      { kind: 'ridge', depth: .04, color: '#263646', height: .45, rough: .67 },
+      { kind: 'ridge', depth: .16, color: '#405365', height: .31, rough: .54 },
+      { kind: 'banners', depth: .55, color: '#876c4a' },
+    ],
+    ground: ['#857b68', '#50493e'],
+  },
+  // 행주 — 산성의 성벽과 방어 깃발.
+  haengju: {
+    sky: ['#29384b', '#9a8d7d', '#e8c7a0'], haze: 'rgba(225,180,143,.18)',
+    layers: [
+      { kind: 'ridge', depth: .05, color: '#4b5150', height: .30, rough: .42 },
+      { kind: 'wall', depth: .30, color: '#58524b', accent: '#aa9273' },
+      { kind: 'banners', depth: .60, color: '#a24941' },
+    ],
+    ground: ['#80705c', '#4d4236'],
+  },
+  // 명량 — 갑판 위를 전투 공간으로 쓰고, 뒤편에 바다와 배들을 둔다.
+  myeongnyang: {
+    sky: ['#172941', '#456880', '#b7cbd0'], haze: 'rgba(144,188,205,.16)',
+    layers: [
+      { kind: 'ridge', depth: .05, color: '#294153', height: .24, rough: .36 },
+      { kind: 'water', depth: .18, color: '#365f70' },
+      { kind: 'ships', depth: .41, color: '#253b48', accent: '#637b83' },
+    ],
+    ground: ['#6a513d', '#3e3027'],
+  },
 };
 
 /** 층 하나를 오프스크린 타일로 굽는다. */
@@ -359,6 +398,21 @@ function bakeLayer(layer, w, h, seed) {
       g.fillRect(rand() * w, y, 12 + rand() * 40, 1.5);
     }
     g.globalAlpha = 1;
+  } else if (layer.kind === 'ships') {
+    // 명량 해협 저편의 배: 전투 판정과 무관한 원경 실루엣.
+    for (let i = 0; i < 8; i++) {
+      const x = (i + .3 + rand() * .4) * w / 8;
+      const y = h * (.59 + rand() * .12);
+      const bw = 65 + rand() * 48;
+      g.fillStyle = layer.color;
+      g.beginPath(); g.moveTo(x - bw * .55, y); g.lineTo(x + bw * .58, y);
+      g.lineTo(x + bw * .35, y + 18); g.lineTo(x - bw * .38, y + 18); g.closePath(); g.fill();
+      g.strokeStyle = layer.color; g.lineWidth = 4;
+      g.beginPath(); g.moveTo(x, y - 64); g.lineTo(x, y); g.stroke();
+      g.fillStyle = layer.accent;
+      g.beginPath(); g.moveTo(x + 3, y - 59); g.lineTo(x + bw * .38, y - 24);
+      g.lineTo(x + 3, y - 24); g.closePath(); g.fill();
+    }
   } else if (layer.kind === 'reeds') {
     // 갈대밭
     for (let i = 0; i < 150; i++) {

@@ -6,9 +6,9 @@ const path = require('node:path');
 const cries = () => import('../src/game/battleCries.js');
 const skills = () => import('../src/game/dashSkills.js');
 
-test('all 30 playable heroes have a bounded, character-specific battle cry profile', async () => {
+test('all 34 playable heroes have a bounded, character-specific battle cry profile', async () => {
   const [{ BATTLE_CRY_PACKS, BATTLE_CRY_PROFILES }, { DASH_SKILLS }] = await Promise.all([cries(), skills()]);
-  assert.equal(Object.keys(BATTLE_CRY_PROFILES).length, 30);
+  assert.equal(Object.keys(BATTLE_CRY_PROFILES).length, 34);
   assert.deepEqual(Object.keys(BATTLE_CRY_PROFILES).sort(), Object.keys(DASH_SKILLS).sort());
   for (const [heroId, profile] of Object.entries(BATTLE_CRY_PROFILES)) {
     assert.ok(BATTLE_CRY_PACKS[profile.pack], `${heroId}: ${profile.pack}`);

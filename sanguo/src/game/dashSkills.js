@@ -2,6 +2,10 @@
 const make = (name, tip, color, kind, theme, speed, duration, reach, lane, damage, hits = 1, shots = 0) =>
   Object.freeze({ name, tip, color, kind, theme, speed, duration, reach, lane, damage, hits, shots, cooldown: 2600, knock: kind === 'overhead' ? 110 : 45 });
 export const DASH_SKILLS = Object.freeze({
+  euljimundeok: make('살수 측면돌파', '물결처럼 적진 옆을 가르기', '#8edbeb', 'reverse', 'water', 900, 510, 168, 85, 31, 2),
+  ganggamchan: make('귀주 진형쇄도', '앞줄을 단단하게 밀어붙이기', '#ead39c', 'overhead', 'earth', 620, 590, 205, 112, 72),
+  kwonyul: make('행주 성벽돌진', '방어선에서 앞으로 파고들기', '#eaa280', 'wide', 'flame', 760, 530, 200, 116, 61),
+  yisunsin: make('명량 물살가르기', '좁은 길을 가로지르는 연격', '#8fd2ec', 'sweep', 'water', 850, 570, 214, 108, 34, 2),
   liubei: make('쌍룡 돌파', '두 번 베며 전진', '#8fe5d8', 'reverse', 'jade', 650, 560, 150, 85, 31, 2),
   guanyu: make('청룡 질풍참', '넓게 가르는 돌진', '#55e6b1', 'wide', 'jade', 690, 530, 225, 132, 66),
   zhangfei: make('장판 맹호격', '강하게 밀쳐내는 일격', '#ff9361', 'overhead', 'flame', 720, 520, 180, 112, 72),

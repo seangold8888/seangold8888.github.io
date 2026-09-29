@@ -1,4 +1,4 @@
-// 영어 그림책. 쉬운 책부터 차례로 놓는다. 쪽마다 전용 삽화(art/<책>-<쪽>.webp), 없으면 카드 원화.
+// 영어 그림책. 쉬운 책부터 차례로 놓는다. 쪽마다 전용 삽화(기본 webp, 책별 imageExt 지정 가능), 없으면 카드 원화.
 // 낭독 음성: english/audio/<책 id>-<쪽 번호>.mp3 (Gemini TTS Leda, 천천히).
 (function (root) {
   "use strict";
@@ -14,6 +14,19 @@
         ["taeo", "Oh no! A dog takes a sandwich!", "앗! 강아지가 샌드위치를 가져가요!"],
         ["appa", "Dad laughs. We have more sandwiches.", "아빠가 웃어요. 샌드위치가 더 있어요."],
         ["eomma", "We eat together. What a happy day!", "우리는 함께 먹어요. 정말 행복한 날이에요!"]
+      ]
+    },
+    {
+      id: "momo", title: "Momo and the Red Kite", titleKo: "모모와 빨간 연", stars: 1, cover: "tortoisehare", imageExt: "png",
+      pages: [
+        ["tortoisehare", "Momo is a little rabbit. He has a red kite.", "모모는 작은 토끼예요. 빨간 연이 있어요."],
+        ["tortoisehare", "The wind blows. The kite flies high!", "바람이 불어요. 연이 높이 날아요!"],
+        ["tortoisehare", "Oh no! The kite is in a tree.", "앗! 연이 나무에 걸렸어요."],
+        ["tortoisehare", "Momo jumps, but the kite is too high.", "모모가 뛰어 보지만, 연이 너무 높이 있어요."],
+        ["tortoisehare", "A little bird says, I can help you!", "작은 새가 말해요. 내가 도와줄게!"],
+        ["tortoisehare", "The bird pulls the string. The kite comes down.", "새가 줄을 당겨요. 연이 내려와요."],
+        ["tortoisehare", "Thank you, Bird! They fly the kite together.", "고마워, 새야! 둘이 함께 연을 날려요."],
+        ["tortoisehare", "The sun goes down. Momo and Bird are happy.", "해가 저물어요. 모모와 새는 행복해요."]
       ]
     },
     {
@@ -86,7 +99,7 @@
       id: book.id, title: book.title, titleKo: book.titleKo, stars: book.stars, cover: book.cover,
       pages: book.pages.map(function (page, index) {
         return { art: page[0], text: page[1], meaning: page[2], audio: "audio/" + book.id + "-" + (index + 1) + ".mp3",
-          image: "art/" + book.id + "-" + (index + 1) + ".webp" };
+          image: "art/" + book.id + "-" + (index + 1) + "." + (book.imageExt || "webp") };
       })
     };
   });

@@ -12,7 +12,7 @@ async function loadUiFonts() {
   let timeout = 0;
   try {
     const requests = [
-      document.fonts.load('400 24px "Gowun Batang"', '삼국지·서유기·수호지 별빛 연대기'),
+      document.fonts.load('400 24px "Gowun Batang"', '삼국지·서유기·한국 명장 별빛 연대기'),
       document.fonts.load('700 24px "Gowun Batang"', '관우 장비 필살기'),
       document.fonts.load('400 16px "Pretendard Variable"', '전투 목표 아이템'),
       document.fonts.load('900 18px "Pretendard Variable"', '필살 무쌍 GO'),
@@ -37,7 +37,7 @@ async function main() {
     onBrowse: openBrowse,
   });
 
-  // 메인 화면 = 삼국지·서유기·수호지 작품 선택. 옛 삼국지 전용 타이틀은 사용하지 않는다.
+  // 메인 화면 = 삼국지·서유기·한국 명장 작품 선택. 옛 삼국지 전용 타이틀은 사용하지 않는다.
   const openBrowse = () => showWorkSelect(uiRoot, {
     onConfirm: (heroId, stageKey) => openStory(heroId, stageKey, openBrowse),
     onBack: null,
