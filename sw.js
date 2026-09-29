@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v177";
+const CACHE_VERSION = "v178";
 const CACHE_PREFIX = "adventure-box-";
 // 큰 그림과 소리(삼국지 배경 200MB+, 저장한 이야기 오디오)는 배포 번호와 따로 둔다.
 // 배포마다 이 캐시를 버리면 기기가 236MB를 다시 받고, "여행 전에 이야기 저장"도 지워졌다.
@@ -618,9 +618,9 @@ const CORE_SHELL = [
   "./story/english/audio/redhood-8.mp3",
   "./webtoon/",
   "./webtoon/style.css?v=3",
-  "./webtoon/art.js?v=15",
-  "./webtoon/words.js?v=13",
-  "./webtoon/episodes.js?v=21",
+  "./webtoon/art.js?v=16",
+  "./webtoon/words.js?v=14",
+  "./webtoon/episodes.js?v=22",
   "./webtoon/app.js?v=6",
   "./webtoon/cover.webp",
   "./webtoon/faces/jaei.webp",

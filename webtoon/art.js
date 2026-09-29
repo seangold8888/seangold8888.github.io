@@ -579,6 +579,24 @@
       // left: 왼쪽으로 날아가는 화살. 모양만 뒤집고 글자는 바로 둔다.
       return `<g transform="translate(${x} ${y}) rotate(${o.rot || 0}) scale(${o.s || 1})">${o.left ? `<g transform="scale(-1 1)">${shape}</g>` : shape}<text x="0" y="6" text-anchor="middle" font-size="15" font-family="Jua, sans-serif" fill="${o.soft ? "#d23f78" : "#3d3a38"}">${o.t || ""}</text></g>`;
     },
+    // 이불 속에 나란히 누운 얼굴들 (위에서 비스듬히 본 침대). ids = 얼굴 순서, z = 잠든 표시.
+    sleepers(x, y, o) {
+      const ids = o.ids || ["taeo"];
+      const w = o.w || 300;
+      const gap = w / (ids.length + 1);
+      let g = `<rect x="${-w / 2 - 14}" y="-150" width="${w + 28}" height="46" rx="12" fill="#c99a6a" stroke="${INK}" stroke-width="2.4"/>`;
+      g += `<rect x="${-w / 2}" y="-112" width="${w}" height="112" rx="14" fill="#fffaf2" stroke="${INK}" stroke-width="2.4"/>`;
+      ids.forEach((id, i) => {
+        const cx = -w / 2 + gap * (i + 1);
+        g += `<rect x="${cx - 44}" y="-104" width="88" height="40" rx="18" fill="#fff" stroke="${INK}" stroke-width="1.8"/>`;
+        g += miniFace(id, cx, -84, o.fh || 74);
+        if (o.z && o.z.includes(id)) g += `<text x="${cx + 34}" y="-104" font-size="18" font-family="Jua, sans-serif" fill="#6c8fd6" stroke="#fff" stroke-width="3" paint-order="stroke">Z</text><text x="${cx + 48}" y="-118" font-size="13" font-family="Jua, sans-serif" fill="#6c8fd6" stroke="#fff" stroke-width="3" paint-order="stroke">z</text>`;
+      });
+      let dots = "";
+      for (let i = 0; i < 9; i++) dots += `<circle cx="${-w / 2 + 20 + i * ((w - 40) / 8)}" cy="${-18 + (i % 2) * 14}" r="4" fill="#fff" opacity=".6"/>`;
+      g += `<path d="M${-w / 2 - 6} -44 Q0 -58 ${w / 2 + 6} -44 L${w / 2 + 6} 0 L${-w / 2 - 6} 0Z" fill="${o.c || "#bfe3ff"}" stroke="${INK}" stroke-width="2.4"/>${dots}`;
+      return `<g transform="translate(${x} ${y}) scale(${o.s || 1})">${g}</g>`;
+    },
     // 신 과일 바구니: 레몬, 자두, 파인애플
     sourfruits(x, y, o) {
       const plum = (dx, dy) => `<g transform="translate(${dx} ${dy})"><circle r="11" fill="#b8325a" stroke="${INK}" stroke-width="1.8"/><path d="M0 -10 q2 -6 6 -7" stroke="#6b4a33" stroke-width="2" fill="none"/><ellipse cx="-4" cy="-4" rx="3" ry="2" fill="#fff" opacity=".5"/></g>`;

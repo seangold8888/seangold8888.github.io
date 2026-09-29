@@ -2120,6 +2120,110 @@
         },
       ],
     },
+    // ───────────────────────── 19화 ─────────────────────────
+    {
+      id: 19,
+      title: "엄마 인누와",
+      summary: "새벽 2시, 어둠 속에서 들려오는 작은 목소리. “엄마… 인누와~” 오늘 밤도 엄마는 태오 옆으로 간다.",
+      lesson: "“인누와”는 금방 사라질 말이에요. 오늘 밤, 부를 때 옆에 있어 주세요.",
+      talk: "잠이 안 올 때 누가 옆에 있으면 좋아요? 우리 가족 ‘잠 주문’을 만들어 볼까요?",
+      cover: 12,
+      panels: [
+        {
+          h: 330, bg: "bedroom-night",
+          fp: [["sleepers", 200, 316, { ids: ["taeo"], w: 200, z: ["taeo"] }]],
+          n: "새벽 2시.",
+          sfx: [FX("쿨쿨", 300, 110, { rot: -6, c: "#6c8fd6" })],
+        },
+        {
+          h: 280, bg: "gloom",
+          chars: [bust("taeo", 200, 190, 1.4, "teary", "stand", { o: "pajama" })],
+          b: [B("…엄마… 인누와~", 200, 44, "", { k: "whisper", w: 220 })],
+        },
+        {
+          h: 330, bg: "bedroom-night",
+          fp: [["sleepers", 200, 316, { ids: ["appa", "eomma"], w: 280, z: ["appa"], c: "#e8e2ff" }]],
+          n: "안방.",
+          b: [B("…또 부른다.", 290, 90, "b", { k: "whisper" })],
+          sfx: [FX("드르렁", 90, 110, { rot: -8, c: "#8a6d52", size: 0.8 })],
+        },
+        {
+          h: 360, bg: "bedroom-night",
+          chars: [C("eomma", 200, "sleepy", "stand", { o: "sick" })],
+          sfx: [FX("비틀비틀", 300, 150, { rot: 8, c: "#6c8fd6" })],
+          b: [B("그래… 엄마 간다…", 120, 90, "b", { k: "whisper" })],
+        },
+        {
+          h: 340, bg: "bedroom-night",
+          fp: [["sleepers", 200, 336, { ids: ["taeo", "eomma"], w: 280, z: [] }], ["heart", 330, 90, { s: 0.8 }]],
+          b: [B("헤헤… 엄마 냄새.", 120, 70, "b", { k: "whisper" })],
+          sfx: [FX("토닥토닥", 300, 150, { rot: 8, c: "#f0609d", size: 0.8 })],
+        },
+        {
+          h: 360, bg: "kitchen",
+          chars: [C("eomma", 110, "sleepy", "hold"), C("appa", 300, "worried", "stand", { o: "work" })],
+          n: "다음 날 아침. 그다음 날도. 또 그다음 날도.",
+          b: [B("여보… 눈 밑이 판다야.", 300, 60, "b", { w: 130 })],
+          sfx: [FX("하아암", 110, 120, { rot: -8, c: "#6c8fd6" })],
+        },
+        {
+          h: 380, bg: "living-night",
+          chars: [C("appa", 110, "determined", "fist"), C("eomma", 300, "teary", "stand", { o: "sick" })],
+          b: [B("오늘 밤은 아빠가 갈게. 당신은 푹 자!", 120, 70, "b", { w: 170 })],
+        },
+        {
+          h: 280, bg: "gloom",
+          chars: [bust("taeo", 200, 190, 1.4, "teary", "stand", { o: "pajama" })],
+          n: "그날 새벽.",
+          b: [B("엄마… 인누와~", 200, 44, "", { k: "whisper", w: 200 })],
+        },
+        {
+          h: 360, bg: "bedroom-night",
+          chars: [C("appa", 150, "happy", "hug", { o: "base" }), C("taeo", 310, "angry", "point", { o: "pajama" })],
+          b: [B("아빠 왔다~!", 140, 80, "b"), B("아니! 엄마!! 인누와!!", 300, 70, "b", { k: "shout", w: 140 })],
+        },
+        {
+          h: 280, bg: "burst:c9dcff",
+          chars: [bust("appa", 200, 180, 1.35, "cry", "stand")],
+          b: [B("…아빠 탈락.", 200, 40, "", { w: 180 })],
+          sfx: [FX("삐빅", 330, 230, { rot: 8, c: "#e0443e" })],
+        },
+        {
+          h: 300, bg: "sparkle:fff0d6",
+          chars: [bust("eomma", 200, 200, 1.3, "teary", "stand", { o: "sick" })],
+          n: "문 뒤에서 듣던 엄마는 생각했다.",
+          b: [B("(언젠가는 안 부르겠지. ‘인누와’도 곧 사라질 말이겠지.)", 200, 44, "", { k: "think", w: 290 })],
+        },
+        {
+          h: 360, bg: "bedroom-night",
+          chars: [C("eomma", 130, "happy", "hug", { o: "sick" }), C("taeo", 300, "love", "up", { o: "pajama" })],
+          b: [B("엄마 여기 있어.", 120, 80, "b")],
+        },
+        {
+          h: 340, bg: "bedroom-night",
+          fp: [["sleepers", 200, 336, { ids: ["taeo", "eomma"], w: 280, z: [] }]],
+          b: [B("엄마 피곤하지? 이번엔 내가 토닥토닥 해 줄게.", 190, 70, "b", { k: "whisper", w: 220 })],
+        },
+        {
+          h: 300, bg: "sparkle:ffe3ee",
+          chars: [bust("eomma", 200, 200, 1.3, "teary", "stand", { o: "sick" })],
+          sfx: [FX("토닥… 토닥…", 200, 60, { rot: -4, c: "#f0609d", size: 0.8 })],
+          fp: [["heart", 330, 230, {}]],
+        },
+        {
+          h: 340, bg: "bedroom-night",
+          fp: [["sleepers", 200, 336, { ids: ["taeo", "eomma"], w: 280, z: ["eomma", "taeo"] }], ["lemon", 360, 250, { s: 0.7, cut: true }], ["moon", 60, 60, {}]],
+          n: "그날 밤은 엄마가 먼저 잠들었다.",
+          sfx: [FX("쿨쿨", 300, 110, { rot: -6, c: "#6c8fd6" })],
+        },
+        {
+          h: 170, bg: "sparkle:fff0d6",
+          fp: [["heart", 60, 110, { s: 0.8 }], ["moon", 345, 60, {}]],
+          n: "“인누와”라고 불러 주는 밤이,",
+          n2: "사실은 엄마에게도 선물이었다.",
+        },
+      ],
+    },
   ];
 
   root.WebtoonData = { CHARACTERS, EPISODES };
