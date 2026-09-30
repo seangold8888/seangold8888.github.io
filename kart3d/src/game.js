@@ -7,6 +7,7 @@ import { createAudio } from './music.js';
 import { CHARACTERS, VILLAINS, driverById, buildKartModel, Kart, driveAI } from './karts.js';
 import { buildCourseFx } from './coursefx.js';
 import { coursePhoto } from './menu-art.js?v=lobby-1';
+import { isEasyRace, EASY_PLAYER_SPEED, EASY_AI_SPEED, EASY_ITEM_DELAY, assistInput, hitSnapshot, softenHit } from './difficulty.js?v=easy-1';
 import {
   CATALOG, SLOTS, loadGarage, saveGarage, itemState, tapItem, addCoins, recordTrophy, applyLook
 } from './garage.js';
@@ -16,9 +17,9 @@ import {
 } from './items.js';
 
 export const MODES = [
-  { id: 'gp',     name: '🏆 그랑프리', desc: '⭐ 추천 · 세 경주 점수를 모아 트로피!', ai: 5, items: true, gp: true },
-  { id: 'battle', name: '아이템 배틀', desc: '장난꾸러기와 아이템 대결!', ai: 5, items: true, villains: true },
-  { id: 'speed',  name: '스피드 매치', desc: '아이템 없이 순수 속도 대결',        ai: 3, items: false },
+  { id: 'gp',     name: '🏆 그랑프리', desc: '⭐ 쉬움 · 길잡이와 세 경주, 트로피 도전!', ai: 5, items: true, gp: true },
+  { id: 'battle', name: '아이템 배틀', desc: '쉬움 · 느긋한 친구들과 아이템 놀이', ai: 5, items: true, villains: true },
+  { id: 'speed',  name: '스피드 매치', desc: '쉬움 · 길잡이와 가볍게 한 판',        ai: 3, items: false },
   { id: 'time',   name: '타임어택',   desc: '혼자 달리며 최고 기록 도전',        ai: 0, items: false },
   // 일반 경주에서 이 코스를 1등으로 끝내야 메뉴에 나타난다.
   { id: 'rival',  name: '🔥 라이벌 레이스', desc: '봐주지 않는 라이벌 · 바나나는 방패로 막아요', ai: 3, items: true, rival: true }
@@ -132,7 +133,8 @@ export function startGame() {
   }
 
   function bestKey() {
-    return 'sanrio-kart3d:' + TRACKS[state.trackIndex].id + ':' + MODES[state.modeIndex].id;
+    const mode = MODES[state.modeIndex];
+    return 'sanrio-kart3d:' + TRACKS[state.trackIndex].id + ':' + mode.id + (isEasyRace(mode) ? ':easy-v1' : '');
   }
 
   // ---------- 라이벌 레이스 기록 ----------
@@ -309,12 +311,18 @@ export function startGame() {
     if (!held) driftArmed = true;
     const jump = driftArmed && jumpEdge;
     jumpEdge = false;
-    return {
+    const input = {
       steer,
       drift: driftArmed && held,
       jump,
       use: !!(keys.Enter || keys.KeyZ || touch.item)
     };
+    if (!isEasyRace(MODES[state.modeIndex])) return input;
+    // Reuse the proven curve lookahead without letting driveAI change player speed.
+    const baseTop = state.player.baseTop;
+    const guide = driveAI(state.player, state.player.total);
+    state.player.baseTop = baseTop;
+    return assistInput(state.player, input, guide);
   }
 
   // ---------- 갱신 ----------
@@ -332,6 +340,8 @@ export function startGame() {
 
     const input = playerInput();
     const mode = MODES[state.modeIndex];
+    const easy = isEasyRace(mode);
+    const beforeHit = easy ? hitSnapshot(state.player) : null;
 
     // 아이가 많이 뒤처지면 카트가 조금 더 힘을 낸다.
     // 드리프트를 아직 못 쓰는 아이도 경주에 붙어 있게 하는 장치다.
@@ -343,9 +353,12 @@ export function startGame() {
       state.player.baseTop = state.player.spec.top * boostMult;
     }
 
+    if (easy) state.player.baseTop *= EASY_PLAYER_SPEED;
+
     for (const k of state.karts) {
       if (k.finished) { k.speed *= 1 - dt * 1.5; continue; }
       const drive = k.isPlayer ? input : driveAI(k, state.player.total);
+      if (easy && !k.isPlayer) k.baseTop *= EASY_AI_SPEED;
       if (!k.isPlayer && k.airborne && k.trickWindow > 0 && Math.random() < 0.06) drive.jump = true;
       k.update(dt, drive);
       applyMagnet(k, state.karts, dt);
@@ -393,6 +406,7 @@ export function startGame() {
 
     if (mode.items) updateItems(dt, input);
     pushApart();
+    if (easy) softenHit(state.player, beforeHit);
     rankKarts();
     if (state.player.finished) finishCamera(dt);
     else followCamera(dt, false);
@@ -449,8 +463,9 @@ export function startGame() {
     for (const k of state.karts) {
       if (k.isPlayer || !k.item || k.finished) continue;
       if (k.rival) { rivalUseItem(k, dt); continue; }
-      k.aiDelay = (k.aiDelay === undefined ? 1.4 : k.aiDelay) - dt;
-      if (k.aiDelay <= 0) { useItem(k, state.karts, spawnProjectile); k.aiDelay = 1.4; }
+      const delay = isEasyRace(MODES[state.modeIndex]) ? EASY_ITEM_DELAY : 1.4;
+      k.aiDelay = (k.aiDelay === undefined ? delay : k.aiDelay) - dt;
+      if (k.aiDelay <= 0) { useItem(k, state.karts, spawnProjectile); k.aiDelay = delay; }
     }
     // 발사체
     for (let i = state.projectiles.length - 1; i >= 0; i--) {
@@ -1111,7 +1126,7 @@ export function startGame() {
     const p = state.player;
     for (const v of state.karts) {
       if (!v.prank || v.finished) continue;
-      v.prankClock -= dt;
+      v.prankClock -= dt * (isEasyRace(MODES[state.modeIndex]) ? 0.5 : 1);
       if (v.prankClock > 0) continue;
       const gap = p.total - v.total;                   // + 면 플레이어가 앞
       let did = false;

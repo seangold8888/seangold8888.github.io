@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v173";
+const CACHE_VERSION = "v175";
 const CACHE_PREFIX = "adventure-box-";
 // 큰 그림과 소리(삼국지 배경 200MB+, 저장한 이야기 오디오)는 배포 번호와 따로 둔다.
 // 배포마다 이 캐시를 버리면 기기가 236MB를 다시 받고, "여행 전에 이야기 저장"도 지워졌다.
@@ -773,7 +773,8 @@ const OPTIONAL_SHELL = [
   "./kart/src/kart.js",
   "./kart/src/main.js",
   "./kart3d/",
-  "./kart3d/src/game.js?v=lobby-1",
+  "./kart3d/src/game.js?v=easy-1",
+  "./kart3d/src/difficulty.js?v=easy-1",
   "./kart3d/menu.css?v=type-2",
   "./kart3d/src/menu-art.js?v=lobby-1",
   "./kart3d/src/items.js",
