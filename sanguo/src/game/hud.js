@@ -87,7 +87,7 @@ export function createPlayerHud(hudRoot, name, progress = null) {
     setKo(n) { ko.textContent = n; },
     setObjective(text) { objective.textContent = text; },
     setStage(wave, total) { const safeTotal = Math.max(1, total || 1); stageCount.textContent = `${Math.min(safeTotal, Math.max(1, wave || 1))} / ${safeTotal}`; stageFill.style.transform = `scaleX(${Math.max(0, Math.min(1, (wave || 0) / safeTotal))})`; },
-    setMount(mounted, label) { mountReadout.textContent = mounted ? `탑승 · ${label || '군마'}` : `하마 · ${label || '군마'} 대기`; mountReadout.classList.toggle('mounted', !!mounted); },
+    setMount(mounted, label, supported = true) { mountReadout.textContent = !supported ? '도보 전투' : mounted ? `탑승 · ${label || '군마'}` : `하마 · ${label || '군마'} 대기`; mountReadout.classList.toggle('mounted', !!mounted); },
     hurt() { vignette.classList.remove('on'); void vignette.offsetWidth; vignette.classList.add('on'); },
   };
 }

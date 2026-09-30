@@ -5,14 +5,16 @@ const path = require('node:path');
 
 const scales = () => import('../src/game/heroRenderScale.js');
 
-test('13 recently painted heroes have deliberate visual-only scale corrections', async () => {
+test('21 painted heroes include calibrated Korean generals and four shorter family adventurers', async () => {
   const { HERO_RENDER_SCALES, heroRenderScale } = await scales();
   assert.deepEqual(Object.keys(HERO_RENDER_SCALES).sort(), [
     'erlangshen', 'ganning', 'honghaier', 'huangzhong', 'luxun', 'machao', 'nezha',
     'simayi', 'sunquan', 'taishici', 'xiahoudun', 'xuchu', 'zhangliao',
-  ]);
+    'euljimundeok', 'ganggamchan', 'kwonyul', 'yisunsin', 'taeo', 'jaei', 'yunchan', 'yungeon',
+  ].sort());
   for (const [heroId, scale] of Object.entries(HERO_RENDER_SCALES)) {
-    assert.ok(scale >= .80 && scale <= .96, `${heroId}: bounded scale`);
+    const family = ['taeo', 'jaei', 'yunchan', 'yungeon'].includes(heroId);
+    assert.ok(family ? scale >= .65 && scale <= .78 : scale >= .80 && scale <= .96, `${heroId}: bounded scale`);
   }
   // Atlas-visible heights differ, so compare the calibrated on-screen result,
   // not the raw multiplier by itself.
@@ -27,7 +29,8 @@ test('standing, ranged and afterimage rendering share one corrected height and a
   const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
   assert.match(source, /const heroVisualScale = heroRenderScale\(heroId\)/);
   assert.match(source, /function standingHeroHeight\(depthScale = 1\)/);
-  assert.equal((source.match(/standingHeroHeight\(/g) || []).length, 4);
+  assert.match(source, /familyProjectile\(heroId, player, target, standingHeroHeight\(/);
+  assert.match(source, /familyRanged \? standingHeroHeight\(1 \+ player.lane \* .0014\) \* familyRanged.launch/);
   assert.doesNotMatch(source, /heroAssets\.hero, ghost\.frame[^\n]+Math\.min\(320/);
   assert.match(source, /launch: 58 \* heroVisualScale/);
   assert.ok(sw.includes('"./sanguo/src/game/heroRenderScale.js"'));

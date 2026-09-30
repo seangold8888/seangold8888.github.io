@@ -82,14 +82,16 @@ test("install is strict only for core and card art; optional warmup is bounded a
   }
 });
 
-test("all checked-in Sanguo PNG, OGG, MP3 and WAV assets are best-effort background assets", () => {
-  const expected = walkFiles(path.join(siteRoot, "sanguo"))
+test("all production Sanguo PNG, OGG, MP3 and WAV assets are best-effort background assets", () => {
+  // Screenshots and unapproved auditions are not shipped game assets.
+  const expected = ['art', 'audio'].flatMap(folder => walkFiles(path.join(siteRoot, 'sanguo', folder)))
+    .filter(file => !file.split(path.sep).includes('elevenlabs-auditions'))
     .filter(file => /\.(?:png|ogg|mp3|wav)$/i.test(file))
     .map(file => `./${path.relative(siteRoot, file).split(path.sep).join("/")}`)
     .sort();
   const shellAssets = sw.OPTIONAL_SHELL.filter(asset => /^\.\/sanguo\/.*\.(?:png|ogg|mp3|wav)(?:[?#].*)?$/i.test(asset));
   const declared = [...new Set([...sw.SANGUO_RUNTIME_ASSETS, ...shellAssets])].sort();
-  assert.equal(expected.length, 216);
+  assert.ok(expected.length >= 232, 'includes Korean generals and four family atlases');
   assert.deepEqual(declared, expected);
   assert.equal(new Set(sw.SANGUO_RUNTIME_ASSETS).size, sw.SANGUO_RUNTIME_ASSETS.length);
 });
@@ -114,9 +116,9 @@ test("all story episode mp3 files match the service worker fallback list", () =>
   }
 });
 
-test("cache generation v163 preserves versioned card assets and canonical navigation aliases", () => {
-  assert.equal(sw.CACHE_VERSION, "v163");
-  assert.match(sw.STATIC_CACHE, /^adventure-box-v163-/);
+test("cache generation v164 preserves versioned card assets and canonical navigation aliases", () => {
+  assert.equal(sw.CACHE_VERSION, "v164");
+  assert.match(sw.STATIC_CACHE, /^adventure-box-v164-/);
   for (const asset of ["./cards/js/element-theater.js?v=1", "./cards/element-theater.css?v=1"]) {
     assert.equal(sw.CORE_SHELL.filter(entry => entry === asset).length, 1);
     assert.ok(fs.existsSync(path.join(siteRoot, asset.split("?")[0])));
@@ -411,7 +413,7 @@ test("Avengers migrates the legacy child scope before its bundle and tombstones 
 });
 
 test("big media and saved stories live in caches that survive a deploy", () => {
-  assert.match(sw.STATIC_CACHE, /^adventure-box-v163-static$/);
+  assert.match(sw.STATIC_CACHE, /^adventure-box-v164-static$/);
   assert.equal(sw.RUNTIME_CACHE, "adventure-box-media-" + sw.MEDIA_REVISION);
   assert.equal(sw.AUDIO_CACHE, "adventure-box-audio-" + sw.MEDIA_REVISION);
   assert.doesNotMatch(sw.RUNTIME_CACHE, /v\d+/, "the media cache name must not carry the deploy number");

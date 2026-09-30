@@ -17,6 +17,8 @@
  * 전용 인물·전장 그림과 전투 시트를 연결한 작품만 ready:true 로 공개한다.
  * 수호지 데이터는 예전 저장 기록 호환을 위해 남기되 메뉴에서는 숨긴다.
  */
+import { FAMILY_PEOPLE, FAMILY_STATS, FAMILY_WEAPONS } from './familyHeroes.js';
+
 export const WORKS = {
   sanguo: { id: 'sanguo', name: '삼국지', sub: '三國志演義', accent: '#c9762f', ready: true },
   xiyou: { id: 'xiyou', name: '서유기', sub: '西遊記', accent: '#ff8b3a', ready: true },
@@ -27,6 +29,7 @@ export const WORKS = {
 export const readyWorks = () => Object.values(WORKS).filter((w) => w.ready);
 
 export const WORK_PEOPLE = {
+  ...FAMILY_PEOPLE,
   // ── 삼국지 보너스 인물 ───────────────────────────────────
   sunshangxiang: {
     name: '손상향', work: 'sanguo', faction: '삼국지 · 강동의 궁희',
@@ -130,6 +133,7 @@ export const WORK_PEOPLE = {
 };
 
 export const WORK_STATS = {
+  ...FAMILY_STATS,
   sunshangxiang: { hp: 122, power: 20, speed: 4.0, range: 98, style: '쌍환 연격', special: '강동 비연무', symbol: '🏹', sigil: '香' },
   tieshangongzhu: { hp: 118, power: 21, speed: 3.7, range: 112, style: '화염풍 제어', special: '파초선 폭풍', symbol: '🪭', sigil: '羅' },
   husanniang: { hp: 134, power: 22, speed: 3.8, range: 92, style: '쌍도·투삭', special: '일월쌍도', symbol: '🌙', sigil: '扈' },
@@ -149,6 +153,7 @@ export const WORK_STATS = {
 };
 
 export const WORK_WEAPONS = {
+  ...FAMILY_WEAPONS,
   warrings: { name: '건곤쌍환', style: 'dual', len: 1.02, width: 1.05 },
   plantainfan: { name: '파초선', style: 'fan', len: 1.08, width: 1.25 },
   moonblades: { name: '일월쌍도', style: 'dual', len: 1.04, width: 1.0 },

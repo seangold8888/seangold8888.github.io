@@ -1,6 +1,27 @@
 import { chapters, person, signature, stage, stats } from '../data.js';
 import { workPerson, workStats, workStage, workWeapon } from '../data/works.js';
 import { getHeroProgress, nextPerk, weaponEnhanceText } from '../game/progression.js';
+import { isFamilyHero, FAMILY_FICTION_NOTE } from '../data/familyHeroes.js';
+
+function renderFamilyIntro(root, heroId, stageKey, { onBegin, onBack }) {
+  const info = workStage(stageKey) || stage(stageKey);
+  const hero = workPerson(heroId), combat = workStats(heroId), weapon = workWeapon(heroId).name;
+  root.innerHTML = `
+    <div class="screen story-screen"><div class="screen-inner story-layout">
+      <div class="story-year">우리 영웅 · 이야기 속 모험</div><div class="story-symbol">${combat.symbol}</div>
+      <h1>${hero.name}의 ${info.title.split(' · ')[0]} 모험</h1><p class="story-opening">${FAMILY_FICTION_NOTE}</p>
+      <div class="story-panels">
+        <section class="story-panel hero-brief"><span class="story-label">출전 영웅</span><h2>${hero.name} <small>${weapon}</small></h2><p>${hero.bio}</p>
+          <div class="story-special">${combat.special} · ${combat.style}</div>${growthBrief(heroId, weapon)}</section>
+        <section class="story-panel"><span class="story-label">이야기 속 전장</span><h2>${info.title}</h2><p>${info.scene_intro || info.lesson || ''}</p>
+          <div class="story-mission"><b>임무</b> ${info.mission || ''}</div></section>
+      </div>
+      <section class="record-card"><span class="story-label">역사와 상상은 달라요</span><h3>우리 영웅의 참가는 게임 속 상상이에요</h3>
+        <div class="record-grid"><p>${info.real || info.lesson || '실제 전투는 많은 사람들이 함께 치른 역사예요. 이 게임의 개인 기술과 모험은 상상한 연출입니다.'}</p><p>${FAMILY_FICTION_NOTE}</p></div></section>
+      <div class="story-actions"><button class="btn" id="story-back"><span class="btn-t">다시 선택</span></button><button class="btn primary" id="story-begin"><span class="btn-t">${hero.name} 출진 · 전투 시작</span><span class="btn-k">ENTER</span></button></div>
+    </div></div>`;
+  wire(root, heroId, onBegin, onBack);
+}
 
 function growthBrief(heroId, weaponName) {
   const progress = getHeroProgress(heroId);
@@ -58,6 +79,7 @@ function wire(root, heroId, onBegin, onBack) {
 }
 
 export function showStoryIntro(root, { heroId = 'guanyu', stageKey = 'hulao', onBegin, onBack }) {
+  if (isFamilyHero(heroId)) return renderFamilyIntro(root, heroId, stageKey, { onBegin, onBack });
   if (workStage(stageKey)) return renderWorkIntro(root, heroId, stageKey, { onBegin, onBack });
   // 호로관 외 삼국지 전장 — 원본 데이터의 임무·교훈으로 같은 뼈대를 채운다.
   if (stageKey !== 'hulao') {

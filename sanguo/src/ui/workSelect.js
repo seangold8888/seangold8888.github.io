@@ -5,6 +5,7 @@ import { difficultyLevels, getDifficulty, setDifficulty } from '../game/difficul
 import { getCombatGrowth, getHeroProgress, nextPerk, weaponEnhanceText } from '../game/progression.js';
 import { heroHasArt } from '../game/sideScroller.js';
 import { dashSkill } from '../game/dashSkills.js';
+import { FAMILY_HERO_IDS, FAMILY_FICTION_NOTE, isFamilyHero } from '../data/familyHeroes.js';
 
 const sheets = {guanyu:'guanyu-painted-sheet-v4',tieshangongzhu:'tieshangongzhu-painted-sheet-v2',erlangshen:'erlangshen-hero-painted-sheet-v1'};
 const portraitFor = id => 'art/side-scroller/' + (sheets[id] || id + '-painted-sheet-v1') + '.png';
@@ -16,10 +17,10 @@ const heroesFor = (work,key) => work === 'sanguo'
   ? [...new Set([...stageHeroes(key),...(key === 'redcliff' ? ['sunshangxiang'] : [])])]
   : WORK_STAGES[key]?.heroes || [];
 // Returning from a briefing retains the user's choice without touching saved progression.
-let remembered = {work:'sanguo',stageKey:'hulao',heroId:'guanyu',faction:'all'};
+let remembered = {work:'sanguo',stageKey:'hulao',heroId:'guanyu',faction:'all',party:'story'};
 
 export function showWorkSelect(root,{onConfirm,onBack}) {
-  let {work,stageKey,heroId,faction='all'} = remembered;
+  let {work,stageKey,heroId,faction='all',party='story'} = remembered;
   let pickerOpen = false;
   const list = () => work === 'sanguo'
     ? stageKeys().map(key=>({key,...stage(key)}))
@@ -30,11 +31,12 @@ export function showWorkSelect(root,{onConfirm,onBack}) {
     const stages=list();
     if(!stages.some(s=>s.key===stageKey))stageKey=stages[0].key;
     const selected=stages.find(s=>s.key===stageKey);
-    const heroes=heroesFor(work,stageKey);
-    const rosterMode=work==='sanguo' && stageKey===SANGUO_DRILL_STAGE_KEY;
+    const familyMode=party==='family';
+    const heroes=familyMode ? FAMILY_HERO_IDS : heroesFor(work,stageKey);
+    const rosterMode=!familyMode && work==='sanguo' && stageKey===SANGUO_DRILL_STAGE_KEY;
     const visibleHeroes=rosterMode && faction!=='all' ? heroes.filter(id=>factionKey(id)===faction) : heroes;
     if(!visibleHeroes.includes(heroId) || !heroHasArt(heroId)) heroId=visibleHeroes.find(heroHasArt) || '';
-    remembered={work,stageKey,heroId,faction};
+    remembered={work,stageKey,heroId,faction,party};
     const hero=heroId ? infoFor(heroId) : null;
     const progress=heroId ? getHeroProgress(heroId) : null;
     const growth=heroId ? getCombatGrowth(heroId) : null;
@@ -63,7 +65,9 @@ export function showWorkSelect(root,{onConfirm,onBack}) {
 
           <section class="cm-panel cm-deployment" aria-labelledby="cm-hero-heading">
             <div class="cm-stage-brief ${stageKey==='hulao'?'painted':''}"><div class="cm-eyebrow">${selected.year || '고전 속 이야기'} · 선택한 전장</div><h2>${selected.title}</h2><p>적장 · ${selected.bossName || selected.boss || '전장의 적장'}</p></div>
-            <div class="cm-section-heading"><h2 id="cm-hero-heading"><span>02</span> ${rosterMode?'대표 장수 선택':'장수 선택'}</h2><small>${visibleHeroes.filter(heroHasArt).length}명 출전 가능</small></div>
+            <div class="cm-section-heading"><h2 id="cm-hero-heading"><span>02</span> ${familyMode?'우리 영웅 선택':rosterMode?'대표 장수 선택':'장수 선택'}</h2><small>${visibleHeroes.filter(heroHasArt).length}명 출전 가능</small></div>
+            <nav class="cm-factions cm-parties" aria-label="영웅 모음 선택"><button type="button" data-party="story" aria-pressed="${!familyMode}">이야기 장수</button><button type="button" data-party="family" aria-pressed="${familyMode}">우리 영웅 <small>태오 · 재이 · 윤찬 · 윤건</small></button></nav>
+            ${familyMode?`<p class="cm-family-note">${FAMILY_FICTION_NOTE}</p>`:''}
             ${rosterMode?`<nav class="cm-factions" aria-label="대표 장수 진영 필터">${[['all','전체'],['shu','촉'],['wei','위'],['wu','오']].map(([key,label])=>`<button type="button" data-faction="${key}" aria-pressed="${key===faction}">${label}</button>`).join('')}</nav>`:''}
             <div class="cm-heroes" id="hero-grid" data-roster="${rosterMode}">${visibleHeroes.map(id=>{
               const {p,s}=infoFor(id), ready=heroHasArt(id), level=getHeroProgress(id).level;
@@ -87,7 +91,7 @@ export function showWorkSelect(root,{onConfirm,onBack}) {
     const screen=root.querySelector('.command-menu');screen.scrollTop=priorScroll;
     if(focus)root.querySelector(focus)?.focus({preventScroll:true});
     root.querySelectorAll('[data-work]').forEach(b=>b.addEventListener('click',()=>{
-      work=b.dataset.work;stageKey=work==='sanguo'?'hulao':stagesOfWork(work)[0];heroId='';faction='all';pickerOpen=false;render('[data-work="'+work+'"]');
+      work=b.dataset.work;stageKey=work==='sanguo'?'hulao':stagesOfWork(work)[0];if(!isFamilyHero(heroId))heroId='';faction='all';pickerOpen=false;render('[data-work="'+work+'"]');
     }));
     root.querySelector('.cm-stage-toggle').addEventListener('click',()=>{pickerOpen=!pickerOpen;render('.cm-stage-toggle');});
     root.querySelectorAll('[data-stage]').forEach(b=>b.addEventListener('click',()=>{
@@ -95,6 +99,7 @@ export function showWorkSelect(root,{onConfirm,onBack}) {
       render(matchMedia('(max-width: 680px)').matches?'.cm-stage-toggle':'[data-stage="'+stageKey+'"]');
     }));
     root.querySelectorAll('[data-faction]').forEach(b=>b.addEventListener('click',()=>{faction=b.dataset.faction;render('[data-faction="'+faction+'"]');}));
+    root.querySelectorAll('[data-party]').forEach(b=>b.addEventListener('click',()=>{party=b.dataset.party;render('[data-party="'+party+'"]');}));
     root.querySelectorAll('[data-hero]:not(:disabled)').forEach(b=>b.addEventListener('click',()=>{heroId=b.dataset.hero;render('[data-hero="'+heroId+'"]');}));
     root.querySelectorAll('[data-diff]').forEach(b=>b.addEventListener('click',()=>{setDifficulty(b.dataset.diff);render('[data-diff="'+b.dataset.diff+'"]');}));
     root.querySelector('#menu-deploy').addEventListener('click',()=>{if(heroId&&heroHasArt(heroId))onConfirm(heroId,stageKey);});

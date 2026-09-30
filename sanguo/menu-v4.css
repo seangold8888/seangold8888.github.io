@@ -37,6 +37,9 @@
 .cm-factions{display:flex;gap:6px;margin:-4px 0 12px;padding:4px;border:1px solid #ffffff12;border-radius:8px;background:#10191e}
 .cm-factions button{flex:1;border:1px solid transparent;border-radius:5px;background:transparent;color:#91a3a8;padding:7px 8px;font-size:11px;font-weight:800}
 .cm-factions button[aria-pressed=true]{border-color:#d8bd7a;background:#31443f;color:#f2dfa8}
+.cm-parties button{min-height:44px;font-size:12px}
+.cm-parties button small{display:block;margin-top:4px;font-size:10px;font-weight:500}
+.cm-family-note{font-size:11px;line-height:1.6;color:#afc7c4;margin:0 0 12px}
 .cm-heroes[data-roster=true]{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
 .cm-heroes[data-roster=true] .cm-hero{max-width:none}
 .cm-heroes[data-roster=true] .cm-portrait{height:118px}

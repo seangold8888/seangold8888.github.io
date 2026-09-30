@@ -3,6 +3,8 @@ const pack = (...files) => Object.freeze(files.map((file) => `audio/battle-cries
 // CC0 field recordings. A small shared source set is mastered differently for
 // every hero so a shout reads as part of that hero, not as a random hit sound.
 export const BATTLE_CRY_PACKS = Object.freeze({
+  // No unrelated general voice if a family hero's own callout fails to load.
+  silent: pack(),
   noble: pack('male-noble-a-cc0.wav', 'male-noble-b-cc0.wav'),
   fierce: pack('male-fierce-a-cc0.wav', 'male-fierce-b-cc0.wav'),
   heavy: pack('male-heavy-a-cc0.wav', 'male-heavy-b-cc0.wav'),
@@ -25,6 +27,10 @@ const voice = (packId, rate, gain, lowpass, highpass, wet) =>
 // One explicit profile per playable hero. Rates stay in a natural range and
 // filters mostly remove rumble/hiss; they do not synthesize a different voice.
 export const BATTLE_CRY_PROFILES = Object.freeze({
+  taeo: voice('silent', 1, .60, 6000, 120, .08),
+  jaei: voice('silent', 1, .60, 6000, 120, .08),
+  yunchan: voice('silent', 1, .60, 6000, 120, .08),
+  yungeon: voice('silent', 1, .60, 6000, 120, .08),
   euljimundeok: voice('noble', .96, .70, 5000, 80, .11),
   ganggamchan: voice('heavy', .90, .72, 4200, 67, .10),
   kwonyul: voice('fierce', .95, .74, 5000, 84, .09),
