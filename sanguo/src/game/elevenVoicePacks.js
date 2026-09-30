@@ -1,13 +1,21 @@
 // Local ElevenLabs recordings only: the game never calls a paid API.
 // One chosen catchphrase per family hero, shared by dash/special/musou.
 const familyPack = file => Object.freeze(Object.fromEntries(
-  ['dash', 'special', 'musou'].map(action => [action, `audio/hero-callouts-eleven-v1/${file}`]),
+  ['dash', 'special', 'musou'].map(action => [action, `audio/hero-callouts-eleven-v2/${file}`]),
 ));
 export const ELEVEN_VOICE_PACKS = Object.freeze({
-  taeo: familyPack('taeo-callout-v1.wav'),
-  jaei: familyPack('jaei-callout-v1.wav'),
-  yunchan: familyPack('yunchan-callout-v1.wav'),
+  taeo: familyPack('taeo-callout-v2.wav'),
+  jaei: familyPack('jaei-callout-v2.wav'),
+  yunchan: familyPack('yunchan-callout-v2.wav'),
   yungeon: familyPack('yungeon-callout-v2.wav'),
+});
+
+// Ages describe the approved fictional performance, not real child recordings.
+export const FAMILY_VOICE_PREVIEWS = Object.freeze({
+  taeo: { phrase: '치앗! 촤! 지앗! 촤! 쓰구미이이!', role: '5살 남자아이풍 · 태권 용사' },
+  jaei: { phrase: '김태오!', role: '8살 여자아이풍 · 방울 마법사' },
+  yunchan: { phrase: '마마보이!', role: '10살 남자아이풍 · 곤충 탐험가' },
+  yungeon: { phrase: '너무 쉽잖아!', role: '7살 남자아이풍 · 불꽃 스트라이커' },
 });
 
 // Zhang Fei keeps his existing performance, as requested. New warrior takes

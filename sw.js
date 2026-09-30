@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v165";
+const CACHE_VERSION = "v166";
 const CACHE_PREFIX = "adventure-box-";
 // 큰 그림과 소리(삼국지 배경 200MB+, 저장한 이야기 오디오)는 배포 번호와 따로 둔다.
 // 배포마다 이 캐시를 버리면 기기가 236MB를 다시 받고, "여행 전에 이야기 저장"도 지워졌다.
@@ -882,6 +882,10 @@ const APP_SHELL = [...CORE_SHELL, ...OPTIONAL_SHELL];
 // Filled from the checked-in files. These large assets never participate in
 // install or activation; they warm in the background with bounded concurrency.
 const SANGUO_RUNTIME_ASSETS = [
+  "./sanguo/audio/hero-callouts-eleven-v2/taeo-callout-v2.wav",
+  "./sanguo/audio/hero-callouts-eleven-v2/jaei-callout-v2.wav",
+  "./sanguo/audio/hero-callouts-eleven-v2/yunchan-callout-v2.wav",
+  "./sanguo/audio/hero-callouts-eleven-v2/yungeon-callout-v2.wav",
   "./sanguo/audio/hero-callouts-eleven-v1/taeo-callout-v1.wav",
   "./sanguo/audio/hero-callouts-eleven-v1/jaei-callout-v1.wav",
   "./sanguo/audio/hero-callouts-eleven-v1/yunchan-callout-v1.wav",

@@ -29,10 +29,21 @@ const { createServer } = require('../preview-server.cjs');
         '    globalThis.__voiceEvents?.push({group,rate:source.playbackRate.value});\n    source.start(startedAt, sourceOffset, sourceDuration);');
     await page.route('**/src/game/sideScroller.js', route => route.fulfill({ body: source, contentType: 'text/javascript' }));
     await page.goto(`http://127.0.0.1:${server.address().port}/voices.html`);
-    await page.waitForFunction(() => document.querySelectorAll('.voice-card').length === 30);
+    await page.waitForFunction(() => document.querySelectorAll('.voice-card').length === 34);
     assert.equal(await page.locator('[data-hero=zhangfei] audio').getAttribute('src'), 'audio/hero-callouts-ko-v6/zhangfei-special-v6.wav');
     assert.ok(await page.locator('[data-hero=zhangfei] button').isDisabled());
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    await page.locator('nav [data-work=family]').click();
+    assert.equal(await page.locator('.voice-card:visible').count(), 4);
+    for (const id of ['taeo', 'jaei', 'yunchan', 'yungeon']) {
+      assert.equal(await page.locator(`[data-hero=${id}] audio`).getAttribute('src'), `audio/hero-callouts-eleven-v2/${id}-callout-v2.wav`);
+      assert.ok(await page.locator(`[data-hero=${id}] button`).isDisabled());
+    }
+    await page.screenshot({ path: path.join(output, 'phone-family-voices.png'), fullPage: true });
+    await page.setViewportSize({ width: 820, height: 1180 });
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    await page.screenshot({ path: path.join(output, 'tablet-family-voices.png'), fullPage: false });
+    await page.setViewportSize({ width: 390, height: 844 });
     await page.locator('nav [data-work=korea]').click();
     assert.equal(await page.locator('.voice-card:visible').count(), 4);
     await page.locator('nav [data-work=xiyou]').click();
@@ -41,7 +52,7 @@ const { createServer } = require('../preview-server.cjs');
     assert.equal(await page.locator('.voice-card:visible').count(), 19);
     await page.locator('[data-hero=guanyu] button').click();
     assert.equal(await page.locator('nav [data-work=sanguo]').getAttribute('aria-pressed'), 'true', 'card clicks do not change filter');
-    await page.reload(); await page.waitForFunction(() => document.querySelectorAll('.voice-card').length === 30);
+    await page.reload(); await page.waitForFunction(() => document.querySelectorAll('.voice-card').length === 34);
     assert.equal(await page.locator('[data-hero=guanyu] button').getAttribute('aria-pressed'), 'true', 'choice retained');
     const decoded = await page.evaluate(async manifest => {
       const ctx = new AudioContext(), results = [];
@@ -80,6 +91,6 @@ const { createServer } = require('../preview-server.cjs');
     await page.screenshot({ path: path.join(output, 'phone-voices.png'), fullPage: false });
     assert.ok(!requests.some(url => url.includes('api.elevenlabs.io')));
     assert.deepEqual(errors, []);
-    console.log('PASS 29 real WAVs decoded, 30 voice cards, filters, saved/reversible selection, 3 real performances, Zhang Fei unchanged. Screenshots:', output);
+    console.log('PASS 29 real WAVs decoded, 34 voice cards including approved family voices, phone/tablet filters, saved/reversible selection, 3 real performances, Zhang Fei unchanged. Screenshots:', output);
   } finally { await browser.close(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

@@ -1,0 +1,12 @@
+{
+  "model": "eleven_v3",
+  "approved": true,
+  "approved_date": "2026-09-30",
+  "note": "Fictional childlike acting by synthetic adult voices. Age targets are not verified voice ages. No real child cloning or pitch shifting.",
+  "heroes": {
+    "taeo": { "file": "taeo-callout-v2.wav", "phrase": "치앗! 촤! 지앗! 촤! 쓰구미이이!", "target_age": 5, "gender": "boy", "voice_id": "TX3LPaxmHKxFdv7VOQHJ", "text": "[childlike tone][playful][shouting] 치앗! 촤! 지앗! 촤! 쓰구미이이!", "duration": 3.324 },
+    "jaei": { "file": "jaei-callout-v2.wav", "phrase": "김태오!", "target_age": 8, "gender": "girl", "voice_id": "cgSgspJ2msm6clMCkdW9", "text": "[8-year-old girl voice][childlike tone][excited][calling out] 김태오!", "duration": 0.949 },
+    "yunchan": { "file": "yunchan-callout-v2.wav", "phrase": "마마보이!", "target_age": 10, "gender": "boy", "voice_id": "bIHbv24MWmeRgasZH58o", "text": "[10-year-old boy voice][childlike tone][confident][shouting] 마마보이!", "duration": 1.309 },
+    "yungeon": { "file": "yungeon-callout-v2.wav", "phrase": "너무 쉽잖아!", "target_age": 7, "gender": "boy", "voice_id": "TX3LPaxmHKxFdv7VOQHJ", "text": "[7-year-old boy voice][childlike tone][playful][shouting] 너무 쉽잖아!", "duration": 1.676 }
+  }
+}

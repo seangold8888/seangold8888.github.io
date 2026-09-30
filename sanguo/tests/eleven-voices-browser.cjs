@@ -82,6 +82,7 @@ const { createServer } = require('../preview-server.cjs');
     assert.deepEqual(result.muted, [], 'muted controls cannot start new voice sources');
     assert.equal(result.legacy.filter(e => e.group === 'battleCry').length, 1, 'unrecorded heroes keep working');
     for (const [id, events] of Object.entries(result.families)) {
+      assert.ok(requests.some(url => url.endsWith(`/audio/hero-callouts-eleven-v2/${id}-callout-v2.wav`)), id + ': approved v2 recording loaded');
       for (const group of ['elevenSpecial', 'elevenDash', 'elevenMusou']) assert.equal(events.filter(e => e.group === group).length, 1, `${id}: ${group}`);
       assert.ok(!events.some(e => ['voiceSpecial', 'voiceMusou', 'battleCry', 'breathDeep', 'breathNeutral'].includes(e.group)), id + ': no second actor');
       assert.ok(events.filter(e => e.group.startsWith('eleven')).every(e => e.rate === 1), id + ': natural pitch');

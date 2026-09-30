@@ -30,7 +30,7 @@ export const FAMILY_RANGED = {
   yungeon: { kind: 'football', label: '슛', speed: 1240, damage: 52, color: '#ffb248', launch: .22 },
 };
 export const FAMILY_CALLOUTS = {
-  taeo: { special: { name: '메가랩터킥', cry: '쓰구미!' }, musou: { name: '태권 유성난무', cry: '쓰구미!' } },
+  taeo: { special: { name: '메가랩터킥', cry: '치앗! 촤! 지앗! 촤! 쓰구미이이!' }, musou: { name: '태권 유성난무', cry: '치앗! 촤! 지앗! 촤! 쓰구미이이!' } },
   jaei: { special: { name: '무지개 방울폭풍', cry: '김태오!' }, musou: { name: '별빛 방울축제', cry: '김태오!' } },
   yunchan: { special: { name: '장수풍뎅이 돌진', cry: '마마보이!' }, musou: { name: '반딧불 은하수', cry: '마마보이!' } },
   yungeon: { special: { name: '불꽃 슛', cry: '너무 쉽잖아!' }, musou: { name: '해트트릭 유성슛', cry: '너무 쉽잖아!' } },
