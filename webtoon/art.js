@@ -634,6 +634,18 @@
       const gems = ["#ff4d4d", "#ffd34d", "#4c7fd0", "#6cc27a", "#ff9f1c", "#b99ad9"].map((c, i) => i < 4 ? `<circle cx="${-11 + i * 7.3}" cy="-24" r="2.8" fill="${c}" stroke="${INK}" stroke-width=".8"/>` : "").join("");
       return `<g transform="translate(${x} ${y}) rotate(${o.rot || 0}) scale(${o.s || 1})"><path d="M-14 16 L-14 -6 L-16 -22 Q-16 -26 -12 -26 Q-9 -26 -9 -22 L-8 -12 L-7 -28 Q-7 -32 -3 -32 Q1 -32 1 -28 L1 -12 L3 -28 Q3 -32 7 -32 Q11 -32 11 -28 L10 -10 L13 -20 Q14 -24 18 -22 Q20 -20 19 -16 L14 6 L14 16Z" fill="#f2c14e" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><path d="M-12 -4 Q0 -8 12 -4" stroke="#c9962a" stroke-width="1.6" fill="none"/><rect x="-16" y="14" width="32" height="10" rx="3" fill="#e0ad3a" stroke="${INK}" stroke-width="2"/>${gems}<circle cx="-1" cy="4" r="4.5" fill="#6cc27a" stroke="${INK}" stroke-width="1"/><circle cx="-12" cy="-6" r="2.6" fill="#ff9f1c" stroke="${INK}" stroke-width=".8"/></g>`;
     },
+    // 바닥을 기어가는 태오 (오른쪽을 본다). 도망 다닐 때 쓴다.
+    crawl(x, y, o) {
+      let g = `<ellipse cx="-70" cy="-10" rx="10" ry="6" fill="#3f73d6" stroke="${INK}" stroke-width="1.8"/><ellipse cx="-52" cy="-6" rx="10" ry="6" fill="#3f73d6" stroke="${INK}" stroke-width="1.8"/>`;
+      g += `<rect x="-66" y="-46" width="76" height="34" rx="16" fill="#4c7fd0" stroke="${INK}" stroke-width="2.2"/><path d="M-30 -46 q4 -10 10 -4" stroke="${INK}" stroke-width="1.6" fill="none"/>`;
+      g += `<path d="M2 -20 L24 -2" stroke="${INK}" stroke-width="15" stroke-linecap="round"/><path d="M2 -20 L24 -2" stroke="#4c7fd0" stroke-width="11" stroke-linecap="round"/><circle cx="26" cy="0" r="7" fill="#f8dcc6" stroke="${INK}" stroke-width="1.8"/>`;
+      g += miniFace("taeo", 30, -64, 74);
+      return `<g transform="translate(${x} ${y}) scale(${(o.f || 1) * (o.s || 1)} ${o.s || 1})">${g}</g>`;
+    },
+    // 칫솔 (치약 묻힘)
+    toothbrush(x, y, o) {
+      return `<g transform="translate(${x} ${y}) rotate(${o.rot || -20}) scale(${o.s || 1})"><rect x="-4" y="-6" width="52" height="12" rx="6" fill="#8fd0f5" stroke="${INK}" stroke-width="1.8"/><rect x="44" y="-9" width="22" height="18" rx="4" fill="#fff" stroke="${INK}" stroke-width="1.8"/><path d="M48 -9 v-8 M54 -9 v-9 M60 -9 v-8" stroke="#4c7fd0" stroke-width="3" stroke-linecap="round"/><ellipse cx="54" cy="-20" rx="9" ry="4" fill="#fff" stroke="#b9dff0" stroke-width="1.2"/></g>`;
+    },
     // 샴푸 통
     shampoo(x, y, o) {
       return `<g transform="translate(${x} ${y}) scale(${o.s || 1})"><rect x="-11" y="-36" width="22" height="36" rx="6" fill="#ff8fb3" stroke="${INK}" stroke-width="1.8"/><rect x="-5" y="-45" width="10" height="10" rx="2" fill="#fff" stroke="${INK}" stroke-width="1.5"/><text x="0" y="-14" text-anchor="middle" font-size="9" font-family="Jua, sans-serif" fill="#fff">샴푸</text></g>`;
