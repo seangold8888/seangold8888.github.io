@@ -93,7 +93,7 @@
       panel = document.createElement("details");
       panel.id = "tacticsCollection";
       panel.className = "tactics-collection";
-      byId("campaignButton").after(panel);
+      byId("cardBrowse").appendChild(panel);
     }
     panel.replaceChildren();
     const summary = document.createElement("summary");
@@ -161,7 +161,7 @@
 
   function cacheDom() {
     [
-      "collectionScreen", "battleScreen", "campaignScreen", "campaignBattleLabel", "collectionGrid", "unlockCount",
+      "collectionScreen", "cardBrowse", "battleScreen", "campaignScreen", "campaignBattleLabel", "collectionGrid", "unlockCount",
       "collectionSort", "collectionElement", "collectionFilterStatus", "detailUnlockLink",
       "muteButton", "musicButton", "leaveBattleButton", "turnOwner", "turnNumber",
       "battleStars", "arena", "enemyCardSlot", "playerCardSlot", "battleMessage",
@@ -3216,7 +3216,13 @@
     game = null;
     busy = false;
     showScreen("collection");
+    dom.cardBrowse.open = true;
     renderCollection();
+  }
+
+  function returnToHome() {
+    returnToCollection();
+    dom.cardBrowse.open = false;
   }
 
   function returnToCampaign(continueRun) {
@@ -3455,7 +3461,7 @@
       battleCards = cards.filter(isPlayableCard);
       if (!isPreviewMode()) loadCollectionLedger();
       campaignUi = window.CardCampaignUI.create({cards: cards, showScreen: showScreen,
-        onBattle: startBattle, onExit: returnToCollection,
+        onBattle: startBattle, onExit: returnToHome,
         // 이야기를 듣거나 수학을 해서 얻은 카드도 원정에 데려간다.
         ownedIds: function () {
           return battleCards.filter(isUnlocked).map(function (card) { return card.id; });
@@ -3467,6 +3473,7 @@
         return card.id === requested && isUnlocked(card) && isPlayableCard(card);
       }) || battleCards.find(isUnlocked) || null;
       renderCollection();
+      dom.cardBrowse.open = Boolean(requested) || new URLSearchParams(location.search).get("view") === "cards";
       if (new URLSearchParams(location.search).get("battle") === "1" &&
           selectedCard && isPlayableCard(selectedCard)) {
         startBattle();

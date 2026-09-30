@@ -18,7 +18,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   <link rel="apple-touch-icon" href="../icon.png">
   <link rel="manifest" href="../manifest.json">
 <link rel="stylesheet" href="styles.css?v=70">
-<link rel="stylesheet" href="campaign.css?v=70"><link rel="stylesheet" href="tactics.css?v=1">
+<link rel="stylesheet" href="campaign.css?v=71"><link rel="stylesheet" href="tactics.css?v=1">
 <link rel="stylesheet" href="element-theater.css?v=1">
 <script src="../assets/study/play-timer.js?v=1"></script>
 </head>
@@ -44,10 +44,26 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   <main>
     <p id="campaignSaveNotice" class="expedition-save-notice" role="status" hidden>이 기기에서는 진행을 저장할 수 없어요. 이 창을 닫으면 이번 진행이 사라질 수 있어요.</p>
     <section class="screen collection-screen" id="collectionScreen">
+      <section class="adventure-entry" aria-labelledby="adventureTitle">
+        <div class="adventure-copy">
+          <p class="eyebrow">재이와 태오의 이야기 원정</p>
+          <h1 id="adventureTitle">쓰구미 대마왕을<br>잡아라!</h1>
+          <p id="adventureGuide" class="adventure-guide">8개의 이야기 세계를 되돌리고,<br>친구들과 함께 모험해요.</p>
+          <button id="campaignButton" class="expedition-entry" type="button" aria-describedby="adventureGuide">원정 떠나기</button>
+          <p class="adventure-hint">세계를 고르고 · 친구 3명과 · 이야기 대결!</p>
+        </div>
+        <div class="adventure-portraits" aria-hidden="true">
+          <figure><img src="art/jaei.webp" alt="" width="240" height="336"><figcaption>재이</figcaption></figure>
+          <figure><img src="art/taeo.webp" alt="" width="240" height="336"><figcaption>태오</figcaption></figure>
+          <span class="adventure-star">✦</span>
+        </div>
+      </section>
+      <details id="cardBrowse" class="card-browse">
+        <summary><span>카드 보기</span><small>모은 영웅과 기술 살펴보기</small></summary>
       <div class="collection-toolbar">
         <div class="collection-title">
-          <p class="eyebrow">나의 카드 컬렉션</p>
-          <h1>영웅 도감</h1>
+          <p class="eyebrow">나의 영웅 카드</p>
+          <h2>카드 보기</h2>
         </div>
         <div class="collection-status" aria-live="polite">
           <span class="status-orb">✦</span>
@@ -56,8 +72,6 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         </div>
         <a class="story-link" href="../story/">🎧 이야기</a>
       </div>
-
-      <button id="campaignButton" class="expedition-entry" type="button">원정 떠나기</button>
 
       <div class="collection-guide">
         <h2>마음에 드는 그림을 눌러 능력을 살펴봐요</h2>
@@ -82,8 +96,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         </label>
       </div>
       <p class="collection-filter-status" id="collectionFilterStatus" role="status"></p>
-      <div class="card-gallery" id="collectionGrid" role="list" aria-label="카드 컬렉션"></div>
-
+      <div class="card-gallery" id="collectionGrid" role="list" aria-label="카드 보기"></div>
+      </details>
     </section>
 
     <section class="screen expedition-screen" id="campaignScreen" aria-label="이야기 원정" hidden></section>
@@ -204,7 +218,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     <p id="resultText"></p>
     <div class="result-actions">
       <button class="primary-button" id="rematchButton" type="button">한 판 더!</button>
-      <button class="ghost-button" id="resultCollectionButton" type="button">카드 컬렉션</button>
+      <button class="ghost-button" id="resultCollectionButton" type="button">카드 보기</button>
     </div>
   </dialog>
 
@@ -217,11 +231,11 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 <script src="js/vfx-recipes.js?v=70" defer></script>
 <script src="js/story-gates.js?v=70" defer></script>
 <script src="js/campaign.js?v=70" defer></script>
-<script src="js/campaign-ui.js?v=70" defer></script>
+<script src="js/campaign-ui.js?v=71" defer></script>
 <script src="js/combat-cinema.js?v=70" defer></script>
 <script src="js/tactics.js?v=1" defer></script>
 <script src="js/element-theater.js?v=1" defer></script>
-<script src="js/app.js?v=73" defer></script>
+<script src="js/app.js?v=74" defer></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
