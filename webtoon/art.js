@@ -634,6 +634,17 @@
       const gems = ["#ff4d4d", "#ffd34d", "#4c7fd0", "#6cc27a", "#ff9f1c", "#b99ad9"].map((c, i) => i < 4 ? `<circle cx="${-11 + i * 7.3}" cy="-24" r="2.8" fill="${c}" stroke="${INK}" stroke-width=".8"/>` : "").join("");
       return `<g transform="translate(${x} ${y}) rotate(${o.rot || 0}) scale(${o.s || 1})"><path d="M-14 16 L-14 -6 L-16 -22 Q-16 -26 -12 -26 Q-9 -26 -9 -22 L-8 -12 L-7 -28 Q-7 -32 -3 -32 Q1 -32 1 -28 L1 -12 L3 -28 Q3 -32 7 -32 Q11 -32 11 -28 L10 -10 L13 -20 Q14 -24 18 -22 Q20 -20 19 -16 L14 6 L14 16Z" fill="#f2c14e" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><path d="M-12 -4 Q0 -8 12 -4" stroke="#c9962a" stroke-width="1.6" fill="none"/><rect x="-16" y="14" width="32" height="10" rx="3" fill="#e0ad3a" stroke="${INK}" stroke-width="2"/>${gems}<circle cx="-1" cy="4" r="4.5" fill="#6cc27a" stroke="${INK}" stroke-width="1"/><circle cx="-12" cy="-6" r="2.6" fill="#ff9f1c" stroke="${INK}" stroke-width=".8"/></g>`;
     },
+    // 샴푸 통
+    shampoo(x, y, o) {
+      return `<g transform="translate(${x} ${y}) scale(${o.s || 1})"><rect x="-11" y="-36" width="22" height="36" rx="6" fill="#ff8fb3" stroke="${INK}" stroke-width="1.8"/><rect x="-5" y="-45" width="10" height="10" rx="2" fill="#fff" stroke="${INK}" stroke-width="1.5"/><text x="0" y="-14" text-anchor="middle" font-size="9" font-family="Jua, sans-serif" fill="#fff">샴푸</text></g>`;
+    },
+    // 거품 (머리 위에 얹거나 흩날리게)
+    foam(x, y, o) {
+      const k = o.s || 1;
+      let g = "";
+      for (const [dx, dy, r] of [[-22, 0, 15], [0, -8, 19], [22, 0, 15], [-10, 12, 12], [12, 12, 12], [34, -10, 9], [-36, -10, 8]]) g += `<circle cx="${dx}" cy="${dy}" r="${r}" fill="#fff" stroke="#b9dff0" stroke-width="1.6"/>`;
+      return `<g transform="translate(${x} ${y}) scale(${k})">${g}</g>`;
+    },
     // 누나 머리끈(분홍 곱창 끈)
     scrunchie(x, y, o) {
       let bumps = "";
@@ -789,6 +800,13 @@
         s += windowRect(40, Math.max(gy - 190, 20), 90, 80, night ? "#232a5e" : "#bfe7ff", night ? `<path d="M100 ${Math.max(gy - 170, 40)} a10 10 0 1 0 7 18 a8 8 0 1 1 -7 -18z" fill="#ffe27a"/>` : "");
         s += floor(W, H, gy, night ? "#7d6f8f" : "#e6cfb0", night ? "#6a5c7a" : "#caa983");
         if (night) s += `<rect width="${W}" height="${H}" fill="#12163d" opacity=".18"/>`;
+        return s;
+      }
+      case "bath": {
+        let s = `<rect width="${W}" height="${H}" fill="#e8f6fb"/>`;
+        for (let y = 0; y < gy; y += 26) for (let x = 0; x < W; x += 26) s += `<rect x="${x + 1}" y="${y + 1}" width="24" height="24" fill="#f5fcff" stroke="#cfe8f0" stroke-width="1"/>`;
+        s += `<rect x="${W - 170}" y="${gy - 84}" width="160" height="84" rx="14" fill="#fff" stroke="${INK}" stroke-width="2.4"/><rect x="${W - 162}" y="${gy - 74}" width="144" height="26" rx="10" fill="#bfe3ff"/>`;
+        s += floor(W, H, gy, "#cfd8de", "#b6c2c9");
         return s;
       }
       case "entrance": {
