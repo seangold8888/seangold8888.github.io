@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ko">
+<head>
+ <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+ <meta name="theme-color" content="#eeefeb"><meta name="apple-mobile-web-app-capable" content="yes">
+ <title>말랑 슬라임 · 모험 상자</title>
+ <link rel="preload" href="../sanguo/fonts/pretendard/PretendardVariable.woff2" as="font" type="font/woff2" crossorigin>
+ <link rel="stylesheet" href="style.css?v=playroom-9">
+ <script src="../assets/study/play-timer.js?v=1"></script><script src="../assets/touch-guard.js?v=1"></script>
+</head>
+<body>
+ <canvas id="jelly" aria-label="말랑 슬라임. 콕 누르기, 잡아 늘리기, 두 번 누르면 점프. 바닥을 누르면 따라와요. 스페이스 점프, R 초기화." tabindex="0"></canvas>
+ <div id="particles" aria-hidden="true"></div>
+ <header>
+  <a class="brand" href="../game/" aria-label="모험보드로 돌아가기"><svg viewBox="0 0 40 40" aria-hidden="true"><path fill="#8de4ff" d="M4 27C4 11 11 4 20 4s16 8 16 23c0 7-5 9-16 9S4 34 4 27"/><ellipse cx="14" cy="23" rx="2" ry="4" fill="#263943"/><ellipse cx="26" cy="23" rx="2" ry="4" fill="#263943"/><ellipse cx="14" cy="12" rx="5" ry="2" fill="white" opacity=".7"/></svg><span>mallang</span><small class="brand-sub">말랑</small></a>
+  <div class="top-actions"><div class="glass count">친해진 횟수 <b id="count">0</b></div><button id="sound" class="glass" type="button" aria-pressed="false">♪ 소리 꺼짐</button></div>
+ </header>
+ <div class="hints" id="hints"><span><b>잡기</b> 이동 · 던지기</span><span><b>탭</b> 콕 누르기</span><span><b>2손가락</b> 누르기 · 늘리기</span></div>
+ <section class="copy"><p class="eyebrow">— Tiny jelly friend · No.01</p><h1>만지고,<br><span>탱글.</span></h1><p class="lead" id="mood" aria-live="polite">잡고, 던지고, 콕 누르고.<br>말랑이는 손끝을 따라 움직이는<br>반짝이는 작은 젤리 친구예요.</p><details class="tools"><summary aria-label="놀이 도움말">놀이 도움말 ···</summary><div class="play-actions"><button class="glass" id="jump" type="button">통통 점프 ↑</button><button class="glass" id="reset" type="button">처음으로 ↻</button><button class="glass" id="quality" type="button" aria-pressed="false">가볍게 보기</button></div><small>두 손가락으로 늘리기 · 두 번 누르면 점프<br>바닥을 누르면 따라와요 · 느려지면 효과만 자동으로 줄여요</small></details></section>
+ <div class="friend-actions"><button class="glass" id="pet-button" type="button" aria-pressed="false">살살 쓰다듬기</button><button class="glass" id="play-menu" type="button" aria-haspopup="dialog">놀이 · 꾸미기</button><button class="glass" id="trampoline-button" type="button" aria-pressed="false">트램펄린</button></div>
+ <dialog id="playroom" aria-labelledby="room-title">
+  <div class="room-heading"><div><small>MY JELLY FRIEND</small><h2 id="room-title">내 말랑이</h2></div><button type="button" id="room-close" aria-label="놀이방 닫기">×</button></div>
+  <form id="name-form"><label for="friend-name">친구 이름</label><div class="name-row"><input id="friend-name" maxlength="12" autocomplete="off" value="말랑이"><button type="submit">저장</button></div></form>
+  <p id="friend-progress" aria-live="polite"></p>
+  <h3>장난감 하나 꺼내기</h3><div class="toy-options" id="toy-options"><button type="button" data-toy="none" aria-pressed="true">자유 놀이</button><button type="button" data-toy="bubbles" aria-pressed="false">비눗방울<br><small>콕 터뜨려요</small></button><button type="button" data-toy="ball" aria-pressed="false">공 굴리기<br><small>서로 주고받아요</small></button><button type="button" data-toy="trampoline" aria-pressed="false">트램펄린<br><small>통통 뛰어요</small></button></div>
+  <div class="toy-options extra-toys"><button type="button" data-toy="stars" aria-pressed="false">반짝 별 찾기<br><small>별 다섯 개를 모아요</small></button><button type="button" data-toy="music" aria-pressed="false">색깔 벨<br><small>콕 눌러 노래를 만들어요</small></button></div>
+  <h3>오늘의 꾸미기</h3><div id="ornaments" class="toy-options"></div>
+  <h3>장식 색</h3><div id="accessory-colors" class="accessory-colors"></div><p class="room-note">꽃·고양이 귀·왕관은 바로 쓸 수 있어요.<br>함께 놀면 리본과 별 모자도 선물로 받아요.<br>일주일 쉬어도 이름·색·선물은 기억해요.<br>‘처음으로’는 오늘의 놀이만 다시 시작해요.</p>
+ </dialog>
+ <section id="toy-hud" class="glass" aria-label="지금 하는 놀이" hidden><span><b id="toy-title"></b><small id="toy-score" aria-live="polite"></small></span><button id="toy-again" type="button" aria-label="놀이 다시 시작">다시 ↻</button><button id="toy-stop" type="button">그만</button></section>
+ <nav class="flavors" aria-label="슬라임 색 고르기"><p class="flavor-label">Flavor —</p><div class="glass palette" id="palette"></div></nav>
+ <div id="fallback" hidden>이 기기에서 3D 화면을 열지 못했어요.<br>Safari나 Chrome에서 다시 열어 주세요.<br><a href="../game/">모험보드로 돌아가기</a></div>
+ <script type="module" src="src/main.js?v=rainbow-16"></script>
+</body>
+</html>

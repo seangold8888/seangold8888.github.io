@@ -1,0 +1,26 @@
+const{chromium}=require('playwright'),assert=require('node:assert/strict'),fs=require('node:fs'),os=require('node:os'),path=require('node:path');
+(async()=>{const out=fs.mkdtempSync(path.join(os.tmpdir(),'slime-playroom9-')),b=await chromium.launch({channel:'msedge',headless:true,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+ try{const p=await b.newPage({viewport:{width:768,height:1024},hasTouch:true,serviceWorkers:'block'}),errors=[];p.on('pageerror',e=>errors.push(e.message));p.on('console',e=>{if(e.type()==='error')errors.push(e.text());});
+ await p.emulateMedia({reducedMotion:'reduce'});await p.clock.install({time:new Date('2026-09-30T00:00:00Z')});await p.clock.pauseAt(new Date('2026-09-30T00:00:02Z'));
+ await p.goto('http://127.0.0.1:8765/slime/?v=playroom-9');await p.waitForFunction(()=>!!window.__slime,{},{polling:100,timeout:90000});
+ await p.evaluate(()=>{__slime.reset();__slime.advance(.1);__slime.renderOnce();});
+ async function picture(name){const data=await p.evaluate(()=>{__slime.renderOnce();return document.getElementById('jelly').toDataURL();});fs.writeFileSync(path.join(out,name+'.png'),Buffer.from(data.split(',')[1],'base64'));}
+ async function choose(toy){await p.locator('#play-menu').click();await p.locator('[data-toy='+toy+']').click();await p.evaluate(()=>{__slime.advance(.05);__slime.renderOnce();});}
+ async function point(pool,i){return p.evaluate(({pool,i})=>{const s=__slime,m=s.toys[pool][i],v=m.position.clone();if(pool==='bells')v.y+=.20;v.project(s.camera);return{x:(v.x*.5+.5)*innerWidth,y:(-.5*v.y+.5)*innerHeight};},{pool,i});}
+ for(const id of ['flower','cat','crown']){await p.locator('#play-menu').click();await p.locator('[data-ornament='+id+']').click();assert.equal(await p.evaluate(()=>__slime.friend.data.ornament),id);await p.evaluate(()=>__slime.advance(.05));await picture(id);}
+ await p.locator('#play-menu').click();await p.locator('[data-color="3"]').click();await p.locator('#room-close').click();assert.equal(await p.evaluate(()=>__slime.friend.data.accessoryColor),3);
+ await p.reload();await p.waitForFunction(()=>!!window.__slime,{},{polling:100,timeout:90000});assert.equal(await p.evaluate(()=>__slime.friend.data.ornament),'crown');assert.equal(await p.evaluate(()=>__slime.friend.data.accessoryColor),3);console.log('PASS flower, cat ears, crown and color persistence');
+ for(const viewport of [{width:768,height:1024},{width:390,height:844},{width:844,height:390}]){await p.setViewportSize(viewport);await p.evaluate(()=>{dispatchEvent(new Event('resize'));__slime.reset();__slime.advance(.05);});await choose('stars');await picture('stars-'+viewport.width);
+  for(let i=0;i<5;i++){const xy=await point('stars',i);assert.ok(xy.x>0&&xy.x<viewport.width&&xy.y>0&&xy.y<viewport.height,JSON.stringify(xy));await p.touchscreen.tap(xy.x,xy.y);const actual=await p.evaluate(()=>__slime.toys.state().hits);if(actual!==i+1){console.log('Miss:',viewport,i,xy,await p.evaluate(xy=>({element:document.elementFromPoint(xy.x,xy.y)?.outerHTML.slice(0,220),trace:__slime.input.trace()}),xy));await p.screenshot({path:path.join(out,'miss.png')});console.log(out);}assert.equal(actual,i+1,'visible star must respond to real touch');}
+  assert.equal(await p.locator('#toy-score').textContent(),'5 / 5');assert.equal(await p.evaluate(()=>__slime.toys.stars.filter(x=>x.visible).length),0);
+  await p.evaluate(()=>__slime.advance(3));assert.equal(await p.evaluate(()=>__slime.toys.state().hits),5);assert.equal(await p.evaluate(()=>__slime.toys.stars.filter(x=>x.visible).length),0);
+  await p.locator('#toy-again').click();assert.equal(await p.evaluate(()=>__slime.toys.state().hits),0);assert.equal(await p.evaluate(()=>__slime.toys.stars.filter(x=>x.visible).length),5);
+  assert.ok(await p.locator('#toy-hud').evaluate(e=>{const r=e.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight;}));
+  await p.locator('#toy-stop').click();assert.equal(await p.evaluate(()=>__slime.toys.state().mode),'none');assert.equal(await p.locator('#toy-hud').isVisible(),false);
+  await choose('music');for(let i=0;i<5;i++){const xy=await point('bells',i);await p.touchscreen.tap(xy.x,xy.y);assert.equal(await p.evaluate(()=>__slime.toys.state().hits),i+1);}
+  const audio=await p.evaluate(()=>__slime.audio.state());assert.equal(audio.enabled,true);assert.equal(audio.context,'running');assert.ok(audio.voices>0&&audio.voices<=24);await picture('bells-'+viewport.width);
+  await p.locator('#play-menu').click();assert.ok(await p.locator('#playroom').evaluate(e=>{const r=e.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight;}));await p.locator('[data-color="5"]').click();await p.locator('#room-close').click();
+ }
+ await p.evaluate(()=>__slime.reset());assert.equal(await p.evaluate(()=>__slime.toys.state().mode),'none');assert.equal(await p.evaluate(()=>__slime.friend.data.ornament),'crown');assert.deepEqual(errors,[]);
+ console.log('PASS five real-touch stars, no automatic respawn, replay/stop, five audible bells, iPad/phone portrait and landscape, reduced motion and no shader errors');console.log('Screenshots: '+out);
+ }finally{await b.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

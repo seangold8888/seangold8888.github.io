@@ -10,12 +10,13 @@ function fn(name) {
   assert.ok(start >= 0, name);
   return html.slice(start, html.indexOf("\n  }", start) + 4);
 }
-test('completion praise runs once at each earned tenth answer, never on duplicate answers',()=>{
+test('completion praise runs once at each earned fifteenth answer and at daily completion, never on duplicate answers',()=>{
  const {ctx}=setup();
- for(let round=0;round<10;round++){
-  for(let i=0;i<9;i++)ctx.answer();assert.equal(ctx.celebrations,round);
+ for(let round=0;round<7;round++){
+  const size=round<6?15:10;
+  for(let i=0;i<size-1;i++)ctx.answer();assert.equal(ctx.celebrations,round);
   ctx.answer();assert.equal(ctx.celebrations,round+1);ctx.pick(ctx.current.answer,null);assert.equal(ctx.celebrations,round+1);
-  if(round<9){ctx.consumeGameTicket();ctx.restoreStudyProgress();}
+  if(round<6){ctx.consumeGameTicket();ctx.restoreStudyProgress();}
  }
 });
 function setup(initial = {}) {
@@ -23,7 +24,7 @@ function setup(initial = {}) {
   const ctx = {
     window: {EnglishReading: require("../../assets/study/english-reading.js"), PrincessGrowth: require("../../assets/study/princess-growth.js")},
     readingLevel: {level:1,passes:0}, recordReadingPass: () => false,
-    BOOK_MAX: 24, BANK_SIZES: {reading: 16}, SKILL_INFO: {reading: {name: "영어 읽기"}},
+    BOOK_MAX: 24, BANK_SIZES: {reading: 16}, SKILL_INFO: {reading: {name: "영어 읽기"}}, missRow: 0, MISS_DOWN: 2,
     todayKey: () => "2026-9-6", dayNum: () => 100, MASTER_AT: 9, CHEERS: ["정답"],
     localStorage: {getItem: k => stored.get(k) ?? null, setItem: (k,v) => stored.set(k,v)},
     cheerEl: {}, drawSetStars() {}, drawDaily() {}, applyState() {}, renderProblem() {},
@@ -33,7 +34,7 @@ function setup(initial = {}) {
   };
   vm.createContext(ctx);
   vm.runInContext(html.match(/var SET = \d+, DAILY = \d+;/)[0] + "\n" +
-    ["loadState", "saveState", "isFree", "hasTicket", "playTimeLeft", "consumeGameTicket", "restoreStudyProgress", "loadPlays", "skillOf", "pick"].map(fn).join("\n"), ctx);
+    ["loadState", "saveState", "isFree", "hasTicket", "playTimeLeft", "consumeGameTicket", "restoreStudyProgress", "loadPlays", "skillOf", "addToBook", "pick"].map(fn).join("\n"), ctx);
   ctx.state = ctx.loadState();
   ctx.setCorrect = ctx.state.solved % ctx.SET;
   ctx.answer = () => {
@@ -55,14 +56,14 @@ test("accepted hub answers grow the selected princess once without altering tick
   assert.equal(ctx.state.solved,11);
 });
 
-test("ten-answer rounds preserve today's total across entry, reload and cached back navigation; answer 100 unlocks", () => {
+test("fifteen-answer rounds preserve today's total across entry, reload and cached back navigation; answer 100 unlocks", () => {
   const {ctx, stored} = setup();
   assert.equal(ctx.DAILY, 100);
-  assert.equal(ctx.SET, 10);
-  for (let round = 1; round <= 10; round++) {
-    for (let i = 0; i < 10; i++) ctx.answer();
-    assert.equal(ctx.state.solved, round * 10);
-    if (round < 10) {
+  assert.equal(ctx.SET, 15);
+  for (let round = 1; round <= 7; round++) {
+    for (let i = 0; i < (round < 7 ? 15 : 10); i++) ctx.answer();
+    assert.equal(ctx.state.solved, Math.min(round * 15, 100));
+    if (round < 7) {
       assert.equal(ctx.isFree(), false);
       assert.equal(ctx.state.credit, 1);
       assert.equal(ctx.consumeGameTicket(), true);
@@ -70,8 +71,8 @@ test("ten-answer rounds preserve today's total across entry, reload and cached b
       ctx.restoreStudyProgress();
       assert.equal(ctx.setCorrect, 0);
       assert.equal(ctx.state.credit, 0);
-      assert.equal(ctx.state.solved, round * 10);
-      assert.equal(ctx.loadState().solved, round * 10, "ordinary reload restores total too");
+      assert.equal(ctx.state.solved, round * 15);
+      assert.equal(ctx.loadState().solved, round * 15, "ordinary reload restores total too");
     } else {
       assert.equal(ctx.isFree(), true);
       for (let j = 0; j < 3; j++) {
@@ -93,11 +94,11 @@ test("ten-answer rounds preserve today's total across entry, reload and cached b
 test("refresh preserves unfinished round; the old 40-answer goal no longer grants free entry", () => {
   const {ctx} = setup({hub2_solved: "47", hub2_credit: "0"});
   ctx.restoreStudyProgress();
-  assert.equal(ctx.setCorrect, 7);
+  assert.equal(ctx.setCorrect, 2);
   assert.equal(ctx.isFree(), false);
   assert.equal(ctx.consumeGameTicket(), false);
-  for (let i = 0; i < 3; i++) ctx.answer();
-  assert.equal(ctx.state.solved, 50);
+  for (let i = 0; i < 13; i++) ctx.answer();
+  assert.equal(ctx.state.solved, 60);
   assert.equal(ctx.state.credit, 1);
 });
 test("incorrect answers do not advance either counter", () => {
@@ -106,7 +107,7 @@ test("incorrect answers do not advance either counter", () => {
   ctx.OOPS = ["다시 읽어요"];
   ctx.pick("no", {style: {}});
   assert.equal(ctx.state.solved, 49);
-  assert.equal(ctx.setCorrect, 9);
+  assert.equal(ctx.setCorrect, 4);
   assert.equal(ctx.state.credit, 0);
 });
 test("parent override and ticket-ready reload preserve learning records", () => {
@@ -127,4 +128,25 @@ test("game click and cached return are wired to tested handlers, with no obsolet
   assert.match(html, /if \(e.persisted\) \{\s*restoreStudyProgress\(\);/);
   assert.doesNotMatch(html, /40문제|0 \/ 40/);
   assert.match(html, /id="hubDailyStat">0 \/ 100/);
+});
+
+test('ticket arrives at answer 15, not 10 or 14; wrong and repeated answers cannot bypass it', () => {
+  const {ctx}=setup();
+  for(let i=0;i<10;i++)ctx.answer();
+  assert.equal(ctx.state.credit,0); assert.equal(ctx.consumeGameTicket(),false);
+  for(let i=0;i<4;i++)ctx.answer();
+  assert.equal(ctx.setCorrect,14); assert.equal(ctx.state.credit,0);
+  ctx.OOPS=['다시 해요']; ctx.current={answer:'yes',seed:{type:'reading',idx:0}};
+  ctx.pick('no',{style:{}}); assert.equal(ctx.state.solved,14);
+  ctx.answer(); assert.equal(ctx.state.solved,15); assert.equal(ctx.state.credit,1);
+  ctx.pick(ctx.current.answer,null); assert.equal(ctx.state.solved,15); assert.equal(ctx.state.credit,1);
+});
+
+test('existing ten-answer ticket and learning totals survive the fifteen-answer update', () => {
+  const {ctx}=setup({hub2_solved:'10',hub2_credit:'1'});
+  ctx.restoreStudyProgress(); assert.equal(ctx.state.solved,10); assert.equal(ctx.state.credit,1);
+  assert.equal(ctx.consumeGameTicket(),true); ctx.restoreStudyProgress();
+  assert.equal(ctx.setCorrect,10); assert.equal(ctx.state.solved,10);
+  for(let i=0;i<5;i++)ctx.answer();
+  assert.equal(ctx.state.solved,15); assert.equal(ctx.state.credit,1);
 });

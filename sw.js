@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v175";
+const CACHE_VERSION = "v194";
 const CACHE_PREFIX = "adventure-box-";
 // 큰 그림과 소리(삼국지 배경 200MB+, 저장한 이야기 오디오)는 배포 번호와 따로 둔다.
 // 배포마다 이 캐시를 버리면 기기가 236MB를 다시 받고, "여행 전에 이야기 저장"도 지워졌다.
@@ -41,7 +41,7 @@ const CORE_SHELL = [
   "./math/learning.js?v=29",
   "./math/store.js?v=32",
   "./assets/study/math-bridge.js?v=2",
-  "./assets/study/english-reading.js?v=21",
+  "./assets/study/english-reading.js?v=22",
   "./assets/study/praise/excellent.mp3",
   "./assets/study/praise/perfect-v2.wav",
   "./assets/study/praise/awesome.mp3",
@@ -773,6 +773,26 @@ const OPTIONAL_SHELL = [
   "./kart/src/kart.js",
   "./kart/src/main.js",
   "./kart3d/",
+  "./slime/",
+  "./slime/style.css?v=playroom-9",
+  "./slime/src/main.js?v=rainbow-16",
+  "./slime/src/physics.js?v=play-7",
+  "./slime/src/audio.js?v=playroom-9",
+  "./slime/src/geometry.js?v=5",
+  "./slime/src/material.js?v=rainbow-16",
+  "./slime/src/aurora-volume.js?v=rainbow-16",
+  "./slime/src/stage.js?v=play-7",
+  "./slime/src/input.js?v=play-7",
+  "./slime/src/friend.js?v=playroom-9",
+  "./slime/src/toys.js?v=bubbles-10",
+  "./slime/src/bubble-material.js?v=bubbles-10",
+  "./slime/src/optics.js?v=5",
+  "./slime/src/caustics.js?v=visual-1",
+  "./slime/vendor/RoomEnvironment.js",
+  "./slime/vendor/Reflector.js",
+  "./slime/vendor/THREE-LICENSE.txt",
+  "./assets/effects/quality.js?v=visual-1",
+  "./assets/covers/cover_slime.svg",
   "./kart3d/src/game.js?v=easy-1",
   "./kart3d/src/difficulty.js?v=easy-1",
   "./kart3d/menu.css?v=type-2",
@@ -793,6 +813,11 @@ const OPTIONAL_SHELL = [
   "./assets/covers/cover_kart.webp",
   "./assets/covers/cover_gem.webp",
   "./assets/covers/cover_stage.webp",
+  "./assets/covers/cover-hogwarts-game-v1.webp",
+  "./assets/covers/cover-kedehun-team-v1.webp",
+  "./assets/covers/cover-ribbon-room-v1.webp",
+  "./assets/covers/cover-sanrio-kart-team-v1.webp",
+  "./assets/covers/cover-jaei-taeo-card-battle-v1.webp",
   "./cards/art/bg/arena-castle.webp",
   "./cards/art/bg/arena-forest.webp",
   "./kart3d/vendor/three.module.min.js",
@@ -1149,7 +1174,7 @@ const BACKGROUND_RETRY_MS = 5 * 60 * 1000;
 const AUDIO_FETCH_TIMEOUT_MS = 45000;
 const NAVIGATION_ROUTES = [
   "game", "cards", "story", "multiverse", "avengers", "bori", "hogwarts", "kart", "kart3d",
-  "kedehun", "odyssey", "princess", "sanguo",
+  "kedehun", "odyssey", "princess", "sanguo", "slime",
 ];
 
 const CARD_ART_FILES = [

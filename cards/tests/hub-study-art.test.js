@@ -16,14 +16,14 @@ const hashes = {
   "mom": "5e9ba9a46932a6f379a571e4f7bb0024c33241b68de00be1a5c5a0bd628f4611",
   "dad": "cdc415dcd7c7f99f087df8f62fb34910208ebbb61b80b469f8f94f7fc05e4ebf"
 };
-test("today's study is first and embeds all five unchanged family images", () => {
-  assert.ok(html.indexOf('<section id="study"') < html.indexOf('<article class="feature-stage"'));
+test("today's study precedes the games; removing the banner preserves all five family assets offline", () => {
+  assert.ok(html.indexOf('<section id="study"') < html.indexOf('id="adventureWorlds"'));
+  assert.doesNotMatch(html, /<article class="feature-stage"/);
   assert.match(html, /id="studyTitle">오늘의 공부/);
   for (const [id, hash] of Object.entries(hashes)) {
     const relative = "assets/study/" + id + ".jpg";
     const bytes = fs.readFileSync(path.join(root, relative));
     assert.equal(crypto.createHash("sha256").update(bytes).digest("hex"), hash);
-    assert.ok(html.includes('src="' + relative + '"'));
     assert.ok(sw.CORE_SHELL.includes("./" + relative), relative + " must work offline");
   }
 });

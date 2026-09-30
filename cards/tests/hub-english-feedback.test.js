@@ -18,8 +18,8 @@ function setup(options={}) {
   const timers=new Map(), events=[], recognizers=[], audios=[], contexts=[], utterances=[], retries=[], gains=[];
   const doc=Object.assign(target(),{hidden:false,createElement:node});
   class Recognition {
-    constructor() { recognizers.push(this); }
-    start() { events.push("start"); this.live=true; if(options.assertReleased)assert.ok(audios.every(a=>!a.src),'media src must be released before microphone start'); if(!options.neverStarts&&this.onstart)this.onstart(); }
+    constructor() { if(options.constructorError)throw Error('unavailable');recognizers.push(this); }
+    start() { if(options.startError)throw Error('start');events.push("start"); this.live=true; if(options.assertReleased)assert.ok(audios.every(a=>!a.src),'media src must be released before microphone start'); if(!options.neverStarts&&this.onstart)this.onstart(); }
     stop() { events.push("stop"); this.stopped=true; }
     end() { events.push("end");this.live=false; if(this.onend)this.onend(); }
     abort() {events.push("abort");this.live=false;}
@@ -64,9 +64,9 @@ function setup(options={}) {
     }
     now=end;
   }
-  function mount(sentence=reading.sentences[0]) {
+  function mount(sentence=reading.sentences[0], callbacks={}) {
     const container=node();
-    const view=reading.mount(container,sentence,()=>passes++,env,{onRetry:w=>retries.push(w)});
+    const view=reading.mount(container,sentence,()=>passes++,env,Object.assign({onRetry:w=>retries.push(w)},callbacks));
     return {container,view,mic:container.children[3].children[0],stop:container.children[3].children[1],status:container.children[4],words:container.children[1].children};
   }
   function result(text) {
@@ -345,6 +345,100 @@ test("a denied recovery leaves the controls usable and never scores a mistake", 
   assert.equal(s.passes(), 0); assert.equal(s.retries.length, 0);
 });
 
+test("empty ends and every microphone error expose recovery and a non-scoring alternative",()=>{
+ for(const error of [null,'no-speech','aborted','network','not-allowed','audio-capture','service-not-allowed','language-not-supported']){
+  const s=setup(),v=s.mount(undefined,{onUnavailable(){}});v.mic.fire('click');
+  if(error)s.recognizers[0].onerror({error});else s.recognizers[0].end();
+  assert.equal(v.container.children[3].children[2].hidden,false,String(error));
+  assert(v.container.children[3].children.some(n=>n.className==='reading-recovery'&&!n.hidden));
+  assert.equal(v.mic.disabled,false);assert.equal(s.passes(),0);assert.equal(s.retries.length,0);
+  assert(v.words.every(w=>!w.classList.contains('retry')));assert(s.contexts.every(c=>c.closed));
+ }
+});
+
+test("confirmed prefixes survive a natural pause, but interim words cannot pass",()=>{
+ const s=setup({noAudio:true}),v=s.mount();v.mic.fire('click');s.result('I like');s.recognizers[0].end();
+ assert.equal(v.mic.textContent,'🎤 이어 읽기');assert.equal(s.retries.length,0);
+ v.mic.fire('click');s.recognizers[1].onresult({results:[Object.assign([{transcript:'apples'}],{isFinal:false})]});
+ assert.equal(s.passes(),0);s.result('apples');s.recognizers[1].end();s.tick(2000);assert.equal(s.passes(),1);
+});
+
+test("a full restart supersedes the prefix; missing and wrong remaining words never pass",()=>{
+ for(const text of ['I like apples','bananas','']){
+  const s=setup({noAudio:true}),v=s.mount();v.mic.fire('click');s.result('I like');s.recognizers[0].end();v.mic.fire('click');
+  if(text)s.result(text);s.recognizers[1].end();s.tick(2000);assert.equal(s.passes(),text==='I like apples'?1:0,text);
+ }
+});
+
+test("continuation belongs only to the same mounted question",()=>{
+ const s=setup({noAudio:true}),v=s.mount();v.mic.fire('click');s.result('I like');s.recognizers[0].end();v.view.destroy();
+ const next=s.mount();next.mic.fire('click');s.result('apples');s.recognizers[1].end();s.tick(2000);assert.equal(s.passes(),0);
+});
+
+test("manual completion flushes the pending final result instead of aborting it",()=>{
+ const s=setup({noAudio:true}),v=s.mount();v.mic.fire('click');
+ s.recognizers[0].onresult({results:[Object.assign([{transcript:'I like apples'}],{isFinal:false})]});
+ v.stop.fire('click');assert(s.events.includes('stop'));assert(!s.events.includes('abort'));
+ assert.equal(v.stop.disabled,true);s.result('I like apples');s.recognizers[0].end();s.tick(2000);assert.equal(s.passes(),1);
+});
+
+test("a manual completion with no end event is bounded and never awards a guessed pass",()=>{
+ const s=setup(),v=s.mount(undefined,{onUnavailable(){}});v.mic.fire('click');v.stop.fire('click');s.tick(2500);
+ assert.equal(v.mic.disabled,false);assert.equal(s.passes(),0);assert.equal(s.retries.length,0);
+ assert.equal(v.container.children[3].children[2].hidden,false);
+});
+
+test("hidden, offline, stopped and disposed views cancel a queued automatic restart",()=>{
+ for(const action of ['hidden','offline','stopped','disposed']){
+  const s=setup({neverStarts:true}),v=s.mount();v.mic.fire('click');s.tick(12000);
+  if(action==='hidden'){s.doc.hidden=true;s.doc.fire('visibilitychange');}
+  else if(action==='offline'){s.env.navigator.onLine=false;s.env.fire('offline');}
+  else if(action==='stopped')v.view.stop();else v.view.destroy();
+  s.tick(60000);assert.equal(s.recognizers.length,1,action);assert.equal(s.passes(),0);
+ }
+});
+
+test("old scheduled restarts cannot interrupt a new manual attempt",()=>{
+ const s=setup({neverStarts:true}),v=s.mount();v.mic.fire('click');s.tick(12000);v.mic.fire('click');
+ s.tick(500);assert.equal(s.recognizers.length,2);assert.equal(s.recognizers[1].live,true);
+});
+
+test("a slow reader is not cut off at the old 25-second limit",()=>{
+ const s=setup({noAudio:true}),v=s.mount();v.mic.fire('click');
+ for(let i=0;i<3;i++){s.tick(10000);s.recognizers[0].onresult({results:[Object.assign([{transcript:'I like'}],{isFinal:false})]});}
+ assert.equal(s.recognizers[0].live,true);s.result('I like apples');s.recognizers[0].end();s.tick(2000);assert.equal(s.passes(),1);
+});
+
+test("an interim tail keeps a final mismatch from prematurely stopping recognition",()=>{
+ const s=setup({noAudio:true}),v=s.mount();v.mic.fire('click');
+ s.recognizers[0].onresult({results:[Object.assign([{transcript:'I hate'}],{isFinal:true}),Object.assign([{transcript:'apples'}],{isFinal:false})]});
+ assert.equal(s.recognizers[0].live,true);assert.equal(s.retries.length,0);
+ s.result('I like apples');s.recognizers[0].end();s.tick(2000);assert.equal(s.passes(),1);
+});
+
+test("constructor and startup exceptions release the speaker and expose a non-scoring alternative",()=>{
+ for(const options of [{constructorError:true},{startError:true}]){
+  const s=setup(options),v=s.mount(undefined,{onUnavailable(){}});v.mic.fire('click');
+  assert.equal(v.container.children[3].children[2].hidden,false);assert.equal(v.mic.disabled,false);
+  assert(s.contexts.every(c=>c.closed));assert.equal(s.passes(),0);assert.equal(s.retries.length,0);
+ }
+});
+
+test("a late permission grant closes its track even after recovery timeout and disposal",async()=>{
+ const s=setup(),v=s.mount(undefined,{onUnavailable(){}});let resolve,closed=0;
+ s.env.navigator.mediaDevices={getUserMedia:()=>new Promise(r=>{resolve=r;})};
+ v.mic.fire('click');s.recognizers[0].onerror({error:'audio-capture'});
+ v.container.children[3].children.find(n=>n.className==='reading-recovery').fire('click');
+ s.tick(8000);v.view.destroy();resolve({getTracks:()=>[{stop(){closed++;}}]});await Promise.resolve();s.tick(60000);
+ assert.equal(closed,1);assert.equal(s.recognizers.length,1);assert.equal(s.passes(),0);
+});
+
+test("a transient service error preserves confirmed prefix for an explicit retry",()=>{
+ const s=setup({noAudio:true}),v=s.mount();v.mic.fire('click');s.result('I like');
+ s.recognizers[0].onerror({error:'network'});v.mic.fire('click');s.result('apples');s.recognizers[1].end();s.tick(2000);
+ assert.equal(s.passes(),1);assert.equal(s.retries.length,0);
+});
+
 test("recognizer alternatives can pass; display uses the first guess; session shape is stable", () => {
   assert.deepEqual(reading.alternativeTexts([["the board", "the bird"], ["can fly", "can fry"]]), ["the board can fly", "the bird can fly", "the board can fry"]);
   assert.equal(reading.anyMatches("The bird can fly.", [["the boat", "the bird"], ["can fly"]]), true);
@@ -361,10 +455,10 @@ test("recognizer alternatives can pass; display uses the first guess; session sh
 
 test("the hub clears stale permanent silence and the worker precaches every clip", () => {
   const sw = require("../../sw.js"), html = fs.readFileSync(path.join(__dirname, "../../game/index.html"), "utf8");
-  assert.equal(sw.CACHE_VERSION, "v175");
-  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=21"));
+  assert.equal(sw.CACHE_VERSION, "v194");
+  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=22"));
   assert.ok(sw.CORE_SHELL.includes("./assets/study/praise/perfect-v2.wav"));
-  assert.match(html, /english-reading\.js\?v=21/);
+  assert.match(html, /english-reading\.js\?v=22/);
   assert.match(html, /removeItem\('hub2_reading_silent'\)/);
   assert.doesNotMatch(html, /setItem\('hub2_reading_silent'/);
   assert.match(html, /silent: readingSilent/);

@@ -13,7 +13,7 @@ function setup() {
   const ctx = {
     window: {EnglishReading: reading}, readingLevel: {level:1,passes:0}, recordReadingPass: () => false, readingFallback: false, lastReadingIndex: -1, readingRecent: [], rememberReading() {},
     sinceReview: 0, lastReviewKey: "", REVIEW_GAP: 2, BOOK_MAX: 24,
-    SET: 10, DAILY: 100, BANK_SIZES: {reading:16}, SKILL_INFO: {reading:{name:"영어"}},
+    SET: 15, DAILY: 100, BANK_SIZES: {reading:16}, SKILL_INFO: {reading:{name:"영어"}},
     todayKey: () => "2026-9-6", dayNum: () => 100, MASTER_AT:9,
     localStorage:{getItem:k=>stored.get(k) ?? null,setItem:(k,v)=>stored.set(k,v)},
     state:{solved:0,credit:0,level:2,streak:2,wrong:[],skills:{},readingWords:{},parentMode:false},
