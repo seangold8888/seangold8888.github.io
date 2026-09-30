@@ -455,10 +455,10 @@ test("recognizer alternatives can pass; display uses the first guess; session sh
 
 test("the hub clears stale permanent silence and the worker precaches every clip", () => {
   const sw = require("../../sw.js"), html = fs.readFileSync(path.join(__dirname, "../../game/index.html"), "utf8");
-  assert.equal(sw.CACHE_VERSION, "v194");
-  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=22"));
+  assert.equal(sw.CACHE_VERSION, "v196");
+  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=23"));
   assert.ok(sw.CORE_SHELL.includes("./assets/study/praise/perfect-v2.wav"));
-  assert.match(html, /english-reading\.js\?v=22/);
+  assert.match(html, /english-reading\.js\?v=23/);
   assert.match(html, /removeItem\('hub2_reading_silent'\)/);
   assert.doesNotMatch(html, /setItem\('hub2_reading_silent'/);
   assert.match(html, /silent: readingSilent/);

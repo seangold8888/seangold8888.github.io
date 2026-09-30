@@ -2,6 +2,31 @@
 const test = require("node:test"), assert = require("node:assert/strict");
 const fs = require("node:fs"), path = require("node:path"), vm = require("node:vm");
 const reading = require("../../assets/study/english-reading.js");
+test("family picture-book names are Jay and Teo without changing progress or asset IDs", () => {
+  const book = require("../../story/english/books.js").books.find(b => b.id === "picnic");
+  assert.equal(book.title, "Jay and Teo Go on a Picnic");
+  assert.equal(book.cover, "jaei");
+  assert.equal(book.pages[0].art, "jaei");
+  assert.equal(book.pages[3].art, "taeo");
+  assert.equal(book.pages[0].audio, "audio/picnic-1.mp3");
+  assert.doesNotMatch([book.title, ...book.pages.map(p => p.text)].join(" "), /\b(?:Jaei|Taeo)\b/);
+  for (const page of [book.pages[0], book.pages[3], book.pages[4]]) {
+    assert.ok(reading.matches(page.text, page.text));
+    assert.ok(reading.matches(page.text, page.text.replace(/Jay/g, "Jaei").replace(/Teo/g, "Taeo")));
+  }
+  assert.ok(reading.matches("Jay sees a butterfly.", "J sees a butterfly"));
+  assert.ok(reading.matches("Teo runs to the park.", "Theo runs to the park"));
+  assert.ok(!reading.matches("Jay sees a butterfly.", "Mom sees a butterfly"));
+  for (const page of book.pages) {
+    assert.ok(fs.existsSync(path.resolve(__dirname, "../../story/english", page.audio)));
+  }
+  const root = path.resolve(__dirname, "../..");
+  for (const entry of ["game/index.html", "story/english/index.html"]) {
+    const html = fs.readFileSync(path.join(root, entry), "utf8");
+    assert.match(html, /books\.js\?v=4/);
+    assert.match(html, /english-reading\.js\?v=23/);
+  }
+});
 function target() {
   const listeners = {};
   return { addEventListener: (name, fn) => { listeners[name] = fn; },
@@ -317,8 +342,8 @@ test("a reading success advances progress once and earns the fifteenth-answer ti
 });
 test("reading support is cached and its script loads before the study controller", () => {
   const sw = require("../../sw.js");
-  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=22"));
-  assert.ok(html.indexOf('src="assets/study/english-reading.js?v=22"') < html.indexOf("var BANK_SIZES"));
+  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=23"));
+  assert.ok(html.indexOf('src="assets/study/english-reading.js?v=23"') < html.indexOf("var BANK_SIZES"));
   assert.match(html, /\.reading-word\.retry\s*\{[^}]*text-decoration:underline wavy/);
   assert.match(html, /if \(current !== target \|\| isFree\(\) \|\| hasTicket\(\) \|\| target\.answered\) return/);
   assert.match(html, /function stopReading\(\)[\s\S]*?clearTimeout\(answerTimer\)/);

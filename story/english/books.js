@@ -4,13 +4,13 @@
   "use strict";
   const BOOKS = [
     {
-      id: "picnic", title: "Jaei and Taeo Go on a Picnic", titleKo: "재이와 태오의 소풍", stars: 1, cover: "jaei",
+      id: "picnic", title: "Jay and Teo Go on a Picnic", titleKo: "재이와 태오의 소풍", stars: 1, cover: "jaei",
       pages: [
-        ["jaei", "It is a sunny day. Jaei wants a picnic.", "화창한 날이에요. 재이는 소풍을 가고 싶어요."],
+        ["jaei", "It is a sunny day. Jay wants a picnic.", "화창한 날이에요. 재이는 소풍을 가고 싶어요."],
         ["eomma", "Mom makes sandwiches.", "엄마가 샌드위치를 만들어요."],
         ["appa", "Dad carries a big basket.", "아빠가 큰 바구니를 들어요."],
-        ["taeo", "Taeo runs to the park. He is so fast!", "태오가 공원으로 달려가요. 정말 빨라요!"],
-        ["jaei", "Jaei sees a butterfly. It is yellow.", "재이가 나비를 봐요. 노란 나비예요."],
+        ["taeo", "Teo runs to the park. He is so fast!", "태오가 공원으로 달려가요. 정말 빨라요!"],
+        ["jaei", "Jay sees a butterfly. It is yellow.", "재이가 나비를 봐요. 노란 나비예요."],
         ["taeo", "Oh no! A dog takes a sandwich!", "앗! 강아지가 샌드위치를 가져가요!"],
         ["appa", "Dad laughs. We have more sandwiches.", "아빠가 웃어요. 샌드위치가 더 있어요."],
         ["eomma", "We eat together. What a happy day!", "우리는 함께 먹어요. 정말 행복한 날이에요!"]

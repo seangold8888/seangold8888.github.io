@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v194";
+const CACHE_VERSION = "v196";
 const CACHE_PREFIX = "adventure-box-";
 // 큰 그림과 소리(삼국지 배경 200MB+, 저장한 이야기 오디오)는 배포 번호와 따로 둔다.
 // 배포마다 이 캐시를 버리면 기기가 236MB를 다시 받고, "여행 전에 이야기 저장"도 지워졌다.
@@ -41,7 +41,8 @@ const CORE_SHELL = [
   "./math/learning.js?v=29",
   "./math/store.js?v=32",
   "./assets/study/math-bridge.js?v=2",
-  "./assets/study/english-reading.js?v=22",
+  "./assets/study/math-credits.js?v=1",
+  "./assets/study/english-reading.js?v=23",
   "./assets/study/praise/excellent.mp3",
   "./assets/study/praise/perfect-v2.wav",
   "./assets/study/praise/awesome.mp3",
@@ -567,7 +568,7 @@ const CORE_SHELL = [
   "./story/index.html",
   "./story/english/",
   "./story/english/index.html",
-  "./story/english/books.js?v=2",
+  "./story/english/books.js?v=4",
   "./story/english/audio/cinderella-1.mp3",
   "./story/english/audio/cinderella-2.mp3",
   "./story/english/audio/cinderella-3.mp3",
@@ -658,6 +659,21 @@ const PRINCESS_STUDIO_ASSETS = Object.entries({
   `./princess/assets/studio-v3/${category}-${id}.${category === "bg" ? "jpg" : "webp"}`
 ));
 const OPTIONAL_SHELL = [
+  "./math/",
+  "./math/index.html",
+  "./math/app.js?v=35",
+  "./math/style.css?v=20",
+  "./math/playground.css?v=34",
+  "./math/visual.js?v=20",
+  "./math/store.js?v=33",
+  "./math/schedule.js?v=20",
+  "./math/characters.js?v=20",
+  "./math/placement.js?v=20",
+  "./math/avatar.js?v=20",
+  "./math/playground.js?v=30",
+  "./math/story/engine.js?v=1",
+  "./math/focus-music.js?v=31",
+  "./math/assets/playground-scene.webp",
   "./story/english/art/cinderella-1.webp",
   "./story/english/art/cinderella-2.webp",
   "./story/english/art/cinderella-3.webp",
@@ -1174,7 +1190,7 @@ const BACKGROUND_RETRY_MS = 5 * 60 * 1000;
 const AUDIO_FETCH_TIMEOUT_MS = 45000;
 const NAVIGATION_ROUTES = [
   "game", "cards", "story", "multiverse", "avengers", "bori", "hogwarts", "kart", "kart3d",
-  "kedehun", "odyssey", "princess", "sanguo", "slime",
+  "kedehun", "odyssey", "princess", "sanguo", "slime", "math",
 ];
 
 const CARD_ART_FILES = [

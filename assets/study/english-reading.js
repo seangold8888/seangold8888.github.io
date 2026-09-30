@@ -377,6 +377,8 @@
     one: ["1", "won"],
     jaei: ["jay", "jae", "jey", "jaye", "jayi", "j"],
     taeo: ["tao", "tayo", "teo", "tae", "tail", "taylor", "theo"],
+    jay: ["jaei", "jae", "jey", "jaye", "jayi", "j"],
+    teo: ["taeo", "tao", "tayo", "tae", "tail", "taylor", "theo"],
     five: ["5"],
     too: ["to", "two", "2"],
     two: ["to", "too", "tu", "2"],
@@ -725,7 +727,7 @@
       record(env, session, event);
       if (logNode && !disposed) logNode.textContent = session.log.join("\n");
     }
-    log("mount-v22" + (touchIOS ? " ios-quiet-round" : ""));
+    log("mount-v23" + (touchIOS ? " ios-quiet-round" : ""));
 
     function controls() {
       nodes.mic.disabled = disposed || awarded || recovering || !!active || soundActive || !Recognition || env.isSecureContext === false || nav.onLine === false;

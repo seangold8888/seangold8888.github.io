@@ -1166,6 +1166,20 @@
     .hud-chip.ticket strong { font-size: 11px; }
     .card .name { font-size: 16px; }
   }
+  .math-launch { display: grid; grid-template-columns: minmax(0,1fr) 132px; align-items: center; gap: 16px; padding: 18px 22px; border: 1px solid #8ee9c43b; border-radius: 22px; color: #f4fffb; background: linear-gradient(115deg,#15273a,#183a38); text-decoration: none; overflow: hidden; }
+  .math-launch:hover { border-color: #a1f1ce; }
+  .math-launch:focus-visible { outline: 3px solid #ffda70; outline-offset: 4px; }
+  .math-launch-copy { display: grid; gap: 6px; min-width: 0; }
+  .math-launch-copy strong { font-size: clamp(19px,3.6vw,23px); letter-spacing: -.03em; }
+  .math-launch-copy small { font-size: 12px; color: #b3cece; line-height: 1.45; }
+  .math-launch-copy > span { font-size: 13px; color: #d0e8dc; line-height: 1.5; word-break: keep-all; }
+  .math-launch-cta { display: inline-flex; align-items: center; min-height: 44px; color: #b0f6d4; font-size: 15px; font-weight: 850; }
+  .math-launch img { width: 132px; height: 100px; border-radius: 16px; object-fit: cover; }
+  @media (max-width: 640px) {
+    .math-launch { grid-template-columns: minmax(0,1fr) 78px; padding: 14px; gap: 10px; border-radius: 18px; }
+    .math-launch img { width: 78px; height: 100px; }
+    .math-launch-copy > span { font-size: 12px; }
+  }
 </style>
 </head>
 <body>
@@ -1227,7 +1241,15 @@
     <div id="studyCelebration"></div>
     <details class="learning-more"><summary>공부로 자란 공주 보기</summary><div id="princessGrowthHub" aria-label="공주 성장 기록"></div></details>
   </section>
-
+  <a class="math-launch" id="mathPlaygroundLaunch" href="math/?from=hub&amp;quick=1">
+    <span class="math-launch-copy">
+      <small>티켓 없이 언제든 · 오늘의 공부에 합산</small>
+      <strong>재이의 수학놀이터</strong>
+      <span>한 문제, 한 칸! 친구와 놀이터를 건너요.</span>
+      <b class="math-launch-cta" id="mathLaunchAction">가볍게 3문제 →</b>
+    </span>
+    <img src="math/assets/playground-scene.webp" alt="친구들과 함께하는 수학놀이터" width="132" height="100" loading="lazy">
+  </a>
   </section>
 
   <section class="world-deck" id="adventureWorlds">
@@ -1423,8 +1445,9 @@
 <script src="math/learning.js?v=29"></script>
 <script src="math/store.js?v=32"></script>
 <script src="assets/study/math-bridge.js?v=2"></script>
-<script src="assets/study/english-reading.js?v=22"></script>
-<script src="story/english/books.js?v=3"></script>
+<script src="assets/study/math-credits.js?v=1"></script>
+<script src="assets/study/english-reading.js?v=23"></script>
+<script src="story/english/books.js?v=4"></script>
 <script src="assets/bgm/bgm-player.js?v=66"></script>
 <script src="assets/study/play-timer.js?v=1" data-mode="hub"></script>
 <script>
@@ -1746,6 +1769,7 @@
   }
 
   function loadState() {
+    if (typeof window !== 'undefined' && window.HubMathCredits) window.HubMathCredits.flush(localStorage);
     var s = { solved: 0, credit: 0, level: 0, streak: 0, wrong: [], skills: {}, readingWords: {}, parentMode: false, parentModeKnown: true };
     try {
       if (localStorage.getItem('hub2_date') === todayKey()) {
@@ -2649,6 +2673,9 @@
     paintQuiet();
   })();
   function applyState() {
+    var mathLaunchAction = document.getElementById('mathLaunchAction');
+    if (mathLaunchAction) mathLaunchAction.textContent = mathState && mathState.pending && mathState.pending.level === mathState.level
+      ? '하던 놀이 이어하기 →' : '가볍게 3문제 →';
     stopReading();
     syncHubMusic();
     drawDaily();
@@ -2816,6 +2843,9 @@
     if (e.persisted) {
       restoreStudyProgress();
     }
+  });
+  window.addEventListener('storage', function (e) {
+    if (window.HubMathCredits && e.key === window.HubMathCredits.KEY) restoreStudyProgress();
   });
 
   applyState();

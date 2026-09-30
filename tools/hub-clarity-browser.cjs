@@ -48,10 +48,10 @@ const server=http.createServer((req,res)=>{
       const canPlay=!!(scene.credit||scene.active||scene.parent||scene.solved>=100);
       assert.equal(await page.locator('#nextAdventure,.feature-stage').count(),0);
       assert(await page.evaluate(()=>{
-        const study=document.querySelector('#study'),worlds=document.querySelector('#adventureWorlds');
-        const a=study.getBoundingClientRect(),b=worlds.getBoundingClientRect(),grid=study.parentElement.getBoundingClientRect();
-        return study.parentElement.nextElementSibling===worlds&&Math.abs(a.width-grid.width)<2&&b.top>=a.bottom&&b.top-a.bottom<65;
-      }),'study fills the row; games immediately follow with no banner gap');
+        const study=document.querySelector('#study'),math=document.querySelector('#mathPlaygroundLaunch'),worlds=document.querySelector('#adventureWorlds');
+        const a=study.getBoundingClientRect(),m=math.getBoundingClientRect(),b=worlds.getBoundingClientRect(),grid=study.parentElement.getBoundingClientRect();
+        return study.nextElementSibling===math&&study.parentElement.nextElementSibling===worlds&&Math.abs(a.width-grid.width)<2&&m.top>=a.bottom&&b.top>=m.bottom&&b.top-m.bottom<65;
+      }),'study first, unlocked math shortcut second; games follow without a banner');
       assert.equal(await page.evaluate(()=>document.body.classList.contains('locked')),!canPlay);
       assert.equal(await page.locator('.card[aria-disabled="true"]').count(),canPlay?0:10);
       assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'horizontal overflow');
