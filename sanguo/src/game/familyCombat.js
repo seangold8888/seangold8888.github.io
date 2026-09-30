@@ -1,4 +1,51 @@
-import { FAMILY_RANGED } from '../data/familyHeroes.js';
+import { FAMILY_RANGED, FAMILY_TECHNIQUES } from '../data/familyHeroes.js';
+
+export function startFamilyTechnique(heroId, action, now) {
+  const spec = FAMILY_TECHNIQUES[heroId];
+  if (!spec || !['special', 'musou'].includes(action)) return null;
+  const powerful = action === 'musou';
+  return { ...spec, heroId, action, started: now, duration: powerful ? 980 : 900,
+    powerful, budget: powerful ? 110 : 82, next: 0 };
+}
+
+// Drain every crossed beat once, even after a slow frame/hitstop. No timers.
+export function familyTechniquePulses(state, now) {
+  const due = [];
+  if (!state) return due;
+  while (state.next < state.beats.length && now >= state.started + state.beats[state.next] * state.duration) {
+    const index = state.next++;
+    due.push({ ...state, index, weight: state.weights[index], final: index === state.beats.length - 1,
+      range: state.range * (state.powerful ? 1.16 : 1) });
+  }
+  return due;
+}
+
+export function familyTechniqueTargets(pulse, player, enemies) {
+  return enemies.filter(enemy => !enemy.deadAt && !enemy.grabbed && enemy.hp > 0
+    && Math.abs(enemy.x - player.x) <= pulse.range
+    && Math.abs(enemy.lane - player.lane) <= pulse.lane
+    && (pulse.mode === 'bubble' || (enemy.x - player.x) * player.facing >= -24))
+    .sort((a, b) => Math.abs(a.x - player.x) + Math.abs(a.lane - player.lane) * 2
+      - Math.abs(b.x - player.x) - Math.abs(b.lane - player.lane) * 2);
+}
+
+export function familyPulseDamage(pulse, total) {
+  const before = pulse.weights.slice(0, pulse.index).reduce((sum, weight) => sum + weight, 0);
+  return Math.round(total * (before + pulse.weight)) - Math.round(total * before);
+}
+
+export function steerFamilyProjectile(arrow, dt, enemyHeight) {
+  const target = arrow.homingTarget;
+  if (!target || target.deadAt || target.grabbed || target.hp <= 0) return;
+  // Do not circle behind a missed target or teleport onto a different enemy.
+  const distance = (target.x - arrow.x) * Math.sign(arrow.vx);
+  if (distance <= 20) { arrow.homingTarget = null; return; }
+  const travel = Math.max(.08, distance / Math.abs(arrow.vx));
+  const mix = 1 - Math.exp(-12 * Math.max(0, dt));
+  arrow.laneV += (Math.max(-380, Math.min(380, (target.lane - arrow.lane) / travel)) - arrow.laneV) * mix;
+  const aim = (enemyHeight * .53 - arrow.height + 260 * travel * travel) / travel;
+  arrow.vz += (Math.max(-600, Math.min(600, aim)) - arrow.vz) * mix;
+}
 
 // Use the engine's existing gravity, charge, pierce and damage pipeline.
 export function familyProjectile(heroId, player, target, heroHeight, enemyHeight, now) {
@@ -69,7 +116,15 @@ export function drawFamilySpecial(ctx, heroId, x, y, facing, heroHeight, progres
   if (!spec) return;
   const alpha = Math.sin(Math.PI * Math.min(1, progress));
   ctx.save(); ctx.translate(x, y - heroHeight * .48); ctx.scale(facing, 1); ctx.globalAlpha = alpha;
-  const count = heroId === 'yungeon' ? 3 : heroId === 'taeo' ? 3 : 7;
+  // Travelling shots are drawn at their real collision position by the engine.
+  // Here only the casting aura is shown, so decorative balls never look like hits.
+  if (heroId === 'yunchan' || heroId === 'yungeon') {
+    ctx.strokeStyle = spec.color; ctx.lineWidth = powerful ? 5 : 3;
+    ctx.shadowColor = spec.color; ctx.shadowBlur = 15;
+    ctx.beginPath(); ctx.ellipse(0, heroHeight * .44, 45 + progress * 25, 12, 0, 0, Math.PI * 2); ctx.stroke();
+    ctx.restore(); return;
+  }
+  const count = heroId === 'taeo' ? 3 : 7;
   for (let i = 0; i < count; i++) {
     ctx.save();
     const angle = i * Math.PI * 2 / count + progress * 3;
@@ -78,5 +133,30 @@ export function drawFamilySpecial(ctx, heroId, x, y, facing, heroHeight, progres
     drawFamilyProjectile(ctx, { ...spec, charged: powerful }, now + i * 100);
     ctx.restore();
   }
+  ctx.restore();
+}
+
+export function drawFamilyTechniqueImpact(ctx, effect, cameraX, floorY) {
+  const progress = Math.max(0, Math.min(1, 1 - effect.life / effect.max));
+  ctx.save(); ctx.translate(effect.x - cameraX, floorY + effect.lane - 80);
+  ctx.globalAlpha = (1 - progress) * .8; ctx.strokeStyle = effect.color;
+  ctx.shadowColor = effect.color; ctx.shadowBlur = 12; ctx.lineWidth = effect.final ? 6 : 3;
+  if (effect.mode === 'bubble') {
+    // Expanding elliptical wave sits on the same lane as the actual area hit.
+    ctx.beginPath(); ctx.ellipse(0, 40, 30 + effect.range * progress, 20 + 60 * progress, 0, 0, Math.PI * 2); ctx.stroke();
+  } else {
+    ctx.scale(effect.facing, 1);
+    ctx.beginPath(); ctx.arc(45, 0, 30 + 75 * progress, -1.25, 1.25); ctx.stroke();
+    if (effect.final) { ctx.beginPath(); ctx.moveTo(-25, 12); ctx.lineTo(130 + 50 * progress, -20); ctx.stroke(); }
+  }
+  ctx.restore();
+}
+
+export function drawFamilyBind(ctx, enemy, cameraX, floorY, now) {
+  if (now >= (enemy.familyBindUntil || 0)) return;
+  ctx.save(); ctx.translate(enemy.x - cameraX, floorY + enemy.lane - 95);
+  ctx.strokeStyle = '#ffb8e1'; ctx.fillStyle = 'rgba(255,184,225,.08)';
+  ctx.lineWidth = 2; ctx.globalAlpha = Math.min(1, (enemy.familyBindUntil - now) / 160);
+  ctx.beginPath(); ctx.ellipse(0, 0, 55, 95, Math.sin(now * .005) * .06, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
   ctx.restore();
 }

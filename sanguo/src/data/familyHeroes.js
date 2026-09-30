@@ -36,6 +36,19 @@ export const FAMILY_CALLOUTS = {
   yungeon: { special: { name: '불꽃 슛', cry: '너무 쉽잖아!' }, musou: { name: '해트트릭 유성슛', cry: '너무 쉽잖아!' } },
 };
 
+// Total base damage stays at the old special/musou budget (82/110).
+// The distinction is timing, targeting and control, not free extra damage.
+export const FAMILY_TECHNIQUES = {
+  taeo: { mode: 'kick', beats: [.22, .43, .70], weights: [.24, .28, .48], range: 290, lane: 104,
+    tip: '앞쪽 적에게 3연속 발차기 · 마지막 타격으로 밀어내기' },
+  jaei: { mode: 'bubble', beats: [.25, .65], weights: [.4, .6], range: 360, lane: 148,
+    tip: '주변에 방울 파동 2회 · 일반 적을 잠시 속박' },
+  yunchan: { mode: 'swarm', beats: [.22, .44, .66], weights: [.3, .3, .4], range: 760, lane: 160,
+    tip: '반딧불 추적탄 3회 · 이동하는 적을 따라가기' },
+  yungeon: { mode: 'hat-trick', beats: [.22, .44, .68], weights: [.25, .3, .45], range: 820, lane: 160,
+    tip: '불꽃 슛 3연발 · 마지막 공으로 강하게 밀어내기' },
+};
+
 const profile = (theme, color, audioStyle, kinds) => ({ attackTheme: theme, specialTheme: theme, whirlwindTheme: theme, musouTheme: theme, arrowColor: color, hitColor: color, impactStyle: 'burst', audioStyle, kinds });
 export const FAMILY_COMBAT_PROFILES = {
   taeo: profile('lightning', '#74cfff', 'dual', { 1: 'thrust', 2: 'reverse', 3: 'wide', heavy: 'overhead', special: 'reverse' }),

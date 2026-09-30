@@ -113,9 +113,14 @@ const root = path.resolve(__dirname, '..');
           reset(action === 'ranged' || action === 'charged' ? 340 : 110);
           if (action === 'musou') q.player.rage = 100;
           q.beginAttack(action === 'charged' ? 'ranged' : action, clock, { charged: action === 'charged' });
-          const kinds = new Set();
-          for (let t = 16; t <= 1200; t += 16) { q.update(.016, clock + t); q.arrows.forEach(a => kinds.add(a.kind)); }
-          results[action] = { damage: 10000 - q.enemies[0].hp, kinds: [...kinds], x: q.player.x };
+          const kinds = new Set(), strikes = []; let lastHp = q.enemies[0].hp;
+          for (let t = 16; t <= 1600; t += 16) {
+            q.update(.016, clock + t); q.arrows.forEach(a => kinds.add(a.kind));
+            if (q.enemies[0].hp < lastHp) strikes.push({ t, damage: lastHp - q.enemies[0].hp });
+            lastHp = q.enemies[0].hp;
+          }
+          results[action] = { damage: 10000 - q.enemies[0].hp, kinds: [...kinds], x: q.player.x, strikes,
+            pulses: q.player.familyTechnique?.next || 0, bindUntil: q.enemies[0].familyBindUntil || 0 };
         }
         reset(); window.__familyClock = clock;
         q.beginAttack('special', clock); q.update(.016, clock + 450); q.render(clock + 450);
@@ -125,6 +130,11 @@ const root = path.resolve(__dirname, '..');
       assert.ok(results.charged.damage > results.ranged.damage, id + ' charge bonus');
       assert.ok(results.ranged.kinds.includes(FAMILY_RANGED[id].kind), id + ' own projectile');
       assert.ok(results.dash.x > 420, id + ' dash movement');
+      for (const action of ['special', 'musou']) {
+        assert.equal(results[action].pulses, id === 'jaei' ? 2 : 3, id + ' drains all technique beats');
+        assert.equal(results[action].strikes.length, id === 'jaei' ? 2 : 3, id + ' actual repeated damage');
+      }
+      if (id === 'jaei') assert.ok(results.special.bindUntil > 0, 'bubble bind is applied');
       await page.screenshot({ path: path.join(output, `${id}-special.png`) });
       // Real touch/keyboard events use the shared input path, not direct beginAttack.
       await page.evaluate(() => { __qa.player.actionUntil = 0; __qa.player.action = 'idle'; __qa.input.clear(); });

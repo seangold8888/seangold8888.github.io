@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v164";
+const CACHE_VERSION = "v165";
 const CACHE_PREFIX = "adventure-box-";
 // 큰 그림과 소리(삼국지 배경 200MB+, 저장한 이야기 오디오)는 배포 번호와 따로 둔다.
 // 배포마다 이 캐시를 버리면 기기가 236MB를 다시 받고, "여행 전에 이야기 저장"도 지워졌다.
@@ -827,6 +827,10 @@ const OPTIONAL_SHELL = [
   "./sanguo/",
   "./sanguo/index.html",
   "./sanguo/menu-v4.css",
+  "./sanguo/voices.html",
+  "./sanguo/voices.css",
+  "./sanguo/src/ui/voicePreview.js",
+  "./sanguo/audio/warrior-callouts-eleven-v2/manifest.json",
   "./sanguo/game-controls.css",
   "./sanguo/mobile-hud.css",
   "./sanguo/src/main.js",
@@ -882,6 +886,35 @@ const SANGUO_RUNTIME_ASSETS = [
   "./sanguo/audio/hero-callouts-eleven-v1/jaei-callout-v1.wav",
   "./sanguo/audio/hero-callouts-eleven-v1/yunchan-callout-v1.wav",
   "./sanguo/audio/hero-callouts-eleven-v1/yungeon-callout-v2.wav",
+  "./sanguo/audio/warrior-callouts-eleven-v2/bajie-special-v2.wav",
+  "./sanguo/audio/warrior-callouts-eleven-v2/caocao-special-v2.wav",
+  "./sanguo/audio/warrior-callouts-eleven-v2/erlangshen-special-v2.wav",
+  "./sanguo/audio/warrior-callouts-eleven-v2/euljimundeok-special-v2.wav",
+  "./sanguo/audio/warrior-callouts-eleven-v2/ganggamchan-special-v2.wav",
+  "./sanguo/audio/warrior-callouts-eleven-v2/ganning-special-v2.wav",
+  "./sanguo/audio/warrior-callouts-eleven-v2/guanyu-special-v2.wav",
+  "./sanguo/audio/warrior-callouts-eleven-v2/honghaier-special-v2.wav",
+  "./sanguo/audio/warrior-callouts-eleven-v2/huanggai-special-v2.wav",
+  "./sanguo/audio/warrior-callouts-eleven-v2/huangzhong-special-v2.wav",
+  "./sanguo/audio/warrior-callouts-eleven-v2/kwonyul-special-v2.wav",
+  "./sanguo/audio/warrior-callouts-eleven-v2/liubei-special-v2.wav",
+  "./sanguo/audio/warrior-callouts-eleven-v2/luxun-special-v2.wav",
+  "./sanguo/audio/warrior-callouts-eleven-v2/machao-special-v2.wav",
+  "./sanguo/audio/warrior-callouts-eleven-v2/nezha-special-v2.wav",
+  "./sanguo/audio/warrior-callouts-eleven-v2/simayi-special-v2.wav",
+  "./sanguo/audio/warrior-callouts-eleven-v2/sunquan-special-v2.wav",
+  "./sanguo/audio/warrior-callouts-eleven-v2/sunshangxiang-special-v2.wav",
+  "./sanguo/audio/warrior-callouts-eleven-v2/taishici-special-v2.wav",
+  "./sanguo/audio/warrior-callouts-eleven-v2/tieshangongzhu-special-v2.wav",
+  "./sanguo/audio/warrior-callouts-eleven-v2/wujing-special-v2.wav",
+  "./sanguo/audio/warrior-callouts-eleven-v2/wukong-special-v2.wav",
+  "./sanguo/audio/warrior-callouts-eleven-v2/xiahoudun-special-v2.wav",
+  "./sanguo/audio/warrior-callouts-eleven-v2/xuchu-special-v2.wav",
+  "./sanguo/audio/warrior-callouts-eleven-v2/yisunsin-special-v2.wav",
+  "./sanguo/audio/warrior-callouts-eleven-v2/zhangliao-special-v2.wav",
+  "./sanguo/audio/warrior-callouts-eleven-v2/zhaoyun-special-v2.wav",
+  "./sanguo/audio/warrior-callouts-eleven-v2/zhouyu-special-v2.wav",
+  "./sanguo/audio/warrior-callouts-eleven-v2/zhugeliang-special-v2.wav",
   "./sanguo/art/side-scroller/boss-haengju-vanguard-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/boss-khitan-vanguard-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/boss-myeongnyang-vanguard-painted-sheet-v1.png",

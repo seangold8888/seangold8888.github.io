@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#142226">
+  <title>장수 함성 듣기 · 별빛 연대기</title>
+  <link rel="stylesheet" href="./voices.css">
+  <script type="module" src="./src/ui/voicePreview.js"></script>
+</head>
+<body>
+  <main>
+    <header>
+      <a href="./">← 게임으로</a>
+      <h1>장수 함성 듣기</h1>
+      <p>새 필살기 함성을 들어보고, 마음에 드는 장수의 목소리를 선택하세요.</p>
+      <p>장비의 “장판뇌후!”는 지금 목소리를 유지합니다. 돌진·무쌍 음성은 기존대로 나옵니다.</p>
+    </header>
+    <nav aria-label="이야기 선택">
+      <button type="button" data-work="all" aria-pressed="true">전체</button>
+      <button type="button" data-work="sanguo" aria-pressed="false">삼국지</button>
+      <button type="button" data-work="xiyou" aria-pressed="false">서유기</button>
+      <button type="button" data-work="korea" aria-pressed="false">한국 명장</button>
+    </nav>
+    <p id="voice-status" role="status" aria-live="polite">목소리를 준비하고 있어요.</p>
+    <div id="voice-grid"></div>
+  </main>
+</body>
+</html>

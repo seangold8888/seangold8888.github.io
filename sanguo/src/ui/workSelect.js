@@ -5,7 +5,7 @@ import { difficultyLevels, getDifficulty, setDifficulty } from '../game/difficul
 import { getCombatGrowth, getHeroProgress, nextPerk, weaponEnhanceText } from '../game/progression.js';
 import { heroHasArt } from '../game/sideScroller.js';
 import { dashSkill } from '../game/dashSkills.js';
-import { FAMILY_HERO_IDS, FAMILY_FICTION_NOTE, isFamilyHero } from '../data/familyHeroes.js';
+import { FAMILY_HERO_IDS, FAMILY_FICTION_NOTE, FAMILY_TECHNIQUES, FAMILY_CALLOUTS, isFamilyHero } from '../data/familyHeroes.js';
 
 const sheets = {guanyu:'guanyu-painted-sheet-v4',tieshangongzhu:'tieshangongzhu-painted-sheet-v2',erlangshen:'erlangshen-hero-painted-sheet-v1'};
 const portraitFor = id => 'art/side-scroller/' + (sheets[id] || id + '-painted-sheet-v1') + '.png';
@@ -48,7 +48,7 @@ export function showWorkSelect(root,{onConfirm,onBack}) {
     root.innerHTML=`
       <div class="screen command-menu"><main class="cm-shell">
         <header class="cm-header">
-          <div><div class="cm-eyebrow">별빛 연대기 · 출진 준비</div><h1>${WORKS[work]?.name || '삼국지'}</h1><p>전장을 고르고, 함께할 장수를 선택하세요.</p></div>
+          <div><div class="cm-eyebrow">별빛 연대기 · 출진 준비</div><h1>${WORKS[work]?.name || '삼국지'}</h1><p>전장을 고르고, 함께할 장수를 선택하세요.</p><a class="cm-voice-link" href="./voices.html">장수 함성 듣기 →</a></div>
           <nav class="cm-worlds" aria-label="고전 선택">${Object.values(WORKS).map(w=>`<button type="button" data-work="${w.id}" aria-pressed="${w.id===work}" ${w.ready?'':'disabled'}>${w.name}${w.ready?'':' · 준비 중'}</button>`).join('')}</nav>
         </header>
 
@@ -67,7 +67,7 @@ export function showWorkSelect(root,{onConfirm,onBack}) {
             <div class="cm-stage-brief ${stageKey==='hulao'?'painted':''}"><div class="cm-eyebrow">${selected.year || '고전 속 이야기'} · 선택한 전장</div><h2>${selected.title}</h2><p>적장 · ${selected.bossName || selected.boss || '전장의 적장'}</p></div>
             <div class="cm-section-heading"><h2 id="cm-hero-heading"><span>02</span> ${familyMode?'우리 영웅 선택':rosterMode?'대표 장수 선택':'장수 선택'}</h2><small>${visibleHeroes.filter(heroHasArt).length}명 출전 가능</small></div>
             <nav class="cm-factions cm-parties" aria-label="영웅 모음 선택"><button type="button" data-party="story" aria-pressed="${!familyMode}">이야기 장수</button><button type="button" data-party="family" aria-pressed="${familyMode}">우리 영웅 <small>태오 · 재이 · 윤찬 · 윤건</small></button></nav>
-            ${familyMode?`<p class="cm-family-note">${FAMILY_FICTION_NOTE}</p>`:''}
+            ${familyMode?`<p class="cm-family-note">${FAMILY_FICTION_NOTE}</p><p class="cm-family-note"><b>${FAMILY_CALLOUTS[heroId]?.special.name || ''}</b> · ${FAMILY_TECHNIQUES[heroId]?.tip || ''}<br>필살 버튼 · 기운 100이면 무쌍으로 강화</p>`:''}
             ${rosterMode?`<nav class="cm-factions" aria-label="대표 장수 진영 필터">${[['all','전체'],['shu','촉'],['wei','위'],['wu','오']].map(([key,label])=>`<button type="button" data-faction="${key}" aria-pressed="${key===faction}">${label}</button>`).join('')}</nav>`:''}
             <div class="cm-heroes" id="hero-grid" data-roster="${rosterMode}">${visibleHeroes.map(id=>{
               const {p,s}=infoFor(id), ready=heroHasArt(id), level=getHeroProgress(id).level;

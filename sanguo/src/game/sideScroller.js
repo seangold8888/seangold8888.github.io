@@ -13,7 +13,7 @@ import { BATTLE_CRY_PACKS, FEMALE_BATTLE_CRY_SEGMENTS, battleCryProfile } from '
 import { elevenVoiceFiles } from './elevenVoicePacks.js';
 import { heroRenderScale } from './heroRenderScale.js';
 import { FAMILY_HERO_IDS, FAMILY_RANGED, FAMILY_COMBAT_PROFILES, FAMILY_CALLOUTS, isFamilyHero } from '../data/familyHeroes.js';
-import { familyProjectile, drawFamilyProjectile, drawFamilySpecial } from './familyCombat.js';
+import { familyProjectile, drawFamilyProjectile, drawFamilySpecial, startFamilyTechnique, familyTechniquePulses, familyTechniqueTargets, familyPulseDamage, steerFamilyProjectile, drawFamilyTechniqueImpact, drawFamilyBind } from './familyCombat.js';
 
 const CANVAS_UI_FONT = '"Pretendard Variable", Pretendard, "Noto Sans KR", "Malgun Gothic", sans-serif';
 const CANVAS_IMPACT_FONT = CANVAS_UI_FONT;
@@ -1889,6 +1889,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     if (type === 'attack') player.attackStep = (now < player.comboUntil ? player.comboStep % 3 : 0) + 1;
     cameraKick = Math.max(cameraKick, musou || type === 'special' ? .085 : type === 'whirlwind' ? .065 : type === 'heavy' || type === 'dash' || (type === 'attack' && player.attackStep === 3) ? .038 : .012);
     player.action = type; player.rangedCharged = type === 'ranged' && charged; player.actionStarted = now; player.actionDuration = duration; player.actionUntil = now + duration; player.hitDone = false;
+    player.familyTechnique = startFamilyTechnique(heroId, type, now);
     if (heroId === 'wukong' && ['special', 'musou'].includes(type)) {
       const cloneCount = musou ? 6 : 4;
       for (let i = 0; i < cloneCount; i++) {
@@ -1897,7 +1898,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       }
     }
     player.combo = now < player.comboUntil ? player.combo + 1 : 1; player.comboStep = (player.comboStep % 3) + 1; player.comboUntil = now + 1150;
-    if (type !== 'ranged') addSlash(type, player.attackStep);
+    if (type !== 'ranged' && !player.familyTechnique) addSlash(type, player.attackStep);
   }
   // 난이도의 rage 배수가 정의만 되고 여태 안 붙어 있었다 — 수련은 무쌍이
   // 빨리 차야 이야기 진행이 편하고, 사지는 천천히 차야 아껴 쓰게 된다.
@@ -1909,8 +1910,56 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     floatText(`+${amount}`, player.x, player.lane, '#76e1b4', .92);
   }
 
+  function resolveFamilyTechnique(now) {
+    const state = player.familyTechnique;
+    if (!state || player.action !== state.action || player.actionStarted !== state.started) return;
+    for (const pulse of familyTechniquePulses(state, now)) {
+      const targets = familyTechniqueTargets(pulse, player, enemies);
+      const baseDamage = familyPulseDamage(pulse, pulse.budget * heroTuning.power + (now < player.weaponBoost ? 18 : 0));
+      const color = familyRanged.color;
+      if (['swarm', 'hat-trick'].includes(pulse.mode)) {
+        const target = targets.length ? targets[pulse.index % targets.length] : null;
+        const shot = familyProjectile(heroId, player, target, standingHeroHeight(1 + player.lane * .0014), Math.min(300, height * .47), now);
+        arrows.push({ ...shot, familyTechnique: true, final: pulse.final, damage: baseDamage / heroTuning.arrow,
+          homingTarget: pulse.mode === 'swarm' ? target : null, charged: false, pierce: 0 });
+        audio.swing(pulse.final, combatProfile.audioStyle);
+      } else {
+        effects.push({ familyTechnique: true, mode: pulse.mode, x: player.x, lane: player.lane,
+          facing: player.facing, range: pulse.range, color, final: pulse.final, life: .42, max: .42 });
+        for (const enemy of targets) {
+          const critical = growth.critChance > 0 && Math.random() < growth.critChance;
+          const damage = Math.round(baseDamage * (critical ? 1.65 : 1));
+          enemy.hp = Math.max(0, enemy.hp - damage);
+          enemy.hitUntil = Math.max(enemy.hitUntil || 0, now + (pulse.final ? 350 : 150));
+          if (pulse.mode === 'bubble') enemy.familyBindUntil = Math.max(enemy.familyBindUntil || 0, now + (enemy.boss ? 140 : pulse.final ? 700 : 420));
+          const direction = pulse.mode === 'bubble' ? Math.sign(enemy.x - player.x) || player.facing : player.facing;
+          enemy.x += direction * (pulse.final ? pulse.mode === 'kick' ? 110 : 35 : 8);
+          constrainEnemy(enemy, combatBounds(worldWidth, waveGate, combatLocked));
+          addImpact(enemy.x, enemy.lane, pulse.final, enemy.hp <= 0);
+          floatText(`${critical ? '✦ ' : ''}${damage}`, enemy.x, enemy.lane, color, pulse.final ? 1.14 : .96);
+          if (enemy.hp <= 0) { enemy.deadAt = now; player.ko++; rewardKoHeal(); gainRage(16); audio.enemyVoice(true, 0, enemy); }
+          else audio.enemyVoice(false, 0, enemy);
+        }
+        if (targets.length) {
+          audio.hit(pulse.final, state.action); gainRage(targets.length * 3);
+          shake = Math.max(shake, pulse.final ? 12 : 4);
+          hitstopUntil = Math.max(hitstopUntil, now + (pulse.final ? 64 : 28));
+          if (pulse.final) slowUntil = Math.max(slowUntil, now + 190);
+        }
+        // Break a crate only once during a cast, not once per pulse.
+        if (pulse.final) for (const prop of props) {
+          if (!prop.collected && prop.type === 'crate' && Math.abs(prop.x - player.x) <= pulse.range
+            && Math.abs(prop.lane - player.lane) <= pulse.lane && (pulse.mode === 'bubble' || (prop.x - player.x) * player.facing >= 0)) {
+            prop.hp--; if (prop.hp <= 0) { prop.type = prop.drop; prop.drop = null; addImpact(prop.x, prop.lane, true, false); }
+          }
+        }
+      }
+    }
+  }
+
   function resolveAttack(now) {
     const action = player.action;
+    if (player.familyTechnique && ['special', 'musou'].includes(action)) return;
     if (action === 'dash') {
       // Swept collision: even a fast dash must hit enemies between frame positions.
       const targets = collectDashHits(player, enemies, dashTechnique, now);
@@ -2025,6 +2074,8 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     const bounds = combatBounds(worldWidth, waveGate, combatLocked);
     // Also recover live units displaced by asynchronous counters/boss attacks.
     for (const enemy of enemies) if (!enemy.deadAt) constrainEnemy(enemy, bounds);
+    // Drain scheduled family strikes before an expired animation returns to idle.
+    resolveFamilyTechnique(now);
     const axis = input.axis(), laneAxis = input.axisY();
     if (axis || laneAxis) {
       audio.startMusic();
@@ -2113,17 +2164,19 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
 
     for (const arrow of arrows) {
       if (arrow.hit) continue;
+      steerFamilyProjectile(arrow, dt, Math.min(300, height * .47));
       arrow.life -= dt; arrow.x += arrow.vx * dt; arrow.lane += arrow.laneV * dt; arrow.height += arrow.vz * dt; arrow.vz -= 520 * dt;
       if (now >= arrow.trailAt) { arrow.trailAt = now + 22; for (let i = 0; i < 3; i++) dust.push({ x: arrow.x - Math.sign(arrow.vx) * (12 + i * 17), y: ground() + arrow.lane - arrow.height + (Math.random() - .5) * 12, vx: -Math.sign(arrow.vx) * (55 + Math.random() * 130), vy: (Math.random() - .5) * 80, life: .18 + Math.random() * .24, max: .42, color: i ? arrow.color : '#ffffff', glow: true, element: i % 2 ? 'shard' : 'droplet', rotation: Math.random() * 6.28 }); }
       for (const enemy of enemies) {
         if (enemy.deadAt || enemy.grabbed || arrow.hitTargets?.has(enemy) || Math.abs(enemy.x - arrow.x) > 58 || Math.abs(enemy.lane - arrow.lane) > 48 || arrow.height < 40 || arrow.height > Math.min(300, height * .47) * .95) continue;
         const arrowCritical = growth.critChance > 0 && Math.random() < growth.critChance * .75;
-        const arrowDamage = Math.round(((arrow.damage ?? 43) * heroTuning.arrow * (arrow.charged ? 1.6 : 1) + (now < player.weaponBoost ? 16 : 0)) * (arrowCritical ? 1.65 : 1));
+        const arrowDamage = Math.round(((arrow.damage ?? 43) * heroTuning.arrow * (arrow.charged ? 1.6 : 1) + (!arrow.familyTechnique && now < player.weaponBoost ? 16 : 0)) * (arrowCritical ? 1.65 : 1));
         enemy.hp = Math.max(0, enemy.hp - arrowDamage); if (enemy.hp > 0) audio.enemyVoice(false, Math.max(-.8, Math.min(.8, (enemy.x - player.x) / 600)), enemy);
         floatText(enemy.boss ? `${arrowCritical ? '✦ ' : ''}◆ ${arrowDamage}` : arrowCritical ? `✦ ${arrowDamage}` : arrowDamage, enemy.x, enemy.lane, enemy.boss ? bossProfile.glow : arrowCritical ? '#fff0a6' : arrow.color, enemy.boss ? 1.16 : arrowCritical ? 1.12 : 1);
         enemy.hitUntil = now + 380;
         const projectileDirection = Math.sign(arrow.vx);
-        enemy.x += arrow.kind === 'lasso' ? -projectileDirection * 92 : projectileDirection * (arrow.kind === 'ring' ? 44 : 58);
+        enemy.x += arrow.kind === 'lasso' ? -projectileDirection * 92 : projectileDirection * (arrow.familyTechnique ? arrow.final ? 100 : 12 : arrow.kind === 'ring' ? 44 : 58);
+        constrainEnemy(enemy, bounds);
         arrow.hitTargets ??= new Set(); arrow.hitTargets.add(enemy);
         if ((arrow.pierce || 0) > 0) arrow.pierce -= 1; else { arrow.hit = true; arrow.life = 0; }
         addImpact(enemy.x, enemy.lane, true, enemy.hp <= 0);
@@ -2206,6 +2259,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     let living = 0, boss = null;
     for (const enemy of enemies) {
       if (enemy.deadAt) continue; living += 1; if (enemy.boss) boss = enemy;
+      if (now < (enemy.familyBindUntil || 0)) { enemy.action = 'hit'; constrainEnemy(enemy, bounds); continue; }
       // 격노: 속도만 올리면 '조금 빨라졌네'로 끝난다. 새 패턴(충격파)이
       // 나와야 2페이즈가 다른 싸움으로 읽힌다. 충격파는 점프로만 피한다.
       if (enemy.boss && !enemy.enraged && enemy.hp <= enemy.maxHp * .5) { enemy.enraged = true; enemy.speed *= 1.16; enemy.attackAt = now + 260; enemy.shockwaveAt = now + 1900; bossHud.setPhase('폭주 · 결전 2단계', true); showBanner(hudRoot, bossLabel + ' 폭주', touchMode ? '땅을 가르는 충격파 — 스틱을 위로 튕겨 점프' : '땅을 가르는 충격파 — W 두 번 눌러 점프'); shake = Math.max(shake, 12); colorFlash = Math.max(colorFlash, .12); slowUntil = Math.max(slowUntil, now + 420); }
@@ -2236,7 +2290,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
         setTimeout(() => {
           const strikeNow = performance.now();
           const hitRange = enemy.role === 'archer' ? 520 : enemy.boss ? bossProfile.hitRange : 185;
-          if (ended || enemy.deadAt || enemy.grabbed || Math.abs(player.x - enemy.x) > hitRange || Math.abs(player.lane - enemy.lane) > 62) return;
+          if (ended || enemy.deadAt || enemy.grabbed || strikeNow < (enemy.familyBindUntil || 0) || Math.abs(player.x - enemy.x) > hitRange || Math.abs(player.lane - enemy.lane) > 62) return;
           if (enemy.role === 'archer' || (enemy.boss && bossProfile.kind === 'celestial')) {
             const drawH = Math.min(300, height * .47), distance = Math.max(180, Math.abs(player.x - enemy.x)), travel = distance / (enemy.boss ? 1120 : 980);
             enemyArrows.push({ x: enemy.x + enemy.facing * 56, lane: enemy.lane, height: drawH * (enemy.boss ? .68 : .62), vx: enemy.facing * (enemy.boss ? 1120 : 980), laneV: (player.lane - enemy.lane) / travel, vz: ((drawH * .56) - drawH * (enemy.boss ? .68 : .62) + 260 * travel * travel) / travel, life: 1.45, max: 1.45, hit: false, trailAt: strikeNow, phase: Math.random() * Math.PI * 2, color: enemy.boss ? bossProfile.glow : '#ff6e63', damage: enemy.boss ? 12 : 8 });
@@ -2764,7 +2818,11 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
         if (player.action === 'ranged') heroFrame = familyRanged ? (actionProgress < .28 ? 0 : actionProgress < .6 ? 2 : 3) : actionProgress < .22 ? 0 : actionProgress < .38 ? 1 : actionProgress < .48 ? 2 : 3;
         else if (player.action === 'run') heroFrame = Math.floor(now / (player.mounted ? 105 : 135)) % 2;
         else if (player.action === 'counter') heroFrame = 2;
-        else if (attacking) heroFrame = actionProgress < .28 ? 0 : actionProgress < .58 ? 2 : 3;
+        else if (attacking) {
+          const activeTechnique = player.familyTechnique?.action === player.action && player.familyTechnique.started === player.actionStarted;
+          const beatProgress = activeTechnique ? (actionProgress * player.familyTechnique.beats.length) % 1 : actionProgress;
+          heroFrame = beatProgress < .28 ? 0 : beatProgress < .58 ? 2 : 3;
+        }
         const strideBob = player.action === 'run' ? Math.abs(Math.sin(now * (player.mounted ? .018 : .023))) * (player.mounted ? 5 : 4) : 0;
         const attackLunge = attacking && !['counter', 'ranged'].includes(player.action) ? Math.sin(Math.PI * actionProgress) * (player.mounted ? 22 : player.action === 'dash' ? 34 : 13) * player.facing : 0;
         // 활 모션 — 스프라이트 프레임만으론 밋밋하다. 시위를 당기는 동안
@@ -2889,6 +2947,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       } else {
         const enemy = actor.enemy, sinceDeath = enemy.deadAt ? (now - enemy.deadAt) / 700 : 0; if (sinceDeath >= 1) continue;
         const baseY = floorY + enemy.lane; drawShadow(enemy.x, baseY + 5, enemy.boss ? 1.48 : enemy.role === 'heavy' ? 1.05 : .9, 0.40 * (1 - sinceDeath));
+        if (!enemy.deadAt) drawFamilyBind(ctx, enemy, cameraX, floorY, now);
         // 부장 지휘권: 부장 발밑 넓은 군기 원 + 지휘받는 병사 발밑 작은 고리.
         // '부장 먼저'가 눈으로 읽혀야 우선순위 선택이 게임플레이가 된다.
         if (!enemy.deadAt && enemy.boss && !enemy.trueBoss) {
@@ -3108,6 +3167,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       ctx.strokeStyle = '#b94732'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-23, 0); ctx.lineTo(-35, -9); ctx.moveTo(-23, 0); ctx.lineTo(-35, 9); ctx.stroke(); ctx.restore();
     }
     for (const effect of effects) {
+      if (effect.familyTechnique) { drawFamilyTechniqueImpact(ctx, effect, cameraX, floorY); continue; }
       const t = 1 - effect.life / effect.max, x = effect.x - cameraX;
       const radius = ((effect.kind === 'rake' ? 166 : effect.kind === 'wide' ? 188 : effect.kind === 'spin' ? 176 : effect.heavy ? 170 : 142) + effect.layer * 18) * (effect.scale || 1);
       const starts = { sweep: -1.62, reverse: .65, wide: -2.35, overhead: -2.75, spin: -2.65, rake: -1.12 }, spans = { sweep: 2.18, reverse: -2.1, wide: 3.45, overhead: 2.85, spin: effect.musou ? 5.7 : 4.75, rake: 1.02 };
