@@ -695,6 +695,7 @@
   }
 
   function resetBattleFlow() {
+    if (window.CardFamilyVoice) window.CardFamilyVoice.stop();
     if (elementTheater) elementTheater.reset();
     if (combatCinema) combatCinema.reset();
     battleSession += 1;
@@ -744,6 +745,10 @@
     if (dom.arena) dom.arena.classList.toggle("bg-forest", selectedCard.type === "magic" || selectedCard.type === "monster");
     window.CardAudio.prime();
     const enemy = expedition ? expedition.enemy : pickEnemy();
+    if (window.CardFamilyVoice) {
+      window.CardFamilyVoice.warm(selectedCard.id);
+      window.CardFamilyVoice.warm(enemy.id);
+    }
     dom.campaignBattleLabel.hidden = !expedition;
     dom.campaignBattleLabel.textContent = expedition ? expedition.label : "";
     dom.leaveBattleButton.textContent = expedition ? "← 원정 지도" : "← 카드 바꾸기";
@@ -1155,6 +1160,7 @@
 
     return {
       actor: actor,
+      cardId: side && side.card ? side.card.id : '',
       target: outcome === "support" && kind === "aura"
         ? actor
         : (attackEvent.target || (actor === "player" ? "enemy" : "player")),
@@ -3071,6 +3077,7 @@
     if (techniquePlan && window.CardAudio.techniqueLaunch) {
       window.CardAudio.techniqueLaunch(techniquePlan);
     }
+    if (techniquePlan && window.CardFamilyVoice) window.CardFamilyVoice.play(techniquePlan);
     const contactTailMs = techniquePlan &&
       (techniquePlan.actualImpact || techniquePlan.outcome === "blocked")
       ? 460
@@ -3175,6 +3182,7 @@
   }
 
   function finishBattle() {
+    if (window.CardFamilyVoice) window.CardFamilyVoice.stop();
     settleTactics();
     const session = battleSession;
     busy = true;

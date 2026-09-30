@@ -1899,8 +1899,15 @@
       return audio;
     },
     isMuted: function () { return muted; },
+    // Recorded voices bypass synthesized material distortion but share the master mix.
+    connectVoice: function (node) {
+      if (!master || muted || pageHidden) return false;
+      node.connect(master);
+      return true;
+    },
     setMuted: function (value) {
       muted = Boolean(value);
+      if (muted && window.CardFamilyVoice) window.CardFamilyVoice.stop();
       try {
         localStorage.setItem("cards_muted", muted ? "1" : "0");
       } catch (error) {}
@@ -1938,11 +1945,15 @@
     },
     setPageHidden: function (hidden) {
       pageHidden = Boolean(hidden);
+      if (pageHidden && window.CardFamilyVoice) window.CardFamilyVoice.stop();
       if (pageHidden) requestAudioRecovery();
       ensureMusicScheduler();
       return pageHidden;
     },
-    requestRecovery: requestAudioRecovery,
+    requestRecovery: function () {
+      if (window.CardFamilyVoice) window.CardFamilyVoice.stop();
+      requestAudioRecovery();
+    },
     bgmConfig: Object.freeze({
       collectionBpm: COLLECTION_BPM,
       battleBpm: BATTLE_BPM,

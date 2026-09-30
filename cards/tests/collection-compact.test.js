@@ -244,12 +244,13 @@ test("양쪽 전투 카드가 같은 전투 정보 렌더러를 사용하고 카
   assert.match(app, /syncBattleCard\(dom\.enemyCardSlot/);
   assert.match(app, /CardView\.create\(side\.card, \{[\s\S]*?compact: true/);
   assert.match(viewSource, /else if \(options\.compact\) \{[\s\S]*?crown, facts, art/);
-  assert.equal((html.match(/\?v=70/g) || []).length, 10);
-  assert.match(html, /js\/app\.js\?v=72/);
+  assert.equal((html.match(/\?v=70/g) || []).length, 9);
+  assert.match(html, /js\/audio\.js\?v=71/);
+  assert.match(html, /js\/app\.js\?v=73/);
   assert.match(html, /js\/tactics\.js\?v=1/);
   assert.match(html, /bgm-player\.js\?v=66/);
   assert.doesNotMatch(html, /\?v=(?:25|26|27|28|29|30|31)/);
-  assert.equal((sw.match(/\.\/cards\/[^"\n]+\?v=70/g) || []).length, 10);
+  assert.equal((sw.match(/\.\/cards\/[^"\n]+\?v=70/g) || []).length, 9);
   assert.equal((sw.match(/\.\/cards\/js\/tactics\.js\?v=1/g) || []).length, 1);
 });
 
