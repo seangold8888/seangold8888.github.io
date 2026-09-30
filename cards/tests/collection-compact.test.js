@@ -103,6 +103,25 @@ test("collection uses only element identity, without automatic-trait badges", ()
   assert.match(css,/#collectionGrid \.card-gallery-item \{[^}]*aspect-ratio: 5 \/ 7/);
   assert.match(css,/#collectionGrid \.story-card.is-collection-compact \{[^}]*height: 100%/);
 });
+test("open and locked collection cards use explicit labels without covering the portrait or disabling details", () => {
+  const view = loadCardView(), card = data.cards.find(c => c.id === "redhood");
+  for (const locked of [true, false]) {
+    const rendered = view.create(card, {interactive: true, compact: true, collectionCompact: true, locked});
+    const nodes = walk(rendered);
+    assert.equal(rendered.classList.contains("is-locked"), locked);
+    assert.equal(nodes.filter(n => hasClass(n, "collection-state-badge")).length, 1);
+    assert.equal(nodes.find(n => hasClass(n, "collection-state-badge")).textContent, locked ? "🔒 잠긴 카드" : "✓ 오픈 카드");
+    assert.equal(nodes.some(n => hasClass(n, "lock-veil")), false);
+    assert.equal(rendered.getAttribute("aria-haspopup"), "dialog");
+    assert.match(rendered.getAttribute("aria-label"), locked ? /잠긴 카드/ : /오픈 카드/);
+    assert.equal(rendered.getAttribute("aria-disabled"), null, "잠긴 카드도 상세를 볼 수 있다");
+  }
+  assert.ok(walk(view.create(card, {locked:true})).some(n => hasClass(n, "lock-veil")), "기존 상세/전투 렌더링 보존");
+  assert.match(css, /\.story-card\.is-locked \.card-art img,[\s\S]*?grayscale\(1\)/);
+  assert.match(css, /border-style: dashed/);
+  assert.match(html, /id="collectionAvailability"[\s\S]*?data-availability="all"[\s\S]*?data-availability="open"[\s\S]*?data-availability="locked"/);
+});
+
 test("plain-language abilities explain costs, damage, timing and limits without changing card data", () => {
   const view=loadCardView();
   for(const card of data.cards) {
@@ -244,13 +263,13 @@ test("양쪽 전투 카드가 같은 전투 정보 렌더러를 사용하고 카
   assert.match(app, /syncBattleCard\(dom\.enemyCardSlot/);
   assert.match(app, /CardView\.create\(side\.card, \{[\s\S]*?compact: true/);
   assert.match(viewSource, /else if \(options\.compact\) \{[\s\S]*?crown, facts, art/);
-  assert.equal((html.match(/\?v=70/g) || []).length, 7);
+  assert.equal((html.match(/\?v=70/g) || []).length, 5);
   assert.match(html, /js\/audio\.js\?v=71/);
-  assert.match(html, /js\/app\.js\?v=74/);
+  assert.match(html, /js\/app\.js\?v=75/);
   assert.match(html, /js\/tactics\.js\?v=1/);
   assert.match(html, /bgm-player\.js\?v=66/);
   assert.doesNotMatch(html, /\?v=(?:25|26|27|28|29|30|31)/);
-  assert.equal((sw.match(/\.\/cards\/[^"\n]+\?v=70/g) || []).length, 7);
+  assert.equal((sw.match(/\.\/cards\/[^"\n]+\?v=70/g) || []).length, 5);
   assert.equal((sw.match(/\.\/cards\/js\/tactics\.js\?v=1/g) || []).length, 1);
 });
 

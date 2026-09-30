@@ -5223,3 +5223,44 @@ dialog p:not(.kicker) {
 #collectionGrid .story-card.element-metal .hp-gem span,
 #collectionGrid .story-card.element-metal .hp-gem strong,
 #collectionGrid .story-card.element-metal .hp-gem i { color: #242424; text-shadow: 0 1px 0 #ffffff88; }
+
+/* Availability is independent of elemental identity: text, shape and portrait treatment. */
+.collection-filters { flex-wrap: wrap; align-items: end; }
+.collection-availability { display: flex; flex: 1 1 320px; gap: 6px; }
+.collection-availability button {
+  flex: 1; min-width: 0; min-height: 48px; padding: 9px 8px;
+  border: 1px solid #817b95; border-radius: 12px; background: #241e36;
+  color: #eee9f9; font: inherit; font-size: 14px; font-weight: 800; cursor: pointer;
+}
+.collection-availability b { font-variant-numeric: tabular-nums; margin-left: 3px; }
+.collection-availability button[aria-pressed="true"] { background: #efe1b7; color: #292037; border-color: #ffdf88; box-shadow: 0 3px 0 #867249; }
+.collection-availability button:focus-visible { outline: 3px dashed #fff; outline-offset: 3px; }
+#collectionGrid .collection-state-badge {
+  position: absolute; top: 8px; left: 8px; z-index: 7;
+  max-width: calc(100% - 16px); box-sizing: border-box; padding: 6px 9px;
+  border: 1px solid #b8f9d8; border-radius: 8px;
+  background: #123e2e; color: #e4ffee; box-shadow: 0 2px 6px #0008;
+  font-size: 12px; font-weight: 900; line-height: 1.2; pointer-events: none;
+}
+#collectionGrid .story-card.is-locked {
+  --element: #83909f; --element-dark: #202933; --element-surface: #3c4958; --element-bright: #eef1f5;
+  border-color: #8996a7; border-style: dashed;
+  background: linear-gradient(155deg, #232c38, #3c4958);
+  box-shadow: 0 5px 0 #18202a, 0 10px 18px #0005, inset 0 0 0 2px #ffffff24;
+}
+#collectionGrid .story-card.is-locked .card-art img,
+#collectionGrid .story-card.is-locked .art-fallback { filter: grayscale(1) brightness(.68); }
+#collectionGrid .story-card.is-locked .art-glow { display: none; }
+#collectionGrid .story-card.is-locked .collection-state-badge { background: #252e3d; color: #fff; border: 1px dashed #c6ceda; }
+#collectionGrid .story-card.is-locked .card-name { color: #f1f4f9; text-shadow: 0 1px 3px #000; }
+#collectionGrid .story-card.is-locked .hp-gem,
+#collectionGrid .story-card.is-locked .collection-tier,
+#collectionGrid .story-card.is-locked .element-rune { background: #263241; color: #eef1f5; border-color: #a0adbf; }
+#collectionGrid .story-card.is-locked .hp-gem span,
+#collectionGrid .story-card.is-locked .hp-gem strong,
+#collectionGrid .story-card.is-locked .hp-gem i { color: #eef1f5; text-shadow: none; }
+@media (max-width: 599px) {
+  .collection-availability { flex-basis: 100%; }
+  .collection-availability button { font-size: 13px; }
+  #collectionGrid .collection-state-badge { font-size: 11px; padding: 6px 8px; }
+}

@@ -17,7 +17,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   <link rel="icon" href="../icon.png">
   <link rel="apple-touch-icon" href="../icon.png">
   <link rel="manifest" href="../manifest.json">
-<link rel="stylesheet" href="styles.css?v=70">
+<link rel="stylesheet" href="styles.css?v=71">
 <link rel="stylesheet" href="campaign.css?v=71"><link rel="stylesheet" href="tactics.css?v=1">
 <link rel="stylesheet" href="element-theater.css?v=1">
 <script src="../assets/study/play-timer.js?v=1"></script>
@@ -68,7 +68,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         <div class="collection-status" aria-live="polite">
           <span class="status-orb">✦</span>
 <strong id="unlockCount">0 / 84</strong>
-          <span>깨어남</span>
+          <span>오픈 카드</span>
         </div>
         <a class="story-link" href="../story/">🎧 이야기</a>
       </div>
@@ -77,7 +77,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         <h2>마음에 드는 그림을 눌러 능력을 살펴봐요</h2>
         <label class="collection-sort">정렬
           <select id="collectionSort" aria-label="카드 정렬 방식">
-            <option value="ready">깨어난 순</option>
+            <option value="ready">오픈 카드 먼저</option>
             <option value="hp">체력 높은 순</option>
             <option value="power">기본 피해 높은 순</option>
             <option value="element">속성순</option>
@@ -87,6 +87,11 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       </div>
 
       <div class="collection-filters" aria-label="카드 골라보기">
+        <div id="collectionAvailability" class="collection-availability" role="group" aria-label="카드 잠금 상태로 골라보기">
+          <button type="button" data-availability="all" aria-pressed="true">전체 <b>0</b></button>
+          <button type="button" data-availability="open" aria-pressed="false">✓ 오픈 <b>0</b></button>
+          <button type="button" data-availability="locked" aria-pressed="false">🔒 잠김 <b>0</b></button>
+        </div>
         <label>속성
           <select id="collectionElement" aria-label="속성으로 골라보기">
             <option value="all">모든 속성</option><option value="wood">🌳 나무</option>
@@ -227,7 +232,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 <script src="js/engine.js?v=70" defer></script>
 <script src="js/audio.js?v=71" defer></script>
 <script src="js/family-voices.js?v=1" defer></script>
-<script src="js/card-view.js?v=70" defer></script>
+<script src="js/card-view.js?v=71" defer></script>
 <script src="js/vfx-recipes.js?v=70" defer></script>
 <script src="js/story-gates.js?v=70" defer></script>
 <script src="js/campaign.js?v=70" defer></script>
@@ -235,7 +240,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 <script src="js/combat-cinema.js?v=70" defer></script>
 <script src="js/tactics.js?v=1" defer></script>
 <script src="js/element-theater.js?v=1" defer></script>
-<script src="js/app.js?v=74" defer></script>
+<script src="js/app.js?v=75" defer></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {

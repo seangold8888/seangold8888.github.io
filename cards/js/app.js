@@ -52,6 +52,7 @@
   let detailCard = null;
   let detailOrigin = null;
   let collectionSort = "ready";
+  let collectionAvailability = "all";
   const COLLECTION_SORTS = ["ready", "hp", "power", "element", "name"];
   let selectedFragmentIndex = null;
   let enemyIntent = null;
@@ -162,7 +163,7 @@
   function cacheDom() {
     [
       "collectionScreen", "cardBrowse", "battleScreen", "campaignScreen", "campaignBattleLabel", "collectionGrid", "unlockCount",
-      "collectionSort", "collectionElement", "collectionFilterStatus", "detailUnlockLink",
+      "collectionSort", "collectionElement", "collectionAvailability", "collectionFilterStatus", "detailUnlockLink",
       "muteButton", "musicButton", "leaveBattleButton", "turnOwner", "turnNumber",
       "battleStars", "arena", "enemyCardSlot", "playerCardSlot", "battleMessage",
       "effectBurst", "combatParticleCanvas", "combatShaderCanvas", "techniqueFxLayer", "actionList",
@@ -553,9 +554,20 @@
       selectedCard = battleCards.find(isUnlocked) || null;
     }
 
-    const filtered = window.CardView.filterCollection(cards, dom.collectionElement.value);
+    const elementCards = window.CardView.filterCollection(cards, dom.collectionElement.value);
+    const openCount = elementCards.filter(isUnlocked).length;
+    const counts = { all: elementCards.length, open: openCount, locked: elementCards.length - openCount };
+    dom.collectionAvailability.querySelectorAll("[data-availability]").forEach(function (button) {
+      button.setAttribute("aria-pressed", String(button.dataset.availability === collectionAvailability));
+      button.querySelector("b").textContent = counts[button.dataset.availability];
+    });
+    const filtered = elementCards.filter(function (card) {
+      return collectionAvailability === "all" || isUnlocked(card) === (collectionAvailability === "open");
+    });
     const shelfOrder = window.CardView.sortCollection(filtered, collectionSort, isUnlocked, isPlayableCard);
-    dom.collectionFilterStatus.textContent = filtered.length + "장 · 초록 나무 · 주홍 불 · 황토 땅 · 은색 금속 · 파랑 물";
+    dom.collectionFilterStatus.textContent = filtered.length
+      ? "오픈 " + counts.open + "장 · 잠김 " + counts.locked + "장 — 카드를 누르면 능력과 해금 방법을 볼 수 있어요."
+      : "이 조건에 맞는 카드가 없어요. 다른 상태나 속성을 골라 보세요.";
 
     shelfOrder.forEach(function (card) {
       const locked = !isUnlocked(card);
@@ -601,9 +613,9 @@
     });
     dom.cardDetailTitle.textContent = card.name;
     dom.cardDetailCard.replaceChildren(detailView);
-    dom.cardDetailStatus.textContent = !unlocked ? unlockLeadPhrase(card) + (card.id === "sseugumi" ? "" : "함께 대결할 수 있어요.") : playable
-      ? "능력을 살펴보고, 이 카드로 바로 대결해 보세요."
-      : "컬렉션 전용 카드예요. 대전은 다음 모험에서 열려요.";
+    dom.cardDetailStatus.textContent = !unlocked ? "🔒 잠긴 카드 · " + unlockLeadPhrase(card) + (card.id === "sseugumi" ? "" : "함께 대결할 수 있어요.") : playable
+      ? "✓ 오픈 카드 · 능력을 살펴보고, 이 카드로 바로 대결해 보세요."
+      : "✓ 오픈 카드 · 컬렉션 전용이에요. 대전은 다음 모험에서 열려요.";
     dom.detailSelectButton.disabled = !playable || !unlocked;
     dom.detailSelectButton.textContent = !unlocked ? "아직 잠든 카드" : playable ? "이 카드로 대결 시작" : "대전 준비 중";
     setUnlockLink(dom.detailUnlockLink, unlocked ? null : unlockDestination(card));
@@ -3307,6 +3319,12 @@
       renderCollection();
     });
     dom.collectionElement.addEventListener("change", renderCollection);
+    dom.collectionAvailability.querySelectorAll("[data-availability]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        collectionAvailability = button.dataset.availability;
+        renderCollection();
+      });
+    });
     dom.leaveBattleButton.addEventListener("click", function () {
       if (campaignBattle) returnToCampaign(false);
       else returnToCollection();
