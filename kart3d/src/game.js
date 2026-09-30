@@ -6,6 +6,7 @@ import { loadProps } from './props.js';
 import { createAudio } from './music.js';
 import { CHARACTERS, VILLAINS, driverById, buildKartModel, Kart, driveAI } from './karts.js';
 import { buildCourseFx } from './coursefx.js';
+import { coursePhoto } from './menu-art.js?v=lobby-1';
 import {
   CATALOG, SLOTS, loadGarage, saveGarage, itemState, tapItem, addCoins, recordTrophy, applyLook
 } from './garage.js';
@@ -829,9 +830,24 @@ export function startGame() {
     const gp = MODES[state.modeIndex].gp;
     const steps = ['누구로 달릴까요?', '어떤 경주를 할까요?', gp ? '컵을 골라요' : '코스를 골라요'];
     el('menu-title').textContent = steps[state.menuStep];
+    menu.dataset.step = state.menuStep;
+    document.querySelectorAll('.lobby-steps li').forEach((e, i) => {
+      if (i === state.menuStep) e.setAttribute('aria-current', 'step'); else e.removeAttribute('aria-current');
+    });
+    const driver = CHARACTERS[state.charIndex];
+    el('hero-name').textContent = driver.name + '!';
+    el('menu-hero').src = thumb(driver, true);
+    el('menu-hero').alt = driver.name + '의 출전 카트';
+    el('hero-note').textContent = state.menuStep === 0 ? '내 카트를 고르고, 트로피를 향해 달려요!' :
+      state.menuStep === 1 ? MODES[state.modeIndex].desc : gp ? '세 번의 경주! 점수를 모아 우승에 도전해요.' : TRACKS[state.trackIndex].tip;
+    el('picker-note').textContent = ['친구를 누르면 왼쪽에서 크게 볼 수 있어요.', '트로피에 도전할까요, 가볍게 한 판 할까요?', gp ? '마음에 드는 세계에서 세 번 달려요.' : '그림을 보고 달리고 싶은 길을 골라요.'][state.menuStep];
+    el('menu-next').textContent = ['이 친구로 달리기 →', gp ? '컵 고르러 가기 →' : '코스 고르러 가기 →', '경주 출발! ▶'][state.menuStep];
     const list = el('menu-list');
     list.innerHTML = '';
     list.classList.toggle('chars', state.menuStep === 0);
+    list.classList.toggle('modes', state.menuStep === 1);
+    list.classList.toggle('courses', state.menuStep === 2);
+    list.classList.toggle('cups', state.menuStep === 2 && !!gp);
     const items = stepItems();
     const sel = state[stepKey()];
     items.forEach((it, i) => {
@@ -839,29 +855,35 @@ export function startGame() {
       const b = document.createElement('button');
       const locked = !selectable(i);
       b.className = 'card' + (i === sel ? ' on' : '') + (locked ? ' locked' : '');
+      b.type = 'button';
+      b.disabled = locked;
+      b.setAttribute('aria-pressed', String(i === sel));
+      b.setAttribute('aria-label', it.name + (locked ? ' · 일반 경주에서 1등 하면 열려요' : ' 선택'));
       let html;
       if (state.menuStep === 0) {
         const kid = CHARACTERS.indexOf(it) >= 7;
         html = '<img alt="" src="' + thumb(it) + '"><strong>' + it.name + '</strong><small>' +
-          (kid ? '우리 아이 · ' : '') + '속도 ' + '★'.repeat(Math.max(1, Math.round((it.top - 106) / 5))) + '</small>';
+          (kid ? '우리 친구' : '속도 ' + '★'.repeat(Math.max(1, Math.round((it.top - 106) / 5)))) + '</small>';
       } else if (state.menuStep === 1) {
-        html = '<strong>' + it.name + '</strong><small>' + it.desc + '</small>';
+        html = '<span class="mode-art" aria-hidden="true">' + ['🏆', '🎁', '⚡', '⏱', '🔥'][i] + '</span><strong>' + it.name.replace(/^[🏆🔥]+\s*/u, '') + '</strong><small>' + it.desc + '</small>';
       } else if (gp) {
         const best = state.garage.trophies[it.id];
         const names = it.tracks.map(id => TRACKS.find(t => t.id === id).name).join(' · ');
         const foes = it.villains.map(id => driverById(id).name).join('·');
-        html = '<b class="cupicon">' + it.icon + '</b><strong>' + it.name + (best ? ' ' + MEDAL[best] : '') + '</strong><small>' + names +
+        html = '<img alt="" src="' + coursePhoto(TRACKS.find(t => t.id === it.tracks[0])) + '"><strong>' + it.icon + ' ' + it.name + (best ? ' ' + MEDAL[best] : '') + '</strong><small>' + names +
           '</small><small>😈 ' + foes + ' 등장</small>';
       } else {
         const rw = MODES[state.modeIndex].rival && rivalRecord(it.id).won ? ' · ✓ 이겨 봤어요' : '';
-        html = '<strong>' + (locked ? '🔒 ' : '') + it.name + '</strong><small>' + it.laps + '바퀴 · ' +
+        html = '<img alt="" src="' + coursePhoto(it) + '"><strong>' + (locked ? '🔒 ' : '') + it.name + '</strong><small>' + it.laps + '바퀴 · ' +
           (locked ? '일반 경주 1등부터' : (it.tip || '')) + rw + '</small>';
       }
       b.innerHTML = html;
       b.addEventListener('click', () => {
         if (locked) return;
         state[stepKey()] = i;
-        nextStep();
+        renderMenu();
+        const selected = list.querySelector('[aria-pressed="true"]');
+        if (selected) selected.focus({ preventScroll: true });
       });
       list.appendChild(b);
     });
@@ -894,6 +916,7 @@ export function startGame() {
   el('menu-back').addEventListener('click', () => {
     if (state.menuStep > 0) { state.menuStep--; renderMenu(); }
   });
+  el('menu-next').addEventListener('click', nextStep);
 
   function showResult() {
     showHud(false);
@@ -983,6 +1006,9 @@ export function startGame() {
 
   // ---------- 조작 ----------
   window.addEventListener('keydown', e => {
+    // Settings and footer controls keep their native keyboard interaction.
+    if (state.scene === 'menu' && e.target.closest?.('.lobby-settings, #garage-open, .lobby-home, #sound, #menu-back')) return;
+    if (state.scene === 'menu' && (e.code === 'Enter' || e.code === 'Space') && e.target.closest?.('#menu-list .card')) return;
     if (e.code === 'Space' && !keys.Space && !e.repeat) jumpEdge = true;
     keys[e.code] = true;
     if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Space', 'Enter'].includes(e.code)) e.preventDefault();
@@ -1008,7 +1034,7 @@ export function startGame() {
       };
       if (e.code === 'ArrowLeft') stepTo(-1);
       if (e.code === 'ArrowRight') stepTo(1);
-      if (e.code === 'Space' || e.code === 'Enter') nextStep();
+      if ((e.code === 'Space' || e.code === 'Enter') && !e.repeat) nextStep();
       if (e.code === 'Escape' && state.menuStep > 0) { state.menuStep--; renderMenu(); }
     } else if (state.scene === 'result') {
       if (e.code === 'Space' || e.code === 'Enter') {
@@ -1374,8 +1400,9 @@ export function startGame() {
   // ================== 메뉴 사진 ==================
   const thumbs = new Map();
   let thumbKit = null;
-  function thumb(spec) {
-    if (thumbs.has(spec.id)) return thumbs.get(spec.id);
+  function thumb(spec, hero = false) {
+    const photoKey = hero ? spec.id + ':' + JSON.stringify(state.garage.equip) : spec.id;
+    if (thumbs.has(photoKey)) return thumbs.get(photoKey);
     try {
       if (!thumbKit) {
         const cv = document.createElement('canvas');
@@ -1389,12 +1416,16 @@ export function startGame() {
         thumbKit = { r, sc, cam, cv };
       }
       const m = buildKartModel(spec);
+      if (hero) applyLook(m, state.garage.equip);
       m.rotation.y = 0.5;
+      thumbKit.r.setSize(hero ? 640 : 200, hero ? 480 : 150, false);
       thumbKit.sc.add(m);
       thumbKit.r.render(thumbKit.sc, thumbKit.cam);
       const url = thumbKit.cv.toDataURL('image/png');
       thumbKit.sc.remove(m); disposeTree(m);
-      thumbs.set(spec.id, url);
+      // Keep previews bounded even when children repeatedly change garage looks.
+      if (thumbs.size > 40) thumbs.clear();
+      thumbs.set(photoKey, url);
       return url;
     } catch (_) { return ''; }
   }
@@ -1497,7 +1528,7 @@ export function startGame() {
       }
       return;
     }
-    if (state.scene !== 'menu' || state.track) renderer.render(scene, camera);
+    if (state.scene !== 'menu') renderer.render(scene, camera);
   }
 
   // 메뉴 배경으로 첫 트랙을 미리 깔아 둔다

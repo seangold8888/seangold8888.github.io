@@ -311,6 +311,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   }
   @media (orientation: portrait) and (pointer: coarse) { #rotate { display: flex; } }
 </style>
+<link rel="preload" href="../sanguo/fonts/pretendard/PretendardVariable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="./menu.css?v=type-2">
 </head>
 <body>
 <canvas id="game"></canvas>
@@ -318,13 +320,30 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 <button id="sound" type="button" aria-label="소리 끄기">🔊</button>
 
 <div class="layer" id="menu">
-  <h1>산리오 카트</h1>
-  <div id="menu-title">캐릭터를 골라요</div>
-  <div id="menu-list"></div>
-  <button class="ghost" id="menu-back">← 뒤로</button>
-  <button class="ghost" id="garage-open" type="button">🧰 차고 꾸미기</button>
-  <div id="menu-hint">← → 로 고르고 스페이스 · 화면을 눌러도 돼요</div>
-
+  <header class="lobby-header">
+    <div class="lobby-brand"><span class="race-mark" aria-hidden="true"></span><div><h1>산리오 카트</h1><small>READY, SET, PLAY!</small></div></div>
+    <a class="lobby-home" href="../game/">모험보드 ↗</a>
+  </header>
+  <main class="lobby-main">
+    <section class="lobby-stage" aria-label="선택한 드라이버">
+      <span class="stage-sticker">오늘은 내가 레이서!</span>
+      <div class="stage-heading">출발 준비 완료.<strong id="hero-name">헬로키티!</strong></div>
+      <span class="stage-cloud" aria-hidden="true"></span><span class="stage-spark" aria-hidden="true">✦</span>
+      <div class="stage-photo"><img id="menu-hero" alt="선택한 캐릭터의 카트"></div>
+      <p class="stage-note" id="hero-note">친구들과 신나는 경주를 떠나요!</p>
+    </section>
+    <section class="lobby-picker" aria-labelledby="menu-title">
+      <ol class="lobby-steps"><li aria-current="step"><b>1</b>친구</li><li><b>2</b>경주</li><li><b>3</b>코스</li></ol>
+      <h2 id="menu-title">누구로 달릴까요?</h2>
+      <p class="picker-note" id="picker-note">마음에 드는 친구를 눌러 골라요.</p>
+      <div id="menu-list"></div>
+      <div class="picker-actions"><button class="ghost" id="menu-back" type="button">← 뒤로</button><button id="menu-next" type="button">이 친구로 달리기 →</button></div>
+    </section>
+  </main>
+  <footer class="lobby-footer">
+    <button class="ghost" id="garage-open" type="button">🧰 차고 꾸미기</button>
+    <div id="menu-hint">← → 선택 · Enter 출발 준비</div>
+    <details class="lobby-settings"><summary>음악 · 조작 방법</summary><div class="settings-content">
   <div id="bgm">
     <label class="bgmbtn" for="bgm-file">🎵 내 음악 넣기</label>
     <input id="bgm-file" type="file" accept="audio/*" hidden>
@@ -345,6 +364,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     <div class="krow only-touch"><kbd>아이템</kbd><span>모아둔 아이템 쓰기</span></div>
     <div class="krow"><kbd>드리프트 팁</kbd><span>굽은 길에서 오래 미끄러지면 부스터가 터져요</span></div>
   </div>
+    </div></details>
+  </footer>
 </div>
 
 <div class="layer" id="hud">
@@ -415,7 +436,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 
 <script src="../assets/bgm/bgm-player.js?v=67"></script>
 <script type="module">
-  import { startGame } from './src/game.js';
+  import { startGame } from './src/game.js?v=lobby-1';
   startGame();
 </script>
 </body>
