@@ -249,6 +249,9 @@ body[data-screen="home"] header.top{padding-bottom:22px}
 #home .start-actions{display:flex;flex-direction:column;align-items:flex-start;gap:7px;margin:0}
 #home #startBtn{width:100%;max-width:310px;font-size:19px;min-height:56px;padding:15px 18px;background:#356c70;box-shadow:0 3px 0 #295359;border-radius:14px}
 #home #quickBtn{width:auto;min-height:44px;padding:8px 0;font-size:15px;background:transparent;box-shadow:none;color:#476b6d;text-decoration:underline;text-underline-offset:5px}
+#home .story-launch{display:inline-flex;align-items:center;min-height:46px;color:#3c696b;font:16px Jua,system-ui;text-decoration:underline;text-underline-offset:5px;text-decoration-color:#a9c3b6}
+#home .story-launch.done{color:#2d7558;text-decoration-color:#a8d0b3}
+#home .story-launch:focus-visible{outline:3px solid #245b78;outline-offset:3px;border-radius:6px}
 #home #homeReview:empty{display:none}
 #home #homeReview{font-size:12px;line-height:1.6;margin:7px 0 0}
 #home #resumeNote{font-size:13px;margin:0 0 12px;line-height:1.6}

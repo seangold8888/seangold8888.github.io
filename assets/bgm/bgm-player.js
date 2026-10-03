@@ -7,6 +7,8 @@
 
   var FADE_MS = 600;
   var STEP_MS = 40;
+  // Keep scene names and private uploaded music intact; only kart defaults use the new cue.
+  var TRACK_FILES = { kart: "kart-candy-parade-v1", kart3d: "kart-candy-parade-v1" };
 
   function clamp(value, low, high) {
     return Math.min(high, Math.max(low, value));
@@ -48,7 +50,7 @@
 
     function elementFor(name) {
       if (players[name]) return players[name];
-      var audio = new Audio(basePath + name + ".mp3");
+      var audio = new Audio(basePath + (TRACK_FILES[name] || name) + ".mp3");
       audio.loop = true;
       audio.preload = "none";
       audio.volume = 0;

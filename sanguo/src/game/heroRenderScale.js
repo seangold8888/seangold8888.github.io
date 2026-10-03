@@ -3,6 +3,14 @@
 // comparable adult heroes the same on-screen height while preserving deliberate
 // stature: Xu Chu stays broad, and the child heroes remain shorter.
 export const HERO_RENDER_SCALES = Object.freeze({
+  taeo: .68,
+  jaei: .74,
+  yunchan: .76,
+  yungeon: .68,
+  euljimundeok: .91,
+  ganggamchan: .91,
+  kwonyul: .92,
+  yisunsin: .93,
   machao: .96,
   huangzhong: .94,
   xiahoudun: .90,

@@ -98,7 +98,9 @@ async function campaign(source, hard = false) {
   return { g, samples };
 }
 
-test('normal mode plays the whole campaign frame-identically to the previous commit', { skip: !baseline.html && 'no git baseline' }, async () => {
+// 2026-09-28 무대 3·4와 골든 하모니로 일반 캠페인이 일부러 바뀌었다. 비교 대상도 네 무대판일 때만 비교한다.
+const baselineComparable = !!(baseline.html && baseline.html.includes('STAGE 04'));
+test('normal mode plays the whole campaign frame-identically to the previous commit', { skip: !baselineComparable && 'baseline predates the four-stage campaign' }, async () => {
   const before = await campaign(baseline);
   const after = await campaign(current);
   assert.ok(before.samples.length > 100);
@@ -230,7 +232,7 @@ test('clear records: normal stage 1 unlocks hard, a hard win never overwrites th
 
   const { g, env: hardEnv } = await hardGame();
   hardEnv.storage.set('starlight-rescue-dx-best', JSON.stringify({ score: 100 }));
-  g.score = 5000; g.recordClear(1);
+  g.score = 5000; g.recordClear(3);   // 2026-09-28: 네 무대, 마지막(3)을 깨야 우승
   const saved = JSON.parse(hardEnv.storage.get('kedehun-hard-v1'));
   assert.deepEqual([saved.hardWon, saved.hardBest], [true, 5000]);
   assert.equal(JSON.parse(hardEnv.storage.get('starlight-rescue-dx-best')).score, 100);
@@ -246,4 +248,37 @@ test('the renderer and HUD know the hard mode, and the new combat script is cach
   const sw = require(path.join(siteRoot, 'sw.js'));
   assert.ok(sw.OPTIONAL_SHELL.includes('./kedehun/combat-v2.js?v=2'));
   assert.ok(!sw.OPTIONAL_SHELL.includes('./kedehun/combat-v2.js?v=1'));
+});
+
+// 2026-09-28: 네 무대 캠페인이 끝까지 가고, 골든 하모니 고리에 맞춰 치면 PERFECT가 난다.
+test('four-stage campaign reaches victory and harmony rings reward on-beat attacks', async () => {
+  const { make } = build(current);
+  const g = make();
+  await g.start('lumi', false);
+  g.finishStory();
+  const seen = new Set();
+  let perfects = 0, goldens = 0;
+  for (let f = 0; f < 60 * 900; f++) {
+    if (g.phase === 'story') g.finishStory();
+    if (g.phase === 'stageClear') { g.nextStage(); g.finishStory(); }
+    if (g.phase === 'victory') break;
+    seen.add(g.stageIndex);
+    const t = g.playTime, H = g.harmony;
+    const onBeat = H && H.ring && Math.abs(H.ring.t - H.ring.dur) < 0.05;
+    g.input.set('right', 'key:D', f % 400 < 340, t);
+    if (onBeat) { g.input.set('attack', 'key:J', true, t); g.input.set('attack', 'key:J', false, t); }
+    else if (!(H && H.ring) && f % 12 === 0) g.input.set('attack', 'key:J', true, t);
+    if (f % 12 === 1) g.input.set('attack', 'key:J', false, t);
+    if (f % 90 === 5) g.input.set('dash', 'key:K', true, t);
+    if (f % 90 === 6) g.input.set('dash', 'key:K', false, t);
+    if (f % 30 === 0 && g.player.energy >= 100) { g.input.set('ultimate', 'key:C', true, t); g.input.set('ultimate', 'key:C', false, t); }
+    const before = H ? H.perfects : 0, gold = H ? H.golden : 0;
+    step(g);
+    if (g.harmony && g.harmony.perfects > before) perfects++;
+    if (g.harmony && g.harmony.golden > 0 && gold === 0) goldens++;
+  }
+  assert.equal(g.phase, 'victory', 'campaign should finish, stuck at stage ' + g.stageIndex + ' phase ' + g.phase);
+  assert.deepEqual([...seen].sort(), [0, 1, 2, 3]);
+  assert.ok(perfects >= 3, 'perfect hits ' + perfects);
+  assert.ok(goldens >= 1, 'golden harmony ' + goldens);
 });

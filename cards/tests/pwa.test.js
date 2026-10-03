@@ -82,14 +82,16 @@ test("install is strict only for core and card art; optional warmup is bounded a
   }
 });
 
-test("all checked-in Sanguo PNG, OGG, MP3 and WAV assets are best-effort background assets", () => {
-  const expected = walkFiles(path.join(siteRoot, "sanguo"))
+test("all production Sanguo PNG, OGG, MP3 and WAV assets are best-effort background assets", () => {
+  // Screenshots and unapproved auditions are not shipped game assets.
+  const expected = ['art', 'audio'].flatMap(folder => walkFiles(path.join(siteRoot, 'sanguo', folder)))
+    .filter(file => !file.split(path.sep).includes('elevenlabs-auditions'))
     .filter(file => /\.(?:png|ogg|mp3|wav)$/i.test(file))
     .map(file => `./${path.relative(siteRoot, file).split(path.sep).join("/")}`)
     .sort();
   const shellAssets = sw.OPTIONAL_SHELL.filter(asset => /^\.\/sanguo\/.*\.(?:png|ogg|mp3|wav)(?:[?#].*)?$/i.test(asset));
   const declared = [...new Set([...sw.SANGUO_RUNTIME_ASSETS, ...shellAssets])].sort();
-  assert.equal(expected.length, 216);
+  assert.ok(expected.length >= 232, 'includes Korean generals and four family atlases');
   assert.deepEqual(declared, expected);
   assert.equal(new Set(sw.SANGUO_RUNTIME_ASSETS).size, sw.SANGUO_RUNTIME_ASSETS.length);
 });
@@ -114,9 +116,13 @@ test("all story episode mp3 files match the service worker fallback list", () =>
   }
 });
 
-test("cache generation v180 preserves exact v70 card assets and canonical navigation aliases", () => {
-  assert.equal(sw.CACHE_VERSION, "v180");
-  assert.match(sw.STATIC_CACHE, /^adventure-box-v180-/);
+test("cache generation v197 preserves versioned card assets and canonical navigation aliases", () => {
+  assert.equal(sw.CACHE_VERSION, "v197");
+  assert.match(sw.STATIC_CACHE, /^adventure-box-v197-/);
+  for (const asset of ["./cards/js/element-theater.js?v=1", "./cards/element-theater.css?v=1"]) {
+    assert.equal(sw.CORE_SHELL.filter(entry => entry === asset).length, 1);
+    assert.ok(fs.existsSync(path.join(siteRoot, asset.split("?")[0])));
+  }
   const studioImages = fs.readdirSync(path.join(siteRoot, "princess/assets/studio-v3")).filter(name => /\.(webp|jpg)$/.test(name));
   assert.equal(studioImages.length, 95);
   for (const name of studioImages) assert.ok(sw.OPTIONAL_SHELL.includes("./princess/assets/studio-v3/" + name), name);
@@ -138,7 +144,8 @@ test("cache generation v180 preserves exact v70 card assets and canonical naviga
     assert.ok(sw.OPTIONAL_SHELL.includes("./princess/assets/bodies-v4/body-" + id + ".webp"));
   }
   for (const asset of ["styles.css", "campaign.css", "engine.js", "audio.js", "card-view.js", "vfx-recipes.js", "story-gates.js", "campaign.js", "campaign-ui.js", "combat-cinema.js", "app.js"]) {
-    assert.ok(sw.CORE_SHELL.some(entry => entry.endsWith(asset + "?v=70")), asset);
+    const version = asset === "app.js" ? 75 : ["styles.css", "card-view.js", "audio.js", "campaign.css", "campaign-ui.js"].includes(asset) ? 71 : 70;
+    assert.ok(sw.CORE_SHELL.some(entry => entry.endsWith(asset + "?v=" + version)), asset);
   }
   assert.doesNotMatch(swSource, /\.\/cards\/[^"\n]+\?v=(?:19|2\d|30|31)|adventure-box-v(?:19|2\d|3\d|4\d|5\d|6[0-5])-/);
   assert.deepEqual(sw.VFX_ART_FILES, [
@@ -407,7 +414,7 @@ test("Avengers migrates the legacy child scope before its bundle and tombstones 
 });
 
 test("big media and saved stories live in caches that survive a deploy", () => {
-  assert.match(sw.STATIC_CACHE, /^adventure-box-v180-static$/);
+  assert.match(sw.STATIC_CACHE, /^adventure-box-v197-static$/);
   assert.equal(sw.RUNTIME_CACHE, "adventure-box-media-" + sw.MEDIA_REVISION);
   assert.equal(sw.AUDIO_CACHE, "adventure-box-audio-" + sw.MEDIA_REVISION);
   assert.doesNotMatch(sw.RUNTIME_CACHE, /v\d+/, "the media cache name must not carry the deploy number");

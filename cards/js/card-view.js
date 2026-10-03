@@ -330,12 +330,16 @@
     glow.setAttribute("aria-hidden", "true");
     frame.appendChild(glow);
 
-    if (options.locked) {
+    if (options.collectionCompact) {
+      const status = el("span", "collection-state-badge", options.locked ? "🔒 잠긴 카드" : "✓ 오픈 카드");
+      status.setAttribute("aria-hidden", "true");
+      frame.appendChild(status);
+    } else if (options.locked) {
       const veil = el("div", "lock-veil");
       veil.append(el("span", "lock-icon", "🔒"), el("strong", "", "아직 잠든 카드"));
       frame.appendChild(veil);
     }
-    if (options.collectionOnly) {
+    if (options.collectionOnly && !options.collectionCompact) {
       frame.appendChild(el("span", "collection-only-badge", "수집 카드 · 대전 준비 중"));
     }
     return frame;
@@ -358,8 +362,8 @@
     const stateLabel = options.locked
       ? "잠긴 카드"
       : options.collectionOnly
-        ? "컬렉션 전용 카드, 대전 준비 중"
-        : options.interactive ? "선택 가능한 카드" : "대전 카드";
+        ? "오픈 카드, 컬렉션 전용, 대전 준비 중"
+        : options.interactive ? "오픈 카드, 선택 가능" : "대전 카드";
     cardEl.setAttribute(
       "aria-label",
       card.name + ", " + type.label + " 타입, " + combatInfo(card).element + ", 희귀도 별 " + rarity +

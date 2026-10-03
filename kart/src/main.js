@@ -20,6 +20,18 @@
   let resultOrder = [];
   let challenge = { drift: 0, items: 0 }, cheer = '', cheerTime = 0, medals = 0;
   let rivalMode = false, rival = null, rivalBeat = false, rivalUnlockedNow = false, rivalRec = { unlocked: false, won: false, losses: 0 };
+  // 업그레이드(2026-09-27): 코스 거리·장난꾸러기·그랑프리·차고
+  let garage = SK.Garage.load();
+  let fx = null, coinPicks = 0, earned = null;
+  let gp = null, cupSel = -1;           // 코스 고르기 화면에서 컵을 고르면 0/1, 코스면 -1
+  let strikes = [], vsay = '', vsayTime = 0, vsayColor = '#ff5ca8';
+  let trail = [], confetti = [], podium = null;
+  let garageSlot = 'paint', garageMsg = '';
+  const FINISH_COINS = [10, 6, 4, 2, 2, 2];
+  const TROPHY_COINS = [30, 20, 10];
+  const MEDAL = ['', '🥇', '🥈', '🥉'];
+  function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+  function say(v, text) { vsay = '😈 ' + v.spec.name + '  ' + text; vsayColor = v.spec.horn || '#ff5ca8'; vsayTime = 2.4; }
   const bestKey = () => 'sanrio-kart:best:' + SK.TRACKS[trackIndex].id;
   const medalKey = () => 'sanrio-kart:medals:' + SK.TRACKS[trackIndex].id;
   function celebrate(message) { cheer = message; cheerTime = 2.2; }
@@ -82,15 +94,19 @@
     }
     const T = SK.Track;
     karts = [];
-    const order = [chosen].concat(SK.CHARACTERS.map((_, i) => i).filter(i => i !== chosen));
-    if (rivalMode) {
-      // 라이벌은 남은 친구 중 가장 빠른 카트이고, 바로 옆 칸에서 출발한다.
-      const rivalIdx = order.slice(1).reduce((best, i) => SK.CHARACTERS[i].top > SK.CHARACTERS[best].top ? i : best, order[1]);
-      order.splice(order.indexOf(rivalIdx), 1);
-      order.splice(1, 0, rivalIdx);
+    // 출전 명단(6대): 그랑프리는 컵 명단 그대로, 라이벌은 가장 빠른 친구 + 친구들,
+    // 보통 경주는 장난꾸러기 둘 + 친구 셋.
+    const me = SK.CHARACTERS[chosen];
+    let lineup;
+    if (gp) lineup = gp.lineup;
+    else if (rivalMode) {
+      const others = SK.CHARACTERS.filter(c => c !== me);
+      const fastest = others.reduce((best, c) => c.top > best.top ? c : best, others[0]);
+      lineup = [me, fastest].concat(others.filter(c => c !== fastest).slice(0, 4));
+    } else {
+      lineup = [me].concat(shuffle(SK.VILLAINS.slice()).slice(0, 2), shuffle(SK.CHARACTERS.filter(c => c !== me)).slice(0, 3));
     }
-    order.forEach((specIndex, slot) => {
-      const spec = SK.CHARACTERS[specIndex];
+    lineup.forEach((spec, slot) => {
       // 출발선 뒤쪽에 두 줄로 세운다
       const back = 70 + Math.floor(slot / 2) * 78;
       const side = (slot % 2 ? 1 : -1) * 56;
@@ -105,8 +121,10 @@
       k.progress = T.nearest(k.x, k.y).point.dist;
       k.total = k.progress - T.length;
       k.lap = -1; // 출발선 뒤에서 첫 통과는 0바퀴, 완주로 세지 않는다.
+      k.lineupIndex = slot; k.coins = 0;
+      if (spec.villain) { k.prank = spec.prank; k.prankClock = 6 + Math.random() * 5; }
       karts.push(k);
-      if (k.isPlayer) player = k;
+      if (k.isPlayer) { player = k; k.look = SK.Garage.look(garage); }
     });
     rival = null;
     if (rivalMode) {
@@ -135,6 +153,11 @@
 
     items = [];
     hearts = [];
+    // 코스 거리: 발판은 바닥 그림에 그려 넣는다(코스를 새로 구울 때만)
+    fx = SK.buildFx(T);
+    if (!trackTex.padded) { SK.paintPads(trackTex, fx); trackTex.padded = true; }
+    coinPicks = 0; earned = null; strikes = []; vsayTime = 0; trail = [];
+    if (gp) gp.scored = false;
     raceTime = 0; countdown = 3.6; lastLapStart = 0;
     playerBestLap = null;
     resultOrder = [];
@@ -149,7 +172,9 @@
   }
 
   // ---------- 입력 ----------
+  let autoPilot = false;
   function playerInput() {
+    if (autoPilot && player) { const d = SK.driveAI(player, player.total, 1 / 60); d.useItem = !!player.item; return d; }
     let steer = 0;
     if (keys.ArrowLeft || keys.KeyA) steer -= 1;
     if (keys.ArrowRight || keys.KeyD) steer += 1;
@@ -245,6 +270,8 @@
       }
     }
 
+    SK.updateFx(fx, karts, dt, time, onFx);
+    updateVillains(dt);
     updateItems(dt, input);
     updateCollisions(dt);
     updatePlaces();
@@ -256,6 +283,8 @@
         karts.forEach(k => { if (!k.finished) { k.finished = true; k.finishTime = raceTime + 99; resultOrder.push(k); } });
         scene = 'result';
         settleRival();
+        settleCoins();
+        if (gp) scoreCup();
         // 도전 배지는 일반 경주에서만 기록한다.
         if (!rivalMode) {
           medals = Math.max(medals, earnedMedals());
@@ -296,10 +325,15 @@
       it.x += Math.sin(it.angle) * it.speed * dt;
       it.y -= Math.cos(it.angle) * it.speed * dt;
       it.speed *= 1 - dt * 1.1;
+      it.armed = (it.armed || 0) - dt;
       for (const k of karts) {
-        if (k === it.owner || it.life <= 0 || k.finished) continue;
+        if ((k === it.owner && it.armed > -1.5) || it.life <= 0 || k.finished || k.hop > 0) continue;
         if (Math.hypot(k.x - it.x, k.y - it.y) < 40) {
-          k.slip = 1.1; it.life = 0;
+          if (it.kind === 'balloon' || it.kind === 'bat') {
+            k.spin = it.kind === 'bat' ? 0.6 : 0.8; k.speed *= 0.55; k.coins = Math.max(0, (k.coins || 0) - 2);
+            if (k === player) celebrate(it.kind === 'bat' ? '박쥐 풍선에 깜짝! 🦇' : '물풍선에 첨벙! 💦');
+          } else k.slip = 1.1;
+          it.life = 0;
           break;
         }
       }
@@ -442,7 +476,26 @@
     }
     for (const it of items) {
       const p = SK.Mode7.project(it.x, it.y, cam, W, H);
-      if (p) drawables.push({ p, kind: 'ribbon' });
+      if (p) drawables.push({ p, kind: it.kind || 'ribbon' });
+    }
+    if (fx) {
+      for (const c of fx.coins) {
+        if (!c.alive) continue;
+        const p = SK.Mode7.project(c.x, c.y, cam, W, H);
+        if (p) drawables.push({ p, kind: 'coin' });
+      }
+      for (const o of fx.obstacles) {
+        const p = SK.Mode7.project(o.x, o.y, cam, W, H);
+        if (p) drawables.push({ p, kind: 'obstacle', o });
+      }
+      for (const r of fx.rings) {
+        const p = SK.Mode7.project(r.x, r.y, cam, W, H);
+        if (p) drawables.push({ p, kind: 'ring' });
+      }
+    }
+    for (const st of strikes) {
+      const p = SK.Mode7.project(st.x, st.y, cam, W, H);
+      if (p) drawables.push({ p, kind: 'zap', st });
     }
     for (const k of karts) {
       if (k === player) continue;
@@ -463,6 +516,12 @@
       }
       else if (d.kind === 'box') SK.Sprites.drawItemBox(ctx, d.p.x, d.p.y, s, time);
       else if (d.kind === 'ribbon') SK.Sprites.drawRibbon(ctx, d.p.x, d.p.y, s, time);
+      else if (d.kind === 'balloon') SK.Sprites.drawBalloon(ctx, d.p.x, d.p.y, s);
+      else if (d.kind === 'bat') SK.Sprites.drawBat(ctx, d.p.x, d.p.y, s, time);
+      else if (d.kind === 'coin') SK.Sprites.drawCoin(ctx, d.p.x, d.p.y, s, time);
+      else if (d.kind === 'obstacle') SK.Sprites.drawObstacle(ctx, d.o.kind, d.p.x, d.p.y, s, time);
+      else if (d.kind === 'ring') SK.Sprites.drawRing(ctx, d.p.x, d.p.y, s);
+      else if (d.kind === 'zap') SK.Sprites.drawZapMark(ctx, d.p.x, d.p.y, s, time, d.st.t);
       else {
         let rel = d.kart.angle - cam.angle;
         while (rel > Math.PI) rel -= Math.PI * 2;
@@ -471,6 +530,8 @@
       }
     }
 
+    // 부스터 꼬리(차고 장식)
+    drawTrail();
     // 플레이어 카트는 항상 화면 아래 고정
     const lean = (player.drift > 0 ? player.driftDir : 0) * 0.8 + playerInput().steer * 0.35;
     SK.Sprites.drawKart(ctx, player, W * 0.5, H * 0.82, 1.15, lean, time);
@@ -491,6 +552,12 @@
     g.fillText('바퀴', 44, 48);
     g.font = '900 30px "Malgun Gothic", sans-serif';
     g.fillText(Math.max(1, Math.min(LAPS, player.lap + 1)) + ' / ' + LAPS, 96, 52);
+
+    // 코인
+    panel(206, 22, 112, 62);
+    g.fillStyle = '#b8860b'; g.font = '900 17px "Malgun Gothic", sans-serif'; g.textAlign = 'left';
+    g.fillText('코인', 220, 46);
+    g.font = '900 26px "Malgun Gothic", sans-serif'; g.fillText('🪙' + (player.coins || 0), 220, 74);
 
     // 등수
     panel(W - 196, 22, 168, 62);
@@ -544,6 +611,7 @@
       g.save(); g.globalAlpha = Math.min(1, cheerTime * 3); panel(275, 185, 410, 52);
       g.textAlign = 'center'; g.fillStyle = '#9a3877'; g.font = '900 25px "Malgun Gothic", sans-serif';
       g.fillText(cheer, 480, 219); g.restore();
+      g.textAlign = 'left';
     }
     if (player.boost > 0) {
       g.save(); g.strokeStyle = 'rgba(255,247,198,.65)'; g.lineWidth = 3;
@@ -559,6 +627,22 @@
       rr(W * 0.5 - 70, H - 44, 140, 14, 7); g.fill();
       g.fillStyle = c > 0.85 ? '#ff8f45' : '#5cc8ff';
       rr(W * 0.5 - 67, H - 41, 134 * c, 8, 4); g.fill();
+    }
+
+    if (vsayTime > 0) {
+      g.save(); g.globalAlpha = Math.min(1, vsayTime * 3);
+      g.font = '900 20px "Malgun Gothic", sans-serif'; g.textAlign = 'center';
+      const w = g.measureText(vsay).width + 40;
+      g.fillStyle = 'rgba(40,24,52,0.86)'; rr(W * 0.5 - w / 2, H - 196, w, 44, 22); g.fill();
+      g.strokeStyle = vsayColor; g.lineWidth = 3; g.stroke();
+      g.fillStyle = '#ffffff'; g.fillText(vsay, W * 0.5, H - 167);
+      g.restore();
+    }
+    if (gp) {
+      g.save(); g.textAlign = 'center'; g.font = '900 15px "Malgun Gothic", sans-serif'; g.fillStyle = '#ffffff';
+      g.lineWidth = 4; g.strokeStyle = '#4a3550';
+      const t = gp.cup.icon + ' ' + gp.cup.name + ' ' + (gp.race + 1) + ' / ' + gp.cup.tracks.length;
+      g.strokeText(t, W * 0.5, 84); g.fillText(t, W * 0.5, 84); g.restore();
     }
 
     if (E_isTouch) drawTouchControls();
@@ -680,38 +764,43 @@
     g.fillText(selStep === 0 ? '카트를 골라요' : '코스를 골라요', W * 0.5, 108);
 
     if (selStep === 0) {
+      // 열한 명이 한 줄에 들어오게 카드를 좁혔다(아이들 넷은 오른쪽 끝)
       const n = SK.CHARACTERS.length;
-      const at = cardLayout(n, 112);
+      const at = cardLayout(n, CARD0_W);
       SK.CHARACTERS.forEach((spec, i) => {
-        const x = at(i), y = 280;
+        const x = at(i), y = 270;
         const on = i === chosen;
         g.save();
         g.translate(x, y);
-        g.scale(on ? 1.1 : 0.92, on ? 1.1 : 0.92);
-        g.fillStyle = on ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.7)';
-        rrAt(g, -58, -100, 116, 206, 20); g.fill();
+        g.scale(on ? 1.08 : 0.94, on ? 1.08 : 0.94);
+        g.fillStyle = on ? 'rgba(255,255,255,0.95)' : spec.kid ? 'rgba(255,248,232,0.8)' : 'rgba(255,255,255,0.7)';
+        rrAt(g, -CARD0_W / 2, -84, CARD0_W, 176, 16); g.fill();
         g.strokeStyle = on ? '#ff5c8a' : 'rgba(140,74,99,0.35)';
-        g.lineWidth = on ? 6 : 3; g.stroke();
+        g.lineWidth = on ? 5 : 2.5; g.stroke();
         g.restore();
 
         const kk = { spec, bob: time * 2 + i, boost: 0, drift: 0, driftDir: 0 };
-        SK.Sprites.drawKart(g, kk, x, y + 30, on ? 0.92 : 0.8, Math.sin(time * 1.5 + i) * 0.2, time);
+        SK.Sprites.drawKart(g, kk, x, y + 22, on ? 0.66 : 0.58, Math.sin(time * 1.5 + i) * 0.2, time);
 
         g.fillStyle = '#4a3550';
-        g.font = '900 17px "Malgun Gothic", sans-serif';
+        g.font = '900 14px "Malgun Gothic", sans-serif';
         g.textAlign = 'center';
-        g.fillText(spec.name, x, y + 82);
-        g.font = '900 12px "Malgun Gothic", sans-serif';
-        g.fillStyle = '#8c7a95';
-        g.fillText('속도 ' + '★'.repeat(Math.max(1, Math.round((spec.top - 370) / 15))), x, y - 74);
-        g.fillText('회전 ' + '★'.repeat(Math.max(1, Math.round((spec.turn - 2.1) / 0.22))), x, y - 58);
+        g.fillText(spec.name, x, y + 72);
+        g.font = '900 11px "Malgun Gothic", sans-serif';
+        g.fillStyle = spec.kid ? '#c0548a' : '#8c7a95';
+        g.fillText(spec.kid ? '우리 아이' : '속도 ' + '★'.repeat(Math.max(1, Math.round((spec.top - 370) / 15))), x, y - 62);
       });
+      // 차고 버튼
+      g.fillStyle = '#fff3a6'; rrAt(g, 350, 126, 260, 36, 18); g.fill();
+      g.strokeStyle = '#c9a23a'; g.lineWidth = 2.5; g.stroke();
+      g.fillStyle = '#8c4a63'; g.font = '900 17px "Malgun Gothic", sans-serif'; g.textAlign = 'center';
+      g.fillText('🧰 차고 꾸미기 · 🪙 ' + garage.coins + (E_isTouch ? '' : '  (G)'), 480, 150);
     } else {
       const n = SK.TRACKS.length;
       const at = cardLayout(n, 196);
       SK.TRACKS.forEach((def, i) => {
         const x = at(i), y = 288;
-        const on = i === trackIndex;
+        const on = i === trackIndex && cupSel < 0;
         g.save();
         g.translate(x, y);
         g.scale(on ? 1.06 : 0.94, on ? 1.06 : 0.94);
@@ -756,27 +845,36 @@
         g.fillText(def.tip, x, y + 84);
         if (on) { g.fillStyle = '#b47a21'; g.fillText('도전 배지 ' + '★'.repeat(medals) + '☆'.repeat(3 - medals), x, y + 106); }
       });
+      // 그랑프리 컵 — 두 경주 점수로 트로피
+      SK.CUPS.forEach((cup, i) => {
+        const x = 330 + i * 300, on = cupSel === i;
+        g.fillStyle = on ? '#ffd9ec' : 'rgba(255,255,255,0.85)'; rrAt(g, x - 135, 128, 270, 44, 22); g.fill();
+        g.strokeStyle = on ? '#ff5c8a' : 'rgba(140,74,99,0.35)'; g.lineWidth = on ? 5 : 2.5; g.stroke();
+        const best = garage.trophies[cup.id];
+        g.fillStyle = '#4a3550'; g.font = '900 18px "Malgun Gothic", sans-serif'; g.textAlign = 'center';
+        g.fillText(cup.icon + ' ' + cup.name + ' 그랑프리' + (best ? ' ' + MEDAL[best] : ''), x, 157);
+      });
     }
 
     g.fillStyle = '#8c4a63';
-    g.font = '900 20px "Malgun Gothic", sans-serif';
-    g.fillText(E_isTouch
-      ? (selStep === 0 ? '카트를 눌러 고르세요' : '코스를 눌러 출발!')
-      : (selStep === 0 ? '← → 로 고르고 스페이스' : '← → 로 고르고 스페이스로 출발!'), W * 0.5, 418);
-
-    g.font = '900 15px "Malgun Gothic", sans-serif'; g.fillStyle = '#8c4a63';
-    if (selStep === 1 && rivalRec.unlocked) {
+    g.font = '900 18px "Malgun Gothic", sans-serif';
+    g.textAlign = 'center';
+    if (selStep === 1 && rivalRec.unlocked && cupSel < 0) {
       // 이 코스를 1등으로 끝낸 적이 있으면 라이벌 레이스 버튼
-      g.fillStyle = '#ff9a6b'; rrAt(g, 330, 138, 300, 34, 17); g.fill();
+      g.fillStyle = '#ff9a6b'; rrAt(g, 330, 400, 300, 32, 16); g.fill();
       g.strokeStyle = '#b8502a'; g.lineWidth = 2.5; g.stroke();
-      g.fillStyle = '#3a1f2c'; g.font = '900 17px "Malgun Gothic", sans-serif';
-      g.fillText('🔥 라이벌 레이스' + (rivalRec.won ? ' ✓' : '') + (E_isTouch ? '' : '  ·  R'), 480, 161);
-    } else g.fillText('2바퀴 스프린트 · 등수와 상관없이 도전 배지 3개를 모아요', 480, 155);
+      g.fillStyle = '#3a1f2c'; g.font = '900 16px "Malgun Gothic", sans-serif';
+      g.fillText('🔥 라이벌 레이스' + (rivalRec.won ? ' ✓' : '') + (E_isTouch ? '' : '  ·  R'), 480, 422);
+    } else {
+      g.fillText(E_isTouch
+        ? (selStep === 0 ? '카트를 눌러 고르세요' : '코스나 컵을 눌러 출발!')
+        : (selStep === 0 ? '← → 로 고르고 스페이스' : '← → 로 고르고 스페이스로 출발!'), W * 0.5, 418);
+    }
     // 최고 기록은 위쪽에. 아래는 조작 설명 자리다.
-    if (bestLap) {
-      g.font = '900 15px "Malgun Gothic", sans-serif';
+    if (bestLap && selStep === 1) {
+      g.font = '900 13px "Malgun Gothic", sans-serif';
       g.fillStyle = '#a98fb0';
-      g.fillText('최고 한 바퀴 기록 ' + fmt(bestLap), W * 0.5, 134);
+      g.fillText('최고 한 바퀴 ' + fmt(bestLap), W * 0.5, 186);
     }
 
     drawControls(g);
@@ -784,6 +882,7 @@
 
   // 조작 설명 — 아이가 처음 잡아도 알 수 있게 선택 화면에 그대로 적어 둔다.
   // 터치 기기와 키보드는 서로 다른 줄을 보여 준다.
+  const CARD0_W = 74;
   function drawControls(g) {
     const rows = E_isTouch ? [
       ['자동', '엑셀은 없어요. 출발하면 알아서 달려요'],
@@ -832,6 +931,7 @@
   }
 
   function drawResult() {
+    if (gp) { drawCupResult(); return; }
     const g = ctx;
     g.fillStyle = 'rgba(60,40,70,0.55)';
     g.fillRect(0, 0, W, H);
@@ -851,7 +951,7 @@
       g.font = '900 26px "Malgun Gothic", sans-serif';
       g.fillStyle = k.isPlayer ? '#ff5c8a' : '#6b5b78';
       g.fillText((i + 1) + '등', W * 0.5 - 200, y);
-      g.fillText((k === rival ? '🔥 ' : '') + k.spec.name, W * 0.5 - 130, y);
+      g.fillText((k === rival ? '🔥 ' : k.spec.villain ? '😈 ' : '') + k.spec.name, W * 0.5 - 130, y);
       g.textAlign = 'right';
       g.font = '900 22px "Malgun Gothic", sans-serif';
       g.fillText(k.finishTime > player.finishTime + 90 ? '—' : fmt(k.finishTime), W * 0.5 + 200, y);
@@ -866,20 +966,279 @@
     g.fillStyle = '#cc8324'; g.fillText('이번 도전 ' + '★'.repeat(earnedMedals()) + '☆'.repeat(3-earnedMedals()) + '  ·  코스 최고 ' + medals + '개', 480, 365);
     g.font = '900 16px "Malgun Gothic", sans-serif'; g.fillStyle = '#8c7a95';
     g.fillText('완주 ✓   드리프트 ' + Math.min(2,challenge.drift) + '/2   아이템 ' + Math.min(2,challenge.items) + '/2',480,394);
-    if (playerBestLap) g.fillText('내 최고 바퀴 ' + fmt(playerBestLap), W * 0.5, 423);
+    if (earned) { g.fillStyle = '#b8860b'; g.fillText('🪙 +' + (earned.picks + earned.bonus) + ' (주운 코인 ' + earned.picks + ' · 순위 ' + earned.bonus + ') → 모은 코인 ' + garage.coins, W * 0.5, 423); }
+    else if (playerBestLap) g.fillText('내 최고 바퀴 ' + fmt(playerBestLap), W * 0.5, 423);
     g.font = '900 24px "Malgun Gothic", sans-serif';
     g.fillStyle = '#4a3550';
     g.font = '900 20px "Malgun Gothic", sans-serif';
     g.fillText('↻ 바로 재도전', 355, 458); g.fillText('코스 바꾸기 →', 605, 458);
   }
 
+  // ================== 코스 이벤트 ==================
+  function onFx(kind, k, extra) {
+    if (k !== player) return;
+    if (kind === 'coin') { coinPicks++; audio.sfx('coin'); }
+    else if (kind === 'pad') { audio.sfx('boost'); celebrate('부스트! 🔥'); }
+    else if (kind === 'bounce') { audio.sfx('boing'); celebrate('통통! 🌟'); }
+    else if (kind === 'ring') { audio.sfx('ring'); celebrate('무지개 통과! 🌈'); }
+    else if (kind === 'bonk') celebrate({ cup: '빙글빙글 찻잔에 쿵!', candy: '사탕 공에 쿵!', crab: '꽃게한테 집혔어요!' }[extra] || '쿵!');
+  }
+
+  // ================== 장난꾸러기 ==================
+  // 태뿔 물풍선 / 찬뿔 번개(떨어질 자리가 노랗게 깜빡 → 비키면 안전) / 건뿔 쿵 밀기·리본 / 재윙 박쥐 풍선·날아오기
+  function updateVillains(dt) {
+    vsayTime = Math.max(0, vsayTime - dt);
+    for (const v of karts) {
+      if (!v.prank || v.finished) continue;
+      v.prankClock -= dt;
+      if (v.prankClock > 0) continue;
+      const gap = player.total - v.total;
+      let did = false;
+      if (!player.finished && Math.abs(gap) < 1400) {
+        const fx0 = Math.sin(v.angle), fy0 = -Math.cos(v.angle);
+        if (v.prank === 'balloon' && gap > 80 && gap < 1000) {
+          items.push({ kind: 'balloon', x: v.x + fx0 * 50, y: v.y + fy0 * 50, angle: v.angle, speed: 640, life: 2.2, owner: v, armed: 0 });
+          say(v, '물풍선 받아라~ 💦'); did = true;
+        } else if (v.prank === 'zap') {
+          let target = null, best = Infinity;
+          for (const k of karts) {
+            if (k === v || k.finished) continue;
+            const g0 = k.total - v.total;
+            if (g0 > 60 && g0 < 1400 && g0 < best) { best = g0; target = k; }
+          }
+          if (target) {
+            const lead = target.speed * 1.1;
+            strikes.push({ x: target.x + Math.sin(target.angle) * lead, y: target.y - Math.cos(target.angle) * lead, t: 1.1, target, by: v });
+            say(v, target === player ? '⚡ 번개! 노란 자리를 피해요!' : '찌릿찌릿~ ⚡'); did = true;
+          }
+        } else if (v.prank === 'slam') {
+          if (Math.hypot(v.x - player.x, v.y - player.y) < 90) {
+            const d = Math.hypot(player.x - v.x, player.y - v.y) || 1;
+            player.x += (player.x - v.x) / d * 46; player.y += (player.y - v.y) / d * 46;
+            player.speed *= 0.72; player.bumpFlash = 1;
+            say(v, '쿵! 헐크 박치기! 💚'); did = true;
+          } else if (gap < -60 && gap > -800) {
+            items.push({ kind: 'ribbon', x: v.x - fx0 * 40, y: v.y - fy0 * 40, angle: v.angle, speed: 0, life: 25, owner: v, armed: 0 });
+            say(v, '리본 조심~ 🎀'); did = true;
+          }
+        } else if (v.prank === 'bat') {
+          if (gap < -60 && gap > -800) {
+            items.push({ kind: 'bat', x: v.x - fx0 * 40, y: v.y - fy0 * 40, angle: v.angle, speed: 0, life: 25, owner: v, armed: 0 });
+            say(v, '박쥐 풍선 뿅! 🦇'); did = true;
+          } else if (gap > 250) {
+            v.boost = Math.max(v.boost, 1.3); say(v, '재윙이 날아와요! 🦇'); did = true;
+          }
+        }
+      }
+      v.prankClock = did ? 9 + Math.random() * 4 : 1.2;
+    }
+    for (const st of strikes) {
+      st.t -= dt;
+      if (st.t > 0 || st.done) continue;
+      st.done = true;
+      let hitPlayer = false;
+      for (const k of karts) {
+        if (k.finished || k.hop > 0 || Math.hypot(k.x - st.x, k.y - st.y) > 80) continue;
+        k.spin = 0.8; k.speed *= 0.5; k.coins = Math.max(0, (k.coins || 0) - 2);
+        if (k === player) { hitPlayer = true; celebrate('찌릿! ⚡'); }
+      }
+      if (st.target === player && !hitPlayer) { celebrate('휙! 번개를 피했어요! ✨'); audio.sfx('trick'); }
+    }
+    strikes = strikes.filter(st => !st.done);
+  }
+
+  // ================== 부스터 꼬리 ==================
+  function drawTrail() {
+    const tr = player && player.look && player.look.trail;
+    if (tr && player.boost > 0 && trail.length < 40 && Math.random() < 0.7) {
+      trail.push({ x: W * 0.5 + (Math.random() - 0.5) * 50, y: H * 0.82 + 20, vx: (Math.random() - 0.5) * 80, vy: 120 + Math.random() * 80, life: 0.55,
+        c: tr.color === 'rainbow' ? SK.Sprites.hsl((time * 1.3 + Math.random() * 0.2) % 1) : tr.color, shape: tr.shape });
+    }
+    for (const t of trail) {
+      t.life -= 1 / 60; t.x += t.vx / 60; t.y += t.vy / 60;
+      if (t.life <= 0) continue;
+      if (t.shape === 'heart') SK.Sprites.drawHeart(ctx, t.x, t.y, 1.4, Math.min(1, t.life * 2), 0);
+      else SK.Sprites.drawStarShape(ctx, t.x, t.y, 9, t.life * 6, t.c);
+    }
+    trail = trail.filter(t => t.life > 0);
+  }
+
+  // ================== 코인 정산·그랑프리 ==================
+  function settleCoins() {
+    if (earned) return;
+    const bonus = FINISH_COINS[Math.min(FINISH_COINS.length - 1, player.place - 1)];
+    const picks = Math.min(40, coinPicks);
+    earned = { picks, bonus };
+    SK.Garage.addCoins(garage, picks + bonus);
+    SK.Garage.save(garage);
+  }
+  function startCup(i) {
+    const cup = SK.CUPS[i];
+    const me = SK.CHARACTERS[chosen];
+    const friends = shuffle(SK.CHARACTERS.filter(c => c !== me)).slice(0, 3);
+    gp = { cup, race: 0, lineup: [me].concat(cup.villains.map(SK.driverById), friends) };
+    gp.points = gp.lineup.map(() => 0); gp.gain = gp.lineup.map(() => 0);
+    trackIndex = SK.TRACKS.findIndex(t => t.id === cup.tracks[0]);
+    startRace(false);
+  }
+  function scoreCup() {
+    if (gp.scored) return;
+    gp.gain = gp.lineup.map(() => 0);
+    resultOrder.forEach((k, place) => { const pts = SK.POINTS[place] || 0; gp.points[k.lineupIndex] += pts; gp.gain[k.lineupIndex] = pts; });
+    gp.scored = true;
+  }
+  function cupOrder() {
+    return gp.lineup.map((spec, i) => ({ spec, i, pts: gp.points[i] })).sort((a, b) => b.pts - a.pts || a.i - b.i);
+  }
+  function nextCupRace() {
+    if (gp.race >= gp.cup.tracks.length - 1) { showPodium(); return; }
+    gp.race++;
+    trackIndex = SK.TRACKS.findIndex(t => t.id === gp.cup.tracks[gp.race]);
+    startRace(false);
+  }
+  function drawCupResult() {
+    const g = ctx;
+    g.fillStyle = 'rgba(60,40,70,0.55)'; g.fillRect(0, 0, W, H);
+    g.fillStyle = 'rgba(255,255,255,0.95)'; rrAt(g, W * 0.5 - 270, 50, 540, 440, 26); g.fill();
+    g.strokeStyle = '#ffd34d'; g.lineWidth = 5; g.stroke();
+    g.textAlign = 'center'; g.fillStyle = '#4a3550'; g.font = '900 30px "Malgun Gothic", sans-serif';
+    g.fillText(gp.cup.icon + ' ' + gp.cup.name + ' ' + (gp.race + 1) + ' / ' + gp.cup.tracks.length + ' · ' + player.place + '등!', W * 0.5, 98);
+    cupOrder().forEach((r, i) => {
+      const y = 140 + i * 40;
+      g.font = '900 21px "Malgun Gothic", sans-serif';
+      g.fillStyle = r.i === 0 ? '#ff5c8a' : '#6b5b78';
+      g.textAlign = 'left'; g.fillText((i + 1) + '위', W * 0.5 - 220, y);
+      g.fillText((r.spec.villain ? '😈 ' : '') + r.spec.name, W * 0.5 - 150, y);
+      g.textAlign = 'right'; g.fillText(r.pts + '점', W * 0.5 + 170, y);
+      g.fillStyle = '#b8860b'; g.font = '900 16px "Malgun Gothic", sans-serif'; g.fillText('+' + gp.gain[r.i], W * 0.5 + 225, y);
+    });
+    g.textAlign = 'center'; g.font = '900 16px "Malgun Gothic", sans-serif'; g.fillStyle = '#b8860b';
+    if (earned) g.fillText('🪙 +' + (earned.picks + earned.bonus) + ' → 모은 코인 ' + garage.coins, W * 0.5, 404);
+    const last = gp.race >= gp.cup.tracks.length - 1;
+    g.fillStyle = '#4a3550'; g.font = '900 20px "Malgun Gothic", sans-serif';
+    g.fillText(last ? '🏆 시상식' : '다음 경주 ▶', 355, 458); g.fillText('그만하기', 605, 458);
+  }
+  function showPodium() {
+    const order = cupOrder();
+    const myPlace = order.findIndex(r => r.i === 0) + 1;
+    const newGold = myPlace === 1 && SK.Garage.trophy(garage, gp.cup.id, 1);
+    if (myPlace > 1) SK.Garage.trophy(garage, gp.cup.id, myPlace);
+    const bonus = myPlace <= 3 ? TROPHY_COINS[myPlace - 1] : 5;
+    SK.Garage.addCoins(garage, bonus); SK.Garage.save(garage);
+    podium = { order, myPlace, bonus, newGold, cup: gp.cup, t: 0 };
+    confetti = [];
+    scene = 'podium';
+    audio.stopMusic(); audio.fanfare();
+  }
+  function leavePodium() { gp = null; podium = null; scene = 'select'; selStep = 0; }
+  function drawPodium(dt) {
+    const g = ctx, P = podium;
+    P.t += dt;
+    const bg = g.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, '#ffd9ec'); bg.addColorStop(1, '#c9e9ff');
+    g.fillStyle = bg; g.fillRect(0, 0, W, H);
+    // 시상대
+    const slots = [[480, 262, '#ffd34d', 88], [300, 296, '#dfe6f0', 54], [660, 316, '#e8a86b', 34]];   // 아래 끝을 410에 맞춘다
+    P.order.slice(0, 3).forEach((r, i) => {
+      const [x, top, col, h] = slots[i];
+      g.fillStyle = col; rrAt(g, x - 80, top, 160, h + 60, 10); g.fill();
+      g.strokeStyle = '#4a3550'; g.lineWidth = 3; g.stroke();
+      g.fillStyle = '#4a3550'; g.font = '900 34px "Malgun Gothic", sans-serif'; g.textAlign = 'center';
+      g.fillText(String(i + 1), x, top + 44);
+      const kk = { spec: r.spec, bob: P.t * 3 + i, boost: 0, drift: 0, driftDir: 0, look: r.i === 0 ? SK.Garage.look(garage) : null };
+      SK.Sprites.drawKart(g, kk, x, top - 30, 1.05, Math.sin(P.t * 2 + i) * 0.2, P.t);
+      g.font = '900 16px "Malgun Gothic", sans-serif'; g.fillText((r.spec.villain ? '😈 ' : '') + r.spec.name, x, top - 88);
+    });
+    // 트로피
+    g.save(); g.translate(480, 112 + Math.sin(P.t * 2) * 4);
+    g.fillStyle = '#ffc83a'; g.strokeStyle = '#a5762c'; g.lineWidth = 3;
+    g.beginPath(); g.moveTo(-26, -30); g.lineTo(26, -30); g.quadraticCurveTo(24, 6, 0, 10); g.quadraticCurveTo(-24, 6, -26, -30); g.fill(); g.stroke();
+    g.beginPath(); g.arc(-30, -18, 9, Math.PI * 0.5, Math.PI * 1.5); g.stroke();
+    g.beginPath(); g.arc(30, -18, 9, -Math.PI * 0.5, Math.PI * 0.5); g.stroke();
+    g.fillRect(-5, 10, 10, 14); g.fillRect(-18, 24, 36, 8);
+    g.restore();
+    // 꽃가루
+    if (confetti.length < 90) confetti.push({ x: Math.random() * W, y: -10, vy: 60 + Math.random() * 80, c: ['#ff7aa8', '#ffd34d', '#7fe0c4', '#7fb8ff', '#c79bff'][Math.floor(Math.random() * 5)], r: Math.random() * 6 });
+    confetti.forEach(c => { c.y += c.vy * dt; c.r += dt * 4; g.save(); g.translate(c.x + Math.sin(c.r) * 8, c.y); g.rotate(c.r); g.fillStyle = c.c; g.fillRect(-4, -6, 8, 12); g.restore(); });
+    confetti = confetti.filter(c => c.y < H + 20);
+    // 글
+    g.textAlign = 'center'; g.font = '900 34px "Malgun Gothic", sans-serif'; g.lineWidth = 9; g.strokeStyle = '#8c4a63'; g.lineJoin = 'round';
+    const title = P.myPlace <= 3 ? (MEDAL[P.myPlace] + ' ' + P.cup.name + (P.myPlace === 1 ? ' 우승!' : ' ' + P.myPlace + '등 트로피!')) : P.cup.name + ' 완주! 다음엔 트로피까지!';
+    g.strokeText(title, W * 0.5, 60); g.fillStyle = '#ffffff'; g.fillText(title, W * 0.5, 60);
+    g.font = '900 16px "Malgun Gothic", sans-serif'; g.fillStyle = '#b8860b';
+    g.fillText('🪙 트로피 보너스 +' + P.bonus + ' → 모은 코인 ' + garage.coins + (P.newGold ? '  ·  🎁 차고에 황금 장식이 열렸어요!' : ''), W * 0.5, 440);
+    g.fillStyle = '#4a3550'; g.font = '900 20px "Malgun Gothic", sans-serif';
+    g.fillText('처음으로', 355, 488); g.fillText('🧰 차고 가기', 605, 488);
+  }
+
+  // ================== 차고 ==================
+  function openGarage() { garage = SK.Garage.load(); scene = 'garage'; garageMsg = SK.CHARACTERS[chosen].name + '의 카트예요. 누르면 사서 바로 끼워요.'; }
+  const GRID = { x: 452, y: 176, w: 150, h: 76, cols: 3, gap: 12 };
+  function drawGarage() {
+    const g = ctx;
+    const bg = g.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, '#ffd9ec'); bg.addColorStop(1, '#c9e9ff');
+    g.fillStyle = bg; g.fillRect(0, 0, W, H);
+    g.textAlign = 'center'; g.fillStyle = '#8c4a63'; g.font = '900 30px "Malgun Gothic", sans-serif';
+    g.fillText('🧰 내 카트 차고', 220, 70);
+    g.fillStyle = 'rgba(255,255,255,0.6)'; rrAt(g, 50, 96, 340, 280, 26); g.fill();
+    const kk = { spec: SK.CHARACTERS[chosen], bob: time * 3, boost: Math.sin(time) > 0.6 ? 1 : 0, drift: 0, driftDir: 0, look: SK.Garage.look(garage) };
+    SK.Sprites.drawKart(g, kk, 220, 290, 2.1, Math.sin(time * 1.2) * 0.25, time);
+    g.fillStyle = '#b8860b'; g.font = '900 26px "Malgun Gothic", sans-serif'; g.fillText('🪙 ' + garage.coins, 220, 414);
+    g.fillStyle = '#8c7a95'; g.font = '800 14px "Malgun Gothic", sans-serif'; g.fillText(garageMsg, 220, 440);
+    g.fillStyle = '#c38be0'; rrAt(g, 110, 458, 220, 50, 25); g.fill();
+    g.fillStyle = '#ffffff'; g.font = '900 20px "Malgun Gothic", sans-serif'; g.fillText('다 꾸몄어요 ▶', 220, 490);
+    // 탭
+    SK.Garage.SLOTS.forEach((sl, i) => {
+      const x = GRID.x + i * 118, on = sl.id === garageSlot;
+      g.fillStyle = on ? '#ff8fb4' : 'rgba(255,255,255,0.85)'; rrAt(g, x, 110, 108, 40, 20); g.fill();
+      g.fillStyle = on ? '#ffffff' : '#8c4a63'; g.font = '900 16px "Malgun Gothic", sans-serif'; g.fillText(sl.name, x + 54, 136);
+    });
+    SK.Garage.CATALOG[garageSlot].forEach((item, i) => {
+      const cx = GRID.x + (i % GRID.cols) * (GRID.w + GRID.gap), cy = GRID.y + Math.floor(i / GRID.cols) * (GRID.h + GRID.gap);
+      const st = SK.Garage.state(garage, garageSlot, item.id);
+      g.globalAlpha = st === 'poor' || st === 'locked' ? 0.55 : 1;
+      g.fillStyle = 'rgba(255,255,255,0.92)'; rrAt(g, cx, cy, GRID.w, GRID.h, 16); g.fill();
+      g.strokeStyle = st === 'equipped' ? '#ff5c8a' : 'rgba(140,74,99,0.25)'; g.lineWidth = st === 'equipped' ? 4 : 2; g.stroke();
+      const sw = item.color || item.tire;
+      if (sw) {
+        g.fillStyle = sw === 'rainbow' ? SK.Sprites.hsl((time * 0.3) % 1) : sw;
+        g.beginPath(); g.arc(cx + 24, cy + 38, 13, 0, Math.PI * 2); g.fill();
+      }
+      g.textAlign = 'left'; g.fillStyle = '#4a3550'; g.font = '900 15px "Malgun Gothic", sans-serif';
+      g.fillText(item.name, cx + (sw ? 44 : 14), cy + 32);
+      g.font = '900 13px "Malgun Gothic", sans-serif';
+      g.fillStyle = st === 'equipped' ? '#ff3d7a' : st === 'buy' ? '#b8860b' : '#8c7a95';
+      const tag = st === 'equipped' ? '✓ 쓰는 중' : st === 'owned' ? '쓰기' : st === 'locked'
+        ? (item.need === 'heart' ? '🏆 하트 컵 우승' : item.need === 'star' ? '🏆 별 컵 우승' : '🏆 컵 우승') : '🪙 ' + item.price;
+      g.fillText(tag, cx + (sw ? 44 : 14), cy + 56);
+      g.globalAlpha = 1; g.textAlign = 'center';
+    });
+  }
+  function garagePointer(p) {
+    if (Math.abs(p.x - 220) < 110 && Math.abs(p.y - 483) < 25) { scene = 'select'; selStep = 0; return; }
+    SK.Garage.SLOTS.forEach((sl, i) => {
+      const x = GRID.x + i * 118;
+      if (p.x >= x && p.x <= x + 108 && p.y >= 110 && p.y <= 150) garageSlot = sl.id;
+    });
+    SK.Garage.CATALOG[garageSlot].forEach((item, i) => {
+      const cx = GRID.x + (i % GRID.cols) * (GRID.w + GRID.gap), cy = GRID.y + Math.floor(i / GRID.cols) * (GRID.h + GRID.gap);
+      if (p.x < cx || p.x > cx + GRID.w || p.y < cy || p.y > cy + GRID.h) return;
+      const r = SK.Garage.tap(garage, garageSlot, item.id);
+      if (r === 'bought' || r === 'equipped') { SK.Garage.save(garage); audio.sfx(r === 'bought' ? 'coin' : 'pickup'); garageMsg = r === 'bought' ? item.name + '을(를) 샀어요!' : item.name + ' 장착!'; }
+      else if (r === 'poor') garageMsg = '코인이 ' + (item.price - garage.coins) + '개 더 필요해요. 경주에서 모아 와요!';
+      else if (r === 'locked') garageMsg = '그랑프리 우승 트로피로 열려요!';
+    });
+  }
+
   // ---------- 루프 ----------
-  let last = 0;
+  let last = 0, lastDt = 0;
   function frame(now) {
     requestAnimationFrame(frame);
     const dt = Math.min(0.05, (now - last) / 1000 || 0);
     last = now;
     update(dt);
+    lastDt = dt;
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.fillStyle = '#2b2038';
@@ -890,6 +1249,10 @@
 
     if (scene === 'select') {
       drawSelect();
+    } else if (scene === 'garage') {
+      drawGarage();
+    } else if (scene === 'podium') {
+      drawPodium(lastDt);
     } else {
       drawSky();
       drawWorld();
@@ -959,22 +1322,30 @@
       if (e.repeat && scene !== 'race') return;
       keys[e.code] = true;
       if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Space'].includes(e.code)) e.preventDefault();
+      if (scene === 'garage') { if (e.code === 'Escape' || e.code === 'Enter') scene = 'select'; return; }
+      if (scene === 'podium') { if (e.code === 'Escape' || e.code === 'Enter' || e.code === 'Space') leavePodium(); return; }
       if (scene === 'select') {
-        const n = selStep === 0 ? SK.CHARACTERS.length : SK.TRACKS.length;
-        const cur = selStep === 0 ? chosen : trackIndex;
-        let next = cur;
-        if (e.code === 'ArrowLeft') next = (cur + n - 1) % n;
-        if (e.code === 'ArrowRight') next = (cur + 1) % n;
-        if (selStep === 0) chosen = next; else { trackIndex = next; readRecords(); }
-        if (e.code === 'KeyR' && selStep === 1 && rivalRec.unlocked) { startRace(true); return; }
-        if (e.code === 'Space' || e.code === 'Enter') {
-          if (selStep === 0) selStep = 1; else startRace();
+        if (selStep === 0) {
+          const n = SK.CHARACTERS.length;
+          if (e.code === 'ArrowLeft') chosen = (chosen + n - 1) % n;
+          if (e.code === 'ArrowRight') chosen = (chosen + 1) % n;
+          if (e.code === 'KeyG') { openGarage(); return; }
+          if (e.code === 'Space' || e.code === 'Enter') selStep = 1;
+        } else {
+          // 컵 두 개 → 코스 네 개 순서로 돈다
+          const n = SK.CUPS.length + SK.TRACKS.length;
+          let cur = cupSel >= 0 ? cupSel : SK.CUPS.length + trackIndex;
+          if (e.code === 'ArrowLeft') cur = (cur + n - 1) % n;
+          if (e.code === 'ArrowRight') cur = (cur + 1) % n;
+          if (cur < SK.CUPS.length) cupSel = cur; else { cupSel = -1; trackIndex = cur - SK.CUPS.length; readRecords(); }
+          if (e.code === 'KeyR' && rivalRec.unlocked && cupSel < 0) { gp = null; startRace(true); return; }
+          if (e.code === 'Space' || e.code === 'Enter') { if (cupSel >= 0) startCup(cupSel); else { gp = null; startRace(); } }
+          if (e.code === 'Escape') selStep = 0;
         }
-        if (e.code === 'Escape' && selStep === 1) selStep = 0;
       } else if (scene === 'result' && (e.code === 'Space' || e.code === 'Enter')) {
-        startRace(rivalMode);
+        if (gp) nextCupRace(); else startRace(rivalMode);
       } else if (scene === 'result' && e.code === 'Escape') {
-        scene = 'select'; selStep = 1;
+        gp = null; scene = 'select'; selStep = 1;
       }
     }, { passive: false });
     window.addEventListener('keyup', e => { keys[e.code] = false; });
@@ -983,31 +1354,45 @@
       e.preventDefault();
       const p = toLogical(e);
       canvas.setPointerCapture?.(e.pointerId);
+      if (scene === 'garage') { garagePointer(p); return; }
+      if (scene === 'podium') { if (p.y > 440) { if (p.x > 480) { leavePodium(); openGarage(); } else leavePodium(); } return; }
       if (scene === 'select') {
         if (selStep === 0) {
-          const at = cardLayout(SK.CHARACTERS.length, 112);
+          if (Math.abs(p.x - 480) < 130 && Math.abs(p.y - 144) < 18) { openGarage(); return; }
+          const at = cardLayout(SK.CHARACTERS.length, CARD0_W);
           for (let i = 0; i < SK.CHARACTERS.length; i++) {
-            if (Math.abs(p.x - at(i)) < 62 && Math.abs(p.y - 280) < 112) {
+            if (Math.abs(p.x - at(i)) < CARD0_W / 2 + 2 && Math.abs(p.y - 270) < 96) {
               if (chosen === i) selStep = 1; else chosen = i;
               return;
             }
           }
           selStep = 1;
         } else {
-          if (rivalRec.unlocked && Math.abs(p.x - 480) < 150 && Math.abs(p.y - 155) < 17) { startRace(true); return; }
+          for (let i = 0; i < SK.CUPS.length; i++) {
+            if (Math.abs(p.x - (330 + i * 300)) < 135 && Math.abs(p.y - 150) < 24) {
+              if (cupSel === i) startCup(i); else cupSel = i;
+              return;
+            }
+          }
+          if (rivalRec.unlocked && cupSel < 0 && Math.abs(p.x - 480) < 150 && Math.abs(p.y - 416) < 16) { gp = null; startRace(true); return; }
           const at = cardLayout(SK.TRACKS.length, 196);
           for (let i = 0; i < SK.TRACKS.length; i++) {
             if (Math.abs(p.x - at(i)) < 100 && Math.abs(p.y - 288) < 118) {
-              if (trackIndex === i) startRace(); else { trackIndex = i; readRecords(); }
+              if (trackIndex === i && cupSel < 0) { gp = null; startRace(); } else { cupSel = -1; trackIndex = i; readRecords(); }
               return;
             }
           }
           if (p.y > 460) selStep = 0;   // 아래쪽을 누르면 뒤로
-          else startRace();
         }
         return;
       }
-      if (scene === 'result') { if (p.y >= 430 && p.y <= 470) { if (p.x >= 230 && p.x < 480) startRace(rivalMode); else if (p.x >= 480 && p.x <= 730) { scene = 'select'; selStep = 1; } } return; }
+      if (scene === 'result') {
+        if (p.y >= 430 && p.y <= 470) {
+          if (p.x >= 230 && p.x < 480) { if (gp) nextCupRace(); else startRace(rivalMode); }
+          else if (p.x >= 480 && p.x <= 730) { gp = null; scene = 'select'; selStep = 1; }
+        }
+        return;
+      }
       // 레이스 조작
       if (Math.hypot(p.x - 92, p.y - (H - 88)) < 62) { touch.steer = -1; touch.leftId = e.pointerId; return; }
       if (Math.hypot(p.x - 242, p.y - (H - 88)) < 62) { touch.steer = 1; touch.leftId = e.pointerId; return; }
@@ -1053,6 +1438,11 @@
       else { drawSky(); drawWorld(); drawHUD(); drawCountdown(); if (scene === 'result') drawResult(); }
     },
     press(code) { keys[code] = true; },
-    release(code) { keys[code] = false; }
+    release(code) { keys[code] = false; },
+    get fx() { return fx; }, get gp() { return gp; }, get garage() { return garage; }, get coinPicks() { return coinPicks; },
+    get strikes() { return strikes; }, get items() { return items; },
+    startCup, nextCupRace, showPodium, openGarage, updateVillains, garagePointer,
+    setCup(i) { cupSel = i; },
+    autopilot(on) { autoPilot = !!on; }
   };
 })();

@@ -16,7 +16,7 @@ export function showTitle(root, { onStart, onBrowse }) {
     const progress = getHeroProgress(selected), upcoming = nextPerk(progress);
     root.innerHTML = `
       <div class="screen side-title"><div class="screen-inner hero-title-layout">
-        <header class="hero-title-head"><div class="eyebrow">동양 고전 액션 · 삼국지 · 서유기 · 수호지</div><div class="h1">세 영웅 출진</div><div class="sub">장수를 선택하면 인물별 무기·궁술·승마 전투와 호로관 이야기가 시작됩니다.</div></header>
+        <header class="hero-title-head"><div class="eyebrow">역사와 고전 액션 · 삼국지 · 서유기 · 한국 명장</div><div class="h1">세 영웅 출진</div><div class="sub">장수를 선택하면 인물별 무기·궁술·승마 전투와 호로관 이야기가 시작됩니다.</div></header>
         <div class="hero-select" role="list" aria-label="출전 장수 선택">
           ${HEROES.map((id) => { const p = person(id), s = stats(id); return `<button class="hero-card ${id === selected ? 'on' : ''}" data-hero="${id}" role="listitem"><span class="hero-card-art" style="background-image:url('${PORTRAITS[id]}')"></span><span class="hero-card-copy"><b>${p.name}</b><small>${signature(id).name} · ${s.style}</small></span><span class="hero-sigil">${s.sigil}</span></button>`; }).join('')}
         </div>

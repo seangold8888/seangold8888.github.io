@@ -1,5 +1,8 @@
 // 산리오 카트 3D — 캐릭터, 카트 모델, 물리
 import * as THREE from '../vendor/three.module.min.js';
+import { KIDS, VILLAINS, buildKidHead, addKidFlair, kidFaceTexture } from './drivers.js';
+
+export { VILLAINS };
 
 export const CHARACTERS = [
   { id: 'kitty',  name: '헬로키티',   body: 0xff8fb4, trim: 0xffffff, fur: 0xffffff, top: 118, accel: 2.6, turn: 2.35, deco: 'ribbon', kart: 'bow' },
@@ -9,7 +12,12 @@ export const CHARACTERS = [
   { id: 'pochaco',name: '포차코',     body: 0xffffff, trim: 0x8fd0ff, fur: 0xffffff, top: 116, accel: 2.7, turn: 2.45, deco: 'pup',    kart: 'stripe' },
   { id: 'gude',   name: '구데타마',   body: 0xffe27a, trim: 0xfff3c4, fur: 0xffe27a, top: 110, accel: 3.1, turn: 2.75, deco: 'egg',    kart: 'pan' },
   { id: 'purin',  name: '폼폼푸린',   body: 0xffe27a, trim: 0x8a5a33, fur: 0xffe27a, top: 120, accel: 2.55, turn: 2.4, deco: 'purin',  kart: 'pudding' }
-];
+].concat(KIDS);
+
+// 이름표로 드라이버 찾기(친구·아이들·장난꾸러기 모두)
+export function driverById(id) {
+  return CHARACTERS.find(c => c.id === id) || VILLAINS.find(c => c.id === id) || null;
+}
 
 // 카트 장식 — 캐릭터마다 실루엣이 달라야 한 눈에 구분된다.
 // 여러 개짜리는 InstancedMesh 로 묶어 카트당 1 드로우콜을 지킨다.
@@ -53,6 +61,8 @@ function addKartFlair(g, spec, mat) {
     many(new THREE.CylinderGeometry(2.9, 3.9, 3.4, 16), mat(0xffe27a), [[0, 9.8, 12.2]]);
     many(new THREE.SphereGeometry(3.0, 14, 10, 0, Math.PI * 2, 0, Math.PI * 0.5), mat(0x9c6326),
       [[0, 11.4, 12.2]]);
+  } else {
+    addKidFlair(g, spec, mat, many);
   }
 }
 
@@ -63,11 +73,13 @@ export function buildKartModel(spec) {
 
   // 차체 (둥글게)
   const body = new THREE.Mesh(new THREE.BoxGeometry(15, 7, 22), mat(spec.body));
+  body.name = 'paint';
   body.position.y = 6.5;
   g.add(body);
   const nose = new THREE.Mesh(new THREE.SphereGeometry(7.4, 12, 10), mat(spec.body));
   nose.scale.set(1, 0.62, 0.8);
   nose.position.set(0, 6.6, 11);
+  nose.name = 'paint';
   g.add(nose);
   const seat = new THREE.Mesh(new THREE.BoxGeometry(11, 6, 7), mat(spec.trim));
   seat.position.set(0, 11, -5);
@@ -181,6 +193,8 @@ export function buildKartModel(spec) {
       ear.position.set(sgn * 5.9, -2.1, -0.2);
       ear.rotation.z = sgn * 0.42; head.add(ear);
     });
+  } else if (spec.kid) {
+    buildKidHead(head, face, spec, mat);
   } else {
     // 구데타마: 노른자
     face.scale.set(1.25, 0.9, 1.05);
@@ -193,7 +207,7 @@ export function buildKartModel(spec) {
   head.position.set(0, 15.4, -3.4);
   g.add(head);
 
-  g.userData = { wheels, head, spec, steerWheel, faceMesh, mood: 'normal' };
+  g.userData = { wheels, head, spec, steerWheel, faceMesh, mood: 'normal', body, nose };
   return g;
 }
 
@@ -201,6 +215,7 @@ export function buildKartModel(spec) {
 const faceCache = new Map();
 
 function faceTexture(spec, mood) {
+  if (spec.kid) return kidFaceTexture(spec, mood, faceCache);
   mood = mood || 'normal';
   const key = spec.id + ':' + mood;
   if (faceCache.has(key)) return faceCache.get(key);
@@ -377,7 +392,8 @@ export class Kart {
     this.vAngle = this.angle;
   }
 
-  get topSpeed() { return this.baseTop * (this.boost > 0 ? 1.36 : 1); }
+  // 코인 하나에 최고 속도 0.8%, 열 개까지(마리오카트식). 부딪혀 빙글 돌면 코인을 조금 흘린다.
+  get topSpeed() { return this.baseTop * (this.boost > 0 ? 1.36 : 1) * (1 + Math.min(10, this.coins || 0) * 0.008); }
 
   update(dt, input) {
     const T = this.track;
@@ -387,6 +403,8 @@ export class Kart {
     this.shield = Math.max(0, this.shield - dt);
     this.magnet = Math.max(0, this.magnet - dt);
     this.itemCooldown = Math.max(0, this.itemCooldown - dt);
+    this.trickWindow = Math.max(0, (this.trickWindow || 0) - dt);
+    this.zapWarn = Math.max(0, (this.zapWarn || 0) - dt);
 
     const surf = T.sample(this.x, this.z);
 
@@ -477,7 +495,14 @@ export class Kart {
     if (this.airborne) {
       this.vy -= GRAV * dt;
       this.y += this.vy * dt;
-      if (this.y <= groundY) { this.y = groundY; this.vy = 0; this.airborne = false; }
+      // 묘기: 점프대·통통 쿠션에서 떠오른 직후 점프 버튼을 누르면 한 바퀴 돌고, 착지하면 부스터
+      if (input.jump && this.trickWindow > 0 && !this.trick) { this.trick = true; this.trickSpin = 0; }
+      if (this.trick && this.trickSpin < Math.PI * 2) this.trickSpin = Math.min(Math.PI * 2, this.trickSpin + dt * 13);
+      if (this.y <= groundY) {
+        this.y = groundY; this.vy = 0; this.airborne = false;
+        if (this.trick) { this.boost = Math.max(this.boost, 0.95); this.trickLanded = 1; }
+        this.trick = false; this.trickSpin = 0; this.trickWindow = 0;
+      }
     } else {
       this.y += (groundY - this.y) * Math.min(1, dt * 12);
       // 점프대
@@ -486,6 +511,7 @@ export class Kart {
         if (Math.hypot(this.x - p.x, this.z - p.z) < 26 && this.speed > this.baseTop * 0.5) {
           this.airborne = true;
           this.vy = 78 + this.speed * 0.24;
+          this.trickWindow = 0.6;
           break;
         }
       }
@@ -513,7 +539,7 @@ export class Kart {
 
   applyToModel(model) {
     model.position.set(this.x, this.y, this.z);
-    model.rotation.y = this.angle;
+    model.rotation.y = this.angle + (this.trickSpin || 0);
     model.rotation.z = -this.lean * 0.18;
     const d = model.userData;
     if (d && d.wheels) d.wheels.forEach(w => { w.rotation.x = this.wheelSpin; });

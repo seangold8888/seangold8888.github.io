@@ -377,6 +377,8 @@
     one: ["1", "won"],
     jaei: ["jay", "jae", "jey", "jaye", "jayi", "j"],
     taeo: ["tao", "tayo", "teo", "tae", "tail", "taylor", "theo"],
+    jay: ["jaei", "jae", "jey", "jaye", "jayi", "j"],
+    teo: ["taeo", "tao", "tayo", "tae", "tail", "taylor", "theo"],
     five: ["5"],
     too: ["to", "two", "2"],
     two: ["to", "too", "tu", "2"],
@@ -672,10 +674,11 @@
     // Silent recovery is temporary. A fresh question gets another chance to
     // celebrate, so one old iOS microphone stall cannot mute praise forever.
     session.silent = callbacks.silent === true;
+    session.autoRetries = 0;
     let disposed = false, awarded = false, active = null, serial = 0, timer = null, finalText = "";
     let retried = false, soundActive = false, soundTimer = null, stopTimer = null, passDone = false, stopping = null;
     let audioCtx = null, primedCtx = null, playing = null, healthTimer = null, recovering = false;
-    let recoveryButton = null;
+    let recoveryButton = null, retryTimer = null, carry = [], lastFinals = [], finishing = false;
     const Recognition = env.SpeechRecognition || env.webkitSpeechRecognition;
     const showLog = !!(env.location && /(?:\?|&)readinglog=1/.test(env.location.search || ""));
     const nodes = {};
@@ -704,7 +707,7 @@
     [nodes.mic, nodes.stop].forEach(function (button) {
       button.type = "button"; actions.appendChild(button);
     });
-    const fallback = element("button", "", "마이크가 안 돼요 · 다른 문제 풀기");
+    const fallback = element("button", "reading-alternative", "마이크가 안 돼요 · 다른 문제 풀기");
     fallback.type = "button"; fallback.hidden = true;
     if (callbacks.onUnavailable) actions.appendChild(fallback);
     fallback.addEventListener("click", function () {
@@ -724,13 +727,13 @@
       record(env, session, event);
       if (logNode && !disposed) logNode.textContent = session.log.join("\n");
     }
-    log("mount-v16" + (touchIOS ? " ios-quiet-round" : ""));
+    log("mount-v23" + (touchIOS ? " ios-quiet-round" : ""));
 
     function controls() {
-      nodes.mic.disabled = disposed || awarded || recovering || !!active || soundActive || !Recognition || env.isSecureContext === false || env.navigator.onLine === false;
-      if (recoveryButton) recoveryButton.disabled = disposed || awarded || recovering || !!active || soundActive || env.navigator.onLine === false;
-      nodes.stop.disabled = disposed || awarded || !!stopping || (!active && !soundActive);
-      nodes.stop.textContent = soundActive && !awarded ? "안내 멈추고 읽기" : "그만하기";
+      nodes.mic.disabled = disposed || awarded || recovering || !!active || soundActive || !Recognition || env.isSecureContext === false || nav.onLine === false;
+      if (recoveryButton) recoveryButton.disabled = disposed || awarded || recovering || !!active || soundActive || !Recognition || env.isSecureContext === false || nav.onLine === false;
+      nodes.stop.disabled = disposed || awarded || finishing || !!stopping || (!active && !soundActive);
+      nodes.stop.textContent = soundActive && !awarded ? "안내 멈추고 읽기" : "다 읽었어요";
     }
     // 소리를 낼 수 있는 상태인가 (무음 모드가 아니고 Web Audio 를 쓸 수 있을 때)
     function canPlay() {
@@ -757,6 +760,8 @@
     // live microphone, so a missing end event calls after(false) instead.
     function stop(message, after) {
       serial++;
+      finishing = false;
+      env.clearTimeout(retryTimer); retryTimer = null;
       Array.from(actions.children).forEach(function (node) { if (node.className === 'reading-word-listen') node.hidden = true; });
       recovering = false;
       env.clearTimeout(healthTimer); healthTimer = null;
@@ -766,7 +771,7 @@
       if (stopping) { stopping.onend = null; try { stopping.abort(); } catch (_) {} stopping = null; }
       const previous = active; active = null;
       if (previous) {
-        previous.onresult = previous.onerror = previous.onend = previous.onstart = null;
+        previous.onresult = previous.onerror = previous.onend = previous.onstart = previous.onspeechstart = null;
         if (after) {
           const id = serial;
           let settled = false;
@@ -992,32 +997,69 @@
       nodes.mic.textContent = retry ? "🎤 다시 읽기" : "🎤 읽어 보기";
     }
     function finishAttempt() {
+      // A browser ending at a child's pause is not a pronunciation mistake.
+      // Keep only confirmed final words in memory, scoped to this question.
+      if (finalText && isPrefix(sentence.text, finalText) && !matches(sentence.text, finalText)) {
+        carry = lastFinals.map(function (alts) { return alts.slice(); });
+        stop("여기까지 잘 들었어요. ‘이어 읽기’를 누르고 남은 말을 읽어 주세요. 처음부터 다시 읽어도 괜찮아요.");
+        releasePrimedAudio();
+        feedback(finalText);
+        nodes.mic.textContent = "🎤 이어 읽기";
+        fallback.hidden = false;
+        return;
+      }
       resetFlow();
       if (finalText && !matches(sentence.text, finalText)) {
         const flags = matchedWords(sentence.text, finalText);
         const words = normalize(sentence.text).split(" ").filter(function (_, i) { return !flags[i]; });
         feedback(finalText, true);
         const spoken = retryWords(sentence.text, finalText);
+        carry = []; lastFinals = [];
         log("retry " + spoken.length);
         stop(spoken.length ? "이렇게 읽어요 👂 " + spoken[0] : "문장에 있는 말만 읽어 주세요", function (safe) { speakWords(spoken, safe); });
         if (callbacks.onRetry) callbacks.onRetry(Array.from(new Set(words)));
       } else {
         log("empty");
         stop("잘 듣지 못했어요. 읽어 보기를 눌러 다시 읽어 주세요.");
+        releasePrimedAudio();
+        fallback.hidden = false;
+        showRecoveryButton();
       }
+    }
+    function scheduleRetry() {
+      const id = serial;
+      retryTimer = env.setTimeout(function () {
+        retryTimer = null;
+        if (!disposed && !awarded && id === serial && !doc.hidden && !nodes.mic.disabled) read();
+      }, 500);
+    }
+    function finishListening() {
+      if (!active || finishing) return;
+      finishing = true; controls();
+      nodes.status.textContent = "마지막 말을 확인하고 있어요…";
+      const recognizer = active, id = serial;
+      env.clearTimeout(healthTimer);
+      // stop(), unlike abort(), asks for the pending final result. Keep result
+      // handlers alive until end, but don't trap the child if end never arrives.
+      healthTimer = env.setTimeout(function () {
+        if (!disposed && !awarded && id === serial && active === recognizer) finishAttempt();
+      }, 2500);
+      try { recognizer.stop(); } catch (_) { finishAttempt(); }
     }
     function offerRecovery(reason) {
       if (disposed || awarded || recovering) return;
       log(reason);
       resetFlow();
       releasePrimedAudio();
+      fallback.hidden = false;
+      if (finalText && isPrefix(sentence.text, finalText)) { finishAttempt(); return; }
       if (touchIOS) {
         stop('마이크 응답이 멈췄어요. 마이크 다시 켜기를 눌러 연결을 새로 준비해 주세요. 오답으로 세지 않아요.');
         showRecoveryButton();
         return;
       }
-      // 소리를 낸 뒤 마이크가 먹통이 되는 기기(iOS WebKit 321436)가 있다.
-      // 처음 막히면 묻지 않고 소리를 끈 뒤 마이크를 새로 켠다. 오답으로 세지 않는다.
+      // Bounded desktop recovery. iOS above stays gesture-driven; never spin
+      // permission prompts or keep listening after the page is hidden.
       if (!session.silent) {
         session.silent = true;
         session.autoRetries = 0;
@@ -1025,7 +1067,7 @@
         if (callbacks.onSilent) { try { callbacks.onSilent(); } catch (_) {} }
         log("auto-silent");
         stop("소리를 잠깐 끄고 마이크를 다시 켰어요. 한 번 더 읽어 주세요.");
-        env.setTimeout(function () { if (!disposed && !awarded && !nodes.mic.disabled) read(); }, 500);
+        scheduleRetry();
         return;
       }
       if (session.autoRetries < 2) {
@@ -1033,7 +1075,7 @@
         detachAudio();
         log("auto-retry " + session.autoRetries);
         stop("마이크를 다시 켰어요. 한 번 더 읽어 주세요.");
-        env.setTimeout(function () { if (!disposed && !awarded && !nodes.mic.disabled) read(); }, 500);
+        scheduleRetry();
         return;
       }
       stop("마이크가 응답하지 않아요. 아래 ‘마이크 다시 켜기’를 눌러 주세요. 오답으로 세지 않아요.");
@@ -1047,6 +1089,7 @@
         recoveryButton.addEventListener("click", recoverMicrophone);
       }
       recoveryButton.hidden = false;
+      controls();
     }
     function recoverMicrophone() {
       if (disposed || awarded || recovering || active || soundActive) return;
@@ -1054,7 +1097,7 @@
       session.silent = true;
       releasePrimedAudio();
       log("recovery-tap");
-      const devices = env.navigator.mediaDevices;
+      const devices = nav.mediaDevices;
       if (!devices || !devices.getUserMedia) { read(); return; }
       recovering = true; controls();
       nodes.status.textContent = "마이크 연결을 다시 준비하고 있어요…";
@@ -1092,14 +1135,16 @@
       stop();
       if (!touchIOS) unlockAudio();
       else session.silent = false;
-      finalText = "";
-      feedback("");
+      lastFinals = carry.map(function (alts) { return alts.slice(); });
+      finalText = lastFinals.map(function (alts) { return alts[0]; }).join(" ");
+      feedback(finalText);
       const id = serial;
       let recognizer;
       try { recognizer = new Recognition(); } catch (_) {
         resetFlow(); log("mic-create-fail");
+        releasePrimedAudio();
         fallback.hidden = false;
-        nodes.status.textContent = "이 브라우저에서 음성 인식을 시작할 수 없어요. Safari 또는 Chrome에서 다시 열어 주세요."; return;
+        nodes.status.textContent = "이 브라우저에서 음성 인식을 시작할 수 없어요. Safari 또는 Chrome에서 다시 열어 주세요."; controls(); return;
       }
       active = recognizer;
       recognizer.lang = "en-US";
@@ -1116,7 +1161,7 @@
       recognizer.onresult = function (event) {
         if (!valid()) return;
         env.clearTimeout(healthTimer);
-        healthTimer = env.setTimeout(function () { if (valid()) offerRecovery("result-stalled"); }, 12000);
+        healthTimer = env.setTimeout(function () { if (valid()) { if (finishing) finishAttempt(); else offerRecovery("result-stalled"); } }, finishing ? 2500 : 12000);
         const finals = [], visible = [];
         for (let i = 0; i < event.results.length; i++) {
           const result = event.results[i];
@@ -1127,11 +1172,19 @@
           visible.push(alts[0]);
           if (result.isFinal) finals.push(alts);
         }
+        // Prefer a new full-sentence attempt over a carried prefix; otherwise
+        // append only confirmed results. Interim words never earn a pass.
+        const fresh = collapseRepeats(finals);
+        const restarted = anyMatches(sentence.text, fresh) || (fresh.length && isPrefix(sentence.text, fresh.map(function (alts) { return alts[0]; }).join(" ")));
+        if (restarted) carry = [];
+        finals.unshift.apply(finals, carry);
+        visible.unshift.apply(visible, carry.map(function (alts) { return alts[0]; }));
         // 안드로이드 크롬은 앞에서 들은 말을 다음 결과에 다시 넣어 준다("I" · "I like" · "I like apples").
         // 그대로 이으면 "I I like I like apples"가 되어 맞게 읽어도 틀린다. 겹친 앞 조각은 버린다.
         const merged = collapseRepeats(finals);
         finals.length = 0;
         merged.forEach(function (alts) { finals.push(alts); });
+        lastFinals = finals;
         finalText = finals.map(function (alts) { return alts[0]; }).join(" ");
         feedback(collapseRepeats(visible.map(function (text) { return [text]; })).map(function (alts) { return alts[0]; }).join(" "));
         if (finals.length) log("result " + finals.length + "/" + event.results.length);
@@ -1139,7 +1192,7 @@
           awarded = true;
           feedback(sentence.text);
           praise();
-        } else if (finalText && !isPrefix(sentence.text, finalText)) {
+        } else if (finalText && !isPrefix(sentence.text, finalText) && Array.from(event.results).every(function (result) { return result.isFinal; })) {
           finishAttempt();
         } else {
           nodes.status.textContent = "듣고 있어요… 문장을 끝까지 읽어 주세요.";
@@ -1147,9 +1200,12 @@
       };
       recognizer.onerror = function (event) {
         if (!valid()) return;
+        if (finalText && isPrefix(sentence.text, finalText) && !matches(sentence.text, finalText)) {
+          carry = lastFinals.map(function (alts) { return alts.slice(); });
+        }
         resetFlow();
         log("error " + (event && event.error));
-        if (event.error !== "no-speech" && event.error !== "aborted") fallback.hidden = false;
+        fallback.hidden = false;
         const messages = {
           "not-allowed": "마이크 또는 음성 인식 권한을 허용해 주세요. 정답 기록은 바뀌지 않았어요.",
           "service-not-allowed": "음성 인식 서비스를 사용할 수 없어요. Safari의 Siri·받아쓰기 설정을 확인해 주세요.",
@@ -1159,24 +1215,28 @@
           "language-not-supported": "영어 음성 인식을 지원하지 않는 기기예요."
         };
         stop(messages[event.error] || "잘 듣지 못했어요. 오답이 아니니 다시 시도해 주세요.");
+        releasePrimedAudio();
+        showRecoveryButton();
       };
       recognizer.onend = function () { if (valid()) { log("end"); active = null; finishAttempt(); } };
       controls();
       nodes.status.textContent = "마이크를 준비하고 있어요…";
-      timer = env.setTimeout(function () { if (valid()) { log("timeout"); finishAttempt(); } }, 25000);
+      // Slow readers get up to a minute; the shorter inactivity watchdog still
+      // detects a dead recognizer. Each real result refreshes that watchdog.
+      timer = env.setTimeout(function () { if (valid()) { log("timeout"); finishAttempt(); } }, 60000);
       healthTimer = env.setTimeout(function () { if (valid()) offerRecovery("start-timeout"); }, (session.lastClip || session.silent) ? 4000 : 12000);
-      try { recognizer.start(); log("start"); } catch (_) { resetFlow(); log("start-fail"); fallback.hidden = false; stop("마이크를 시작하지 못했어요. 잠시 후 다시 눌러 주세요."); }
+      try { recognizer.start(); log("start"); } catch (_) { resetFlow(); log("start-fail"); fallback.hidden = false; stop("마이크를 시작하지 못했어요. 마이크 다시 켜기를 눌러 주세요. 오답이 아니에요."); releasePrimedAudio(); showRecoveryButton(); }
     }
     nodes.mic.addEventListener("click", read);
     nodes.stop.addEventListener("click", function () {
       if (disposed || awarded) return;
       if (soundActive) { stop(); read(); }
-      else if (active) finishAttempt();
+      else if (active) finishListening();
     });
     const hide = function () { if (doc.hidden) { if (active) resetFlow(); stop("잠시 멈췄어요. 읽어 보기를 눌러 다시 시작해요."); releasePrimedAudio(); if (awarded) completePass(); } };
     const leave = function () { if (active) resetFlow(); stop(); releasePrimedAudio(); if (awarded) completePass(); };
     const offline = function () { resetFlow(); fallback.hidden = false; stop("인터넷 연결 후 다시 읽어 주세요. 다른 공부는 계속할 수 있어요."); releasePrimedAudio(); if (awarded) completePass(); };
-    const online = function () { controls(); };
+    const online = function () { controls(); if (!disposed && !awarded && !active && !soundActive) nodes.status.textContent = "인터넷이 연결됐어요. 읽어 보기를 눌러 다시 시작해요."; };
     doc.addEventListener("visibilitychange", hide);
     env.addEventListener("pagehide", leave);
     env.addEventListener("offline", offline);

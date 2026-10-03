@@ -10,12 +10,20 @@ import { dashSkill, startDashState, collectDashHits } from './dashSkills.js';
 import { combatBounds, clampCombatX, constrainEnemy, waveSpawnX } from './combatBounds.js';
 import { MOUNT_PROFILES, drawConsistentMount } from './mountedSprites.js';
 import { BATTLE_CRY_PACKS, FEMALE_BATTLE_CRY_SEGMENTS, battleCryProfile } from './battleCries.js';
+import { elevenVoiceFiles } from './elevenVoicePacks.js';
 import { heroRenderScale } from './heroRenderScale.js';
+import { FAMILY_HERO_IDS, FAMILY_RANGED, FAMILY_COMBAT_PROFILES, FAMILY_CALLOUTS, isFamilyHero } from '../data/familyHeroes.js';
+import { familyProjectile, drawFamilyProjectile, drawFamilySpecial, startFamilyTechnique, familyTechniquePulses, familyTechniqueTargets, familyPulseDamage, steerFamilyProjectile, drawFamilyTechniqueImpact, drawFamilyBind } from './familyCombat.js';
 
 const CANVAS_UI_FONT = '"Pretendard Variable", Pretendard, "Noto Sans KR", "Malgun Gothic", sans-serif';
 const CANVAS_IMPACT_FONT = CANVAS_UI_FONT;
 
 const HERO_ART = {
+  ...Object.fromEntries(FAMILY_HERO_IDS.map(id => [id, { hero: `art/side-scroller/${id}-painted-sheet-v1.png` }])),
+  euljimundeok: { hero: 'art/side-scroller/euljimundeok-painted-sheet-v1.png', heroBow: 'art/side-scroller/euljimundeok-bow-painted-sheet-v1.png' },
+  ganggamchan: { hero: 'art/side-scroller/ganggamchan-painted-sheet-v1.png', heroBow: 'art/side-scroller/ganggamchan-bow-painted-sheet-v1.png' },
+  kwonyul: { hero: 'art/side-scroller/kwonyul-painted-sheet-v1.png', heroBow: 'art/side-scroller/kwonyul-bow-painted-sheet-v1.png' },
+  yisunsin: { hero: 'art/side-scroller/yisunsin-painted-sheet-v1.png', heroBow: 'art/side-scroller/yisunsin-bow-painted-sheet-v1.png' },
   erlangshen: { hero: 'art/side-scroller/erlangshen-hero-painted-sheet-v1.png', heroBow: 'art/side-scroller/erlangshen-hero-bow-painted-sheet-v1.png' },
   honghaier: { hero: 'art/side-scroller/honghaier-painted-sheet-v1.png', heroBow: 'art/side-scroller/honghaier-bow-painted-sheet-v1.png' },
   nezha: {
@@ -132,6 +140,10 @@ const MOUNT_ART = {
 for (const [id, profile] of Object.entries(MOUNT_PROFILES)) MOUNT_ART[id] = profile.horse;
 
 const BOSS_ART = {
+  suiVanguard: 'art/side-scroller/boss-sui-vanguard-painted-sheet-v1.png',
+  khitanVanguard: 'art/side-scroller/boss-khitan-vanguard-painted-sheet-v1.png',
+  haengjuVanguard: 'art/side-scroller/boss-haengju-vanguard-painted-sheet-v1.png',
+  myeongnyangVanguard: 'art/side-scroller/boss-myeongnyang-vanguard-painted-sheet-v1.png',
   yinjiao: 'art/side-scroller/boss-yinjiao-painted-sheet-v1.png',
   honghaier: 'art/side-scroller/boss-honghaier-painted-sheet-v1.png',
   dapeng: 'art/side-scroller/boss-dapeng-painted-sheet-v1.png',
@@ -178,6 +190,10 @@ const MOUNT_KINDS = {
 // 소설별 적장 프로필. 이름만 바뀌고 같은 화웅 스프라이트를 쓰지 않도록
 // 색상·무기·실루엣 장식·공격 사거리까지 보스마다 따로 둔다.
 const BOSS_PROFILES = {
+  suiVanguard: { kind: 'spear', tint: null, glow: '#bd7471', weapon: '수군 장창', attackRange: 235, hitRange: 218, damage: 20, actionDuration: 590, cooldownScale: 1.05, hpScale: .9 },
+  khitanVanguard: { kind: 'sword', tint: null, glow: '#c7a06f', weapon: '거란 곡도', attackRange: 225, hitRange: 210, damage: 22, actionDuration: 520, cooldownScale: .95, hpScale: 1.0 },
+  haengjuVanguard: { kind: 'spear', tint: null, glow: '#d5855b', weapon: '공성 장창', attackRange: 240, hitRange: 220, damage: 24, actionDuration: 540, cooldownScale: .92, hpScale: 1.06 },
+  myeongnyangVanguard: { kind: 'sword', tint: null, glow: '#93bddd', weapon: '수군 도검', attackRange: 225, hitRange: 212, damage: 26, actionDuration: 490, cooldownScale: .85, hpScale: 1.12 },
   huaxiong: { kind: 'halberd', tint: { from: 0, to: 0, width: 54, sat: 1.10, val: 1.04 }, glow: '#ff7048', weapon: '대감도', attackRange: 210, hitRange: 205, damage: 22, hpScale: 1.02 },
   zhangjiao: { kind: 'staff', tint: { from: 0, to: 46, width: 56, sat: 1.12, val: 1.10 }, glow: '#ffd35d', weapon: '구절장', attackRange: 190, hitRange: 190, damage: 20, hpScale: .98 },
   chunyuqiong: { kind: 'axe', tint: { from: 0, to: 205, width: 54, sat: .82, val: 1.00 }, glow: '#b8d4ff', weapon: '대부', attackRange: 220, hitRange: 210, damage: 24, hpScale: 1.08 },
@@ -208,6 +224,10 @@ const BOSS_PROFILES = {
 };
 
 const ENEMY_ROSTERS = {
+  salsu: { faction: '수나라 군', baseHue: 0, names: { soldier: '수나라 보병', archer: '수나라 궁수', heavy: '수나라 중갑병', captain: '수나라 선봉' }, hues: { soldier: 0, archer: 15, heavy: 345, captain: 28 }, weapons: { soldier: 'spear', archer: 'bow', heavy: 'axe', captain: 'halberd' }, accent: '#cf8172' },
+  gwiju: { faction: '거란군', baseHue: 42, names: { soldier: '거란 보병', archer: '거란 궁수', heavy: '거란 중갑병', captain: '거란 선봉' }, hues: { soldier: 42, archer: 28, heavy: 50, captain: 16 }, weapons: { soldier: 'blade', archer: 'bow', heavy: 'axe', captain: 'halberd' }, accent: '#c8a46d' },
+  haengju: { faction: '왜군 공격대', baseHue: 20, names: { soldier: '공성 보병', archer: '공성 궁수', heavy: '공성 중갑병', captain: '공격대 선봉' }, hues: { soldier: 20, archer: 8, heavy: 32, captain: 350 }, weapons: { soldier: 'spear', archer: 'bow', heavy: 'club', captain: 'halberd' }, accent: '#d8926a' },
+  myeongnyang: { faction: '왜군 수군', baseHue: 202, names: { soldier: '갑판 보병', archer: '수군 궁수', heavy: '갑판 중갑병', captain: '수군 선봉' }, hues: { soldier: 202, archer: 188, heavy: 220, captain: 236 }, weapons: { soldier: 'blade', archer: 'bow', heavy: 'spear', captain: 'halberd' }, accent: '#8bbbd3' },
   default: { faction: '적군', baseHue: 0, names: { soldier: '적 병졸', archer: '적 궁수', heavy: '적 중장', captain: '적 부장' }, hues: { soldier: 0, archer: 12, heavy: 28, captain: 345 }, weapons: { soldier: 'blade', archer: 'bow', heavy: 'axe', captain: 'halberd' }, accent: '#d56a45' },
   yellow: { faction: '황건적', baseHue: 46, names: { soldier: '황건 병졸', archer: '황건 궁수', heavy: '황건 장사', captain: '장각 호위대' }, hues: { soldier: 46, archer: 34, heavy: 20, captain: 8 }, weapons: { soldier: 'staff', archer: 'bow', heavy: 'club', captain: 'halberd' }, accent: '#e8bc4c' },
   hulao: { faction: '동탁군', baseHue: 0, names: { soldier: '서량 보병', archer: '서량 궁수', heavy: '서량 중갑', captain: '화웅 선봉대' }, hues: { soldier: 0, archer: 352, heavy: 338, captain: 18 }, weapons: { soldier: 'blade', archer: 'bow', heavy: 'axe', captain: 'halberd' }, accent: '#cf4d3d' },
@@ -233,6 +253,11 @@ const ENEMY_ROSTERS = {
 };
 
 const COMBAT_PROFILES = {
+  ...FAMILY_COMBAT_PROFILES,
+  euljimundeok: { attackTheme: 'water', specialTheme: 'storm', whirlwindTheme: 'water', musouTheme: 'water', arrowColor: '#a1dbea', hitColor: '#78cde1', impactStyle: 'ribbon', audioStyle: 'dual', kinds: { 1: 'sweep', 2: 'reverse', 3: 'wide', special: 'spin' } },
+  ganggamchan: { attackTheme: 'solar', specialTheme: 'earth', whirlwindTheme: 'solar', musouTheme: 'solar', arrowColor: '#efd8a6', hitColor: '#e0c081', impactStyle: 'crescent', audioStyle: 'dual', kinds: { 1: 'sweep', 2: 'overhead', 3: 'wide', special: 'overhead' } },
+  kwonyul: { attackTheme: 'earth', specialTheme: 'flame', whirlwindTheme: 'earth', musouTheme: 'flame', arrowColor: '#e4b090', hitColor: '#d98b67', impactStyle: 'burst', audioStyle: 'dual', kinds: { 1: 'sweep', 2: 'thrust', 3: 'wide', special: 'wide' } },
+  yisunsin: { attackTheme: 'water', specialTheme: 'water', whirlwindTheme: 'storm', musouTheme: 'storm', arrowColor: '#a4d7f1', hitColor: '#80c5e9', impactStyle: 'ribbon', audioStyle: 'dual', kinds: { 1: 'sweep', 2: 'reverse', 3: 'wide', special: 'spin' } },
   liubei: { attackTheme: 'water', specialTheme: 'jade', whirlwindTheme: 'storm', musouTheme: 'solar', arrowColor: '#8ec8ff', hitColor: '#8ec8ff', impactStyle: 'ribbon', audioStyle: 'dual', kinds: { 1: 'sweep', 2: 'reverse', 3: 'wide', special: 'wide', mountedThrust: 'reverse' } },
   guanyu: { attackTheme: 'jade', specialTheme: 'water', whirlwindTheme: 'storm', musouTheme: 'water', arrowColor: '#78e8d0', hitColor: '#62e8c1', impactStyle: 'crescent', audioStyle: 'guandao', kinds: { 1: 'sweep', 2: 'overhead', 3: 'wide', heavy: 'overhead', mountedThrust: 'overhead' } },
   zhangfei: { attackTheme: 'flame', specialTheme: 'inferno', whirlwindTheme: 'flame', musouTheme: 'solar', arrowColor: '#ff9a4e', hitColor: '#ff7548', impactStyle: 'burst', audioStyle: 'spear', kinds: { 1: 'thrust', 2: 'thrust', 3: 'wide', heavy: 'thrust', mountedThrust: 'thrust' } },
@@ -269,6 +294,11 @@ const COMBAT_PROFILES = {
 };
 
 const SPECIAL_CALLOUTS = {
+  ...FAMILY_CALLOUTS,
+  euljimundeok: { special: { name: '살수 역습', cry: '물길을 읽고 길을 연다' }, musou: { name: '살수 결진', cry: '고구려군이 함께 물러서지 않는다' } },
+  ganggamchan: { special: { name: '귀주 결진', cry: '흩어진 진형을 다시 모은다' }, musou: { name: '귀주 대승', cry: '고려의 진형이 길을 지킨다' } },
+  kwonyul: { special: { name: '행주 호령', cry: '산성의 방어선을 지킨다' }, musou: { name: '행주 수성진', cry: '함께 지킨 성은 무너지지 않는다' } },
+  yisunsin: { special: { name: '명량 파도진', cry: '좁은 바닷길을 지킨다' }, musou: { name: '명량 수군진', cry: '조선 수군이 함께 앞으로 나아간다' } },
   liubei: { special: { name: '덕의검기', cry: '백성을 지키는 쌍검의 기세' }, musou: { name: '인왕쌍룡참', cry: '인의로 난세를 가른다' } },
   guanyu: { special: { name: '청룡일섬', cry: '언월도의 단호한 일격' }, musou: { name: '청룡언월참', cry: '청룡이 전장을 가른다' } },
   zhangfei: { special: { name: '장판뇌후', cry: '함성으로 만군을 멈춘다' }, musou: { name: '만군벽력진', cry: '장팔사모의 폭풍' } },
@@ -393,7 +423,11 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
   const recordedHeroCallouts = new Set(['liubei','guanyu','zhangfei','caocao','zhaoyun','zhouyu','huanggai','zhugeliang','machao','huangzhong','sunshangxiang','wukong','bajie','wujing','tieshangongzhu','wusong','linchong','lizhishen','husanniang']);
   const hasRecordedHeroCallouts = recordedHeroCallouts.has(heroId);
   const battleCry = battleCryProfile(heroId);
+  const elevenVoices = elevenVoiceFiles(heroId);
   const sampleManifest = {
+    elevenDash: elevenVoices.dash,
+    elevenSpecial: elevenVoices.special,
+    elevenMusou: elevenVoices.musou,
     footstep: [0, 1, 2, 3].map((index) => 'audio/kenney-impact/footstep_concrete_00' + index + '.ogg'),
     // 실제 동물 녹음을 중심에 두고 절차 합성은 안장·호흡·강제이탈 보강층으로 쓴다.
     mountHorse: ['audio/mount-sfx/horse-neigh-pd-v1.ogg'],
@@ -401,14 +435,15 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
     // 적 피격 비명은 아이가 듣기 거칠어 비워 둔다. 영웅의 공격·필살 함성은
     // 아래 battleCry에서 별도로 불러 캐릭터별 프로필로 마스터링한다.
     enemyGrunt: [], enemyDeath: [],
+    // Family heroes use their dedicated callouts, never an unrelated general's fallback.
     battleCry: BATTLE_CRY_PACKS[battleCry.pack],
     // v6는 피치업·더블링·소프트클립을 제거한 자연스러운 기술명 원음이다.
     voiceSpecial: hasRecordedHeroCallouts ? ['audio/hero-callouts-ko-v6/' + heroId + '-special-v6.wav'] : [],
     voiceMusou: hasRecordedHeroCallouts ? ['audio/hero-callouts-ko-v6/' + heroId + '-musou-v6.wav'] : [],
     waterSplashLight: [1, 2, 3].map((index) => 'audio/cinematic-water/water-splash-light-0' + index + '-cc0-v1.ogg'),
     waterSplashHeavy: [1, 2, 3].map((index) => 'audio/cinematic-water/water-splash-heavy-0' + index + '-cc0-v1.ogg'),
-    breathNeutral: ['audio/cinematic-breath/battle-inhale-neutral-cc0-v1.ogg'],
-    breathDeep: ['audio/cinematic-breath/battle-inhale-deep-cc0-v1.ogg'],
+    breathNeutral: isFamilyHero(heroId) ? [] : ['audio/cinematic-breath/battle-inhale-neutral-cc0-v1.ogg'],
+    breathDeep: isFamilyHero(heroId) ? [] : ['audio/cinematic-breath/battle-inhale-deep-cc0-v1.ogg'],
   };
   const voiceProfiles = {
     liubei: { rate: .98, gain: .60, lowpass: 5200, wet: .08 }, guanyu: { rate: .92, gain: .68, lowpass: 4550, wet: .10 }, caocao: { rate: .94, gain: .66, lowpass: 4800, wet: .09 },
@@ -801,6 +836,28 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
     true,
   );
 
+  // A reviewed take contains the complete performance. Keep its natural pitch
+  // and never add a second actor's shout over it. If it has not decoded yet,
+  // use the existing local recording for this action rather than playing late.
+  const playElevenVoice = (action) => {
+    const group = { dash: 'elevenDash', special: 'elevenSpecial', musou: 'elevenMusou' }[action];
+    if (muted || !buffers[group]?.length) return false;
+    const duration = Math.min(5, Math.max(...buffers[group].map(buffer => buffer.duration)));
+    const played = playSample(group, action === 'dash' ? .66 : .76, 1, 0, .035, {
+      highpass: 70, lowpass: 11500, gainCeiling: .80,
+      voice: true, fixedRate: true, exclusiveVoice: true,
+    }, true);
+    if (played) {
+      lastVoiceAt = performance.now();
+      duckMusic(action === 'dash' ? .14 : .09, duration * 1000 + 160);
+      const at = ctx.currentTime;
+      sfxBus.gain.cancelScheduledValues(at);
+      sfxBus.gain.setTargetAtTime(.57, at, .018);
+      sfxBus.gain.setTargetAtTime(.86, at + duration, .12);
+    }
+    return played;
+  };
+
   try { ensure(); } catch { ctx = null; }
 
   return {
@@ -808,6 +865,7 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
       return Promise.all([
         sampleReady.battleCry,
         sampleReady.voiceSpecial, sampleReady.voiceMusou,
+        sampleReady.elevenDash, sampleReady.elevenSpecial, sampleReady.elevenMusou,
         sampleReady.waterSplashLight, sampleReady.waterSplashHeavy,
         sampleReady.breathNeutral, sampleReady.breathDeep,
       ].filter(Boolean));
@@ -909,6 +967,7 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
 
     shout(powerful = false) {
       const now = performance.now();
+      if (muted || activeCallout) return false;
       if (now - lastVoiceAt < (powerful ? 520 : 760)) return;
       lastVoiceAt = now;
       duckMusic(powerful ? .14 : .21, powerful ? 700 : 360);
@@ -917,6 +976,11 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
         if (!muted && performance.now() - now < 260) playBattleCry(powerful);
       });
       return played;
+    },
+
+    dashCry() {
+      if (!playElevenVoice('dash')) return this.shout(true);
+      return true;
     },
 
     enemyVoice(defeated = false, pan = 0, enemy = null) {
@@ -947,40 +1011,40 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
       const impactAt = powerful ? .451 : .414;
       duckMusic(powerful ? .095 : .11, powerful ? 1600 : 1320);
 
-      // 과장된 피치·끝음절 증폭 대신 캐릭터별 EQ와 일정한 게인으로 기술명을
-      // 재생한다. 새 기술은 이전 음성을 75ms 교차감쇠해 대사가 겹치지 않는다.
-      const voiceToken = lastSpecialVoiceAt;
-      const voiceGain = Math.min(.68, (voiceProfile.gain + .06) * (powerful ? .90 : .84));
-      const playCry = () => playSample(
-        powerful ? 'voiceMusou' : 'voiceSpecial',
-        voiceGain,
-        1,
-        0,
-        Math.min(.06, voiceProfile.wet * .55),
-        {
-          lowpass: Math.min(9800, Math.max(7200, voiceProfile.lowpass + 2400)),
-          highpass: Math.max(78, voiceProfile.highpass || 0),
-          gainCeiling: .82, voice: true, fixedRate: true, exclusiveVoice: true,
-        },
-        true,
-      );
-      if (!playCry()) sampleReady[powerful ? 'voiceMusou' : 'voiceSpecial']?.then(() => {
-        if (muted || lastSpecialVoiceAt !== voiceToken || performance.now() - voiceToken > 240) return;
-        playCry();
-      });
+      const performed = playElevenVoice(powerful ? 'musou' : 'special');
+      if (!performed) {
+        // 기존 기술명과 공용 함성은 새 녹음이 없거나 로드되지 않았을 때만 쓴다.
+        const voiceToken = lastSpecialVoiceAt;
+        const voiceGain = Math.min(.68, (voiceProfile.gain + .06) * (powerful ? .90 : .84));
+        const playCry = () => playSample(
+          powerful ? 'voiceMusou' : 'voiceSpecial',
+          voiceGain,
+          1,
+          0,
+          Math.min(.06, voiceProfile.wet * .55),
+          {
+            lowpass: Math.min(9800, Math.max(7200, voiceProfile.lowpass + 2400)),
+            highpass: Math.max(78, voiceProfile.highpass || 0),
+            gainCeiling: .82, voice: true, fixedRate: true, exclusiveVoice: true,
+          },
+          true,
+        );
+        if (!playCry()) sampleReady[powerful ? 'voiceMusou' : 'voiceSpecial']?.then(() => {
+          if (muted || lastSpecialVoiceAt !== voiceToken || performance.now() - voiceToken > 240) return;
+          playCry();
+        });
 
-      // 실제 목소리의 짧은 전투 함성을 기술명 뒤, 타격 프레임 직전에 겹친다.
-      // 모든 영웅이 이 층을 가지며 기술명 녹음이 없는 11명도 침묵하지 않는다.
-      const battleCryDelay = powerful ? .18 : .11;
-      const playHeroCry = () => playBattleCry(powerful, battleCryDelay);
-      if (!playHeroCry()) sampleReady.battleCry?.then(() => {
-        if (muted || lastSpecialVoiceAt !== voiceToken || performance.now() - voiceToken > 240) return;
-        playHeroCry();
-      });
+        const battleCryDelay = powerful ? .18 : .11;
+        const playHeroCry = () => playBattleCry(powerful, battleCryDelay);
+        if (!playHeroCry()) sampleReady.battleCry?.then(() => {
+          if (muted || lastSpecialVoiceAt !== voiceToken || performance.now() - voiceToken > 240) return;
+          playHeroCry();
+        });
+      }
 
       // 독자적인 호흡→응축→날 세움→접촉→잔향의 한 타임라인. 실제 CC0
       // 들숨은 낮게 깔고, 물·비·빙결 계열은 접촉(414/451ms)에 물보라가 터진다.
-      playSample(powerful ? 'breathDeep' : 'breathNeutral', powerful ? .21 : .16, 1, -.10, .025, {
+      if (!performed) playSample(powerful ? 'breathDeep' : 'breathNeutral', powerful ? .21 : .16, 1, -.10, .025, {
         highpass: 105, lowpass: 7200, gainCeiling: .23, fixedRate: true,
       }, true);
       burst({ type: 'bandpass', from: 520, to: 2850, q: .48, gain: powerful ? .09 : .062, decay: impactAt - .035, attack: .14, delay: .01, pan: -.18, wet: .06 });
@@ -1124,12 +1188,22 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
         musicBus.gain.cancelScheduledValues(ctx.currentTime);
         musicBus.gain.setValueAtTime(BGM_VOLUME, ctx.currentTime);
       }
+      if (sfxBus && ctx) {
+        sfxBus.gain.cancelScheduledValues(ctx.currentTime);
+        sfxBus.gain.setValueAtTime(.86, ctx.currentTime);
+      }
     },
   };
 }
 // Explicit cuts and boot anchors keep weapon overhangs in their own pose and
 // compensate for transparent padding without modifying the original PNG pixels.
 const PAINTED_FRAME_LAYOUTS = {
+    // Native 1254px atlases measured in the renderer's normalized 1280-unit space.
+    'taeo-painted-sheet-v1.png': [[0,0,640,640,322,610,572],[640,0,640,640,305,597,572],[0,640,640,640,265,597,572],[640,640,640,640,285,597,572]],
+    'jaei-painted-sheet-v1.png': [[0,0,640,640,332,627,590],[640,0,640,640,325,620,590],[0,640,640,640,326,593,590],[640,640,640,640,326,585,590]],
+    // The net extends 20 units past the lower-row midpoint; cut in the empty gap.
+    'yunchan-painted-sheet-v1.png': [[0,0,640,640,322,625,566],[640,0,640,640,331,610,566],[0,640,660,640,253,591,566],[660,640,620,640,282,598,566]],
+    'yungeon-painted-sheet-v1.png': [[0,0,640,640,335,628,598],[640,0,640,640,322,615,598],[0,640,640,640,318,594,598],[640,640,640,640,348,592,598]],
     // Erlang's bow poses use a measured transparent divider at y=619px,
     // not the geometric midpoint; keep the lower bow tip out of the idle frame.
     'erlangshen-hero-painted-sheet-v1.png': [[0,0,640,640,310,634,555],[640,0,640,640,320,634,555],[0,640,640,640,320,582,555],[640,640,640,640,320,582,555]],
@@ -1296,7 +1370,8 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   const mountLabel = MOUNT_LABELS[heroId] || '군마';
   const mountKind = MOUNT_KINDS[heroId] || 'horse';
   const isCloudMount = mountKind === 'cloud', isFireWheelMount = mountKind === 'wheels', isBoarMount = mountKind === 'boar', isWaterMount = mountKind === 'waterBeast';
-  const rangedStyle = ['wukong', 'tieshangongzhu', 'zhugeliang', 'luxun'].includes(heroId) ? 'fan'
+  const familyRanged = FAMILY_RANGED[heroId];
+  const rangedStyle = familyRanged ? familyRanged.kind : ['wukong', 'tieshangongzhu', 'zhugeliang', 'luxun'].includes(heroId) ? 'fan'
     : ['sunshangxiang', 'nezha'].includes(heroId) ? 'ring'
     : heroId === 'husanniang' ? 'lasso'
     : heroId === 'honghaier' ? 'fire'
@@ -1310,7 +1385,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   const usesSeatedMountSheet = !usesConsistentMount && supportsMount && ['horse', 'wheels'].includes(mountKind) && !!heroAssets.mounted;
   const supportsMountedRanged = usesSeatedMountSheet ? !!heroAssets.mountedBow : supportsMount && supportsRanged;
   const extra = workPerson(heroId), extraStats = workStats(heroId);
-  // 전장 정보. 서유기·수호지는 works.js, 삼국지는 원본 gamedata 에서 온다.
+  // 전장 정보. 서유기·한국 명장은 works.js, 삼국지는 원본 gamedata 에서 온다.
   const stageInfo = workStage(stageKey) || (() => {
     const s = stage(stageKey);
     if (!s || !s.title) return null;
@@ -1324,10 +1399,11 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   const heroName = extra?.name || person(heroId).name || '관우';
   const bossLabel = stageInfo?.bossName || '호로관 수문장';
   // 진영별 군복. gamedata 에 troop 이 6종 있는데 여태 쓰지 않아 12개 전장이
-  // 전부 같은 병사·같은 적장으로 보였다. 서유기·수호지는 대응 진영이 없어
+  // 전부 같은 병사·같은 적장으로 보였다. 삼국지 외 작품은 대응 진영이 없어
   // 전장 분위기에 맞는 것을 골라 준다.
   const WORK_TROOP = {
     flamemountain: 'yellow', heavenpalace: 'yuan', liangshan: 'wu', snowshrine: 'wei',
+    salsu: 'wei', gwiju: 'yuan', haengju: 'dong', myeongnyang: 'ship',
     huaguoshan: 'yellow', donghai: 'ship', baihuling: 'yuan', lianhuadong: 'wei', huoyundong: 'dong', shituoling: 'wu',
   };
   const troop = stage(stageKey)?.troop || WORK_TROOP[stageKey] || 'dong';
@@ -1385,13 +1461,13 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   const hudRoot = createHudRoot(), playerHud = createPlayerHud(hudRoot, heroName, { level: growth.level, weapon: `${weaponName} ${weaponEnhanceText(growth)}` }), bossHud = createEnemyHud(hudRoot, bossLabel);
   if (extra) {
     const fanName = ['zhugeliang','luxun'].includes(heroId) ? '우선' : '파초선';
-    const rangedControl = { fan: fanName + ' 공격', ring: heroId === 'nezha' ? '건곤권 투척' : '쌍환 투척', lasso: '홍금투삭', fire: '삼매진화탄', bow: heroId === 'erlangshen' ? '탄궁 발사' : '활쏘기' }[rangedStyle];
+    const rangedControl = familyRanged?.label || { fan: fanName + ' 공격', ring: heroId === 'nezha' ? '건곤권 투척' : '쌍환 투척', lasso: '홍금투삭', fire: '삼매진화탄', bow: heroId === 'erlangshen' ? '탄궁 발사' : '활쏘기' }[rangedStyle];
     const mountControl = supportsMount ? '<span>F ' + (isFireWheelMount ? '풍화륜' : '승마') + '</span>' : '';
     hudRoot.querySelector('.controls').innerHTML = '<span>WASD 이동 · W 두 번 점프</span><span>J 공격 · 꾹 강공</span><span>K ' + rangedControl + '</span>' + mountControl + '<span>L 필살기</span><span>I 돌진기</span>';
   }
   playerHud.setDashSkill(dashTechnique);
-  playerHud.setCapabilities(supportsRanged, supportsMount, { fan: ['zhugeliang','luxun'].includes(heroId) ? '우선' : '파초선', ring: heroId === 'nezha' ? '건곤권' : '쌍환', lasso: '투삭', fire: '화염탄', bow: heroId === 'erlangshen' ? '탄궁' : '활' }[rangedStyle], isFireWheelMount ? '풍화륜' : '승마');
-  bossHud.show(false); bossHud.setWeapon(bossProfile.weapon); bossHud.setPhase('결전 대기'); playerHud.setObjective(stageInfo?.mission || '호로관의 적군을 돌파하라'); playerHud.setMount(false, mountLabel);
+  playerHud.setCapabilities(supportsRanged, supportsMount, familyRanged?.label || { fan: ['zhugeliang','luxun'].includes(heroId) ? '우선' : '파초선', ring: heroId === 'nezha' ? '건곤권' : '쌍환', lasso: '투삭', fire: '화염탄', bow: heroId === 'erlangshen' ? '탄궁' : '활' }[rangedStyle], isFireWheelMount ? '풍화륜' : '승마');
+  bossHud.show(false); bossHud.setWeapon(bossProfile.weapon); bossHud.setPhase('결전 대기'); playerHud.setObjective(stageInfo?.mission || '호로관의 적군을 돌파하라'); playerHud.setMount(false, mountLabel, supportsMount);
   const input = createInput(canvas), audio = makeAudio(heroId, stageKey), worldWidth = 7800;
   const touchCapable = (navigator.maxTouchPoints || 0) > 0 || !!globalThis.matchMedia?.('(any-pointer: coarse)')?.matches;
   document.documentElement.classList.add('battle-viewport');
@@ -1716,6 +1792,12 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     // 화면에 그리는 활 효과와 똑같은 손 앵커에서 화살을 생성한다.
     const anchor = bowAnchor();
     const enemyDrawH = Math.min(300, height * .47);
+    if (familyRanged) {
+      const projectile = familyProjectile(heroId, player, target, standingHeroHeight(1 + player.lane * .0014), enemyDrawH, now);
+      pushArrow({ ...projectile, pierce: growth.pierce });
+      audio.swing(charged, combatProfile.audioStyle);
+      return;
+    }
     if (heroId === 'erlangshen') {
       // 탄궁은 화살이 아닌 빛 탄환. 기존 차지·관통·성장 계산은 그대로 쓴다.
       const speed = 1180, launchHeight = anchor.height;
@@ -1802,11 +1884,12 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     if (musou) { const move = callouts.musou; player.rage = 0; player.invulnerableUntil = now + 1120; audio.specialCry(true, combatProfile.musouTheme); showBanner(hudRoot, move.name, move.cry); floatText(move.name, player.x, player.lane, combatProfile.hitColor, 1.34); }
     else if (type === 'special') { const move = callouts.special; audio.specialCry(false, combatProfile.specialTheme); showBanner(hudRoot, move.name, move.cry); floatText(move.name, player.x, player.lane, combatProfile.hitColor, 1.24); }
     else if (type === 'whirlwind') { audio.musou(false); audio.shout(true); }
-    else if (type !== 'ranged') { audio.swing(heavy, combatProfile.audioStyle || weaponStyle); if (type === 'dash' || type === 'heavy' || type === 'mountedThrust') audio.shout(type === 'dash'); else if (type === 'attack' && Math.random() < .24) audio.shout(false); }
+    else if (type !== 'ranged') { audio.swing(heavy, combatProfile.audioStyle || weaponStyle); if (type === 'dash') audio.dashCry(); else if (type === 'heavy' || type === 'mountedThrust') audio.shout(false); else if (type === 'attack' && Math.random() < .24) audio.shout(false); }
     const duration = musou ? 980 : type === 'whirlwind' ? 720 : type === 'special' ? 900 : type === 'ranged' ? 640 : type === 'dash' ? dashTechnique.duration : type === 'throw' ? 560 : heavy ? 510 : lightAttackMs;
     if (type === 'attack') player.attackStep = (now < player.comboUntil ? player.comboStep % 3 : 0) + 1;
     cameraKick = Math.max(cameraKick, musou || type === 'special' ? .085 : type === 'whirlwind' ? .065 : type === 'heavy' || type === 'dash' || (type === 'attack' && player.attackStep === 3) ? .038 : .012);
     player.action = type; player.rangedCharged = type === 'ranged' && charged; player.actionStarted = now; player.actionDuration = duration; player.actionUntil = now + duration; player.hitDone = false;
+    player.familyTechnique = startFamilyTechnique(heroId, type, now);
     if (heroId === 'wukong' && ['special', 'musou'].includes(type)) {
       const cloneCount = musou ? 6 : 4;
       for (let i = 0; i < cloneCount; i++) {
@@ -1815,7 +1898,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       }
     }
     player.combo = now < player.comboUntil ? player.combo + 1 : 1; player.comboStep = (player.comboStep % 3) + 1; player.comboUntil = now + 1150;
-    if (type !== 'ranged') addSlash(type, player.attackStep);
+    if (type !== 'ranged' && !player.familyTechnique) addSlash(type, player.attackStep);
   }
   // 난이도의 rage 배수가 정의만 되고 여태 안 붙어 있었다 — 수련은 무쌍이
   // 빨리 차야 이야기 진행이 편하고, 사지는 천천히 차야 아껴 쓰게 된다.
@@ -1827,8 +1910,56 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     floatText(`+${amount}`, player.x, player.lane, '#76e1b4', .92);
   }
 
+  function resolveFamilyTechnique(now) {
+    const state = player.familyTechnique;
+    if (!state || player.action !== state.action || player.actionStarted !== state.started) return;
+    for (const pulse of familyTechniquePulses(state, now)) {
+      const targets = familyTechniqueTargets(pulse, player, enemies);
+      const baseDamage = familyPulseDamage(pulse, pulse.budget * heroTuning.power + (now < player.weaponBoost ? 18 : 0));
+      const color = familyRanged.color;
+      if (['swarm', 'hat-trick'].includes(pulse.mode)) {
+        const target = targets.length ? targets[pulse.index % targets.length] : null;
+        const shot = familyProjectile(heroId, player, target, standingHeroHeight(1 + player.lane * .0014), Math.min(300, height * .47), now);
+        arrows.push({ ...shot, familyTechnique: true, final: pulse.final, damage: baseDamage / heroTuning.arrow,
+          homingTarget: pulse.mode === 'swarm' ? target : null, charged: false, pierce: 0 });
+        audio.swing(pulse.final, combatProfile.audioStyle);
+      } else {
+        effects.push({ familyTechnique: true, mode: pulse.mode, x: player.x, lane: player.lane,
+          facing: player.facing, range: pulse.range, color, final: pulse.final, life: .42, max: .42 });
+        for (const enemy of targets) {
+          const critical = growth.critChance > 0 && Math.random() < growth.critChance;
+          const damage = Math.round(baseDamage * (critical ? 1.65 : 1));
+          enemy.hp = Math.max(0, enemy.hp - damage);
+          enemy.hitUntil = Math.max(enemy.hitUntil || 0, now + (pulse.final ? 350 : 150));
+          if (pulse.mode === 'bubble') enemy.familyBindUntil = Math.max(enemy.familyBindUntil || 0, now + (enemy.boss ? 140 : pulse.final ? 700 : 420));
+          const direction = pulse.mode === 'bubble' ? Math.sign(enemy.x - player.x) || player.facing : player.facing;
+          enemy.x += direction * (pulse.final ? pulse.mode === 'kick' ? 110 : 35 : 8);
+          constrainEnemy(enemy, combatBounds(worldWidth, waveGate, combatLocked));
+          addImpact(enemy.x, enemy.lane, pulse.final, enemy.hp <= 0);
+          floatText(`${critical ? '✦ ' : ''}${damage}`, enemy.x, enemy.lane, color, pulse.final ? 1.14 : .96);
+          if (enemy.hp <= 0) { enemy.deadAt = now; player.ko++; rewardKoHeal(); gainRage(16); audio.enemyVoice(true, 0, enemy); }
+          else audio.enemyVoice(false, 0, enemy);
+        }
+        if (targets.length) {
+          audio.hit(pulse.final, state.action); gainRage(targets.length * 3);
+          shake = Math.max(shake, pulse.final ? 12 : 4);
+          hitstopUntil = Math.max(hitstopUntil, now + (pulse.final ? 64 : 28));
+          if (pulse.final) slowUntil = Math.max(slowUntil, now + 190);
+        }
+        // Break a crate only once during a cast, not once per pulse.
+        if (pulse.final) for (const prop of props) {
+          if (!prop.collected && prop.type === 'crate' && Math.abs(prop.x - player.x) <= pulse.range
+            && Math.abs(prop.lane - player.lane) <= pulse.lane && (pulse.mode === 'bubble' || (prop.x - player.x) * player.facing >= 0)) {
+            prop.hp--; if (prop.hp <= 0) { prop.type = prop.drop; prop.drop = null; addImpact(prop.x, prop.lane, true, false); }
+          }
+        }
+      }
+    }
+  }
+
   function resolveAttack(now) {
     const action = player.action;
+    if (player.familyTechnique && ['special', 'musou'].includes(action)) return;
     if (action === 'dash') {
       // Swept collision: even a fast dash must hit enemies between frame positions.
       const targets = collectDashHits(player, enemies, dashTechnique, now);
@@ -1936,13 +2067,15 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       try { localStorage.setItem('sanguo_clear_' + stageKey, '1'); } catch {}
     }
     const rewards = awardBattleProgress(heroId, { win, ko: player.ko, stageKey, difficultyId: diff.id });
-    setTimeout(() => { document.getElementById('ui').innerHTML = ''; showResult(document.getElementById('ui'), { win, heroName, enemyName: bossLabel, weaponName, rewards, story: stageInfo?.work === 'xiyou' ? stageInfo : null, onRetry: () => startSideBattle(heroId, stageKey, { onExit }), onMenu: () => onExit?.() }); }, 450);
+    setTimeout(() => { document.getElementById('ui').innerHTML = ''; showResult(document.getElementById('ui'), { win, heroName, enemyName: bossLabel, weaponName, rewards, story: stageInfo?.work === 'xiyou' || stageInfo?.work === 'korea' ? stageInfo : null, onRetry: () => startSideBattle(heroId, stageKey, { onExit }), onMenu: () => onExit?.() }); }, 450);
   }
 
   function update(dt, now) {
     const bounds = combatBounds(worldWidth, waveGate, combatLocked);
     // Also recover live units displaced by asynchronous counters/boss attacks.
     for (const enemy of enemies) if (!enemy.deadAt) constrainEnemy(enemy, bounds);
+    // Drain scheduled family strikes before an expired animation returns to idle.
+    resolveFamilyTechnique(now);
     const axis = input.axis(), laneAxis = input.axisY();
     if (axis || laneAxis) {
       audio.startMusic();
@@ -2031,17 +2164,19 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
 
     for (const arrow of arrows) {
       if (arrow.hit) continue;
+      steerFamilyProjectile(arrow, dt, Math.min(300, height * .47));
       arrow.life -= dt; arrow.x += arrow.vx * dt; arrow.lane += arrow.laneV * dt; arrow.height += arrow.vz * dt; arrow.vz -= 520 * dt;
       if (now >= arrow.trailAt) { arrow.trailAt = now + 22; for (let i = 0; i < 3; i++) dust.push({ x: arrow.x - Math.sign(arrow.vx) * (12 + i * 17), y: ground() + arrow.lane - arrow.height + (Math.random() - .5) * 12, vx: -Math.sign(arrow.vx) * (55 + Math.random() * 130), vy: (Math.random() - .5) * 80, life: .18 + Math.random() * .24, max: .42, color: i ? arrow.color : '#ffffff', glow: true, element: i % 2 ? 'shard' : 'droplet', rotation: Math.random() * 6.28 }); }
       for (const enemy of enemies) {
         if (enemy.deadAt || enemy.grabbed || arrow.hitTargets?.has(enemy) || Math.abs(enemy.x - arrow.x) > 58 || Math.abs(enemy.lane - arrow.lane) > 48 || arrow.height < 40 || arrow.height > Math.min(300, height * .47) * .95) continue;
         const arrowCritical = growth.critChance > 0 && Math.random() < growth.critChance * .75;
-        const arrowDamage = Math.round(((arrow.damage ?? 43) * heroTuning.arrow * (arrow.charged ? 1.6 : 1) + (now < player.weaponBoost ? 16 : 0)) * (arrowCritical ? 1.65 : 1));
+        const arrowDamage = Math.round(((arrow.damage ?? 43) * heroTuning.arrow * (arrow.charged ? 1.6 : 1) + (!arrow.familyTechnique && now < player.weaponBoost ? 16 : 0)) * (arrowCritical ? 1.65 : 1));
         enemy.hp = Math.max(0, enemy.hp - arrowDamage); if (enemy.hp > 0) audio.enemyVoice(false, Math.max(-.8, Math.min(.8, (enemy.x - player.x) / 600)), enemy);
         floatText(enemy.boss ? `${arrowCritical ? '✦ ' : ''}◆ ${arrowDamage}` : arrowCritical ? `✦ ${arrowDamage}` : arrowDamage, enemy.x, enemy.lane, enemy.boss ? bossProfile.glow : arrowCritical ? '#fff0a6' : arrow.color, enemy.boss ? 1.16 : arrowCritical ? 1.12 : 1);
         enemy.hitUntil = now + 380;
         const projectileDirection = Math.sign(arrow.vx);
-        enemy.x += arrow.kind === 'lasso' ? -projectileDirection * 92 : projectileDirection * (arrow.kind === 'ring' ? 44 : 58);
+        enemy.x += arrow.kind === 'lasso' ? -projectileDirection * 92 : projectileDirection * (arrow.familyTechnique ? arrow.final ? 100 : 12 : arrow.kind === 'ring' ? 44 : 58);
+        constrainEnemy(enemy, bounds);
         arrow.hitTargets ??= new Set(); arrow.hitTargets.add(enemy);
         if ((arrow.pierce || 0) > 0) arrow.pierce -= 1; else { arrow.hit = true; arrow.life = 0; }
         addImpact(enemy.x, enemy.lane, true, enemy.hp <= 0);
@@ -2124,6 +2259,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     let living = 0, boss = null;
     for (const enemy of enemies) {
       if (enemy.deadAt) continue; living += 1; if (enemy.boss) boss = enemy;
+      if (now < (enemy.familyBindUntil || 0)) { enemy.action = 'hit'; constrainEnemy(enemy, bounds); continue; }
       // 격노: 속도만 올리면 '조금 빨라졌네'로 끝난다. 새 패턴(충격파)이
       // 나와야 2페이즈가 다른 싸움으로 읽힌다. 충격파는 점프로만 피한다.
       if (enemy.boss && !enemy.enraged && enemy.hp <= enemy.maxHp * .5) { enemy.enraged = true; enemy.speed *= 1.16; enemy.attackAt = now + 260; enemy.shockwaveAt = now + 1900; bossHud.setPhase('폭주 · 결전 2단계', true); showBanner(hudRoot, bossLabel + ' 폭주', touchMode ? '땅을 가르는 충격파 — 스틱을 위로 튕겨 점프' : '땅을 가르는 충격파 — W 두 번 눌러 점프'); shake = Math.max(shake, 12); colorFlash = Math.max(colorFlash, .12); slowUntil = Math.max(slowUntil, now + 420); }
@@ -2154,7 +2290,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
         setTimeout(() => {
           const strikeNow = performance.now();
           const hitRange = enemy.role === 'archer' ? 520 : enemy.boss ? bossProfile.hitRange : 185;
-          if (ended || enemy.deadAt || enemy.grabbed || Math.abs(player.x - enemy.x) > hitRange || Math.abs(player.lane - enemy.lane) > 62) return;
+          if (ended || enemy.deadAt || enemy.grabbed || strikeNow < (enemy.familyBindUntil || 0) || Math.abs(player.x - enemy.x) > hitRange || Math.abs(player.lane - enemy.lane) > 62) return;
           if (enemy.role === 'archer' || (enemy.boss && bossProfile.kind === 'celestial')) {
             const drawH = Math.min(300, height * .47), distance = Math.max(180, Math.abs(player.x - enemy.x)), travel = distance / (enemy.boss ? 1120 : 980);
             enemyArrows.push({ x: enemy.x + enemy.facing * 56, lane: enemy.lane, height: drawH * (enemy.boss ? .68 : .62), vx: enemy.facing * (enemy.boss ? 1120 : 980), laneV: (player.lane - enemy.lane) / travel, vz: ((drawH * .56) - drawH * (enemy.boss ? .68 : .62) + 260 * travel * travel) / travel, life: 1.45, max: 1.45, hit: false, trailAt: strikeNow, phase: Math.random() * Math.PI * 2, color: enemy.boss ? bossProfile.glow : '#ff6e63', damage: enemy.boss ? 12 : 8 });
@@ -2216,7 +2352,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     cameraZoom += (zoomTarget - cameraZoom) * (1 - Math.exp(-dt * 9));
     colorFlash *= Math.exp(-dt * 15); shake *= Math.exp(-dt * 11);
     playerHud.setDashCooldown(player.dashReady - now, dashTechnique.cooldown * growth.cooldown);
-    playerHud.setHp(player.hp / player.maxHp); playerHud.setRage(player.rage / 100); playerHud.setCombo(player.combo); playerHud.setKo(player.ko); playerHud.setStage(wave, TOTAL_WAVES); playerHud.setMount(player.mounted, mountLabel);
+    playerHud.setHp(player.hp / player.maxHp); playerHud.setRage(player.rage / 100); playerHud.setCombo(player.combo); playerHud.setKo(player.ko); playerHud.setStage(wave, TOTAL_WAVES); playerHud.setMount(player.mounted, mountLabel, supportsMount);
   }
   function drawBackground() {
     if (paintedBackground) {
@@ -2243,7 +2379,42 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       return;
     }
     // 그림 한 장이라도 로드에 실패하면 기존 절차 배경이 안전한 폴백이다.
-    if (scenery) { scenery.draw(ctx, cameraX, width, height, performance.now(), q()); return; }
+    if (scenery) {
+      scenery.draw(ctx, cameraX, width, height, performance.now(), q());
+      if (['salsu', 'gwiju', 'haengju'].includes(stageKey)) {
+        // 강가·고개·산성 모두 발밑의 실제 전투 지면이 필요하다.
+        const floorTop = ground() - 108;
+        const [top, bottom] = scenery.scene.ground;
+        const earth = ctx.createLinearGradient(0, floorTop, 0, height);
+        earth.addColorStop(0, top); earth.addColorStop(1, bottom);
+        ctx.fillStyle = earth; ctx.fillRect(0, floorTop, width, height - floorTop);
+        ctx.fillStyle = 'rgba(222,211,175,.23)'; ctx.fillRect(0, floorTop, width, 3);
+        const shift = ((cameraX * .7) % 173 + 173) % 173;
+        for (let i = -1; i < Math.ceil(width / 173) + 1; i++) {
+          const x = i * 173 - shift;
+          ctx.fillStyle = 'rgba(20,22,19,.21)'; ctx.fillRect(x + 18, floorTop + 36 + (i % 3) * 21, 65, 2);
+          ctx.fillStyle = 'rgba(230,221,188,.11)'; ctx.fillRect(x + 96, floorTop + 95 + (i % 2) * 33, 46, 2);
+        }
+      } else if (stageKey === 'myeongnyang') {
+        // 실제 해전은 배 위 전투다. 원경의 바다는 남기고 발밑에는 갑판을 깐다.
+        const deckTop = ground() - 108;
+        const wood = ctx.createLinearGradient(0, deckTop, 0, height);
+        wood.addColorStop(0, '#80634a'); wood.addColorStop(.55, '#604632'); wood.addColorStop(1, '#35271f');
+        ctx.fillStyle = wood; ctx.fillRect(0, deckTop, width, height - deckTop);
+        ctx.fillStyle = '#2c2924'; ctx.fillRect(0, deckTop - 11, width, 13);
+        ctx.fillStyle = '#b0906d'; ctx.fillRect(0, deckTop + 1, width, 3);
+        const plankShift = ((cameraX % 180) + 180) % 180;
+        for (let row = 0; row < 12; row++) {
+          const y = deckTop + 18 + row * 29;
+          ctx.fillStyle = 'rgba(22,14,10,.29)'; ctx.fillRect(0, y, width, 2);
+          ctx.fillStyle = 'rgba(204,163,119,.12)'; ctx.fillRect(0, y + 3, width, 1);
+          for (let x = -180 - plankShift + (row % 2) * 90; x < width + 180; x += 180) {
+            ctx.fillStyle = 'rgba(19,11,8,.25)'; ctx.fillRect(x, y + 3, 2, 26);
+          }
+        }
+      }
+      return;
+    }
     const image = assets.background, scale = Math.max(width / image.width, height / image.height), drawW = image.width * scale, drawH = image.height * scale, parallax = (cameraX * 0.10) % drawW;
     ctx.fillStyle = '#171716'; ctx.fillRect(0, 0, width, height);
     // 배경 타일은 drawW >= width 라 화면에 최대 2장만 걸친다. 3장을 다 그리면
@@ -2644,10 +2815,14 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
         const attacking = ['attack', 'heavy', 'musou', 'special', 'throw', 'grab', 'dash', 'whirlwind', 'counter', 'ranged', 'mountedThrust'].includes(player.action);
         const actionProgress = attacking ? Math.max(0, Math.min(1, (now - player.actionStarted) / Math.max(1, player.actionDuration))) : 0;
         let heroFrame = 0;
-        if (player.action === 'ranged') heroFrame = actionProgress < .22 ? 0 : actionProgress < .38 ? 1 : actionProgress < .48 ? 2 : 3;
+        if (player.action === 'ranged') heroFrame = familyRanged ? (actionProgress < .28 ? 0 : actionProgress < .6 ? 2 : 3) : actionProgress < .22 ? 0 : actionProgress < .38 ? 1 : actionProgress < .48 ? 2 : 3;
         else if (player.action === 'run') heroFrame = Math.floor(now / (player.mounted ? 105 : 135)) % 2;
         else if (player.action === 'counter') heroFrame = 2;
-        else if (attacking) heroFrame = actionProgress < .28 ? 0 : actionProgress < .58 ? 2 : 3;
+        else if (attacking) {
+          const activeTechnique = player.familyTechnique?.action === player.action && player.familyTechnique.started === player.actionStarted;
+          const beatProgress = activeTechnique ? (actionProgress * player.familyTechnique.beats.length) % 1 : actionProgress;
+          heroFrame = beatProgress < .28 ? 0 : beatProgress < .58 ? 2 : 3;
+        }
         const strideBob = player.action === 'run' ? Math.abs(Math.sin(now * (player.mounted ? .018 : .023))) * (player.mounted ? 5 : 4) : 0;
         const attackLunge = attacking && !['counter', 'ranged'].includes(player.action) ? Math.sin(Math.PI * actionProgress) * (player.mounted ? 22 : player.action === 'dash' ? 34 : 13) * player.facing : 0;
         // 활 모션 — 스프라이트 프레임만으론 밋밋하다. 시위를 당기는 동안
@@ -2665,6 +2840,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
           drawHorse(player.x + attackLunge + mountedBowShift, baseY - strideBob + mountedBowDip, player.facing, true, heroFrame, flicker, player.action === 'ranged');
         }
         else drawAtlasFrame(ctx, player.action === 'ranged' && !rangedUsesBase ? heroAssets.heroBow : heroAssets.hero, heroFrame, player.x + attackLunge + bowShift - cameraX, baseY - player.y - strideBob + bowDip, standingHeroHeight(1 + player.lane * .0014), player.facing, flicker);
+        if (familyRanged && ['special', 'musou'].includes(player.action)) drawFamilySpecial(ctx, heroId, player.x - cameraX, baseY - player.y, player.facing, standingHeroHeight(), actionProgress, now, player.action === 'musou');
         if (growth.weaponLevel >= 4) {
           const tier = growth.weaponLevel >= 16 ? 3 : growth.weaponLevel >= 10 ? 2 : 1;
           const pulse = .5 + Math.sin(now * .009) * .16, auraX = player.x - cameraX + player.facing * (player.mounted ? 76 : 54 * heroVisualScale), auraY = baseY - player.y - (player.mounted ? 188 : 128 * heroVisualScale);
@@ -2686,11 +2862,18 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
           const anchor = bowAnchor();
           const effectTint = heroId === 'wukong' ? '#8fe6a2' : combatProfile.arrowColor;
           const bowX = player.x + bowShift - cameraX + player.facing * anchor.fx;
-          const bowY = baseY - player.y - anchor.height + bowDip;
+          const bowY = baseY - player.y - (familyRanged ? standingHeroHeight(1 + player.lane * .0014) * familyRanged.launch : anchor.height) + bowDip;
           ctx.save(); ctx.translate(bowX, bowY); ctx.scale(player.facing, 1);
           if (rangedStyle === 'fan' && heroId === 'wukong') { ctx.globalCompositeOperation = 'source-over'; drawHeldFan(actionProgress); }
           ctx.globalCompositeOperation = 'lighter';
-          if (rangedStyle === 'fan') {
+          if (familyRanged) {
+            // Family magic and kicks must not fall through to the drawn bowstring.
+            if (actionProgress < .47) {
+              ctx.globalAlpha = .3 + actionProgress;
+              ctx.scale(.55 + actionProgress, .55 + actionProgress);
+              drawFamilyProjectile(ctx, { ...familyRanged, charged: player.rangedCharged }, now);
+            }
+          } else if (rangedStyle === 'fan') {
             const fanProgress = Math.max(0, Math.min(1, actionProgress));
             if (fanProgress < .47) {
               const charge = fanProgress / .47;
@@ -2764,6 +2947,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       } else {
         const enemy = actor.enemy, sinceDeath = enemy.deadAt ? (now - enemy.deadAt) / 700 : 0; if (sinceDeath >= 1) continue;
         const baseY = floorY + enemy.lane; drawShadow(enemy.x, baseY + 5, enemy.boss ? 1.48 : enemy.role === 'heavy' ? 1.05 : .9, 0.40 * (1 - sinceDeath));
+        if (!enemy.deadAt) drawFamilyBind(ctx, enemy, cameraX, floorY, now);
         // 부장 지휘권: 부장 발밑 넓은 군기 원 + 지휘받는 병사 발밑 작은 고리.
         // '부장 먼저'가 눈으로 읽혀야 우선순위 선택이 게임플레이가 된다.
         if (!enemy.deadAt && enemy.boss && !enemy.trueBoss) {
@@ -2916,6 +3100,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       const x = arrow.x - cameraX, y = floorY + arrow.lane - arrow.height, angle = Math.atan2(-arrow.vz, Math.abs(arrow.vx)), dir = Math.sign(arrow.vx);
       ctx.save(); ctx.translate(x, y); ctx.scale(dir, 1); ctx.rotate(angle); ctx.lineCap = 'round';
       ctx.globalCompositeOperation = 'lighter'; ctx.shadowColor = arrow.color; ctx.shadowBlur = 14;
+      if (drawFamilyProjectile(ctx, arrow, now)) { ctx.restore(); continue; }
       if (arrow.kind === 'pellet') {
         const radius = arrow.charged ? 10 : 7;
         ctx.globalAlpha = .35; ctx.strokeStyle = arrow.color; ctx.lineWidth = radius;
@@ -2982,6 +3167,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       ctx.strokeStyle = '#b94732'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-23, 0); ctx.lineTo(-35, -9); ctx.moveTo(-23, 0); ctx.lineTo(-35, 9); ctx.stroke(); ctx.restore();
     }
     for (const effect of effects) {
+      if (effect.familyTechnique) { drawFamilyTechniqueImpact(ctx, effect, cameraX, floorY); continue; }
       const t = 1 - effect.life / effect.max, x = effect.x - cameraX;
       const radius = ((effect.kind === 'rake' ? 166 : effect.kind === 'wide' ? 188 : effect.kind === 'spin' ? 176 : effect.heavy ? 170 : 142) + effect.layer * 18) * (effect.scale || 1);
       const starts = { sweep: -1.62, reverse: .65, wide: -2.35, overhead: -2.75, spin: -2.65, rake: -1.12 }, spans = { sweep: 2.18, reverse: -2.1, wide: 3.45, overhead: 2.85, spin: effect.musou ? 5.7 : 4.75, rake: 1.02 };

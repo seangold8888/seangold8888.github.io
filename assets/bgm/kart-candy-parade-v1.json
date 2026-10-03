@@ -1,0 +1,22 @@
+{
+  "title": "캔디 퍼레이드",
+  "file": "kart-candy-parade-v1.mp3",
+  "scenes": ["kart", "kart3d"],
+  "generator": "Vertex AI Lyria (lyria-002)",
+  "generatedDate": "2026-09-30",
+  "seed": 30930,
+  "prompt": "Original instrumental background music for a cute pastel cartoon kart racing game. Joyful, adorable, bright and bouncy, playful candy parade at 128 BPM in 4/4, major key. A memorable cheerful marimba melody answered by sparkling celesta and tiny glockenspiel bells, light ukulele strums, pizzicato strings, warm rounded bass, soft brushed snare and little shaker groove. Fun animated toy-town adventure with friends, uplifting racing energy but never aggressive. Polished studio arrangement, clear gentle treble, spacious mix with room for engine and pickup sound effects. Steady beat from the first moment, repeated balanced eight-bar phrases, no spoken words, no vocals, no intro build-up, no ending cadence or fade-out, suitable for seamless looping. Compose a wholly original melody, not a recreation of an existing song.",
+  "negativePrompt": "vocals, singing, speech, lyrics, shouting, harsh synth leads, distorted guitar, aggressive bass, heavy kick drums, dramatic orchestral action, sad mood, abrupt tempo changes, silence, intro fade in, outro fade out",
+  "master": "game-hub/bgm-masters/kart-candy-parade-v1.wav (outside published repository)",
+  "processing": "tools/loopify-bgm.py, 30-second loop, 2-second equal-power overlap, loudness normalization, 112 kbps stereo MP3",
+  "measured": {
+    "durationSeconds": 30,
+    "integratedLoudnessLufs": -19.7,
+    "truePeakDbfs": -3.2,
+    "sizeBytes": 420980,
+    "sha256": "76b845bf0b47f97e7c34aaaa4f5f5c375085f43e0eb7592f1dc73b8001c94451"
+  },
+  "generationRequests": 1,
+  "estimatedGenerationCostUsd": 0.06,
+  "estimatedCostNote": "Estimate from the existing project production tool; actual billing was not queried."
+}

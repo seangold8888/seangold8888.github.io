@@ -2,6 +2,31 @@
 const test = require("node:test"), assert = require("node:assert/strict");
 const fs = require("node:fs"), path = require("node:path"), vm = require("node:vm");
 const reading = require("../../assets/study/english-reading.js");
+test("family picture-book names are Jay and Teo without changing progress or asset IDs", () => {
+  const book = require("../../story/english/books.js").books.find(b => b.id === "picnic");
+  assert.equal(book.title, "Jay and Teo Go on a Picnic");
+  assert.equal(book.cover, "jaei");
+  assert.equal(book.pages[0].art, "jaei");
+  assert.equal(book.pages[3].art, "taeo");
+  assert.equal(book.pages[0].audio, "audio/picnic-1.mp3");
+  assert.doesNotMatch([book.title, ...book.pages.map(p => p.text)].join(" "), /\b(?:Jaei|Taeo)\b/);
+  for (const page of [book.pages[0], book.pages[3], book.pages[4]]) {
+    assert.ok(reading.matches(page.text, page.text));
+    assert.ok(reading.matches(page.text, page.text.replace(/Jay/g, "Jaei").replace(/Teo/g, "Taeo")));
+  }
+  assert.ok(reading.matches("Jay sees a butterfly.", "J sees a butterfly"));
+  assert.ok(reading.matches("Teo runs to the park.", "Theo runs to the park"));
+  assert.ok(!reading.matches("Jay sees a butterfly.", "Mom sees a butterfly"));
+  for (const page of book.pages) {
+    assert.ok(fs.existsSync(path.resolve(__dirname, "../../story/english", page.audio)));
+  }
+  const root = path.resolve(__dirname, "../..");
+  for (const entry of ["game/index.html", "story/english/index.html"]) {
+    const html = fs.readFileSync(path.join(root, entry), "utf8");
+    assert.match(html, /books\.js\?v=4/);
+    assert.match(html, /english-reading\.js\?v=23/);
+  }
+});
 function target() {
   const listeners = {};
   return { addEventListener: (name, fn) => { listeners[name] = fn; },
@@ -246,13 +271,14 @@ test("interim mistakes and valid final prefixes are not prematurely red", () => 
   s.result([["I like", true], ["apples", true]]);
   assert.equal(s.passes(), 1);
 });
-test("unfinished final sentence is marked for retry on end, stop or timeout", () => {
+test("unfinished confirmed prefix offers continuation on end, stop or timeout, without a mistake", () => {
   for (const ending of ["end", "stop", "timeout"]) {
     const s = setup(); s.mic.fire("click"); s.result([["I like", true]]);
     if (ending === "end") s.instances[0].onend();
-    else if (ending === "stop") s.stop.fire("click");
+    else if (ending === "stop") { s.stop.fire("click"); s.instances[0].onend(); }
     else [...s.timers.values()][0]();
-    assert.equal(s.container.children[1].children[2].classList.contains("retry"), true, ending);
+    assert.equal(s.container.children[1].children[2].classList.contains("retry"), false, ending);
+    assert.equal(s.mic.textContent, "🎤 이어 읽기");
     assert.equal(s.mic.disabled, false);
     assert.equal(s.passes(), 0);
   }
@@ -300,24 +326,24 @@ function fn(name) {
   const start = html.indexOf("  function " + name + "(");
   return html.slice(start, html.indexOf("\n  }", start) + 4);
 }
-test("a reading success advances progress once and earns the tenth-answer ticket without math growth", () => {
+test("a reading success advances progress once and earns the fifteenth-answer ticket without math growth", () => {
   const skill = { s: 0, d: 0 };
   const ctx = { isFree: () => false, hasTicket: () => ctx.state.credit > 0, readingLevel: {level:1,passes:0}, recordReadingPass: () => false, 
     current: { answer: "I like apples.", reading: {}, seed: { type: "reading", idx: 0 } },
-    state: { solved: 9, credit: 0, streak: 3, level: 2 }, setCorrect: 9, SET: 10, DAILY: 100,
+    state: { solved: 14, credit: 0, streak: 3, level: 2 }, setCorrect: 14, SET: 15, DAILY: 100,
     CHEERS: ["잘했어요"], BANK_SIZES: { reading: 16 }, MASTER_AT: 9, cheerEl: {},
     skillOf: () => skill, dayNum: () => 100, drawSetStars() {}, drawDaily() {}, saveState() {},
     setTimeout: () => 1, applyState() {}, renderProblem() {} };
   ctx.celebrateRound=()=>{};
   vm.runInNewContext(fn("pick"), ctx);
   ctx.pick("I like apples.", null); ctx.pick("I like apples.", null);
-  assert.equal(ctx.state.solved, 10); assert.equal(ctx.state.credit, 1); assert.equal(ctx.setCorrect, 0);
+  assert.equal(ctx.state.solved, 15); assert.equal(ctx.state.credit, 1); assert.equal(ctx.setCorrect, 0);
   assert.equal(skill.s, 1); assert.equal(ctx.state.streak, 3); assert.equal(ctx.state.level, 2);
 });
 test("reading support is cached and its script loads before the study controller", () => {
   const sw = require("../../sw.js");
-  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=21"));
-  assert.ok(html.indexOf('src="assets/study/english-reading.js?v=21"') < html.indexOf("var BANK_SIZES"));
+  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=23"));
+  assert.ok(html.indexOf('src="assets/study/english-reading.js?v=23"') < html.indexOf("var BANK_SIZES"));
   assert.match(html, /\.reading-word\.retry\s*\{[^}]*text-decoration:underline wavy/);
   assert.match(html, /if \(current !== target \|\| isFree\(\) \|\| hasTicket\(\) \|\| target\.answered\) return/);
   assert.match(html, /function stopReading\(\)[\s\S]*?clearTimeout\(answerTimer\)/);

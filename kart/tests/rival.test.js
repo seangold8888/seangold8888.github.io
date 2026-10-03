@@ -14,14 +14,18 @@ const { execFileSync } = require('node:child_process');
 const siteRoot = path.resolve(__dirname, '..', '..');
 const read = (f) => fs.readFileSync(path.join(siteRoot, f), 'utf8');
 function gitShow(f) {
-  try { return execFileSync('git', ['show', 'HEAD:' + f], { cwd: siteRoot, encoding: 'utf8', maxBuffer: 1 << 26 }); }
+  try { return execFileSync('git', ['show', 'HEAD:' + f], { cwd: siteRoot, encoding: 'utf8', maxBuffer: 1 << 26, stdio: ['ignore', 'pipe', 'ignore'] }); }
   catch { return null; }
 }
-const current = { main: read('kart/src/main.js'), kart: read('kart/src/kart.js') };
+const current = { main: read('kart/src/main.js'), kart: read('kart/src/kart.js'), extras: read('kart/src/extras.js') };
 const baseDir = process.env.KART_BASELINE_DIR;
+const readBase = f => { try { return fs.readFileSync(path.join(baseDir, f), 'utf8'); } catch { return null; } };
 const baseline = baseDir
-  ? { main: fs.readFileSync(path.join(baseDir, 'kart/src/main.js'), 'utf8'), kart: fs.readFileSync(path.join(baseDir, 'kart/src/kart.js'), 'utf8') }
-  : { main: gitShow('kart/src/main.js'), kart: gitShow('kart/src/kart.js') };
+  ? { main: readBase('kart/src/main.js'), kart: readBase('kart/src/kart.js'), extras: readBase('kart/src/extras.js') }
+  : { main: gitShow('kart/src/main.js'), kart: gitShow('kart/src/kart.js'), extras: gitShow('kart/src/extras.js') };
+// 2026-09-27 업그레이드(코스 거리·장난꾸러기·아이들)로 일반 경주가 일부러 바뀌었다.
+// 동일성 비교는 비교 대상도 업그레이드 뒤(extras.js 가 있는) 버전일 때만 한다.
+const baselineComparable = !!(baseline.main && baseline.extras);
 
 function build(source, storage = new Map()) {
   let seed = 20260913;
@@ -35,6 +39,8 @@ function build(source, storage = new Map()) {
   });
   context.SK = win.SK; context.navigator = { maxTouchPoints: 0 };
   vm.runInContext(read('kart/src/track.js'), context);
+  if (source.extras) vm.runInContext(source.extras, context);
+  context.SK.paintPads = () => {};                    // 트랙 텍스처는 가짜라 그리지 않는다
   vm.runInContext(source.kart, context);
   context.SK.createAudio = () => audio;
   context.SK.buildTrackTexture = () => ({ width: 2048, height: 2048 });
@@ -65,7 +71,7 @@ function race(SK, track, frames, { rivalOn = false, boostPlayer = false } = {}) 
   return samples;
 }
 
-test('normal races on all four courses match the previous commit frame for frame', { skip: !baseline.main && 'no git baseline' }, () => {
+test('normal races on all four courses match the previous commit frame for frame', { skip: !baselineComparable && 'baseline predates the 2026-09-27 upgrade' }, () => {
   for (let track = 0; track < 4; track++) {
     const a = race(build(baseline).SK, track, 60 * 80);
     const b = race(build(current).SK, track, 60 * 80);

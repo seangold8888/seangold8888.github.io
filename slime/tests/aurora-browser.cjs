@@ -1,0 +1,20 @@
+const{chromium}=require('playwright'),fs=require('node:fs'),os=require('node:os'),path=require('node:path'),assert=require('node:assert/strict');
+(async()=>{const out=fs.mkdtempSync(path.join(os.tmpdir(),'slime-rainbow16-')),b=await chromium.launch({channel:'msedge',headless:true,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+ try{const p=await b.newPage({viewport:{width:768,height:1024},hasTouch:true,serviceWorkers:'block'}),errors=[];p.on('pageerror',e=>errors.push(e.message));p.on('console',e=>{if(e.type()==='error')errors.push(e.text());});
+ await p.emulateMedia({reducedMotion:'reduce'});await p.clock.install({time:new Date('2026-09-30T00:00:00Z')});await p.clock.pauseAt(new Date('2026-09-30T00:00:02Z'));
+ await p.goto('http://127.0.0.1:8765/slime/?v=rainbow-16');await p.waitForFunction(()=>!!window.__slime,{},{polling:100,timeout:90000});
+ async function photo(name){const image=await p.evaluate(()=>{__slime.renderOnce();return document.getElementById('jelly').toDataURL();});fs.writeFileSync(path.join(out,name+'.png'),Buffer.from(image.split(',')[1],'base64'));return image;}
+ await p.evaluate(()=>{__slime.reset();__slime.flavor(0);__slime.advance(2);});const soda=await photo('soda');
+ await p.locator('#palette button').nth(5).click();await p.evaluate(()=>__slime.advance(2));const aurora=await photo('aurora');assert.notEqual(soda,aurora);
+ assert.ok(await p.evaluate(()=>__slime.mesh.material.transmission>.99&&__slime.mesh.material.iridescence>.3&&__slime.mesh.material.iridescence<.5));
+ const phase=await p.evaluate(()=>__slime.expression.filmPhase.value);await p.evaluate(()=>__slime.advance(.5));assert.equal(await p.evaluate(()=>__slime.expression.filmPhase.value),phase);
+ await p.evaluate(()=>{__slime.expression.filmPhase.value=0;});const shifted=await photo('aurora-shift');assert.notEqual(shifted,aurora);
+ const colors=new Set([aurora,shifted]);for(const phase of [3.6,5.4]){await p.evaluate(phase=>{__slime.expression.filmPhase.value=phase;},phase);colors.add(await photo('rainbow-'+phase));}assert.equal(colors.size,4);
+ await p.evaluate(()=>{__slime.expression.filmPhase.value=0;__slime.flavor(0);__slime.advance(2);});assert.ok(await p.evaluate(()=>__slime.expression.rainbow.value<.001&&Math.abs(__slime.mesh.material.iridescence-.2)<.005));
+ await p.locator('#palette button').nth(5).click();await p.evaluate(()=>__slime.advance(1));await p.reload();await p.waitForFunction(()=>!!window.__slime,{},{polling:100,timeout:90000});assert.equal(await p.evaluate(()=>__slime.state().flavor),'aurora');assert.equal(await p.evaluate(()=>__slime.expression.rainbow.value),1);
+ for(const viewport of [{width:390,height:844},{width:844,height:390}]){await p.setViewportSize(viewport);await p.evaluate(()=>{dispatchEvent(new Event('resize'));__slime.reset();__slime.advance(.2);});await photo('aurora-'+viewport.width);}
+ await p.evaluate(()=>{__slime.quality.setLow(true);__slime.advance(.1);});assert.equal(await p.evaluate(()=>__slime.expression.auroraSamples.value),4);await photo('aurora-low');
+ await p.evaluate(()=>{__slime.quality.setLow(false);__slime.advance(.1);});assert.equal(await p.evaluate(()=>__slime.expression.auroraSamples.value),8);
+ await p.evaluate(()=>{__slime.solver.poke(30);__slime.advance(.1);});await photo('aurora-squash');assert.ok(await p.evaluate(()=>__slime.solver.position.every(Number.isFinite)));
+ await p.emulateMedia({reducedMotion:'no-preference'});const beforeMotion=await p.evaluate(()=>__slime.expression.filmPhase.value);await p.evaluate(()=>__slime.advance(5));const phaseTravel=await p.evaluate(before=>__slime.expression.filmPhase.value-before,beforeMotion);assert.ok(Math.abs(phaseTravel-Math.PI*2)<.025,'one rainbow cycle takes five seconds');assert.deepEqual(errors,[]);console.log('PASS 5-second soft rainbow cycle, refraction, 4/8 sample budgets, deforming gel, soda restoration, saved flavor, portrait/landscape, reduced-motion pause and no shader errors');console.log('Screenshots: '+out);
+ }finally{await b.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

@@ -87,7 +87,7 @@
     }
     function showMap() {
       shell("쓰구미 대마왕을 잡아라", progress.run > 1 ? "재이와 태오의 " + runName(progress.run) + " · 상대가 더 튼튼해요" + medals() : "재이와 태오의 이야기 원정" + medals());
-      root.querySelector(".expedition-header button").replaceWith(button("← 카드 컬렉션", "ghost-button", options.onExit));
+      root.querySelector(".expedition-header button").replaceWith(button("← 모험 홈", "ghost-button", options.onExit));
       const intro = el("div", "expedition-map-intro");
       intro.append(el("p", "", "장난에 걸린 세계를 되돌리고, 친구를 모아요."),
         el("span", "expedition-progress", progress.cleared.length + " / 8 세계"));

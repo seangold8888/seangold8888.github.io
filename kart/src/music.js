@@ -409,6 +409,22 @@ SK.createAudio = function () {
         env('sine', t, 0.14, 0.13, 380, 220);
         env('triangle', t + 0.02, 0.10, 0.07, 760, 520);
         break;
+      case 'coin':                         // 코인 — 짤랑
+        env('square', t, 0.06, 0.09, f(88), f(88));
+        env('square', t + 0.05, 0.12, 0.09, f(95), f(95));
+        break;
+      case 'boing':                        // 통통 쿠션 — 용수철
+        env('sine', t, 0.28, 0.16, 180, 720);
+        env('triangle', t + 0.05, 0.2, 0.07, 360, 900);
+        break;
+      case 'ring':                         // 무지개 링 — 반짝 아르페지오
+        [84, 88, 91, 96].forEach((n, i) => env('triangle', t + i * 0.05, 0.14, 0.11, f(n), f(n)));
+        break;
+      case 'trick':                        // 번개 피함 — 위로 쏘는 반짝임
+        env('square', t, 0.1, 0.1, f(79), f(79));
+        env('square', t + 0.08, 0.1, 0.1, f(86), f(86));
+        env('square', t + 0.16, 0.18, 0.11, f(91), f(91));
+        break;
       case 'lap':                          // 한 바퀴 — 딩동
         env('triangle', t, 0.16, 0.15, f(83), f(83));
         env('triangle', t + 0.13, 0.26, 0.15, f(88), f(88));

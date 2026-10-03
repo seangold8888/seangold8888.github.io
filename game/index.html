@@ -748,15 +748,16 @@
   }
   .card::before { content: ""; position: absolute; inset: 0; z-index: -2; background: var(--cover) var(--cover-pos, center 38%) / var(--cover-size, cover) no-repeat; transition: transform .45s ease, filter .25s ease; }
   .card::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(8,9,29,.04) 4%, rgba(8,9,29,.34) 42%, rgba(8,9,29,.96) 100%); }
-  .card.battle { grid-column: span 8; min-height: 330px; --cover-pos: 50% 31%; }
+  .card.battle { grid-column: span 8; min-height: 330px; --cover: url('assets/covers/cover-jaei-taeo-card-battle-v1.webp'); --cover-pos: 50% 25%; }
   .card.hero { --cover-size: 72%; --cover-pos: 50% 27%; background: linear-gradient(155deg, #46235c, #182e61); }
   .card.sea { --cover-pos: 50% 28%; }
   .card.war { --cover-pos: 50% 50%; }
-  .card.castle { --cover-size: 62%; --cover-pos: 50% 28%; background: linear-gradient(145deg, #302257, #111832); }
-  .card.kart3d { --cover: linear-gradient(180deg, rgba(20,16,50,.05), rgba(20,16,50,.45)), url('assets/covers/cover_kart3d.webp'); --cover-pos: 50% 50%; }
+  .card.castle { --cover: url('assets/covers/cover-hogwarts-game-v1.webp'); --cover-size: cover; --cover-pos: 50% 42%; background: linear-gradient(145deg, #302257, #111832); }
+  .card.kart3d { --cover: url('assets/covers/cover-sanrio-kart-team-v1.webp'); --cover-pos: 50% 34%; }
   .card.kart { --cover: linear-gradient(180deg, rgba(20,16,50,.05), rgba(20,16,50,.45)), url('assets/covers/cover_kart.webp'); --cover-pos: 50% 50%; }
-  .card.stage { --cover: linear-gradient(180deg, rgba(20,16,50,.05), rgba(20,16,50,.45)), url('assets/covers/cover_stage.webp'); --cover-pos: 50% 50%; }
-  .card.gem { --cover: linear-gradient(180deg, rgba(20,16,50,.05), rgba(20,16,50,.45)), url('assets/covers/cover_gem.webp'); --cover-pos: 50% 50%; }
+  .card.slime { --cover:url('assets/covers/cover_slime.svg'); --cover-pos:50% 30%; }
+  .card.stage { --cover: url('assets/covers/cover-kedehun-team-v1.webp'); --cover-pos: 50% 24%; }
+  .card.gem { --cover: url('assets/covers/cover-ribbon-room-v1.webp'); --cover-pos: 55% 42%; }
   .card.princess { --cover-size: 78%; --cover-pos: 50% 22%; background: linear-gradient(150deg, #f7b8dc, #7e58c8); }
   .card .badge { position: relative; z-index: 2; width: 48px; height: 48px; border: 1px solid rgba(255,255,255,.22); border-radius: 15px 5px; background: rgba(12,15,39,.7); color: white; font-size: 25px; backdrop-filter: blur(10px); }
   .card .meta { position: relative; z-index: 2; gap: 6px; }
@@ -870,7 +871,7 @@
   .wrap { gap: 24px; }
   .brand-kicker { font-size: 12px; letter-spacing: .06em; }
   .brand-copy .sub, .hud-chip small { font-size: 13px; }
-  .hero-grid { grid-template-columns: minmax(0, 1.15fr) minmax(320px, 1fr); gap: 16px; }
+  .hero-grid { grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr); gap: 16px; }
   .feature-stage, .feature-copy { min-height: 340px; }
   .feature-stage { border-radius: 26px; }
   .feature-copy { width: 65%; padding: 28px; }
@@ -882,9 +883,10 @@
   .feature-stats { display: none; }
   .art-fan { inset: 12px -45px 12px 50%; }
   .art-fan img { width: clamp(140px, 18vw, 210px); border-radius: 18px; }
-  #study { min-height: 340px; padding: 24px; border-radius: 26px; scroll-margin-top: 20px; }
+  #study { min-height: 340px; padding: 24px; border-radius: 26px; scroll-margin-top: 20px; border: 2px solid var(--gold); }
   #study .eyebrow { font-size: 14px; letter-spacing: .02em; }
   #study .daily { font-size: 14px; }
+  #study .progress { flex-wrap: wrap; letter-spacing: 0; font-size: clamp(13px, 2vw, 18px); }
   #study .choices button { min-width: 64px; min-height: 60px; border-radius: 14px; }
   .section-kicker { font-size: 12px; letter-spacing: .06em; }
   .section-heading h2 { font-size: clamp(26px, 3.5vw, 34px); }
@@ -945,6 +947,10 @@
   .study-family { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
   .study-family img { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #ffd56a; object-fit: cover; object-position: center 20%; background: #fff6dc; }
   .study-family-art { display: block; width: 100%; height: auto; border-radius: 16px; border: 2px solid rgba(255,213,106,.65); transform: rotate(2deg); box-shadow: 0 8px 20px rgba(0,0,0,.2); }
+  @media (max-width: 760px) {
+    .study-family { gap: 4px; }
+    .study-family img { width: 30px; height: 30px; }
+  }
   @media (max-width: 380px) {
     .study-welcome { grid-template-columns: minmax(0, 1fr) 100px; gap: 8px; }
     .study-family { gap: 3px; }
@@ -976,11 +982,205 @@
   .reading-heard { font-size:16px; color:#e0d5ff; overflow-wrap:anywhere; }
   .reading-actions button:focus-visible { outline:3px solid #66e3ff; outline-offset:3px; }
   #study .reading-actions button[hidden] { display:none; }
+  #study .reading-actions .reading-alternative { flex-basis:100%; font-size:14px; background:#eef3fb; color:#334765; }
+  #study .reading-actions .reading-recovery { order:-1; flex-basis:100%; }
+  #study .reading-resume { grid-column:1 / -1; font-size:14px; background:#eef3fb; color:#334765; }
 </style>
 <style>
 .party-launch{display:grid;grid-template-columns:minmax(0,1fr) 230px;align-items:center;gap:20px;background:linear-gradient(120deg,#fff2e6,#f9e1e9);border:1px solid #f5d5cb;border-radius:26px;padding:24px 30px;margin:0 0 20px;color:#4f354b;text-decoration:none;overflow:hidden;box-shadow:0 12px 35px #0002}
 .party-launch:hover{filter:brightness(1.03)}.party-launch:focus-visible{outline:3px solid #66e3ff;outline-offset:4px}.party-launch small{color:#aa3e64;font-weight:800;letter-spacing:.03em}.party-launch h2{margin:6px 0;font-size:clamp(23px,3vw,32px);color:#4f354b}.party-launch p{margin:0;color:#735b6a;line-height:1.6}.party-launch strong{display:inline-block;background:#b83f68;color:white;border-radius:14px;padding:12px 18px;margin-top:14px}.party-launch img{width:100%;height:auto;object-fit:contain;mix-blend-mode:multiply}
 @media(max-width:600px){.party-launch{padding:20px;gap:8px;grid-template-columns:minmax(0,1fr) 90px}.party-launch h2{font-size:23px}.party-launch p{font-size:13px}.party-launch img{align-self:center}.party-launch small{font-size:11px}}
+</style>
+<style id="dashboard-clarity">
+  /* One clear next step; secondary information stays available on demand. */
+  body { background: radial-gradient(ellipse at 18% 0%, #22285080, transparent 55%), #0c1022; }
+  body::before { display: none; }
+  #sky { opacity: .3; }
+  .lobby-shell { max-width: 1200px; gap: 32px; padding-top: calc(22px + env(safe-area-inset-top,0px)); }
+  .sr-only { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip-path: inset(50%) !important; white-space: nowrap !important; border: 0 !important; }
+  .topbar { grid-template-columns: auto minmax(0,1fr) auto; gap: 12px; }
+  .brand-orb { width: 44px; height: 44px; border-radius: 14px; transform: none; padding: 4px; box-shadow: none; }
+  .brand-orb img { border-radius: 10px; }
+  .brand-copy h1 { font-size: 27px; letter-spacing: -.04em; }
+  .brand-kicker, .brand-copy .sub { display: none; }
+  .player-hud { display: flex; grid-column: auto; align-items: center; gap: 10px; }
+  .hud-chip.ticket { min-height: 44px; min-width: 0; padding: 7px 12px; background: #ffffff07; border-radius: 12px; box-shadow: none; backdrop-filter: none; }
+  .hud-chip.ticket small { font-size: 11px; color: #c5c9df; letter-spacing: 0; }
+  .hud-chip.ticket strong { font-size: 13px; }
+  .lobby-settings { position: relative; }
+  .lobby-settings > summary { width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 12px; color: #e0e4f5; background: #ffffff08; cursor: pointer; list-style: none; }
+  .lobby-settings > summary::-webkit-details-marker { display: none; }
+  .lobby-settings > summary svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.7; }
+  .lobby-settings[open] > summary { border-color: var(--gold); color: var(--gold); }
+  .settings-panel { position: absolute; top: calc(100% + 10px); right: 0; width: min(330px, calc(100vw - 28px)); z-index: 30; padding: 20px; background: #171d34; border: 1px solid #525b78; border-radius: 18px; box-shadow: 0 18px 60px #0009; text-align: left; display: grid; gap: 16px; }
+  .settings-panel h2 { font-size: 17px; }
+  .settings-panel .hud-chip { display: flex; flex-direction: row; align-items: center; justify-content: space-between; min-height: 32px; border: 0; border-radius: 0; padding: 0; background: none; box-shadow: none; backdrop-filter: none; }
+  .settings-panel .hud-chip small { font-size: 13px; color: #c5c9df; }
+  .settings-panel .hud-chip strong { font-size: 14px; }
+  .settings-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .settings-panel .book-open { width: auto; min-height: 46px; align-self: stretch; border: 1px solid #59627e; background: #ffffff08; color: #f6f7ff; border-radius: 11px; padding: 9px; font-size: 13px; box-shadow: none; }
+  .settings-panel .parent-entry { grid-column: 1 / -1; min-height: 48px; font-size: 14px; }
+  .settings-panel .hub-quiet[aria-pressed="true"] { background: var(--gold); color: #172039; box-shadow: none; }
+  .settings-panel .hub-music[aria-pressed="true"] { opacity: 1; filter: none; }
+  .settings-panel .daily, .settings-panel .reading-label { font-size: 12px; line-height: 1.6; color: #c5c9df; }
+  .hero-grid { grid-template-columns: minmax(0, 1fr); align-items: start; gap: 24px; }
+  #study { min-height: 0; padding: 24px; gap: 12px; border: 1px solid #7781a9; border-radius: 24px; background: linear-gradient(145deg, #252e4b, #172039); box-shadow: 0 16px 44px #0002; }
+  .study-welcome { grid-template-columns: minmax(0,1fr) auto; gap: 12px; padding: 0 0 14px; margin: 0; border-color: #ffffff20; }
+  #study .study-welcome h2 { font-size: 27px; }
+  #study .study-welcome p { margin-top: 5px; font-size: 14px; color: #dde0ef; }
+  .quest-ring { width: 56px; height: 56px; padding: 5px; box-shadow: none; }
+  .quest-ring span { font-size: 13px; background: #1b2440; }
+  .quest-head { display: block; }
+  #study .eyebrow { color: #c9efa4; font-size: 13px; line-height: 1.6; letter-spacing: 0; }
+  #study .progress { display: none; }
+  #study .items .story-page-art { width: 100%; height: 190px; max-height: none; margin: 0; border-radius: 14px; object-fit: contain; background: #10182b; box-shadow: none; }
+  #study .items:empty, #study .cheer:empty, #studyCelebration:empty { display: none; }
+  #study:has(.reading-practice) #question { display: none; }
+  #study .question { font-size: 22px; line-height: 1.5; word-break: keep-all; text-wrap: balance; }
+  #study .choices.reading-practice { gap: 12px; }
+  #study .reading-sentence { font-size: clamp(27px, 3vw, 35px); line-height: 1.45; letter-spacing: -.025em; }
+  #study .reading-label, #study .reading-status { font-size: 14px; line-height: 1.55; }
+  #study .reading-heard:empty { display: none; }
+  #study .choices button { border-radius: 12px; box-shadow: 0 3px 0 #ad793b; }
+  #study .reading-actions button { min-height: 48px; padding: 11px; }
+  .reading-help { border-top: 1px solid #ffffff20; padding-top: 8px; }
+  .reading-help summary, .learning-more > summary { cursor: pointer; color: #cad2eb; font-size: 13px; min-height: 44px; display: flex; align-items: center; gap: 8px; list-style: none; }
+  .reading-help summary::-webkit-details-marker, .learning-more > summary::-webkit-details-marker { display: none; }
+  .reading-help summary::before, .learning-more > summary::before { content: '+'; font-size: 17px; }
+  .reading-help[open] summary::before, .learning-more[open] > summary::before { content: '−'; }
+  .reading-help .reading-privacy { padding-top: 4px; font-size: 13px; }
+  .learning-more { border-top: 1px solid #ffffff20; }
+  .feature-stage { min-height: 430px; border: 1px solid #ffffff1a; border-radius: 24px; background: #171d37; box-shadow: none; }
+  .feature-stage::after { background: linear-gradient(90deg,#11172fea 0%,#11172fa0 50%,#11172f00 100%); }
+  .feature-copy { min-height: 430px; width: 72%; padding: 32px; justify-content: flex-start; }
+  .feature-label { padding: 0; margin-bottom: 18px; border: 0; background: none; color: #bdc9ed; font-size: 13px; letter-spacing: 0; }
+  .feature-copy h2 { font-size: clamp(45px,5vw,60px); line-height: 1.15; letter-spacing: -.07em; }
+  .feature-copy p { font-size: 14px; line-height: 1.5; margin-top: 12px; max-width: 230px; word-break: keep-all; }
+  .feature-actions { margin-top: 24px; }
+  .feature-button { min-height: 46px; border-radius: 12px; box-shadow: none; padding: 0 16px; font-size: 14px; }
+  .feature-button:active { box-shadow: none; }
+  .feature-actions .secondary { display: none; }
+  .art-fan { inset: 80px -50px 12px 40%; opacity: .82; }
+  .art-fan img { width: 188px; right: 22px; border-radius: 18px; }
+  .feature-family { position: absolute; z-index: 3; left: 32px; bottom: 24px; display: flex; gap: 10px; align-items: center; }
+  .feature-family .study-family { flex-wrap: nowrap; margin: 0; gap: 0; }
+  .feature-family .study-family img { width: 30px; height: 30px; margin-left: -5px; border: 2px solid #222c48; }
+  .feature-family .study-family img:first-child { margin-left: 0; }
+  .feature-family .study-family-art { width: 45px; height: 30px; border: 1px solid #ffffff36; border-radius: 6px; object-fit: cover; transform: none; box-shadow: none; }
+  .feature-family > span { color: #d5dbee; font-size: 12px; }
+  .section-heading { flex-direction: row; align-items: center; gap: 16px; margin-bottom: 16px; }
+  .section-heading h2 { font-size: 25px; letter-spacing: -.045em; margin: 0; }
+  .section-heading p { font-size: 13px; line-height: 1.5; color: #c4cbe2; max-width: 360px; }
+  .games { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; }
+  .card, .card.hero, .card.battle { grid-column: auto; min-height: 226px; padding: 18px; gap: 0; border-radius: 18px; border: 1px solid #ffffff25; box-shadow: none; }
+  .card::after, body.locked .card::after { background: linear-gradient(180deg,#0c102200 30%,#0c1022aa 64%,#0c1022f5 100%); }
+  .card .badge, .card .tags, .card .desc, .card .update { display: none; }
+  .card .meta { width: 100%; display: grid; grid-template-columns: minmax(0,1fr) 28px; gap: 10px; align-items: end; }
+  .card .name { font-size: 21px; line-height: 1.35; letter-spacing: -.035em; word-break: keep-all; text-wrap: balance; overflow-wrap: normal; }
+  .card .title-group { white-space: nowrap; }
+  .card .go { align-self: end; margin: 0; padding: 0; font-size: 0; letter-spacing: 0; color: #ffe397; }
+  .card .go::after { content: '↗'; font-size: 23px; }
+  .padlock { width: 30px; height: 30px; top: 12px; right: 12px; border-radius: 9px; font-size: 14px; backdrop-filter: none; }
+  body.locked .card::before { filter: saturate(.9) brightness(.92); }
+  .open-deck { border: 0; border-top: 1px solid #ffffff20; border-radius: 0; background: none; padding: 26px 0 0; }
+  .open-deck .section-heading h2 { font-size: 21px; }
+  .open-deck .section-heading p { color: #bceca1; }
+  .open-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }
+  .shop { min-height: 112px; border-radius: 16px; padding: 20px; box-shadow: none; }
+  .shop .badge, .shop .tags, .shop .desc, .shop .go { display: none; }
+  .shop .name { font-size: 20px; }
+  .shop .open-sign { font-size: 11px; padding: 4px 7px; top: 12px; right: 12px; border-radius: 6px; }
+  .party-launch { min-height: 90px; grid-template-columns: minmax(0,1fr) 70px; gap: 16px; padding: 16px 20px; margin: 0; border-radius: 16px; background: #ffffff06; border: 1px solid #ffffff22; color: var(--text); box-shadow: none; }
+  .party-launch small { color: #c3cbe4; font-size: 12px; }
+  .party-launch h2 { color: var(--text); font-size: 19px; margin: 4px 0; }
+  .party-launch p { display: none; }
+  .party-launch strong { font-size: 12px; margin: 3px 0 0; padding: 0; background: none; color: #ffe397; }
+  .party-launch img { border-radius: 12px; mix-blend-mode: normal; }
+  footer { gap: 10px; font-size: 12px; }
+  footer .tip { display: block; color: #c3cbe4; border: 0; background: none; padding: 10px 0; }
+  .lobby-help summary { min-height: 44px; display: flex; align-items: center; justify-content: center; color: #c3cbe4; cursor: pointer; }
+  .lobby-settings > summary:focus-visible, .reading-help summary:focus-visible, .learning-more > summary:focus-visible, .lobby-help summary:focus-visible, .settings-panel button:focus-visible { outline: 3px solid var(--electric); outline-offset: 3px; }
+  @media (max-width: 900px) {
+    .hero-grid { grid-template-columns: minmax(0,1fr); }
+    .feature-stage, .feature-copy { min-height: 232px; }
+    .feature-copy { padding: 24px; width: 68%; }
+    .feature-label { margin-bottom: 8px; }
+    .feature-copy h2 { font-size: 39px; }
+    .feature-copy h2 br { display: none; }
+    .feature-copy p { margin-top: 8px; }
+    .feature-actions { margin-top: 16px; }
+    .feature-family { display: none; }
+    .art-fan { inset: 8px -25px 8px 52%; opacity: .8; }
+    .art-fan img { width: 150px; }
+    #study .items .story-page-art { height: 190px; }
+    .card, .card.hero, .card.battle { min-height: 210px; }
+    .card .name { font-size: 19px; }
+  }
+  @media (max-width: 600px) {
+    .lobby-shell { padding-top: calc(16px + env(safe-area-inset-top,0px)); gap: 24px; }
+    .topbar { gap: 8px; }
+    .brand-orb { width: 36px; height: 36px; border-radius: 11px; }
+    .brand-copy h1 { font-size: 22px; white-space: nowrap; }
+    .player-hud { gap: 8px; }
+    .hud-chip.ticket { padding: 4px 6px; border: 0; background: none; }
+    .hud-chip.ticket small { font-size: 10px; }
+    .hud-chip.ticket strong { font-size: 12px; }
+    #study { padding: 18px; gap: 10px; border-radius: 20px; }
+    .study-welcome { padding-bottom: 12px; }
+    #study .study-welcome h2 { font-size: 25px; }
+    #study .study-welcome p { font-size: 13px; }
+    #study .eyebrow { font-size: 12px; line-height: 1.5; }
+    .quest-ring { width: 50px; height: 50px; }
+    #study .items .story-page-art { height: 140px; }
+    #study .reading-sentence { font-size: 28px; line-height: 1.4; }
+    #study .reading-actions button { font-size: 15px; min-height: 48px; }
+    #study .question { font-size: 20px; }
+    #study .reading-status, #study .reading-label { font-size: 13px; }
+    .feature-copy { padding: 20px; width: 75%; }
+    .feature-stage, .feature-copy { min-height: 222px; }
+    .feature-copy h2 { font-size: 34px; }
+    .feature-copy h2 br { display: block; }
+    .feature-copy p { font-size: 13px; max-width: 155px; }
+    .feature-label { font-size: 12px; }
+    .feature-actions { margin-top: 14px; }
+    .feature-button { font-size: 13px; min-height: 44px; padding: 0 12px; }
+    .art-fan { inset: 0 -25px 0 52%; }
+    .art-fan img { width: 128px; }
+    .section-heading { align-items: flex-start; flex-direction: column; gap: 6px; }
+    .section-heading h2 { font-size: 23px; }
+    .section-heading p { text-align: left; font-size: 12px; }
+    .games { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+    .card, .card.hero, .card.battle { min-height: 178px; padding: 14px 12px; }
+    .card .meta { grid-template-columns: minmax(0,1fr) 18px; gap: 4px; }
+    .card .name { font-size: 17px; }
+    .card .go::after { font-size: 19px; }
+    .card.hero { --cover-size: cover; }
+    .open-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+    .shop { min-height: 122px; padding: 16px 12px; }
+    .shop .name { font-size: 17px; }
+    .shop .open-sign { font-size: 10px; }
+    .party-launch { padding: 14px; grid-template-columns: minmax(0,1fr) 58px; }
+    .party-launch h2 { font-size: 17px; }
+  }
+  @media (max-width: 350px) {
+    .brand-copy h1 { font-size: 19px; }
+    .hud-chip.ticket strong { font-size: 11px; }
+    .card .name { font-size: 16px; }
+  }
+  .math-launch { display: grid; grid-template-columns: minmax(0,1fr) 132px; align-items: center; gap: 16px; padding: 18px 22px; border: 1px solid #8ee9c43b; border-radius: 22px; color: #f4fffb; background: linear-gradient(115deg,#15273a,#183a38); text-decoration: none; overflow: hidden; }
+  .math-launch:hover { border-color: #a1f1ce; }
+  .math-launch:focus-visible { outline: 3px solid #ffda70; outline-offset: 4px; }
+  .math-launch-copy { display: grid; gap: 6px; min-width: 0; }
+  .math-launch-copy strong { font-size: clamp(19px,3.6vw,23px); letter-spacing: -.03em; }
+  .math-launch-copy small { font-size: 12px; color: #b3cece; line-height: 1.45; }
+  .math-launch-copy > span { font-size: 13px; color: #d0e8dc; line-height: 1.5; word-break: keep-all; }
+  .math-launch-cta { display: inline-flex; align-items: center; min-height: 44px; color: #b0f6d4; font-size: 15px; font-weight: 850; }
+  .math-launch img { width: 132px; height: 100px; border-radius: 16px; object-fit: cover; }
+  @media (max-width: 640px) {
+    .math-launch { grid-template-columns: minmax(0,1fr) 78px; padding: 14px; gap: 10px; border-radius: 18px; }
+    .math-launch img { width: 78px; height: 100px; }
+    .math-launch-copy > span { font-size: 12px; }
+  }
 </style>
 </head>
 <body>
@@ -994,80 +1194,68 @@
     <div class="brand-copy">
       <span class="brand-kicker">우리 가족의 모험 기지</span>
       <h1>모험 상자</h1>
-      <p class="sub" id="subline">10문제마다 게임 티켓! 오늘 100문제를 풀면 모두 자유롭게!</p>
+      <p class="sub" id="subline">공부 먼저, 모험은 다음! 15문제마다 게임 티켓을 받아요.</p>
     </div>
     <div class="player-hud" aria-label="오늘의 모험 상태">
-      <span class="hud-chip quest"><small>오늘 누적 정답</small><strong id="hubDailyStat">0 / 100</strong></span>
       <span class="hud-chip ticket"><small>게임 티켓</small><strong id="hubTicketStat">준비 중</strong></span>
-      <span class="hud-chip crown"><small>숙달 왕관</small><strong id="hubCrownStat">0개</strong></span>
-      <span class="hud-chip offline"><small>기기 저장</small><strong id="hubOfflineStat">확인 중</strong></span>
-      <button class="book-open hub-quiet" id="quietMode" type="button" aria-pressed="false" aria-label="조용 모드: 기차·비행기에서는 소리 내어 읽기 대신 산수" title="조용 모드 (기차·비행기)">🤫</button>
-      <button class="book-open hub-music" id="hubMusic" type="button" aria-pressed="false" aria-label="배경음악 끄기">🎵</button>
-      <button class="book-open parent-entry" id="bookOpen" type="button" aria-label="부모님용 학습 리포트 열기">📖</button>
+      <details class="lobby-settings" id="lobbySettings">
+        <summary aria-label="설정과 학습 기록 열기" title="설정·학습 기록"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6l.6 2.5 2.2 1.3 2.5-.7 3 5.2-1.9 1.8v2.6l1.9 1.8-3 5.2-2.5-.7-2.2 1.3L15 25H9l-.6-2.5-2.2-1.3-2.5.7-3-5.2 1.9-1.8v-2.6L.7 10.5l3-5.2 2.5.7 2.2-1.3Z" transform="translate(1 0) scale(.85)"/><circle cx="11.2" cy="11.9" r="3"/></svg><span class="sr-only">설정·학습 기록</span></summary>
+        <div class="settings-panel">
+          <h2>설정·학습 기록</h2>
+          <div>
+            <span class="hud-chip quest"><small>오늘 누적 정답</small><strong id="hubDailyStat">0 / 100</strong></span>
+            <span class="hud-chip crown"><small>숙달 왕관</small><strong id="hubCrownStat">0개</strong></span>
+            <span class="hud-chip offline"><small>기기 저장</small><strong id="hubOfflineStat">확인 중</strong></span>
+          </div>
+          <div class="settings-actions">
+            <button class="book-open hub-quiet" id="quietMode" type="button" aria-pressed="false" aria-label="조용 모드: 기차·비행기에서는 소리 내어 읽기 대신 산수" title="조용 모드 (기차·비행기)">🤫 조용 모드</button>
+            <button class="book-open hub-music" id="hubMusic" type="button" aria-pressed="false" aria-label="배경음악 끄기">🎵 배경음악</button>
+            <button class="book-open parent-entry" id="bookOpen" type="button" aria-label="부모님용 학습 리포트 열기">학습 리포트 보기 →</button>
+          </div>
+          <p class="daily" id="daily"></p>
+          <p class="reading-label" id="studyModeNote">영어 그림책 읽기 중심 · 다섯 번째는 재이의 수학놀이터</p>
+        </div>
+      </details>
     </div>
   </header>
 
-  <a class="party-launch" id="partyAdventure" href="math/party/">
-    <div><small>재이에게 도착한 초대 · 티켓 없이 바로 놀기</small><h2>우리 가족 생일파티를 열자!</h2><p>반짝 불빛, 쿠키 선물, 둥실 풍선.<br>재이가 준비한 파티에서 가족과 신나게 놀자.</p><strong>내 파티 만들러 가기 →</strong></div>
-    <img src="math/assets/jaei-family-v4.webp" width="1024" height="683" alt="아빠, 태오, 재이, 엄마가 기다리는 생일파티">
-  </a>
-  <section class="hero-grid" aria-label="오늘의 공부와 모험">
+  <section class="hero-grid" aria-label="오늘의 공부">
   <section id="study" aria-live="polite" aria-labelledby="studyTitle">
     <div class="study-welcome">
       <div class="study-welcome-copy">
         <h2 id="studyTitle">오늘의 공부</h2>
-        <p>재이와 함께 하나씩 풀어요</p>
-        <div class="study-family" aria-label="함께하는 우리 가족">
-          <img src="assets/study/jaei.jpg" width="36" height="36" alt="재이" decoding="async">
-          <img src="assets/study/taeo.jpg" width="36" height="36" alt="태오" decoding="async">
-          <img src="assets/study/mom.jpg" width="36" height="36" alt="엄마" decoding="async">
-          <img src="assets/study/dad.jpg" width="36" height="36" alt="아빠" decoding="async">
-        </div>
+        <p id="studyPitch">15문제면, 모험이 열려요.</p>
       </div>
-      <img class="study-family-art" src="assets/study/picnic-scene.jpg" width="1152" height="768" alt="가족이 함께 소풍을 즐기는 그림" fetchpriority="high" decoding="async">
+      <div class="quest-ring" id="questRing" role="status" aria-label="이번 티켓 진행"><span id="questRingLabel">0/15</span></div>
     </div>
-    <div id="princessGrowthHub" aria-label="공주 성장 기록"></div>
     <div class="quest-head">
       <div>
-        <div class="eyebrow" id="studyEyebrow">문제 풀고 티켓 받기</div>
-        <div class="daily" id="daily"></div>
+        <div class="eyebrow" id="studyEyebrow">공부 먼저 · 15문제 도전</div>
       </div>
-      <div class="quest-ring" id="questRing" aria-hidden="true"><span id="questRingLabel">0/10</span></div>
     </div>
-    <p class="reading-label" id="studyModeNote">영어 그림책 읽기 중심 · 다섯 번째는 재이의 수학놀이터</p>
-    <div class="progress" id="stars"></div>
+    <div class="progress" id="stars" aria-hidden="true"></div>
     <div class="formula" id="formula"></div>
     <div class="items" id="items"></div>
     <div class="question" id="question"></div>
     <div class="choices" id="choices"></div>
     <div class="cheer" id="cheer"></div>
     <div id="studyCelebration"></div>
+    <details class="learning-more"><summary>공부로 자란 공주 보기</summary><div id="princessGrowthHub" aria-label="공주 성장 기록"></div></details>
   </section>
-
-    <article class="feature-stage">
-      <div class="feature-copy">
-        <span class="feature-label">오늘의 모험</span>
-        <h2>오늘은<br><em>어디로 갈까?</em></h2>
-        <p>문제를 풀고 게임으로 출발!<br>이야기는 티켓 없이 즐겨요.</p>
-        <div class="feature-actions">
-          <a class="feature-button" id="nextAdventure" href="#study">문제 풀고 티켓 받기 <span aria-hidden="true">→</span></a>
-          <a class="feature-button secondary feature-shop" href="story/">🎧 이야기 듣기</a>
-        </div>
-        <div class="feature-stats" aria-label="카드 배틀 특징">
-          <span>24장의 이야기 영웅</span><span>듣고 나면 카드가 깨어나요</span>
-        </div>
-      </div>
-      <div class="art-fan" aria-hidden="true">
-        <img class="art-left" src="cards/art/redhood.webp" alt="" decoding="async">
-        <img class="art-right" src="cards/art/sunwukong.webp" alt="" decoding="async">
-        <img class="art-main" src="cards/art/arthur.webp" alt="" decoding="async" fetchpriority="high">
-      </div>
-    </article>
+  <a class="math-launch" id="mathPlaygroundLaunch" href="math/?from=hub&amp;quick=1">
+    <span class="math-launch-copy">
+      <small>티켓 없이 언제든 · 오늘의 공부에 합산</small>
+      <strong>재이의 수학놀이터</strong>
+      <span>한 문제, 한 칸! 친구와 놀이터를 건너요.</span>
+      <b class="math-launch-cta" id="mathLaunchAction">가볍게 3문제 →</b>
+    </span>
+    <img src="math/assets/playground-scene.webp" alt="친구들과 함께하는 수학놀이터" width="132" height="100" loading="lazy">
+  </a>
   </section>
 
   <section class="world-deck" id="adventureWorlds">
     <div class="section-heading">
-      <div><div class="section-kicker">게임 골라 보기</div><h2>어디로 떠날까?</h2></div>
+      <div><h2>다음 모험 고르기</h2></div>
       <p id="worldAccessHint">티켓 한 장으로 좋아하는 게임 5분!</p>
     </div>
     <nav class="games" aria-label="게임 목록">
@@ -1075,17 +1263,17 @@
       <span class="padlock">🔒</span>
       <span class="badge">🦸</span>
       <span class="meta">
-        <span class="name">재이와 태오의 멀티버스</span>
+        <span class="name"><span class="title-group">재이·태오</span> 멀티버스</span>
         <span class="tags"><span class="genre">🦸 90초 히어로 미션</span></span>
         <span class="desc">재이·태오가 영웅으로 출동 · 구출·보물·보스 미션 · 캡슐로 망토·마스크·무기 꾸미기</span>
         <span class="go">모험 떠나기 ▶</span>
       </span>
     </a>
-    <a class="card battle" href="cards/" style="--cover:url('cards/art/cinderella.webp')">
+    <a class="card battle" href="cards/">
       <span class="padlock">🔒</span>
       <span class="badge">🃏</span>
       <span class="meta">
-        <span class="name">J&amp;T Adventure</span>
+        <span class="name">재이태오 카드 배틀</span>
         <span class="tags"><span class="genre">🃏 카드 배틀</span></span>
         <span class="desc">이야기를 들으면 영웅 카드 해금 · 별사탕으로 펼치는 1:1 대결</span>
         <span class="go">카드 대결하기 ▶</span>
@@ -1095,29 +1283,27 @@
       <span class="padlock">🔒</span>
       <span class="badge">⛵</span>
       <span class="meta">
-        <span class="name">오디세이아: 집으로 가는 길</span>
+        <span class="name">오딧세이</span>
         <span class="tags"><span class="genre">⚔️ 모험 액션</span></span>
         <span class="desc">키클롭스 동굴부터 이어지는, 지혜로 떠나는 액션 모험</span>
         <span class="go">모험 떠나기 ▶</span>
+      </span>
+    </a>
+    <a class="card slime" href="slime/">
+      <span class="padlock">🔒</span><span class="badge">🫧</span>
+      <span class="meta"><span class="name">말랑 슬라임</span>
+        <span class="tags"><span class="genre">🫧 말랑한 3D 놀이</span></span>
+        <span class="desc">콕 누르고, 쭉 늘리고, 통통 던져요. 표정도 바뀌는 나만의 젤리 친구!</span>
+        <span class="go">말랑이 만나기 ▶</span>
       </span>
     </a>
     <a class="card kart3d" href="kart3d/">
       <span class="padlock">🔒</span>
       <span class="badge">🏁</span>
       <span class="meta">
-        <span class="name">산리오 카트 3D</span>
+        <span class="name">산리오 카트</span>
         <span class="tags"><span class="genre">🏁 3D 레이싱</span></span>
-        <span class="desc">진짜 3D 레이싱 · 코스 6개 · 캐릭터 7명 · 아이템 배틀 · 내 음악 넣기</span>
-        <span class="go">모험 떠나기 ▶</span>
-      </span>
-    </a>
-    <a class="card kart" href="kart/">
-      <span class="padlock">🔒</span>
-      <span class="badge">🏎️</span>
-      <span class="meta">
-        <span class="name">산리오 카트 (간단판)</span>
-        <span class="tags"><span class="genre">🏎️ 레이싱</span></span>
-        <span class="desc">코스 4개 · 캐릭터 7명 · 드리프트 부스터 · 내 음악 넣기</span>
+        <span class="desc">6개 3D 코스 · 자동 출발과 코너 길잡이 · 그랑프리 · 코인 차고</span>
         <span class="go">모험 떠나기 ▶</span>
       </span>
     </a>
@@ -1125,17 +1311,17 @@
       <span class="padlock">🔒</span>
       <span class="badge">🐉</span>
       <span class="meta">
-        <span class="name">삼국지 · 서유기 · 수호지</span>
+        <span class="name">삼국지 · 서유기 · 명장</span>
         <span class="tags"><span class="genre">⚔️ 전장 액션</span></span>
         <span class="desc">세 고전을 넘나드는 별빛 연대기 횡스크롤 전장</span>
         <span class="go">모험 떠나기 ▶</span>
       </span>
     </a>
-    <a class="card castle" href="hogwarts/" style="--cover:url('hogwarts/icon.png')">
+    <a class="card castle" href="hogwarts/">
       <span class="padlock">🔒</span>
       <span class="badge">🏰</span>
       <span class="meta">
-        <span class="name">호그와트 마법학교</span>
+        <span class="name">호그와트</span>
         <span class="tags"><span class="genre">✨ 마법 어드벤처</span></span>
         <span class="desc">7년의 마법 학교 어드벤처</span>
         <span class="go">모험 떠나기 ▶</span>
@@ -1146,8 +1332,8 @@
       <span class="badge">🎤</span>
       <span class="meta">
         <span class="name">케데헌</span>
-        <span class="tags"><span class="genre">🎵 리듬 러너</span></span>
-        <span class="desc">무대를 달리는 데몬 헌터스</span>
+        <span class="tags"><span class="genre">⚔️ 무대 액션</span></span>
+        <span class="desc">루미·미라·조이가 악귀와 맞서는 무대 액션</span>
         <span class="go">모험 떠나기 ▶</span>
       </span>
     </a>
@@ -1155,7 +1341,7 @@
       <span class="padlock">🔒</span>
       <span class="badge">💎</span>
       <span class="meta">
-        <span class="name">헬로키티의 리본방</span>
+        <span class="name">헬로키티 리본방</span>
         <span class="tags"><span class="genre">🔍 추리 · 미니게임</span></span>
         <span class="desc">사라진 보석을 찾는 아기자기 추리 놀이</span>
         <span class="go">모험 떠나기 ▶</span>
@@ -1176,12 +1362,12 @@
 
   <section class="open-deck" id="alwaysOpen">
     <div class="section-heading">
-      <div><div class="section-kicker">언제든 환영해</div><h2>티켓 없이 바로!</h2></div>
-      <p>이야기 극장과 가족 웹툰은 언제든 열려 있어요.</p>
+      <div><h2>이야기는 언제든</h2></div>
+      <p>티켓 없이 바로 열려요.</p>
     </div>
     <div class="open-grid">
   <a class="shop story" href="story/" aria-label="이야기 극장 — 언제나 열려 있어요" style="--cover:url('cards/art/cinderella.webp')">
-    <span class="open-sign">24시간 영업 중</span>
+    <span class="open-sign">티켓 없이</span>
     <span class="badge">🎧</span>
     <span class="meta">
       <span class="name">이야기 극장</span>
@@ -1191,12 +1377,12 @@
     </span>
   </a>
   <a class="shop story" href="story/english/" aria-label="영어 그림책 — 언제나 열려 있어요" style="--cover:url('cards/art/threepigs.webp')">
-    <span class="open-sign">영어로 읽기</span>
+    <span class="open-sign">티켓 없이</span>
     <span class="badge">📚</span>
     <span class="meta">
       <span class="name">영어 그림책</span>
         <span class="tags"><span class="genre">📚 English</span></span>
-      <span class="desc">그림 보며 영어 이야기를 듣고 직접 읽어요 · 6권 · 공부 없이도 입장 OK</span>
+      <span class="desc">그림 보며 영어 이야기를 듣고 직접 읽어요 · 7권 · 공부 없이도 입장 OK</span>
       <span class="go">그림책 펴기 ▶</span>
     </span>
   </a>
@@ -1214,9 +1400,14 @@
     </div>
   </section>
 
+  <a class="party-launch" id="partyAdventure" href="math/party/">
+    <div><small>재이에게 도착한 초대 · 티켓 없이 바로 놀기</small><h2>우리 가족 생일파티를 열자!</h2><p>반짝 불빛, 쿠키 선물, 둥실 풍선.<br>재이가 준비한 파티에서 가족과 신나게 놀자.</p><strong>내 파티 만들러 가기 →</strong></div>
+    <img src="math/assets/jaei-family-v4.webp" width="1024" height="683" alt="아빠, 태오, 재이, 엄마가 기다리는 생일파티" loading="lazy">
+  </a>
+
   <footer>
-    <span class="tip">✦ 여행 전 이야기 극장에서 듣고 싶은 이야기를 저장해 주세요</span>
-    <span>우리 가족의 별빛 모험 기지 · 새로운 월드는 계속 열려요</span>
+    <details class="lobby-help"><summary>여행·오프라인 안내</summary><span class="tip">여행 전 이야기 극장에서 듣고 싶은 이야기를 저장해 주세요. 저장 상태와 학습 기록은 위의 설정에서 확인할 수 있어요.</span></details>
+    <span>모험 상자 · 우리 가족의 작은 세계</span>
   </footer>
 </main>
 
@@ -1265,8 +1456,9 @@
 <script src="math/learning.js?v=29"></script>
 <script src="math/store.js?v=32"></script>
 <script src="assets/study/math-bridge.js?v=2"></script>
-<script src="assets/study/english-reading.js?v=21"></script>
-<script src="story/english/books.js?v=2"></script>
+<script src="assets/study/math-credits.js?v=1"></script>
+<script src="assets/study/english-reading.js?v=23"></script>
+<script src="story/english/books.js?v=4"></script>
 <script src="assets/bgm/bgm-player.js?v=66"></script>
 <script src="assets/study/play-timer.js?v=1" data-mode="hub"></script>
 <script>
@@ -1278,7 +1470,7 @@
   var bgm = window.HubBgm.create({ basePath: '../assets/bgm/', storageKey: 'hub_bgm_muted', volume: 0.66 });
   function paint() {
     var muted = bgm.isMuted();
-    button.textContent = muted ? '🔈' : '🎵';
+    button.textContent = muted ? '🔈 음악 켜기' : '🎵 배경음악';
     button.setAttribute('aria-pressed', muted ? 'true' : 'false');
     button.setAttribute('aria-label', muted ? '배경음악 켜기' : '배경음악 끄기');
   }
@@ -1332,7 +1524,7 @@
   }
 
   /* ---- 공부 시스템 v4 ----
-     세트 = 10문제 → 게임 티켓 1장. 게임 한 판 쓰면 다시 10문제.
+     세트 = 15문제 → 게임 티켓 1장. 게임 한 판 쓰면 다시 15문제.
      하루 100문제를 다 채우면 그날은 자유 이용. 게임 복귀 시 누적은 유지.
      v3: 오답노트 + 적응형 난이도.
        · 틀린 문제는 오답노트(날짜가 바뀌어도 유지)에 적히고,
@@ -1349,7 +1541,7 @@
        · 새 과목은 문제 은행(idx) 기반이라 오답노트 복습도 같은 문제로 나온다.
        · 새 과목도 유형별 숙달·오답노트에 연결되지만,
          수학 난이도 단계(streak/missRow)는 수학 문제로만 움직인다. */
-  var SET = 10, DAILY = 100;
+  var SET = 15, DAILY = 100;
   var STREAK_UP = 3;      // 한 번에 맞히기 연속 성공 → 단계 상승
   var MISS_DOWN = 2;      // 틀린 문제 연속 → 단계 하락
   var REVIEW_GAP = 2;     // 새 문제 몇 개마다 오답노트 복습을 끼워 넣나
@@ -1588,6 +1780,7 @@
   }
 
   function loadState() {
+    if (typeof window !== 'undefined' && window.HubMathCredits) window.HubMathCredits.flush(localStorage);
     var s = { solved: 0, credit: 0, level: 0, streak: 0, wrong: [], skills: {}, readingWords: {}, parentMode: false, parentModeKnown: true };
     try {
       if (localStorage.getItem('hub2_date') === todayKey()) {
@@ -1888,16 +2081,15 @@
         : (playTimeLeft() ? '게임 ' + window.HubPlayTimer.format(window.HubPlayTimer.remainingMs()) + ' 남음'
         : (hasTicket() ? '1장 · 5분' : Math.max(1, SET - setCorrect) + '문제 남음'));
     }
-    var nextAdventure = document.getElementById('nextAdventure');
     var worldAccessHint = document.getElementById('worldAccessHint');
-    var canPlay = isFree() || hasTicket() || playTimeLeft();
-    if (nextAdventure) {
-      nextAdventure.setAttribute('href', canPlay ? '#adventureWorlds' : '#study');
-      nextAdventure.textContent = canPlay ? '게임 고르러 가기 →' : '문제 풀고 티켓 받기 →';
-    }
+    var studyPitch = document.getElementById('studyPitch');
+    if (studyPitch) studyPitch.textContent = state.parentMode ? '진도는 그대로, 자유롭게 둘러봐요.' : isFree()
+      ? '오늘의 공부, 해냈어요.' : hasTicket() ? '공부 성공! 이제 모험 시간.'
+      : playTimeLeft() ? '남은 시간 동안 모험해요.' : '15문제면, 모험이 열려요.';
     if (worldAccessHint) worldAccessHint.textContent = state.parentMode ? '부모님 모드 · 달을 5번 누르면 꺼져요.' : isFree()
       ? '오늘은 모두 열렸어요. 마음껏 골라요!'
-      : (hasTicket() ? '티켓 1장 준비 완료! 원하는 게임을 골라요.' : '문제 ' + Math.max(1, SET - setCorrect) + '개 더 풀면 출발! 이야기는 바로 즐겨요.');
+      : (hasTicket() ? '티켓 1장 준비 완료! 원하는 게임을 골라요.' : playTimeLeft()
+        ? '남은 게임 시간 동안 원하는 모험을 골라요.' : '문제 ' + Math.max(1, SET - setCorrect) + '개 더 풀면 출발! 이야기는 바로 즐겨요.');
     if (questRingLabel) {
       questRingLabel.textContent = state.parentMode ? '부모님' : isFree() ? '완료' : (hasTicket() ? '티켓' : setCorrect + '/' + SET);
     }
@@ -2011,8 +2203,8 @@
   function closeBookModal() {
     if (bookModal.hidden) return;
     bookModal.hidden = true;
-    if (bookLastFocus && bookLastFocus.focus) bookLastFocus.focus();
     if (lobbyMain) lobbyMain.inert = false;
+    if (bookLastFocus && bookLastFocus.focus) bookLastFocus.focus();
     if (!isFree() && !hasTicket()) renderProblem();
   }
   bookOpenBtn.addEventListener('click', function () {
@@ -2036,6 +2228,7 @@
   document.addEventListener('keydown', function (e) {
     if (bookModal.hidden) return;
     if (e.key === 'Escape') {
+      e.preventDefault();
       closeBookModal();
       return;
     }
@@ -2251,9 +2444,18 @@
           if (current !== target || target.answered || isFree() || hasTicket()) return;
           readingFallback = true;
           renderProblem();
-          cheerEl.textContent = '마이크가 준비될 때까지 다른 문제를 풀어요. 새로고침하면 영어 읽기를 다시 시도해요.';
+          cheerEl.textContent = '마이크 문제는 오답이 아니에요. 다른 문제를 풀거나 아래에서 영어 읽기로 돌아가요.';
         }
       });
+      // Preserve the full microphone disclosure, but keep it below the task on demand.
+      var privacy = choicesEl.querySelector && choicesEl.querySelector('.reading-privacy');
+      if (privacy) {
+        var help = document.createElement('details');
+        help.className = 'reading-help';
+        var summary = document.createElement('summary');
+        summary.textContent = '마이크·개인정보 안내';
+        help.appendChild(summary); help.appendChild(privacy); choicesEl.appendChild(help);
+      }
       return;
     }
     var answers;
@@ -2290,6 +2492,19 @@
       b.addEventListener('click', function () { pick(n, b); });
       choicesEl.appendChild(b);
     });
+    if (readingFallback && !(typeof quietToday === 'function' && quietToday())) {
+      var resumeReading = document.createElement('button');
+      resumeReading.type = 'button'; resumeReading.className = 'reading-resume';
+      resumeReading.textContent = '🎤 영어 읽기 다시 시도';
+      var fallbackTarget = current;
+      resumeReading.addEventListener('click', function () {
+        if (current !== fallbackTarget || fallbackTarget.answered || isFree() || hasTicket()) return;
+        readingFallback = false;
+        renderProblem();
+        cheerEl.textContent = '정답 기록은 그대로예요. 읽어 보기를 눌러 시작해요.';
+      });
+      choicesEl.appendChild(resumeReading);
+    }
   }
 
   function pick(n, btn) {
@@ -2424,6 +2639,7 @@
 
   function syncGameCardAccess() {
     var locked = !isFree() && !hasTicket() && !playTimeLeft();
+    document.body.classList.toggle('locked', locked);
     document.querySelectorAll('.card').forEach(function (card) {
       if (locked) {
         card.setAttribute('aria-disabled', 'true');
@@ -2468,6 +2684,9 @@
     paintQuiet();
   })();
   function applyState() {
+    var mathLaunchAction = document.getElementById('mathLaunchAction');
+    if (mathLaunchAction) mathLaunchAction.textContent = mathState && mathState.pending && mathState.pending.level === mathState.level
+      ? '하던 놀이 이어하기 →' : '가볍게 3문제 →';
     stopReading();
     syncHubMusic();
     drawDaily();
@@ -2500,14 +2719,14 @@
       eyebrowEl.textContent = '게임 티켓';
       starsEl.textContent = '🎫';
       itemsEl.textContent = '';
-      questionEl.textContent = '10문제 성공! 게임을 하고 돌아오면 새로운 10문제를 시작해요.';
+      questionEl.textContent = SET + '문제 성공! 게임을 하고 돌아오면 새로운 ' + SET + '문제를 시작해요.';
       choicesEl.innerHTML = '';
       subEl.textContent = '오늘은 어떤 모험을 떠날까?';
     } else {
       document.body.classList.add('locked');
       studyEl.classList.remove('done');
-      eyebrowEl.textContent = '오늘의 공부';
-      subEl.textContent = '10문제마다 게임 티켓! 오늘 ' + DAILY + '문제를 풀면 모두 자유롭게!';
+      eyebrowEl.textContent = '공부 먼저 · ' + SET + '문제 도전';
+      subEl.textContent = '공부 먼저! ' + SET + '문제마다 게임 티켓 · 오늘 누적 ' + DAILY + '문제면 자유 모험!';
       drawSetStars();
       renderProblem();
     }
@@ -2590,7 +2809,7 @@
 
   /* 실제로 입장할 때만 놀이 횟수를 센다 (잠긴 카드 탭은 제외).
      티켓을 소모하는 핸들러보다 먼저 등록해야 소모 전 상태로 판단한다. */
-  document.querySelectorAll('.card, .shop, .feature-shop').forEach(function (link) {
+  document.querySelectorAll('.card, .shop').forEach(function (link) {
     link.addEventListener('click', function () {
       if (link.classList.contains('card') && !isFree() && !hasTicket() && !playTimeLeft()) return;
       var k = gameKey(link);
@@ -2636,6 +2855,9 @@
       restoreStudyProgress();
     }
   });
+  window.addEventListener('storage', function (e) {
+    if (window.HubMathCredits && e.key === window.HubMathCredits.KEY) restoreStudyProgress();
+  });
 
   applyState();
   annotatePlays();
@@ -2670,6 +2892,21 @@
     }
   });
 })();
+</script>
+<script>
+  /* Native disclosure: keyboard access, no focus trap, close outside or with Escape. */
+  (function () {
+    var settings = document.getElementById('lobbySettings');
+    if (!settings) return;
+    document.addEventListener('click', function (event) {
+      if (settings.open && !settings.contains(event.target) && document.getElementById('bookModal').hidden) settings.open = false;
+    });
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && !event.defaultPrevented && settings.open && document.getElementById('bookModal').hidden) {
+        settings.open = false; settings.querySelector('summary').focus();
+      }
+    });
+  })();
 </script>
 <script>
   /* <base href="../"> 아래에서는 href="#study" 가 뿌리(/#study)로 풀려 페이지를 새로 연다.

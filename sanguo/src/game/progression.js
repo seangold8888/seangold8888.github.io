@@ -6,6 +6,7 @@ export const MAX_WEAPON_LEVEL = 20;
 const STAGE_ORDER = [
   'yellow', 'hulao', 'guandu', 'qianli', 'changban', 'redcliff', 'dongguan', 'dingjunshan', 'yiling', 'chushi',
   'flamemountain', 'heavenpalace', 'liangshan', 'snowshrine',
+  'salsu', 'gwiju', 'haengju', 'myeongnyang',
 ];
 
 const DIFFICULTY_REWARD = { easy: .82, normal: 1, hard: 1.28 };

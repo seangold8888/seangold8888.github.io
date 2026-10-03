@@ -1,0 +1,210 @@
+{
+  "version": 2,
+  "model": "eleven_v3",
+  "scope": "special",
+  "heroes": {
+    "bajie": {
+      "file": "bajie-special-v2.wav",
+      "phrase": "천봉 구치진!",
+      "duration": 1.548,
+      "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+      "listening_review": "pending"
+    },
+    "caocao": {
+      "file": "caocao-special-v2.wav",
+      "phrase": "패왕 기습진!",
+      "duration": 1.714,
+      "voice_id": "N2lVS1w4EtoT3dr4eOWO",
+      "listening_review": "pending"
+    },
+    "erlangshen": {
+      "file": "erlangshen-special-v2.wav",
+      "phrase": "천안 관통참!",
+      "duration": 1.505,
+      "voice_id": "pNInz6obpgDQGcFmaJgB",
+      "listening_review": "pending"
+    },
+    "euljimundeok": {
+      "file": "euljimundeok-special-v2.wav",
+      "phrase": "살수 역습!",
+      "duration": 1.348,
+      "voice_id": "JBFqnCBsd6RMkjVDRZzb",
+      "listening_review": "pending"
+    },
+    "ganggamchan": {
+      "file": "ganggamchan-special-v2.wav",
+      "phrase": "귀주 결진!",
+      "duration": 1.115,
+      "voice_id": "pqHfZKP75CvOlQylNhV4",
+      "listening_review": "pending"
+    },
+    "ganning": {
+      "file": "ganning-special-v2.wav",
+      "phrase": "금범 급습!",
+      "duration": 1.043,
+      "voice_id": "IKne3meq5aSn9XLyUdCD",
+      "listening_review": "pending"
+    },
+    "guanyu": {
+      "file": "guanyu-special-v2.wav",
+      "phrase": "청룡 일섬! 하아앗!",
+      "duration": 1.879,
+      "voice_id": "pNInz6obpgDQGcFmaJgB",
+      "listening_review": "pending"
+    },
+    "honghaier": {
+      "file": "honghaier-special-v2.wav",
+      "phrase": "삼매 진화포!",
+      "duration": 1.521,
+      "voice_id": "FGY2WhTYpPnrIDTdsKH5",
+      "listening_review": "pending"
+    },
+    "huanggai": {
+      "file": "huanggai-special-v2.wav",
+      "phrase": "고육 화공진!",
+      "duration": 2.055,
+      "voice_id": "pqHfZKP75CvOlQylNhV4",
+      "listening_review": "pending"
+    },
+    "huangzhong": {
+      "file": "huangzhong-special-v2.wav",
+      "phrase": "정군산 일격!",
+      "duration": 1.602,
+      "voice_id": "pqHfZKP75CvOlQylNhV4",
+      "listening_review": "pending"
+    },
+    "kwonyul": {
+      "file": "kwonyul-special-v2.wav",
+      "phrase": "행주 호령!",
+      "duration": 1.215,
+      "voice_id": "SOYHLrjzK2X1ezoPC6cr",
+      "listening_review": "pending"
+    },
+    "liubei": {
+      "file": "liubei-special-v2.wav",
+      "phrase": "덕의 검기!",
+      "duration": 1.344,
+      "voice_id": "cjVigY5qzO86Huf0OWal",
+      "listening_review": "pending"
+    },
+    "luxun": {
+      "file": "luxun-special-v2.wav",
+      "phrase": "연영 화계!",
+      "duration": 1.36,
+      "voice_id": "bIHbv24MWmeRgasZH58o",
+      "listening_review": "pending"
+    },
+    "machao": {
+      "file": "machao-special-v2.wav",
+      "phrase": "서량 질풍창!",
+      "duration": 1.428,
+      "voice_id": "IKne3meq5aSn9XLyUdCD",
+      "listening_review": "pending"
+    },
+    "nezha": {
+      "file": "nezha-special-v2.wav",
+      "phrase": "건곤환 연격!",
+      "duration": 1.434,
+      "voice_id": "EXAVITQu4vr4xnSDxMaL",
+      "listening_review": "pending"
+    },
+    "simayi": {
+      "file": "simayi-special-v2.wav",
+      "phrase": "위수 봉쇄진!",
+      "duration": 1.456,
+      "voice_id": "N2lVS1w4EtoT3dr4eOWO",
+      "listening_review": "pending"
+    },
+    "sunquan": {
+      "file": "sunquan-special-v2.wav",
+      "phrase": "강동 결집령!",
+      "duration": 1.749,
+      "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+      "listening_review": "pending"
+    },
+    "sunshangxiang": {
+      "file": "sunshangxiang-special-v2.wav",
+      "phrase": "강동 비연무! 이야앗!",
+      "duration": 2.28,
+      "voice_id": "FGY2WhTYpPnrIDTdsKH5",
+      "listening_review": "pending"
+    },
+    "taishici": {
+      "file": "taishici-special-v2.wav",
+      "phrase": "동래 관통시!",
+      "duration": 1.455,
+      "voice_id": "cjVigY5qzO86Huf0OWal",
+      "listening_review": "pending"
+    },
+    "tieshangongzhu": {
+      "file": "tieshangongzhu-special-v2.wav",
+      "phrase": "파초 열풍진!",
+      "duration": 1.792,
+      "voice_id": "pFZP5JQG7iQjIQuC4Bku",
+      "listening_review": "pending"
+    },
+    "wujing": {
+      "file": "wujing-special-v2.wav",
+      "phrase": "유사 항요참!",
+      "duration": 1.453,
+      "voice_id": "nPczCjzI2devNBz1zQrb",
+      "listening_review": "pending"
+    },
+    "wukong": {
+      "file": "wukong-special-v2.wav",
+      "phrase": "제천 분신격!",
+      "duration": 1.927,
+      "voice_id": "IKne3meq5aSn9XLyUdCD",
+      "listening_review": "pending"
+    },
+    "xiahoudun": {
+      "file": "xiahoudun-special-v2.wav",
+      "phrase": "독안 진파!",
+      "duration": 1.238,
+      "voice_id": "SOYHLrjzK2X1ezoPC6cr",
+      "listening_review": "pending"
+    },
+    "xuchu": {
+      "file": "xuchu-special-v2.wav",
+      "phrase": "호위 철벽!",
+      "duration": 1.244,
+      "voice_id": "nPczCjzI2devNBz1zQrb",
+      "listening_review": "pending"
+    },
+    "yisunsin": {
+      "file": "yisunsin-special-v2.wav",
+      "phrase": "명량 파도진!",
+      "duration": 1.612,
+      "voice_id": "nPczCjzI2devNBz1zQrb",
+      "listening_review": "pending"
+    },
+    "zhangliao": {
+      "file": "zhangliao-special-v2.wav",
+      "phrase": "소요진 돌파령!",
+      "duration": 1.321,
+      "voice_id": "pNInz6obpgDQGcFmaJgB",
+      "listening_review": "pending"
+    },
+    "zhaoyun": {
+      "file": "zhaoyun-special-v2.wav",
+      "phrase": "용담 은룡파!",
+      "duration": 1.736,
+      "voice_id": "TX3LPaxmHKxFdv7VOQHJ",
+      "listening_review": "pending"
+    },
+    "zhouyu": {
+      "file": "zhouyu-special-v2.wav",
+      "phrase": "적벽 화신계!",
+      "duration": 1.359,
+      "voice_id": "iP95p4xoKVk53GoZ742B",
+      "listening_review": "pending"
+    },
+    "zhugeliang": {
+      "file": "zhugeliang-special-v2.wav",
+      "phrase": "팔진 동남풍!",
+      "duration": 1.361,
+      "voice_id": "JBFqnCBsd6RMkjVDRZzb",
+      "listening_review": "pending"
+    }
+  }
+}

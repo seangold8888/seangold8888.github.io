@@ -5,8 +5,8 @@ export function showResult(root, { win, heroName, enemyName, weaponName = '전�
         <details class="result-story">
           <summary>이 전장에서 배운 이야기</summary>
           <p>${escape(story.lesson)}</p>
-          <h3>실제 이야기</h3><p>${escape(story.real)}</p>
-          <h3>소설 속 이야기</h3><p>${escape(story.fiction)}</p>
+          <h3>실제 ${story.work === 'korea' ? '역사' : '이야기'}</h3><p>${escape(story.real)}</p>
+          <h3>${story.work === 'korea' ? '게임 속 연출' : '소설 속 이야기'}</h3><p>${escape(story.fiction)}</p>
         </details>` : '';
   const progress = rewards?.after;
   const growthNotice = rewards ? `

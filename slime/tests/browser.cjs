@@ -1,0 +1,93 @@
+const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),os=require('node:os'),http=require('node:http');
+const root=path.resolve(__dirname,'../..'),output=fs.mkdtempSync(path.join(os.tmpdir(),'slime-qa-'));
+const server=http.createServer((q,r)=>{const u=decodeURIComponent(new URL(q.url,'http://local').pathname),f=path.resolve(root,'.'+u+(u.endsWith('/')?'index.html':''));if(!f.startsWith(root+path.sep)){r.writeHead(403);return r.end();}fs.readFile(f,(e,b)=>{r.writeHead(e?404:200,{'Content-Type':{'.js':'text/javascript','.css':'text/css','.html':'text/html;charset=utf-8','.woff2':'font/woff2','.svg':'image/svg+xml'}[path.extname(f)]||'application/octet-stream'});r.end(e?'missing':b);});});
+(async()=>{
+  await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
+  const browser=await chromium.launch({channel:'msedge',headless:true,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+  try{
+    const context=await browser.newContext({viewport:{width:1024,height:768},hasTouch:true,serviceWorkers:'block'});
+    await context.addInitScript(()=>{if(sessionStorage.getItem('slime:qa-init'))return;sessionStorage.setItem('slime:qa-init','1');const d=new Date();localStorage.setItem('hub_play_pass',JSON.stringify({free:true,day:d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}));});
+    const p=await context.newPage(),errors=[],network=[];
+    p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>{if(m.type()==='error')errors.push(m.text());});p.on('request',r=>network.push(r.url()));
+    await p.goto(base+'/slime/');await p.waitForFunction(()=>!!window.__slime);await p.evaluate(()=>document.fonts.ready);await p.evaluate(()=>__slime.advance(2));await p.waitForTimeout(150);
+    await p.screenshot({path:path.join(output,'tablet.png')});
+    assert.equal(await p.locator('#palette button').count(),6);assert.equal(await p.locator('#fallback').isVisible(),false);
+    assert.ok(await p.evaluate(()=>!!__slime.scene.environment));
+    let xy=await p.evaluate(()=>__slime.screen());await p.mouse.click(xy.x,xy.y);await p.waitForTimeout(200);
+    assert.equal(await p.locator('#count').textContent(),'1');
+    console.log('PASS rendered jelly, six flavors, actual tap response');
+    assert.equal(await p.evaluate(()=>__slime.state().vertices),4412);
+    await p.evaluate(()=>__slime.reset());xy=await p.evaluate(()=>__slime.screen());await p.mouse.dblclick(xy.x,xy.y,{delay:60});
+    await p.waitForFunction(()=>__slime.solver.body.y>.05,{},{timeout:15000});assert.ok(await p.evaluate(()=>__slime.state().count>=2));
+    console.log('PASS actual double tap jumps');
+    await p.evaluate(()=>__slime.reset());xy=await p.evaluate(()=>__slime.screen());
+    await p.mouse.move(xy.x,xy.y);await p.mouse.down();assert.ok(await p.evaluate(()=>__slime.state().grab),JSON.stringify(await p.evaluate(xy=>({xy,screen:__slime.screen(),state:__slime.state(),trace:__slime.input.trace(),probe:__slime.input.probe(xy.x,xy.y),target:document.elementFromPoint(xy.x,xy.y)?.id}),xy)));
+    await p.mouse.move(xy.x+85,xy.y-140,{steps:12});
+    await p.waitForFunction(()=>__slime.state().maxDeformation>.1&&__slime.solver.body.y>.1,{},{timeout:15000});
+    const stretch=await p.evaluate(()=>__slime.state());assert.ok(stretch.held);assert.ok(stretch.maxDeformation>.05);assert.ok(stretch.body.y>.1);
+    await p.screenshot({path:path.join(output,'stretch.png')});await p.mouse.up();
+    assert.equal(await p.evaluate(()=>__slime.state().grab),false);
+    await p.waitForTimeout(500);assert.equal(await p.locator('#count').textContent(),'1');
+    console.log('PASS real drag: stretched surface, fling, input release');
+    await p.evaluate(()=>__slime.reset());await p.getByRole('button',{name:'오로라 색 선택'}).click();await p.waitForTimeout(400);
+    assert.equal(await p.evaluate(()=>__slime.state().flavor),'aurora');await p.screenshot({path:path.join(output,'aurora.png')});
+    assert.equal(await p.locator('#sound').getAttribute('aria-pressed'),'false');await p.locator('#sound').click();assert.equal(await p.locator('#sound').getAttribute('aria-pressed'),'true');await p.locator('#sound').click();
+    const beforeJump=await p.evaluate(()=>__slime.state());
+    await p.evaluate(()=>__slime.reset());await p.locator('#jelly').focus();await p.keyboard.press('Space');await p.waitForFunction(()=>__slime.solver.body.y>.05,{},{timeout:15000});
+    const afterJump=await p.evaluate(()=>__slime.state());
+    assert.ok(afterJump.body.y>.05,JSON.stringify({beforeJump,afterJump}));
+    console.log('PASS flavor shader, mute and jump');
+    await p.evaluate(()=>__slime.reset());xy=await p.evaluate(()=>__slime.screen());const cdp=await context.newCDPSession(p);
+    const point=(id,x,y)=>({id,x,y,radiusX:5,radiusY:5,force:1});
+    await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[point(1,xy.x-25,xy.y),point(2,xy.x+25,xy.y)]});
+    await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[point(1,xy.x-55,xy.y),point(2,xy.x+55,xy.y)]});
+    await p.waitForFunction(()=>__slime.state().squash>.08,{},{timeout:15000});
+    assert.ok(await p.evaluate(()=>__slime.state().pinch));assert.ok(await p.evaluate(()=>__slime.state().squash>.08));
+    await p.screenshot({path:path.join(output,'pinch.png')});
+    await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+    assert.deepEqual(await p.evaluate(()=>({p:__slime.state().pointers,pinch:__slime.state().pinch,grab:__slime.state().grab})),{p:0,pinch:false,grab:false});
+    xy=await p.evaluate(()=>__slime.screen());await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[point(3,xy.x,xy.y)]});await cdp.send('Input.dispatchTouchEvent',{type:'touchCancel',touchPoints:[]});
+    assert.equal(await p.evaluate(()=>__slime.state().held),false);console.log('PASS multi-touch pinch and cancelled-touch cleanup');
+    await p.evaluate(()=>__slime.reset());xy=await p.evaluate(()=>__slime.screen());await p.mouse.click(xy.x+160,xy.y+65);
+    await p.waitForFunction(()=>__slime.solver.body.y>.03,{},{timeout:15000});await p.evaluate(()=>__slime.advance(.15));assert.ok(await p.evaluate(()=>__slime.solver.body.x>.05));
+    console.log('PASS actual floor tap follows the chosen point');
+    await p.evaluate(()=>__slime.reset());xy=await p.evaluate(()=>__slime.screen());
+    for(let i=0;i<8;i++)await p.mouse.move(xy.x+(i%2?-45:45),xy.y,{steps:4});
+    assert.ok(await p.evaluate(()=>__slime.state().count>0));console.log('PASS actual hover petting earns affection');
+    await p.locator('#sound').click();await p.waitForFunction(()=>__slime.audio.state().context==='running');
+    await p.evaluate(()=>__slime.audio.play('release',1));assert.ok(await p.evaluate(()=>__slime.audio.state().voices>0));
+    await p.waitForFunction(()=>__slime.audio.state().voices===0,{},{timeout:5000});await p.locator('#sound').click();
+    assert.equal(await p.evaluate(()=>__slime.audio.enabled),false);console.log('PASS gesture-unlocked sound and oscillator cleanup');
+    await p.evaluate(()=>__slime.renderer.forceContextLoss());await p.waitForFunction(()=>__slime.state().contextLost);
+    await p.evaluate(()=>__slime.renderer.forceContextRestore());await p.waitForFunction(()=>!__slime.state().contextLost,{},{timeout:15000});
+    assert.ok(await p.evaluate(()=>!!__slime.scene.environment));console.log('PASS WebGL context recovery');
+    const recoveredLight=await p.evaluate(()=>{__slime.renderOnce();const t=__slime.caustics.debugTarget,b=new Uint8Array(t.width*t.height*4);__slime.renderer.readRenderTargetPixels(t,0,0,t.width,t.height,b);return b.some((v,i)=>i%4!==3&&v>0);});assert.ok(recoveredLight);
+    await p.evaluate(()=>__slime.reset());assert.equal(await p.locator('#count').textContent(),'0');assert.equal(await p.evaluate(()=>__slime.state().maxDeformation),0);
+    for(const viewport of [{width:768,height:1024},{width:844,height:390},{width:390,height:844}]){await p.setViewportSize(viewport);await p.waitForTimeout(250);assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));assert.ok(await p.locator('#palette').evaluate(e=>{const r=e.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.bottom<=innerHeight;}));await p.screenshot({path:path.join(output,'layout-'+viewport.width+'.png')});}
+    await p.emulateMedia({reducedMotion:'reduce'});await p.evaluate(()=>__slime.reset());await p.locator('#jelly').focus();await p.keyboard.press('Space');await p.waitForTimeout(250);assert.equal(await p.locator('.heart').count(),0);
+    assert.ok(network.every(u=>new URL(u).hostname==='127.0.0.1'));assert.deepEqual(errors,[]);
+    await p.evaluate(()=>{__slime.reset();__slime.advance(23);});assert.ok(await p.evaluate(()=>__slime.state().sleeping));
+    xy=await p.evaluate(()=>__slime.screen());await p.mouse.click(xy.x,xy.y);assert.equal(await p.evaluate(()=>__slime.state().sleeping),false);
+    console.log('PASS idle sleep, gesture wake-up');
+    const calls=await p.evaluate(()=>__slime.renderer.info.render.calls);assert.ok(calls<60);console.log('PASS layouts, reset, reduced motion, local assets, render budget ('+calls+' calls)');
+    await p.evaluate(()=>{localStorage.setItem('hub_play_timer_force','1');HubPlayTimer.grant(5);});await p.reload();await p.waitForFunction(()=>!!window.__slime);
+    await p.locator('.hub-play-chip').waitFor({state:'visible'});
+    assert.ok(await p.locator('.hub-play-chip').evaluate(e=>e.getBoundingClientRect().bottom<document.getElementById('palette').getBoundingClientRect().top));
+    await p.screenshot({path:path.join(output,'phone-timer.png')});await p.close();
+    const hub=await context.newPage();await hub.goto(base+'/game/');const card=hub.locator('a.card.slime');await card.waitFor();assert.equal(await card.getAttribute('href'),'slime/');assert.equal(await card.locator('.name').textContent(),'말랑 슬라임');
+    await hub.evaluate(()=>{localStorage.removeItem('hub_play_pass');localStorage.setItem('hub2_parent_mode','0');});
+    await hub.reload();assert.equal(await card.getAttribute('aria-disabled'),'true');await card.click({force:true});assert.equal(new URL(hub.url()).pathname,'/game/');assert.ok(await hub.locator('#lockNotice').isVisible());
+    // This gesture is explicitly five rapid taps, not five slow actionability waits.
+    await hub.locator('#moon').click({clickCount:5,delay:30,force:true});
+    assert.equal(await card.getAttribute('aria-disabled'),null);await card.click();
+    await hub.waitForURL(base+'/slime/');await hub.waitForFunction(()=>!!window.__slime);
+    assert.ok(await hub.evaluate(()=>HubPlayTimer.isFreeToday()));
+    console.log('PASS dashboard tile: study gate, parent access, shared play timer');console.log('Screenshots: '+output);
+  }catch(error){
+    for(const ctx of browser.contexts())for(const page of ctx.pages())if(await page.evaluate(()=>!!window.__slime).catch(()=>false)){
+      console.error('Failed browser state:',JSON.stringify(await page.evaluate(()=>({state:__slime.state(),trace:__slime.input.trace(),screen:__slime.screen()}))));
+      await page.screenshot({path:path.join(output,'failed.png')}).catch(()=>{});
+    }
+    console.error('Failure captures: '+output);throw error;
+  }finally{await browser.close();server.close();}
+})().catch(e=>{console.error(e);process.exitCode=1;server.close();});

@@ -32,8 +32,8 @@ const GAMES = [
   { url: "/odyssey/", track: "odyssey.mp3", name: "오디세이", starters: ["시작", "모험", "출발"] },
   { url: "/hogwarts/", track: "hogwarts.mp3", name: "호그와트", starters: ["시작", "입학", "출발"] },
   { url: "/kedehun/", track: "kedehun.mp3", name: "케데헌", selectors: ["#startBtn"], starters: ["무대 출격", "시작"] },
-  { url: "/kart/", track: "kart.mp3", name: "카트", starters: ["시작", "출발", "레이스"] },
-  { url: "/kart3d/", track: "kart3d.mp3", name: "3D 카트", starters: ["시작", "출발", "레이스"] }
+  { url: "/kart/", track: "kart-candy-parade-v1.mp3", name: "카트", starters: ["시작", "출발", "레이스"] },
+  { url: "/kart3d/", track: "kart-candy-parade-v1.mp3", name: "3D 카트", starters: ["시작", "출발", "레이스"] }
 ];
 
 async function poke(page, starters, selectors) {

@@ -7,11 +7,29 @@
   const Learn = window.MathLearning;
   const Play = window.MathPlayground;
   const Music = window.MathFocusMusic.create();
+  const HubCredits = window.HubMathCredits;
+  const hubEntry = new URLSearchParams(window.location.search).get("from") === "hub";
+  const hubQuick = hubEntry && new URLSearchParams(window.location.search).get("quick") === "1";
+  const hubUrl = new URL("../game/#study", window.location.href).href;
+  let hubRun = "", hubAdded = 0, hubSaveFailed = false;
   let hintStep = 0, sessionMode = "adventure", recovered = 0, nextTimer = null, friendTimer = null, sessionSpot = null, sessionFocus = "";
   let state = S.load(storage);
   const PRAISE = ["맞았어요", "정확해요", "잘했어요", "좋아요", "그렇지!", "딩동댕"];
   let session = null, index = 0, current = null, typed = "", shownAt = 0, firstTry = true, results = [], lastLine = "";
   let lastEntry = null, lastFirst = 0, lastFresh = 0, lastReviews = [];
+
+  function updateHubProgress() {
+    if (!hubEntry || !HubCredits) return;
+    const info = HubCredits.preview(storage);
+    const message = $("hubStudyProgress");
+    if (hubSaveFailed || !info.ok) {
+      message.textContent = "수학은 계속할 수 있어요. 오늘의 공부 합산 저장은 안 됐어요. 저장 공간을 확인해 주세요.";
+      return;
+    }
+    const progress = info.solved >= HubCredits.DAILY ? "오늘의 공부 완료!"
+      : info.credit ? "게임 티켓 준비 완료!" : "다음 티켓 " + (info.solved % HubCredits.SET) + " / " + HubCredits.SET;
+    message.textContent = (hubAdded ? "이번 놀이 +" + hubAdded + "문제 · " : "맞힌 문제는 오늘의 공부에 합산 · ") + progress;
+  }
 
   function levelInfo() { return C.levelById(state.level); }
   function plan() { return Sc.buildPlan({ start: state.planStart, end: state.planEnd, daysPerWeek: state.planDays, fromLevel: state.planFrom }); }
@@ -62,8 +80,8 @@
     friendTimer = null;
     if (!friendPromptEligible()) return;
     $("friendPromptText").textContent = state.climber === "kitty"
-      ? "키티: 재이야, 다음 봉까지 같이 가자!"
-      : "폼폼푸린: 오래 매달리면 힘들어~ 다음 봉까지 도와줘!";
+      ? "키티: 재이야, 다음 봉까지 같이 갈 방법을 찾아볼까?"
+      : "폼폼푸린: 재이야, 다음 봉까지 같이 갈 방법을 찾아보자!";
     $("friendPrompt").hidden = false;
     const climber = $("questRungs").querySelector(".monkey-climber");
     if (climber) climber.classList.add("waiting");
@@ -287,7 +305,7 @@
   /* ---------- 문제 ---------- */
   function checkpoint() {
     if (!session || placement) return;
-    state.pending = index < session.length ? { problems:session, index:index, results:results, earned:earned, mode:sessionMode, firstTry:firstTry, hintStep:hintStep, recovered:recovered, level:state.level, spot:sessionSpot, focusTitle:sessionFocus } : null;
+    state.pending = index < session.length ? { problems:session, index:index, results:results, earned:earned, mode:sessionMode, firstTry:firstTry, hintStep:hintStep, recovered:recovered, level:state.level, spot:sessionSpot, focusTitle:sessionFocus, hubRun:hubRun, hubAdded:hubAdded } : null;
     S.save(storage,state);
   }
   function start(mode) {
@@ -295,13 +313,18 @@
     if (state.pending && state.pending.level === state.level) {
       const p=state.pending; session=p.problems; index=p.index; results=p.results; earned=Number(p.earned)||0;
       sessionSpot=p.spot || null; sessionFocus=p.focusTitle || ""; sessionMode=p.mode || "adventure"; recovered=Number(p.recovered)||0;
+      hubRun = typeof p.hubRun === "string" && /^[a-zA-Z0-9_-]{1,120}$/.test(p.hubRun) ? p.hubRun : HubCredits ? HubCredits.runId() : "";
+      hubAdded = Number.isInteger(p.hubAdded) && p.hubAdded >= 0 && p.hubAdded <= p.index ? p.hubAdded : 0;
       current=session[index]; firstTry=p.firstTry !== false; hintStep=Number(p.hintStep)||0;
+      checkpoint(); updateHubProgress();
       show("quiz"); renderProblem(); shownAt=performance.now();
       if (!firstTry) { $("explain").textContent=Learn.hint(current); $("explain").hidden=false; }
       if (firstTry && hintStep === 0) scheduleFriendPrompt(); else hideFriendPrompt();
       return;
     }
     sessionMode = mode === "quick" ? "quick" : "adventure";
+    hubRun = HubCredits ? HubCredits.runId() : ""; hubAdded = 0; hubSaveFailed = false;
+    updateHubProgress();
     sessionSpot=Play.byId(state.playgroundSpot).id;
     const focus=Play.focus(sessionSpot,state.level); sessionFocus=focus.title;
     session = Learn.buildSession({focus:focus,level:state.level,count:sessionMode === "quick" ? 3 : state.perSession,rng:Math.random,review:S.dueReviews(state),state:state});
@@ -434,6 +457,12 @@
       S.addCoins(state,A.COIN.correct,"문제 끝까지 해결"); earned+=A.COIN.correct;
       if(growthBonus) { S.addCoins(state,2,"다시 만나 혼자 해결"); earned+=2; recovered++; state.growthRewards[rewardKey]=true; }
       S.recordAnswer(state,current,firstTry);
+      if (HubCredits && hubRun) {
+        const receipt = HubCredits.record(storage, hubRun + ":" + index);
+        if (receipt.added) hubAdded++;
+        if (!receipt.ok) hubSaveFailed = true;
+        updateHubProgress();
+      }
       // A later variation checks transfer after a scaffold, once per session.
       if(!firstTry && !current.transfer && !session.some(function(p) { return p.transfer; }) && sessionMode !== "quick") {
         const follow=Learn.variant(current,Math.random,session.map(function(p) { return p.key; }));
@@ -600,13 +629,18 @@
   });
 
   $("startBtn").addEventListener("click", start);
-  $("againBtn").addEventListener("click", start);
-  $("doneBtn").addEventListener("click", function () { renderHome(); show("home"); });
+  $("againBtn").addEventListener("click", function () { start(hubEntry ? "quick" : "adventure"); });
+  $("doneBtn").addEventListener("click", function () {
+    if (hubEntry) { window.location.href = hubUrl; return; }
+    renderHome(); show("home");
+  });
   $("retryBtn").addEventListener("click", retry);
   $("quitBtn").addEventListener("click", function () {
     clearTimeout(nextTimer); hideFriendPrompt();
     if (placement) { placement = null; $("quitBtn").textContent = "여기까지 하고 쉬기"; showSetup(); return; }
-    checkpoint(); renderHome(); show("home");
+    checkpoint();
+    if (hubEntry) { window.location.href = hubUrl; return; }
+    renderHome(); show("home");
   });
   $("keypad").addEventListener("click", function (e) { const b = e.target.closest("button"); if (b) key(b.getAttribute("data-k")); });
   document.addEventListener("keydown", function (e) {
@@ -638,6 +672,10 @@
   }
   function renderPlayground() {
     const spot=Play.byId(state.playgroundSpot), total=state.garden || 0;
+    const storyDone=window.MathSwingStory.load(storage,S.today(),state.climber).phase==="done";
+    const storyLink=document.querySelector(".story-launch");
+    storyLink.textContent=storyDone?"✓ 오늘의 짝꿍 그네 완료 · 다시 놀기 ↗":"오늘의 이야기 놀이 · 짝꿍 그네 ↗";
+    storyLink.classList.toggle("done",storyDone);
     $("missionTitle").textContent=spot.mission;
     $("playgroundChapter").textContent=(Math.floor(total/24)+1)+"번째 탐험";
     $("playgroundGreeting").textContent="재이의 놀이터에\n놀러 와!";
@@ -748,6 +786,18 @@
     state.name=$("setupName").value.trim().slice(0,12); state.grade=parseInt($("setupGrade").value,10)||1;
     state.placed=true; S.save(storage,state); start("quick");
   });
+  $("hubMoreBtn").addEventListener("click", function () { start("quick"); });
+  if (hubEntry) {
+    $("hubStudyLink").hidden = false; $("hubCapsuleActions").hidden = false;
+    $("againBtn").textContent = "조금 더 놀기";
+    $("doneBtn").textContent = "모험상자로 돌아가기";
+    $("quitBtn").textContent = "모험상자로 돌아가기";
+    updateHubProgress();
+  }
   renderHome();
-  if (!state.placed) showSetup(); else show("home");
+  if (hubQuick) {
+    // No mandatory name or placement quiz: preserve progress and start/resume.
+    if (!state.placed) { state.placed = true; S.save(storage, state); }
+    start("quick");
+  } else if (!state.placed) showSetup(); else show("home");
 })();

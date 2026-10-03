@@ -74,7 +74,7 @@ const {createServer}=require('../preview-server.cjs');
    await page.locator('#menu-deploy').click();await page.waitForSelector('#story-begin');
    assert.match(await page.locator('.story-screen').innerText(),/태사자/);
    await page.locator('#story-back').click();await page.waitForSelector('.command-menu');
-   for(const work of ['xiyou','shuihu','sanguo']){
+   for(const work of ['xiyou','korea','sanguo']){
     await page.locator('[data-work='+work+']').click();
     assert.ok(await page.locator('[data-hero]:not(:disabled)').count()>0);
     assert.ok(await page.evaluate(()=>{const s=document.querySelector('.command-menu');return s.scrollWidth<=s.clientWidth+1;}));

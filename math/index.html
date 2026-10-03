@@ -13,7 +13,15 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Nunito:wght@800;900&display=swap">
 <link rel="stylesheet" href="style.css?v=20">
-<link rel="stylesheet" href="playground.css?v=33">
+<link rel="stylesheet" href="playground.css?v=34">
+<style>
+  .hub-study-link { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 14px; padding: 12px 16px; margin: 0 0 16px; border: 1px solid #c5dccc; border-radius: 16px; background: #edf8ee; color: #355d47; font-size: 14px; }
+  .hub-study-link a { display: inline-flex; align-items: center; min-height: 44px; color: #294f3a; font-weight: 800; }
+  .hub-study-link [role="status"] { flex: 1 1 180px; line-height: 1.5; }
+  .hub-study-link[hidden], #hubCapsuleActions[hidden] { display: none; }
+  #hubCapsuleActions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 18px; }
+  #hubCapsuleActions a { display: inline-flex; align-items: center; text-decoration: none; }
+</style>
 </head>
 <body>
 <div class="sky" aria-hidden="true"><i></i><i></i><i></i><i></i><b>★</b><b>★</b><b>★</b></div>
@@ -23,6 +31,10 @@
     <span class="who" id="who"></span>
   </header>
 
+  <div class="hub-study-link" id="hubStudyLink" hidden>
+    <span id="hubStudyProgress" role="status">맞힌 문제는 오늘의 공부에 합산돼요.</span>
+    <a href="../game/#study">모험상자로 돌아가기 →</a>
+  </div>
   <section id="setup" hidden>
     <div class="card">
       <img class="welcome-art" src="assets/playground-scene.webp" width="1536" height="1024" alt="" decoding="async"><p class="eyebrow">매일 만나고 싶은 나의 놀이터</p><a class="party-cta" href="party/">가족 파티로 바로 가기 ↗</a>
@@ -57,7 +69,7 @@
         <p id="playgroundStory">천천히 한 칸씩, 같이 가요.</p>
         <div class="mission-panel">
           <p class="hint" id="resumeNote" hidden></p>
-          <div class="start-actions"><button class="btn big" id="startBtn">구름사다리 출발 →</button><button class="btn secondary" id="quickBtn">가볍게 3문제</button></div>
+          <div class="start-actions"><button class="btn big" id="startBtn">구름사다리 출발 →</button><a class="story-launch" href="story/">오늘의 이야기 놀이 · 짝꿍 그네 ↗</a><button class="btn secondary" id="quickBtn">가볍게 3문제</button></div>
           <p class="tiny" id="homeReview"></p>
         </div>
       </div>
@@ -141,7 +153,7 @@
       </div>
       <p class="collection-reset"><a href="#" id="resetLink">처음부터 다시 시작</a></p>
     </details>
-    <p class="foot home-footer"><a href="../">모험보드</a><a href="parent.html">부모님 보기</a></p>
+    <p class="foot home-footer"><a href="../game/">모험상자</a><a href="parent.html">부모님 보기</a></p>
 
   </section>
 
@@ -195,6 +207,10 @@
       <p class="level-name">오늘의 스티커 뽑기</p>
       <p class="small">캡슐 하나를 골라요. 어떤 친구가 나올까?</p>
       <div class="capsules" id="capsules"></div>
+      <div id="hubCapsuleActions" hidden>
+        <button class="btn secondary" id="hubMoreBtn" type="button">조금 더 놀기</button>
+        <a class="btn" href="../game/#study">모험상자로 돌아가기 →</a>
+      </div>
     </div>
   </section>
 
@@ -239,7 +255,9 @@
 <script src="../princess/studio.js?v=36"></script>
 <script src="avatar.js?v=20"></script>
 <script src="playground.js?v=30"></script>
+<script src="story/engine.js?v=1"></script>
 <script src="focus-music.js?v=31"></script>
-<script src="app.js?v=33"></script>
+<script src="../assets/study/math-credits.js?v=1"></script>
+<script src="app.js?v=35"></script>
 </body>
 </html>
