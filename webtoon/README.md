@@ -16,6 +16,7 @@
 | `app.js` | 목록 ↔ 읽기 화면, 읽음·좋아요 기록(이 기기에만), 말풍선이 컷 밖으로 나가지 않게 맞추기. |
 | `style.css` | 화면 모양. 말풍선 종류(보통·외침·생각·속삭임)와 효과음 글자. |
 | `cover.webp` | 허브 입구 그림. 목록 맨 위 가족 그림을 캡처한 것. |
+| `tools/` | 로컬에서 이어 만들 때 쓰는 도구. `preview.cjs`(한 화를 휴대폰 폭으로 캡처), `export-data.cjs` + `make-planning-xlsx.py`(엑셀 기획표 다시 만들기). |
 | `planning/오늘도우리집_기획표.xlsx` | 엑셀 기획표. 등장인물, 에피소드, 컷 대본, 다음 화 아이디어 시트. |
 
 ## 캐릭터 디자인
@@ -86,3 +87,16 @@
 - 소품: `art.js`의 `PROPS` 목록(딸기 접시, 소파, 이불, 침대, 그림, 쿠폰, 공룡, 프라이팬, 죽 그릇, 휴대폰, 영상통화 화면 등).
 
 새 화를 넣으면 `sw.js`의 `episodes.js?v=` 숫자와 `index.html`의 같은 숫자를 함께 올리고, 허브 입구 설명의 화 수를 고친다.
+
+## 로컬에서 이어 만들기
+
+```
+git clone https://github.com/seangold8888/seangold8888.github.io.git
+cd seangold8888.github.io
+python3 -m http.server 8000      # http://localhost:8000/webtoon/ 에서 확인
+node webtoon/tools/preview.cjs 21 preview   # 21화를 캡처해서 preview/ 에 저장
+```
+
+새 화 하나를 만들 때마다: `episodes.js`에 대본 추가 → `preview.cjs`로 겹침 확인 → `words.js`에 새 말 추가 →
+`index.html`과 `sw.js`의 `?v=` 숫자와 `CACHE_VERSION`을 올리고(테스트 `cards/tests/pwa.test.js`, `hub-english-feedback.test.js`의 같은 번호도) →
+`game/index.html`의 웹툰 입구 설명 화 수를 고치고 → 엑셀 기획표를 다시 만든다.
