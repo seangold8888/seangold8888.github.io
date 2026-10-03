@@ -2460,6 +2460,122 @@
         },
       ],
     },
+    // ───────────────────────── 22화 ─────────────────────────
+    {
+      id: 22,
+      title: "치앗촤! 가족 어벤져스",
+      summary: "“어벤져스 캐릭터로 싸우자! 치앗촤!” 태오가 감독이 된 가족 어벤져스 놀이. 가장 예쁜 영웅 둘은 반드시 지켜야 한다!",
+      lesson: "지켜 주고 싶은 마음은 힘이 세요. 그리고 서로 지켜 주는 가족이 진짜 어벤져스예요.",
+      talk: "우리 가족 어벤져스에서 나는 누구일까요? 내가 지켜 주고 싶은 사람은 누구예요?",
+      cover: 6,
+      panels: [
+        {
+          h: 380, bg: "living",
+          chars: [C("taeo", 110, "determined", "kick", { o: "dobok" })],
+          fp: [["boardgame", 290, 356, { s: 1 }]],
+          n: "토요일 오후, 거실.",
+          b: [B("어벤져스 캐릭터로 싸우자! 치앗촤!", 170, 90, "bl", { k: "shout", w: 250 })],
+          sfx: [FX("휙!", 300, 150, { rot: 8, c: "#3b6fd6", size: 1.1 })],
+        },
+        {
+          h: 360, bg: "living",
+          chars: [C("jaei", 110, "smile", "hold"), C("eomma", 300, "smile", "stand")],
+          b: [B("그래. 누가 누구 할까?", 120, 90, "b", { w: 150 })],
+        },
+        {
+          h: 300, bg: "burst:ffe27a",
+          chars: [bust("taeo", 200, 200, 1.5, "proud", "hip", { o: "dobok" })],
+          b: [B("내가 감독이야! 역할을 정해 줄게!", 200, 44, "", { k: "shout", w: 270 })],
+        },
+        {
+          h: 380, bg: "living",
+          chars: [C("taeo", 90, "determined", "point", { o: "dobok" }), C("jaei", 330, "surprised", "stand")],
+          b: [B("누나는 블랙 위도우! 제일 예뻐!", 180, 80, "b", { k: "shout", w: 190 })],
+          sfx: [FX("반짝", 330, 170, { rot: -8, c: "#ff9f1c", size: 0.8 })],
+        },
+        {
+          h: 380, bg: "living",
+          chars: [C("taeo", 90, "determined", "point", { o: "dobok" }), C("eomma", 330, "surprised", "stand")],
+          b: [B("엄마는 핀타스틱포 쑤우! 쑤우 예뻐!", 190, 80, "b", { k: "shout", w: 200 })],
+          sfx: [FX("반짝", 330, 160, { rot: 8, c: "#ff9f1c", size: 0.8 })],
+        },
+        {
+          h: 300, bg: "sparkle:ffe3ee",
+          chars: [bust("eomma", 120, 200, 1.1, "shy", "cheeks"), bust("jaei", 300, 210, 1.1, "shy", "cheeks")],
+          b: [B("어머, 엄마가 쑤우래.", 120, 50, "b", { w: 130 }), B("…아니야. 좋은데?", 300, 60, "b", { w: 130 })],
+        },
+        {
+          h: 400, bg: "living",
+          chars: [C("harabeoji", 90, "proud", "stand"), C("halmeoni", 210, "happy", "stand"), C("taeo", 335, "determined", "point", { o: "dobok" })],
+          b: [B("할아버지는 우엉! 할머니는… 맛있는 거 주는 영웅!", 190, 70, "b", { w: 240 })],
+        },
+        {
+          h: 380, bg: "living",
+          chars: [C("appa", 200, "sly", "hold", { o: "work" })],
+          fp: [["glove", 100, 300, { s: 1.3 }]],
+          b: [B("그럼 아빠는 당연히…", 130, 90, "br", { w: 170 })],
+          sfx: [FX("크크크", 300, 160, { rot: 8, c: "#8e5cc7" })],
+        },
+        {
+          h: 300, bg: "gloom",
+          chars: [bust("appa", 200, 190, 1.35, "sly", "fist", { o: "work" })],
+          b: [B("아임… 인에비터블.", 200, 44, "", { w: 200 })],
+        },
+        {
+          h: 340, bg: "burst:ffd1e1",
+          chars: [bust("taeo", 200, 200, 1.5, "angry", "kick", { o: "dobok" })],
+          b: [B("치앗촤!! 타노스 나와라!!", 200, 44, "", { k: "shout", w: 260 })],
+          sfx: [FX("지앗!", 70, 260, { rot: -10, c: "#e0443e", size: 1.1 }), FX("치앗차!", 330, 270, { rot: 10, c: "#3b6fd6", size: 1.1 })],
+        },
+        {
+          h: 400, bg: "speed:fff3f6",
+          chars: [C("taeo", 110, "determined", "kick", { o: "dobok" }), C("appa", 310, "surprised", "up", { o: "work" })],
+          b: [B("블랙 위도우랑 쑤우는 내가 지킨다! 치앗촤!", 150, 70, "b", { k: "shout", w: 230 })],
+          sfx: [FX("퍽!", 215, 290, { rot: 10, c: "#e0443e", size: 1.3 })],
+        },
+        {
+          h: 320, bg: "burst:c9dcff",
+          chars: [bust("appa", 190, 200, 1.4, "cry", "up", { o: "work" })],
+          fp: [["glove", 330, 260, { s: 1, rot: 40 }]],
+          b: [B("으악! 타노스가 졌다!", 200, 44, "", { k: "shout", w: 220 })],
+          sfx: [FX("쿵", 70, 270, { rot: -8, c: "#3b6fd6", size: 1.1 })],
+        },
+        {
+          h: 300, bg: "burst:ffe27a",
+          chars: [bust("taeo", 200, 200, 1.5, "laugh", "cheer", { o: "dobok" })],
+          b: [B("이겼다! 타노스 끝! 치앗촤!", 200, 44, "", { k: "shout", w: 260 })],
+        },
+        {
+          h: 470, bg: "living",
+          chars: [C("jaei", 110, "determined", "kick"), C("eomma", 300, "determined", "kick")],
+          b: [B("태오만 싸우는 게 아니야!", 130, 70, "b", { k: "shout", w: 180 }), B("블랙 위도우랑 쑤우도 싸울 수 있어!", 300, 100, "b", { k: "shout", w: 170 })],
+          sfx: [FX("얍!", 200, 270, { rot: -8, c: "#f0609d", size: 1.2 })],
+        },
+        {
+          h: 300, bg: "sparkle:fff4c7",
+          chars: [bust("taeo", 200, 200, 1.45, "surprised", "stand", { o: "dobok" })],
+          b: [B("…예쁜데 센 영웅이었어?", 200, 44, "", { w: 240 })],
+        },
+        {
+          h: 380, bg: "living",
+          chars: [C("taeo", 110, "happy", "cheer", { o: "dobok" }), C("jaei", 215, "proud", "up"), C("eomma", 320, "proud", "up")],
+          b: [B("그럼 다 같이 싸우자! 치앗촤!", 180, 70, "b", { k: "shout", w: 230 })],
+        },
+        {
+          h: 320, bg: "living",
+          chars: [bust("appa", 190, 200, 1.3, "teary", "stand", { o: "work" })],
+          fp: [["glove", 330, 270, { s: 0.9, rot: 60 }]],
+          n2: "그렇게 타노스는 또 졌다.",
+          b: [B("…아빠 오늘도 졌네. 그래도 행복하다.", 200, 44, "", { k: "whisper", w: 270 })],
+        },
+        {
+          h: 170, bg: "sparkle:fff0d6",
+          fp: [["heart", 60, 120, { s: 0.8 }], ["heart", 345, 60, {}]],
+          n: "예뻐서 지키고 싶었던 마음은,",
+          n2: "알고 보니 서로 지켜 주는 마음이었다.",
+        },
+      ],
+    },
   ];
 
   root.WebtoonData = { CHARACTERS, EPISODES };
