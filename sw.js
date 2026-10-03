@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v196";
+const CACHE_VERSION = "v197";
 const CACHE_PREFIX = "adventure-box-";
 // 큰 그림과 소리(삼국지 배경 200MB+, 저장한 이야기 오디오)는 배포 번호와 따로 둔다.
 // 배포마다 이 캐시를 버리면 기기가 236MB를 다시 받고, "여행 전에 이야기 저장"도 지워졌다.
@@ -617,6 +617,19 @@ const CORE_SHELL = [
   "./story/english/audio/redhood-6.mp3",
   "./story/english/audio/redhood-7.mp3",
   "./story/english/audio/redhood-8.mp3",
+  "./webtoon/",
+  "./webtoon/style.css?v=3",
+  "./webtoon/art.js?v=18",
+  "./webtoon/words.js?v=17",
+  "./webtoon/episodes.js?v=24",
+  "./webtoon/app.js?v=6",
+  "./webtoon/cover.webp",
+  "./webtoon/faces/jaei.webp",
+  "./webtoon/faces/halmeoni.webp",
+  "./webtoon/faces/eomma.webp",
+  "./webtoon/faces/appa.webp",
+  "./webtoon/faces/harabeoji.webp",
+  "./webtoon/faces/taeo.webp",
   "./cards/",
   "./cards/index.html",
   "./cards/styles.css?v=71",
@@ -1190,7 +1203,7 @@ const BACKGROUND_RETRY_MS = 5 * 60 * 1000;
 const AUDIO_FETCH_TIMEOUT_MS = 45000;
 const NAVIGATION_ROUTES = [
   "game", "cards", "story", "multiverse", "avengers", "bori", "hogwarts", "kart", "kart3d",
-  "kedehun", "odyssey", "princess", "sanguo", "slime", "math",
+  "kedehun", "odyssey", "princess", "sanguo", "slime", "math", "webtoon",
 ];
 
 const CARD_ART_FILES = [
