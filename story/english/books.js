@@ -2,6 +2,52 @@
 // 낭독 음성: english/audio/<책 id>-<쪽 번호>.mp3 (Gemini TTS Leda, 천천히).
 (function (root) {
   "use strict";
+  // Same story and illustrations, with a short, complete sentence for beginners.
+  // Original page text/audio remains available in the higher reading modes.
+  const EASY = {
+    picnic: [
+      ["It is sunny.", "날이 화창해요."], ["Mom makes sandwiches.", "엄마가 샌드위치를 만들어요."],
+      ["Dad has a basket.", "아빠에게 바구니가 있어요."], ["Teo can run.", "태오는 달릴 수 있어요."],
+      ["Jay sees a butterfly.", "재이가 나비를 봐요."], ["The dog takes food.", "강아지가 먹을 것을 가져가요."],
+      ["Dad is happy.", "아빠는 즐거워요."], ["We eat together.", "우리는 함께 먹어요."]
+    ],
+    momo: [
+      ["Momo has a kite.", "모모에게 연이 있어요."], ["The kite flies.", "연이 날아요."],
+      ["It is stuck.", "연이 걸렸어요."], ["Momo can jump.", "모모는 뛸 수 있어요."],
+      ["A bird can help.", "새가 도와줄 수 있어요."], ["The kite comes down.", "연이 내려와요."],
+      ["They play together.", "둘은 함께 놀아요."], ["They are happy.", "둘은 행복해요."]
+    ],
+    pigs: [
+      ["Three pigs go out.", "돼지 세 마리가 집을 나서요."], ["The pig uses straw.", "돼지가 지푸라기를 써요."],
+      ["The house falls down.", "집이 무너져요."], ["The pig uses sticks.", "돼지가 나뭇가지를 써요."],
+      ["The wolf blows hard.", "늑대가 세게 불어요."], ["This house has bricks.", "이 집에는 벽돌이 있어요."],
+      ["The brick house stays.", "벽돌집은 그대로 있어요."], ["The pigs are safe.", "돼지들은 안전해요."]
+    ],
+    race: [
+      ["The hare is fast.", "토끼는 빨라요."], ["The tortoise is slow.", "거북이는 느려요."],
+      ["They have a race.", "둘이 경주를 해요."], ["The hare runs fast.", "토끼가 빨리 달려요."],
+      ["The hare is sleeping.", "토끼가 자고 있어요."], ["The tortoise keeps walking.", "거북이는 계속 걸어요."],
+      ["The hare wakes up.", "토끼가 깨어나요."], ["The tortoise wins the race.", "거북이가 경주에서 이겨요."]
+    ],
+    redhood: [
+      ["Red has a hood.", "빨간 모자에게 두건이 있어요."], ["Red brings some cookies.", "빨간 모자가 쿠키를 가져가요."],
+      ["A wolf sees Red.", "늑대가 빨간 모자를 봐요."], ["The wolf runs fast.", "늑대가 빨리 달려요."],
+      ["He hides in bed.", "늑대가 침대에 숨어요."], ["Your eyes are big!", "눈이 커요!"],
+      ["A man helps Red.", "한 사람이 빨간 모자를 도와요."], ["They eat cookies together.", "둘은 함께 쿠키를 먹어요."]
+    ],
+    jack: [
+      ["Jack lives with Mom.", "잭은 엄마와 살아요."], ["Jack gets magic beans.", "잭이 요술 콩을 받아요."],
+      ["Mom throws the beans.", "엄마가 콩을 던져요."], ["The plant is tall.", "식물이 높이 자랐어요."],
+      ["Jack can climb.", "잭은 올라갈 수 있어요."], ["A giant lives here.", "여기에 거인이 살아요."],
+      ["Jack takes a hen.", "잭이 암탉을 데려가요."], ["They are happy now.", "이제 둘은 행복해요."]
+    ],
+    cinderella: [
+      ["She works all day.", "소녀는 하루 종일 일해요."], ["She wants to dance.", "소녀는 춤추고 싶어요."],
+      ["A fairy helps her.", "요정이 소녀를 도와요."], ["Look at the coach!", "마차를 보세요!"],
+      ["She can dance now.", "이제 소녀는 춤출 수 있어요."], ["She loses a shoe.", "소녀가 구두 한 짝을 잃어버려요."],
+      ["He finds the girl.", "왕자가 소녀를 찾아요."], ["They are happy now.", "이제 둘은 행복해요."]
+    ]
+  };
   const BOOKS = [
     {
       id: "picnic", title: "Jay and Teo Go on a Picnic", titleKo: "재이와 태오의 소풍", stars: 1, cover: "jaei",
@@ -98,12 +144,85 @@
     return {
       id: book.id, title: book.title, titleKo: book.titleKo, stars: book.stars, cover: book.cover,
       pages: book.pages.map(function (page, index) {
-        return { art: page[0], text: page[1], meaning: page[2], audio: "audio/" + book.id + "-" + (index + 1) + ".mp3",
+        const easy = EASY[book.id][index];
+        return { art: page[0], text: page[1], meaning: page[2], easy: { text: easy[0], meaning: easy[1] }, audio: "audio/" + book.id + "-" + (index + 1) + ".mp3",
           image: "art/" + book.id + "-" + (index + 1) + "." + (book.imageExt || "webp") };
       })
     };
   });
-  const api = { books: BOOKS };
+  const MODE_KEY = "hub2_book_reading_mode";
+  const ADAPTIVE_KEY = "hub2_book_reading_growth";
+  const MODES = ["easy", "sentence", "page"];
+  const thresholds = { easy: 6, sentence: 8, page: 0 };
+  const modeLabels = { easy: "짧은 문장", sentence: "한 문장씩", page: "한 쪽 전체" };
+  function cleanMode(mode) { return Object.hasOwn(modeLabels, mode) ? mode : "easy"; }
+  function readMode(storage) { try { return cleanMode(storage.getItem(MODE_KEY)); } catch (_) { return "easy"; } }
+  // An explicit parent choice resets the growth streak, never the book cursor.
+  function saveMode(storage, mode) {
+    mode = cleanMode(mode);
+    try {
+      storage.setItem(MODE_KEY, mode);
+      storage.setItem(ADAPTIVE_KEY, JSON.stringify({ mode, streak: 0, struggles: 0, recent: [] }));
+      return true;
+    } catch (_) { return false; }
+  }
+  function readGrowth(storage) {
+    const mode = readMode(storage);
+    let saved;
+    try { saved = JSON.parse(storage.getItem(ADAPTIVE_KEY) || "null"); } catch (_) {}
+    if (!saved || saved.mode !== mode) saved = {};
+    return { mode,
+      streak: Math.max(0, Math.min(thresholds[mode] || 0, parseInt(saved.streak, 10) || 0)),
+      struggles: Math.max(0, Math.min(3, parseInt(saved.struggles, 10) || 0)),
+      recent: Array.isArray(saved.recent) ? saved.recent.filter(id => typeof id === "string").slice(-32) : [] };
+  }
+  function growthLabel(storage) {
+    const state = readGrowth(storage), need = thresholds[state.mode];
+    return need ? "자동 성장 · 다음 단계 " + state.streak + "/" + need : "자동 성장 · 한 쪽 전체 읽기";
+  }
+  // Accepted passages only: silence, API failures, and navigation never count.
+  // Deduplicate between reading surfaces; switch modes at page boundaries only.
+  function recordPass(storage, event) {
+    const state = readGrowth(storage), before = state.mode;
+    const result = { mode: before, promoted: false, eased: false, counted: false };
+    if (!event || event.mode !== before || !event.id) return result;
+    const id = before + ":" + event.id;
+    if (state.recent.includes(id)) return result;
+    state.recent.push(id); state.recent = state.recent.slice(-32);
+    result.counted = true;
+    if (event.firstTry === true) {
+      state.struggles = 0;
+      state.streak = Math.min(thresholds[before] || 0, state.streak + 1);
+    } else {
+      state.streak = 0; state.struggles = Math.min(3, state.struggles + 1);
+    }
+    const level = MODES.indexOf(before);
+    if (event.pageComplete === true) {
+      if (thresholds[before] && state.streak >= thresholds[before] && level < MODES.length - 1) {
+        state.mode = MODES[level + 1]; result.promoted = true;
+      } else if (state.struggles >= 3 && level > 0) {
+        state.mode = MODES[level - 1]; result.eased = true;
+      }
+    }
+    if (state.mode !== before) { state.streak = 0; state.struggles = 0; }
+    result.mode = state.mode;
+    try {
+      storage.setItem(MODE_KEY, state.mode);
+      storage.setItem(ADAPTIVE_KEY, JSON.stringify(state));
+    } catch (_) {}
+    return result;
+  }
+  function splitSentences(text) { return (text.match(/[^.!?]+[.!?]?/g) || [text]).map(s => s.trim()).filter(Boolean); }
+  function practice(page, mode) {
+    mode = cleanMode(mode);
+    if (mode === "easy" && page.easy) return [page.easy];
+    if (mode === "sentence") {
+      const lines = splitSentences(page.text), meanings = splitSentences(page.meaning);
+      return lines.map((text, i) => ({ text, meaning: meanings.length === lines.length ? meanings[i] : page.meaning }));
+    }
+    return [{ text: page.text, meaning: page.meaning }];
+  }
+  const api = { books: BOOKS, MODE_KEY, ADAPTIVE_KEY, thresholds, modeLabels, cleanMode, readMode, saveMode, readGrowth, growthLabel, recordPass, practice };
   if (typeof module === "object" && module.exports) module.exports = api;
   else root.EnglishBooks = api;
 })(typeof window !== "undefined" ? window : globalThis);

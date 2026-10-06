@@ -1,0 +1,18 @@
+{
+  "hero": "taeo",
+  "action": "special",
+  "model": "eleven_v3",
+  "voice_id": "TX3LPaxmHKxFdv7VOQHJ",
+  "text": "[5-year-old boy voice][childlike tone][playful][shouting] 치앗! 촤! 치앗! 촤!",
+  "voice_settings": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "use_speaker_boost": false
+  },
+  "take_id": "kiap-v1",
+  "request_id": "kslDEZcWJbA5kCQc3KHU",
+  "duration": 1.864,
+  "sha256": "887b88ebe3e034bed03873d2bc459eb19a90cedcf23d749b6110e5f3b0c45a7f",
+  "duration_ok": true,
+  "reviewed": false
+}

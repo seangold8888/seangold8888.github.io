@@ -1,0 +1,18 @@
+{
+  "hero": "taeo",
+  "action": "special",
+  "model": "eleven_v3",
+  "voice_id": "TX3LPaxmHKxFdv7VOQHJ",
+  "text": "[childlike tone][playful][shouting] 치앗! 촤! 지앗! 촤! 쓰구미이이!",
+  "voice_settings": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "use_speaker_boost": false
+  },
+  "take_id": "boy-sseugumi-a",
+  "request_id": "Ttw2bPaORTn0KhXrEJ3O",
+  "duration": 3.324,
+  "sha256": "f5037800fbfa9fdcb98575fe21ce7e05bb44156e3536e4a562b542a767cfa560",
+  "duration_ok": true,
+  "reviewed": false
+}

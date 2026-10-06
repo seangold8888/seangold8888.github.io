@@ -1,0 +1,18 @@
+{
+  "hero": "taeo",
+  "action": "special",
+  "model": "eleven_v3",
+  "voice_id": "TX3LPaxmHKxFdv7VOQHJ",
+  "text": "[childlike tone][playful][excited][shouting] 메가랩터키익!",
+  "voice_settings": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "use_speaker_boost": false
+  },
+  "take_id": "megaraptor-v1",
+  "request_id": "Q0i4UAHF5P3ToPexkxhH",
+  "duration": 2.08,
+  "sha256": "e115928674ad233ce7d6a5915824a508e600f4a3a9c3a44aa957ab06bceca2b8",
+  "duration_ok": true,
+  "reviewed": false
+}

@@ -23,7 +23,7 @@ test("family picture-book names are Jay and Teo without changing progress or ass
   const root = path.resolve(__dirname, "../..");
   for (const entry of ["game/index.html", "story/english/index.html"]) {
     const html = fs.readFileSync(path.join(root, entry), "utf8");
-    assert.match(html, /books\.js\?v=4/);
+    assert.match(html, /books\.js\?v=6/);
     assert.match(html, /english-reading\.js\?v=23/);
   }
 });

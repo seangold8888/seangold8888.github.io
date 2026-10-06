@@ -1,5 +1,6 @@
 // 재이와 태오의 멀티버스 2 — 90초 히어로 미션.
 // 혼자 하는 게임: 고른 아이가 주인공, 다른 아이는 컴퓨터 동료. 깨면 별, 별로 캡슐, 캡슐로 꾸미기.
+import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family-skill-voices.js?v=1';
 (function () {
   "use strict";
 
@@ -55,6 +56,9 @@
   // ---------- 소리 ----------
   var muted = false;
   try { muted = localStorage.getItem("mv2_muted") === "1"; } catch (e) {}
+  var skillVoices = createFamilySkillPlayer(window, '../', { muted: function () { return muted || !game || !game.running || game.paused; } });
+  document.addEventListener('visibilitychange', function () { if (document.hidden) skillVoices.stop(); });
+  window.addEventListener('pagehide', function () { skillVoices.stop(); });
   var bgm = window.HubBgm ? window.HubBgm.create({ basePath: "../assets/bgm/", volume: 0.55 }) : null;
   if (bgm) { bgm.setMuted(muted); bgm.setTrack("avengers"); }
   var Sfx = (function () {
@@ -373,6 +377,7 @@
     h.hp -= dmg; h.flash = 0.12; h.invul = 0.6;
     floatText(h.x, h.y - HERO_H, "-" + dmg, "#ff8a8a", 28);
     Sfx.hurt();
+    if (h.isPlayer) skillVoices.play(h.kid, 'hurt', 1);
     if (h.hp <= 0) {
       h.hp = 0; h.st = h.isPlayer ? "down" : "rest"; h.t = 0;
       h.restT = h.isPlayer ? 2.2 : 4;
@@ -411,6 +416,7 @@
     }
     h.combo = h.comboT > 0 ? (h.combo + 1) % 3 : 0;
     h.st = "attack"; h.t = 0; h.hitDone = false; h.prof = prof; h.comboT = 0.7;
+    if (h.isPlayer) skillVoices.play(h.kid, h.combo === 2 ? 'finisher' : h.combo === 1 ? 'combo' : 'attack', 1);
   }
   function doHit(h) {
     var prof = h.prof, third = h.combo === 2;
@@ -443,9 +449,11 @@
     h.meter = 0; h.st = "special"; h.t = 0; h.hitDone = false;
     if (h.isPlayer) updateSpecialBtn();
     Sfx.special(); shake(14);
+    if (h.isPlayer) skillVoices.play(h.kid, 'special', 3);
     var fx = wearing(h.kid, "fx");
     game.flash = { color: fx ? fx.color : "#ffffff", t: 0.35 };
-    floatText(h.x, h.y - HERO_H - 40, D.HEROES[h.kid].name + " 필살기!", fx ? fx.color : "#fff", 40);
+    var cry = familySkillLine(h.kid, 'special');
+    floatText(h.x, h.y - HERO_H - 40, cry ? cry.phrase : D.HEROES[h.kid].name + " 필살기!", fx ? fx.color : "#fff", 40);
   }
   function specialBlast(h) {
     var fx = wearing(h.kid, "fx");
@@ -505,6 +513,7 @@
       if (d < 150) { s.x += (h.x - s.x) * Math.min(1, dt * 8); s.y += (h.y - s.y) * Math.min(1, dt * 8); }
       if (d < 60) {
         game.sparks.splice(i, 1); game.collected++; addMeter(h.isPlayer ? h : game.player, 3); Sfx.coin();
+        if (h.isPlayer && game.collected % 5 === 0) skillVoices.play(h.kid, 'pickup', 1);
         burst(s.x, s.y - 30, "#fff3b0", 6, 220);
         if (game.collected >= game.goal && game.mission.id === "treasure") winMission();
       }
@@ -1143,6 +1152,7 @@
   // ---------- 화면 ----------
   var screens = ["home", "map", "intro", "result", "pause", "wardrobe", "capsule"];
   function showScreen(id, keepGame) {
+    if (id) skillVoices.stop();
     screens.forEach(function (s) { $(s).hidden = s !== id; });
     // 화면이 바뀌면(멈춤·결과·지도) 끌던 막대기와 눌린 키를 놓는다.
     resetStick(); keys = {};
@@ -1198,6 +1208,7 @@
   $("goCapsule").addEventListener("click", function () { showScreen("capsule"); });
   $("muteBtn").addEventListener("click", function () {
     muted = !muted;
+    if (muted) skillVoices.stop();
     try { localStorage.setItem("mv2_muted", muted ? "1" : "0"); } catch (e) {}
     if (bgm) bgm.setMuted(muted);
     paintHome();

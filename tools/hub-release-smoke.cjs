@@ -21,11 +21,13 @@ const server=http.createServer((req,res)=>{
       localStorage.setItem('hub2_date',day);localStorage.setItem('hub2_solved','15');localStorage.setItem('hub2_credit','1');
       localStorage.setItem('hub2_parent_mode','0');localStorage.setItem('hub_play_pass',JSON.stringify({day,until:Date.now()+600000}));
     });
-    const menu=await context.newPage();await menu.goto(base+'/game/?v=hub-release-194');
+    const menu=await context.newPage();await menu.goto(base+'/game/?v=hub-release-201');
     await menu.waitForFunction(()=>document.querySelector('#hubTicketStat').textContent!=='준비 중');
     assert.equal(await menu.locator('.feature-stage,#nextAdventure').count(),0);
     const links=await menu.locator('a.card').evaluateAll(es=>es.map(e=>({name:e.querySelector('.name').textContent,url:e.href})));
     assert.equal(links.length,10);
+    assert.equal(await menu.locator('a.webtoon').count(),1);
+    links.push({name:'오늘도 우리 집 웹툰',url:await menu.locator('a.webtoon').getAttribute('href').then(h=>new URL(h,base+'/').href)});
     for(const link of links){
       const page=await context.newPage(),errors=[],missing=[];
       page.on('pageerror',e=>errors.push(e.message));
@@ -42,6 +44,6 @@ const server=http.createServer((req,res)=>{
       assert.deepEqual(broken,[],link.name+': broken images');assert.deepEqual(errors,[],link.name+': runtime errors');assert.deepEqual(missing,[],link.name+': HTTP errors');
       console.log('PASS',link.name,'entry; no runtime/HTTP/image errors');await page.close();
     }
-    await context.close();console.log('PASS release:',base,'10 games; banner removed; fresh isolated saves');
+    await context.close();console.log('PASS release:',base,'10 games + webtoon; banner removed; fresh isolated saves');
   }finally{await browser.close();if(server.listening){server.closeAllConnections();await new Promise(r=>server.close(r));}}
 })().catch(e=>{console.error(e);process.exitCode=1;});

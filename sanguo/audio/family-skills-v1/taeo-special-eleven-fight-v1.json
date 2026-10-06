@@ -1,0 +1,18 @@
+{
+  "hero": "taeo",
+  "action": "special",
+  "model": "eleven_v3",
+  "voice_id": "TX3LPaxmHKxFdv7VOQHJ",
+  "text": "[5-year-old boy voice][childlike tone][playful][excited][shouting] 싸우자!",
+  "voice_settings": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "use_speaker_boost": false
+  },
+  "take_id": "fight-v1",
+  "request_id": "rPA7RkYjIJ9Rgm7zxeAz",
+  "duration": 1.168,
+  "sha256": "d4cd3827d5e8c09c1b110fee0997801b18a315d52daca4c16c5852e5907cdee0",
+  "duration_ok": true,
+  "reviewed": false
+}

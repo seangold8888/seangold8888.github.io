@@ -1,0 +1,18 @@
+{
+  "hero": "jaei",
+  "action": "special",
+  "model": "eleven_v3",
+  "voice_id": "cgSgspJ2msm6clMCkdW9",
+  "text": "[8-year-old girl voice][childlike tone][excited][calling out] 물통 바꿔줘!",
+  "voice_settings": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "use_speaker_boost": false
+  },
+  "take_id": "water-v1",
+  "request_id": "CpiIfp0n7Bb1WP2VOvRk",
+  "duration": 1.407,
+  "sha256": "c10e54df99bcfbe8357de49bdef140d66e91edfb573c434c3ebc1f6ca10568f5",
+  "duration_ok": true,
+  "reviewed": false
+}

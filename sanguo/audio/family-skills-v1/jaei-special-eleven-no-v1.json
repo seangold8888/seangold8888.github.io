@@ -1,0 +1,18 @@
+{
+  "hero": "jaei",
+  "action": "special",
+  "model": "eleven_v3",
+  "voice_id": "cgSgspJ2msm6clMCkdW9",
+  "text": "[8-year-old girl voice][childlike tone][playful][shouting] 아니야!",
+  "voice_settings": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "use_speaker_boost": false
+  },
+  "take_id": "no-v1",
+  "request_id": "v2r0eOAJIsyf37AbtI3W",
+  "duration": 1.17,
+  "sha256": "003da33aae5f735bcd09af405ee63f4a4160cc4a09811e36dec98f959371a2f7",
+  "duration_ok": true,
+  "reviewed": false
+}

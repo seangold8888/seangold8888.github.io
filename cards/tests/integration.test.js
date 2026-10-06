@@ -171,7 +171,7 @@ test("손패·원정 UI와 캐시 버전 43이 함께 배포되도록 묶여 있
   ["fragmentTray", "fragmentHand", "fragmentPreview"].forEach((id) => {
     assert.match(html, new RegExp('id="' + id + '"'));
   });
-  assert.match(html, /styles\.css\?v=71/);
+  assert.match(html, /styles\.css\?v=72/);
   ["engine", "audio", "card-view", "vfx-recipes", "story-gates", "campaign", "campaign-ui", "combat-cinema", "app"].forEach((file) => {
     const version = file === "app" ? "75" : ["audio", "card-view", "campaign-ui"].includes(file) ? "71" : "70";
     assert.match(html, new RegExp("js/" + file + "\\.js\\?v=" + version));
