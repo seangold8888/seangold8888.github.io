@@ -634,6 +634,31 @@
       const gems = ["#ff4d4d", "#ffd34d", "#4c7fd0", "#6cc27a", "#ff9f1c", "#b99ad9"].map((c, i) => i < 4 ? `<circle cx="${-11 + i * 7.3}" cy="-24" r="2.8" fill="${c}" stroke="${INK}" stroke-width=".8"/>` : "").join("");
       return `<g transform="translate(${x} ${y}) rotate(${o.rot || 0}) scale(${o.s || 1})"><path d="M-14 16 L-14 -6 L-16 -22 Q-16 -26 -12 -26 Q-9 -26 -9 -22 L-8 -12 L-7 -28 Q-7 -32 -3 -32 Q1 -32 1 -28 L1 -12 L3 -28 Q3 -32 7 -32 Q11 -32 11 -28 L10 -10 L13 -20 Q14 -24 18 -22 Q20 -20 19 -16 L14 6 L14 16Z" fill="#f2c14e" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><path d="M-12 -4 Q0 -8 12 -4" stroke="#c9962a" stroke-width="1.6" fill="none"/><rect x="-16" y="14" width="32" height="10" rx="3" fill="#e0ad3a" stroke="${INK}" stroke-width="2"/>${gems}<circle cx="-1" cy="4" r="4.5" fill="#6cc27a" stroke="${INK}" stroke-width="1"/><circle cx="-12" cy="-6" r="2.6" fill="#ff9f1c" stroke="${INK}" stroke-width=".8"/></g>`;
     },
+    // 무지개빛 망토 (목 위치가 x,y. 아래로 펼쳐진다). 인물 뒤(bp)에 두면 망토를 두른 모습이 된다.
+    cape(x, y, o) {
+      const w = o.w || 120, h = o.h || 150;
+      const cols = ["#ff5c5c", "#ff9f1c", "#ffd34d", "#6cc27a", "#4c9fe0", "#8e5cc7"];
+      const sw = w / cols.length;
+      let g = "";
+      cols.forEach((c, i) => {
+        const x0 = -w / 2 + i * sw, x1 = x0 + sw;
+        g += `<path d="M${x0 * 0.45} 0 L${x1 * 0.45} 0 L${x1} ${h} Q${(x0 + x1) / 2} ${h + 12} ${x0} ${h}Z" fill="${c}" stroke="${INK}" stroke-width="1.2"/>`;
+      });
+      return `<g transform="translate(${x} ${y}) rotate(${o.rot || 0}) scale(${o.s || 1})">${g}<path d="M${-w * 0.23} 0 L${w * 0.23} 0" stroke="${INK}" stroke-width="3"/></g>`;
+    },
+    // 거미줄 (x,y에서 dx,dy 쪽으로 뻗는다)
+    web(x, y, o) {
+      const dx = o.dx || 100, dy = o.dy || 0;
+      let g = "";
+      for (const k of [-10, 0, 10]) g += `<path d="M${x} ${y} Q${x + dx / 2} ${y + dy / 2 + k} ${x + dx} ${y + dy}" stroke="${INK}" stroke-width="4.2" fill="none" stroke-linecap="round"/>`;
+      for (const k of [-10, 0, 10]) g += `<path d="M${x} ${y} Q${x + dx / 2} ${y + dy / 2 + k} ${x + dx} ${y + dy}" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+      return `<g>${g}</g>`;
+    },
+    // 또봇 Y (작은 로봇 장난감)
+    tobot(x, y, o) {
+      const s = o.s || 1;
+      return `<g transform="translate(${x} ${y}) scale(${s})"><rect x="-22" y="-92" width="44" height="34" rx="9" fill="#ffd34d" stroke="${INK}" stroke-width="2.4"/><circle cx="-9" cy="-77" r="5" fill="#fff" stroke="${INK}" stroke-width="1.8"/><circle cx="9" cy="-77" r="5" fill="#fff" stroke="${INK}" stroke-width="1.8"/><circle cx="-8" cy="-77" r="2" fill="${INK}"/><circle cx="10" cy="-77" r="2" fill="${INK}"/><rect x="-27" y="-58" width="54" height="46" rx="8" fill="#f2f2f2" stroke="${INK}" stroke-width="2.4"/><path d="M-9 -50 L0 -36 L9 -50 M0 -36 L0 -24" stroke="#e0443e" stroke-width="4.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><rect x="-40" y="-56" width="14" height="34" rx="6" fill="#ffd34d" stroke="${INK}" stroke-width="2.2"/><rect x="26" y="-56" width="14" height="34" rx="6" fill="#ffd34d" stroke="${INK}" stroke-width="2.2"/><rect x="-22" y="-12" width="16" height="28" rx="5" fill="#4c7fd0" stroke="${INK}" stroke-width="2.2"/><rect x="6" y="-12" width="16" height="28" rx="5" fill="#4c7fd0" stroke="${INK}" stroke-width="2.2"/></g>`;
+    },
     // 바닥을 기어가는 태오 (오른쪽을 본다). 도망 다닐 때 쓴다.
     crawl(x, y, o) {
       let g = `<ellipse cx="-70" cy="-10" rx="10" ry="6" fill="#3f73d6" stroke="${INK}" stroke-width="1.8"/><ellipse cx="-52" cy="-6" rx="10" ry="6" fill="#3f73d6" stroke="${INK}" stroke-width="1.8"/>`;
