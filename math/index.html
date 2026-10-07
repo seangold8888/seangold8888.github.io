@@ -21,6 +21,15 @@
   .hub-study-link[hidden], #hubCapsuleActions[hidden] { display: none; }
   #hubCapsuleActions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 18px; }
   #hubCapsuleActions a { display: inline-flex; align-items: center; text-decoration: none; }
+  #hubChoices { max-width:620px; margin:0 auto; }
+  #hubChoices h2 { font-size:clamp(25px,5vw,32px); line-height:1.35; margin:8px 0 12px; }
+  #hubChoicesTitle:focus { outline:none; }
+  #hubChoices .hub-choice-note { color:var(--muted); font-size:16px; line-height:1.6; margin:0 0 20px; }
+  .hub-choice-actions { display:grid; gap:16px; }
+  .hub-choice-actions .btn { min-height:68px; text-align:left; padding:16px 18px; }
+  .hub-choice-actions small { display:block; font-size:14px; font-weight:400; line-height:1.5; margin-top:6px; }
+  #hubChoices .btn:disabled { opacity:1; color:var(--muted); background:#edf2f0; box-shadow:none; }
+  #hubChoices [hidden] { display:none; }
 </style>
 </head>
 <body>
@@ -35,6 +44,19 @@
     <span id="hubStudyProgress" role="status">맞힌 문제는 오늘의 공부에 합산돼요.</span>
     <a href="../game/#study">모험상자로 돌아가기 →</a>
   </div>
+  <section id="hubChoices" aria-labelledby="hubChoicesTitle" hidden>
+    <div class="card">
+      <p class="eyebrow">한 문제, 한 칸! 내 속도로 놀아요</p>
+      <h2 id="hubChoicesTitle" tabindex="-1">오늘은 얼마나 놀까?</h2>
+      <p class="hub-choice-note" id="hubChoiceNote">맞힌 문제는 오늘의 공부에 합산돼요. 쉬었다 이어가도 괜찮아요.</p>
+      <div class="hub-choice-actions">
+        <button class="btn" id="hubResumeBtn" type="button" hidden>하던 놀이 이어하기 →</button>
+        <button class="btn" id="hubStudyBtn" type="button"><span id="hubStudyLabel">오늘의 공부 남은 문제</span><small id="hubStudyHint">15문제 한 바퀴를 마쳐요.</small></button>
+        <button class="btn secondary" id="hubQuickBtn" type="button"><span>가볍게 3문제 →</span><small>조금만 풀어도 공부에 쌓여요.</small></button>
+        <button class="btn secondary" id="hubAdventureBtn" type="button"><span id="hubAdventureLabel">일반 탐험 · 12문제 →</span><small>부모님이 정한 문제 수로 놀아요.</small></button>
+      </div>
+    </div>
+  </section>
   <section id="setup" hidden>
     <div class="card">
       <img class="welcome-art" src="assets/playground-scene.webp" width="1536" height="1024" alt="" decoding="async"><p class="eyebrow">매일 만나고 싶은 나의 놀이터</p><a class="party-cta" href="party/">가족 파티로 바로 가기 ↗</a>
@@ -208,7 +230,7 @@
       <p class="small">캡슐 하나를 골라요. 어떤 친구가 나올까?</p>
       <div class="capsules" id="capsules"></div>
       <div id="hubCapsuleActions" hidden>
-        <button class="btn secondary" id="hubMoreBtn" type="button">조금 더 놀기</button>
+        <button class="btn secondary" id="hubMoreBtn" type="button">문제 수 골라 더 놀기</button>
         <a class="btn" href="../game/#study">모험상자로 돌아가기 →</a>
       </div>
     </div>
@@ -257,7 +279,7 @@
 <script src="playground.js?v=30"></script>
 <script src="story/engine.js?v=1"></script>
 <script src="focus-music.js?v=31"></script>
-<script src="../assets/study/math-credits.js?v=1"></script>
-<script src="app.js?v=35"></script>
+<script src="../assets/study/math-credits.js?v=2"></script>
+<script src="app.js?v=36"></script>
 </body>
 </html>

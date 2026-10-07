@@ -32,6 +32,30 @@
   }
 
   function levelInfo() { return C.levelById(state.level); }
+  function showHubChoices() {
+    state = S.load(storage);
+    const pending = state.pending && state.pending.level === state.level;
+    const round = HubCredits ? HubCredits.studyRound(storage) : { ok:false, count:0 };
+    $("hubResumeBtn").hidden = !pending;
+    $("hubResumeBtn").textContent = pending ? "하던 놀이 이어하기 · " + (state.pending.problems.length - state.pending.index) + "문제 →" : "하던 놀이 이어하기 →";
+    $("hubStudyBtn").disabled = !!pending || !round.count;
+    $("hubQuickBtn").disabled = !!pending;
+    $("hubAdventureBtn").disabled = !!pending;
+    $("hubStudyLabel").textContent = !round.ok ? "공부 합산 저장 확인이 필요해요" : round.count ? "오늘의 공부 · 남은 " + round.count + "문제 →" : "오늘의 공부 완료!";
+    $("hubStudyHint").textContent = !round.ok ? "아래 놀이로 시작할 수 있어요. 합산 저장은 확인해 주세요."
+      : !round.count ? "오늘은 충분히 했어요. 더 놀고 싶으면 아래에서 골라요."
+      : round.solved + round.count >= HubCredits.DAILY ? "오늘의 공부를 마무리해요."
+      : round.credit ? "게임 티켓이 있어요. 원하면 다음 공부 한 바퀴를 이어가요." : "15문제 한 바퀴를 마치면 게임 티켓이 준비돼요.";
+    $("hubAdventureLabel").textContent = "일반 탐험 · " + state.perSession + "문제 →";
+    $("hubChoiceNote").textContent = pending ? "하던 문제와 진도는 그대로예요. 먼저 이어서 마친 뒤 문제 수를 고를 수 있어요."
+      : "맞힌 문제는 오늘의 공부에 합산돼요. 쉬었다 이어가도 괜찮아요.";
+    updateHubProgress(); show("hubChoices");
+    $("hubChoicesTitle").focus({preventScroll:true});
+  }
+  function startHubChoice(mode) {
+    if (!state.placed) { state.placed = true; S.save(storage, state); }
+    start(mode);
+  }
   function plan() { return Sc.buildPlan({ start: state.planStart, end: state.planEnd, daysPerWeek: state.planDays, fromLevel: state.planFrom }); }
   function planStatus() { return Sc.status(plan(), Object.keys(state.stamps), state.level, S.today()); }
   function showVisualFirst() {
@@ -93,7 +117,7 @@
   function show(id) {
     if (id !== "quiz") hideFriendPrompt();
     document.body.dataset.screen=id;
-    ["setup", "placed", "home", "quiz", "capsule", "result", "showcard", "pick", "wardrobe"].forEach(function (v) { $(v).hidden = v !== id; });
+    ["hubChoices", "setup", "placed", "home", "quiz", "capsule", "result", "showcard", "pick", "wardrobe"].forEach(function (v) { $(v).hidden = v !== id; });
     Music.setScene(id === "quiz" ? "quiz" : id === "home" ? "home" : "rest");
     window.scrollTo(0, 0);
   }
@@ -322,12 +346,14 @@
       if (firstTry && hintStep === 0) scheduleFriendPrompt(); else hideFriendPrompt();
       return;
     }
-    sessionMode = mode === "quick" ? "quick" : "adventure";
+    sessionMode = mode === "quick" ? "quick" : hubEntry && mode === "study" ? "study" : "adventure";
+    const count = sessionMode === "quick" ? 3 : sessionMode === "study" ? HubCredits.studyRound(storage).count : state.perSession;
+    if (!count) { showHubChoices(); return; }
     hubRun = HubCredits ? HubCredits.runId() : ""; hubAdded = 0; hubSaveFailed = false;
     updateHubProgress();
     sessionSpot=Play.byId(state.playgroundSpot).id;
     const focus=Play.focus(sessionSpot,state.level); sessionFocus=focus.title;
-    session = Learn.buildSession({focus:focus,level:state.level,count:sessionMode === "quick" ? 3 : state.perSession,rng:Math.random,review:S.dueReviews(state),state:state});
+    session = Learn.buildSession({focus:focus,level:state.level,count:count,rng:Math.random,review:S.dueReviews(state),state:state});
     index=0; results=[]; earned=0; recovered=0;
     show("quiz"); next();
   }
@@ -464,7 +490,7 @@
         updateHubProgress();
       }
       // A later variation checks transfer after a scaffold, once per session.
-      if(!firstTry && !current.transfer && !session.some(function(p) { return p.transfer; }) && sessionMode !== "quick") {
+      if(!firstTry && !current.transfer && !session.some(function(p) { return p.transfer; }) && sessionMode === "adventure") {
         const follow=Learn.variant(current,Math.random,session.map(function(p) { return p.key; }));
         if(follow) { follow.transfer=true; session.splice(Math.min(session.length,index+3),0,follow); }
       }
@@ -629,7 +655,7 @@
   });
 
   $("startBtn").addEventListener("click", start);
-  $("againBtn").addEventListener("click", function () { start(hubEntry ? "quick" : "adventure"); });
+  $("againBtn").addEventListener("click", function () { if (hubEntry) showHubChoices(); else start("adventure"); });
   $("doneBtn").addEventListener("click", function () {
     if (hubEntry) { window.location.href = hubUrl; return; }
     renderHome(); show("home");
@@ -649,7 +675,7 @@
     else if (e.key === "Backspace") key("back");
     else if (e.key === "Enter") { if (!$("retryBtn").hidden) retry(); else key("go"); }
   });
-  window.addEventListener("pageshow", function () { state = S.load(storage); if (!$("home").hidden) renderHome(); });
+  window.addEventListener("pageshow", function () { state = S.load(storage); if (!$("home").hidden) renderHome(); else if (!$("hubChoices").hidden) showHubChoices(); });
   // 처음부터 다시: 부모님 확인(곱셈 한 문제) → 확인 → 이름·단계·코인·옷장 전부 삭제
   function resetAll() {
     const a = 6 + Math.floor(Math.random() * 4), b = 6 + Math.floor(Math.random() * 4);
@@ -786,10 +812,14 @@
     state.name=$("setupName").value.trim().slice(0,12); state.grade=parseInt($("setupGrade").value,10)||1;
     state.placed=true; S.save(storage,state); start("quick");
   });
-  $("hubMoreBtn").addEventListener("click", function () { start("quick"); });
+  $("hubMoreBtn").addEventListener("click", showHubChoices);
+  $("hubStudyBtn").addEventListener("click", function () { startHubChoice("study"); });
+  $("hubQuickBtn").addEventListener("click", function () { startHubChoice("quick"); });
+  $("hubAdventureBtn").addEventListener("click", function () { startHubChoice("adventure"); });
+  $("hubResumeBtn").addEventListener("click", function () { start(); });
   if (hubEntry) {
     $("hubStudyLink").hidden = false; $("hubCapsuleActions").hidden = false;
-    $("againBtn").textContent = "조금 더 놀기";
+    $("againBtn").textContent = "문제 수 골라 더 놀기";
     $("doneBtn").textContent = "모험상자로 돌아가기";
     $("quitBtn").textContent = "모험상자로 돌아가기";
     updateHubProgress();
@@ -799,5 +829,8 @@
     // No mandatory name or placement quiz: preserve progress and start/resume.
     if (!state.placed) { state.placed = true; S.save(storage, state); }
     start("quick");
+  } else if (hubEntry) {
+    if (state.pending && state.pending.level === state.level) start();
+    else showHubChoices();
   } else if (!state.placed) showSetup(); else show("home");
 })();

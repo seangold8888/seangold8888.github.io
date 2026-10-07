@@ -53,6 +53,13 @@
     return t && t.day === today && Number.isInteger(t.solved) && t.solved >= 0 && t.solved <= 100000 &&
       (t.credit === 0 || t.credit === 1) && Number.isInteger(t.count) && t.count > 0 && t.count <= DAILY;
   }
+  // One study round is 15 answers, not the whole 100-answer daily cap.
+  // Include unimported math receipts so a return/reload never creates extra work.
+  function studyRound(storage, now) {
+    const info = preview(storage, now);
+    return Object.assign({}, info, { count: info.ok
+      ? Math.max(0, Math.min(SET - info.solved % SET, DAILY - info.solved)) : 0 });
+  }
   function apply(storage, t) {
     // Write the import marker LAST; interrupted writes replay an exact snapshot.
     // A completed import never resurrects a spent ticket, even if cleanup failed.
@@ -81,7 +88,7 @@
       return Object.assign(status, { added: status.delta });
     } catch (_) { return { ok: false, added: 0 }; }
   }
-  const api = { KEY, IMPORTED, TX, SET, DAILY, day, runId, record, preview, flush };
+  const api = { KEY, IMPORTED, TX, SET, DAILY, day, runId, record, preview, studyRound, flush };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.HubMathCredits = api;
 })(typeof window !== "undefined" ? window : globalThis);
