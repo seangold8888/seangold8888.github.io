@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-27067b61.mp3",
+  "text": "Jack cuts the beanstalk.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Jack cuts the beanstalk.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "f34480033d914169b019ff6f77085d00840fa5d8e0af0957368aacd9a636db5e"
+}

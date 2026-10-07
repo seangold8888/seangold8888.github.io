@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-cf4dc5bf.mp3",
+  "text": "Your eyes are big!",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Your eyes are big.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "4a4de1af1b2db321dc80b3a24149de9c5ef7576855bfb04b8b7bd2a2a5566d04"
+}

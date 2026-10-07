@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-416f0d5a.mp3",
+  "text": "The hare is tired.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The hare is tired.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "b43a6c0303972bebe19482f6413c69d57f017387a36262cd67fa5b2cd0507eba"
+}

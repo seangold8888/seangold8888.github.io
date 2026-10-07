@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-c4c042fc.mp3",
+  "text": "Jack takes a hen.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Jack takes a hen.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "f689c6bbe57a7b1a50482d04655c30dfccb676894f9e8bb0a12a8cff13548e38"
+}

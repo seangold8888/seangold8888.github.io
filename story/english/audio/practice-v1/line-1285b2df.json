@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-1285b2df.mp3",
+  "text": "Momo and Bird are happy.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Momo and bird are happy.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "2e3ae76ba419bf45bfccfce10c80d845df3f3eeff81d7281620be9854c82bad7"
+}

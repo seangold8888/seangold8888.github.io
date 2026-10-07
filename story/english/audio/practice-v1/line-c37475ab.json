@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-c37475ab.mp3",
+  "text": "We have more sandwiches.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "We have more sandwiches.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "40e72365c3f8ecc1e4b1ed47c22d25cb37990795dbab1dfc753a8d3bddaa980d"
+}

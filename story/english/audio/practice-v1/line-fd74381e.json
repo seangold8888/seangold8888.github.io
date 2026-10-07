@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-fd74381e.mp3",
+  "text": "The sun goes down.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The sun goes down.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "8bdca1bc467a163fd1b7ca8b633909de2443481f500d7562818db19db7e53bcd"
+}

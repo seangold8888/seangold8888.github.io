@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-b5926f6d.mp3",
+  "text": "Dad has a basket.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Dad has a basket.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "d1eded7f8173d0af698acb663c619a80aed678be0f0e7338f717de52e103fde1"
+}

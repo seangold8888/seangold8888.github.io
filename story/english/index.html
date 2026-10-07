@@ -39,6 +39,7 @@
   .count { color:#8a7fb0; font-weight:800; font-size:14px; }
   .text { font-size:clamp(28px,5vw,42px); font-weight:900; line-height:1.35; }
   .text.playing { color:#7a3fd1; }
+  .original-text.playing { color:#7a3fd1; }
   .meaning { font-size:18px; color:#5d547e; }
   .meaning[hidden] { display:none; }
   .row { display:flex; flex-wrap:wrap; gap:10px; }
@@ -87,6 +88,7 @@
   .listen.is-help { background:#ffe08a; color:#17213b; }
   .listening-original { margin-top:12px; font-size:15px; line-height:1.6; }
   .listening-original summary { cursor:pointer; min-height:44px; }
+  .original-listen { min-height:48px; padding:12px 16px; border:0; border-radius:12px; font-weight:800; }
   .study-return[hidden], .listening-guide[hidden] { display:none; }
 </style>
 </head>
@@ -100,8 +102,8 @@
   <a id="studyReturn" class="study-return" href="../../game/#study" hidden>← 오늘의 공부로 돌아가 다시 읽기</a>
   <aside id="listeningGuide" class="listening-guide" hidden>
     <strong>모르면 먼저 들어도 괜찮아요 😊</strong>
-    <p>노란 ‘이 쪽 이야기 듣기’를 눌러 보세요. 듣고 나면 위 버튼으로 돌아가 같은 문장을 다시 읽어요. 듣기만으로 정답·티켓·난이도는 바뀌지 않아요.</p>
-    <p>녹음은 이 쪽의 원래 이야기라 짧은 연습 문장보다 길 수 있어요.</p>
+    <p>노란 ‘이 문장 듣기’를 눌러 보세요. 화면에 나온 문장 그대로 들어요. 듣고 나면 위 버튼으로 돌아가 다시 읽어요. 듣기만으로 정답·티켓·난이도는 바뀌지 않아요.</p>
+    <p>이 쪽의 원래 긴 이야기는 아래 ‘원문 듣기 (이 쪽 전체)’에서 따로 들을 수 있어요.</p>
   </aside>
   <div class="reading-mode-setting">
     <label for="bookReadingMode">읽기 난이도</label>
@@ -124,7 +126,7 @@
 </div>
 
 <script src="../../assets/study/english-reading.js?v=23"></script>
-<script src="books.js?v=6"></script>
+<script src="books.js?v=7"></script>
 <script>
 (function () {
   "use strict";
@@ -176,8 +178,7 @@
   }
   function stopAudio() {
     if (audio) { try { audio.pause(); } catch (error) {} audio = null; }
-    var text = pageEl.querySelector(".text");
-    if (text) text.classList.remove("playing");
+    pageEl.querySelectorAll('.playing').forEach(function (text) { text.classList.remove('playing'); });
   }
   function stopPractice() {
     if (practiceView && practiceView.destroy) { try { practiceView.destroy(); } catch (error) {} }
@@ -266,30 +267,36 @@
     var text = el("p", "text", line.text); text.lang = "en";
     var meaning = el("p", "meaning", line.meaning); meaning.hidden = true;
     var row = el("div", "row");
-    var listen = el("button", listeningHelp ? "listen is-help" : "listen", listeningHelp ? "🔊 이 쪽 이야기 듣기" : "🔊 전체 이야기 듣기"); listen.type = "button";
+    var listen = el("button", listeningHelp ? "listen is-help" : "listen", "🔊 이 문장 듣기"); listen.type = "button";
     var show = el("button", "show", "한글 뜻 보기"); show.type = "button";
     var read = el("button", "read", "🎤 내가 읽기"); read.type = "button";
     var practice = el("div", "practice"); practice.hidden = true;
     row.append(listen, show, read);
     body.append(el("span", "count", (index + 1) + " / " + book.pages.length + "쪽 · " + window.EnglishBooks.modeLabels[readingMode] + (parts.length > 1 ? " " + (part + 1) + "/" + parts.length : "")), text, meaning, row, practice);
     pageEl.append(img, body);
-    if (listeningHelp) {
-      var original = el('details', 'listening-original');
-      original.append(el('summary', '', '듣는 이야기와 한글 뜻 보기'), el('p', '', page.text), el('p', '', page.meaning));
-      body.appendChild(original);
-    }
+    var original = el('details', 'listening-original');
+    var originalText = el('p', 'original-text', page.text); originalText.lang = 'en';
+    var originalListen = el('button', 'original-listen', '🔊 원문 듣기 · 이 쪽 전체'); originalListen.type = 'button';
+    original.append(el('summary', '', '원문 듣기 (이 쪽 전체)'), originalText, el('p', '', page.meaning), originalListen);
+    body.appendChild(original);
 
     listen.addEventListener("click", function () {
+      playNarration(line.audio, text, listen, listeningHelp);
+    });
+    originalListen.addEventListener('click', function () {
+      playNarration(page.audio, originalText, originalListen, false);
+    });
+    function playNarration(file, playingText, button, showMeaning) {
       stopPractice(); practice.hidden = true;
       stopAudio();
-      if (listeningHelp) meaning.hidden = false;
-      audio = new Audio(page.audio);
-      text.classList.add("playing");
-      audio.addEventListener("ended", function () { text.classList.remove("playing"); });
-      audio.addEventListener("error", function () { text.classList.remove("playing"); listen.textContent = "🔊 소리를 못 찾았어요"; });
+      if (showMeaning) meaning.hidden = false;
+      audio = new Audio(file);
+      playingText.classList.add("playing");
+      audio.addEventListener("ended", function () { playingText.classList.remove("playing"); });
+      audio.addEventListener("error", function () { playingText.classList.remove("playing"); button.textContent = "🔊 소리를 못 찾았어요 · 다시 누르기"; });
       var playing = audio.play();
-      if (playing && playing.catch) playing.catch(function () { text.classList.remove("playing"); });
-    });
+      if (playing && playing.catch) playing.catch(function () { playingText.classList.remove("playing"); button.textContent = '🔊 다시 눌러 듣기'; });
+    }
     show.addEventListener("click", function () {
       meaning.hidden = !meaning.hidden;
       show.textContent = meaning.hidden ? "한글 뜻 보기" : "한글 뜻 숨기기";

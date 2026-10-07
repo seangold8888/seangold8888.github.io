@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-9a3ed34a.mp3",
+  "text": "Jack lives with Mom.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Jack lives with mom.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "6d3894e966ebe546fd208a915b6f9a2a450f0058818e5e85ff08ebb3ed9979ec"
+}

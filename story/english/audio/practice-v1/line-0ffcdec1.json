@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-0ffcdec1.mp3",
+  "text": "Teo runs to the park.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Teo runs to the park.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "4557ba1893a36d6cff75acfb7e7bc01fd6b9b713170daa28ecbbff3fa3e53775"
+}

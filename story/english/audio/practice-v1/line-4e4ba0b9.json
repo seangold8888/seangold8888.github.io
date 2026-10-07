@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-4e4ba0b9.mp3",
+  "text": "They have a race.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "They have a race.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "eee3b993d4a8ab6202a131f96bb88688109f5130de323ca2a9153244401d58f4"
+}

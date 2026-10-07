@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-7b7454f3.mp3",
+  "text": "The wind blows.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The wind blows.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "9b6820f6be850032285f1269dd3d55dadeb81161afaa1dee5b7e780b8f38bd36"
+}

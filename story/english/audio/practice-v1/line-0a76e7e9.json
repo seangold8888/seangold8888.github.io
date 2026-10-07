@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-0a76e7e9.mp3",
+  "text": "The stick house falls down!",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The stick house falls down.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "a0990b20d79da7931a50e0837669841e43f9675823bf0849b4523955577a1e21"
+}

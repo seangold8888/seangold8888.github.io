@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-8177c1f1.mp3",
+  "text": "The bird pulls the string.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The bird pulls the string.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "c26795565acc05d3ea7b206f629cb22e6a6c270b7dc9f020872121679fad8dc3"
+}

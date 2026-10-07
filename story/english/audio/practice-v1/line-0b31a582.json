@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-0b31a582.mp3",
+  "text": "Dad laughs.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Dad laughs.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "a41b217b36947c73e50d83779be43cea4e37c0b81b54931bb0b20cb8a06f7d4c"
+}

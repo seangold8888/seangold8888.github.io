@@ -60,8 +60,8 @@ test("book completion is awarded once on the last page, and stale page callbacks
 });
 test("both reading surfaces load the updated book helper; VS has a constrained, centered grid track",()=>{
   const standalone=fs.readFileSync(path.join(root,"story/english/index.html"),"utf8");
-  a.match(html,/books\.js\?v=6/);a.match(standalone,/books\.js\?v=6/);
-  a.match(html,/id="bookReadingMode"/);a.match(standalone,/전체 이야기 듣기/);
+  a.match(html,/books\.js\?v=7/);a.match(standalone,/books\.js\?v=7/);
+  a.match(html,/id="bookReadingMode"/);a.match(standalone,/원문 듣기/);
   const css=fs.readFileSync(path.join(root,"cards/styles.css"),"utf8"),block=css.match(/\.battle-center \{([^}]+)\}/)[1];
   a.match(block,/min-width:\s*0/);a.match(block,/grid-template-columns:\s*minmax\(0,\s*1fr\)/);
 });

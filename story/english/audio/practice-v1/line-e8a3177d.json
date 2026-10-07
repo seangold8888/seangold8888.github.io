@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-e8a3177d.mp3",
+  "text": "The pig uses sticks.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The pig uses sticks.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "18a2cea9fcb7c30da31025700c7755d875098297df6496052cbb82331f409be2"
+}

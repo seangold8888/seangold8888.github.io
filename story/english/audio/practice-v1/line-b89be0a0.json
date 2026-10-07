@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-b89be0a0.mp3",
+  "text": "The tortoise keeps walking.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The tortoise keeps walking.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "d55e7db61ae5986945b6d377a4e82d032391b7a2282de1a88781141e3312d162"
+}

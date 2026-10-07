@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-a42ff18d.mp3",
+  "text": "Jack can climb.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Jack can climb.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "eb9c7b3a2dc93597cc08d22f305b72b89d38bafc88b6c7a95b1b63d5a9465b39"
+}

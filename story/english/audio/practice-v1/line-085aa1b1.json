@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-085aa1b1.mp3",
+  "text": "He finds the girl.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "He finds the girl.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "759f357b7f87bac36f2fd57ce09b1301bff0624ebe94ea03a517691bc7ed5254"
+}

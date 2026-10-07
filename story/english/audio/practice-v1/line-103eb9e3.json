@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-103eb9e3.mp3",
+  "text": "They are happy.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "They are happy.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "3294bddb021f57f0b188ad504386a5b8948305b7d1622974efe3cf8abba45ddf"
+}

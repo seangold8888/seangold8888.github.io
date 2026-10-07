@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-7f7239c8.mp3",
+  "text": "He takes a nap.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "He takes a nap.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "8afcaa432de724c3b160a1364838b7ed546d96e337111365e6a62b426b755ae0"
+}

@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-a415332b.mp3",
+  "text": "The brick house stays.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The brick house stays.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "14e63081d69ef418698002b70bc5a05e812e9ec7dea2aad1e43391ce9905dff6"
+}

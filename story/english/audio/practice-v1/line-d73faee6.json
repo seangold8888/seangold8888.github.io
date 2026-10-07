@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-d73faee6.mp3",
+  "text": "The hare wakes up.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The hare wakes up.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "fe5d04b7b82097f975d809e01e7368bff740368b61c26485a5e15448b289a397"
+}

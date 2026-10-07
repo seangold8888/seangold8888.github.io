@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-8debff7f.mp3",
+  "text": "Jay wants a picnic.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Jay wants a picnic.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "420a873112293cdd6b8b1b47ee27b03c6e539b83ee57df1469428a28d308c539"
+}

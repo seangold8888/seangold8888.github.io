@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-bce2f49c.mp3",
+  "text": "The house falls down.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The house falls down.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "ed2febc8a80b064715f79a4f9769d8110a21c4553d05ce6813cf02348fb2565b"
+}

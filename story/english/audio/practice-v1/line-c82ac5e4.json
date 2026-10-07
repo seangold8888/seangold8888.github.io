@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-c82ac5e4.mp3",
+  "text": "The kite flies.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The kite flies.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "ecbcafbc5630910ba5b5bd0f80e34cf8ee33e5753196b1fcbae0d25b753f34a1"
+}

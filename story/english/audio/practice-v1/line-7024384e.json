@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-7024384e.mp3",
+  "text": "The pigs are safe.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The pigs are safe.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "22e01623f3986f576222d2a4ab17647ae9edc55fe7b615ccb3482ec71cd2bf3c"
+}

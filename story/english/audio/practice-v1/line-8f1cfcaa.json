@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-8f1cfcaa.mp3",
+  "text": "It is yellow.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "It is yellow.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "600445b52f89066e4ed687d9c35564706065763f16f58dc7a8b1beafea171951"
+}

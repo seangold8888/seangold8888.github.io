@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-d5249ef3.mp3",
+  "text": "They are happy now.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "They are happy now.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "30f3cf8652e8169de9e74769d73eeb9f7f2312fbfba9546986173c4ad0767fb3"
+}

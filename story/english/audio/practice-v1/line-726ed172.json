@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-726ed172.mp3",
+  "text": "A woodcutter hears her.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "A woodcutter hears her.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "5aabfae9428c1f1e49f9c5ea87a4b0cbcfc211545aa66ff807a536494cf4ef2b"
+}

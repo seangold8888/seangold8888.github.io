@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-71b3e6d1.mp3",
+  "text": "A dog takes a sandwich!",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "A dog takes a sandwich.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "3c377e5eff5d36c24ea9d7acc37b3a2c0ccb0b5dd3e99898897f32eb975bc9e6"
+}

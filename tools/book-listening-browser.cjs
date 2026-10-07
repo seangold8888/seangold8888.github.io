@@ -44,7 +44,12 @@ const progress=p=>p.evaluate(()=>Object.fromEntries(['hub2_solved','hub2_credit'
       const u=new URL(p.url());assert.equal(u.searchParams.get('book'),'picnic');assert.equal(u.searchParams.get('page'),'3');assert.equal(u.searchParams.get('part'),'1');
       assert.equal(await p.locator('#page .text').innerText(),line);assert.equal(await p.evaluate(()=>window.__audios.length),0);
       await p.locator('#page .listen').click();await p.waitForFunction(()=>window.__audios.some(a=>a.currentTime>0&&Number.isFinite(a.duration)&&a.duration>0));
+      const expected=await p.evaluate(()=>window.EnglishBooks.practice(window.EnglishBooks.books[0].pages[3],'sentence')[1].audio);
+      assert.ok((await p.evaluate(()=>window.__audios.at(-1).src)).endsWith('/story/english/'+expected));
+      await p.locator('.listening-original summary').click(); await p.locator('.original-listen').click();
+      await p.waitForFunction(()=>window.__audios.at(-1)?.currentTime>0);
       assert.match(await p.evaluate(()=>window.__audios.at(-1).src),/\/story\/english\/audio\/picnic-4\.mp3$/);
+      assert.equal(await p.evaluate(()=>window.__audios.slice(0,-1).every(a=>a.paused)),true);
       assert.deepEqual(await progress(p),before);assert.equal(await p.locator('#page .meaning').isVisible(),true);
       assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
       await p.locator('#studyReturn').click();await p.waitForSelector('#bookListeningHelp');

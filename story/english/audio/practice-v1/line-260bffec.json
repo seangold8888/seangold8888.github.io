@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-260bffec.mp3",
+  "text": "The kite comes down.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The kite comes down.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "f12ae93ee8dfa9691942b2456d6bdf814341f1636f620c4f7149a8f59d56528b"
+}

@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-6c8762df.mp3",
+  "text": "What a happy day!",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "What a happy day.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "90b6f9f9f8584bd9596ab5b717fc7f93768e91cc10177331be6d0dccd94bafe1"
+}

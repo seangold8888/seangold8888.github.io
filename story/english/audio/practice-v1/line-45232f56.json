@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-45232f56.mp3",
+  "text": "She can dance now.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "She can dance now.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "eb367aabb56892b3d766be34661c4d83f9dab839fdeee5e241326b02c6aa6009"
+}

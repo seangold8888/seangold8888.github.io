@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-41bdf0bd.mp3",
+  "text": "This house has bricks.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "This house has bricks.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "8fe66bce7c962cf99a42ba259c3251a2e460122bc6f72ef10e792f87fe34b58e"
+}

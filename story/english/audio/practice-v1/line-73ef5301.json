@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-73ef5301.mp3",
+  "text": "He is so fast!",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "He is so fast.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "50521c2fd187fb80bf0b797412f14b7894733e90a6b8a04138678ac976b5a123"
+}

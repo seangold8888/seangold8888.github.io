@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-933b398f.mp3",
+  "text": "The hare is sleeping.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The hare is sleeping.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "b9f58243100224b26e67a131d66f5bcd4709bfc8dec5ec6c60c8f0e07f193c5b"
+}

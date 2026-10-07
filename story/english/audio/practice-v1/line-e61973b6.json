@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-e61973b6.mp3",
+  "text": "A bird can help.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "A bird can help.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "1b482393f58a8b443e433a72c1a47b70e428dd9856b7f2aeda5cdc3629a36067"
+}

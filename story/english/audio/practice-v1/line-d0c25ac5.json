@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-d0c25ac5.mp3",
+  "text": "Look at the coach!",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Look at the coach.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "60cb16257a648e6a2f48631b233f009315a546e8d57924a2cbec0432a03faf13"
+}

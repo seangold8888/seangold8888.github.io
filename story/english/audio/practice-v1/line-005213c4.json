@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-005213c4.mp3",
+  "text": "The dog takes food.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The dog takes food.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "f00fcc74b9386f50eed527eace780803ac645a6369b4cb434a216dae39e722f9"
+}

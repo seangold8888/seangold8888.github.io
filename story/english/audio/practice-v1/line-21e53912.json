@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-21e53912.mp3",
+  "text": "Thank you, Bird!",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Thank you, bird.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "771b08e394dc990dfafef1f5075eb0abf73b6974ea1d061572d48b957166bc69"
+}

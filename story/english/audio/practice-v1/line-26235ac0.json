@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-26235ac0.mp3",
+  "text": "The hare runs fast.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The hare runs fast.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "8bfa2f89b6fe5b60a2dd8d92fa36277656b9cc6d963b4918fbe5db8beeb72325"
+}

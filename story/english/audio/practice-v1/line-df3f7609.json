@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-df3f7609.mp3",
+  "text": "She throws the beans outside.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "She throws the beans outside.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "e3472a1cd4c7a4f5459cb27b2705bd9fc9ab574c58481dad4c1675f170fe9df8"
+}

@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-d55c5c08.mp3",
+  "text": "At midnight, she runs away.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "At midnight, she runs away.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "5e02001e4fde5b28538dad307b2e4f427063cfe214f863178d83b810b4504c55"
+}

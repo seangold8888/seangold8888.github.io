@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-8ff8e1aa.mp3",
+  "text": "They eat cookies together.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "They eat cookies together.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "86ad732cb6b844888a6bae01692254e282bbbfc00f989f06a1b00723979ee594"
+}
