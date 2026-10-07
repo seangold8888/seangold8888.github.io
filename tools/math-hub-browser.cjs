@@ -46,7 +46,7 @@ async function solve(p, wrong=false){
         const s=JSON.parse(localStorage.getItem("math10_state")||"{}"),p=s.pending,last=(s.history||[]).slice(-1)[0];
         const label=document.getElementById("hubStudyProgress"),added=label&&label.textContent.match(/이번 놀이 \+(\d+)문제/);
         return {answer:p&&p.problems[p.index].answer,index:p?p.index:last?last.count:0,length:p?p.problems.length:last?last.count:null,
-          run:p?p.hubRun:"",added:p?p.hubAdded||0:added?Number(added[1]):0,pending:p,level:s.level};
+          run:p?p.hubRun:"",added:p?p.hubAdded||0:added?Number(added[1]):0,pending:p||null,level:s.level};
       };
       window.__hubProbe=()=>({solved:Number(localStorage.getItem("hub2_solved")||0),credit:Number(localStorage.getItem("hub2_credit")||0),correct:Number(localStorage.getItem("hub2_solved")||0)%15});
     });
