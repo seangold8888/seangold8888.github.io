@@ -1148,6 +1148,9 @@ main {
 .battle-center {
   position: relative;
   z-index: 6;
+  /* Fixed-width messages must not widen an implicit grid track and push VS right. */
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr);
   min-height: 270px;
   display: grid;
   place-items: center;

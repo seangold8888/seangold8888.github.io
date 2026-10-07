@@ -428,6 +428,11 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
     elevenDash: elevenVoices.dash,
     elevenSpecial: elevenVoices.special,
     elevenMusou: elevenVoices.musou,
+    elevenAttack: elevenVoices.attack,
+    elevenHeavy: elevenVoices.heavy,
+    elevenRanged: elevenVoices.ranged,
+    elevenWhirlwind: elevenVoices.whirlwind,
+    elevenCounter: elevenVoices.counter,
     footstep: [0, 1, 2, 3].map((index) => 'audio/kenney-impact/footstep_concrete_00' + index + '.ogg'),
     // 실제 동물 녹음을 중심에 두고 절차 합성은 안장·호흡·강제이탈 보강층으로 쓴다.
     mountHorse: ['audio/mount-sfx/horse-neigh-pd-v1.ogg'],
@@ -840,8 +845,9 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
   // and never add a second actor's shout over it. If it has not decoded yet,
   // use the existing local recording for this action rather than playing late.
   const playElevenVoice = (action) => {
-    const group = { dash: 'elevenDash', special: 'elevenSpecial', musou: 'elevenMusou' }[action];
+    const group = { attack:'elevenAttack', heavy:'elevenHeavy', ranged:'elevenRanged', whirlwind:'elevenWhirlwind', counter:'elevenCounter', dash: 'elevenDash', special: 'elevenSpecial', musou: 'elevenMusou' }[action];
     if (muted || !buffers[group]?.length) return false;
+    if (['taeo', 'jaei'].includes(heroId) && !['special', 'musou'].includes(action) && (activeCallout || performance.now() - lastVoiceAt < 1800)) return false;
     const duration = Math.min(5, Math.max(...buffers[group].map(buffer => buffer.duration)));
     const played = playSample(group, action === 'dash' ? .66 : .76, 1, 0, .035, {
       highpass: 70, lowpass: 11500, gainCeiling: .80,
@@ -866,6 +872,8 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
         sampleReady.battleCry,
         sampleReady.voiceSpecial, sampleReady.voiceMusou,
         sampleReady.elevenDash, sampleReady.elevenSpecial, sampleReady.elevenMusou,
+        sampleReady.elevenAttack, sampleReady.elevenHeavy, sampleReady.elevenRanged,
+        sampleReady.elevenWhirlwind, sampleReady.elevenCounter,
         sampleReady.waterSplashLight, sampleReady.waterSplashHeavy,
         sampleReady.breathNeutral, sampleReady.breathDeep,
       ].filter(Boolean));
@@ -982,6 +990,8 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
       if (!playElevenVoice('dash')) return this.shout(true);
       return true;
     },
+
+    skillCry(action) { return playElevenVoice(action); },
 
     enemyVoice(defeated = false, pan = 0, enemy = null) {
       const key = enemy?.boss ? 'boss' : stageKey === 'flamemountain' ? 'demon' : enemy?.role === 'heavy' ? 'heavy' : enemy?.role === 'archer' ? 'archer' : 'soldier';
@@ -1864,7 +1874,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     if (type === 'counter') {
       player.counterReady = now + 3200; player.counterUntil = now + 620;
       player.action = 'counter'; player.actionStarted = now; player.actionDuration = 620; player.actionUntil = now + 620; player.hitDone = true;
-      audio.startMusic(); audio.shout(false); return;
+      audio.startMusic(); if (heroId === 'taeo' || heroId === 'jaei') audio.skillCry('counter'); else audio.shout(false); return;
     }
     if (type === 'dash') {
       releaseGrab(player.grab);
@@ -1884,9 +1894,17 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     if (musou) { const move = callouts.musou; player.rage = 0; player.invulnerableUntil = now + 1120; audio.specialCry(true, combatProfile.musouTheme); showBanner(hudRoot, move.name, move.cry); floatText(move.name, player.x, player.lane, combatProfile.hitColor, 1.34); }
     else if (type === 'special') { const move = callouts.special; audio.specialCry(false, combatProfile.specialTheme); showBanner(hudRoot, move.name, move.cry); floatText(move.name, player.x, player.lane, combatProfile.hitColor, 1.24); }
     else if (type === 'whirlwind') { audio.musou(false); audio.shout(true); }
-    else if (type !== 'ranged') { audio.swing(heavy, combatProfile.audioStyle || weaponStyle); if (type === 'dash') audio.dashCry(); else if (type === 'heavy' || type === 'mountedThrust') audio.shout(false); else if (type === 'attack' && Math.random() < .24) audio.shout(false); }
+    else if (type !== 'ranged') {
+      audio.swing(heavy, combatProfile.audioStyle || weaponStyle);
+      if (type === 'dash') audio.dashCry();
+      else if (!['taeo', 'jaei'].includes(heroId) || type === 'mountedThrust') {
+        if (type === 'heavy' || type === 'mountedThrust') audio.shout(false);
+        else if (type === 'attack' && Math.random() < .24) audio.shout(false);
+      }
+    }
     const duration = musou ? 980 : type === 'whirlwind' ? 720 : type === 'special' ? 900 : type === 'ranged' ? 640 : type === 'dash' ? dashTechnique.duration : type === 'throw' ? 560 : heavy ? 510 : lightAttackMs;
     if (type === 'attack') player.attackStep = (now < player.comboUntil ? player.comboStep % 3 : 0) + 1;
+    if ((heroId === 'taeo' || heroId === 'jaei') && !['dash', 'special', 'musou'].includes(type) && (type !== 'attack' || player.attackStep === 1)) audio.skillCry(type);
     cameraKick = Math.max(cameraKick, musou || type === 'special' ? .085 : type === 'whirlwind' ? .065 : type === 'heavy' || type === 'dash' || (type === 'attack' && player.attackStep === 3) ? .038 : .012);
     player.action = type; player.rangedCharged = type === 'ranged' && charged; player.actionStarted = now; player.actionDuration = duration; player.actionUntil = now + duration; player.hitDone = false;
     player.familyTechnique = startFamilyTechnique(heroId, type, now);

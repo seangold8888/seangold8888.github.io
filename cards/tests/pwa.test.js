@@ -144,7 +144,7 @@ test("cache generation v201 preserves versioned card assets and canonical naviga
     assert.ok(sw.OPTIONAL_SHELL.includes("./princess/assets/bodies-v4/body-" + id + ".webp"));
   }
   for (const asset of ["styles.css", "campaign.css", "engine.js", "audio.js", "card-view.js", "vfx-recipes.js", "story-gates.js", "campaign.js", "campaign-ui.js", "combat-cinema.js", "app.js"]) {
-    const version = asset === "app.js" ? 75 : ["styles.css", "card-view.js", "audio.js", "campaign.css", "campaign-ui.js"].includes(asset) ? 71 : 70;
+    const version = asset === "styles.css" ? 72 : asset === "app.js" ? 75 : ["card-view.js", "audio.js", "campaign.css", "campaign-ui.js"].includes(asset) ? 71 : 70;
     assert.ok(sw.CORE_SHELL.some(entry => entry.endsWith(asset + "?v=" + version)), asset);
   }
   assert.doesNotMatch(swSource, /\.\/cards\/[^"\n]+\?v=(?:19|2\d|30|31)|adventure-box-v(?:19|2\d|3\d|4\d|5\d|6[0-5])-/);

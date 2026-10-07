@@ -79,6 +79,15 @@
   .reading-privacy { font-size:13px; line-height:1.6; color:#bbc5df; }
   .reading-heard { font-size:16px; color:#e0d5ff; overflow-wrap:anywhere; }
   .reading-log { display:none; }
+  .reading-mode-setting { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 0 0 18px; color: var(--soft); font-size: 14px; }
+  .reading-mode-setting select { min-height: 44px; padding: 8px 12px; border: 1px solid #9daed3; border-radius: 12px; background: #202d48; color: #fff; font: inherit; }
+  .study-return { display:block; padding:14px 16px; border-radius:14px; background:#ffe08a; color:#17213b; text-decoration:none; font-weight:800; }
+  .listening-guide { margin:14px 0; padding:14px 16px; border:1px solid #ffe08a; border-radius:14px; color:#fff0bc; line-height:1.6; }
+  .listening-guide p { margin:6px 0 0; }
+  .listen.is-help { background:#ffe08a; color:#17213b; }
+  .listening-original { margin-top:12px; font-size:15px; line-height:1.6; }
+  .listening-original summary { cursor:pointer; min-height:44px; }
+  .study-return[hidden], .listening-guide[hidden] { display:none; }
 </style>
 </head>
 <body>
@@ -88,6 +97,17 @@
     <h1>📚 영어 그림책</h1>
   </div>
 
+  <a id="studyReturn" class="study-return" href="../../game/#study" hidden>← 오늘의 공부로 돌아가 다시 읽기</a>
+  <aside id="listeningGuide" class="listening-guide" hidden>
+    <strong>모르면 먼저 들어도 괜찮아요 😊</strong>
+    <p>노란 ‘이 쪽 이야기 듣기’를 눌러 보세요. 듣고 나면 위 버튼으로 돌아가 같은 문장을 다시 읽어요. 듣기만으로 정답·티켓·난이도는 바뀌지 않아요.</p>
+    <p>녹음은 이 쪽의 원래 이야기라 짧은 연습 문장보다 길 수 있어요.</p>
+  </aside>
+  <div class="reading-mode-setting">
+    <label for="bookReadingMode">읽기 난이도</label>
+    <select id="bookReadingMode"><option value="easy">짧은 문장</option><option value="sentence">한 문장씩</option><option value="page">한 쪽 전체</option></select>
+    <span id="readingGrowth" role="status" aria-live="polite"></span>
+  </div>
   <section class="shelf-view" id="shelfView">
     <p class="lead">그림을 보며 영어 이야기를 들어요. 🔊로 듣고, 🎤로 직접 읽어 봐요. 별이 적은 책부터 시작해요.</p>
     <div class="shelf" id="shelf"></div>
@@ -104,7 +124,7 @@
 </div>
 
 <script src="../../assets/study/english-reading.js?v=23"></script>
-<script src="books.js?v=4"></script>
+<script src="books.js?v=6"></script>
 <script>
 (function () {
   "use strict";
@@ -118,7 +138,27 @@
   var prevBtn = document.getElementById("prevBtn");
   var nextBtn = document.getElementById("nextBtn");
   var backLink = document.getElementById("backLink");
-  var book = null, index = 0, audio = null, practiceView = null;
+  var book = null, index = 0, part = 0, audio = null, practiceView = null;
+  var startParams = new URLSearchParams(location.search);
+  var fromStudy = startParams.get('from') === 'study';
+  var listeningHelp = fromStudy && startParams.get('listen') === '1';
+  document.getElementById('studyReturn').hidden = !fromStudy;
+  document.getElementById('listeningGuide').hidden = !listeningHelp;
+  var readingMode = window.EnglishBooks.readMode(localStorage);
+  var growthNotice = "", renderSerial = 0;
+  var modeSelect = document.getElementById("bookReadingMode");
+  function paintGrowth() {
+    modeSelect.value = readingMode;
+    document.getElementById("readingGrowth").textContent = growthNotice || window.EnglishBooks.growthLabel(localStorage);
+  }
+  paintGrowth();
+  modeSelect.value = readingMode;
+  modeSelect.addEventListener("change", function () {
+    readingMode = window.EnglishBooks.cleanMode(modeSelect.value); part = 0;
+    window.EnglishBooks.saveMode(localStorage, readingMode);
+    growthNotice = ""; paintGrowth();
+    if (book) renderPage();
+  });
 
   function art(id) { return "../../cards/art/" + id + ".webp"; }
   function readDone() {
@@ -164,7 +204,7 @@
   }
 
   function openBook(item) {
-    book = item; index = 0;
+    book = item; index = 0; part = 0;
     shelfView.hidden = true; reader.hidden = false;
     backLink.textContent = "← 책장";
     backLink.setAttribute("href", "#");
@@ -173,6 +213,7 @@
   }
   function closeBook() {
     stopAudio(); stopPractice();
+    renderSerial++;
     book = null;
     reader.hidden = true; shelfView.hidden = false;
     backLink.textContent = "← 이야기 극장";
@@ -192,6 +233,8 @@
 
   function renderPage() {
     stopAudio(); stopPractice();
+    var serial = ++renderSerial;
+    paintGrowth();
     pageEl.textContent = "";
     renderDots();
     prevBtn.disabled = index === 0;
@@ -201,7 +244,7 @@
       finish.append(el("div", "big", "🌟"), el("h2", "", "The End"), el("p", "", "「" + book.titleKo + "」을 다 읽었어요! 멋져요!"));
       var again = el("button", "listen", "처음부터 다시 읽기");
       again.type = "button";
-      again.addEventListener("click", function () { index = 0; renderPage(); });
+      again.addEventListener("click", function () { index = 0; part = 0; renderPage(); });
       finish.appendChild(again);
       pageEl.appendChild(finish);
       nextBtn.textContent = "책장으로";
@@ -209,25 +252,37 @@
     }
     nextBtn.textContent = index === book.pages.length - 1 ? "끝 →" : "다음 →";
     var page = book.pages[index];
+    var parts = window.EnglishBooks.practice(page, readingMode);
+    part = Math.min(part, parts.length - 1);
+    var line = parts[part];
+    var missed = false, accepted = false;
+    var challenge = { mode: readingMode, id: book.id + ':' + index + ':' + part,
+      pageComplete: part === parts.length - 1 };
     var img = el("img"); img.alt = "";
     // 쪽 전용 삽화가 없으면 카드 원화로 대신한다.
     img.addEventListener("error", function () { if (img.src.indexOf("/cards/art/") < 0) img.src = art(page.art); });
     img.src = page.image;
     var body = el("div", "body");
-    var text = el("p", "text", page.text); text.lang = "en";
-    var meaning = el("p", "meaning", page.meaning); meaning.hidden = true;
+    var text = el("p", "text", line.text); text.lang = "en";
+    var meaning = el("p", "meaning", line.meaning); meaning.hidden = true;
     var row = el("div", "row");
-    var listen = el("button", "listen", "🔊 들어 보기"); listen.type = "button";
+    var listen = el("button", listeningHelp ? "listen is-help" : "listen", listeningHelp ? "🔊 이 쪽 이야기 듣기" : "🔊 전체 이야기 듣기"); listen.type = "button";
     var show = el("button", "show", "한글 뜻 보기"); show.type = "button";
     var read = el("button", "read", "🎤 내가 읽기"); read.type = "button";
     var practice = el("div", "practice"); practice.hidden = true;
     row.append(listen, show, read);
-    body.append(el("span", "count", (index + 1) + " / " + book.pages.length), text, meaning, row, practice);
+    body.append(el("span", "count", (index + 1) + " / " + book.pages.length + "쪽 · " + window.EnglishBooks.modeLabels[readingMode] + (parts.length > 1 ? " " + (part + 1) + "/" + parts.length : "")), text, meaning, row, practice);
     pageEl.append(img, body);
+    if (listeningHelp) {
+      var original = el('details', 'listening-original');
+      original.append(el('summary', '', '듣는 이야기와 한글 뜻 보기'), el('p', '', page.text), el('p', '', page.meaning));
+      body.appendChild(original);
+    }
 
     listen.addEventListener("click", function () {
       stopPractice(); practice.hidden = true;
       stopAudio();
+      if (listeningHelp) meaning.hidden = false;
       audio = new Audio(page.audio);
       text.classList.add("playing");
       audio.addEventListener("ended", function () { text.classList.remove("playing"); });
@@ -243,25 +298,42 @@
       stopAudio();
       if (!practice.hidden) { stopPractice(); practice.hidden = true; return; }
       practice.hidden = false;
-      practiceView = window.EnglishReading.mount(practice, { text: page.text, meaning: page.meaning }, function () {
+      practiceView = window.EnglishReading.mount(practice, line, function () {
+        if (serial !== renderSerial || accepted || !book) return;
+        accepted = true;
         // 다 읽으면 칭찬이 끝난 뒤 다음 쪽으로 넘어간다.
         stopPractice();
-        index += 1; renderPage();
-      }, window, {});
+        if (part < parts.length - 1) part += 1;
+        else { index += 1; part = 0; }
+        challenge.firstTry = !missed;
+        var growth = window.EnglishBooks.recordPass(localStorage, challenge);
+        readingMode = growth.mode;
+        growthNotice = growth.promoted ? '🌟 잘 읽어서 「' + window.EnglishBooks.modeLabels[readingMode] + '」로 올라가요!'
+          : growth.eased ? '잘 끝냈어요! 다음 쪽은 조금 짧게 읽어요 🌱' : '';
+        renderPage();
+      }, window, { onRetry: function () { if (serial === renderSerial && !accepted) missed = true; } });
     });
   }
 
-  prevBtn.addEventListener("click", function () { if (index > 0) { index -= 1; renderPage(); } });
+  prevBtn.addEventListener("click", function () { if (index > 0) { index -= 1; part = 0; renderPage(); } });
   nextBtn.addEventListener("click", function () {
     if (index >= book.pages.length) { closeBook(); return; }
-    index += 1; renderPage();
+    index += 1; part = 0; renderPage();
   });
   document.addEventListener("visibilitychange", function () { if (document.hidden) stopAudio(); });
+  window.addEventListener('pagehide', function () { stopAudio(); stopPractice(); });
 
-  var start = new URLSearchParams(location.search).get("book");
+  var start = startParams.get("book");
   renderShelf();
   var first = BOOKS.find(function (item) { return item.id === start; });
-  if (first) openBook(first);
+  if (first) {
+    openBook(first);
+    if (fromStudy) {
+      index = Math.max(0, Math.min(first.pages.length - 1, parseInt(startParams.get('page'), 10) || 0));
+      part = Math.max(0, Math.min(7, parseInt(startParams.get('part'), 10) || 0));
+      renderPage();
+    }
+  }
 })();
 </script>
 </body>

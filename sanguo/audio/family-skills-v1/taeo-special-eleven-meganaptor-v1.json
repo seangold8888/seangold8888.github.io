@@ -1,0 +1,18 @@
+{
+  "hero": "taeo",
+  "action": "special",
+  "model": "eleven_v3",
+  "voice_id": "TX3LPaxmHKxFdv7VOQHJ",
+  "text": "[5-year-old boy voice][childlike tone][playful][excited][shouting] 메가냅터킥!",
+  "voice_settings": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "use_speaker_boost": false
+  },
+  "take_id": "meganaptor-v1",
+  "request_id": "4yEXTrU81Tj5o2r8ziYo",
+  "duration": 1.496,
+  "sha256": "060669d5f83d085111082bf24065a604d234e12cf01362ce25902fe4ae7f778c",
+  "duration_ok": true,
+  "reviewed": false
+}

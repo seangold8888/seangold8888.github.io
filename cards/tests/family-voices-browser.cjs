@@ -14,7 +14,7 @@ const server = http.createServer((req, res) => {
 });
 (async () => {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  const browser = await chromium.launch({ headless: true, args: ['--autoplay-policy=no-user-gesture-required'] });
+  const browser = await chromium.launch({ channel:'msedge', headless: true, args: ['--autoplay-policy=no-user-gesture-required'] });
   const data = JSON.parse(fs.readFileSync(path.join(root, 'cards/cards.json')));
   try {
     for (const id of ['taeo', 'jaei', 'yunchan', 'yungeon']) {
@@ -26,7 +26,7 @@ const server = http.createServer((req, res) => {
       // Telemetry only; approved audio decoding and playback use the actual module.
       await page.route('**/js/family-voices.js*', route => {
         const body = fs.readFileSync(path.join(root, 'cards/js/family-voices.js'), 'utf8')
-          .replace('source.start(audio.currentTime);', '__familyVoiceEvents.push({id:plan.cardId,rate:source.playbackRate.value,duration:buffer.duration}); source.start(audio.currentTime);')
+          .replace('source.start(audio.currentTime);', '__familyVoiceEvents.push({id:plan.cardId,file,attack:plan.attack,rate:source.playbackRate.value,duration:buffer.duration}); source.start(audio.currentTime);')
           .replace('const previous = active; active = null;', 'const previous = active; active = null; if(previous) __familyVoiceStops++;');
         return route.fulfill({ body, contentType: 'text/javascript' });
       });
@@ -61,6 +61,9 @@ const server = http.createServer((req, res) => {
       catch (error) { console.log('voice diagnostics', await page.evaluate(() => __voiceDiagnostics), errors); throw error; }
       assert.equal((await page.evaluate(() => __familyVoiceEvents))[0].rate, 1);
       assert.ok(requests.some(url => url.endsWith(`/sanguo/audio/hero-callouts-eleven-v2/${id}-callout-v2.wav`)));
+      // Short new takes can finish during the coin animation. Start the real,
+      // warmed clip again to test muting while it is definitely still active.
+      assert.equal(await page.evaluate(({id,attack})=>CardFamilyVoice.play({cardId:id,attack,big:true}),{id,attack:big.name}),true);
       await page.locator('#muteButton').click();
       assert.ok(await page.evaluate(() => __familyVoiceStops > 0), 'mute stops the running cry');
       await page.locator('#leaveBattleButton').click();
@@ -75,9 +78,24 @@ const server = http.createServer((req, res) => {
       await page.locator('#actionList button').filter({ hasText: card.attacks[0].name }).click();
       await finishCoin();
       await page.waitForTimeout(350);
-      assert.equal(await page.evaluate(() => __familyVoiceEvents.length), 0, 'ordinary attack stays quiet');
+      assert.equal(await page.evaluate(() => __familyVoiceEvents.length), ['taeo','jaei'].includes(id) ? 1 : 0, 'only mapped ordinary attacks speak');
+      if(['taeo','jaei'].includes(id)) {
+        const { ACTION_FILES } = require('../js/family-voices.js');
+        for(const attack of card.attacks) {
+          await page.goto(base);
+          await page.locator('#actionList button').filter({hasText:attack.name}).waitFor();
+          await page.evaluate(id=>CardFamilyVoice.warm(id),id);
+          // Selecting/inspecting the card alone must not shout.
+          assert.equal(await page.evaluate(()=>__familyVoiceEvents.length),0);
+          await page.locator('#actionList button').filter({hasText:attack.name}).click();await finishCoin();
+          await page.waitForFunction(()=>__familyVoiceEvents.length>=1);
+          const event=(await page.evaluate(()=>__familyVoiceEvents))[0];
+          assert.equal(event.file,ACTION_FILES[id][attack.name][0]);assert.equal(event.attack,attack.name);assert.equal(event.rate,1);
+          assert.ok(event.duration>.25&&event.duration<4.5);
+        }
+      }
       assert.deepEqual(errors, []); assert.ok(!requests.some(url => url.includes('api.elevenlabs.io')));
-      console.log(`PASS ${id}: real large-technique voice, original pitch, mute, navigation and quiet ordinary attack`);
+      console.log(`PASS ${id}: real skill-specific clips, original pitch, mute/navigation, mapped ordinary attacks and all technique buttons`);
       await page.close();
     }
   } finally { await browser.close(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); }

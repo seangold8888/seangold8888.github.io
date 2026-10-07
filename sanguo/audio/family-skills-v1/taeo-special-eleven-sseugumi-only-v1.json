@@ -1,0 +1,18 @@
+{
+  "hero": "taeo",
+  "action": "special",
+  "model": "eleven_v3",
+  "voice_id": "TX3LPaxmHKxFdv7VOQHJ",
+  "text": "[5-year-old boy voice][childlike tone][playful][excited][shouting] 쓰구미!",
+  "voice_settings": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "use_speaker_boost": false
+  },
+  "take_id": "sseugumi-only-v1",
+  "request_id": "VGR0Lu0ajTSJKkALGXUg",
+  "duration": 1.046,
+  "sha256": "4c569e623747f34a1086381ac80def4379fbfd0764c189058643d73b9d8f1a31",
+  "duration_ok": true,
+  "reviewed": false
+}
