@@ -5,7 +5,7 @@ export const isFamilyHero = id => FAMILY_HERO_IDS.includes(id);
 export const FAMILY_FICTION_NOTE = '우리 영웅이 이야기 속으로 들어가는 상상 모험이에요. 실제 역사나 원작에 등장한 인물은 아니에요.';
 
 export const FAMILY_PEOPLE = {
-  taeo: { name: '태오', work: 'family', faction: '우리 영웅 · 태권 용사', robe: '#f5efe3', accent: '#5198ff', skin: '#edbb91', hair: '#4b3022', weapon: 'taekwondo', head: 'none', beard: 'none', bio: '하얀 도복과 파란 띠를 두른 태권 용사예요. 빠른 발차기로 길을 열고, 친구들이 위험하면 메가냅터킥으로 달려갑니다.' },
+  taeo: { name: '태오', work: 'family', faction: '우리 영웅 · 태권 용사', robe: '#f5efe3', accent: '#5198ff', skin: '#edbb91', hair: '#4b3022', weapon: 'taekwondo', head: 'none', beard: 'none', bio: '하얀 도복과 파란 띠를 두른 태권 용사예요. 빠른 발차기로 길을 열고, 친구들이 위험하면 메가냅터킥으로 달려갑니다. 싸울 때는 기술 이름을 줄줄이 외치고 마지막엔 “쓰구미~!” 하고 인사해요.' },
   jaei: { name: '재이', work: 'family', faction: '우리 영웅 · 방울 마법사', robe: '#eea2bf', accent: '#b2eafa', skin: '#f1c5a5', hair: '#503329', weapon: 'bubbleMagic', head: 'none', beard: 'none', bio: '토끼 잠옷을 입은 방울 마법사예요. 무지개 방울을 날리고 넓은 마법으로 친구들이 지나갈 길을 열어 줍니다.' },
   yunchan: { name: '윤찬', work: 'family', faction: '우리 영웅 · 곤충 탐험가', robe: '#47badd', accent: '#bfea70', skin: '#e6b185', hair: '#22252b', weapon: 'insectNet', head: 'none', beard: 'none', bio: '잠자리채와 곤충 도감을 챙긴 탐험가예요. 반딧불이의 빛으로 앞을 밝히고 장수풍뎅이의 기운으로 힘차게 돌진해요.' },
   yungeon: { name: '윤건', work: 'family', faction: '우리 영웅 · 불꽃 스트라이커', robe: '#ffd658', accent: '#ff913d', skin: '#edb78c', hair: '#513427', weapon: 'football', head: 'none', beard: 'none', bio: '노란 유니폼을 입은 축구 용사예요. 재빠른 드리블로 빈틈을 찾고 불꽃 슛으로 이야기 속 모험을 헤쳐 나갑니다.' },
