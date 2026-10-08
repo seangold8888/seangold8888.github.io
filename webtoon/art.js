@@ -763,6 +763,18 @@
     moon(x, y, o) {
       return `<path transform="translate(${x} ${y})" d="M8 -16 A16 16 0 1 0 8 16 A12 12 0 1 1 8 -16Z" fill="#ffe27a"/>`;
     },
+    // 동그라미 네 개가 이어진 자동차 로고(아우디). 태오 눈에는 콩콩이차.
+    rings(x, y, o) {
+      const r = 22, dx = 26;
+      let s = `<g transform="translate(${x} ${y}) scale(${o.s || 1})" fill="none" stroke="#c9ced6" stroke-width="7">`;
+      for (let i = 0; i < 4; i++) s += `<circle cx="${(i - 1.5) * dx}" cy="0" r="${r}"/>`;
+      return s + `</g>`;
+    },
+    // 옆에서 본 자동차. 색은 o.c, 앞(오른쪽)에 동그라미 로고.
+    car(x, y, o) {
+      const c = o.c || "#c9ced6";
+      return `<g transform="translate(${x} ${y}) scale(${o.s || 1})"><path d="M-110 0 V-26 Q-110 -38 -96 -40 L-60 -46 Q-44 -74 -10 -74 H30 Q56 -74 72 -46 L102 -40 Q114 -36 114 -22 V0Z" fill="${c}" stroke="${INK}" stroke-width="3"/><path d="M-50 -48 Q-38 -66 -10 -66 H0 V-48Z M10 -66 H28 Q46 -66 58 -48 H10Z" fill="#bfe3f5" stroke="${INK}" stroke-width="2.2"/><circle cx="-62" cy="2" r="20" fill="#3d3a38"/><circle cx="-62" cy="2" r="9" fill="#e6e6e6"/><circle cx="66" cy="2" r="20" fill="#3d3a38"/><circle cx="66" cy="2" r="9" fill="#e6e6e6"/><g fill="none" stroke="#6b717c" stroke-width="2.4"><circle cx="80" cy="-22" r="5"/><circle cx="88" cy="-22" r="5"/><circle cx="96" cy="-22" r="5"/><circle cx="104" cy="-22" r="5"/></g></g>`;
+    },
   };
 
   function drawProp(p, W, H) {
@@ -855,13 +867,15 @@
         return s;
       }
       case "street": {
-        let s = `<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6b5ca5"/><stop offset=".55" stop-color="#f28c7c"/><stop offset="1" stop-color="#ffd08a"/></linearGradient></defs><rect width="${W}" height="${H}" fill="url(#sky)"/>`;
+        const am = arg === "morning";
+        const sky = am ? ["#8fd0ff", "#d6efff", "#fff3d6"] : ["#6b5ca5", "#f28c7c", "#ffd08a"];
+        let s = `<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${sky[0]}"/><stop offset=".55" stop-color="${sky[1]}"/><stop offset="1" stop-color="${sky[2]}"/></linearGradient></defs><rect width="${W}" height="${H}" fill="url(#sky)"/>`;
         const bs = [[0, 120, 90], [80, 180, 70], [150, 140, 80], [230, 200, 60], [290, 160, 110]];
         for (const [x, h, w] of bs) {
-          s += `<rect x="${x}" y="${gy - h}" width="${w}" height="${h}" fill="#3e3a6b"/>`;
-          for (let wy = gy - h + 14; wy < gy - 14; wy += 22) for (let wx = x + 10; wx < x + w - 12; wx += 20) s += `<rect x="${wx}" y="${wy}" width="9" height="11" fill="${(wx + wy) % 3 ? "#ffe27a" : "#5a5590"}"/>`;
+          s += `<rect x="${x}" y="${gy - h}" width="${w}" height="${h}" fill="${am ? "#b4c2d8" : "#3e3a6b"}"/>`;
+          for (let wy = gy - h + 14; wy < gy - 14; wy += 22) for (let wx = x + 10; wx < x + w - 12; wx += 20) s += `<rect x="${wx}" y="${wy}" width="9" height="11" fill="${(wx + wy) % 3 ? (am ? "#ffffff" : "#ffe27a") : (am ? "#8fa3c2" : "#5a5590")}"/>`;
         }
-        s += `<rect x="0" y="${gy}" width="${W}" height="${H - gy}" fill="#8a8198"/><path d="M0 ${gy + 22} H${W}" stroke="#fff" stroke-width="3" stroke-dasharray="20 16" opacity=".6"/>`;
+        s += `<rect x="0" y="${gy}" width="${W}" height="${H - gy}" fill="${am ? "#a9afba" : "#8a8198"}"/><path d="M0 ${gy + 22} H${W}" stroke="#fff" stroke-width="3" stroke-dasharray="20 16" opacity=".6"/>`;
         return s;
       }
       case "burst":
