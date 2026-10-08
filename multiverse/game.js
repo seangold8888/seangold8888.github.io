@@ -454,6 +454,8 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     game.flash = { color: fx ? fx.color : "#ffffff", t: 0.35 };
     var cry = familySkillLine(h.kid, 'special');
     floatText(h.x, h.y - HERO_H - 40, cry ? cry.phrase : D.HEROES[h.kid].name + " 필살기!", fx ? fx.color : "#fff", 40);
+    var chants = D.HEROES[h.kid].chants;
+    if (chants) floatText(h.x, h.y - HERO_H - 4, chants[Math.floor(Math.random() * chants.length)], "#fff3c4", 30);
   }
   function specialBlast(h) {
     var fx = wearing(h.kid, "fx");

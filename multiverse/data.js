@@ -56,6 +56,7 @@
         hurt:    { src: "art/yungeon-hurt.webp",    head: [0.440, 0.240], chest: [0.490, 0.460], back: [0.220, 0.390], hand: [0.770, 0.200] }
       } },
     taeo: { name: "태오", age: 5, color: "#ff6b5b", hp: 110, speed: 350, power: 11, scale: 0.92,
+      chants: ["안킬로해머!", "스밀로클로 발싸!", "퀀텀해로우 발싸!", "마임마임 발싸!", "래터킥 냅터킥 쓰구미~"],
       poses: {
         idle:    { src: "art/taeo-idle.webp",    head: [0.550, 0.270], chest: [0.490, 0.480], back: [0.230, 0.420], hand: [0.890, 0.380] },
         run:     { src: "art/taeo-run.webp",     head: [0.550, 0.270], chest: [0.500, 0.480], back: [0.190, 0.420], hand: [0.900, 0.450] },
