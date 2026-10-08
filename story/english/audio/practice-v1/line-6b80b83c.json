@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-6b80b83c.mp3",
+  "text": "The tortoise wins the race.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The tortoise wins the race.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "60b2ab9f1a3e1eee5ee43c8c077beaaead8eff5b847f1de68fae0b5a86616724"
+}

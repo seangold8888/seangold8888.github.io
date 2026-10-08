@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-e56a3864.mp3",
+  "text": "A fairy helps her.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "A fairy helps her.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "93935a8d1cc1f450649ed6462bb6e53628a54a8f55d10fedec17444808d8d323"
+}

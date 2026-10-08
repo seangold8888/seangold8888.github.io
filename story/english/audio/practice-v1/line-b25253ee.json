@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-b25253ee.mp3",
+  "text": "Momo is a little rabbit.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Momo is a little rabbit.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "8e38bedb9d28255351dfdb5c2e6339ff0a6c159a8a4b0d204efe31791d5aa06d"
+}

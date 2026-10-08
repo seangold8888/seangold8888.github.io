@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-929eeee1.mp3",
+  "text": "A fairy godmother comes.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "A fairy godmother comes.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "b699128962b338120e907bbddfa1ea617c6b675017dec6ff05ae7ea0b6046d54"
+}

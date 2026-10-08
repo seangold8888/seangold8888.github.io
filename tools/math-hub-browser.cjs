@@ -46,7 +46,7 @@ async function solve(p, wrong=false){
         const s=JSON.parse(localStorage.getItem("math10_state")||"{}"),p=s.pending,last=(s.history||[]).slice(-1)[0];
         const label=document.getElementById("hubStudyProgress"),added=label&&label.textContent.match(/이번 놀이 \+(\d+)문제/);
         return {answer:p&&p.problems[p.index].answer,index:p?p.index:last?last.count:0,length:p?p.problems.length:last?last.count:null,
-          run:p?p.hubRun:"",added:p?p.hubAdded||0:added?Number(added[1]):0,pending:p,level:s.level};
+          run:p?p.hubRun:"",added:p?p.hubAdded||0:added?Number(added[1]):0,pending:p||null,level:s.level};
       };
       window.__hubProbe=()=>({solved:Number(localStorage.getItem("hub2_solved")||0),credit:Number(localStorage.getItem("hub2_credit")||0),correct:Number(localStorage.getItem("hub2_solved")||0)%15});
     });
@@ -64,9 +64,14 @@ async function solve(p, wrong=false){
       const p=await context.newPage(),errors=[],bad=[];p.on("pageerror",e=>errors.push(e.message));p.on("response",r=>{if(r.url().startsWith(base)&&r.status()>=400)bad.push(r.url());});
       await p.goto(base+"/game/");await p.waitForFunction(()=>window.__hubProbe);
       a.equal(await p.locator('#mathPlaygroundLaunch').getAttribute('aria-disabled'),null);
-      a.equal(await p.locator('#mathLaunchAction').innerText(),"가볍게 3문제 →");
+      a.equal(await p.locator('#mathLaunchAction').innerText(),"문제 수 골라 시작 →");
       await p.locator('#mathPlaygroundLaunch').scrollIntoViewIfNeeded();await p.screenshot({path:path.join(output,scene.name+"-entry.png")});
-      await p.locator('#mathPlaygroundLaunch').click();await p.waitForFunction(()=>window.__mathProbe&&document.body.dataset.screen==="quiz");
+      await p.locator('#mathPlaygroundLaunch').click();await p.locator('#hubChoices').waitFor({state:'visible'});
+      a.equal(await p.locator('#setup').isVisible(),false);a.equal(await p.evaluate(()=>__mathProbe().pending),null);
+      a.match(await p.locator('#hubStudyLabel').innerText(),new RegExp('남은 '+(15-scene.initial)+'문제'));
+      a.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
+      await p.screenshot({path:path.join(output,scene.name+'-choices.png')});
+      await p.locator('#hubQuickBtn').click();await p.waitForFunction(()=>window.__mathProbe&&document.body.dataset.screen==="quiz");
       a.equal(await p.evaluate(()=>__mathProbe().length),3);a.equal(await p.locator('#setup').isVisible(),false);
       a.equal(await p.locator('.hub-play-over').count(),0);a.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
       await p.screenshot({path:path.join(output,scene.name+"-quiz.png")});
@@ -91,7 +96,7 @@ async function solve(p, wrong=false){
         await p.goto(base+"/game/");await p.waitForFunction(()=>window.__hubProbe);
         a.deepEqual(await p.evaluate(()=>__hubProbe()),{solved:17,credit:0,correct:2});
       }else{
-        await p.locator('#mathPlaygroundLaunch').click();await p.waitForFunction(()=>window.__mathProbe&&__mathProbe().index===0);
+        await p.locator('#mathPlaygroundLaunch').click();await p.locator('#hubQuickBtn').click();await p.waitForFunction(()=>window.__mathProbe&&__mathProbe().index===0);
         a.notEqual(await p.evaluate(()=>__mathProbe().run),run,"new session earns new receipts");
         await solve(p);await p.locator('#quitBtn').click();await p.waitForURL("**/game/#study");await p.waitForFunction(()=>window.__hubProbe);
         a.equal(await p.evaluate(()=>__hubProbe().solved),4);a.equal(await p.locator('#mathLaunchAction').innerText(),"하던 놀이 이어하기 →");
@@ -101,6 +106,52 @@ async function solve(p, wrong=false){
       }
       a.deepEqual(errors,[]);a.deepEqual(bad,[]);await context.close();console.log("PASS "+scene.name+": unlocked quick entry, wrong/duplicate protection, completion, return and reload");
     }
+    for(const scene of [{initial:0,count:15,width:390},{initial:14,count:1,width:820},{initial:17,count:13,width:390},{initial:99,count:1,width:320},{initial:100,count:0,width:390}]){
+      const c=await newContext({viewport:{width:scene.width,height:1180},hasTouch:true,serviceWorkers:'block',reducedMotion:'reduce'});
+      const p=await c.newPage(),errors=[],bad=[];p.on('pageerror',e=>errors.push(e.message));p.on('response',r=>{if(r.url().startsWith(base)&&r.status()>=400)bad.push(r.url());});
+      await p.goto(base+'/game/');await p.evaluate(n=>{const d=new Date(),day=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();localStorage.setItem('hub2_date',day);localStorage.setItem('hub2_solved',String(n));localStorage.setItem('hub2_credit','0');},scene.initial);
+      await p.goto(base+'/math/?from=hub');await p.locator('#hubChoices').waitFor({state:'visible'});
+      a.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('math10_state')||'null')),null,'opening choices never modifies math progress');
+      a.equal(await p.evaluate(()=>Number(localStorage.getItem('hub2_solved'))),scene.initial);
+      for(const id of ['hubStudyBtn','hubQuickBtn','hubAdventureBtn']){const b=await p.locator('#'+id).boundingBox();a.ok(b.height>=44);}
+      a.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
+      await p.screenshot({path:path.join(output,'study-'+scene.initial+'-choices.png')});
+      if(!scene.count){
+        a.equal(await p.locator('#hubStudyBtn').isDisabled(),true);a.equal(await p.locator('#hubQuickBtn').isEnabled(),true);a.equal(await p.locator('#hubAdventureBtn').isEnabled(),true);
+        await p.locator('#hubQuickBtn').click();a.equal(await p.evaluate(()=>__mathProbe().length),3);
+      }else{
+        a.match(await p.locator('#hubStudyLabel').innerText(),new RegExp('남은 '+scene.count+'문제'));
+        await p.locator('#hubStudyBtn').click();await p.waitForFunction(()=>document.body.dataset.screen==='quiz');
+        a.equal(await p.evaluate(()=>__mathProbe().length),scene.count);
+        if(scene.count>1){
+          await solve(p,true);a.equal(await p.evaluate(()=>__mathProbe().length),scene.count,'hint cannot append an extra study question');
+          const run=await p.evaluate(()=>__mathProbe().run);await p.reload();await p.waitForFunction(()=>document.body.dataset.screen==='quiz');
+          a.equal(await p.evaluate(()=>__mathProbe().run),run);a.equal(await p.evaluate(()=>__mathProbe().index),1);
+          a.equal(await p.evaluate(()=>__mathProbe().length),scene.count,'reload preserves chosen length');
+        }
+        while((await p.evaluate(()=>__mathProbe().index))<scene.count)await solve(p);
+        await p.waitForFunction(()=>['capsule','result'].includes(document.body.dataset.screen));
+        a.match(await p.locator('#hubStudyProgress').innerText(),new RegExp('이번 놀이 \\+'+scene.count+'문제'));
+        if(await p.locator('#capsule').isVisible())await p.locator('#capsules button').first().click();
+        await p.waitForFunction(()=>document.body.dataset.screen==='result');
+        await p.locator('#againBtn').click();await p.locator('#hubChoices').waitFor({state:'visible'});
+        a.equal(await p.evaluate(()=>__mathProbe().pending),null);
+        await p.locator('#hubStudyLink a').click();await p.waitForURL('**/game/#study');await p.waitForFunction(()=>window.__hubProbe);
+        const expected=scene.initial+scene.count;a.equal(await p.evaluate(()=>__hubProbe().solved),expected);
+        a.equal(await p.evaluate(()=>__hubProbe().credit),expected<100?1:0);
+      }
+      a.deepEqual(errors,[]);a.deepEqual(bad,[]);await c.close();console.log('PASS study choice '+scene.initial+' + '+scene.count+': exact round length, hints/reload/return, preserved progress and ticket boundary');
+    }
+    for(const count of [8,12,16]){
+      const c=await newContext({viewport:{width:820,height:1180},serviceWorkers:'block',reducedMotion:'reduce'}),p=await c.newPage();
+      await p.goto(base+'/math/?from=hub');await p.evaluate(n=>{const s=MathStore.defaults();s.placed=true;s.perSession=n;s.coins=23;s.level=4;localStorage.setItem('math10_state',JSON.stringify(s));},count);
+      await p.reload();await p.locator('#hubAdventureBtn').waitFor();a.match(await p.locator('#hubAdventureLabel').innerText(),new RegExp(count+'문제'));
+      await p.locator('#hubAdventureBtn').click();await p.waitForFunction(()=>document.body.dataset.screen==='quiz');
+      a.equal(await p.evaluate(()=>__mathProbe().length),count);a.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('math10_state')).coins),23);a.equal(await p.evaluate(()=>__mathProbe().level),4);
+      await c.close();console.log('PASS general adventure follows parent '+count+' questions without altering coins or level');
+    }
+    const legacy=await newContext({viewport:{width:390,height:844},serviceWorkers:'block',reducedMotion:'reduce'}),lp=await legacy.newPage();
+    await lp.goto(base+'/math/?from=hub&quick=1');await lp.waitForFunction(()=>document.body.dataset.screen==='quiz');a.equal(await lp.evaluate(()=>__mathProbe().length),3);await legacy.close();console.log('PASS old quick=1 links remain compatible');
     const context=await newContext({viewport:{width:320,height:720},serviceWorkers:"block"});
     const pending=S.defaults();pending.placed=true;pending.pending={level:1,index:2,results:[{},{}],problems:Array.from({length:12},()=>C.makeProblem(1)),mode:"adventure",firstTry:true};
     const p=await context.newPage();await p.goto(base+"/game/");await p.evaluate(s=>localStorage.setItem("math10_state",JSON.stringify(s)),pending);

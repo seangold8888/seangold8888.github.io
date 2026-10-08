@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-163c5602.mp3",
+  "text": "Teo can run.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Teo can run.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "fd3c693a9be8a9e6e57f9212dcaf3606de11c210c660e57a766d2964ef83ec83"
+}

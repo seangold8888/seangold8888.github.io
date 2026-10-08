@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-33cc5f34.mp3",
+  "text": "The shoe fits!",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The shoe fits.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "a23b8f397929347e8d1d6f50ebdcb813b7a238774816c8b6337cab7d94f0364b"
+}

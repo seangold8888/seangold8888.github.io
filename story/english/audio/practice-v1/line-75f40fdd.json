@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-75f40fdd.mp3",
+  "text": "The wolf blows and blows.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The wolf blows and blows.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "27bfdfc2b262038a3b43016ae840a168b884846dcd9f139d73f5bf0c67db93e9"
+}

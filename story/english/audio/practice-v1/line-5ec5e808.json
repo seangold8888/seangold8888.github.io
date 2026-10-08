@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-5ec5e808.mp3",
+  "text": "She waves her wand.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "She waves her wand.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "9649566f558b05fbd9911954ef180371c902c0edd823aeb3d220889129d0b057"
+}

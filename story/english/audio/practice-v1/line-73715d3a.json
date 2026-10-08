@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-73715d3a.mp3",
+  "text": "Grandma and Red are safe.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Grandma and Red are safe.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "659fd1adaf7a1745894dde6a66756272b8b73dc91368e738b0e15a6fd3d26bea"
+}

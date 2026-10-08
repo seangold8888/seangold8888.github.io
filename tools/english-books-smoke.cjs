@@ -9,6 +9,7 @@ const os = require("node:os");
 
 const root = path.resolve(__dirname, "..");
 const books = require("../story/english/books.js").books;
+const practice = require("../story/english/books.js").practice;
 const shots = fs.mkdtempSync(path.join(os.tmpdir(), "english-books-"));
 const mime = { ".html": "text/html; charset=utf-8", ".js": "application/javascript", ".css": "text/css", ".json": "application/json",
   ".webp": "image/webp", ".png": "image/png", ".mp3": "audio/mpeg" };
@@ -47,12 +48,12 @@ const server = http.createServer((req, res) => {
       await page.screenshot({ path: path.join(shots, viewport.width + "-shelf.png") });
       await page.locator(".book").first().click();
       await page.waitForSelector(".page .text");
-      assert.equal(await page.locator(".page .text").innerText(), books[0].pages[0].text);
+      assert.equal(await page.locator(".page .text").innerText(), practice(books[0].pages[0],'easy')[0].text);
       assert.equal(await page.locator(".page .meaning").isHidden(), true, "뜻은 처음에 숨는다");
       assert.match(await page.locator(".page img").getAttribute("src"), /^art\/picnic-1\.webp$/);
       await page.waitForFunction(() => { const i = document.querySelector(".page img"); return i.complete && i.naturalWidth > 0 && !i.src.includes("/cards/art/"); });
       await page.locator(".page .show").click();
-      assert.equal(await page.locator(".page .meaning").innerText(), books[0].pages[0].meaning);
+      assert.equal(await page.locator(".page .meaning").innerText(), practice(books[0].pages[0],'easy')[0].meaning);
       await page.locator(".page .listen").click();
       await page.waitForFunction(() => document.querySelector(".page .text.playing") || true);
       await page.waitForTimeout(600);
@@ -68,7 +69,7 @@ const server = http.createServer((req, res) => {
       assert.equal(await page.locator(".book .done").count(), 1);
       await page.locator('.book').filter({ hasText: 'Momo and the Red Kite' }).click();
       await page.waitForSelector('.page .text');
-      assert.equal(await page.locator('.page .text').innerText(), books.find(book => book.id === 'momo').pages[0].text);
+      assert.equal(await page.locator('.page .text').innerText(), practice(books.find(book => book.id === 'momo').pages[0],'easy')[0].text);
       assert.equal(await page.locator('.page img').getAttribute('src'), 'art/momo-1.png');
       await page.waitForFunction(() => { const image = document.querySelector('.page img'); return image.complete && image.naturalWidth > 0; });
       await page.locator('.page .listen').click();

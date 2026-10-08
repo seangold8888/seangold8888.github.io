@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-3b8412ed.mp3",
+  "text": "He has a red kite.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "He has a red kite.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "08f953448445104d7c0d3e0df23ad58848090859f48e836744803a261a9441a9"
+}

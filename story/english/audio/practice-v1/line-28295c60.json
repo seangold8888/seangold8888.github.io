@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-28295c60.mp3",
+  "text": "The plant is tall.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The plant is tall.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "b8c6159a7a41856ec0e5c848a3e5ee060f36ca49d2e11b41d1c7803cbfadfca2"
+}

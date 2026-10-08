@@ -3,7 +3,8 @@
 (function (root) {
   "use strict";
   // Same story and illustrations, with a short, complete sentence for beginners.
-  // Original page text/audio remains available in the higher reading modes.
+  // Every practice line carries a recording matched to its exact visible text.
+  // Original page narration is kept for page mode and the separate original button.
   const EASY = {
     picnic: [
       ["It is sunny.", "날이 화창해요."], ["Mom makes sandwiches.", "엄마가 샌드위치를 만들어요."],
@@ -213,16 +214,31 @@
     return result;
   }
   function splitSentences(text) { return (text.match(/[^.!?]+[.!?]?/g) || [text]).map(s => s.trim()).filter(Boolean); }
+  const originalAudio = new Map(BOOKS.flatMap(book => book.pages.map(page => [page.text, page.audio])));
+  function audioFor(text) {
+    if (originalAudio.has(text)) return originalAudio.get(text);
+    let hash = 2166136261;
+    for (let i = 0; i < text.length; i++) hash = Math.imul(hash ^ text.charCodeAt(i), 16777619) >>> 0;
+    return 'audio/practice-v1/line-' + hash.toString(16).padStart(8, '0') + '.mp3';
+  }
   function practice(page, mode) {
     mode = cleanMode(mode);
-    if (mode === "easy" && page.easy) return [page.easy];
+    if (mode === "easy" && page.easy) return [{ ...page.easy, audio: audioFor(page.easy.text) }];
     if (mode === "sentence") {
       const lines = splitSentences(page.text), meanings = splitSentences(page.meaning);
-      return lines.map((text, i) => ({ text, meaning: meanings.length === lines.length ? meanings[i] : page.meaning }));
+      return lines.map((text, i) => ({ text, meaning: meanings.length === lines.length ? meanings[i] : page.meaning, audio: audioFor(text) }));
     }
-    return [{ text: page.text, meaning: page.meaning }];
+    return [{ text: page.text, meaning: page.meaning, audio: page.audio }];
   }
-  const api = { books: BOOKS, MODE_KEY, ADAPTIVE_KEY, thresholds, modeLabels, cleanMode, readMode, saveMode, readGrowth, growthLabel, recordPass, practice };
+  function practiceAudioPlan() {
+    const clips = new Map();
+    for (const book of BOOKS) for (const page of book.pages) for (const mode of MODES) for (const line of practice(page, mode)) {
+      if (clips.has(line.audio) && clips.get(line.audio).text !== line.text) throw Error('Practice audio collision');
+      clips.set(line.audio, { audio: line.audio, text: line.text });
+    }
+    return Array.from(clips.values());
+  }
+  const api = { books: BOOKS, MODE_KEY, ADAPTIVE_KEY, thresholds, modeLabels, cleanMode, readMode, saveMode, readGrowth, growthLabel, recordPass, practice, practiceAudioPlan };
   if (typeof module === "object" && module.exports) module.exports = api;
   else root.EnglishBooks = api;
 })(typeof window !== "undefined" ? window : globalThis);

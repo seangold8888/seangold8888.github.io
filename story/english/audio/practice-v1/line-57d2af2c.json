@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-57d2af2c.mp3",
+  "text": "The tortoise is slow.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The tortoise is slow.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "22b0cf14ed8830b65d48fc301cc31d7a8570cc1a76d4b5914b0a81a0d5e22bda"
+}

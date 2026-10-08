@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-a5833d79.mp3",
+  "text": "Momo has a kite.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Momo has a kite.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "5943bdbac7ab661c79b9ee0ec75618ad78d4e10f2b65e6386f7f96f94be40c1e"
+}

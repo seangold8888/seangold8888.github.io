@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-94564374.mp3",
+  "text": "It is a sunny day.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "It is a sunny day.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "5b7994250497d0c87ea587075f78b20e29f8d9b185d76412f4989b8cafd85b7a"
+}

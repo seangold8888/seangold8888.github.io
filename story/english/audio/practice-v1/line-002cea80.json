@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-002cea80.mp3",
+  "text": "The wolf blows hard.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The wolf blows hard.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "af9c483671179b325a3d523ff96cb0ee4e79f43aa7f8d3d30c373a93599abf61"
+}

@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-c90a1d92.mp3",
+  "text": "Slow and steady wins the race.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Slow and steady wins the race.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "42ea2426439d8322b78a98d058076b9e8f30f087228ba2154dc3ba5fcc183824"
+}

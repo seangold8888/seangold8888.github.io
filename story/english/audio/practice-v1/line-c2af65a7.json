@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-c2af65a7.mp3",
+  "text": "Jack gets magic beans.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Jack gets magic beans.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "63979efba84c821f0da894a13d28321e857b0ce34ba4603e6494edfc9050f4bb"
+}

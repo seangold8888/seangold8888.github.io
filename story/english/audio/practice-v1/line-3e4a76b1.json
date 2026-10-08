@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-3e4a76b1.mp3",
+  "text": "The kite is in a tree.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The kite is in a tree.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "2e95a22590f53d08f7dec80dbb7ff948bba46c65fece7677a816aa2f0393727a"
+}

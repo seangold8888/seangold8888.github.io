@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-5d8befce.mp3",
+  "text": "Dad is happy.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Dad is happy.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "ce54810915d13e01774dcc8e8f0c21ab8f6ce25fc3cd1496e851fa3f57fe7ddb"
+}

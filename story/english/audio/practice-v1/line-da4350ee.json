@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-da4350ee.mp3",
+  "text": "It is stuck.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "It is stuck.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "83f2dab2794f32d99af5c929772aefa2383aeeb4a774274280dcc5526521fa84"
+}

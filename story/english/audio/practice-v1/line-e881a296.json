@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-e881a296.mp3",
+  "text": "Red brings some cookies.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Red brings some cookies.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "3ad2ce4c6e4a83ce600312d90bd5148c26478b25b2c26764e352271f964d4194"
+}

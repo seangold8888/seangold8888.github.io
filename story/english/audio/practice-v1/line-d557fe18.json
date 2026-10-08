@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-d557fe18.mp3",
+  "text": "They fly the kite together.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "They fly the kite together.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "95f3362fbb1034f57208a1a4be8aea93e7f49256b774b3d5dcd8de6c78f7ed74"
+}

@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-aa6316de.mp3",
+  "text": "The brick house does not fall.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The brick house does not fall.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "741b2324f80e271d071b7fa8ee6cf0f812d404ae174b77dc9cb76a26c1bca151"
+}

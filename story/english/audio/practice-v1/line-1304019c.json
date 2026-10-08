@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-1304019c.mp3",
+  "text": "Oh no!",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Oh no.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "cfa2fb483a3cfc7d209149cd636d546070c9093f44f0b31502a45d70889a5ebc"
+}

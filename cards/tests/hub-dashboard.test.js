@@ -182,7 +182,7 @@ test("새 시각 시스템은 iPad·모바일·키보드·모션 감소 계약�
 test('오늘의 공부가 파티와 게임 소개보다 먼저 나오고 15문제 목표를 안내한다', () => {
   assert.ok(html.indexOf('id="study"') < html.indexOf('id="mathPlaygroundLaunch"'));
   assert.ok(html.indexOf('id="mathPlaygroundLaunch"') < html.indexOf('id="adventureWorlds"'));
-  assert.match(html, /id="mathPlaygroundLaunch" href="math\/\?from=hub&amp;quick=1"/);
+  assert.match(html, /id="mathPlaygroundLaunch" href="math\/\?from=hub"/);
   assert.match(html, /티켓 없이 언제든 · 오늘의 공부에 합산/);
   assert.ok(html.indexOf('id="study"') < html.indexOf('id="adventureWorlds"'));
   assert.ok(html.indexOf('id="study"') < html.indexOf('id="partyAdventure"'));

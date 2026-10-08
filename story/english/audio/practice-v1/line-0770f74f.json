@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-0770f74f.mp3",
+  "text": "They play together.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "They play together.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "5b7a3870581b1ee4e7edb6009c08d1b2cfe67d644167bd7dfaec362e1653f78e"
+}

@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-fd8ad662.mp3",
+  "text": "They live happily ever after.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "They live happily ever after.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "a6c1a577209216a4b91a907aa1bf6e0b9a6c879706bf3744df7fcdc65ccb9798"
+}

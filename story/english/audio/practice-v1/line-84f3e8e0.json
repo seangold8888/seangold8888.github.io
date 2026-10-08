@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-84f3e8e0.mp3",
+  "text": "Three pigs go out.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Three pigs go out.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "506d09859ba8db5d5faf0bed05caef09a2d37097c01c7a48b027a95df06f3ccc"
+}

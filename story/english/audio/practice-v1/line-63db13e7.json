@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-63db13e7.mp3",
+  "text": "A wolf sees Red.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "A wolf sees red.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "d030ccd13420f867842d076c596c7c7a6ce147d1c6e19d76b2e046bba215ea8f"
+}

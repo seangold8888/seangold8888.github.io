@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-8391bed7.mp3",
+  "text": "It is sunny.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "It is sunny.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "80c7965fa11ad186531298ca41c8c34fc1af4e155170b210d62cf07fec623bed"
+}

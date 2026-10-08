@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-f0bffc79.mp3",
+  "text": "Mom is angry.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Mom is angry.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "03b4af010cff078f9dd041649f2169619ccce0b5aec8f78d61c50554f0e50b5e"
+}

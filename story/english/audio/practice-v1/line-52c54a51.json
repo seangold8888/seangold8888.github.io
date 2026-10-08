@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-52c54a51.mp3",
+  "text": "Mom throws the beans.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Mom throws the beans.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "b1bca916079d2581fe13bae36738e08ab79ed214c41fbcbf9f6391fecfc0aaf1"
+}

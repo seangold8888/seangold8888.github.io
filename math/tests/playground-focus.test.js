@@ -40,6 +40,17 @@ test('every current concept is reachable; focused practice cannot imply mastery 
  assert.equal(L.ready(state,4),false);
  assert.ok(Object.keys(state.skills).every(k=>k.startsWith('3:')));
 });
+
+test('all 1-to-15 remaining study lengths fill exactly without duplicates or future concepts',()=>{
+ for(let level=1;level<=12;level++) for(const spot of P.SPOTS) for(let count=1;count<=15;count++) {
+  const focus=P.focus(spot.id,level),state=S.defaults(),before=JSON.stringify(state);
+  const set=L.buildSession({level,count,focus,rng:random(100+count),state});
+  const context=JSON.stringify({level,id:spot.id,count});
+  assert.equal(set.length,count,context);assert.equal(new Set(set.map(p=>p.key)).size,count,context);
+  assert.ok(set.every(p=>p.level<=level && Number.isInteger(p.answer)),context);
+  assert.equal(JSON.stringify(state),before,'session choices cannot change mastery');
+ }
+});
 test('due-review identity survives focused practice and future review is excluded',()=>{
  const r=C.makeProblem(4,random(12),'split10'),future=C.makeProblem(9,random(13),'carry');
  const set=L.buildSession({level:4,count:8,focus:P.focus('slide',4),rng:random(8),review:[{key:future.key,problem:future},{key:r.key,problem:r}]});

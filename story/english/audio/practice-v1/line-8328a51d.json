@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-8328a51d.mp3",
+  "text": "Momo can jump.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Momo can jump.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "13c1ef523b226f3b9e7af2ef8b2e82d236692148fb80112322b23f4b8621d8bd"
+}

@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-30ea4146.mp3",
+  "text": "A giant lives here.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "A giant lives here.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "cd1a6f6f7d616cd213911fdee418aebf6bcacf6b3460db0e5dd8a83bfdbe1490"
+}

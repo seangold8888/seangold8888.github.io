@@ -71,15 +71,39 @@ test("invalid, duplicate and unbounded receipt data is cleaned; unavailable stor
   const denied={getItem(){throw Error("denied");},setItem(){throw Error("denied");}};
   a.equal(credits.record(denied,"x:1",now).ok,false);a.equal(credits.flush(denied,now).ok,false);
 });
-test("runtime wiring gives quick entry without a timer gate, persistent receipt IDs and safe fixed return", () => {
+test("runtime wiring gives choice and legacy quick entries without a timer gate, persistent receipt IDs and safe fixed return", () => {
   const root=path.resolve(__dirname,"../.."), app=fs.readFileSync(path.join(root,"math/app.js"),"utf8");
   const html=fs.readFileSync(path.join(root,"math/index.html"),"utf8"),hub=fs.readFileSync(path.join(root,"game/index.html"),"utf8");
   a.match(app,/hubRun:hubRun/);a.match(app,/HubCredits\.record\(storage, hubRun \+ ":" \+ index\)/);
   a.match(app,/if \(hubQuick\)/);a.match(app,/start\("quick"\)/);
-  a.doesNotMatch(html,/play-timer\.js/);a.match(html,/math-credits\.js\?v=1/);a.match(html,/app\.js\?v=35/);
+  a.doesNotMatch(html,/play-timer\.js/);a.match(html,/math-credits\.js\?v=2/);a.match(html,/app\.js\?v=36/);
   a.match(hub,/HubMathCredits\.flush\(localStorage\)/);
   const limits=hub.match(/var SET = (\d+), DAILY = (\d+);/);
   a.equal(Number(limits[1]),credits.SET);a.equal(Number(limits[2]),credits.DAILY);
   a.match(app,/new URL\("\.\.\/game\/#study", window\.location\.href\)/);
   a.match(html,/id="hubCapsuleActions"/);
+  a.match(hub,/id="mathPlaygroundLaunch" href="math\/\?from=hub"/);
+  a.match(html,/id="hubChoices"/);a.match(html,/id="hubStudyBtn"/);a.match(html,/id="hubQuickBtn"/);a.match(html,/id="hubAdventureBtn"/);
+  a.match(app,/HubCredits\.studyRound\(storage\)\.count/);
+  a.match(app,/sessionMode === "adventure"\) \{/,'fixed-length study and quick modes must not add transfer questions');
+  a.match(app,/if \(hubEntry\) showHubChoices\(\); else start\("adventure"\)/);
+});
+
+test("study choice finishes the current 15-answer round and respects the daily cap", () => {
+  for (const [solved, count] of [[0,15],[4,11],[14,1],[15,15],[17,13],[90,10],[99,1],[100,0],[101,0]]) {
+    const s=store({hub2_date:day,hub2_solved:String(solved),hub2_credit:"0"});
+    a.equal(credits.studyRound(s,now).count,count,'solved '+solved);
+    a.equal(s.getItem('hub2_solved'),String(solved),'choosing never scores');
+  }
+});
+
+test("study count includes pending receipts, survives an imported/spent ticket and resets on a new day", () => {
+  const s=store({hub2_date:day,hub2_solved:"10",hub2_credit:"0"});answers(s,3);
+  a.equal(credits.studyRound(s,now).count,2);
+  credits.flush(s,now);a.equal(credits.studyRound(s,now).count,2);
+  answers(s,2,'finish');credits.flush(s,now);a.equal(credits.studyRound(s,now).count,15);
+  s.setItem('hub2_credit','0');a.equal(credits.studyRound(s,now).count,15);
+  a.equal(credits.studyRound(s,now+86400000).count,15);
+  const denied={getItem(){throw Error('denied');}};
+  a.equal(credits.studyRound(denied,now).ok,false);a.equal(credits.studyRound(denied,now).count,0);
 });

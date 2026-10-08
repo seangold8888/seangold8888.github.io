@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-40a4ff7b.mp3",
+  "text": "She loses a shoe.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "She loses a shoe.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "e4cd1169c7fc915796060a2668a1ba34aa8b9df6fb0c4a42c8d4039c99d5d0f3"
+}

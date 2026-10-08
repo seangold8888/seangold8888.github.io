@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-3e754aae.mp3",
+  "text": "He chases the wolf away.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "He chases the wolf away.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "8100cb144b5075ef278fdf26ccdd42df969682f35f2759562616170ab96b2e1f"
+}

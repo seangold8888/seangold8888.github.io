@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-0edef6d8.mp3",
+  "text": "She works all day.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "She works all day.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "1a8de6e468fd320a7b744669330c2a2af1a826a1fb70d389005eae239ead29a1"
+}

@@ -1245,12 +1245,12 @@
     <div id="studyCelebration"></div>
     <details class="learning-more"><summary>공부로 자란 공주 보기</summary><div id="princessGrowthHub" aria-label="공주 성장 기록"></div></details>
   </section>
-  <a class="math-launch" id="mathPlaygroundLaunch" href="math/?from=hub&amp;quick=1">
+  <a class="math-launch" id="mathPlaygroundLaunch" href="math/?from=hub">
     <span class="math-launch-copy">
       <small>티켓 없이 언제든 · 오늘의 공부에 합산</small>
       <strong>재이의 수학놀이터</strong>
       <span>한 문제, 한 칸! 친구와 놀이터를 건너요.</span>
-      <b class="math-launch-cta" id="mathLaunchAction">가볍게 3문제 →</b>
+      <b class="math-launch-cta" id="mathLaunchAction">문제 수 골라 시작 →</b>
     </span>
     <img src="math/assets/playground-scene.webp" alt="친구들과 함께하는 수학놀이터" width="132" height="100" loading="lazy">
   </a>
@@ -1463,9 +1463,9 @@
 <script src="math/learning.js?v=29"></script>
 <script src="math/store.js?v=32"></script>
 <script src="assets/study/math-bridge.js?v=2"></script>
-<script src="assets/study/math-credits.js?v=1"></script>
+<script src="assets/study/math-credits.js?v=2"></script>
 <script src="assets/study/english-reading.js?v=23"></script>
-<script src="story/english/books.js?v=6"></script>
+<script src="story/english/books.js?v=7"></script>
 <script src="assets/bgm/bgm-player.js?v=66"></script>
 <script src="assets/study/play-timer.js?v=1" data-mode="hub"></script>
 <script>
@@ -2739,7 +2739,7 @@
   function applyState() {
     var mathLaunchAction = document.getElementById('mathLaunchAction');
     if (mathLaunchAction) mathLaunchAction.textContent = mathState && mathState.pending && mathState.pending.level === mathState.level
-      ? '하던 놀이 이어하기 →' : '가볍게 3문제 →';
+      ? '하던 놀이 이어하기 →' : '문제 수 골라 시작 →';
     stopReading();
     syncHubMusic();
     drawDaily();

@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-222f280b.mp3",
+  "text": "A man helps Red.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "A man helps red.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "34aa837ef765d31670ae8ca782c2576f961f73411b8433e305cb65de9da48c87"
+}

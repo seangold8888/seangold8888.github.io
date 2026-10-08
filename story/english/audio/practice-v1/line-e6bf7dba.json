@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-e6bf7dba.mp3",
+  "text": "The wolf runs fast.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The wolf runs fast.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "0d2e212982f5c3308bd2f44f6c8fd6fe05d02b9f9d188713e08a65f23edf7d42"
+}

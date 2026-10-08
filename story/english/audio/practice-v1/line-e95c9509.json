@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-e95c9509.mp3",
+  "text": "Jay sees a butterfly.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Jay sees a butterfly.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "872f7335673986104d4e1215e4279e76f4bed919e37d1d28b126383fa40bc51b"
+}

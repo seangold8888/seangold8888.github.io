@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-d6f07cfa.mp3",
+  "text": "The straw house falls down!",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The straw house falls down.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "b4127f924bfb65fffe0c14a2ebb502aa0b0d48d75afeed95d31fdc4c73cc2e22"
+}

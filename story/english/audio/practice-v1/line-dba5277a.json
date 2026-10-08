@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-dba5277a.mp3",
+  "text": "She wants to dance.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "She wants to dance.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "c10891052d78c87af8b229fa38f4a977037eb3351fead544a864085d66544ea4"
+}

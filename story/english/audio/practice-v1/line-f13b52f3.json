@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-f13b52f3.mp3",
+  "text": "The pig uses straw.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The pig uses straw.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "955019db9d23d67260e0dcc51c6749628f937c25db749e94583f557cce2b00dd"
+}

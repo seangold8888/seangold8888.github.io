@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-52c44b30.mp3",
+  "text": "The tortoise walks and walks.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The tortoise walks and walks.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "a5af6ef7c21b6640b290fd722bc70507bc649c24e08ccae9eb726b1d5e3d723f"
+}

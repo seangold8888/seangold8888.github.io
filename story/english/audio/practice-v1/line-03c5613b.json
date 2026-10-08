@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-03c5613b.mp3",
+  "text": "We eat together.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "We eat together.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "4267dddc354b2773e637fdace5f8f5843de4994f0a2fd55f2622aa4217866a6b"
+}

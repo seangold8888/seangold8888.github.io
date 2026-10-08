@@ -1,0 +1,10 @@
+{
+  "audio": "audio/practice-v1/line-ecea4827.mp3",
+  "text": "Red has a hood.",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Red has a hood.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "0b6e49aa20a3ed38f5ea09a20d77fcb68a68f6211782caa948d83b29dbf93f1e"
+}
