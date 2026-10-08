@@ -2960,16 +2960,17 @@
     {
       id: 27,
       title: "둔쫀떡 먹은 날, 콩콩이차",
-      summary: "아침에 둔쫀떡을 먹은 태오는 기분이 하늘 끝까지! 누나 학교 가는 길에 안아 달라는 말도 없이 씽씽 걷다가, 동그라미 네 개 로고를 보고 외쳤다. “콩콩이차다!”",
-      lesson: "작은 기쁨 하나가 하루를 씩씩하게 만들어요. 기분 좋은 마음은 걸음도 가볍게 해 줘요.",
+      summary: "엄마가 출장 간 아침, 아빠와 함께 둔쫀떡을 먹은 태오는 기분이 하늘 끝까지! 누나 학교 가는 길에 안아 달라는 말도 없이 씽씽 걷다가, 동그라미 네 개 로고를 보고 외쳤다. “콩콩이차다!”",
+      lesson: "엄마가 없는 아침에도 작은 기쁨 하나가 하루를 씩씩하게 만들어요. 기분 좋은 마음은 걸음도 가볍게 해 줘요.",
       talk: "오늘 아침 나를 기분 좋게 한 건 뭐였어요? 타 보고 싶은 차가 있나요?",
       cover: 6,
       panels: [
         {
           h: 360, bg: "kitchen",
-          chars: [C("taeo", 130, "eating", "hold"), C("eomma", 310, "smile", "stand")],
+          chars: [C("taeo", 130, "eating", "hold"), C("appa", 310, "smile", "stand", { o: "work" })],
           fp: [["plate", 130, 330, { r: 50 }]],
-          n: "아침, 식탁 위에 둔쫀떡.",
+          n: "엄마가 출장 간 아침.",
+          n2: "식탁 위에 둔쫀떡.",
           b: [B("두바이 쫀득 찹쌀떡이야.", 310, 60, "b", { w: 150 })],
         },
         {
@@ -2980,8 +2981,8 @@
         },
         {
           h: 400, bg: "entrance",
-          chars: [C("eomma", 300, "smile", "stand"), C("taeo", 120, "happy", "stand", { o: "dobok" }), C("jaei", 210, "smile", "stand")],
-          n: "누나 학교 가는 시간.",
+          chars: [C("appa", 300, "smile", "stand", { o: "work" }), C("taeo", 120, "happy", "stand", { o: "dobok" }), C("jaei", 210, "smile", "stand")],
+          n: "엄마 대신 아빠가 누나 학교 데려다주는 시간.",
           b: [B("태오야, 안아 줄까?", 300, 90, "b", { w: 150 }), B("안 안아도 돼!", 120, 100, "b", { k: "shout", w: 130 })],
         },
         {
@@ -2993,7 +2994,7 @@
         },
         {
           h: 330, bg: "street:morning",
-          chars: [bust("jaei", 120, 205, 1.1, "blank", "stand"), bust("eomma", 290, 205, 1.1, "surprised", "stand")],
+          chars: [bust("jaei", 120, 205, 1.1, "blank", "stand"), bust("appa", 290, 205, 1.1, "surprised", "stand", { o: "work" })],
           b: [B("태오가 안아 달라는 말을 안 하네?", 120, 44, "b", { w: 170 }), B("둔쫀떡 효과인가 봐.", 290, 56, "b", { w: 140 })],
         },
         {
@@ -3030,7 +3031,7 @@
         },
         {
           h: 330, bg: "street:morning",
-          chars: [bust("eomma", 120, 205, 1.1, "sly", "stand"), bust("jaei", 290, 205, 1.1, "smile", "stand")],
+          chars: [bust("appa", 120, 205, 1.1, "sly", "stand", { o: "work" }), bust("jaei", 290, 205, 1.1, "smile", "stand")],
           b: [B("그럼 우리 오늘은 신나게 걸어서 갈까?", 120, 44, "b", { w: 180 }), B("콩콩콩 뛰는 차처럼!", 290, 56, "b", { w: 150 })],
         },
         {
