@@ -763,6 +763,22 @@
     moon(x, y, o) {
       return `<path transform="translate(${x} ${y})" d="M8 -16 A16 16 0 1 0 8 16 A12 12 0 1 1 8 -16Z" fill="#ffe27a"/>`;
     },
+    // 벽에 붙은 키 재는 자(80~120cm). y는 자의 윗부분(120cm). o.marks = [{ v: 95, c: "#e0443e" }]
+    heightchart(x, y, o) {
+      const k = 6, top = 120, bot = 80, hh = (top - bot) * k, w = 58;
+      let s = `<g transform="translate(${x} ${y}) scale(${o.s || 1})"><rect x="${-w / 2}" y="-8" width="${w}" height="${hh + 16}" rx="6" fill="#fff3c9" stroke="${INK}" stroke-width="2.6"/>`;
+      for (let v = bot; v <= top; v += 5) {
+        const yy = (top - v) * k, big = v % 10 === 0;
+        s += `<path d="M${-w / 2} ${yy} H${-w / 2 + (big ? 20 : 11)}" stroke="${INK}" stroke-width="${big ? 2.4 : 1.6}"/>`;
+        if (big) s += `<text x="${-w / 2 + 24}" y="${yy + 5}" font-size="15" font-weight="800" fill="${INK}" font-family="inherit">${v}</text>`;
+      }
+      for (const m of o.marks || []) {
+        const yy = (top - m.v) * k;
+        const x0 = -w / 2 - 14 - (m.reach || 0);
+        s += `<path d="M${x0} ${yy} H${w / 2 + 14}" stroke="${m.c || "#e0443e"}" stroke-width="4" stroke-linecap="round"/><circle cx="${x0}" cy="${yy}" r="5" fill="${m.c || "#e0443e"}"/>`;
+      }
+      return s + `</g>`;
+    },
     // 동그라미 네 개가 이어진 자동차 로고(아우디). 태오 눈에는 콩콩이차.
     rings(x, y, o) {
       const r = 22, dx = 26;
