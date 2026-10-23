@@ -634,6 +634,11 @@
       const gems = ["#ff4d4d", "#ffd34d", "#4c7fd0", "#6cc27a", "#ff9f1c", "#b99ad9"].map((c, i) => i < 4 ? `<circle cx="${-11 + i * 7.3}" cy="-24" r="2.8" fill="${c}" stroke="${INK}" stroke-width=".8"/>` : "").join("");
       return `<g transform="translate(${x} ${y}) rotate(${o.rot || 0}) scale(${o.s || 1})"><path d="M-14 16 L-14 -6 L-16 -22 Q-16 -26 -12 -26 Q-9 -26 -9 -22 L-8 -12 L-7 -28 Q-7 -32 -3 -32 Q1 -32 1 -28 L1 -12 L3 -28 Q3 -32 7 -32 Q11 -32 11 -28 L10 -10 L13 -20 Q14 -24 18 -22 Q20 -20 19 -16 L14 6 L14 16Z" fill="#f2c14e" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><path d="M-12 -4 Q0 -8 12 -4" stroke="#c9962a" stroke-width="1.6" fill="none"/><rect x="-16" y="14" width="32" height="10" rx="3" fill="#e0ad3a" stroke="${INK}" stroke-width="2"/>${gems}<circle cx="-1" cy="4" r="4.5" fill="#6cc27a" stroke="${INK}" stroke-width="1"/><circle cx="-12" cy="-6" r="2.6" fill="#ff9f1c" stroke="${INK}" stroke-width=".8"/></g>`;
     },
+    // 눈사람 (나뭇가지 팔, 당근 코, 숯 단추). 키가 큰 편이라 서 있는 인물 옆에 둔다.
+    snowman(x, y, o) {
+      const s = o.s || 1;
+      return `<g transform="translate(${x} ${y}) scale(${s})"><circle cx="0" cy="-34" r="34" fill="#fff" stroke="${INK}" stroke-width="2.4"/><circle cx="0" cy="-92" r="26" fill="#fff" stroke="${INK}" stroke-width="2.4"/><path d="M-30 -60 L-62 -78 M-52 -72 L-60 -90 M30 -60 L62 -76 M52 -70 L62 -88" stroke="#7a5230" stroke-width="3.2" stroke-linecap="round" fill="none"/><circle cx="-8" cy="-98" r="3.4" fill="${INK}"/><circle cx="8" cy="-98" r="3.4" fill="${INK}"/><path d="M0 -92 L22 -88 L0 -85Z" fill="#ff9f1c" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round"/><path d="M-10 -80 Q0 -73 10 -80" stroke="${INK}" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="0" cy="-48" r="3.6" fill="${INK}"/><circle cx="0" cy="-34" r="3.6" fill="${INK}"/><circle cx="0" cy="-20" r="3.6" fill="${INK}"/><path d="M-4 -118 L-7 -132 M2 -118 L2 -134 M7 -117 L12 -130" stroke="#7a5230" stroke-width="2.4" stroke-linecap="round" fill="none"/></g>`;
+    },
     // 무지개빛 망토 (목 위치가 x,y. 아래로 펼쳐진다). 인물 뒤(bp)에 두면 망토를 두른 모습이 된다.
     cape(x, y, o) {
       const w = o.w || 120, h = o.h || 150;
