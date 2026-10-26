@@ -24,12 +24,14 @@ const representativeCases=[
  ['zhaoyun','changban'],['caocao','guandu'],['machao','dongguan'],['huangzhong','dingjunshan'],
  ['xiahoudun','trilands'],['zhangliao','trilands'],['xuchu','trilands'],['simayi','trilands'],
  ['sunquan','trilands'],['taishici','trilands'],['ganning','trilands'],['luxun','trilands'],
+ // 군웅 — 연환계 전장(보스 동탁)과 연무장 동탁.
+ ['lvbu','lianhuan'],['diaochan','lianhuan'],['dongzhuo','trilands'],
  // 서유기 확장 — 새 적 진영·보스·절차 배경이 실제로 7파도를 돌 수 있는지 본다.
  ['wukong','huaguoshan'],['wukong','baihuling'],['wukong','shituoling'],
  ['nezha','heavenpalace'],['wukong','donghai'],['wukong','flamemountain'],
  ['wukong','lianhuadong'],['wukong','huoyundong'],['wusong','liangshan'],['linchong','snowshrine'],
 ];
-const rangedHeroes=new Set(['huangzhong','xiahoudun','zhangliao','xuchu','simayi','sunquan','taishici','ganning','luxun','nezha','erlangshen','honghaier']);
+const rangedHeroes=new Set(['huangzhong','xiahoudun','zhangliao','xuchu','simayi','sunquan','taishici','ganning','luxun','lvbu','diaochan','nezha','erlangshen','honghaier']);
 (async()=>{
  const server=createServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));let browser;
  try{
@@ -51,7 +53,7 @@ const rangedHeroes=new Set(['huangzhong','xiahoudun','zhangliao','xuchu','simayi
     const output=process.env.COMBAT_QA_OUTPUT;fs.mkdirSync(output,{recursive:true});
     await page.evaluate(()=>{const b=__battle,n=performance.now();b.update(.034,n);b.render(n);});
     await page.screenshot({path:path.join(output,hero+'-battle.png')});
-    if(['huangzhong','taishici','luxun','nezha','honghaier'].includes(hero)){
+    if(['huangzhong','taishici','luxun','lvbu','diaochan','nezha','honghaier'].includes(hero)){
      await page.evaluate(()=>{const b=__battle,n=performance.now()+1000;b.beginAttack('ranged',n);b.render(n+300);});
      await page.screenshot({path:path.join(output,hero+'-bow.png')});
     }

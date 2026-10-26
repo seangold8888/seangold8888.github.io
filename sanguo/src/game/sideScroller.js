@@ -65,6 +65,9 @@ const HERO_ART = {
   taishici: { hero: 'art/side-scroller/taishici-painted-sheet-v1.png', heroBow: 'art/side-scroller/taishici-bow-painted-sheet-v1.png' },
   ganning: { hero: 'art/side-scroller/ganning-painted-sheet-v1.png', heroBow: 'art/side-scroller/ganning-bow-painted-sheet-v1.png' },
   luxun: { hero: 'art/side-scroller/luxun-painted-sheet-v1.png' },
+  lvbu: { hero: 'art/side-scroller/lvbu-painted-sheet-v1.png', heroBow: 'art/side-scroller/lvbu-bow-painted-sheet-v1.png' },
+  diaochan: { hero: 'art/side-scroller/diaochan-painted-sheet-v1.png' },
+  dongzhuo: { hero: 'art/side-scroller/dongzhuo-painted-sheet-v1.png' },
   zhouyu: { hero: 'art/side-scroller/zhouyu-painted-sheet-v1.png', heroBow: 'art/side-scroller/zhouyu-bow-painted-sheet-v1.png' },
   huanggai: { hero: 'art/side-scroller/huanggai-painted-sheet-v1.png', heroBow: 'art/side-scroller/huanggai-bow-painted-sheet-v1.png' },
   zhugeliang: { hero: 'art/side-scroller/zhugeliang-painted-sheet-v1.png' },
@@ -157,6 +160,7 @@ zhangjiao: 'art/side-scroller/boss-zhangjiao-painted-sheet-v1.png',
   caimao: 'art/side-scroller/boss-caimao-painted-sheet-v1.png',
   xiahoudun: 'art/side-scroller/boss-xiahoudun-painted-sheet-v1.png',
   luxun: 'art/side-scroller/boss-luxun-painted-sheet-v1.png',
+  dongzhuo: 'art/side-scroller/dongzhuo-painted-sheet-v1.png',
   simayi: 'art/side-scroller/boss-simayi-painted-sheet-v1.png',
   wumawang: 'art/side-scroller/boss-wumawang-painted-sheet-v1.png',
   erlangshen: 'art/side-scroller/boss-erlangshen-painted-sheet-v1.png',
@@ -201,6 +205,8 @@ const BOSS_PROFILES = {
   caimao: { kind: 'spear', tint: { from: 0, to: 172, width: 54, sat: .84, val: 1.00 }, glow: '#67e5dd', weapon: '수군장창', attackRange: 225, hitRange: 215, damage: 22, hpScale: .96 },
   xiahoudun: { kind: 'halberd', tint: { from: 0, to: 232, width: 54, sat: .90, val: .94 }, glow: '#89aaff', weapon: '언월극', attackRange: 220, hitRange: 210, damage: 24, hpScale: 1.06 },
   luxun: { kind: 'fan', tint: { from: 0, to: 88, width: 54, sat: .86, val: .98 }, glow: '#b7ed8b', weapon: '우선', attackRange: 235, hitRange: 220, damage: 21, hpScale: .94 },
+  // 동탁 — 무겁고 느린 대도. 체력이 두꺼워 연환계 결전이 길게 이어진다.
+  dongzhuo: { kind: 'axe', tint: null, glow: '#e0a040', weapon: '상국 대도', attackRange: 230, hitRange: 214, damage: 24, actionDuration: 640, cooldownScale: 1.02, hpScale: 1.24 },
   simayi: { kind: 'sword', tint: { from: 0, to: 232, width: 54, sat: .90, val: .92 }, glow: '#a6b8ff', weapon: '지휘검', attackRange: 205, hitRange: 198, damage: 22, hpScale: 1.00 },
   // 조인 — 「굳게 지키고 나가 싸우지 마라」. 수비형이라 체력이 두껍고 공격이 느리다.
   caoren: { kind: 'spear', tint: { from: 0, to: 218, width: 54, sat: .86, val: .94 }, glow: '#9fb6e8', weapon: '수성장창', attackRange: 240, hitRange: 228, damage: 23, actionDuration: 600, cooldownScale: 1.12, hpScale: 1.22 },
@@ -231,6 +237,7 @@ const ENEMY_ROSTERS = {
   default: { faction: '적군', baseHue: 0, names: { soldier: '적 병졸', archer: '적 궁수', heavy: '적 중장', captain: '적 부장' }, hues: { soldier: 0, archer: 12, heavy: 28, captain: 345 }, weapons: { soldier: 'blade', archer: 'bow', heavy: 'axe', captain: 'halberd' }, accent: '#d56a45' },
   yellow: { faction: '황건적', baseHue: 46, names: { soldier: '황건 병졸', archer: '황건 궁수', heavy: '황건 장사', captain: '장각 호위대' }, hues: { soldier: 46, archer: 34, heavy: 20, captain: 8 }, weapons: { soldier: 'staff', archer: 'bow', heavy: 'club', captain: 'halberd' }, accent: '#e8bc4c' },
   hulao: { faction: '동탁군', baseHue: 0, names: { soldier: '서량 보병', archer: '서량 궁수', heavy: '서량 중갑', captain: '화웅 선봉대' }, hues: { soldier: 0, archer: 352, heavy: 338, captain: 18 }, weapons: { soldier: 'blade', archer: 'bow', heavy: 'axe', captain: 'halberd' }, accent: '#cf4d3d' },
+  lianhuan: { faction: '동탁군', baseHue: 0, names: { soldier: '장안 수비병', archer: '궁궐 궁수', heavy: '서량 중갑', captain: '동탁 친위대' }, hues: { soldier: 352, archer: 340, heavy: 330, captain: 12 }, weapons: { soldier: 'blade', archer: 'bow', heavy: 'axe', captain: 'halberd' }, accent: '#d1607a' },
   guandu: { faction: '원소군', baseHue: 205, names: { soldier: '원소군 보병', archer: '발해 궁수', heavy: '오소 중장', captain: '순우경 친위' }, hues: { soldier: 205, archer: 190, heavy: 224, captain: 250 }, weapons: { soldier: 'blade', archer: 'bow', heavy: 'club', captain: 'halberd' }, accent: '#9db7dc' },
   qianli: { faction: '위군 추격대', baseHue: 226, names: { soldier: '위군 추격병', archer: '하후돈 궁수', heavy: '철갑 추격대', captain: '하후돈 친위' }, hues: { soldier: 226, archer: 212, heavy: 244, captain: 265 }, weapons: { soldier: 'blade', archer: 'bow', heavy: 'axe', captain: 'halberd' }, accent: '#7d9ce0' },
   changban: { faction: '호표기', baseHue: 226, names: { soldier: '호표기 기병', archer: '위군 궁노', heavy: '호표기 중기병', captain: '조순 친위' }, hues: { soldier: 226, archer: 242, heavy: 260, captain: 278 }, weapons: { soldier: 'spear', archer: 'bow', heavy: 'spear', captain: 'halberd' }, accent: '#6d8dc6' },
@@ -276,6 +283,12 @@ const COMBAT_PROFILES = {
   taishici: { attackTheme: 'lightning', specialTheme: 'lightning', whirlwindTheme: 'storm', musouTheme: 'solar', arrowColor: '#ffd1a4', hitColor: '#ff9474', impactStyle: 'crescent', audioStyle: 'spear', kinds: { 1: 'thrust', 2: 'thrust', 3: 'wide', heavy: 'thrust', special: 'thrust' } },
   ganning: { attackTheme: 'water', specialTheme: 'water', whirlwindTheme: 'storm', musouTheme: 'solar', arrowColor: '#9ee6eb', hitColor: '#56c9d1', impactStyle: 'ribbon', audioStyle: 'dual', kinds: { 1: 'reverse', 2: 'sweep', 3: 'wide', heavy: 'reverse', special: 'spin' } },
   luxun: { attackTheme: 'flame', specialTheme: 'inferno', whirlwindTheme: 'storm', musouTheme: 'inferno', arrowColor: '#d7efaf', hitColor: '#a8d978', impactStyle: 'cloud', audioStyle: 'fan', kinds: { 1: 'sweep', 2: 'wide', 3: 'spin', heavy: 'wide', special: 'spin' } },
+  // 여포 — 방천화극의 넓은 호와 무거운 찌르기. 활도 명궁(원문사극).
+  lvbu: { attackTheme: 'inferno', specialTheme: 'inferno', whirlwindTheme: 'storm', musouTheme: 'inferno', arrowColor: '#ffb38a', hitColor: '#ff6a4a', impactStyle: 'crescent', audioStyle: 'guandao', kinds: { 1: 'sweep', 2: 'thrust', 3: 'wide', heavy: 'thrust', special: 'wide' } },
+  // 초선 — 부채 춤. 꽃잎 바람이 넓게 돌고 빠르다.
+  diaochan: { attackTheme: 'storm', specialTheme: 'storm', whirlwindTheme: 'cloud', musouTheme: 'storm', arrowColor: '#ffd0e2', hitColor: '#ff9fc6', impactStyle: 'cloud', audioStyle: 'fan', kinds: { 1: 'sweep', 2: 'reverse', 3: 'spin', heavy: 'wide', special: 'spin' } },
+  // 동탁 — 대도로 내려찍는 느린 중갑.
+  dongzhuo: { attackTheme: 'earth', specialTheme: 'earth', whirlwindTheme: 'earth', musouTheme: 'inferno', arrowColor: '#e8c27a', hitColor: '#e0a040', impactStyle: 'burst', audioStyle: 'monkstaff', kinds: { 1: 'overhead', 2: 'sweep', 3: 'wide', heavy: 'overhead', special: 'overhead' } },
   zhouyu: { attackTheme: 'flame', specialTheme: 'inferno', whirlwindTheme: 'storm', musouTheme: 'solar', arrowColor: '#ff9d72', hitColor: '#ff7456', impactStyle: 'ribbon', audioStyle: 'dual', kinds: { 1: 'sweep', 2: 'reverse', 3: 'spin', special: 'wide', mountedThrust: 'reverse' } },
   huanggai: { attackTheme: 'earth', specialTheme: 'flame', whirlwindTheme: 'earth', musouTheme: 'inferno', arrowColor: '#ffc271', hitColor: '#ef9d46', impactStyle: 'burst', audioStyle: 'monkstaff', kinds: { 1: 'overhead', 2: 'wide', 3: 'spin', special: 'overhead', mountedThrust: 'wide' } },
   zhugeliang: { attackTheme: 'storm', specialTheme: 'lightning', whirlwindTheme: 'cloud', musouTheme: 'thunder', arrowColor: '#e2eeff', hitColor: '#9edfff', impactStyle: 'cloud', audioStyle: 'fan', kinds: { 1: 'sweep', 2: 'wide', 3: 'spin', special: 'wide', mountedThrust: 'reverse' } },
@@ -313,6 +326,9 @@ const SPECIAL_CALLOUTS = {
   taishici: { special: { name: '동래관통시', cry: '창과 화살이 한 줄기로 꿰뚫는다' }, musou: { name: '태사연노진', cry: '연속 사격으로 길을 연다' } },
   ganning: { special: { name: '금범급습', cry: '물결을 가르며 적진을 습격한다' }, musou: { name: '강야난무', cry: '금범의 쌍도가 밤을 가른다' } },
   luxun: { special: { name: '연영화계', cry: '기다린 불길이 적진을 감싼다' }, musou: { name: '백리화공진', cry: '불꽃의 흐름으로 전장을 지배한다' } },
+  lvbu: { special: { name: '방천무쌍', cry: '사람 중에는 여포다' }, musou: { name: '적토천하참', cry: '천하무쌍의 방천화극' } },
+  diaochan: { special: { name: '연환화선무', cry: '꽃바람이 고리처럼 이어진다' }, musou: { name: '월하폐월진', cry: '달빛 아래 부채가 춤춘다' } },
+  dongzhuo: { special: { name: '폭군대도', cry: '이 상국을 막을 자는 없다' }, musou: { name: '장안압살진', cry: '장안은 내 손 안에 있다' } },
   zhaoyun: { special: { name: '용담은룡파', cry: '한 줄기 은빛 돌파' }, musou: { name: '칠진칠출격', cry: '용담의 창은 멈추지 않는다' } },
   zhouyu: { special: { name: '적벽화신계', cry: '적벽을 물들인 화공' }, musou: { name: '신화주유진', cry: '장강을 뒤덮는 불의 진' } },
   huanggai: { special: { name: '고육화공진', cry: '몸을 던져 전세를 바꾼다' }, musou: { name: '맹장화선충', cry: '결사의 화선 돌격' } },
@@ -460,6 +476,7 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
     husanniang: { rate: 1.06, gain: .57, lowpass: 6200, highpass: 120, wet: .08 },
     xiahoudun: { rate: .91, gain: .68, lowpass: 4400, wet: .09 }, zhangliao: { rate: .98, gain: .63, lowpass: 5200, wet: .08 }, xuchu: { rate: .86, gain: .74, lowpass: 3700, wet: .08 }, simayi: { rate: .96, gain: .60, lowpass: 5200, wet: .12 },
     sunquan: { rate: .99, gain: .61, lowpass: 5500, wet: .09 }, taishici: { rate: .99, gain: .64, lowpass: 5600, wet: .08 }, ganning: { rate: 1.05, gain: .62, lowpass: 6000, highpass: 105, wet: .07 }, luxun: { rate: 1.06, gain: .58, lowpass: 6400, highpass: 115, wet: .10 },
+    lvbu: { rate: .96, gain: .70, lowpass: 5000, wet: .11 }, diaochan: { rate: 1.08, gain: .56, lowpass: 6800, highpass: 140, wet: .11 }, dongzhuo: { rate: .84, gain: .74, lowpass: 3600, wet: .10 },
     nezha: { rate: 1.09, gain: .57, lowpass: 6900, highpass: 135, wet: .08 }, erlangshen: { rate: .94, gain: .65, lowpass: 4900, wet: .11 }, honghaier: { rate: 1.10, gain: .58, lowpass: 6500, highpass: 125, wet: .10 },
   };
   const voiceProfile = voiceProfiles[heroId] || { rate: .98, gain: .62, lowpass: 5100, wet: .09 };
@@ -1381,7 +1398,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   const mountKind = MOUNT_KINDS[heroId] || 'horse';
   const isCloudMount = mountKind === 'cloud', isFireWheelMount = mountKind === 'wheels', isBoarMount = mountKind === 'boar', isWaterMount = mountKind === 'waterBeast';
   const familyRanged = FAMILY_RANGED[heroId];
-  const rangedStyle = familyRanged ? familyRanged.kind : ['wukong', 'tieshangongzhu', 'zhugeliang', 'luxun'].includes(heroId) ? 'fan'
+  const rangedStyle = familyRanged ? familyRanged.kind : ['wukong', 'tieshangongzhu', 'zhugeliang', 'luxun', 'diaochan'].includes(heroId) ? 'fan'
     : ['sunshangxiang', 'nezha'].includes(heroId) ? 'ring'
     : heroId === 'husanniang' ? 'lasso'
     : heroId === 'honghaier' ? 'fire'
@@ -1470,13 +1487,13 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   const weaponName = workWeapon(heroId)?.name || signature(heroId).name || '전용 무기';
   const hudRoot = createHudRoot(), playerHud = createPlayerHud(hudRoot, heroName, { level: growth.level, weapon: `${weaponName} ${weaponEnhanceText(growth)}` }), bossHud = createEnemyHud(hudRoot, bossLabel);
   if (extra) {
-    const fanName = ['zhugeliang','luxun'].includes(heroId) ? '우선' : '파초선';
+    const fanName = heroId === 'diaochan' ? '비단 부채' : ['zhugeliang','luxun'].includes(heroId) ? '우선' : '파초선';
     const rangedControl = familyRanged?.label || { fan: fanName + ' 공격', ring: heroId === 'nezha' ? '건곤권 투척' : '쌍환 투척', lasso: '홍금투삭', fire: '삼매진화탄', bow: heroId === 'erlangshen' ? '탄궁 발사' : '활쏘기' }[rangedStyle];
     const mountControl = supportsMount ? '<span>F ' + (isFireWheelMount ? '풍화륜' : '승마') + '</span>' : '';
     hudRoot.querySelector('.controls').innerHTML = '<span>WASD 이동 · W 두 번 점프</span><span>J 공격 · 꾹 강공</span><span>K ' + rangedControl + '</span>' + mountControl + '<span>L 필살기</span><span>I 돌진기</span>';
   }
   playerHud.setDashSkill(dashTechnique);
-  playerHud.setCapabilities(supportsRanged, supportsMount, familyRanged?.label || { fan: ['zhugeliang','luxun'].includes(heroId) ? '우선' : '파초선', ring: heroId === 'nezha' ? '건곤권' : '쌍환', lasso: '투삭', fire: '화염탄', bow: heroId === 'erlangshen' ? '탄궁' : '활' }[rangedStyle], isFireWheelMount ? '풍화륜' : '승마');
+  playerHud.setCapabilities(supportsRanged, supportsMount, familyRanged?.label || { fan: heroId === 'diaochan' ? '비단 부채' : ['zhugeliang','luxun'].includes(heroId) ? '우선' : '파초선', ring: heroId === 'nezha' ? '건곤권' : '쌍환', lasso: '투삭', fire: '화염탄', bow: heroId === 'erlangshen' ? '탄궁' : '활' }[rangedStyle], isFireWheelMount ? '풍화륜' : '승마');
   bossHud.show(false); bossHud.setWeapon(bossProfile.weapon); bossHud.setPhase('결전 대기'); playerHud.setObjective(stageInfo?.mission || '호로관의 적군을 돌파하라'); playerHud.setMount(false, mountLabel, supportsMount);
   const input = createInput(canvas), audio = makeAudio(heroId, stageKey), worldWidth = 7800;
   const touchCapable = (navigator.maxTouchPoints || 0) > 0 || !!globalThis.matchMedia?.('(any-pointer: coarse)')?.matches;
@@ -1522,7 +1539,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   //  - dual(유비 쌍고검): 짧고 빠른 연속 베기 — 사거리 짧고 회전 빠름
   //  - staff(손오공 여의봉): 빠른 연타 — 사거리 중간, 회전 가장 빠름
   //  - rake(저팔계 구치정파): 세 갈래 갈퀴질 — 느리지만 전방을 긁고 지면을 뒤흔듦
-  const historicalWeaponStyles = { liubei: 'dual', guanyu: 'guandao', zhangfei: 'spear', caocao: 'dual', zhaoyun: 'spear', zhouyu: 'dual', huanggai: 'monkstaff', zhugeliang: 'fan', machao: 'spear', huangzhong: 'guandao', xiahoudun: 'halberd', zhangliao: 'halberd', xuchu: 'maul', simayi: 'sword', sunquan: 'sword', taishici: 'spear', ganning: 'dual', luxun: 'fan' };
+  const historicalWeaponStyles = { liubei: 'dual', guanyu: 'guandao', zhangfei: 'spear', caocao: 'dual', zhaoyun: 'spear', zhouyu: 'dual', huanggai: 'monkstaff', zhugeliang: 'fan', machao: 'spear', huangzhong: 'guandao', xiahoudun: 'halberd', zhangliao: 'halberd', xuchu: 'maul', simayi: 'sword', sunquan: 'sword', taishici: 'spear', ganning: 'dual', luxun: 'fan', lvbu: 'halberd', diaochan: 'fan', dongzhuo: 'maul' };
   const weaponStyle = workWeapon(heroId)?.style || historicalWeaponStyles[heroId] || 'guandao';
   const lightAttackMs = weaponStyle === 'staff' ? 235 : weaponStyle === 'dual' || weaponStyle === 'sword' ? 265 : weaponStyle === 'fan' ? 315 : weaponStyle === 'spear' ? 320 : weaponStyle === 'halberd' ? 350 : weaponStyle === 'maul' ? 405 : weaponStyle === 'rake' ? 395 : weaponStyle === 'crescent' ? 340 : weaponStyle === 'monkstaff' ? 375 : 360;
   const player = { x: 330, lane: 0, y: 0, vy: 0, facing: 1, hp: maxHp, maxHp, rage: growth.startingRage, combo: 0, comboUntil: 0, comboStep: 0, attackStep: 1, ko: 0, action: 'idle', actionUntil: 0, hitDone: false, invulnerableUntil: 0, mounted: false, grab: null, grabHits: 0, weaponBoost: 0, actionStarted: 0, actionDuration: 0, afterimageAt: 0, footstepAt: 0, dashReady: 0, whirlwindReady: 0, counterReady: 0, counterUntil: 0 };
@@ -1830,7 +1847,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       return;
     }
     if (rangedStyle === 'fan') {
-      const ironFan = heroId === 'tieshangongzhu', fanColor = ironFan ? '#ff9a55' : heroId === 'wukong' ? '#8fe6a2' : heroId === 'luxun' ? '#a8d978' : '#9edfff';
+      const ironFan = heroId === 'tieshangongzhu', fanColor = ironFan ? '#ff9a55' : heroId === 'wukong' ? '#8fe6a2' : heroId === 'luxun' ? '#a8d978' : heroId === 'diaochan' ? '#ffb3d1' : '#9edfff';
       const speed = ironFan ? 1100 : 1040, launchHeight = anchor.height * .92, distance = target ? Math.max(180, Math.abs(target.x - player.x)) : 760, travel = distance / speed;
       const targetLane = target?.lane ?? player.lane, targetHeight = target ? enemyDrawH * .56 : launchHeight * .80;
       pushArrow({ kind: 'fan', x: player.x + player.facing * anchor.launch, lane: player.lane, height: launchHeight, vx: player.facing * speed, laneV: (targetLane - player.lane) / travel, vz: (targetHeight - launchHeight + 220 * travel * travel) / travel, life: 1.18, max: 1.18, hit: false, trailAt: now, phase: Math.random() * Math.PI * 2, color: fanColor, damage: ironFan ? 64 : 58, pierce: growth.pierce });
@@ -1851,7 +1868,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       return;
     }
     // 황충은 활 자체가 정체성이다 — 다른 장수보다 빠르고 강하고 한 명을 더 뚫는다.
-    const masterArcher = ['huangzhong','taishici'].includes(heroId);
+    const masterArcher = ['huangzhong','taishici','lvbu'].includes(heroId);
     const speed = masterArcher ? 1400 : 1180, launchHeight = anchor.height, distance = target ? Math.max(170, Math.abs(target.x - player.x)) : 820, travel = distance / speed;
     const targetLane = target?.lane ?? player.lane, targetHeight = target ? enemyDrawH * .56 : launchHeight * .82;
     pushArrow({ x: player.x + player.facing * anchor.launch, lane: player.lane, height: launchHeight, vx: player.facing * speed, laneV: (targetLane - player.lane) / travel, vz: (targetHeight - launchHeight + (masterArcher ? 190 : 260) * travel * travel) / travel, life: 1.35, max: 1.35, hit: false, trailAt: now, phase: Math.random() * Math.PI * 2, color: combatProfile.arrowColor, damage: masterArcher ? 62 : undefined, pierce: growth.pierce + (masterArcher ? 1 : 0) });

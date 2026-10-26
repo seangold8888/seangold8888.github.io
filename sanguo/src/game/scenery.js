@@ -232,6 +232,18 @@ export const SCENES = {
     ],
     ground: ['#6f6350', '#3a3328'],
   },
+  // 장안 연환계 — 밤의 궁궐: 보랏빛 하늘, 성벽, 누각, 붉은 깃발
+  lianhuan: {
+    sky: ['#140f1f', '#3b2a4a', '#c98f6b'],
+    haze: 'rgba(214,140,160,.18)',
+    layers: [
+      { kind: 'ridge', depth: .05, color: '#120e18', height: .34, rough: .45 },
+      { kind: 'wall', depth: .20, color: '#22192a', accent: '#a0704a' },
+      { kind: 'pagoda', depth: .38, color: '#1c1424', accent: '#d9a25c' },
+      { kind: 'banners', depth: .60, color: '#8a3a4a' },
+    ],
+    ground: ['#6b4a3a', '#3e2a22'],
+  },
   // 동관 — 위수의 나루: 누런 흙먼지, 강물, 갈대, 관문 성벽
   dongguan: {
     sky: ['#241d18', '#6b563c', '#e2c58f'],

@@ -4,7 +4,7 @@ export const MAX_HERO_LEVEL = 50;
 export const MAX_WEAPON_LEVEL = 20;
 
 const STAGE_ORDER = [
-  'yellow', 'hulao', 'guandu', 'qianli', 'changban', 'redcliff', 'dongguan', 'dingjunshan', 'yiling', 'chushi',
+  'yellow', 'hulao', 'lianhuan', 'guandu', 'qianli', 'changban', 'redcliff', 'dongguan', 'dingjunshan', 'yiling', 'chushi',
   'flamemountain', 'heavenpalace', 'liangshan', 'snowshrine',
   'salsu', 'gwiju', 'haengju', 'myeongnyang',
 ];
