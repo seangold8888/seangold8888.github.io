@@ -3300,6 +3300,101 @@
         },
       ],
     },
+    // ───────────────────────── 31화 ─────────────────────────
+    {
+      id: 31,
+      title: "배스틴라빈스 하자!",
+      summary: "31화니까 배스킨라빈스 31 게임! 아니, 태오식으로는 “배스틴라빈스”. 31을 외치고 신난 태오, 라스베가스 게임도 하자, 3·6·9에서는 “박수 한 번만 치고 싶어!”",
+      lesson: "규칙은 천천히 배워도 괜찮아요. 같이 노는 시간이 제일 큰 상이에요.",
+      talk: "우리 가족이 같이 하는 숫자 놀이·말놀이는 뭐예요? 태오처럼 규칙을 바꿔서 해 볼까요?",
+      cover: 3,
+      panels: [
+        {
+          h: 400, bg: "living-night",
+          chars: [C("taeo", 110, "happy", "cheer", { o: "pajama" }), C("jaei", 305, "smile", "stand")],
+          n: "저녁, 거실. 태오의 놀이 시간.",
+          b: [B("배스틴라빈스 하자!", 120, 120, "b", { k: "shout", w: 170 }), B("배스킨라빈스야.", 300, 150, "b", { w: 160 })],
+        },
+        {
+          h: 320, bg: "burst:ffd1e1",
+          chars: [bust("taeo", 200, 205, 1.45, "angry", "point", { o: "pajama" })],
+          b: [B("아니야! 배스틴라빈스야!", 200, 44, "", { k: "shout", w: 240 })],
+        },
+        {
+          h: 400, bg: "living-night",
+          chars: [C("appa", 120, "smile", "point", { o: "work" }), C("taeo", 305, "surprised", "stand", { o: "pajama" })],
+          b: [B("숫자를 하나에서 세 개까지 말하고, 31을 말하면 지는 거야.", 140, 80, "b", { w: 220 }), B("알아! 알아!", 305, 190, "b", { w: 110 })],
+        },
+        {
+          h: 400, bg: "living-night",
+          chars: [C("appa", 70, "smile", "stand", { o: "work", s: 0.85 }), C("jaei", 200, "smile", "stand", { s: 0.85 }), C("taeo", 330, "determined", "fist", { o: "pajama", s: 0.85 })],
+          b: [B("하나, 둘.", 70, 110, "b", { w: 90 }), B("셋.", 200, 140, "b", { w: 70 }), B("넷, 다섯…", 330, 110, "b", { w: 100 })],
+        },
+        {
+          h: 340, bg: "burst:ffe27a",
+          chars: [bust("taeo", 200, 205, 1.5, "laugh", "up", { o: "pajama" })],
+          b: [B("서른하나!! 내가 31 말했다!", 200, 44, "", { k: "shout", w: 260 })],
+          sfx: [FX("31!", 70, 270, { rot: -10, c: "#e0443e", size: 1.4 })],
+        },
+        {
+          h: 380, bg: "living-night",
+          chars: [C("jaei", 110, "blank", "point"), C("taeo", 305, "proud", "hip", { o: "pajama" })],
+          b: [B("태오야… 31 말하면 지는 거야.", 130, 100, "b", { w: 180 }), B("……", 305, 160, "b", { w: 80 })],
+        },
+        {
+          h: 340, bg: "burst:ffd1e1",
+          chars: [bust("taeo", 200, 205, 1.5, "angry", "fist", { o: "pajama" })],
+          b: [B("그럼 다시! 이번 건 연습이야!", 200, 44, "", { k: "shout", w: 260 })],
+        },
+        {
+          h: 400, bg: "living-night",
+          chars: [C("eomma", 110, "smile", "hands"), C("taeo", 300, "determined", "think", { o: "pajama" })],
+          n: "두 번째 판. 엄마가 옆에서 몰래 숫자를 알려 준다.",
+          b: [B("(스물여덟, 스물아홉…)", 120, 130, "b", { k: "whisper", w: 160 }), B("스물여덟, 스물아홉!", 300, 170, "b", { w: 150 })],
+        },
+        {
+          h: 340, bg: "burst:c9dcff",
+          chars: [bust("appa", 200, 205, 1.4, "cry", "cover", { o: "work" })],
+          b: [B("…서른. 서른하나. 아빠가 졌다!", 200, 44, "", { w: 260 })],
+          sfx: [FX("털썩", 330, 280, { rot: 8, c: "#3b6fd6" })],
+        },
+        {
+          h: 340, bg: "burst:ffe27a",
+          chars: [bust("taeo", 200, 205, 1.5, "laugh", "cheer", { o: "pajama" })],
+          b: [B("아빠 졌다! 타노스 졌다! 라스베가스 게임 하자!", 200, 44, "", { k: "shout", w: 280 })],
+        },
+        {
+          h: 380, bg: "living-night",
+          chars: [C("eomma", 110, "smile", "stand"), C("taeo", 305, "happy", "hands", { o: "pajama" })],
+          b: [B("라스베가스는 내일 하자. 이제 잘 시간.", 130, 90, "b", { w: 180 }), B("그럼 3·6·9 딱 한 번만!", 305, 160, "b", { w: 150 })],
+        },
+        {
+          h: 380, bg: "living-night",
+          chars: [C("jaei", 110, "smile", "stand"), C("taeo", 305, "laugh", "hands", { o: "pajama" })],
+          b: [B("하나!", 110, 110, "b", { w: 80 }), B("박수 한 번만 치고 싶어! 짝!", 290, 120, "b", { k: "shout", w: 170 })],
+          sfx: [FX("짝!", 330, 330, { rot: 8, c: "#e0443e", size: 1.2 })],
+        },
+        {
+          h: 340, bg: "living-night",
+          chars: [bust("jaei", 120, 205, 1.15, "blank", "stand"), bust("taeo", 290, 205, 1.15, "laugh", "hands", { o: "pajama" })],
+          b: [B("1은 박수 아니야!", 120, 44, "b", { w: 140 }), B("한 번만! 짝! 한 번만! 짝!", 290, 56, "b", { w: 150 })],
+          sfx: [FX("짝!", 200, 300, { rot: -8, c: "#e0443e" })],
+        },
+        {
+          h: 360, bg: "bedroom-night",
+          chars: [C("taeo", 200, "sleepy", "hands", { o: "pajama" })],
+          fp: [["note", 90, 120, {}], ["note", 320, 100, { s: 0.8 }]],
+          b: [B("…짝… 한 번만…", 200, 80, "b", { k: "whisper", w: 150 })],
+          sfx: [FX("Z", 320, 180, { rot: 10, c: "#3b6fd6" })],
+        },
+        {
+          h: 200, bg: "sparkle:fff0d6",
+          fp: [["heart", 60, 140, { s: 0.8 }], ["heart", 345, 80, {}]],
+          n: "오늘 밤 태오의 “한 번만” 박수는,",
+          n2: "꼭 서른한 번이었다.",
+        },
+      ],
+    },
   ];
 
   root.WebtoonData = { CHARACTERS, EPISODES };
