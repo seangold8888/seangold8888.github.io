@@ -21,6 +21,10 @@ export const HERO_RENDER_SCALES = Object.freeze({
   taishici: .93,
   ganning: .90,
   luxun: .88,
+  // 여포는 깃털 투구를 빼고도 가장 큰 장수로 보이게, 초선은 조금 작게.
+  lvbu: 1.15,
+  dongzhuo: .97,
+  diaochan: .92,
   nezha: .84,
   erlangshen: .80,
   honghaier: .83,

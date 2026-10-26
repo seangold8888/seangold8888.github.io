@@ -4,7 +4,7 @@ const source=fs.readFileSync(path.join(__dirname,'../src/game/sideScroller.js'),
 const start=source.indexOf('const PAINTED_FRAME_LAYOUTS = '),end=source.indexOf('function drawAtlasFrame',start);
 const layouts=vm.runInNewContext(source.slice(start,end)+';PAINTED_FRAME_LAYOUTS;');
 const genericFrames=[[0,0,640,640],[640,0,640,640],[0,640,640,640],[640,640,640,640]];
-const representativeArt='xiahoudun-painted-sheet-v1 xiahoudun-bow-painted-sheet-v1 zhangliao-painted-sheet-v1 zhangliao-bow-painted-sheet-v1 xuchu-painted-sheet-v1 xuchu-bow-painted-sheet-v1 simayi-painted-sheet-v1 simayi-bow-painted-sheet-v1 sunquan-painted-sheet-v1 sunquan-bow-painted-sheet-v1 taishici-painted-sheet-v1 taishici-bow-painted-sheet-v1 ganning-painted-sheet-v1 ganning-bow-painted-sheet-v1 luxun-painted-sheet-v1 zhouyu-bow-painted-sheet-v1 huanggai-bow-painted-sheet-v1'.split(' ').map(name=>name+'.png');
+const representativeArt='lvbu-painted-sheet-v1 lvbu-bow-painted-sheet-v1 diaochan-painted-sheet-v1 dongzhuo-painted-sheet-v1 xiahoudun-painted-sheet-v1 xiahoudun-bow-painted-sheet-v1 zhangliao-painted-sheet-v1 zhangliao-bow-painted-sheet-v1 xuchu-painted-sheet-v1 xuchu-bow-painted-sheet-v1 simayi-painted-sheet-v1 simayi-bow-painted-sheet-v1 sunquan-painted-sheet-v1 sunquan-bow-painted-sheet-v1 taishici-painted-sheet-v1 taishici-bow-painted-sheet-v1 ganning-painted-sheet-v1 ganning-bow-painted-sheet-v1 luxun-painted-sheet-v1 zhouyu-bow-painted-sheet-v1 huanggai-bow-painted-sheet-v1'.split(' ').map(name=>name+'.png');
 for(const name of representativeArt)layouts[name]=genericFrames;
 const genericEdgeBudget=Object.fromEntries(representativeArt.map(name=>[name,name==='xuchu-painted-sheet-v1.png'?210:60]));
 // X1 atlases use their actual dimensions (Ao Guang is not square).

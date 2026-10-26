@@ -6,9 +6,9 @@ const path = require('node:path');
 const cries = () => import('../src/game/battleCries.js');
 const skills = () => import('../src/game/dashSkills.js');
 
-test('all 38 heroes have explicit profiles; family heroes have no general-voice fallback', async () => {
+test('all 41 heroes have explicit profiles; family heroes have no general-voice fallback', async () => {
   const [{ BATTLE_CRY_PACKS, BATTLE_CRY_PROFILES }, { DASH_SKILLS }] = await Promise.all([cries(), skills()]);
-  assert.equal(Object.keys(BATTLE_CRY_PROFILES).length, 38);
+  assert.equal(Object.keys(BATTLE_CRY_PROFILES).length, 41);
   assert.equal(BATTLE_CRY_PACKS.silent.length, 0);
   for (const id of ['taeo', 'jaei', 'yunchan', 'yungeon']) assert.equal(BATTLE_CRY_PROFILES[id].pack, 'silent');
   assert.deepEqual(Object.keys(BATTLE_CRY_PROFILES).sort(), Object.keys(DASH_SKILLS).sort());
@@ -22,7 +22,7 @@ test('all 38 heroes have explicit profiles; family heroes have no general-voice 
   }
   assert.deepEqual(
     Object.entries(BATTLE_CRY_PROFILES).filter(([, profile]) => profile.pack === 'female').map(([id]) => id).sort(),
-    ['husanniang', 'sunshangxiang', 'tieshangongzhu'],
+    ['diaochan', 'husanniang', 'sunshangxiang', 'tieshangongzhu'],
   );
 });
 

@@ -5,16 +5,17 @@ const path = require('node:path');
 
 const scales = () => import('../src/game/heroRenderScale.js');
 
-test('21 painted heroes include calibrated Korean generals and four shorter family adventurers', async () => {
+test('24 painted heroes include calibrated Korean generals and four shorter family adventurers', async () => {
   const { HERO_RENDER_SCALES, heroRenderScale } = await scales();
   assert.deepEqual(Object.keys(HERO_RENDER_SCALES).sort(), [
     'erlangshen', 'ganning', 'honghaier', 'huangzhong', 'luxun', 'machao', 'nezha',
+    'lvbu', 'diaochan', 'dongzhuo',
     'simayi', 'sunquan', 'taishici', 'xiahoudun', 'xuchu', 'zhangliao',
     'euljimundeok', 'ganggamchan', 'kwonyul', 'yisunsin', 'taeo', 'jaei', 'yunchan', 'yungeon',
   ].sort());
   for (const [heroId, scale] of Object.entries(HERO_RENDER_SCALES)) {
     const family = ['taeo', 'jaei', 'yunchan', 'yungeon'].includes(heroId);
-    assert.ok(family ? scale >= .65 && scale <= .78 : scale >= .80 && scale <= .96, `${heroId}: bounded scale`);
+    assert.ok(family ? scale >= .65 && scale <= .78 : scale >= .80 && scale <= (heroId === 'lvbu' ? 1.16 : .97), `${heroId}: bounded scale`);
   }
   // Atlas-visible heights differ, so compare the calibrated on-screen result,
   // not the raw multiplier by itself.

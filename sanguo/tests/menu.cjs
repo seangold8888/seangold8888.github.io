@@ -21,7 +21,7 @@ const {createServer}=require('../preview-server.cjs');
    assert.ok(layout.x>=0&&layout.right<=width+.5&&layout.bottom<=height+.5,JSON.stringify(layout));
    assert.ok(layout.scrollWidth<=layout.clientWidth+1,'horizontal overflow');
    if(width>=1000)assert.ok(layout.scrollHeight<=layout.clientHeight+1,'iPad initial menu must fit one screen');
-   assert.equal(await page.locator('[data-stage]').count(),11);
+   assert.equal(await page.locator('[data-stage]').count(),12);
    assert.equal(await page.locator('.cm-details').getAttribute('open'),null);
    await page.locator('[data-hero=zhangfei]').click();
    assert.equal(await page.locator('[data-hero=zhangfei]').getAttribute('aria-pressed'),'true');
@@ -52,11 +52,19 @@ const {createServer}=require('../preview-server.cjs');
    await page.locator('[data-stage=changban]').click();
    assert.ok(await page.locator('#menu-deploy').isEnabled());
    assert.equal(await page.locator('[data-hero=zhaoyun]').getAttribute('aria-pressed'),'true');
+   // 연환계 — 호로관 바로 다음 전장, 초선·여포 출전.
+   if(width<=680)await page.locator('.cm-stage-toggle').click();
+   await page.locator('[data-stage=lianhuan]').click();
+   assert.ok(await page.locator('#menu-deploy').isEnabled());
+   assert.deepEqual(await page.locator('#hero-grid [data-hero]').evaluateAll(els=>els.map(e=>e.dataset.hero)),['diaochan','lvbu']);
+   assert.equal(await page.locator('[data-hero=diaochan]').getAttribute('aria-pressed'),'true');
+   assert.match(await page.locator('.cm-stage-brief').innerText(),/동탁/);
+   await page.screenshot({path:path.join(output,label+'-lianhuan.png'),fullPage:true});
    if(width<=680)await page.locator('.cm-stage-toggle').click();
    await page.locator('[data-stage=trilands]').click();
    assert.equal(await page.locator('#hero-grid[data-roster=true]').count(),1);
    await page.locator('[data-faction=all]').click();
-   assert.equal(await page.locator('#hero-grid [data-hero]').count(),19);
+   assert.equal(await page.locator('#hero-grid [data-hero]').count(),22);
    await page.locator('[data-faction=wei]').click();
    assert.equal(await page.locator('#hero-grid [data-hero]').count(),5);
    for(const hero of ['caocao','xiahoudun','zhangliao','xuchu','simayi'])assert.equal(await page.locator('[data-hero='+hero+']').count(),1,hero);
@@ -65,6 +73,10 @@ const {createServer}=require('../preview-server.cjs');
    await page.locator('[data-faction=wu]').click();
    assert.equal(await page.locator('#hero-grid [data-hero]').count(),7);
    for(const hero of ['sunquan','zhouyu','huanggai','sunshangxiang','taishici','ganning','luxun'])assert.equal(await page.locator('[data-hero='+hero+']').count(),1,hero);
+   await page.locator('[data-faction=qun]').click();
+   assert.equal(await page.locator('#hero-grid [data-hero]').count(),3);
+   for(const hero of ['lvbu','diaochan','dongzhuo'])assert.equal(await page.locator('[data-hero='+hero+']:not(:disabled)').count(),1,hero);
+   await page.locator('[data-faction=wu]').click();
    await page.locator('[data-hero=taishici]').click();
    assert.equal(await page.locator('.cm-unavailable').count(),0);
    await page.locator('[data-hero=taishici] .cm-portrait').evaluate(async el=>{
@@ -91,6 +103,6 @@ const {createServer}=require('../preview-server.cjs');
    console.log(JSON.stringify({label,layout,passed:true}));
    await context.close();
   }
-  console.log('PASS: menu layout, faction-filtered 19 representative roster, selection, briefing/back, Ma Chao/Huang Zhong portraits and deployment. '+output);
+  console.log('PASS: menu layout, faction-filtered 22 representative roster, selection, briefing/back, Ma Chao/Huang Zhong portraits and deployment. '+output);
  }finally{await browser?.close();server.closeAllConnections();await new Promise(r=>server.close(r));}
 })().catch(e=>{console.error(e);process.exitCode=1;});

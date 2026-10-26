@@ -16,7 +16,7 @@ const instrumented = source.replace(marker, hook + '\n' + marker).replace('funct
 const cases = [
   ['machao', .96], ['huangzhong', .94], ['xiahoudun', .90], ['zhangliao', .92],
   ['xuchu', .92], ['simayi', .89], ['sunquan', .89], ['taishici', .93],
-  ['ganning', .90], ['luxun', .88], ['nezha', .84], ['erlangshen', .80], ['honghaier', .83],
+  ['ganning', .90], ['luxun', .88], ['lvbu', 1.15], ['diaochan', .92], ['dongzhuo', .97], ['nezha', .84], ['erlangshen', .80], ['honghaier', .83],
 ];
 
 (async () => {
