@@ -1,5 +1,6 @@
 import * as THREE from '../../kart3d/vendor/three.module.min.js';
 import {AURORA_VOLUME_GLSL} from './aurora-volume.js?v=rainbow-16';
+import {GLITTER_GLSL} from './glitter.js?v=workshop-17';
 export const FLAVORS=[
  {id:'soda',name:'소다',color:'#a2eaff',deep:'#3db8f6',glow:'#a8eeff'},
  {id:'berry',name:'딸기',color:'#ffa3c2',deep:'#f2508a',glow:'#ffc6da'},
@@ -11,6 +12,7 @@ export const FLAVORS=[
 export function jellyMaterial(){
  const expression={eye:{value:new THREE.Vector4(1,0,0,0)},squeeze:{value:0},look:{value:new THREE.Vector2()},rainbow:{value:0},filmPhase:{value:1.8},filmRange:{value:new THREE.Vector2(280,680)},time:{value:0},glow:{value:new THREE.Color(FLAVORS[0].glow)},
   optics:{value:1},auroraSamples:{value:8},rippleStrength:{value:1},ripples:{value:Array.from({length:4},()=>new THREE.Vector4(0,0,1,-10))},ripplePower:{value:new THREE.Vector4()},deform:{value:0},
+  glitter:{value:0},glitterColor:{value:new THREE.Color('#fff6d8')},
   localCamera:{value:new THREE.Vector3()},center:{value:new THREE.Vector3()},radii:{value:new THREE.Vector3(1,1,1)}};
  const material=new THREE.MeshPhysicalMaterial({color:FLAVORS[0].color,attenuationColor:FLAVORS[0].deep,
  transmission:1,thickness:1.1,ior:1.36,dispersion:.35,roughness:.14,metalness:0,attenuationDistance:2.4,
@@ -18,7 +20,7 @@ export function jellyMaterial(){
  material.onBeforeCompile=sh=>{
   Object.assign(sh.uniforms,{uEye:expression.eye,uSqueeze:expression.squeeze,uLook:expression.look,uRainbow:expression.rainbow,uFilmPhase:expression.filmPhase,uFilmRange:expression.filmRange,uTime:expression.time,uGlow:expression.glow,
    uOptics:expression.optics,uAuroraSamples:expression.auroraSamples,uLocalCamera:expression.localCamera,uBodyCenter:expression.center,uBodyRadii:expression.radii,
-   uRipples:expression.ripples,uRipplePower:expression.ripplePower,uRippleStrength:expression.rippleStrength,uDeform:expression.deform});
+   uRipples:expression.ripples,uRipplePower:expression.ripplePower,uRippleStrength:expression.rippleStrength,uDeform:expression.deform,uGlitter:expression.glitter,uGlitterColor:expression.glitterColor});
   sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute vec3 jellyRest;varying vec3 vRest,vSkinPoint,vSkinNormal;').replace('#include <begin_vertex>','#include <begin_vertex>\nvRest=jellyRest;vSkinPoint=position;vSkinNormal=normal;');
   sh.fragmentShader=sh.fragmentShader.replace('#include <common>',`#include <common>
     varying vec3 vRest,vSkinPoint,vSkinNormal;uniform vec4 uEye;uniform vec2 uLook,uFilmRange;uniform float uRainbow,uFilmPhase,uTime,uSqueeze,uOptics;uniform vec3 uGlow,uLocalCamera,uBodyCenter,uBodyRadii;
@@ -51,6 +53,7 @@ export function jellyMaterial(){
       return clamp((-b+sqrt(disc))/(2.0*a),.12,3.5);
     }
     ${AURORA_VOLUME_GLSL}
+    ${GLITTER_GLSL}
   `).replace('#include <color_fragment>',`#include <color_fragment>
     vec3 jr=normalize(vRest);vec2 p=jr.xy/(.55+.45*max(0.0,jr.z));
     vec2 le=p-vec2(-.235,.05)-uLook,re=p-vec2(.235,.05)-uLook;
@@ -102,6 +105,7 @@ export function jellyMaterial(){
     float gelGlow=mix(.05+rim*.42+low*.3,.025+rim*.30+low*.20,uOptics);
     totalEmissiveRadiance+=uGlow*gelGlow*(1.0-faceMask)+vec3(.95)*eyeShine;
     totalEmissiveRadiance+=auroraVolume()*(1.0-faceMask);
+    totalEmissiveRadiance+=glitterField()*(1.0-faceMask);
     totalEmissiveRadiance+=vec3(.5,.055,.10)*cheeks*uEye.y*.14*(1.0-faceMask)*smoothstep(.2,.4,jr.z);
   `).replace('#include <transmission_fragment>',THREE.ShaderChunk.transmission_fragment
    .replace('material.transmission = transmission;','material.transmission = transmission * (1.0-faceMask);')

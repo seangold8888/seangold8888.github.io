@@ -18,12 +18,16 @@ export function createJelly(rings=18,segments=36) {
     rest[n]=unit[n]*1.16*1.06*wide;rest[n+1]=(-.7+(raw+.7)*h+.2*h*(1-h))*1.16+.812;
     rest[n+2]=unit[n+2]*1.16*.98*wide;
   }
+  // Growth scales the rest shape about the floor contact, so input, ground and walls stay in world units.
+  const baseRest=rest.slice();let size=1;
+  function setSize(value=1){const next=clamp(Number.isFinite(value)?value:1,.5,1.3);if(next===size)return size;size=next;for(let i=0;i<rest.length;i++)rest[i]=baseRest[i]*size;return size;}
   const sets=Array.from({length:N},()=>new Set());
   for(let i=0;i<indices.length;i+=3){const a=indices[i],b=indices[i+1],c=indices[i+2];sets[a].add(b).add(c);sets[b].add(a).add(c);sets[c].add(a).add(b);}
   const offsets=new Uint32Array(N+1);for(let i=0;i<N;i++)offsets[i+1]=offsets[i]+sets[i].size;
   const neighbours=new Uint16Array(offsets[N]);sets.forEach((s,i)=>neighbours.set([...s],offsets[i]));
   // Rest-shape mobility and graph degree do not change: keep them out of the 240 Hz loop.
-  const mobility=new Float64Array(N),inverseDegree=new Float64Array(N);
+  const mobility=new Float64Array(N),inverseDegree=new Float64Array(N),floorSpread=new Float64Array(N);
+  for(let i=0;i<N;i++)floorSpread[i]=.65/(Math.hypot(unit[i*3],unit[i*3+2])||1);
   for(let i=0;i<N;i++){const t=clamp(rest[i*3+1]/2.065,0,1);mobility[i]=.25+.75*t*t*(3-2*t);inverseDegree[i]=1/(offsets[i+1]-offsets[i]);}
   const disp=new Float32Array(unit.length),vel=new Float32Array(unit.length),deltaVelocity=new Float32Array(unit.length),position=rest.slice(),weights=new Float32Array(N);
   const body={x:0,y:0,z:0,vx:0,vy:0,vz:0},events=[],bounds={x:3.8,zMin:-1.8,zMax:2.0,yMax:4};
@@ -86,14 +90,15 @@ export function createJelly(rings=18,segments=36) {
       }
     }
     for(let i=0;i<N;i++){
-      const b=i*3;for(let k=0;k<3;k++){vel[b+k]+=deltaVelocity[b+k];disp[b+k]=clamp(disp[b+k]+vel[b+k]*h,-2.3,2.3);}
+      // Flush decayed motion to zero: float32 denormals make an idle jelly's steps far slower.
+      const b=i*3;for(let k=0;k<3;k++){let v=vel[b+k]+deltaVelocity[b+k];if(v>-1e-30&&v<1e-30)v=0;vel[b+k]=v;let d=clamp(disp[b+k]+v*h,-2.3,2.3);if(d>-1e-30&&d<1e-30)d=0;disp[b+k]=d;}
       if(held){
         const inward=disp[b]*unit[b]+disp[b+1]*unit[b+1]+disp[b+2]*unit[b+2];
         if(inward<-.3){const push=-.3-inward;disp[b]+=unit[b]*push;disp[b+1]+=unit[b+1]*push;disp[b+2]+=unit[b+2]*push;}
       }
-      const py=body.y+rest[b+1]*sy+disp[b+1]-ground;if(py<0){const radius=Math.hypot(unit[b],unit[b+2])||1;disp[b+1]-=py;vel[b+1]=Math.max(0,vel[b+1]);disp[b]+=unit[b]/radius*-py*.65;disp[b+2]+=unit[b+2]/radius*-py*.65;vel[b]*=.94;vel[b+2]*=.94;}
+      const py=body.y+rest[b+1]*sy+disp[b+1]-ground;if(py<0){const spread=floorSpread[i]*-py;disp[b+1]-=py;vel[b+1]=Math.max(0,vel[b+1]);disp[b]+=unit[b]*spread;disp[b+2]+=unit[b+2]*spread;vel[b]*=.94;vel[b+2]*=.94;}
       // Local pressure, not just centre-of-mass bounce: a wall makes jelly splat.
-      const wx=body.x+rest[b]*sx+disp[b],wz=body.z+rest[b+2]*sx+disp[b+2],edge=bounds.x+1.365;
+      const wx=body.x+rest[b]*sx+disp[b],wz=body.z+rest[b+2]*sx+disp[b+2],edge=bounds.x+1.365*size;
       if(wx>edge){vel[b]-=(wx-edge)*900*h;if(vel[b]>0)vel[b]*=.8;}
       else if(wx<-edge){vel[b]+=(-edge-wx)*900*h;if(vel[b]<0)vel[b]*=.8;}
       if(wz<-4.6){vel[b+2]+=(-4.6-wz)*900*h;if(vel[b+2]<0)vel[b+2]*=.8;}
@@ -101,5 +106,5 @@ export function createJelly(rings=18,segments=36) {
   }
   function write(){const sy=1+q,sx=1/Math.sqrt(sy);for(let i=0;i<N;i++){const b=i*3;position[b]=rest[b]*sx+disp[b];position[b+1]=Math.max(ground-body.y,rest[b+1]*sy+disp[b+1]);position[b+2]=rest[b+2]*sx+disp[b+2];}}
   function advance(dt){accumulator+=clamp(dt,0,.05);let n=0;while(accumulator+1e-10>=H&&n++<12){step(H);accumulator-=H;}write();}
-  return{unit,rest,indices,position,disp,body,bounds,events,advance,grab,move,release,poke,jump,reset,state,feel,setGround,get groundHeight(){return ground;},get squash(){return q;},stretch:v=>{target=clamp(v,-.45,.8);}};
+  return{unit,rest,indices,position,disp,body,bounds,events,advance,grab,move,release,poke,jump,reset,state,feel,setGround,setSize,get size(){return size;},get groundHeight(){return ground;},get squash(){return q;},stretch:v=>{target=clamp(v,-.45,.8);}};
 }

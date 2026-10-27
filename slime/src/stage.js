@@ -92,10 +92,10 @@ export function jellyStage(renderer,scene,camera){
  const drops=[];for(let i=0;i<24;i++){const m=new THREE.Mesh(dropGeometry,dropMaterial);m.visible=false;m.userData.life=0;scene.add(m);drops.push(m);}let cursor=0;
  function splash(body,force){for(let i=0;i<Math.min(8,Math.ceil(force));i++){const m=drops[cursor++%drops.length],a=Math.random()*Math.PI*2,r=1.2+Math.random()*.9;m.position.set(body.x+Math.cos(a)*r,.025,body.z+Math.sin(a)*r*.75);m.userData.life=4+Math.random()*3;m.userData.size=.045+Math.random()*.075;m.visible=true;}}
  const focusPoint=new THREE.Vector3();let lightField=null,lightEnabled=false;
- function update(body,squash,dt,color,rainbow=0){
-   frameId++;const spread=1/Math.sqrt(1+squash),height=body.y;
+ function update(body,squash,dt,color,rainbow=0,size=1){
+   frameId++;const spread=size/Math.sqrt(1+squash),height=body.y;
    if(lightField){floor.material.uniforms.uCausticTexel.value=1/lightField.state().size;floor.material.uniforms.uCausticStrength.value=lightEnabled?1.3+Math.min(.5,Math.abs(squash))*.6:0;}
-   shadows.forEach((m,i)=>{m.position.x=body.x+(i===0?-.15:i===1?.05:.1);m.position.z=body.z+(i===0?-.2:i===1?-.05:.35);m.scale.set(spread*(1+height*(i<2?.15:0)),spread,1);m.material.opacity=m.userData.opacity/(1+height*.8)*(i===2?1-.5*rainbow:1);});
+   shadows.forEach((m,i)=>{m.position.x=body.x+(i===0?-.15:i===1?.05:.1);m.position.z=body.z+(i===0?-.2:i===1?-.05:.35);m.scale.set(spread*(1+height*(i<2?.15:0)),spread,1);m.position.z=body.z+(i===0?-.2:i===1?-.05:.35)*size;m.material.opacity=m.userData.opacity/(1+height*.8)*(i===2?1-.5*rainbow:1);});
    shadows[2].material.color.copy(color);dropMaterial.attenuationColor.copy(color);floor.material.uniforms.uFocus.value=camera.position.distanceTo(focusPoint.set(body.x,body.y+.812,body.z));
    drops.forEach(m=>{if(!m.visible)return;m.userData.life-=dt;const size=m.userData.size*Math.min(1,m.userData.life);m.scale.set(size,size*.55,size);if(m.userData.life<=0)m.visible=false;});
  }

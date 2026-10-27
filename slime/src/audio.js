@@ -31,6 +31,13 @@ export function jellyAudio(){
   else if(name==='ball')voice(220,480,140,.22,.17,0,'sine',30);
   else if(name==='trampoline')voice(180,780,950,.32,.18,0,'triangle',25);
   else if(name==='star')[784,1047].forEach((f,i)=>voice(f,f,f,.35,.09,i*.10));
+  else if(name==='drip'){const f=[392,440,523.25,587.33,659.25][Math.max(0,Math.min(4,Math.round(force)))];voice(f*1.5,f*2.3,f,.18,.11,0,'sine',16);voice(f*2,f*2.4,f*1.2,.1,.04,.05,'triangle');}
+  else if(name==='mixin')voice(720*pitch,1350*pitch,900,.13,.08,0,'triangle',18);
+  else if(name==='make')[523.25,659.25,783.99,1046.5].forEach((f,i)=>voice(f,f*1.01,f,.32,.08,i*.08,'triangle',6));
+  else if(name==='secret')[659.25,783.99,987.77,1318.5,1567.98].forEach((f,i)=>voice(f,f,f,.55,.07,i*.07,'sine',4));
+  else if(name==='gulp'){voice(340*pitch,190,120,.2,.16,0,'sine',22);voice(520,950,720,.14,.06,.12,'triangle',10);}
+  else if(name==='grow')voice(300,620,760,.3,.09,0,'sine',14);
+  else if(name==='split'){voice(150,430,620,.5,.2,0,'sine',50);[783.99,987.77].forEach((f,i)=>voice(f,f*1.05,f,.26,.08,.32+i*.08,'triangle',6));}
   else if(name==='note'){const notes=[523.25,587.33,659.25,783.99,880],f=notes[Math.max(0,Math.min(4,Math.round(force)))];voice(f,f,f,.65,.16);voice(f*2,f*2,f*2,.38,.035,.004);}
  }
  function quiet(){if(ctx&&master)master.gain.setValueAtTime(0,ctx.currentTime);}

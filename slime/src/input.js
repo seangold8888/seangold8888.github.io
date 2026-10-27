@@ -1,5 +1,5 @@
 import * as THREE from '../../kart3d/vendor/three.module.min.js';
-import {clamp} from './physics.js?v=play-7';
+import {clamp} from './physics.js?v=workshop-17';
 export function jellyInput({canvas,solver,mesh,group,scene,camera,touch,bump,particles,jump,mood,happy,audio,time,petMode=()=>false,toyTap=()=>false,ripple=()=>{}}){
  const ray=new THREE.Raycaster(),ndc=new THREE.Vector2(),plane=new THREE.Plane(),floor=new THREE.Plane(new THREE.Vector3(0,1,0),0),point=new THREE.Vector3();
  const fingers=new Map(),trace=[];let grab=null,pinch=null,floorTap=null,hover=null,lastTap=null,petStroke=null,strokeLevel=0,wheelUntil=0,gestureBase=0,pointer={x:0,y:0,has:false};
@@ -41,7 +41,7 @@ export function jellyInput({canvas,solver,mesh,group,scene,camera,touch,bump,par
   if(!h){const p=ray.ray.intersectPlane(floor,new THREE.Vector3());if(p)floorTap={id:e.pointerId,x:e.clientX,y:e.clientY,start:now,p:{x:clamp(p.x,-solver.bounds.x,solver.bounds.x),z:clamp(p.z,solver.bounds.zMin,solver.bounds.zMax)}};return;}
   if(petMode()){petStroke={id:e.pointerId,x:e.clientX,y:e.clientY,poke:time()};happy(.7);return;}
   const vertex=nearest(h);plane.setFromNormalAndCoplanarPoint(camera.getWorldDirection(new THREE.Vector3()),h.point);
-  const p=physical(h.point);solver.grab(vertex,p);grab={id:e.pointerId,vertex,x:e.clientX,y:e.clientY,start:now,distance:0,samples:[{...p,t:now}]};happy(1);canvas.style.cursor='grabbing';
+  const p=physical(h.point);solver.grab(vertex,p);grab={id:e.pointerId,touch:e.pointerType==='touch',vertex,x:e.clientX,y:e.clientY,start:now,distance:0,samples:[{...p,t:now}]};happy(1);canvas.style.cursor='grabbing';
  });
  canvas.addEventListener('pointermove',e=>{
   if(fingers.has(e.pointerId))fingers.set(e.pointerId,{x:e.clientX,y:e.clientY});
@@ -87,6 +87,12 @@ export function jellyInput({canvas,solver,mesh,group,scene,camera,touch,bump,par
   if(grab){const last=grab.samples.at(-1);grab.samples.push({...last,t:performance.now()/1000});if(grab.samples.length>30)grab.samples.shift();}
   if(wheelUntil&&time()>wheelUntil){wheelUntil=0;solver.stretch(0);}
  }
+ // iPad edge gestures can swallow pointerup. When no finger is left on the glass,
+ // release every drag, pinch and stroke instead of leaving the jelly held.
+ let fingerCount=0,lostTimer=0;
+ function countFingers(e){fingerCount=e.touches?e.touches.length:0;clearTimeout(lostTimer);
+  if(!fingerCount)lostTimer=setTimeout(()=>{if(!fingerCount&&(fingers.size||pinch||petStroke||(grab&&grab.touch)))cancel();},80);}
+ for(const name of ['touchstart','touchend','touchcancel'])addEventListener(name,countFingers,{passive:true,capture:true});
  function cancel(){log('cancel',{});release(true);fingers.clear();pinch=floorTap=hover=lastTap=petStroke=null;wheelUntil=0;solver.stretch(0);pointer.has=false;canvas.style.cursor='';}
  return{cancel,update,hopTo,get pointer(){return pointer;},state:()=>({pointers:fingers.size,grab:!!grab,petting:!!petStroke,pinch:!!pinch||wheelUntil>0,strokeLevel}),trace:()=>trace.slice(),probe:(x,y)=>!!hit(x,y)};
 }
