@@ -68,6 +68,8 @@ const HERO_ART = {
   lvbu: { hero: 'art/side-scroller/lvbu-painted-sheet-v1.png', heroBow: 'art/side-scroller/lvbu-bow-painted-sheet-v1.png' },
   diaochan: { hero: 'art/side-scroller/diaochan-painted-sheet-v1.png' },
   dongzhuo: { hero: 'art/side-scroller/dongzhuo-painted-sheet-v1.png' },
+  menghuo: { hero: 'art/side-scroller/menghuo-painted-sheet-v1.png' },
+  zhurong: { hero: 'art/side-scroller/zhurong-painted-sheet-v1.png' },
   zhouyu: { hero: 'art/side-scroller/zhouyu-painted-sheet-v1.png', heroBow: 'art/side-scroller/zhouyu-bow-painted-sheet-v1.png' },
   huanggai: { hero: 'art/side-scroller/huanggai-painted-sheet-v1.png', heroBow: 'art/side-scroller/huanggai-bow-painted-sheet-v1.png' },
   zhugeliang: { hero: 'art/side-scroller/zhugeliang-painted-sheet-v1.png' },
@@ -138,6 +140,8 @@ const MOUNT_ART = {
   wusong: 'art/side-scroller/mount-wusong-painted-sheet-v1.png',
   linchong: 'art/side-scroller/mount-linchong-painted-sheet-v1.png',
   lizhishen: 'art/side-scroller/mount-lizhishen-painted-sheet-v1.png',
+  // 적토마는 원래 여포의 말이고, 연의에서 조조를 거쳐 관우에게 간다. 같은 말이라 같은 그림이다.
+  lvbu: 'art/side-scroller/red-hare-painted-sheet-v3.png',
 };
 
 for (const [id, profile] of Object.entries(MOUNT_PROFILES)) MOUNT_ART[id] = profile.horse;
@@ -161,6 +165,8 @@ zhangjiao: 'art/side-scroller/boss-zhangjiao-painted-sheet-v1.png',
   xiahoudun: 'art/side-scroller/boss-xiahoudun-painted-sheet-v1.png',
   luxun: 'art/side-scroller/boss-luxun-painted-sheet-v1.png',
   dongzhuo: 'art/side-scroller/dongzhuo-painted-sheet-v1.png',
+  sunquan: 'art/side-scroller/sunquan-painted-sheet-v1.png',
+  menghuo: 'art/side-scroller/menghuo-painted-sheet-v1.png',
   simayi: 'art/side-scroller/boss-simayi-painted-sheet-v1.png',
   wumawang: 'art/side-scroller/boss-wumawang-painted-sheet-v1.png',
   erlangshen: 'art/side-scroller/boss-erlangshen-painted-sheet-v1.png',
@@ -179,6 +185,7 @@ const MOUNT_LABELS = {
   wusong: '경양강 준마',
   linchong: '설원 은마',
   lizhishen: '금강마',
+  lvbu: '적토마',
 };
 
 // 화면·이동음·탑승음을 같은 분류에서 읽는다. 사오정의 수마가 말발굽
@@ -188,7 +195,7 @@ for (const [id, profile] of Object.entries(MOUNT_PROFILES)) MOUNT_LABELS[id] = p
 const MOUNT_KINDS = {
   liubei: 'horse', guanyu: 'horse', zhangfei: 'horse',
   wukong: 'cloud', nezha: 'wheels', bajie: 'boar', wujing: 'waterBeast',
-  wusong: 'horse', linchong: 'horse', lizhishen: 'horse',
+  wusong: 'horse', linchong: 'horse', lizhishen: 'horse', lvbu: 'horse',
 };
 
 // 소설별 적장 프로필. 이름만 바뀌고 같은 화웅 스프라이트를 쓰지 않도록
@@ -207,6 +214,12 @@ const BOSS_PROFILES = {
   luxun: { kind: 'fan', tint: { from: 0, to: 88, width: 54, sat: .86, val: .98 }, glow: '#b7ed8b', weapon: '우선', attackRange: 235, hitRange: 220, damage: 21, hpScale: .94 },
   // 동탁 — 무겁고 느린 대도. 체력이 두꺼워 연환계 결전이 길게 이어진다.
   dongzhuo: { kind: 'axe', tint: null, glow: '#e0a040', weapon: '상국 대도', attackRange: 230, hitRange: 214, damage: 24, actionDuration: 640, cooldownScale: 1.02, hpScale: 1.24 },
+  // 손권 — 합비에서 소요진 다리를 넘어 달아난 군주. 지휘검이라 빠르지만 얇다.
+  sunquan: { kind: 'sword', tint: null, glow: '#f2a85c', weapon: '강동 패검', attackRange: 215, hitRange: 204, damage: 22, actionDuration: 470, cooldownScale: .86, hpScale: .96 },
+  // 방덕 — 관을 메고 나와 끝까지 항복하지 않은 장수. 그림은 기본 적장 시트에 색만 입힌다.
+  pangde: { kind: 'axe', tint: { from: 0, to: 236, width: 56, sat: .78, val: .90 }, glow: '#9fb6e8', weapon: '대도', attackRange: 230, hitRange: 216, damage: 25, actionDuration: 560, cooldownScale: .96, hpScale: 1.10 },
+  // 맹획 — 칠종칠금. 한 번씩은 짧게 쓰러지지만 일곱 번 일어난다(bossCaptures).
+  menghuo: { kind: 'axe', tint: null, glow: '#e8b04a', weapon: '남만 철퇴', attackRange: 225, hitRange: 212, damage: 23, actionDuration: 600, cooldownScale: 1.0, hpScale: 1.0 },
   simayi: { kind: 'sword', tint: { from: 0, to: 232, width: 54, sat: .90, val: .92 }, glow: '#a6b8ff', weapon: '지휘검', attackRange: 205, hitRange: 198, damage: 22, hpScale: 1.00 },
   // 조인 — 「굳게 지키고 나가 싸우지 마라」. 수비형이라 체력이 두껍고 공격이 느리다.
   caoren: { kind: 'spear', tint: { from: 0, to: 218, width: 54, sat: .86, val: .94 }, glow: '#9fb6e8', weapon: '수성장창', attackRange: 240, hitRange: 228, damage: 23, actionDuration: 600, cooldownScale: 1.12, hpScale: 1.22 },
@@ -238,6 +251,11 @@ const ENEMY_ROSTERS = {
   yellow: { faction: '황건적', baseHue: 46, names: { soldier: '황건 병졸', archer: '황건 궁수', heavy: '황건 장사', captain: '장각 호위대' }, hues: { soldier: 46, archer: 34, heavy: 20, captain: 8 }, weapons: { soldier: 'staff', archer: 'bow', heavy: 'club', captain: 'halberd' }, accent: '#e8bc4c' },
   hulao: { faction: '동탁군', baseHue: 0, names: { soldier: '서량 보병', archer: '서량 궁수', heavy: '서량 중갑', captain: '화웅 선봉대' }, hues: { soldier: 0, archer: 352, heavy: 338, captain: 18 }, weapons: { soldier: 'blade', archer: 'bow', heavy: 'axe', captain: 'halberd' }, accent: '#cf4d3d' },
   lianhuan: { faction: '동탁군', baseHue: 0, names: { soldier: '장안 수비병', archer: '궁궐 궁수', heavy: '서량 중갑', captain: '동탁 친위대' }, hues: { soldier: 352, archer: 340, heavy: 330, captain: 12 }, weapons: { soldier: 'blade', archer: 'bow', heavy: 'axe', captain: 'halberd' }, accent: '#d1607a' },
+  hefei: { faction: '손권군', baseHue: 96, names: { soldier: '오군 보병', archer: '오군 궁수', heavy: '강동 중갑', captain: '손권 친위대' }, hues: { soldier: 96, archer: 82, heavy: 112, captain: 30 }, weapons: { soldier: 'spear', archer: 'bow', heavy: 'club', captain: 'halberd' }, accent: '#e8a85c' },
+  fancheng: { faction: '우금 칠군', baseHue: 226, names: { soldier: '번성 구원병', archer: '제방 궁수', heavy: '칠군 중갑', captain: '방덕 친위' }, hues: { soldier: 214, archer: 200, heavy: 236, captain: 252 }, weapons: { soldier: 'spear', archer: 'bow', heavy: 'axe', captain: 'halberd' }, accent: '#7fa8c8' },
+  // 코끼리 부대는 색만 바꾼 병사가 아니라 전용 그림이다(sheets). 그림이 없으면 중갑병으로 돌아간다.
+  nanman: { faction: '남만군', baseHue: 0, names: { soldier: '남만 전사', archer: '독화살 사냥꾼', heavy: '코끼리 부대', captain: '등갑병 대장' }, hues: { soldier: 22, archer: 34, heavy: 0, captain: 14 }, weapons: { soldier: 'spear', archer: 'bow', heavy: 'spear', captain: 'axe' }, accent: '#e0a050', sheets: { heavy: 'art/side-scroller/enemy-nanman-elephant-painted-sheet-v1.png' } },
+  wuzhangyuan: { faction: '위군', baseHue: 226, names: { soldier: '위수 수비병', archer: '위군 궁수', heavy: '철갑 위군', captain: '사마의 친위' }, hues: { soldier: 230, archer: 216, heavy: 248, captain: 270 }, weapons: { soldier: 'blade', archer: 'bow', heavy: 'axe', captain: 'halberd' }, accent: '#8f9bd8' },
   guandu: { faction: '원소군', baseHue: 205, names: { soldier: '원소군 보병', archer: '발해 궁수', heavy: '오소 중장', captain: '순우경 친위' }, hues: { soldier: 205, archer: 190, heavy: 224, captain: 250 }, weapons: { soldier: 'blade', archer: 'bow', heavy: 'club', captain: 'halberd' }, accent: '#9db7dc' },
   qianli: { faction: '위군 추격대', baseHue: 226, names: { soldier: '위군 추격병', archer: '하후돈 궁수', heavy: '철갑 추격대', captain: '하후돈 친위' }, hues: { soldier: 226, archer: 212, heavy: 244, captain: 265 }, weapons: { soldier: 'blade', archer: 'bow', heavy: 'axe', captain: 'halberd' }, accent: '#7d9ce0' },
   changban: { faction: '호표기', baseHue: 226, names: { soldier: '호표기 기병', archer: '위군 궁노', heavy: '호표기 중기병', captain: '조순 친위' }, hues: { soldier: 226, archer: 242, heavy: 260, captain: 278 }, weapons: { soldier: 'spear', archer: 'bow', heavy: 'spear', captain: 'halberd' }, accent: '#6d8dc6' },
@@ -289,6 +307,10 @@ const COMBAT_PROFILES = {
   diaochan: { attackTheme: 'storm', specialTheme: 'storm', whirlwindTheme: 'cloud', musouTheme: 'storm', arrowColor: '#ffd0e2', hitColor: '#ff9fc6', impactStyle: 'cloud', audioStyle: 'fan', kinds: { 1: 'sweep', 2: 'reverse', 3: 'spin', heavy: 'wide', special: 'spin' } },
   // 동탁 — 대도로 내려찍는 느린 중갑.
   dongzhuo: { attackTheme: 'earth', specialTheme: 'earth', whirlwindTheme: 'earth', musouTheme: 'inferno', arrowColor: '#e8c27a', hitColor: '#e0a040', impactStyle: 'burst', audioStyle: 'monkstaff', kinds: { 1: 'overhead', 2: 'sweep', 3: 'wide', heavy: 'overhead', special: 'overhead' } },
+  // 맹획 — 남만 철퇴로 내려찍고 휩쓴다.
+  menghuo: { attackTheme: 'earth', specialTheme: 'earth', whirlwindTheme: 'storm', musouTheme: 'earth', arrowColor: '#f0c070', hitColor: '#e8b04a', impactStyle: 'burst', audioStyle: 'monkstaff', kinds: { 1: 'overhead', 2: 'sweep', 3: 'wide', heavy: 'overhead', special: 'wide' } },
+  // 축융부인 — 불꽃 장표로 찌르고 비도를 던진다.
+  zhurong: { attackTheme: 'inferno', specialTheme: 'inferno', whirlwindTheme: 'inferno', musouTheme: 'inferno', arrowColor: '#ffb062', hitColor: '#ff7a3a', impactStyle: 'crescent', audioStyle: 'guandao', kinds: { 1: 'thrust', 2: 'sweep', 3: 'thrust', heavy: 'thrust', special: 'spin' } },
   zhouyu: { attackTheme: 'flame', specialTheme: 'inferno', whirlwindTheme: 'storm', musouTheme: 'solar', arrowColor: '#ff9d72', hitColor: '#ff7456', impactStyle: 'ribbon', audioStyle: 'dual', kinds: { 1: 'sweep', 2: 'reverse', 3: 'spin', special: 'wide', mountedThrust: 'reverse' } },
   huanggai: { attackTheme: 'earth', specialTheme: 'flame', whirlwindTheme: 'earth', musouTheme: 'inferno', arrowColor: '#ffc271', hitColor: '#ef9d46', impactStyle: 'burst', audioStyle: 'monkstaff', kinds: { 1: 'overhead', 2: 'wide', 3: 'spin', special: 'overhead', mountedThrust: 'wide' } },
   zhugeliang: { attackTheme: 'storm', specialTheme: 'lightning', whirlwindTheme: 'cloud', musouTheme: 'thunder', arrowColor: '#e2eeff', hitColor: '#9edfff', impactStyle: 'cloud', audioStyle: 'fan', kinds: { 1: 'sweep', 2: 'wide', 3: 'spin', special: 'wide', mountedThrust: 'reverse' } },
@@ -329,6 +351,8 @@ const SPECIAL_CALLOUTS = {
   lvbu: { special: { name: '방천무쌍', cry: '사람 중에는 여포다' }, musou: { name: '적토천하참', cry: '천하무쌍의 방천화극' } },
   diaochan: { special: { name: '연환화선무', cry: '꽃바람이 고리처럼 이어진다' }, musou: { name: '월하폐월진', cry: '달빛 아래 부채가 춤춘다' } },
   dongzhuo: { special: { name: '폭군대도', cry: '이 상국을 막을 자는 없다' }, musou: { name: '장안압살진', cry: '장안은 내 손 안에 있다' } },
+  menghuo: { special: { name: '남만왕철퇴', cry: '이번엔 진짜로 이긴다' }, musou: { name: '칠종불굴진', cry: '몇 번이라도 다시 일어난다' } },
+  zhurong: { special: { name: '화신비도', cry: '불의 신의 칼날을 받아라' }, musou: { name: '축융화염진', cry: '남쪽 하늘이 불타오른다' } },
   zhaoyun: { special: { name: '용담은룡파', cry: '한 줄기 은빛 돌파' }, musou: { name: '칠진칠출격', cry: '용담의 창은 멈추지 않는다' } },
   zhouyu: { special: { name: '적벽화신계', cry: '적벽을 물들인 화공' }, musou: { name: '신화주유진', cry: '장강을 뒤덮는 불의 진' } },
   huanggai: { special: { name: '고육화공진', cry: '몸을 던져 전세를 바꾼다' }, musou: { name: '맹장화선충', cry: '결사의 화선 돌격' } },
@@ -419,7 +443,12 @@ export function preloadSideScroller(heroId = 'guanyu', stageKey = 'hulao') {
     const loadedBackground = Object.fromEntries(backgroundEntries.filter(([, image]) => !!image));
     const backgroundLayers = backgroundEntries.length === 3 && Object.keys(loadedBackground).length === 3 ? loadedBackground : null;
     if (backgroundEntries.length && !backgroundLayers) console.warn('그림 배경 일부를 읽지 못해 절차 배경으로 전환합니다:', stageKey);
-    const bundle = { ...common, heroes: { [resolvedHeroId]: hero }, mounts, bosses, backgroundLayers };
+    const roleSheets = {};
+    for (const [role, src] of Object.entries(ENEMY_ROSTERS[stageKey]?.sheets || {})) {
+      const image = await loadOptional(src, stageKey + '.enemy.' + role);
+      if (image) roleSheets[role] = image;
+    }
+    const bundle = { ...common, heroes: { [resolvedHeroId]: hero }, mounts, bosses, backgroundLayers, roleSheets };
     bundle.releaseStageBackground = () => {
       backgroundSources.forEach((src) => imageCache.delete(src));
       bundle.backgroundLayers = null;
@@ -436,7 +465,7 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
   // 로컬 마스터링 전투 대사와 무기·원소 레이어만 재생한다.
   // 대표 장수 확장본은 전용 한국어 음성이 준비되기 전까지 기술명 배너와
   // 무기 효과음만 사용한다. 없는 WAV를 요청해 콘솔 404를 만들지 않는다.
-  const recordedHeroCallouts = new Set(['liubei','guanyu','zhangfei','caocao','zhaoyun','zhouyu','huanggai','zhugeliang','machao','huangzhong','sunshangxiang','wukong','bajie','wujing','tieshangongzhu','wusong','linchong','lizhishen','husanniang']);
+  const recordedHeroCallouts = new Set(['xiahoudun','zhangliao','xuchu','simayi','sunquan','taishici','ganning','luxun','lvbu','diaochan','dongzhuo','menghuo','zhurong','liubei','guanyu','zhangfei','caocao','zhaoyun','zhouyu','huanggai','zhugeliang','machao','huangzhong','sunshangxiang','wukong','bajie','wujing','tieshangongzhu','wusong','linchong','lizhishen','husanniang']);
   const hasRecordedHeroCallouts = recordedHeroCallouts.has(heroId);
   const battleCry = battleCryProfile(heroId);
   const elevenVoices = elevenVoiceFiles(heroId);
@@ -477,6 +506,7 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
     xiahoudun: { rate: .91, gain: .68, lowpass: 4400, wet: .09 }, zhangliao: { rate: .98, gain: .63, lowpass: 5200, wet: .08 }, xuchu: { rate: .86, gain: .74, lowpass: 3700, wet: .08 }, simayi: { rate: .96, gain: .60, lowpass: 5200, wet: .12 },
     sunquan: { rate: .99, gain: .61, lowpass: 5500, wet: .09 }, taishici: { rate: .99, gain: .64, lowpass: 5600, wet: .08 }, ganning: { rate: 1.05, gain: .62, lowpass: 6000, highpass: 105, wet: .07 }, luxun: { rate: 1.06, gain: .58, lowpass: 6400, highpass: 115, wet: .10 },
     lvbu: { rate: .96, gain: .70, lowpass: 5000, wet: .11 }, diaochan: { rate: 1.08, gain: .56, lowpass: 6800, highpass: 140, wet: .11 }, dongzhuo: { rate: .84, gain: .74, lowpass: 3600, wet: .10 },
+    menghuo: { rate: .88, gain: .74, lowpass: 3900, wet: .09 }, zhurong: { rate: 1.06, gain: .58, lowpass: 6800, highpass: 135, wet: .10 },
     nezha: { rate: 1.09, gain: .57, lowpass: 6900, highpass: 135, wet: .08 }, erlangshen: { rate: .94, gain: .65, lowpass: 4900, wet: .11 }, honghaier: { rate: 1.10, gain: .58, lowpass: 6500, highpass: 125, wet: .10 },
   };
   const voiceProfile = voiceProfiles[heroId] || { rate: .98, gain: .62, lowpass: 5100, wet: .09 };
@@ -1401,7 +1431,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   const rangedStyle = familyRanged ? familyRanged.kind : ['wukong', 'tieshangongzhu', 'zhugeliang', 'luxun', 'diaochan'].includes(heroId) ? 'fan'
     : ['sunshangxiang', 'nezha'].includes(heroId) ? 'ring'
     : heroId === 'husanniang' ? 'lasso'
-    : heroId === 'honghaier' ? 'fire'
+    : ['honghaier', 'zhurong'].includes(heroId) ? 'fire'
     : 'bow';
   const rangedUsesBase = rangedStyle !== 'bow' && !(['nezha', 'honghaier'].includes(heroId) && heroAssets.heroBow);
   const supportsRanged = rangedUsesBase || !!heroAssets.heroBow;
@@ -1439,10 +1469,12 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   const enemySheets = Object.fromEntries(Object.entries(enemyRoster.hues).map(([role, hue]) => {
     const shift = typeof hue === 'object' && hue ? hue : { to: hue };
     const tint = { from: enemyRoster.baseHue, to: shift.to, width: shift.width ?? 52, sat: shift.sat ?? .92, val: shift.val ?? (role === 'heavy' ? .88 : 1.04) };
-    return [role, tintSheet(enemySheet, 'enemy:' + stageKey + ':' + role, [tint])];
+    return [role, assets.roleSheets?.[role] || tintSheet(enemySheet, 'enemy:' + stageKey + ':' + role, [tint])];
   }));
   const bossId = stageInfo?.bossId || stage(stageKey)?.bossId || 'default';
   const bossProfile = BOSS_PROFILES[bossId] || BOSS_PROFILES.default;
+  // 칠종칠금: 남만 전장의 적장은 정해진 횟수만큼 쓰러져야 끝난다. 한 번의 체력은 그만큼 얇다.
+  const bossCaptures = Math.max(0, stage(stageKey)?.bossCaptures || 0);
   const dedicatedBossArt = assets.bosses?.[bossId];
   const bossSheet = dedicatedBossArt || tintSheet(assets.boss, 'boss:' + bossId, bossProfile.tint ? [bossProfile.tint] : BOSS_TINT[troop]);
   ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
@@ -1488,12 +1520,12 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   const hudRoot = createHudRoot(), playerHud = createPlayerHud(hudRoot, heroName, { level: growth.level, weapon: `${weaponName} ${weaponEnhanceText(growth)}` }), bossHud = createEnemyHud(hudRoot, bossLabel);
   if (extra) {
     const fanName = heroId === 'diaochan' ? '비단 부채' : ['zhugeliang','luxun'].includes(heroId) ? '우선' : '파초선';
-    const rangedControl = familyRanged?.label || { fan: fanName + ' 공격', ring: heroId === 'nezha' ? '건곤권 투척' : '쌍환 투척', lasso: '홍금투삭', fire: '삼매진화탄', bow: heroId === 'erlangshen' ? '탄궁 발사' : '활쏘기' }[rangedStyle];
+    const rangedControl = familyRanged?.label || { fan: fanName + ' 공격', ring: heroId === 'nezha' ? '건곤권 투척' : '쌍환 투척', lasso: '홍금투삭', fire: heroId === 'zhurong' ? '화염 비도 투척' : '삼매진화탄', bow: heroId === 'erlangshen' ? '탄궁 발사' : '활쏘기' }[rangedStyle];
     const mountControl = supportsMount ? '<span>F ' + (isFireWheelMount ? '풍화륜' : '승마') + '</span>' : '';
     hudRoot.querySelector('.controls').innerHTML = '<span>WASD 이동 · W 두 번 점프</span><span>J 공격 · 꾹 강공</span><span>K ' + rangedControl + '</span>' + mountControl + '<span>L 필살기</span><span>I 돌진기</span>';
   }
   playerHud.setDashSkill(dashTechnique);
-  playerHud.setCapabilities(supportsRanged, supportsMount, familyRanged?.label || { fan: heroId === 'diaochan' ? '비단 부채' : ['zhugeliang','luxun'].includes(heroId) ? '우선' : '파초선', ring: heroId === 'nezha' ? '건곤권' : '쌍환', lasso: '투삭', fire: '화염탄', bow: heroId === 'erlangshen' ? '탄궁' : '활' }[rangedStyle], isFireWheelMount ? '풍화륜' : '승마');
+  playerHud.setCapabilities(supportsRanged, supportsMount, familyRanged?.label || { fan: heroId === 'diaochan' ? '비단 부채' : ['zhugeliang','luxun'].includes(heroId) ? '우선' : '파초선', ring: heroId === 'nezha' ? '건곤권' : '쌍환', lasso: '투삭', fire: heroId === 'zhurong' ? '화염 비도' : '화염탄', bow: heroId === 'erlangshen' ? '탄궁' : '활' }[rangedStyle], isFireWheelMount ? '풍화륜' : '승마');
   bossHud.show(false); bossHud.setWeapon(bossProfile.weapon); bossHud.setPhase('결전 대기'); playerHud.setObjective(stageInfo?.mission || '호로관의 적군을 돌파하라'); playerHud.setMount(false, mountLabel, supportsMount);
   const input = createInput(canvas), audio = makeAudio(heroId, stageKey), worldWidth = 7800;
   const touchCapable = (navigator.maxTouchPoints || 0) > 0 || !!globalThis.matchMedia?.('(any-pointer: coarse)')?.matches;
@@ -1539,7 +1571,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   //  - dual(유비 쌍고검): 짧고 빠른 연속 베기 — 사거리 짧고 회전 빠름
   //  - staff(손오공 여의봉): 빠른 연타 — 사거리 중간, 회전 가장 빠름
   //  - rake(저팔계 구치정파): 세 갈래 갈퀴질 — 느리지만 전방을 긁고 지면을 뒤흔듦
-  const historicalWeaponStyles = { liubei: 'dual', guanyu: 'guandao', zhangfei: 'spear', caocao: 'dual', zhaoyun: 'spear', zhouyu: 'dual', huanggai: 'monkstaff', zhugeliang: 'fan', machao: 'spear', huangzhong: 'guandao', xiahoudun: 'halberd', zhangliao: 'halberd', xuchu: 'maul', simayi: 'sword', sunquan: 'sword', taishici: 'spear', ganning: 'dual', luxun: 'fan', lvbu: 'halberd', diaochan: 'fan', dongzhuo: 'maul' };
+  const historicalWeaponStyles = { liubei: 'dual', guanyu: 'guandao', zhangfei: 'spear', caocao: 'dual', zhaoyun: 'spear', zhouyu: 'dual', huanggai: 'monkstaff', zhugeliang: 'fan', machao: 'spear', huangzhong: 'guandao', xiahoudun: 'halberd', zhangliao: 'halberd', xuchu: 'maul', simayi: 'sword', sunquan: 'sword', taishici: 'spear', ganning: 'dual', luxun: 'fan', lvbu: 'halberd', diaochan: 'fan', dongzhuo: 'maul', menghuo: 'maul', zhurong: 'spear' };
   const weaponStyle = workWeapon(heroId)?.style || historicalWeaponStyles[heroId] || 'guandao';
   const lightAttackMs = weaponStyle === 'staff' ? 235 : weaponStyle === 'dual' || weaponStyle === 'sword' ? 265 : weaponStyle === 'fan' ? 315 : weaponStyle === 'spear' ? 320 : weaponStyle === 'halberd' ? 350 : weaponStyle === 'maul' ? 405 : weaponStyle === 'rake' ? 395 : weaponStyle === 'crescent' ? 340 : weaponStyle === 'monkstaff' ? 375 : 360;
   const player = { x: 330, lane: 0, y: 0, vy: 0, facing: 1, hp: maxHp, maxHp, rage: growth.startingRage, combo: 0, comboUntil: 0, comboStep: 0, attackStep: 1, ko: 0, action: 'idle', actionUntil: 0, hitDone: false, invulnerableUntil: 0, mounted: false, grab: null, grabHits: 0, weaponBoost: 0, actionStarted: 0, actionDuration: 0, afterimageAt: 0, footstepAt: 0, dashReady: 0, whirlwindReady: 0, counterReady: 0, counterUntil: 0 };
@@ -1698,7 +1730,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       const role = isLead ? 'captain' : plan.archer && i % 3 !== 0 ? 'archer' : wave >= 3 && i % 3 === 0 ? 'heavy' : 'soldier';
       const roleScale = { soldier: [1, 1], archer: [.82, .92], heavy: [1.42, .68], captain: [1, 1] }[role];
       const baseHp = isLead ? (bossWave ? 460 : 260) : 66 + wave * 16;
-      const hp = Math.round(baseHp * difficulty * roleScale[0] * diff.enemyHp * growth.enemyHp * (isLead && bossWave ? (bossProfile.hpScale || 1) : 1));
+      const hp = Math.round(baseHp * difficulty * roleScale[0] * diff.enemyHp * growth.enemyHp * (isLead && bossWave ? (bossProfile.hpScale || 1) * (bossCaptures ? .3 : 1) : 1));
       const baseSpeed = isLead ? (bossWave ? 126 : 118) : 80 + wave * 3 + Math.random() * 24;
       const speed = baseSpeed * roleScale[1];
       const unitName = enemyRoster.names[role] || enemyRoster.names.soldier, weapon = enemyRoster.weapons[role] || 'blade';
@@ -2291,6 +2323,17 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     // 쓰러뜨려라'는 힌트가 실제 전투 논리로 성립해야 한다.
     const commander = enemies.find((enemy) => enemy.boss && !enemy.trueBoss && !enemy.deadAt);
     for (const enemy of enemies) enemy.rallied = !!commander && !enemy.boss && !enemy.deadAt && Math.abs(enemy.x - commander.x) < 460;
+    // 칠종칠금 — 마지막 한 번 전까지는 쓰러진 맹획을 놓아주고 다시 싸운다.
+    if (bossCaptures) for (const enemy of enemies) {
+      if (!enemy.trueBoss || !enemy.deadAt || (enemy.released || 0) >= bossCaptures - 1) continue;
+      enemy.released = (enemy.released || 0) + 1;
+      const side = enemy.x >= player.x ? 1 : -1;
+      Object.assign(enemy, { deadAt: 0, hp: enemy.maxHp, enraged: false, action: 'hit', actionStarted: now, actionUntil: now + 700, attackAt: now + 1600, x: enemy.x + side * 360, facing: -side });
+      const left = bossCaptures - enemy.released;
+      showBanner(hudRoot, bossLabel + ' 사로잡음 ' + enemy.released + '/' + bossCaptures, left > 1 ? '놓아준다 — 마음으로 따를 때까지 다시 싸운다' : '마지막 한 번 — 이번에 잡으면 마음으로 따른다');
+      bossHud.setPhase('칠종칠금 ' + enemy.released + '/' + bossCaptures, left <= 1);
+      colorFlash = Math.max(colorFlash, .10); slowUntil = Math.max(slowUntil, now + 320);
+    }
     let living = 0, boss = null;
     for (const enemy of enemies) {
       if (enemy.deadAt) continue; living += 1; if (enemy.boss) boss = enemy;
@@ -2429,6 +2472,20 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
           const x = i * 173 - shift;
           ctx.fillStyle = 'rgba(20,22,19,.21)'; ctx.fillRect(x + 18, floorTop + 36 + (i % 3) * 21, 65, 2);
           ctx.fillStyle = 'rgba(230,221,188,.11)'; ctx.fillRect(x + 96, floorTop + 95 + (i % 2) * 33, 46, 2);
+        }
+      } else if (stageKey === 'fancheng') {
+        // 앞으로 나아갈수록 물이 차오른다. 판정과 무관한 배경 표현이다.
+        const rise = Math.max(0, Math.min(1, cameraX / 5200)), now = performance.now();
+        const waterTop = ground() - 96 - rise * 70;
+        const flood = ctx.createLinearGradient(0, waterTop, 0, height);
+        flood.addColorStop(0, 'rgba(96,124,128,.78)'); flood.addColorStop(.4, 'rgba(70,92,96,.86)'); flood.addColorStop(1, 'rgba(38,50,54,.94)');
+        ctx.fillStyle = flood; ctx.fillRect(0, waterTop, width, height - waterTop);
+        ctx.fillStyle = 'rgba(214,232,226,.30)'; ctx.fillRect(0, waterTop, width, 2);
+        const flow = ((cameraX * .9 + now * .05) % 150 + 150) % 150;
+        for (let row = 0; row < 9; row++) {
+          const y = waterTop + 14 + row * 26 + Math.sin(now * .002 + row) * 3;
+          ctx.fillStyle = 'rgba(214,232,226,' + (.16 - row * .012) + ')';
+          for (let x = -150 - flow + (row % 2) * 70; x < width + 150; x += 150) ctx.fillRect(x, y, 48 + (row % 3) * 14, 2);
         }
       } else if (stageKey === 'myeongnyang') {
         // 실제 해전은 배 위 전투다. 원경의 바다는 남기고 발밑에는 갑판을 깐다.
@@ -3027,7 +3084,8 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
           ctx.scale(1 + fall * .06, 1 - fall * .12);
           ctx.translate(-enemyX, -baseY + fall * 42);
         }
-        const enemyHeight = enemy.boss ? Math.min(448, height * .67) : enemy.role === 'heavy' ? Math.min(328, height * .51) : Math.min(300, height * .47);
+        // 전용 그림 병종(코끼리 부대)은 사람보다 크게 그린다.
+        const enemyHeight = (enemy.boss ? Math.min(448, height * .67) : enemy.role === 'heavy' ? Math.min(328, height * .51) : Math.min(300, height * .47)) * (!enemy.boss && assets.roleSheets?.[enemy.role] ? 1.34 : 1);
         drawAtlasFrame(ctx, enemy.boss ? bossSheet : (enemySheets[enemy.role] || enemySheet), frame, enemyX, baseY - enemyBob, enemyHeight * depthScale, enemy.facing, 1 - sinceDeath);
         // 맞은 직후 흰 섬광 — 어느 적을 때렸는지 난전에서 즉시 읽힌다.
         if (!enemy.deadAt && enemy.hitUntil > now) {

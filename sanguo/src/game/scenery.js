@@ -244,6 +244,56 @@ export const SCENES = {
     ],
     ground: ['#6b4a3a', '#3e2a22'],
   },
+  // 합비 — 새벽 강가의 성과 소요진: 푸른 새벽, 강물, 성벽, 오군 깃발
+  hefei: {
+    sky: ['#1c2633', '#5a6e82', '#e6c48e'],
+    haze: 'rgba(200,190,170,.22)',
+    layers: [
+      { kind: 'ridge', depth: .05, color: '#18212b', height: .34, rough: .5 },
+      { kind: 'water', depth: .18, color: '#3c5664' },
+      { kind: 'wall', depth: .38, color: '#262c30', accent: '#8a7a56' },
+      { kind: 'banners', depth: .60, color: '#5c8a4a' },
+    ],
+    ground: ['#6e6248', '#463d2c'],
+  },
+  // 번성 — 가을 장마: 잿빛 하늘, 빗줄기, 불어난 한수(발밑 물은 sideScroller가 그린다)
+  fancheng: {
+    sky: ['#1a2024', '#46545a', '#8c9894'],
+    haze: 'rgba(150,170,172,.26)',
+    rain: true,
+    layers: [
+      { kind: 'ridge', depth: .05, color: '#1a2226', height: .40, rough: .6 },
+      { kind: 'water', depth: .16, color: '#4c6268' },
+      { kind: 'wall', depth: .36, color: '#262e30', accent: '#6a7270' },
+      { kind: 'water', depth: .54, color: 'rgba(110,140,146,.55)' },
+    ],
+    ground: ['#4f5a56', '#2f3836'],
+  },
+  // 남만 — 밀림: 짙은 초록, 겹친 산, 갈대 대신 넓은 잎
+  nanman: {
+    sky: ['#12261a', '#3f6e44', '#e2d08a'],
+    haze: 'rgba(170,210,140,.20)',
+    layers: [
+      { kind: 'ridge', depth: .05, color: '#10241a', height: .50, rough: .9 },
+      { kind: 'ridge', depth: .15, color: '#1c3a26', height: .36, rough: 1.0 },
+      { kind: 'jungle', depth: .36, color: '#1f4a2a', accent: '#3d7a3a' },
+      { kind: 'crags', depth: .58, color: '#22361f' },
+    ],
+    ground: ['#5a5a32', '#3a3a22'],
+  },
+  // 오장원 — 별이 떨어진 밤: 남빛 밤하늘, 별, 진영 깃발
+  wuzhangyuan: {
+    sky: ['#070b18', '#1c2440', '#5a5a7a'],
+    haze: 'rgba(120,130,190,.16)',
+    stars: true,
+    layers: [
+      { kind: 'ridge', depth: .05, color: '#0c1020', height: .40, rough: .6 },
+      { kind: 'ridge', depth: .14, color: '#151a2c', height: .26, rough: .5 },
+      { kind: 'pagoda', depth: .32, color: '#141a2a', accent: '#b89a5a' },
+      { kind: 'banners', depth: .58, color: '#4a5a8a' },
+    ],
+    ground: ['#4a4a3e', '#2c2c26'],
+  },
   // 동관 — 위수의 나루: 누런 흙먼지, 강물, 갈대, 관문 성벽
   dongguan: {
     sky: ['#241d18', '#6b563c', '#e2c58f'],
@@ -448,6 +498,21 @@ function bakeLayer(layer, w, h, seed) {
       // 문
       g.fillStyle = 'rgba(10,12,16,.7)'; g.fillRect(x - 18, baseY - 44, 36, 48);
     }
+  } else if (layer.kind === 'jungle') {
+    // 남만 밀림 — 굽은 야자 줄기와 부채꼴 잎
+    for (let i = 0; i < 16; i++) {
+      const x = rand() * w, th = h * (.34 + rand() * .3), lean = (rand() - .5) * 60;
+      g.strokeStyle = layer.color; g.lineWidth = 7; g.lineCap = 'round';
+      g.beginPath(); g.moveTo(x, h); g.quadraticCurveTo(x + lean * .3, h - th * .6, x + lean, h - th); g.stroke();
+      g.fillStyle = i % 2 ? layer.accent : layer.color;
+      for (let leaf = 0; leaf < 7; leaf++) {
+        const a = -Math.PI + leaf * (Math.PI / 6) + (rand() - .5) * .2, len = 46 + rand() * 30;
+        g.beginPath(); g.moveTo(x + lean, h - th);
+        g.quadraticCurveTo(x + lean + Math.cos(a - .25) * len * .6, h - th + Math.sin(a - .25) * len * .6, x + lean + Math.cos(a) * len, h - th + Math.sin(a) * len + 14);
+        g.quadraticCurveTo(x + lean + Math.cos(a + .25) * len * .6, h - th + Math.sin(a + .25) * len * .6, x + lean, h - th);
+        g.fill();
+      }
+    }
   } else if (layer.kind === 'deadtrees') {
     // 마른 나무
     for (let i = 0; i < 18; i++) {
@@ -480,7 +545,36 @@ export function createScenery(sceneKey, width, height, { painted = false } = {})
   const drawParticles = (ctx, cameraX, w, h, now = 0, quality = 1) => {
     // 테마 고유 입자 — 화염산 불티, 설야 눈발, 사타령 금빛 깃털.
     // 그림 배경을 쓰는 전장도 이 효과만 재사용한다.
-    if (quality <= .6 || (!scene.ember && !scene.snow)) return;
+    if (quality <= .6) return;
+    if (scene.rain) {
+      // 번성의 가을 장마 — 비스듬한 빗줄기
+      ctx.save(); ctx.strokeStyle = 'rgba(200,220,226,.34)'; ctx.lineWidth = 1.2;
+      for (let i = 0; i < 70; i++) {
+        const px = ((i * 97.3 - now * .32 - cameraX * .5) % (w + 120) + w + 120) % (w + 120) - 60;
+        const py = ((i * 61.7 + now * .9) % (h + 60)) - 30;
+        ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px - 7, py + 22); ctx.stroke();
+      }
+      ctx.restore();
+      return;
+    }
+    if (scene.stars) {
+      // 오장원의 밤 — 반짝이는 별과 가끔 떨어지는 별똥별
+      ctx.save();
+      for (let i = 0; i < 40; i++) {
+        const px = ((i * 151.3 - cameraX * .02) % w + w) % w, py = (i * 37.7) % (h * .42);
+        ctx.globalAlpha = .35 + .35 * Math.sin(now * .002 + i * 1.7);
+        ctx.fillStyle = '#e8ecff'; ctx.fillRect(px, py, 2, 2);
+      }
+      const fall = (now % 7000) / 1400;
+      if (fall < 1) {
+        ctx.globalAlpha = 1 - fall; ctx.strokeStyle = '#fff4c8'; ctx.lineWidth = 2;
+        const sx = w * .72 - fall * w * .22, sy = h * .08 + fall * h * .2;
+        ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + 60, sy - 24); ctx.stroke();
+      }
+      ctx.restore();
+      return;
+    }
+    if (!scene.ember && !scene.snow) return;
     const count = scene.snow ? 46 : 30;
     ctx.save(); ctx.globalCompositeOperation = scene.snow ? 'source-over' : 'lighter';
     for (let i = 0; i < count; i++) {

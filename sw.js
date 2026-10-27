@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v211";
+const CACHE_VERSION = "v212";
 const CACHE_PREFIX = "adventure-box-";
 // 큰 그림과 소리(삼국지 배경 200MB+, 저장한 이야기 오디오)는 배포 번호와 따로 둔다.
 // 배포마다 이 캐시를 버리면 기기가 236MB를 다시 받고, "여행 전에 이야기 저장"도 지워졌다.
@@ -1197,6 +1197,9 @@ const SANGUO_RUNTIME_ASSETS = [
   "./sanguo/art/side-scroller/lvbu-bow-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/diaochan-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/dongzhuo-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/menghuo-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/zhurong-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/enemy-nanman-elephant-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/lizhishen-bow-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/lizhishen-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/mount-bajie-painted-sheet-v1.png",
@@ -1309,6 +1312,32 @@ const SANGUO_RUNTIME_ASSETS = [
   "./sanguo/audio/hero-callouts-ko-v6/wusong-special-v6.wav",
   "./sanguo/audio/hero-callouts-ko-v6/zhangfei-musou-v6.wav",
   "./sanguo/audio/hero-callouts-ko-v6/zhangfei-special-v6.wav",
+  "./sanguo/audio/hero-callouts-ko-v6/xiahoudun-musou-v6.wav",
+  "./sanguo/audio/hero-callouts-ko-v6/xiahoudun-special-v6.wav",
+  "./sanguo/audio/hero-callouts-ko-v6/zhangliao-musou-v6.wav",
+  "./sanguo/audio/hero-callouts-ko-v6/zhangliao-special-v6.wav",
+  "./sanguo/audio/hero-callouts-ko-v6/xuchu-musou-v6.wav",
+  "./sanguo/audio/hero-callouts-ko-v6/xuchu-special-v6.wav",
+  "./sanguo/audio/hero-callouts-ko-v6/simayi-musou-v6.wav",
+  "./sanguo/audio/hero-callouts-ko-v6/simayi-special-v6.wav",
+  "./sanguo/audio/hero-callouts-ko-v6/sunquan-musou-v6.wav",
+  "./sanguo/audio/hero-callouts-ko-v6/sunquan-special-v6.wav",
+  "./sanguo/audio/hero-callouts-ko-v6/taishici-musou-v6.wav",
+  "./sanguo/audio/hero-callouts-ko-v6/taishici-special-v6.wav",
+  "./sanguo/audio/hero-callouts-ko-v6/ganning-musou-v6.wav",
+  "./sanguo/audio/hero-callouts-ko-v6/ganning-special-v6.wav",
+  "./sanguo/audio/hero-callouts-ko-v6/luxun-musou-v6.wav",
+  "./sanguo/audio/hero-callouts-ko-v6/luxun-special-v6.wav",
+  "./sanguo/audio/hero-callouts-ko-v6/lvbu-musou-v6.wav",
+  "./sanguo/audio/hero-callouts-ko-v6/lvbu-special-v6.wav",
+  "./sanguo/audio/hero-callouts-ko-v6/diaochan-musou-v6.wav",
+  "./sanguo/audio/hero-callouts-ko-v6/diaochan-special-v6.wav",
+  "./sanguo/audio/hero-callouts-ko-v6/dongzhuo-musou-v6.wav",
+  "./sanguo/audio/hero-callouts-ko-v6/dongzhuo-special-v6.wav",
+  "./sanguo/audio/hero-callouts-ko-v6/menghuo-musou-v6.wav",
+  "./sanguo/audio/hero-callouts-ko-v6/menghuo-special-v6.wav",
+  "./sanguo/audio/hero-callouts-ko-v6/zhurong-musou-v6.wav",
+  "./sanguo/audio/hero-callouts-ko-v6/zhurong-special-v6.wav",
   "./sanguo/audio/hero-callouts-ko-v6/zhaoyun-musou-v6.wav",
   "./sanguo/audio/hero-callouts-ko-v6/zhaoyun-special-v6.wav",
   "./sanguo/audio/hero-callouts-ko-v6/zhouyu-musou-v6.wav",

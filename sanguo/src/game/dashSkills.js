@@ -27,6 +27,8 @@ export const DASH_SKILLS = Object.freeze({
   luxun: make('이릉 화선풍', '부채 바람으로 넓게 휩쓸기', '#a8d978', 'spin', 'inferno', 660, 610, 238, 146, 56),
   lvbu: make('적토 무쌍돌파', '방천화극으로 두 번 휩쓸며 돌진', '#ff6a4a', 'wide', 'inferno', 1060, 600, 214, 120, 40, 2),
   diaochan: make('연환 꽃바람', '부채를 펼치며 꽃잎 바람 세 갈래', '#ffb3d1', 'spin', 'storm', 820, 620, 226, 140, 22, 1, 3),
+  menghuo: make('남만 코끼리 돌격', '철퇴를 앞세워 코끼리처럼 밀고 나가기', '#e8b04a', 'overhead', 'earth', 760, 640, 212, 126, 70),
+  zhurong: make('화신 비도난무', '불꽃 장표로 찌르며 비도 세 자루', '#ff7a3a', 'thrust', 'inferno', 960, 610, 214, 72, 24, 1, 3),
   dongzhuo: make('폭군 압살', '느리지만 대도로 땅을 내려찍기', '#e0a040', 'overhead', 'earth', 540, 660, 210, 124, 84),
   zhouyu: make('홍련 진격', '넓은 화염 연속 베기', '#ff896d', 'wide', 'inferno', 620, 600, 175, 125, 29, 2),
   huanggai: make('철벽 파쇄', '느리지만 강한 충격', '#efb66e', 'overhead', 'earth', 520, 620, 200, 105, 82),
