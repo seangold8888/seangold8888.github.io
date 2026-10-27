@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v218";
+const CACHE_VERSION = "v219";
 const CACHE_PREFIX = "adventure-box-";
 // 큰 그림과 소리(삼국지 배경 200MB+, 저장한 이야기 오디오)는 배포 번호와 따로 둔다.
 // 배포마다 이 캐시를 버리면 기기가 236MB를 다시 받고, "여행 전에 이야기 저장"도 지워졌다.
@@ -920,19 +920,26 @@ const OPTIONAL_SHELL = [
   "./kart3d/",
   "./slime/",
   "./slime/style.css?v=playroom-9",
-  "./slime/src/main.js?v=rainbow-16",
-  "./slime/src/physics.js?v=play-7",
-  "./slime/src/audio.js?v=playroom-9",
+  "./slime/src/main.js?v=workshop-17",
+  "./slime/src/physics.js?v=workshop-17",
+  "./slime/src/audio.js?v=workshop-17",
   "./slime/src/geometry.js?v=5",
-  "./slime/src/material.js?v=rainbow-16",
+  "./slime/src/material.js?v=workshop-17",
   "./slime/src/aurora-volume.js?v=rainbow-16",
-  "./slime/src/stage.js?v=play-7",
-  "./slime/src/input.js?v=play-7",
+  "./slime/src/stage.js?v=workshop-17",
+  "./slime/src/input.js?v=workshop-17",
   "./slime/src/friend.js?v=playroom-9",
   "./slime/src/toys.js?v=bubbles-10",
   "./slime/src/bubble-material.js?v=bubbles-10",
   "./slime/src/optics.js?v=5",
   "./slime/src/caustics.js?v=visual-1",
+  "./slime/workshop.css?v=workshop-17",
+  "./slime/src/workshop.js?v=workshop-17",
+  "./slime/src/workshop-ui.js?v=workshop-17",
+  "./slime/src/mixins.js?v=workshop-17",
+  "./slime/src/buddies.js?v=workshop-17",
+  "./slime/src/food.js?v=workshop-17",
+  "./slime/src/glitter.js?v=workshop-17",
   "./slime/vendor/RoomEnvironment.js",
   "./slime/vendor/Reflector.js",
   "./slime/vendor/THREE-LICENSE.txt",
