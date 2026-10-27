@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v219";
+const CACHE_VERSION = "v220";
 const CACHE_PREFIX = "adventure-box-";
 // 큰 그림과 소리(삼국지 배경 200MB+, 저장한 이야기 오디오)는 배포 번호와 따로 둔다.
 // 배포마다 이 캐시를 버리면 기기가 236MB를 다시 받고, "여행 전에 이야기 저장"도 지워졌다.
@@ -919,6 +919,35 @@ const OPTIONAL_SHELL = [
   "./kart/src/main.js",
   "./kart3d/",
   "./slime/",
+  "./usa/",
+  "./usa/index.html",
+  "./usa/style.css?v=1",
+  "./usa/cover.webp",
+  "./usa/src/main.js?v=1",
+  "./usa/src/places.js",
+  "./usa/src/save.js",
+  "./usa/src/sfx.js",
+  "./usa/src/engine.js",
+  "./usa/src/games/vegas.js",
+  "./usa/src/games/park.js",
+  "./usa/src/games/beverly.js",
+  "./usa/src/games/santamonica.js",
+  "./usa/src/games/huntington.js",
+  "./usa/src/games/erewhon.js",
+  "./usa/src/games/beachart.js",
+  "./usa/art/map.webp",
+  "./usa/art/bg-vegas.webp",
+  "./usa/art/bg-park.webp",
+  "./usa/art/bg-beverly.webp",
+  "./usa/art/bg-market.webp",
+  "./usa/art/jaei-travel.webp",
+  "./usa/art/jaei-cheer.webp",
+  "./usa/art/jaei-beach.webp",
+  "./usa/art/jaei-surf.webp",
+  "./usa/art/taeo-travel.webp",
+  "./usa/art/taeo-cheer.webp",
+  "./usa/art/taeo-beach.webp",
+  "./usa/art/taeo-surf.webp",
   "./slime/style.css?v=playroom-9",
   "./slime/src/main.js?v=workshop-17",
   "./slime/src/physics.js?v=workshop-17",
@@ -1924,6 +1953,8 @@ if (typeof self !== "undefined" && typeof self.addEventListener === "function") 
     // 같은 도메인의 다른 사이트(점심 사이트 SIKPAN, 옛 주소 포함)는 이 워커 범위(/) 안에 있지만
     // 모험 상자 것이 아니다. 캐시하면 어제 메뉴를 먼저 보여 주므로 손대지 않는다.
     if (/^\/(?:sikpan|gasan-lunch)(?:\/|$)/.test(url.pathname)) return;
+    // 여행 사진은 나중에 같은 이름으로 넣거나 바꾸므로 캐시하지 않고 늘 서버에서 받는다.
+    if (/^\/usa\/photos\//.test(url.pathname)) return;
     if (!backgroundWarmupFinished) {
       event.waitUntil(warmBackgroundAssets().catch(() => null));
     }
