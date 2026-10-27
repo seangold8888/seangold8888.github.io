@@ -15,7 +15,16 @@
     { id: "sky", name: "번개 하늘섬", icon: "⚡", bg: "art/bg-sky.webp", tint: "#ffe07a",
       enemies: ["drone", "shield", "tin"], boss: "golem" },
     { id: "core", name: "멀티버스 코어", icon: "🌀", bg: "art/bg-core.webp", tint: "#c69bff",
-      enemies: ["drone", "shield", "tin"], boss: "mecha" }
+      enemies: ["drone", "shield", "tin"], boss: "mecha" },
+    // 다섯째 세계: 쓰구미 메카를 이기면 열린다. 바닥에서 용암 분수가 솟는다(영웅도 적도 보스도 맞는다).
+    { id: "volcano", name: "공룡 화산섬", icon: "🌋", bg: "art/bg-volcano.webp", tint: "#ff7a2f",
+      enemies: ["raptor", "raptor", "shield", "drone"], boss: "trex", gimmick: "lava",
+      animals: ["🦕", "🐣", "🦖"], cage: { bar: "#8a5a3a", top: "#5a3622" },
+      missionText: {
+        rescue: { name: "아기 공룡 구출", goal: "바위 우리 3개를 부수고 아기 공룡을 구해요" },
+        treasure: { name: "화산 보석", goal: "보석 50개! 용암 분수가 보석을 뿜어요" }
+      },
+      tip: "바닥이 부글부글 끓으면 얼른 피해요! 로봇을 그 위로 꾀면 펑!" }
   ];
 
   var MISSIONS = [
@@ -70,7 +79,9 @@
   var ENEMIES = {
     tin:    { name: "깡통 로봇", src: "art/enemy-tin.webp", hp: 30, speed: 120, damage: 8, size: 150, reach: 70 },
     shield: { name: "방패 로봇", src: "art/enemy-shield.webp", hp: 46, speed: 90, damage: 10, size: 170, reach: 80, guard: true },
-    drone:  { name: "뿅뿅 드론", src: "art/enemy-drone.webp", hp: 24, speed: 140, damage: 7, size: 140, reach: 420, ranged: true, fly: 120 }
+    drone:  { name: "뿅뿅 드론", src: "art/enemy-drone.webp", hp: 24, speed: 140, damage: 7, size: 140, reach: 420, ranged: true, fly: 120 },
+    // 아기 랩터: 작고 빠르고 통통 뛰어다닌다. 맷집은 약하다.
+    raptor: { name: "아기 랩터", src: "art/enemy-raptor.webp", hp: 22, speed: 185, damage: 7, size: 130, reach: 60, hop: true }
   };
 
   var BOSSES = {
@@ -81,7 +92,17 @@
     golem: { name: "번개 골렘", src: "art/boss-golem.webp", hp: 2700, size: 360, speed: 90, damage: 16,
       moves: ["stomp", "rain", "charge"], minion: "shield" },
     mecha: { name: "쓰구미 메카", src: "art/boss-mecha.webp", hp: 3300, size: 380, speed: 110, damage: 17,
-      moves: ["stomp", "charge", "rain", "summon"], minion: "drone" }
+      moves: ["stomp", "charge", "rain", "summon"], minion: "drone" },
+    // 쿵쾅 티라노: 체력 줄마다 세 단계. 단계가 바뀌면 크게 울부짖고 기술이 늘어난다.
+    // tail=꼬리 휘두르기(빨간 띠 → 위아래로 피함), meteor=화산 돌 비, erupt=발밑 용암 분수 여러 개.
+    trex: { name: "쿵쾅 티라노", src: "art/boss-trex.webp", hp: 3600, size: 410, speed: 120, damage: 15,
+      moves: ["stomp", "tail", "charge", "meteor"], minion: "raptor", summonLine: "아기 공룡들아 나와라!",
+      phases: [
+        { at: 1, moves: ["stomp", "tail", "charge", "meteor"] },
+        { at: 0.6, moves: ["tail", "summon", "charge", "meteor", "stomp"], roar: "티라노가 화났다! 🔥", fast: 1.15 },
+        { at: 0.3, moves: ["erupt", "charge", "tail", "meteor", "summon"], roar: "화산이 깨어났다! 🌋", fast: 1.3 }
+      ],
+      drops: ["cape-lava", "mask-dino", "emblem-volcano"] }
   };
 
   // 꾸미기 조각. 캡슐은 아직 없는 것만 준다(같은 게 두 번 나오지 않는다).
@@ -97,6 +118,8 @@
     { id: "cape-green", slot: "cape", name: "숲 망토", color: "#3fbf6b" },
     { id: "cape-pink", slot: "cape", name: "분홍 망토", color: "#ff7ec8" },
     { id: "cape-silver", slot: "cape", name: "은빛 망토", color: "#c9d3e6", stars: true },
+    // drop이 있는 조각은 캡슐에서 안 나오고, 그 보스를 이길 때마다 하나씩 받는다.
+    { id: "cape-lava", slot: "cape", name: "용암 망토", color: "lava", drop: "trex" },
     { id: "mask-hero", slot: "mask", name: "영웅 마스크", color: "#1d2440" },
     { id: "mask-red", slot: "mask", name: "빨강 마스크", color: "#e2344a" },
     { id: "mask-gold", slot: "mask", name: "황금 마스크", color: "#f0b429" },
@@ -104,6 +127,7 @@
     { id: "mask-star", slot: "mask", name: "별 고글", color: "#58d6ff", goggle: true },
     { id: "mask-bug", slot: "mask", name: "곤충 더듬이", color: "#2a2a3a", antenna: true },
     { id: "mask-green", slot: "mask", name: "초록 마스크", color: "#2fae5a" },
+    { id: "mask-dino", slot: "mask", name: "공룡 볏", color: "#ff7a2f", crest: true, drop: "trex" },
     { id: "emblem-star", slot: "emblem", name: "별 마크", icon: "⭐" },
     { id: "emblem-heart", slot: "emblem", name: "하트 마크", icon: "💖" },
     { id: "emblem-bolt", slot: "emblem", name: "번개 마크", icon: "⚡" },
@@ -116,6 +140,7 @@
     { id: "emblem-butterfly", slot: "emblem", name: "나비 마크", icon: "🦋" },
     { id: "emblem-fire", slot: "emblem", name: "불꽃 마크", icon: "🔥" },
     { id: "emblem-rainbow", slot: "emblem", name: "무지개 마크", icon: "🌈" },
+    { id: "emblem-volcano", slot: "emblem", name: "화산 마크", icon: "🌋", drop: "trex" },
     { id: "weapon-shield", slot: "weapon", name: "별 방패", icon: "🛡️", kind: "shield" },
     { id: "weapon-hammer", slot: "weapon", name: "번개 망치", icon: "🔨", kind: "hammer" },
     { id: "weapon-blade", slot: "weapon", name: "빛검", icon: "⚔️", kind: "blade" },

@@ -22,6 +22,12 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
   function persist() { Save.save(state); }
   function other(kid) { return state.buddy && state.buddy !== kid ? state.buddy : D.BUDDY[kid]; }
   function heroHeight(kid) { return HERO_H * (D.HEROES[kid].scale || 1); }
+  // 세계마다 미션 이름·목표를 바꿀 수 있다(공룡 화산섬: 아기 공룡 구출, 화산 보석).
+  function missionInfo(world, mission) {
+    var o = world.missionText && world.missionText[mission.id];
+    return { name: (o && o.name) || mission.name, goal: (o && o.goal) || mission.goal };
+  }
+  function lavaWorld() { return game && game.world.gimmick === "lava"; }
 
   var images = {};
   function image(src) {
@@ -170,7 +176,11 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
   zone.addEventListener("lostpointercapture", stickEnd);
   // 아이패드는 손가락이 화면 모서리로 미끄러지면(홈 제스처 등) 뗀 신호를 안 보낼 때가 있다.
   // 케데헌에서 그 때문에 주인공이 혼자 걸어갔다(2026-09-25). 막대기가 끌린 채 남지 않게 두 겹으로 막는다.
-  function resetStick() { stick.id = null; stick.x = 0; stick.y = 0; knob.style.transform = ""; }
+  function resetStick() {
+    stick.id = null; stick.x = 0; stick.y = 0; knob.style.transform = "";
+    // 손가락이 다 떨어졌으면 눌린 버튼 모양도 모두 푼다.
+    document.querySelectorAll("#controls .is-down").forEach(function (el) { el.classList.remove("is-down"); });
+  }
   window.addEventListener("pointerup", stickEnd);
   window.addEventListener("pointercancel", stickEnd);
   var fingers = 0;
@@ -234,7 +244,8 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
   function makeBoss(id) {
     var def = D.BOSSES[id];
     return { kind: "boss", id: id, def: def, x: W + 200, y: (GROUND_TOP + GROUND_BOTTOM) / 2, z: def.fly || 0, facing: -1,
-      hp: def.hp, maxHp: def.hp, st: "enter", t: 0, flash: 0, move: null, moveIdx: 0, vx: 0, tx: 0, ty: 0, hitSet: [] };
+      hp: def.hp, maxHp: def.hp, st: "enter", t: 0, flash: 0, move: null, moveIdx: 0, vx: 0, tx: 0, ty: 0, hitSet: [],
+      phase: 0, used: {} };
   }
 
   function startMission(worldIndex, missionIndex) {
@@ -244,14 +255,14 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
       time: D.MISSION_SECONDS, running: false, paused: false, over: false, endT: 0, stars: 0,
       heroes: [], enemies: [], boss: null, cages: [], sparks: [], shots: [], hazards: [], parts: [],
       freed: 0, collected: 0, goal: mission.id === "treasure" ? 50 : 3, spawnT: 1.2, sparkT: 0.5,
-      hitstop: 0, shake: 0, banner: null, clock: 0, won: false };
+      hitstop: 0, shake: 0, banner: null, clock: 0, won: false, ventT: 2.5, callout: null, prize: null };
     var player = makeHero(state.hero, true, 360, 660);
     var buddy = makeHero(buddyKid, false, 240, 600);
     player.maxHp = player.hp; buddy.maxHp = buddy.hp;
     game.heroes.push(player, buddy);
     game.player = player; game.buddy = buddy;
     if (mission.id === "rescue") {
-      var animals = ["🐶", "🐱", "🐰", "🐼", "🦊", "🐹"];
+      var animals = world.animals || ["🐶", "🐱", "🐰", "🐼", "🦊", "🐹"];
       [[540, 610], [800, 690], [1070, 620]].forEach(function (p, i) {
         game.cages.push({ kind: "cage", x: p[0], y: p[1], hp: 280 + worldIndex * 40, maxHp: 280 + worldIndex * 40, animal: animals[(i + worldIndex * 2) % animals.length], freed: false, flash: 0, t: 0 });
       });
@@ -269,10 +280,14 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
   }
 
   function runIntro() {
-    var m = game.mission;
+    var m = game.mission, info = missionInfo(game.world, m);
     $("introIcon").textContent = m.icon;
-    $("introTitle").textContent = game.world.name + " · " + m.name;
-    $("introGoal").textContent = game.boss ? game.boss.def.name + "을(를) 물리쳐요!" : m.goal;
+    $("introTitle").textContent = game.world.name + " · " + info.name;
+    $("introGoal").textContent = game.boss ? game.boss.def.name + "을(를) 물리쳐요!" : info.goal;
+    if (game.world.tip) {
+      var tip = document.createElement("small"); tip.className = "intro-tip"; tip.textContent = game.world.tip;
+      $("introGoal").appendChild(tip);
+    }
     $("introCount").textContent = "";
     showScreen("intro", true);
     var steps = ["3", "2", "1", "출동!"], i = 0;
@@ -606,27 +621,45 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
       if (b.t > 1.4) { b.st = "idle"; b.t = 0; floatText(b.x, b.y - def.size - 20, def.name + " 등장!", "#ffd84a", 40); shake(10); Sfx.big(); }
       return;
     }
-    if (b.st === "idle") {
+    // 단계 보스: 체력이 줄을 넘으면 크게 울부짖고(잠깐 멈춤) 기술이 바뀐다.
+    if (def.phases && (b.st === "idle" || b.st === "dizzy")) {
+      var ph = bossPhase(b);
+      if (ph > b.phase) {
+        b.phase = ph; b.moveIdx = 0; b.st = "roar"; b.t = 0;
+        game.callout = { text: def.phases[ph].roar || "크아앙!", t: 0 };
+        game.hazards.push({ kind: "ring", owner: "fx", x: b.x, y: b.y, r: 20, maxR: 520, t: 0, dur: 0.7, dmg: 0, hit: [], color: "#ff7a2f" });
+        shake(16); Sfx.big(); Sfx.warn();
+      }
+    }
+    if (b.st === "roar") {
+      if (b.t > 1.3) { b.st = "idle"; b.t = 0; }
+    } else if (b.st === "idle") {
       var keep = target.x + (b.x < target.x ? -260 : 260);
       b.x += clamp(keep - b.x, -1, 1) * def.speed * 0.6 * dt;
       b.y += clamp(target.y - b.y, -1, 1) * def.speed * 0.4 * dt;
       b.facing = target.x < b.x ? -1 : 1;
-      var wait = b.hp < b.maxHp / 2 ? 1.1 : 1.7;
+      var wait = (b.hp < b.maxHp / 2 ? 1.1 : 1.7) / bossFast(b);
       if (b.t > wait) {
-        b.move = def.moves[b.moveIdx % def.moves.length]; b.moveIdx++;
+        var moves = def.phases ? def.phases[b.phase].moves : def.moves;
+        b.move = moves[b.moveIdx % moves.length]; b.moveIdx++;
+        b.used[b.move] = (b.used[b.move] || 0) + 1;
         b.st = "tele"; b.t = 0; b.hitSet = [];
         b.tx = target.x; b.ty = target.y;
         Sfx.warn();
-        if (b.move === "rain") {
-          for (var i = 0; i < 5; i++) {
+        if (b.move === "rain" || b.move === "meteor") {
+          var rocks = b.move === "meteor" ? (b.phase >= 2 ? 7 : 5) : 5;
+          for (var i = 0; i < rocks; i++) {
             var h = pick(heroesAlive()) || game.player;
             game.hazards.push({ kind: "drop", owner: "boss", x: clamp(h.x + rand(-160, 160), 60, W - 60), y: clamp(h.y + rand(-50, 50), GROUND_TOP, GROUND_BOTTOM),
-              r: 70, t: -i * 0.18, dur: 1.2, dmg: def.damage, hit: [], color: game.world.tint });
+              r: 70, t: -i * 0.18, dur: 1.2, dmg: def.damage, hit: [], color: game.world.tint, style: b.move === "meteor" ? "rock" : null });
           }
+        }
+        if (b.move === "tail") {
+          floatText(b.x, b.y - def.size - 10, b.used.tail === 1 ? "꼬리 조심! 위아래로 피해요!" : "꼬리 휘두르기!", "#ffb0a0", 30);
         }
       }
     } else if (b.st === "tele") {
-      var teleTime = b.move === "charge" ? 0.8 : b.move === "dive" ? 0.7 : b.move === "stomp" ? 0.9 : 0.6;
+      var teleTime = b.move === "charge" ? 0.8 : b.move === "dive" ? 0.7 : b.move === "stomp" ? 0.9 : b.move === "tail" ? 0.95 : 0.6;
       if (b.t > teleTime) { b.st = "act"; b.t = 0; startBossMove(b, target); }
     } else if (b.st === "act") {
       actBoss(b, dt);
@@ -636,16 +669,32 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     b.y = clamp(b.y, GROUND_TOP + 10, GROUND_BOTTOM - 10);
     b.x = clamp(b.x, 90, W - 90);
   }
+  function bossPhase(b) {
+    var ps = b.def.phases, k = b.hp / b.maxHp;
+    for (var i = ps.length - 1; i > 0; i--) if (k <= ps[i].at) return i;
+    return 0;
+  }
+  function bossFast(b) { return b.def.phases ? b.def.phases[b.phase].fast || 1 : 1; }
+  var TAIL_W = 430, TAIL_H = 46;
   function startBossMove(b, target) {
     var def = b.def;
     if (b.move === "stomp") {
       game.hazards.push({ kind: "ring", owner: "boss", x: b.x, y: b.y, r: 30, maxR: 330, t: 0, dur: 0.5, dmg: def.damage, hit: [], color: "#ff6b5b" });
       shake(14); Sfx.big();
     } else if (b.move === "charge") {
-      b.vx = (target.x < b.x ? -1 : 1) * 820; b.facing = b.vx < 0 ? -1 : 1;
+      b.vx = (target.x < b.x ? -1 : 1) * 820 * bossFast(b); b.facing = b.vx < 0 ? -1 : 1;
     } else if (b.move === "summon") {
       spawnEnemy(def.minion, -1); spawnEnemy(def.minion, 1);
-      floatText(b.x, b.y - def.size - 10, "부하들아 나와라!", "#fff", 30);
+      floatText(b.x, b.y - def.size - 10, def.summonLine || "부하들아 나와라!", "#fff", 30);
+    } else if (b.move === "erupt") {
+      // 화산 폭발: 영웅들 발밑마다 하나씩, 그리고 아무 데나 두 개 더.
+      heroesAlive().forEach(function (h) { spawnVent(h.x, h.y, 1.2); });
+      spawnVent(rand(120, W - 120), rand(GROUND_TOP + 10, GROUND_BOTTOM - 10), 1.2);
+      spawnVent(rand(120, W - 120), rand(GROUND_TOP + 10, GROUND_BOTTOM - 10), 1.2);
+      floatText(b.x, b.y - def.size - 10, "화산 폭발! 부글부글 피해요!", "#ffd0a0", 32);
+      shake(10); Sfx.big();
+    } else if (b.move === "tail") {
+      Sfx.big(); shake(8);
     } else if (b.move === "dive") {
       b.sx = b.x; b.sy = b.y;
     }
@@ -668,8 +717,42 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
         shake(10); burst(b.x, b.y - 40, "#c69bff", 20);
       }
       if (b.t > 1.2) { b.z = def.fly; b.st = "dizzy"; b.t = 0.9; }
+    } else if (b.move === "tail") {
+      // 꼬리는 보스 높이의 띠 안만 친다. 위아래로 비켜서면 안 맞는다.
+      if (b.t < 0.4) heroesAlive().forEach(function (h) {
+        if (b.hitSet.indexOf(h) < 0 && Math.abs(h.x - b.x) < TAIL_W && Math.abs(h.y - b.y) < TAIL_H) { b.hitSet.push(h); hurtHero(h, def.damage, b); }
+      });
+      if (b.t > 0.85) { b.st = "idle"; b.t = 0; }
     } else if (b.t > 0.7) {
       b.st = "idle"; b.t = 0;
+    }
+  }
+
+  // ---------- 용암 분수(공룡 화산섬) ----------
+  // 바닥이 부글부글(경고) → 펑 솟음. 영웅은 아프고, 적은 크게 다치고, 보스도 "앗 뜨거!" 한다.
+  function spawnVent(x, y, warn) {
+    warn = warn || 1.4;
+    game.hazards.push({ kind: "vent", x: clamp(x, 80, W - 80), y: clamp(y, GROUND_TOP + 8, GROUND_BOTTOM - 8), r: 82, t: 0,
+      warn: warn, dur: warn + 0.8, dmg: 8 + worldLevel(), hit: [], erupted: false });
+  }
+  function updateVent(z) {
+    if (z.t < z.warn || z.t >= z.dur) return;
+    if (!z.erupted) {
+      z.erupted = true; shake(5); Sfx.big();
+      burst(z.x, z.y - 60, "#ff9a3c", 16, 380);
+      if (game.mission.id === "treasure") for (var i = 0; i < 3; i++) dropSpark(z.x + rand(-90, 90), z.y + rand(-30, 30), rand(380, 520));
+    }
+    function inside(o, pad) { return Math.hypot(o.x - z.x, (o.y - z.y) * 2.2) < z.r + pad; }
+    heroesAlive().forEach(function (h) {
+      if (z.hit.indexOf(h) < 0 && inside(h, 16)) { z.hit.push(h); hurtHero(h, z.dmg, z); }
+    });
+    game.enemies.forEach(function (e) {
+      if (e.st !== "dead" && z.hit.indexOf(e) < 0 && inside(e, 30)) { z.hit.push(e); hurtTarget(e, 60, null, { kb: 160, color: "#ff9a3c" }); }
+    });
+    var b = game.boss;
+    if (b && b.st !== "dead" && b.st !== "enter" && z.hit.indexOf(b) < 0 && inside(b, 70)) {
+      z.hit.push(b); floatText(b.x, b.y - b.def.size - 30, "앗 뜨거!", "#ffb347", 36);
+      hurtTarget(b, 150, null, { big: true, color: "#ff9a3c" });
     }
   }
 
@@ -706,6 +789,15 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
         game.spawnT = rand(1.2, 2.4);
       }
     }
+    if (lavaWorld() && !game.over) {
+      game.ventT -= dt;
+      if (game.ventT <= 0) {
+        var near = Math.random() < 0.5 ? pick(heroesAlive()) : null;
+        spawnVent(near ? near.x + rand(-120, 120) : rand(120, W - 120), near ? near.y + rand(-30, 30) : rand(GROUND_TOP + 10, GROUND_BOTTOM - 10));
+        game.ventT = m === "boss" ? rand(5.5, 7.5) : rand(3.2, 4.6);
+        if (!game.ventTold) { game.ventTold = true; game.callout = { text: "부글부글! 끓는 바닥을 피해요 🌋", t: 0 }; }
+      }
+    }
     if (m === "treasure" && !game.over) {
       game.sparkT -= dt;
       if (game.sparkT <= 0) { dropSpark(rand(80, W - 80), rand(GROUND_TOP + 10, GROUND_BOTTOM - 10)); game.sparkT = rand(0.9, 1.3); }
@@ -716,6 +808,7 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     game.clock += dt;
     game.shake = Math.max(0, game.shake - dt * 40);
     if (game.flash) { game.flash.t -= dt; if (game.flash.t <= 0) game.flash = null; }
+    if (game.callout) { game.callout.t += dt; if (game.callout.t > 2.2) game.callout = null; }
     updateParts(dt);
     if (game.over) {
       game.endT += dt;
@@ -771,6 +864,8 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
             if (z.owner === "boss") hurtHero(v, z.dmg, z); else hurtTarget(v, z.dmg, game.player, { kb: 300 });
           }
         });
+      } else if (z.kind === "vent") {
+        updateVent(z);
       } else if (z.kind === "drop" && z.t >= z.dur && !z.done) {
         z.done = true; shake(6); burst(z.x, z.y - 10, z.color, 12, 260);
         heroesAlive().forEach(function (h) { if (Math.hypot(h.x - z.x, (h.y - z.y) * 1.8) < z.r + 20) hurtHero(h, z.dmg, z); });
@@ -834,7 +929,11 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     g.quadraticCurveTo(x0 - h * 0.02 - sway * 0.5, y0 + len + h * 0.04, x0 + h * 0.12 - sway * 0.3, y0 + len * 0.96);
     g.quadraticCurveTo(x0 + h * 0.09, y0 + len * 0.45, x0 + h * 0.07, y0 - h * 0.01);
     g.closePath();
-    if (cape.color === "rainbow") {
+    if (cape.color === "lava") {
+      var lgr = g.createLinearGradient(0, y0, 0, y0 + len);
+      lgr.addColorStop(0, "#ffd84a"); lgr.addColorStop(0.45, "#ff7a2f"); lgr.addColorStop(1, "#b8231a");
+      g.fillStyle = lgr;
+    } else if (cape.color === "rainbow") {
       var grd = g.createLinearGradient(0, y0, 0, y0 + len);
       ["#ff5e7a", "#ffb347", "#ffe45c", "#5ee07a", "#58b8ff", "#9b5cff"].forEach(function (c, i) { grd.addColorStop(i / 5, c); });
       g.fillStyle = grd;
@@ -843,6 +942,13 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     }
     g.fill();
     g.lineWidth = h * 0.012; g.strokeStyle = "rgba(0,0,0,0.35)"; g.stroke();
+    if (cape.color === "lava") {
+      // 용암 망토: 반짝이는 불씨가 깜빡인다.
+      for (var e = 0; e < 5; e++) {
+        g.fillStyle = "rgba(255,240,150," + (0.45 + 0.55 * Math.abs(Math.sin(t * 4 + e * 1.7))) + ")";
+        g.beginPath(); g.arc(x0 - h * 0.03 - sway * (e / 5) + Math.sin(e * 5) * h * 0.04, y0 + len * (0.25 + e * 0.15), h * 0.011, 0, Math.PI * 2); g.fill();
+      }
+    }
     if (cape.stars) {
       g.fillStyle = "#fff6b0";
       for (var i = 0; i < 6; i++) { var sx = x0 - h * 0.02 - sway * (i / 6) + Math.sin(i * 7) * h * 0.04, sy = y0 + len * (0.2 + i * 0.13); g.beginPath(); g.arc(sx, sy, h * 0.008, 0, Math.PI * 2); g.fill(); }
@@ -855,6 +961,17 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
       [[-1, -0.07], [1, -0.07]].forEach(function (s) {
         g.beginPath(); g.moveTo(x + s[0] * mw * 0.22, y - h * 0.09); g.lineTo(x + s[0] * mw * 0.48, y - h * 0.19); g.lineTo(x + s[0] * mw * 0.5, y - h * 0.08); g.closePath(); g.fill();
       });
+    }
+    if (mask.crest) {
+      // 공룡 볏: 머리 위에 뾰족뾰족한 등지느러미 네 개.
+      for (var k = 0; k < 4; k++) {
+        var cx = x - mw * 0.36 + k * mw * 0.24, tall = h * (0.075 + (k === 1 || k === 2 ? 0.03 : 0));
+        g.fillStyle = mask.color; g.strokeStyle = "rgba(90,30,10,0.6)"; g.lineWidth = h * 0.006;
+        g.beginPath(); g.moveTo(cx - mw * 0.12, y - h * 0.075); g.quadraticCurveTo(cx - mw * 0.02, y - h * 0.075 - tall, cx + mw * 0.03, y - h * 0.075 - tall);
+        g.quadraticCurveTo(cx + mw * 0.05, y - h * 0.075 - tall * 0.4, cx + mw * 0.12, y - h * 0.075); g.closePath(); g.fill(); g.stroke();
+        g.fillStyle = "#ffd84a"; g.beginPath(); g.arc(cx + mw * 0.01, y - h * 0.075 - tall * 0.8, h * 0.008, 0, Math.PI * 2); g.fill();
+      }
+      return;
     }
     if (mask.antenna) {
       // 곤충 더듬이: 머리 위로 휘어진 두 줄과 끝 방울
@@ -932,7 +1049,36 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     g.closePath(); g.fill();
   }
 
-  function drawSprite(g, src, x, y, h, facing, flash, alpha, wobble) {
+  // 화산 돌(티라노의 돌 비)과 화산 보석(반짝이 대신).
+  function rock(g, x, y, r, t) {
+    g.save(); g.translate(x, y); g.rotate(t * 3);
+    g.fillStyle = "rgba(255,140,40,0.45)"; g.beginPath(); g.arc(0, 0, r * 1.35, 0, Math.PI * 2); g.fill();
+    g.fillStyle = "#6b4636"; g.strokeStyle = "#ff8a2f"; g.lineWidth = 4;
+    g.beginPath();
+    for (var i = 0; i < 7; i++) { var a = i / 7 * Math.PI * 2, rr = r * (0.8 + 0.2 * Math.sin(i * 2.3)); g.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); }
+    g.closePath(); g.fill(); g.stroke();
+    g.restore();
+  }
+  function gem(g, x, y, r, tw) {
+    g.fillStyle = "#ff6b3d"; g.strokeStyle = "#fff1c2"; g.lineWidth = 3;
+    g.beginPath(); g.moveTo(x, y - r); g.lineTo(x + r * 0.8, y - r * 0.2); g.lineTo(x, y + r); g.lineTo(x - r * 0.8, y - r * 0.2); g.closePath(); g.fill(); g.stroke();
+    g.fillStyle = "#ffd36b"; g.beginPath(); g.moveTo(x, y - r); g.lineTo(x + r * 0.8, y - r * 0.2); g.lineTo(x, y - r * 0.05); g.lineTo(x - r * 0.8, y - r * 0.2); g.closePath(); g.fill();
+    g.fillStyle = "rgba(255,255,255," + (0.5 + 0.5 * tw) + ")"; g.beginPath(); g.arc(x - r * 0.25, y - r * 0.45, r * 0.12, 0, Math.PI * 2); g.fill();
+  }
+
+  var tintCache = {};
+  function tintOf(im, color) {
+    if (!ready(im)) return null;
+    var key = im.src + "|" + color;
+    if (tintCache[key]) return tintCache[key];
+    var c = document.createElement("canvas");
+    c.width = im.naturalWidth; c.height = im.naturalHeight;
+    var g = c.getContext("2d");
+    g.drawImage(im, 0, 0); g.globalCompositeOperation = "source-in"; g.fillStyle = color; g.fillRect(0, 0, c.width, c.height);
+    tintCache[key] = c;
+    return c;
+  }
+  function drawSprite(g, src, x, y, h, facing, flash, alpha, wobble, tint) {
     var im = image(src);
     if (!ready(im)) { g.fillStyle = "#999"; g.beginPath(); g.arc(x, y - h / 2, h / 3, 0, Math.PI * 2); g.fill(); return; }
     var w = h * im.naturalWidth / im.naturalHeight;
@@ -942,6 +1088,7 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     if (wobble) g.rotate(wobble);
     if (alpha !== undefined) g.globalAlpha = alpha;
     g.drawImage(im, -w / 2, -h, w, h);
+    if (tint) { g.globalAlpha = Math.max(0, tint.a) * (alpha === undefined ? 1 : alpha); g.drawImage(tintOf(im, tint.color), -w / 2, -h, w, h); }
     if (flash > 0) { g.globalAlpha = Math.min(1, flash * 8); g.drawImage(whiteOf(im), -w / 2, -h, w, h); }
     g.restore();
   }
@@ -975,7 +1122,19 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
         var k = clamp(z.t / z.dur, 0, 1);
         if (z.t < 0) return;
         g.fillStyle = "rgba(255,70,70," + (0.18 + 0.3 * k) + ")"; g.beginPath(); g.ellipse(z.x, z.y, z.r, z.r * 0.3, 0, 0, Math.PI * 2); g.fill();
-        if (!z.done) { var fy = z.y - 600 * (1 - k); star(g, z.x, fy - 30, 30, z.color); }
+        if (!z.done) { var fy = z.y - 600 * (1 - k); if (z.style === "rock") rock(g, z.x, fy - 30, 30, t); else star(g, z.x, fy - 30, 30, z.color); }
+      } else if (z.kind === "vent") {
+        var wk = clamp(z.t / z.warn, 0, 1), on = z.t >= z.warn;
+        g.fillStyle = on ? "rgba(255,120,30,0.8)" : "rgba(255,100,40," + (0.22 + 0.4 * wk * (0.65 + 0.35 * Math.sin(t * 18))) + ")";
+        g.beginPath(); g.ellipse(z.x, z.y, z.r, z.r * 0.32, 0, 0, Math.PI * 2); g.fill();
+        if (!on) {
+          g.strokeStyle = "rgba(255,216,74," + (0.5 + 0.5 * Math.sin(t * 18)) + ")"; g.lineWidth = 4; g.stroke();
+          g.fillStyle = "#ffd36b";
+          for (var bi = 0; bi < 5; bi++) {
+            var by = ((t * 50 + bi * 9) % 22);
+            g.beginPath(); g.arc(z.x + Math.cos(bi * 1.9) * z.r * 0.6, z.y + Math.sin(bi * 2.7) * z.r * 0.14 - by, 5 + 3 * wk, 0, Math.PI * 2); g.fill();
+          }
+        }
       }
     });
     if (game.boss && game.boss.st === "tele") {
@@ -984,6 +1143,12 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
       if (b.move === "stomp") { g.beginPath(); g.ellipse(b.x, b.y, 330, 70, 0, 0, Math.PI * 2); g.stroke(); }
       if (b.move === "charge") { g.beginPath(); g.moveTo(b.x, b.y); g.lineTo(b.tx < b.x ? 60 : W - 60, b.y); g.stroke(); }
       if (b.move === "dive") { g.fillStyle = "rgba(255,80,80,0.35)"; g.beginPath(); g.ellipse(b.tx, b.ty, 110, 34, 0, 0, Math.PI * 2); g.fill(); }
+      if (b.move === "tail") {
+        // 꼬리 띠: 이 높이에 서 있으면 맞는다. 위나 아래로 비키면 된다.
+        g.fillStyle = "rgba(255,60,60," + (0.3 + 0.12 * Math.sin(t * 20)) + ")";
+        g.strokeStyle = "rgba(255,70,70," + (0.75 + 0.25 * Math.sin(t * 20)) + ")";
+        roundRect(g, b.x - TAIL_W, b.y - TAIL_H, TAIL_W * 2, TAIL_H * 2, TAIL_H); g.fill(); g.stroke();
+      }
     }
     // 그림자와 캐릭터를 앞뒤 순서로
     var list = [];
@@ -993,6 +1158,7 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     game.cages.forEach(function (c) { list.push(c); });
     game.sparks.forEach(function (s) { list.push(s); });
     game.shots.forEach(function (s) { list.push(s); });
+    game.hazards.forEach(function (z) { if (z.kind === "vent" && z.t >= z.warn && z.t < z.dur) list.push(z); });
     list.sort(function (a, b) { return a.y - b.y; });
     list.forEach(function (o) { drawThing(g, o, t); });
     game.hazards.forEach(function (z) {
@@ -1001,6 +1167,19 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
       g.strokeStyle = z.color; g.globalAlpha = Math.max(0, a); g.lineWidth = z.owner === "boss" ? 14 : 18;
       g.beginPath(); g.ellipse(z.x, z.y, z.r, z.r * 0.32, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1;
     });
+    if (game.boss && game.boss.st === "tele" && game.boss.move === "tail") {
+      // 피하는 방향 화살표는 캐릭터 위에 크게 그린다.
+      var ab = game.boss, ax = ab.x + ab.facing * TAIL_W * 0.72, bounce = Math.sin(t * 14) * 6;
+      g.font = "900 44px system-ui"; g.textAlign = "center"; g.lineWidth = 7; g.strokeStyle = "#5a0d0d"; g.fillStyle = "#fff0e8";
+      // 비킬 자리가 있는 쪽만 화살표를 보여 준다.
+      if (ab.y - TAIL_H > GROUND_TOP + 6) { g.strokeText("⬆", ax, ab.y - TAIL_H - 14 - bounce); g.fillText("⬆", ax, ab.y - TAIL_H - 14 - bounce); }
+      if (ab.y + TAIL_H < GROUND_BOTTOM - 6) { var dy2 = Math.min(ab.y + TAIL_H + 44, H - 4) + bounce; g.strokeText("⬇", ax, dy2); g.fillText("⬇", ax, dy2); }
+    }
+    if (game.boss && game.boss.st === "act" && game.boss.move === "tail" && game.boss.t < 0.5) {
+      var tb = game.boss, tk = tb.t / 0.4;
+      g.strokeStyle = "rgba(255,170,60," + Math.max(0, 1 - tb.t * 2) + ")"; g.lineWidth = 22; g.lineCap = "round";
+      g.beginPath(); g.ellipse(tb.x, tb.y - 30, TAIL_W, 58, 0, -0.2, -0.2 + Math.PI * 2 * Math.min(1, tk)); g.stroke();
+    }
     drawParts(g);
     if (game.flash) { g.fillStyle = game.flash.color; g.globalAlpha = game.flash.t * 1.4; g.fillRect(-200, -900, W + 400, H + 1200); g.globalAlpha = 1; }
     g.setTransform(view.dpr * view.scale, 0, 0, view.dpr * view.scale, view.dpr * view.ox, view.dpr * Math.min(view.oy, 0));
@@ -1028,7 +1207,8 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
       shadow(g, o.x, o.y, hgt * 0.3);
       var wob = o.st === "windup" ? Math.sin(t * 40) * 0.08 : o.st === "hurt" ? -0.15 * o.facing : 0;
       var a = o.st === "dead" ? Math.max(0, o.dead / 0.5) : 1;
-      drawSprite(g, o.def.src, o.x, o.y - o.z + (o.st === "dead" ? (1 - a) * 40 : 0), hgt, o.facing, o.flash, a, wob);
+      var hop = o.def.hop && o.st === "walk" ? Math.abs(Math.sin(t * 11 + o.x * 0.01)) * 18 : 0;
+      drawSprite(g, o.def.src, o.x, o.y - o.z - hop + (o.st === "dead" ? (1 - a) * 40 : 0), hgt, o.facing, o.flash, a, wob);
       if (o.st === "windup") { g.font = "900 34px system-ui"; g.textAlign = "center"; g.fillStyle = "#ff5a5a"; g.fillText("!", o.x, o.y - o.z - hgt - 8); }
       if (o.st !== "dead" && o.hp < o.maxHp) bar(g, o.x - 40, o.y - o.z - hgt - 18, 80, 9, o.hp / o.maxHp, "#ff6b5b");
       if (o.slow > 0) { g.strokeStyle = "rgba(255,255,255,0.7)"; g.lineWidth = 2; for (var i = 0; i < 4; i++) { g.beginPath(); g.moveTo(o.x - 40, o.y - o.z - hgt * (0.2 + i * 0.2)); g.lineTo(o.x + 40, o.y - o.z - hgt * (0.3 + i * 0.15)); g.stroke(); } }
@@ -1036,8 +1216,12 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
       var bh = o.def.size * s;
       shadow(g, o.x, o.y, bh * 0.36);
       var bw = o.st === "tele" ? Math.sin(t * 36) * 0.05 : o.st === "dizzy" ? Math.sin(t * 6) * 0.1 : 0;
+      if (o.st === "roar") bw = Math.sin(t * 50) * 0.04;
+      if (o.st === "act" && o.move === "tail") bw = Math.sin(o.t * 24) * 0.14;
       var enterAlpha = o.st === "dead" ? Math.max(0, 1 - o.t) : 1;
-      drawSprite(g, o.def.src, o.x, o.y - o.z, bh, o.facing, o.flash, enterAlpha, bw);
+      // 화난 단계일수록 몸이 붉게 달아올라 깜빡인다(배경이 주황이라 빛무리 대신 몸 색을 바꾼다).
+      var heat = o.phase > 0 && o.st !== "dead" ? { color: o.phase > 1 ? "#ff1e00" : "#ff6a00", a: (o.phase > 1 ? 0.3 : 0.16) + 0.12 * Math.sin(t * (o.phase > 1 ? 9 : 5)) } : null;
+      drawSprite(g, o.def.src, o.x, o.y - o.z, bh, o.facing, o.flash, enterAlpha, bw, heat);
       if (o.st === "dizzy") { for (var j = 0; j < 3; j++) star(g, o.x + Math.cos(t * 5 + j * 2.1) * 60, o.y - o.z - bh - 10 + Math.sin(t * 5 + j * 2.1) * 12, 14, "#ffe45c"); }
     } else if (o.kind === "cage") {
       shadow(g, o.x, o.y, 70);
@@ -1046,17 +1230,35 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
         return;
       }
       var shakeX = o.t > 0 ? Math.sin(t * 60) * 5 : 0;
+      var cageLook = game.world.cage || {};
+      if (cageLook.bar) { g.fillStyle = "rgba(255,240,210,0.75)"; g.beginPath(); g.arc(o.x + shakeX, o.y - 62, 40, 0, Math.PI * 2); g.fill(); }
       g.font = "64px system-ui"; g.textAlign = "center"; g.fillText(o.animal, o.x + shakeX, o.y - 40);
-      g.strokeStyle = o.flash > 0 ? "#ffffff" : "#8e96ad"; g.lineWidth = 8;
+      g.strokeStyle = o.flash > 0 ? "#ffffff" : cageLook.bar || "#8e96ad"; g.lineWidth = 8;
       g.strokeRect(o.x - 60 + shakeX, o.y - 150, 120, 150);
       for (var k2 = 1; k2 < 5; k2++) { g.beginPath(); g.moveTo(o.x - 60 + k2 * 24 + shakeX, o.y - 150); g.lineTo(o.x - 60 + k2 * 24 + shakeX, o.y); g.stroke(); }
-      g.fillStyle = "#5d6479"; g.fillRect(o.x - 70 + shakeX, o.y - 164, 140, 18);
+      g.fillStyle = cageLook.top || "#5d6479"; g.fillRect(o.x - 70 + shakeX, o.y - 164, 140, 18);
       bar(g, o.x - 55, o.y - 186, 110, 12, o.hp / o.maxHp, "#58d6ff");
       g.font = "900 22px system-ui"; g.fillStyle = "#fff"; g.fillText("때려서 열어요!", o.x, o.y - 196);
     } else if (o.kind === "spark") {
       var glow = 0.6 + 0.4 * Math.sin(t * 8 + o.x);
       if (o.z < 30) { g.fillStyle = "rgba(255,230,120,0.25)"; g.beginPath(); g.ellipse(o.x, o.y, 26, 8, 0, 0, Math.PI * 2); g.fill(); }
-      g.save(); g.translate(o.x, o.y - 26 - o.z); g.rotate(t * 2); g.globalAlpha = glow; star(g, 0, 0, 24, "#ffe45c"); g.restore(); g.globalAlpha = 1;
+      g.save(); g.translate(o.x, o.y - 26 - o.z);
+      if (lavaWorld()) { g.globalAlpha = glow; gem(g, 0, 0, 24, Math.sin(t * 3 + o.x)); }
+      else { g.rotate(t * 2); g.globalAlpha = glow; star(g, 0, 0, 24, "#ffe45c"); }
+      g.restore(); g.globalAlpha = 1;
+    } else if (o.kind === "vent") {
+      // 솟는 용암 기둥: 올라갔다가 내려온다.
+      var vk = clamp((o.t - o.warn) / (o.dur - o.warn), 0, 1), vh = 280 * Math.sin(vk * Math.PI) + 20;
+      var lg = g.createLinearGradient(0, o.y - vh, 0, o.y);
+      lg.addColorStop(0, "rgba(255,236,140,0.95)"); lg.addColorStop(0.5, "rgba(255,150,40,0.95)"); lg.addColorStop(1, "rgba(230,70,20,0.95)");
+      g.fillStyle = lg;
+      g.beginPath(); g.moveTo(o.x - 50, o.y);
+      g.quadraticCurveTo(o.x - 26, o.y - vh * 0.55, o.x - 22, o.y - vh);
+      g.quadraticCurveTo(o.x, o.y - vh - 34, o.x + 22, o.y - vh);
+      g.quadraticCurveTo(o.x + 26, o.y - vh * 0.55, o.x + 50, o.y);
+      g.closePath(); g.fill();
+      g.fillStyle = "#ffcf5a";
+      for (var vb = 0; vb < 4; vb++) { g.beginPath(); g.arc(o.x + Math.cos(t * 7 + vb * 1.6) * 36, o.y - vh - 6 + Math.sin(t * 9 + vb) * 16, 9, 0, Math.PI * 2); g.fill(); }
     } else if (o.kind === "shot") {
       // 총알: bubble(드론 비눗방울, 때려서 터뜨림) · web(거미줄) · ball(불꽃 축구공)
       if (o.type === "bubble") {
@@ -1124,12 +1326,25 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     // 목표
     var m = game.mission.id, goal = "";
     if (m === "rescue") goal = "🔓 " + game.freed + " / 3";
-    if (m === "treasure") goal = "⭐ " + game.collected + " / 50";
+    if (m === "treasure") goal = (lavaWorld() ? "💎 " : "⭐ ") + game.collected + " / 50";
     if (goal) { g.font = "900 30px system-ui"; g.lineWidth = 6; g.strokeText(goal, W / 2, 104); g.fillStyle = "#ffe45c"; g.fillText(goal, W / 2, 104); }
     if (game.boss && game.boss.st !== "enter") {
       g.font = "900 22px system-ui"; g.fillStyle = "#fff"; g.lineWidth = 5;
       g.strokeText(game.boss.def.name, W / 2, 100); g.fillText(game.boss.def.name, W / 2, 100);
-      bar(g, W / 2 - 220, 110, 440, 20, game.boss.hp / game.boss.maxHp, "#ff5a78");
+      bar(g, W / 2 - 220, 110, 440, 20, game.boss.hp / game.boss.maxHp, game.boss.phase > 1 ? "#ff3b1f" : "#ff5a78");
+      // 단계 보스는 체력 줄에 금을 그어 "여기까지 깎으면 화낸다"를 보여 준다.
+      if (game.boss.def.phases) game.boss.def.phases.forEach(function (ph, i) {
+        if (!i) return;
+        var nx = W / 2 - 220 + 440 * ph.at;
+        g.fillStyle = "#ffffff"; g.fillRect(nx - 2, 106, 4, 28);
+      });
+    }
+    if (game.callout && !game.over) {
+      var ck = Math.min(1, game.callout.t * 5), ca = game.callout.t > 1.8 ? Math.max(0, (2.2 - game.callout.t) / 0.4) : 1;
+      g.save(); g.globalAlpha = ca; g.translate(W / 2, 182); g.scale(0.6 + 0.4 * ck, 0.6 + 0.4 * ck);
+      g.font = "900 46px system-ui"; g.textAlign = "center"; g.lineWidth = 9; g.strokeStyle = "#2a1408";
+      g.strokeText(game.callout.text, 0, 0); g.fillStyle = "#ffb347"; g.fillText(game.callout.text, 0, 0);
+      g.restore();
     }
     if (game.banner) {
       var k = Math.min(1, game.banner.t * 4);
@@ -1238,10 +1453,10 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
         b.disabled = !open;
         b.innerHTML = "";
         var ic = document.createElement("span"); ic.className = "m-icon"; ic.textContent = open ? (m.id === "boss" ? "👑" : m.icon) : "🔒";
-        var nm = document.createElement("span"); nm.textContent = m.id === "boss" ? D.BOSSES[w.boss].name : m.name;
+        var nm = document.createElement("span"); nm.textContent = m.id === "boss" ? D.BOSSES[w.boss].name : missionInfo(w, m).name;
         var st = document.createElement("span"); st.className = "m-stars"; st.textContent = "★★★".slice(0, best) + "☆☆☆".slice(0, 3 - best);
         b.append(ic, nm, st);
-        b.setAttribute("aria-label", w.name + " " + m.name + (open ? "" : " 잠김"));
+        b.setAttribute("aria-label", w.name + " " + missionInfo(w, m).name + (open ? "" : " 잠김"));
         b.addEventListener("click", function () { startMission(wi, mi); });
         row.appendChild(b);
       });
@@ -1252,7 +1467,14 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
 
   function showResult() {
     var rec = Save.recordMission(state, game.world.id, game.mission.id, game.stars);
-    state = rec.state; persist();
+    state = rec.state;
+    // 보스 선물: 이길 때마다 아직 없는 선물 조각 하나.
+    game.prize = null;
+    if (game.boss && game.won) {
+      var drop = Save.bossDrop(state, D, game.boss.id);
+      state = drop.state; game.prize = drop.item;
+    }
+    persist();
     $("controls").hidden = true;
     var st = $("resultStars");
     st.replaceChildren();
@@ -1264,12 +1486,21 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     }
     $("resultTitle").textContent = game.stars > 0 ? "미션 성공! 🎉" : "아깝다! 다시 해 볼까?";
     $("resultText").textContent = game.stars > 0 ? "별 " + rec.earned + "개를 받았어요! (모은 별 ⭐ " + state.stars + ")" : resultHint();
+    var lastWorld = game.worldIndex === D.WORLDS.length - 1;
+    if (game.won && game.boss && lastWorld) $("resultTitle").textContent = "멀티버스를 다 구했어요! 🏆";
+    $("resultPrize").hidden = !game.prize; $("resultWear").hidden = !game.prize;
+    if (game.prize) {
+      $("resultPrizeIcon").replaceChildren(itemBadge(game.prize, true));
+      $("resultPrizeName").textContent = game.boss.def.name + " 선물: " + game.prize.name + "!";
+    }
     var next = nextMission();
     $("nextBtn").hidden = !(game.stars > 0 && next);
-    $("resultCapsule").hidden = state.stars < D.CAPSULE_COST || state.owned.length >= D.ITEMS.length;
+    $("resultCapsule").hidden = state.stars < D.CAPSULE_COST || Save.capsuleDone(state, D);
     showScreen("result", true);
   }
   function resultHint() {
+    if (game.boss && game.boss.def.phases) return "빨간 띠가 번쩍이면 위아래로 피해요! 티라노를 용암 분수 위로 꾀어도 좋아요.";
+    if (game.world.tip && game.mission.id !== "boss") return game.world.tip;
     if (game.mission.id === "rescue") return "철창을 계속 때리면 열려요. 태오·재이도 같이 도와줘요!";
     if (game.mission.id === "treasure") return "반짝이 20개만 모아도 별을 받아요. 로봇을 물리치면 반짝이가 튀어나와요!";
     return "보스가 벽에 부딪혀 어지러울 때 마구 때려요!";
@@ -1283,6 +1514,12 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
   $("againBtn").addEventListener("click", function () { startMission(game.worldIndex, game.missionIndex); });
   $("nextBtn").addEventListener("click", function () { var n = nextMission(); if (n) startMission(n[0], n[1]); });
   $("resultCapsule").addEventListener("click", function () { showScreen("capsule"); });
+  $("resultWear").addEventListener("click", function () {
+    var it = game && game.prize; if (!it) return;
+    wardrobeKid = state.hero; wardrobeSlot = it.slot;
+    state = Save.equip(state, D, wardrobeKid, it.id); persist();
+    showScreen("wardrobe");
+  });
 
   function pauseGame() {
     if (!game || !game.running || game.over) return;
@@ -1326,7 +1563,7 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
       var owned = state.owned.indexOf(it.id) >= 0;
       var b = document.createElement("button"); b.type = "button"; b.className = "item" + (owned ? "" : " is-locked");
       b.appendChild(itemBadge(it, owned));
-      var name = document.createElement("span"); name.textContent = owned ? it.name : "???";
+      var name = document.createElement("span"); name.textContent = owned ? it.name : it.drop ? D.BOSSES[it.drop].name + " 선물" : "???";
       b.appendChild(name);
       b.disabled = !owned;
       b.classList.toggle("is-on", state.outfit[wardrobeKid][wardrobeSlot] === it.id);
@@ -1336,10 +1573,11 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     $("collectCount").textContent = "모은 조각 " + state.owned.length + " / " + D.ITEMS.length;
   }
   function itemBadge(it, owned) {
-    if (!owned) { var q = document.createElement("span"); q.className = "i-icon"; q.textContent = "❔"; return q; }
+    if (!owned) { var q = document.createElement("span"); q.className = "i-icon"; q.textContent = it.drop ? "🦖" : "❔"; return q; }
     if (it.icon) { var i = document.createElement("span"); i.className = "i-icon"; i.textContent = it.icon; return i; }
     var sw = document.createElement("span"); sw.className = "swatch";
-    sw.style.background = it.color === "rainbow" ? "linear-gradient(135deg,#ff5e7a,#ffe45c,#5ee07a,#58b8ff,#9b5cff)" : it.color;
+    sw.style.background = it.color === "rainbow" ? "linear-gradient(135deg,#ff5e7a,#ffe45c,#5ee07a,#58b8ff,#9b5cff)"
+      : it.color === "lava" ? "linear-gradient(180deg,#ffd84a,#ff7a2f 45%,#b8231a)" : it.color;
     return sw;
   }
   function renderPreview(t) {
@@ -1359,7 +1597,7 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     paintStars();
     $("capsulePrize").hidden = true; $("wearPrize").hidden = true;
     $("capsuleBall").className = "capsule";
-    var done = state.owned.length >= D.ITEMS.length;
+    var done = Save.capsuleDone(state, D);
     $("openCapsule").disabled = done || state.stars < D.CAPSULE_COST;
     $("capsuleHint").textContent = done ? "모든 조각을 다 모았어요! 👑" : state.stars < D.CAPSULE_COST
       ? "별이 " + (D.CAPSULE_COST - state.stars) + "개 더 있으면 열 수 있어요. 미션을 깨요!" : "별 3개로 새 꾸미기 조각이 나와요!";
@@ -1378,7 +1616,7 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
       $("capsulePrize").hidden = false; $("wearPrize").hidden = false;
       $("capsuleHint").textContent = "새 조각이에요! 옷장에서 입혀 봐요.";
       paintStars();
-      setTimeout(function () { $("openCapsule").disabled = state.stars < D.CAPSULE_COST || state.owned.length >= D.ITEMS.length; }, 400);
+      setTimeout(function () { $("openCapsule").disabled = state.stars < D.CAPSULE_COST || Save.capsuleDone(state, D); }, 400);
     }, 1050);
   });
   $("wearPrize").addEventListener("click", function () {
@@ -1397,6 +1635,7 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
   window.__MV = {
     get state() { return state; }, get game() { return game; }, data: D,
     start: startMission, setState: function (s) { state = Save.normalise(s, D); persist(); showScreen("home"); },
+    vent: function (x, y, warn) { if (game) spawnVent(x, y, warn); },
     step: function (sec) { for (var i = 0; i < sec * 60; i++) { if (game && game.running && !game.paused) update(1 / 60); } }
   };
 })();

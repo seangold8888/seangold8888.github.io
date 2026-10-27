@@ -97,10 +97,16 @@
     return { state: next, earned: earned };
   }
 
+  // 캡슐에서 나오는 조각: 보스 선물(drop)은 빼고.
+  function capsulePool(data) { return data.ITEMS.filter(function (item) { return !item.drop; }); }
+  function capsuleDone(state, data) {
+    return capsulePool(data).every(function (item) { return state.owned.indexOf(item.id) >= 0; });
+  }
+
   // 캡슐: 별 3개. 아직 없는 조각 중 하나를 준다. 다 모으면 열 수 없다.
   function openCapsule(state, data, random) {
     var cost = data.CAPSULE_COST;
-    var missing = data.ITEMS.filter(function (item) { return state.owned.indexOf(item.id) < 0; });
+    var missing = capsulePool(data).filter(function (item) { return state.owned.indexOf(item.id) < 0; });
     if (state.stars < cost || missing.length === 0) return { state: state, item: null };
     var pick = missing[Math.floor((random || Math.random)() * missing.length) % missing.length];
     var next = JSON.parse(JSON.stringify(state));
@@ -108,6 +114,21 @@
     next.capsules += 1;
     next.owned.push(pick.id);
     return { state: next, item: pick };
+  }
+
+  // 보스 선물: 그 보스를 이길 때마다 아직 없는 선물 조각을 차례로 하나 준다. 다 받았으면 없음.
+  function bossDrop(state, data, bossId) {
+    var boss = data.BOSSES[bossId];
+    var ids = boss && boss.drops ? boss.drops : [];
+    for (var i = 0; i < ids.length; i++) {
+      if (state.owned.indexOf(ids[i]) >= 0) continue;
+      var item = data.ITEMS.filter(function (it) { return it.id === ids[i]; })[0];
+      if (!item) continue;
+      var next = JSON.parse(JSON.stringify(state));
+      next.owned.push(item.id);
+      return { state: next, item: item };
+    }
+    return { state: state, item: null };
   }
 
   function equip(state, data, kid, itemId, slot) {
@@ -121,5 +142,6 @@
   }
 
   return { KEY: KEY, fresh: fresh, normalise: normalise, load: load, save: save,
-    missionOpen: missionOpen, recordMission: recordMission, openCapsule: openCapsule, equip: equip };
+    missionOpen: missionOpen, recordMission: recordMission, openCapsule: openCapsule, equip: equip,
+    capsulePool: capsulePool, capsuleDone: capsuleDone, bossDrop: bossDrop };
 });
