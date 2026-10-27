@@ -25,6 +25,8 @@ export const HERO_RENDER_SCALES = Object.freeze({
   lvbu: 1.15,
   dongzhuo: .97,
   diaochan: .92,
+  menghuo: 1.0,
+  zhurong: .92,
   nezha: .84,
   erlangshen: .80,
   honghaier: .83,

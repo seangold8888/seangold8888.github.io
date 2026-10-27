@@ -102,6 +102,7 @@ export const TROOP_TINT = {
   wei:    [{ from: 0, to: 226, width: 50, sat: .85, val: .96 }],    // 위군 — 짙은 감청
   ship:   [{ from: 0, to: 172, width: 50, sat: .80, val: 1.02 }],   // 수군 — 물빛 청록
   wu:     [{ from: 0, to: 96, width: 50, sat: .78, val: 1.00 }],    // 오군 — 이끼 녹
+  nanman: [{ from: 0, to: 28, width: 50, sat: .96, val: 1.04 }],   // 남만군 — 등나무 갈색
 };
 
 /** 적장은 진영보다 한 단계 더 짙고 강한 색으로 구분한다. */
@@ -112,4 +113,5 @@ export const BOSS_TINT = {
   wei:    [{ from: 0, to: 232, width: 54, sat: .92, val: .92 }],
   ship:   [{ from: 0, to: 168, width: 54, sat: .88, val: .98 }],
   wu:     [{ from: 0, to: 88, width: 54, sat: .86, val: .96 }],
+  nanman: [{ from: 0, to: 24, width: 54, sat: 1.0, val: .98 }],
 };

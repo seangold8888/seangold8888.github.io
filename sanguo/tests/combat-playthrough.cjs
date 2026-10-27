@@ -26,12 +26,14 @@ const representativeCases=[
  ['sunquan','trilands'],['taishici','trilands'],['ganning','trilands'],['luxun','trilands'],
  // 군웅 — 연환계 전장(보스 동탁)과 연무장 동탁.
  ['lvbu','lianhuan'],['diaochan','lianhuan'],['dongzhuo','trilands'],
+ // 남만 장수와 새 역사 전장 넷. 남만은 맹획을 일곱 번 잡아야 끝난다(칠종칠금).
+ ['menghuo','trilands'],['zhurong','trilands'],['zhangliao','hefei'],['guanyu','fancheng'],['zhugeliang','nanman'],['zhugeliang','wuzhangyuan'],
  // 서유기 확장 — 새 적 진영·보스·절차 배경이 실제로 7파도를 돌 수 있는지 본다.
  ['wukong','huaguoshan'],['wukong','baihuling'],['wukong','shituoling'],
  ['nezha','heavenpalace'],['wukong','donghai'],['wukong','flamemountain'],
  ['wukong','lianhuadong'],['wukong','huoyundong'],['wusong','liangshan'],['linchong','snowshrine'],
 ];
-const rangedHeroes=new Set(['huangzhong','xiahoudun','zhangliao','xuchu','simayi','sunquan','taishici','ganning','luxun','lvbu','diaochan','nezha','erlangshen','honghaier']);
+const rangedHeroes=new Set(['huangzhong','xiahoudun','zhangliao','xuchu','simayi','sunquan','taishici','ganning','luxun','lvbu','diaochan','zhurong','nezha','erlangshen','honghaier']);
 (async()=>{
  const server=createServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));let browser;
  try{
@@ -53,12 +55,12 @@ const rangedHeroes=new Set(['huangzhong','xiahoudun','zhangliao','xuchu','simayi
     const output=process.env.COMBAT_QA_OUTPUT;fs.mkdirSync(output,{recursive:true});
     await page.evaluate(()=>{const b=__battle,n=performance.now();b.update(.034,n);b.render(n);});
     await page.screenshot({path:path.join(output,hero+'-battle.png')});
-    if(['huangzhong','taishici','luxun','lvbu','diaochan','nezha','honghaier'].includes(hero)){
+    if(['huangzhong','taishici','luxun','lvbu','diaochan','zhurong','nezha','honghaier'].includes(hero)){
      await page.evaluate(()=>{const b=__battle,n=performance.now()+1000;b.beginAttack('ranged',n);b.render(n+300);});
      await page.screenshot({path:path.join(output,hero+'-bow.png')});
     }
    }
-   const result=await page.evaluate(({hero,ranged})=>{
+   const result=await page.evaluate(({hero,ranged,stage})=>{
     const b=globalThis.__battle,p=b.player; let now=performance.now()+1000,axis=0,laneAxis=0;
     b.input.axis=()=>axis;b.input.axisY=()=>laneAxis;p.invulnerableUntil=Infinity;
     const check=(ok,message)=>{if(!ok)throw Error(hero+': '+message);};
@@ -108,8 +110,9 @@ const rangedHeroes=new Set(['huangzhong','xiahoudun','zhangliao','xuchu','simayi
      check(arrowDamage.hold>arrowDamage.tap,'hold increases actual damage');
     }
     // Natural seven-wave advancement; defeat every unit through actual melee damage.
-    b.prepare(1,330);p.lane=0;let attacks=0,moves=0;const waves=[];
+    b.prepare(1,330);p.lane=0;let attacks=0,moves=0,captures=0;const waves=[];
     while(!b.ended){
+     captures=Math.max(captures,b.enemies.find(e=>e.trueBoss)?.released||0);
      const wave=b.wave;if(!waves.includes(wave))waves.push(wave);
      const target=b.enemies.find(e=>!e.deadAt);
      if(!target){axis=laneAxis=0;tick(.034);check(moves++<18000,'wave advancement timeout');continue;}
@@ -123,8 +126,9 @@ const rangedHeroes=new Set(['huangzhong','xiahoudun','zhangliao','xuchu','simayi
      check(attacks<2500,'melee defeat timeout');
     }
     check(p.hp>0,'victory, not defeat');check(waves.length===7,'all seven waves');
-    return {hero,recoveredDamage,arrowDamage,waves,attacks,moves,ko:p.ko,win:b.ended&&p.hp>0,ranged:b.supportsRanged};
-   },{hero,ranged});
+    check(stage==='nanman'?captures===6:captures===0,'boss releases '+captures);
+    return {hero,stage,recoveredDamage,arrowDamage,waves,attacks,moves,captures,ko:p.ko,win:b.ended&&p.hp>0,ranged:b.supportsRanged};
+   },{hero,ranged,stage});
    assert.ok(result.win);assert.deepEqual(result.waves,[1,2,3,4,5,6,7]);
    if(ranged)assert.equal(result.ranged,true);
    assert.deepEqual(errors,[]);console.log(JSON.stringify(result));

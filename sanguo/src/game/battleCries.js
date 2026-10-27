@@ -53,6 +53,8 @@ export const BATTLE_CRY_PROFILES = Object.freeze({
   lvbu: voice('fierce', .96, .78, 5000, 74, .11),
   diaochan: voice('female', 1.08, .60, 7000, 150, .12),
   dongzhuo: voice('heavy', .85, .80, 3600, 52, .10),
+  menghuo: voice('heavy', .88, .80, 3900, 56, .09),
+  zhurong: voice('female', 1.04, .62, 6800, 140, .10),
   zhouyu: voice('noble', 1.03, .65, 6000, 108, .12),
   huanggai: voice('heavy', .89, .79, 4100, 58, .09),
   zhugeliang: voice('noble', .98, .62, 5700, 100, .15),
