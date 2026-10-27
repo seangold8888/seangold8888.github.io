@@ -405,6 +405,10 @@ export class Kart {
     this.itemCooldown = Math.max(0, this.itemCooldown - dt);
     this.trickWindow = Math.max(0, (this.trickWindow || 0) - dt);
     this.zapWarn = Math.max(0, (this.zapWarn || 0) - dt);
+    // 얼음길(coursefx 가 밟는 동안 채워 준다): 조향이 덜 먹고 진행 방향이 늦게 따라와 미끄러진다
+    this.ice = Math.max(0, (this.ice || 0) - dt);
+    // 빙글 도는 중에는 얼음 효과를 끈다. 겹치면 회전이 끝난 뒤에도 엉뚱한 쪽으로 오래 미끄러져 갇힌다.
+    const icy = this.ice > 0 && !this.airborne && this.spin <= 0;
 
     const surf = T.sample(this.x, this.z);
 
@@ -444,7 +448,7 @@ export class Kart {
       this.angle += dt * 8;
       this.speed *= 1 - dt * 0.85;
     } else if (!this.airborne) {
-      const grip = this.spec.turn * (this.drift > 0 ? 1.25 : 1);
+      const grip = this.spec.turn * (this.drift > 0 ? 1.25 : 1) * (icy ? 0.66 : 1);
       const sf = 0.58 + 0.42 * (1 - Math.min(1, this.speed / this.baseTop));
       // steer +1 = 화면 오른쪽. 카메라가 +Z를 바라보므로 화면 오른쪽은 월드 -X 방향이라
       // 각도를 "빼야" 화면과 손이 일치한다.
@@ -456,7 +460,7 @@ export class Kart {
     let dA = this.angle - this.vAngle;
     while (dA > Math.PI) dA -= Math.PI * 2;
     while (dA < -Math.PI) dA += Math.PI * 2;
-    const chase = this.airborne ? 1.2 : (this.drift > 0 ? 2.9 : 12);
+    const chase = this.airborne ? 1.2 : (this.drift > 0 ? 2.9 : icy ? 4.2 : 12);
     this.vAngle += dA * Math.min(1, chase * dt);
     this.slipAngle = dA;
 

@@ -64,8 +64,8 @@ const server = http.createServer((q,r) => {
     assert.equal(await page.evaluate(()=>__game.state.menuStep),1);
     await page.screenshot({path:path.join(output,'modes.png')});
     await page.locator('#menu-next').click();
-    assert.equal(await page.locator('#menu-list .card').count(),2);
-    assert.equal(await page.locator('#menu-list img').count(),2);
+    assert.equal(await page.locator('#menu-list .card').count(),3);
+    assert.equal(await page.locator('#menu-list img').count(),3);
     await page.screenshot({path:path.join(output,'cups.png')});
     await page.locator('#menu-next').click();
     assert.equal(await page.evaluate(()=>__game.state.scene),'race');
@@ -76,7 +76,7 @@ const server = http.createServer((q,r) => {
     await page.locator('#menu-next').click();
     await page.getByRole('button',{name:'스피드 매치 선택',exact:true}).click();
     await page.locator('#menu-next').click();
-    assert.equal(await page.locator('#menu-list .card').count(),6);
+    assert.equal(await page.locator('#menu-list .card').count(),7);
     await page.getByRole('button',{name:'노을 해변 선택',exact:true}).click();
     assert.ok(await page.locator('#menu-list .card').evaluateAll(cards=>cards.every(card=>card.lastElementChild.getBoundingClientRect().bottom<=card.getBoundingClientRect().bottom)), 'course captions stay inside their tiles');
     await page.screenshot({path:path.join(output,'courses.png')});

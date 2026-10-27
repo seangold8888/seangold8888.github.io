@@ -1,12 +1,12 @@
 // 산리오 카트 3D — 게임 진행: 메뉴 → 레이스 → 결과
 import * as THREE from '../vendor/three.module.min.js';
-import { TRACKS, buildTrack } from './tracks.js';
-import { buildTrackMesh } from './trackmesh.js';
+import { TRACKS, buildTrack } from './tracks.js?v=snow-1';
+import { buildTrackMesh } from './trackmesh.js?v=snow-1';
 import { loadProps } from './props.js';
 import { createAudio } from './music.js';
-import { CHARACTERS, VILLAINS, driverById, buildKartModel, Kart, driveAI } from './karts.js';
-import { buildCourseFx } from './coursefx.js';
-import { coursePhoto } from './menu-art.js?v=lobby-1';
+import { CHARACTERS, VILLAINS, driverById, buildKartModel, Kart, driveAI } from './karts.js?v=snow-1';
+import { buildCourseFx } from './coursefx.js?v=snow-1';
+import { coursePhoto } from './menu-art.js?v=snow-1';
 import { isEasyRace, EASY_PLAYER_SPEED, EASY_AI_SPEED, EASY_ITEM_DELAY, assistInput, hitSnapshot, softenHit } from './difficulty.js?v=easy-1';
 import {
   CATALOG, SLOTS, loadGarage, saveGarage, itemState, tapItem, addCoins, recordTrophy, applyLook
@@ -28,7 +28,10 @@ export const MODES = [
 // 그랑프리: 컵마다 세 코스를 연달아 달리고 점수를 모은다. 컵마다 장난꾸러기 둘이 나온다.
 export const CUPS = [
   { id: 'heart', name: '하트 컵', icon: '💖', tracks: ['park', 'beach', 'candy'], villains: ['taeppul', 'geonppul'] },
-  { id: 'star',  name: '별 컵',  icon: '⭐', tracks: ['cloud', 'night', 'rainbow'], villains: ['chanppul', 'jaewing'] }
+  { id: 'star',  name: '별 컵',  icon: '⭐', tracks: ['cloud', 'night', 'rainbow'], villains: ['chanppul', 'jaewing'] },
+  // 새 눈꽃 마을로 시작해(컵 그림·시상식도 눈 내리는 마을) 사탕 숲을 지나 별빛 밤길로 끝난다.
+  // 장난꾸러기는 앞 두 컵에서 하나씩 섞었다.
+  { id: 'snow',  name: '눈꽃 컵', icon: '❄️', tracks: ['snow', 'candy', 'night'], villains: ['taeppul', 'jaewing'] }
 ];
 export const POINTS = [10, 8, 6, 4, 2, 1];
 const FINISH_COINS = [10, 6, 4, 2, 2, 2];
@@ -168,12 +171,9 @@ export function startGame() {
     return !!MODES[state.modeIndex].rival && !rivalRecord(TRACKS[i].id).unlocked;
   }
 
-  function startRace() {
-    clearRace();
-    const def = TRACKS[state.trackIndex];
-    const mode = MODES[state.modeIndex];
-    state.track = buildTrack(def);
-    state.trackGroup = buildTrackMesh(state.track, scene);
+  // 하늘·안개·조명을 코스에 맞춘다. 시상식도 같은 것을 쓴다
+  // (예전엔 시상식이 마지막 경주의 조명을 물려받아 눈꽃 컵 시상식이 밤길처럼 어두웠다).
+  function applyTrackLook(def) {
     scene.background = new THREE.Color(def.sky);
     scene.fog = new THREE.Fog(def.fog, 420, 1900);
     // 지면색을 반사광에 그대로 쓰면 잔디 초록이 흰 캐릭터까지 물들인다.
@@ -183,6 +183,15 @@ export function startGame() {
     hemi.intensity = def.hemi != null ? def.hemi : 1.0;
     sun.intensity = def.sunI != null ? def.sunI : 1.12;
     fill.intensity = def.sunI != null ? 0.34 : 0.5;
+  }
+
+  function startRace() {
+    clearRace();
+    const def = TRACKS[state.trackIndex];
+    const mode = MODES[state.modeIndex];
+    state.track = buildTrack(def);
+    state.trackGroup = buildTrackMesh(state.track, scene);
+    applyTrackLook(def);
 
     let lineup;
     if (mode.gp && state.gp) lineup = state.gp.lineup;
@@ -1102,7 +1111,9 @@ export function startGame() {
     else if (kind === 'bounce') { audio.sfx('boing'); toast('통통! 점프 버튼으로 묘기!'); }
     else if (kind === 'ring') { audio.sfx('ring'); toast('무지개 통과! 🌈'); }
     else if (kind === 'block') { audio.sfx('block'); toast('방패로 막았어요! 🛡️'); }
-    else if (kind === 'bonk') toast({ cup: '빙글빙글 찻잔에 쿵!', candy: '사탕 공에 쿵!', crab: '꽃게한테 집혔어요!' }[extra] || '쿵!');
+    else if (kind === 'bonk') toast({ cup: '빙글빙글 찻잔에 쿵!', candy: '사탕 공에 쿵!', crab: '꽃게한테 집혔어요!', snowball: '데굴데굴 눈덩이에 쿵! ☃️', snowman: '눈사람한테 쿵! ⛄' }[extra] || '쿵!');
+    else if (kind === 'ice') { audio.sfx('ring'); toast('꽁꽁 얼음길! 미끌미끌~ ❄️'); }
+    else if (kind === 'gift') { state.coinPicks++; audio.sfx('boing'); toast('선물 상자 퐁! 🎁 코인 +1'); }
   }
 
   // ================== 장난꾸러기 ==================
@@ -1338,8 +1349,7 @@ export function startGame() {
     const def = TRACKS[state.trackIndex];
     state.track = buildTrack(def);
     state.trackGroup = buildTrackMesh(state.track, scene);
-    scene.background = new THREE.Color(def.sky);
-    scene.fog = new THREE.Fog(def.fog, 420, 1900);
+    applyTrackLook(def);
     const p0 = state.track.points[0];
     const ang = Math.atan2(p0.tx, p0.tz);
     const fx = Math.sin(ang), fz = Math.cos(ang);
@@ -1381,8 +1391,8 @@ export function startGame() {
       r.spec.name + '</b><em>' + r.pts + '점</em></div>').filter(Boolean).join('');
     let note = '🪙 트로피 보너스 +' + bonus + '  →  모은 코인 ' + state.garage.coins;
     if (newBest && myPlace === 1) {
-      const unlock = g.cup.id === 'heart' ? '황금 색칠' : '황금 바퀴';
-      note += '  ·  🎁 차고에 ' + unlock + '·왕관이 열렸어요!';
+      const unlock = g.cup.id === 'heart' ? '황금 색칠·' : g.cup.id === 'star' ? '황금 바퀴·' : '';
+      note += '  ·  🎁 차고에 ' + unlock + '왕관이 열렸어요!';
     }
     el('podium-note').textContent = note;
     el('podium').style.display = 'flex';
@@ -1543,7 +1553,16 @@ export function startGame() {
       }
       return;
     }
-    if (state.scene !== 'menu') renderer.render(scene, camera);
+    if (state.scene !== 'menu') { tickSnow(dt); renderer.render(scene, camera); }
+  }
+
+  // 눈꽃 마을: 내리는 눈을 카메라가 보는 앞쪽 둘레에 감아 넣는다(경주·카운트다운·결과·시상식 모두)
+  const _look = new THREE.Vector3();
+  function tickSnow(dt) {
+    const snow = state.trackGroup && state.trackGroup.userData.snow;
+    if (!snow) return;
+    camera.getWorldDirection(_look);
+    snow(dt, camera.position.x + _look.x * 150, camera.position.y, camera.position.z + _look.z * 150);
   }
 
   // 메뉴 배경으로 첫 트랙을 미리 깔아 둔다
@@ -1561,7 +1580,7 @@ export function startGame() {
   window.__game = {
     state, startRace, update, renderer, scene, camera,
     step(dt) { update(dt); },
-    render() { renderer.render(scene, camera); },
+    render() { tickSnow(1 / 60); renderer.render(scene, camera); },
     press(c) { keys[c] = true; },
     autopilot(on) { state.autopilot = !!on; },
     release(c) { keys[c] = false; },

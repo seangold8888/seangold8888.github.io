@@ -35,7 +35,7 @@ const server = http.createServer((q, r) => {
     await page.waitForFunction(() => !!window.__game);
     assert.ok((await page.locator('#keys').textContent()).includes('코너 길잡이'));
     // No debug autopilot, no keyboard steering and no items: test the actual child's default input.
-    for (const track of [0, 1, 2, 3, 4, 5]) {
+    for (const track of [0, 1, 2, 3, 4, 5, 6]) {
       const r = await page.evaluate(track => {
         const G = __game; G.pick(0, track, 2); G.autopilot(false); G.startRace();
         document.querySelector('#menu').style.display = 'none';
@@ -90,7 +90,7 @@ const server = http.createServer((q, r) => {
     assert.equal(impacts[0].spin, 0); assert.ok(impacts[0].speed >= 82); assert.ok(impacts[0].coins >= 9); assert.ok(impacts[0].shield >= 1.8);
     assert.ok(impacts[1].spin > 0); assert.ok(impacts[1].speed < 65); assert.equal(impacts[1].shield, 0);
     console.log('PASS real obstacle impact softened only in easy races', JSON.stringify(impacts));
-    for (const cup of [0, 1]) {
+    for (const cup of [0, 1, 2]) {
       const r = await page.evaluate(cup => {
         const G = __game; G.pick(8, 0, 0); G.state.cupIndex = cup; G.autopilot(false); G.startCup();
         const villains = G.state.karts.filter(k => k.prank).map(k => k.spec.id), places = [];
@@ -102,7 +102,7 @@ const server = http.createServer((q, r) => {
         return { cup: G.state.gp.cup.id, scene: G.state.scene, places, villains, points: G.state.gp.points[0], trophy: G.state.garage.trophies[G.state.gp.cup.id] };
       }, cup);
       assert.equal(r.scene, 'podium'); assert.ok(r.places.every(p => p <= 2), JSON.stringify(r)); assert.ok(r.points >= 24); assert.equal(r.trophy, 1);
-      assert.deepEqual(r.villains, cup ? ['chanppul', 'jaewing'] : ['taeppul', 'geonppul']);
+      assert.deepEqual(r.villains, [['taeppul', 'geonppul'], ['chanppul', 'jaewing'], ['taeppul', 'jaewing']][cup]);
       console.log('PASS three-race cup and trophy', JSON.stringify(r));
     }
     const records = await page.evaluate(() => {

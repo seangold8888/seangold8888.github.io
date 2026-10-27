@@ -50,7 +50,10 @@
 #menu-list.courses .card { padding:0 0 10px; overflow:hidden; gap:5px; }
 #menu-list.courses .card img { width:100%; height:clamp(62px,10vh,90px); aspect-ratio:2; object-fit:cover; border-radius:12px 12px 0 0; }
 #menu-list.courses .card small { display:block; max-width:100%; padding:0 7px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-#menu-list.cups .card img { height:clamp(130px,25vh,220px); }
+/* 컵이 셋(하트·별·눈꽃)이라 한 줄에 나란히. 코스 이름은 줄바꿈해 잘리지 않게 */
+#menu-list.cups { grid-template-columns:repeat(3,minmax(0,1fr)); }
+#menu-list.cups .card img { height:clamp(96px,19vh,200px); }
+#menu-list.cups .card small { white-space:normal; overflow:visible; line-height:1.35; }
 .picker-actions { display:flex; gap:10px; padding-top:14px; flex:none; }
 #menu-next { flex:1; font:inherit; font-weight:800; font-size:24px; line-height:1.25; letter-spacing:-.015em; color:#17264e; background:#ffdb54; border:3px solid #17264e; border-radius:16px; box-shadow:0 5px 0 #17264e; padding:15px 12px; cursor:pointer; }
 #menu-next:active { transform:translateY(4px); box-shadow:0 1px 0 #17264e; }
@@ -73,7 +76,7 @@ body:has(#menu[style*="flex"]) #sound { top:27px; right:32px; left:auto; width:4
   .lobby-main { gap:18px; }.lobby-stage { padding:17px; border-radius:23px; }.stage-heading { margin-top:12px; font-size:17px; }#hero-name {font-size:30px;}
   .stage-sticker { font-size:10px; padding:4px 8px; }.stage-note { font-size:11px; margin-bottom:17px; }
   .lobby-steps { margin-bottom:10px; }.lobby-steps li { padding:5px; font-size:13px; }.picker-note { margin-bottom:7px; font-size:12px; }
-  #menu-list { gap:7px; }#menu-list .card img { height:48px; }#menu-list .card strong { font-size:14px; }#menu-list .card small { font-size:11px; }
+  #menu-list { gap:7px; }#menu-list .card img { height:48px; }#menu-list.cups .card img { height:56px; }#menu-list .card strong { font-size:14px; }#menu-list .card small { font-size:11px; }
   #menu-next { padding:9px; font-size:20px; }.picker-actions { padding-top:8px; }.lobby-footer { padding-top:12px; }
   body:has(#menu[style*="flex"]) #sound { top:14px; right:24px; height:34px; width:34px; }
   #menu-list.modes .card { padding:8px; }.mode-art { width:32px;height:32px;font-size:23px;margin-bottom:0; }
@@ -85,5 +88,6 @@ body:has(#menu[style*="flex"]) #sound { top:27px; right:32px; left:auto; width:4
   .stage-heading { font-size:18px; margin-top:13px; }#hero-name {font-size:30px;}.stage-photo { position:absolute; width:80%; height:210px; right:-2%; bottom:17px; }.stage-note { text-align:left; font-size:12px; margin-top:auto; max-width:36%; }
   .lobby-picker { min-height:380px; }#menu-list { overflow:visible; flex:none; }#menu-list .card img { height:66px; }
   #menu-hint { display:none; }body:has(#menu[style*="flex"]) #sound { right:14px;top:14px; width:32px;height:32px; }
+  #menu-list.cups { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
 @media (prefers-reduced-motion:reduce) { #menu-hero { animation:none; }#menu-list .card { transition:none; } }
