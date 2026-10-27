@@ -634,6 +634,26 @@
       const gems = ["#ff4d4d", "#ffd34d", "#4c7fd0", "#6cc27a", "#ff9f1c", "#b99ad9"].map((c, i) => i < 4 ? `<circle cx="${-11 + i * 7.3}" cy="-24" r="2.8" fill="${c}" stroke="${INK}" stroke-width=".8"/>` : "").join("");
       return `<g transform="translate(${x} ${y}) rotate(${o.rot || 0}) scale(${o.s || 1})"><path d="M-14 16 L-14 -6 L-16 -22 Q-16 -26 -12 -26 Q-9 -26 -9 -22 L-8 -12 L-7 -28 Q-7 -32 -3 -32 Q1 -32 1 -28 L1 -12 L3 -28 Q3 -32 7 -32 Q11 -32 11 -28 L10 -10 L13 -20 Q14 -24 18 -22 Q20 -20 19 -16 L14 6 L14 16Z" fill="#f2c14e" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><path d="M-12 -4 Q0 -8 12 -4" stroke="#c9962a" stroke-width="1.6" fill="none"/><rect x="-16" y="14" width="32" height="10" rx="3" fill="#e0ad3a" stroke="${INK}" stroke-width="2"/>${gems}<circle cx="-1" cy="4" r="4.5" fill="#6cc27a" stroke="${INK}" stroke-width="1"/><circle cx="-12" cy="-6" r="2.6" fill="#ff9f1c" stroke="${INK}" stroke-width=".8"/></g>`;
     },
+    // 원카드 카드. 기본은 바닥에 놓인 더미(뒷면)와 펼친 카드 한 장, fan: true 면 손에 든 부채꼴 카드.
+    cards(x, y, o) {
+      const s = o.s || 1;
+      const face = (cx, cy, rot, mark, col) => `<g transform="translate(${cx} ${cy}) rotate(${rot})"><rect x="-14" y="-20" width="28" height="40" rx="4" fill="#fff" stroke="${INK}" stroke-width="2"/><text x="0" y="6" text-anchor="middle" font-size="17" font-weight="700" fill="${col}">${mark}</text></g>`;
+      const back = (cx, cy, rot) => `<g transform="translate(${cx} ${cy}) rotate(${rot})"><rect x="-14" y="-20" width="28" height="40" rx="4" fill="#e0443e" stroke="${INK}" stroke-width="2"/><rect x="-9" y="-15" width="18" height="30" rx="2" fill="none" stroke="#fff" stroke-width="1.4"/></g>`;
+      let g = "";
+      if (o.fan) {
+        [["♥", "#e0443e"], ["7", INK], ["♠", INK], ["A", "#e0443e"], ["♦", "#e0443e"]].slice(0, o.n || 5).forEach(([m, c], i, a) => {
+          g += face((i - (a.length - 1) / 2) * 12, Math.abs(i - (a.length - 1) / 2) * 3, (i - (a.length - 1) / 2) * 14, m, c);
+        });
+      } else {
+        g += back(-22, 2, -6) + back(-20, 0, 4) + back(-18, -2, -2) + face(22, 0, 8, o.mark || "7", o.col || "#e0443e");
+      }
+      return `<g transform="translate(${x} ${y}) rotate(${o.rot || 0}) scale(${s})">${g}</g>`;
+    },
+    // 눈사람 (나뭇가지 팔, 당근 코, 숯 단추). 키가 큰 편이라 서 있는 인물 옆에 둔다.
+    snowman(x, y, o) {
+      const s = o.s || 1;
+      return `<g transform="translate(${x} ${y}) scale(${s})"><circle cx="0" cy="-34" r="34" fill="#fff" stroke="${INK}" stroke-width="2.4"/><circle cx="0" cy="-92" r="26" fill="#fff" stroke="${INK}" stroke-width="2.4"/><path d="M-30 -60 L-62 -78 M-52 -72 L-60 -90 M30 -60 L62 -76 M52 -70 L62 -88" stroke="#7a5230" stroke-width="3.2" stroke-linecap="round" fill="none"/><circle cx="-8" cy="-98" r="3.4" fill="${INK}"/><circle cx="8" cy="-98" r="3.4" fill="${INK}"/><path d="M0 -92 L22 -88 L0 -85Z" fill="#ff9f1c" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round"/><path d="M-10 -80 Q0 -73 10 -80" stroke="${INK}" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="0" cy="-48" r="3.6" fill="${INK}"/><circle cx="0" cy="-34" r="3.6" fill="${INK}"/><circle cx="0" cy="-20" r="3.6" fill="${INK}"/><path d="M-4 -118 L-7 -132 M2 -118 L2 -134 M7 -117 L12 -130" stroke="#7a5230" stroke-width="2.4" stroke-linecap="round" fill="none"/></g>`;
+    },
     // 무지개빛 망토 (목 위치가 x,y. 아래로 펼쳐진다). 인물 뒤(bp)에 두면 망토를 두른 모습이 된다.
     cape(x, y, o) {
       const w = o.w || 120, h = o.h || 150;
