@@ -1,5 +1,5 @@
 "use strict";
-// 미국 여행 점검: 여섯 미니게임을 끝까지 돌리고, 열리는 순서·도장·앨범(사진 0장/1장)·새로고침 저장·한 화면 맞춤·오류 0을 본다.
+// 미국 여행 점검: 여섯 미니게임을 끝까지 돌리고(디즈니랜드는 줄 서기·놀이기구 셋까지), 열리는 순서·도장·앨범(사진 0장/1장)·새로고침 저장·한 화면 맞춤·오류 0을 본다.
 // 사용: (사이트 뿌리에서) python -m http.server 8791  →  BASE=http://127.0.0.1:8791 SHOTS=<폴더> node usa/tests/smoke.cjs
 const { chromium } = require("playwright");
 const assert = require("node:assert/strict");
@@ -24,6 +24,101 @@ async function fitsOneScreen(page, label) {
   });
   assert.ok(r.sw <= r.iw && r.sh <= r.ih, `${label}: page scrolls (${r.sw}x${r.sh} in ${r.iw}x${r.ih})`);
   assert.deepEqual(r.off, [], `${label}: elements outside the screen`);
+}
+
+// 디즈니랜드 놀이기구 하루: 고르기 → 줄 서기(말풍선·떼쓰기·⚡ 라이트닝 패스) → 타기, 세 번. 진짜 손가락 입력도 섞는다.
+async function playPark(page, tag) {
+  const shot = n => page.screenshot({ path: path.join(SHOTS, `${tag}-park-${n}.png`) });
+  const G = f => page.evaluate(f);
+  // 조건이 될 때까지 1/60초씩 빨리 돌린다(bot=봇이 대신 누름)
+  const ff = (cond, bot = true, max = 90) => page.evaluate(([c, b, m]) => {
+    const g = __USA.game, f = new Function("g", "return " + c);
+    let i = 0;
+    while (!f(g) && i < m * 60) { if (b) g.bot(1 / 60); g.update(1 / 60); i++; }
+    return f(g) ? i / 60 : -1;
+  }, [cond, bot, max]);
+  const phase = () => G(() => __USA.game.summary().phase);
+  assert.equal(await phase(), "menu", "park starts at the ride menu");
+  await page.waitForTimeout(400);
+  await shot("01-menu");
+  const ORDER = ["racers", "space", "pan"];
+  for (let k = 0; k < 3; k++) {
+    const c = (await G(() => __USA.game.menuCards())).find(c => c.id === ORDER[k]);
+    await page.mouse.click(c.x, c.y);
+    assert.equal(await phase(), "queue", ORDER[k] + ": tapping a card starts its queue");
+    if (k === 0) {
+      await page.waitForFunction(() => __USA.game.queueInfo().bubbles.length > 0, null, { timeout: 8000 });
+      await page.waitForTimeout(600);
+      await shot("02-queue-bubble");
+      const b = (await G(() => __USA.game.queueInfo())).bubbles[0];
+      await page.mouse.click(b.x, b.y);
+      assert.ok((await G(() => __USA.game.queueInfo())).cheered >= 1, "tapping a grumble bubble cheers the kid up");
+      await G(() => __USA.game.queueMeter(0.995));
+      await page.waitForFunction(() => __USA.game.queueInfo().state === "melt", null, { timeout: 3000 });
+      await page.waitForTimeout(1900);
+      await shot("03-queue-meltdown");
+      await page.waitForFunction(() => __USA.game.queueInfo().state === "wait", null, { timeout: 6000 });
+      const qi = await G(() => __USA.game.queueInfo());
+      assert.equal(qi.melts, 1, "full grumble meter = one meltdown, then back to waiting (no fail)");
+      assert.ok(qi.meter < 0.5, "meter resets after the meltdown");
+    }
+    const before = await G(() => __USA.game.queueInfo());
+    assert.ok(before.canPass, "lightning pass ready");
+    await page.mouse.click(before.button.x, before.button.y);
+    assert.equal((await G(() => __USA.game.queueInfo())).passes, 0, "lightning pass used");
+    if (k === 0) { await page.waitForTimeout(350); await shot("04-lightning-zip"); }
+    await page.waitForTimeout(k === 0 ? 1000 : 1300);
+    if (k === 0) await shot("05-lightning-joke");
+    const after = await G(() => __USA.game.queueInfo());
+    assert.ok(after.minutes < before.minutes, `wait sign drops (${before.minutes} -> ${after.minutes})`);
+    assert.ok(await ff('g.queueInfo() && g.queueInfo().state === "board"') >= 0, "queue reaches the front");
+    await page.waitForTimeout(450);
+    await shot(`0${6 + k}-finally-${ORDER[k]}`);
+    assert.ok(await ff('g.summary().phase === "ride"') >= 0);
+    assert.ok(await ff('g.rideInfo().stage === "play"', false) >= 0);
+    const W = await G(() => innerWidth), H = await G(() => innerHeight);
+    if (ORDER[k] === "racers") {
+      await page.mouse.move(W / 2, H * 0.55); await page.mouse.down();
+      let ri = await G(() => __USA.game.rideInfo());
+      assert.ok(ri.hold && ri.lane === 0, "racers: hold = accelerate, finger height = lane");
+      await page.mouse.up();
+      assert.equal((await G(() => __USA.game.rideInfo())).hold, false, "racers: letting go stops accelerating");
+    } else if (ORDER[k] === "space") {
+      assert.ok(await ff("g.rideInfo().blasts.some(b => b.x < innerWidth - 60 && b.x > innerWidth * 0.45)", false, 10) >= 0, "space: blasts come");
+      const bl = (await G(() => __USA.game.rideInfo())).blasts.find(b => b.x < W - 60 && b.x > W * 0.45);
+      const d0 = (await G(() => __USA.game.rideInfo())).deflected;
+      await page.mouse.click(bl.x, bl.y);
+      assert.ok((await G(() => __USA.game.rideInfo())).deflected > d0, "space: tapping a blast deflects it");
+    } else {
+      await page.mouse.click(W / 2, H * 0.3);
+      assert.ok(Math.abs((await G(() => __USA.game.rideInfo())).ty - H * 0.3) < 2, "pan: ship flies to the finger height");
+    }
+    await G(() => __USA.bot(true));
+    await page.waitForTimeout(4500);
+    await shot(`1${k}-ride-${ORDER[k]}`);
+    await G(() => __USA.bot(false));
+    if (ORDER[k] === "racers") {
+      assert.ok(await ff('g.rideInfo().race', true) >= 0);
+      await page.waitForTimeout(300);
+      await shot("13-racers-race");
+    }
+    if (ORDER[k] === "space") {
+      assert.ok(await ff('g.rideInfo().time > 13.2') >= 0);
+      await page.waitForTimeout(200);
+      await shot("14-space-outside");
+    }
+    if (ORDER[k] === "pan") {
+      assert.ok(await ff('g.rideInfo().p > 0.8') >= 0);
+      await page.waitForTimeout(200);
+      await shot("15-pan-neverland");
+    }
+    assert.ok(await ff('g.summary().phase !== "ride"') >= 0, ORDER[k] + " ride finishes");
+    const sum = await G(() => __USA.game.summary());
+    assert.ok(sum.rides[ORDER[k]] >= 1 && sum.rides[ORDER[k]] <= 3, ORDER[k] + " scored");
+    console.log(tag, "park", ORDER[k], JSON.stringify(sum.rides), "cheered", sum.cheered);
+    if (k === 0) { await page.waitForTimeout(500); await shot("09-menu-after-racers"); }
+  }
+  assert.equal(await phase(), "fire", "after three rides: fireworks finale");
 }
 
 (async () => {
@@ -76,6 +171,7 @@ async function fitsOneScreen(page, label) {
         if (i === 0) await page.screenshot({ path: path.join(SHOTS, tag + "-03-intro-" + id + ".png") });
         await page.click("#startBtn");
         await page.waitForFunction(() => __USA.state.state === "play", null, { timeout: 6000 });
+        if (id === "park") await playPark(page, tag);
         if (id === "beverly") {
           // 진짜 손가락 입력: 물건을 직접 눌러 본다
           const at = await page.evaluate(() => __USA.game.where());

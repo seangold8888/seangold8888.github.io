@@ -1,94 +1,107 @@
-// 디즈니랜드(테마파크): 롤러코스터 별 모으기 + 불꽃놀이 피날레.
-// 캐릭터·성·로고는 모두 이 게임만의 것(구름토끼·별곰, 동그란 동화 성 그림).
-import { cover, text, star, Particles, Floaters, rng, clamp, rr } from "../engine.js";
+// 디즈니랜드(테마파크): 놀이기구 하루. 골라서 → 줄 서고(투덜투덜! ⚡ 라이트닝 패스) → 타고, 세 번. 마지막은 불꽃놀이.
+// 놀이기구 이름(레이서스·스타워즈·피터팬)은 아이들이 부르던 이름표일 뿐, 그림은 모두 이 게임만의 것.
+// 퍼레이드 마스코트도 이 게임만의 구름토끼·별곰.
+import { cover, text, star, sprite, Particles, Floaters, clamp, rr } from "../engine.js";
+import { createQueue } from "./parkqueue.js";
+import { unit, emo } from "./parkkit.js";
+import * as racers from "./parkracers.js";
+import * as space from "./parkspace.js";
+import * as pan from "./parkpan.js";
 
 const FIRE_COLORS = [["#ff5fa2", "#ffd1e8"], ["#ffd23f", "#fff4b8"], ["#5fd4ff", "#d8f6ff"], ["#9b7bff", "#e2d8ff"], ["#7cf06b", "#e0ffd8"]];
+const RIDES = [
+  { id: "racers", name: "레이서스", icon: "🏎️", sub: "빨간 사막 자동차 경주", c: "#e0603a", c2: "#ffb36b", mod: racers },
+  { id: "space", name: "스타워즈", icon: "🚀", sub: "우주선 타고 탈출!", c: "#3a4a8a", c2: "#151a40", mod: space },
+  { id: "pan", name: "피터팬", icon: "⛵", sub: "밤하늘 날아 네버랜드로", c: "#5a3a9f", c2: "#1a1446", mod: pan },
+];
+// 첫 줄은 길고(60분!), 다음 줄들은 짧다
+const QUEUES = [{ minutes: 60, speed: 1 }, { minutes: 40, speed: 3 }, { minutes: 30, speed: 3.6 }];
+const FIRE_SEC = 10;
+// 시작 카드 글(장소 목록의 옛 '롤러코스터' 글 대신)
+export const TITLE = "놀이기구 하루";
+export const GOAL = "줄 서서 투덜이를 달래고 💬<br>레이서스 🏎️ 스타워즈 🚀 피터팬 ⛵ 타기!";
 
 export function create(env) {
   const { sfx } = env;
   const easy = env.easy;
   const fx = new Particles(), fl = new Floaters();
-  const u0 = clamp(env.H / 820, 0.75, 1.35);
-  const L = 13500 * u0;
-  const v0 = (easy ? 700 : 640) * u0, G = 1700 * u0;
-  const reach = (easy ? 1.45 : 1.1) * u0;
-  let phase = "ride", t = 0, carX = 0, v = 280 * u0, hopY = 0, hopV = 0, got = 0, fireT = 0, launched = 0, done = false, nextAuto = 1, botT = 0;
+  const BADGE = easy ? 4 : 5;
+  let phase = "menu", t = 0, pt = 0, order = 0, queue = null, ride = null, rideId = "", cheeredDone = 0, melts = 0;
+  let fireT = 0, launched = 0, nextAuto = 1, done = false, botT = 0, saidMenu = false;
+  const results = {};
   const rockets = [];
-  const r = rng(11);
-  const stars = [];
-  for (let x = 800 * u0; x < L - 500 * u0; x += 270 * u0) {
-    const p = r();
-    if (p < 0.35) stars.push({ x, off: 0, got: false });
-    else if (p < 0.68) stars.push({ x, off: (115 + r() * 30) * u0, got: false });
-    else { [0, 1, 2].forEach(k => stars.push({ x: x + k * 70 * u0, off: [100, 140, 100][k] * u0, got: false })); x += 80 * u0; }
-  }
 
-  const u = () => u0;
-  function f(x) {
-    const xs = x / u0;
-    const k = clamp((xs - 300) / 700, 0, 1) * clamp((L / u0 - xs) / 700, 0, 1);
-    return k * (0.55 * Math.sin(xs / 430) + 0.3 * Math.sin(xs / 200 + 1.3) + 0.15 * Math.sin(xs / 105 + 0.4));
+  function cards() {
+    const W = env.W, H = env.H, U = unit(env);
+    const port = H > W * 1.05;
+    const out = [];
+    if (port) {
+      const w = Math.min(W - 64, 600 * U), h = 206 * U, gap = 22 * U, top = H * 0.2;
+      RIDES.forEach((rd, i) => out.push({ rd, x: (W - w) / 2, y: top + i * (h + gap), w, h }));
+    } else {
+      const gap = 26 * U, w = Math.min((W - 80 - gap * 2) / 3, 330 * U), h = Math.min(330 * U, H * 0.5), left = (W - (w * 3 + gap * 2)) / 2, top = H * 0.27;
+      RIDES.forEach((rd, i) => out.push({ rd, x: left + i * (w + gap), y: top, w, h }));
+    }
+    return out;
   }
-  const baseY = () => env.H * 0.68;
-  const amp = () => Math.min(env.H * 0.2, 190 * u0);
-  const trackY = x => baseY() - amp() * f(x);
-  const slope = x => (trackY(x + 4) - trackY(x - 4)) / 8;
-  const carScreenX = () => env.W * 0.3;
-  const carCenterY = () => trackY(carX) - 44 * u() + hopY;
-
-  function hop() {
-    if (phase !== "ride" || hopY < 0 || hopV !== 0) return;
-    hopV = -v0; sfx.jump();
+  function pick(rd) {
+    if (results[rd.id]) { sfx.wrong(); env.toast("벌써 탔어요! 다른 걸 골라요 🙂", 1800); return; }
+    sfx.pop();
+    rideId = rd.id;
+    queue = createQueue(env, { mascot, ...QUEUES[order], passes: 1, jokeIndex: order, first: order === 0, gate: { name: rd.name, icon: rd.icon, c: rd.c }, badgeNeed: BADGE, cheeredBefore: cheeredDone });
+    phase = "queue"; pt = 0;
   }
   function launch(x, y) {
     rockets.push({ x, y: env.H + 10, tx: x, ty: y, age: 0, c: FIRE_COLORS[launched % FIRE_COLORS.length] });
     launched++; sfx.launch();
   }
+  const totalCheered = () => cheeredDone + (queue ? queue.cheered : 0);
+  const cur = () => (phase === "queue" ? queue : phase === "ride" ? ride : null);
 
-  return {
+  const api = {
     id: "park",
     update(dt) {
-      t += dt;
-      if (phase === "ride") {
-        const sl = slope(carX);
-        const target = (300 + 190 * clamp(sl, -1, 1)) * u();
-        v += (target - v) * Math.min(1, dt * 2);
-        carX += v * dt;
-        if (hopV !== 0 || hopY < 0) {
-          hopV += G * dt; hopY += hopV * dt;
-          if (hopY >= 0) { hopY = 0; hopV = 0; }
+      t += dt; pt += dt;
+      const U = unit(env);
+      if (phase === "menu") {
+        if (!saidMenu && pt > 0.3) { saidMenu = true; env.toast(order ? `${3 - order}개 남았어요! 카드를 콕` : "오늘은 놀이기구 세 개! 카드를 콕", 2800); }
+        env.setScore(`🎢 ${order}/3`);
+        env.setProgress(order / 3 * 0.9);
+      } else if (phase === "queue") {
+        queue.update(dt);
+        env.setProgress((order + 0.25 * queue.progress()) / 3 * 0.9);
+        if (queue.done) {
+          cheeredDone += queue.cheered; melts += queue.melts;
+          const rd = RIDES.find(x => x.id === rideId);
+          ride = rd.mod.create(env);
+          queue = null; phase = "ride"; pt = 0;
         }
-        const cy = carCenterY();
-        for (const s of stars) {
-          if (s.got) continue;
-          const dx = s.x - carX;
-          if (dx < -60 * u()) continue;
-          if (dx > 80 * u()) break;
-          const sy = trackY(s.x) - 44 * u() - s.off;
-          if (Math.abs(dx) < 46 * reach && Math.abs(sy - cy) < 54 * reach) {
-            s.got = true; got++;
-            sfx.star();
-            fx.burst(carScreenX() + dx, sy, 10, { color: ["#ffd23f", "#fff"], kind: "star", speed: 220, size: 5, gravity: 300 });
-            if (s.off > 0) fl.add("번쩍!", carScreenX() + dx, sy - 40, "#fff36b", 26);
-            env.setScore(`⭐ ${got}`);
-          }
+      } else if (phase === "ride") {
+        ride.update(dt);
+        env.setProgress((order + 0.25 + 0.75 * ride.progress()) / 3 * 0.9);
+        if (ride.done) {
+          if (ride.release) ride.release();
+          results[rideId] = ride.result;
+          ride = null; order++; pt = 0; saidMenu = false;
+          if (order >= RIDES.length) {
+            phase = "fire"; fireT = 0;
+            env.toast("마지막은 불꽃놀이! 하늘을 콕 🎆", 3000);
+            sfx.fanfare();
+          } else phase = "menu";
         }
-        if (t < 1) env.setScore(`⭐ ${got}`);
-        if (Math.floor(t) === 1 && Math.floor(t - dt) === 0) env.toast("콕 누르면 번쩍 점프! 높은 별도 잡아요 ⭐", 2800);
-        if (carX >= L) {
-          phase = "fire"; fireT = 0; hopY = 0; hopV = 0;
-          env.toast("하늘을 콕! 불꽃을 터뜨려요 🎆", 3000);
-          sfx.fanfare();
-        }
-        env.setProgress(carX / L * 0.75);
-      } else {
+      } else if (phase === "fire") {
         fireT += dt;
-        if (fireT > nextAuto) { nextAuto += 1.6; launch(env.W * (0.2 + Math.random() * 0.6), env.H * (0.12 + Math.random() * 0.25)); }
-        env.setProgress(0.75 + fireT / 14 * 0.25);
-        if (fireT > 14 && !done) {
+        if (fireT > nextAuto) { nextAuto += 1.4; launch(env.W * (0.2 + Math.random() * 0.6), env.H * (0.12 + Math.random() * 0.25)); }
+        env.setProgress(0.9 + fireT / FIRE_SEC * 0.1);
+        env.setScore(`🎆 ${launched}`);
+        if (fireT > FIRE_SEC && !done) {
           done = true;
-          const ratio = got / stars.length, hi = easy ? 0.6 : 0.75, mid = easy ? 0.35 : 0.45;
-          env.finish({ stars: ratio >= hi ? 3 : ratio >= mid ? 2 : 1, text: `별 ${stars.length}개 중 ${got}개! 불꽃 ${launched}개 펑펑 🎆` });
+          const sum = RIDES.reduce((n, rd) => n + (results[rd.id] ? results[rd.id].score : 1), 0);
+          const badge = cheeredDone >= BADGE;
+          const hiT = (easy ? 6 : 7) - (badge ? 1 : 0), midT = (easy ? 4 : 5) - (badge ? 1 : 0);
+          const lines = RIDES.map(rd => results[rd.id] && results[rd.id].line).filter(Boolean);
+          if (badge) lines.push("🏅 참을성 배지");
+          env.finish({ stars: sum >= hiT ? 3 : sum >= midT ? 2 : 1, text: lines.join(" · ") });
         }
       }
       for (const k of rockets) {
@@ -97,159 +110,98 @@ export function create(env) {
         k.y = env.H + 10 + (k.ty - env.H - 10) * (1 - (1 - p) * (1 - p));
         if (p >= 1 && !k.boom) {
           k.boom = true; sfx.boom();
-          fx.burst(k.tx, k.ty, 46, { color: k.c, speed: 300 * u(), size: 4.5, gravity: 90, drag: 1.4, life: 1.5 });
-          fx.burst(k.tx, k.ty, 14, { color: ["#fff"], speed: 120 * u(), size: 3, gravity: 60, drag: 1, life: 1.1, kind: "star" });
+          fx.burst(k.tx, k.ty, 46, { color: k.c, speed: 300 * U, size: 4.5, gravity: 90, drag: 1.4, life: 1.5 });
+          fx.burst(k.tx, k.ty, 14, { color: ["#fff"], speed: 120 * U, size: 3, gravity: 60, drag: 1, life: 1.1, kind: "star" });
         }
       }
       for (let i = rockets.length - 1; i >= 0; i--) if (rockets[i].boom) rockets.splice(i, 1);
       fx.update(dt); fl.update(dt);
     },
-    down(x, y) {
-      if (phase === "ride") hop();
-      else if (y < env.H * 0.72 && y > 70) launch(x, y);
+    down(x, y, id) {
+      if (phase === "menu") { const c = cards().find(c => x > c.x && x < c.x + c.w && y > c.y && y < c.y + c.h); if (c) pick(c.rd); }
+      else if (phase === "fire") { if (y < env.H * 0.72 && y > 70) launch(x, y); }
+      else { const c = cur(); if (c && c.down) c.down(x, y, id); }
     },
+    move(x, y, id) { const c = cur(); if (c && c.move) c.move(x, y, id); },
+    up(x, y, id) { const c = cur(); if (c && c.up) c.up(x, y, id); },
+    release() { const c = cur(); if (c && c.release) c.release(); },
     bot(dt) {
-      if (phase === "ride") {
-        if (hopY < 0 || hopV !== 0) return;
-        const tPeak = v0 / G;
-        for (const s of stars) {
-          if (s.got || s.off < 50) continue;
-          const dx = s.x - carX;
-          if (dx < 0) continue;
-          if (dx / v <= tPeak + 0.02) { hop(); }
-          break;
-        }
-      } else {
-        botT += dt;
-        if (botT > 0.7) { botT = 0; this.down(env.W * (0.15 + Math.random() * 0.7), env.H * (0.15 + Math.random() * 0.35)); }
-      }
+      const c = cur();
+      if (c) { c.bot(dt); return; }
+      botT += dt;
+      if (phase === "menu" && botT > 0.8) { botT = 0; const k = cards().find(k => !results[k.rd.id]); if (k) api.down(k.x + k.w / 2, k.y + k.h / 2); }
+      if (phase === "fire" && botT > 0.7) { botT = 0; api.down(env.W * (0.15 + Math.random() * 0.7), env.H * (0.15 + Math.random() * 0.35)); }
     },
     draw(ctx) {
-      const W = env.W, H = env.H, U = u();
-      const prog = clamp(carX / L, 0, 1);
-      cover(ctx, env.img("bg-park"), 0, 0, W, H, 0.15 + 0.7 * prog, 0.42, 1.18);
-      if (phase === "fire") {
-        const a = Math.min(0.5, fireT / 3);
+      const W = env.W, H = env.H, U = unit(env);
+      if (phase === "queue") { queue.draw(ctx); fx.draw(ctx); fl.draw(ctx); return; }
+      if (phase === "ride") { ride.draw(ctx); if (pt < 0.45) { ctx.fillStyle = `rgba(255,255,255,${1 - pt / 0.45})`; ctx.fillRect(0, 0, W, H); } return; }
+      cover(ctx, env.img("bg-park"), 0, 0, W, H, 0.5, 0.42, 1.08);
+      if (phase === "menu") {
+        ctx.fillStyle = "rgba(30,15,60,.35)"; ctx.fillRect(0, 0, W, H);
+        text(ctx, order ? "다음엔 뭐 탈까?" : "뭐부터 탈까?", W / 2, H * (H > W * 1.05 ? 0.155 : 0.2), 50 * U, { color: "#fff", stroke: "#7b4bd0", lw: 10 * U });
+        for (const c of cards()) card(ctx, c, results[c.rd.id], U, t);
+        const kh = Math.min(170 * U, H * 0.16);
+        sprite(ctx, env.kid("cheer", "player"), W * 0.1, H - 6, kh);
+        sprite(ctx, env.kid("cheer", "buddy"), W * 0.9, H - 6, kh * 0.9, true);
+      } else {
+        // 불꽃놀이 피날레
+        const a = Math.min(0.55, fireT / 2.5);
         ctx.fillStyle = `rgba(20,10,60,${a})`; ctx.fillRect(0, 0, W, H);
-      }
-      const camX = carX - carScreenX();
-      // 받침 기둥
-      const step = 120 * U;
-      ctx.lineCap = "round";
-      for (let wx = Math.floor(camX / step) * step; wx < camX + W + step; wx += step) {
-        const x = wx - camX, y = trackY(wx);
-        ctx.strokeStyle = "rgba(255,255,255,.6)"; ctx.lineWidth = 5 * U;
-        ctx.beginPath(); ctx.moveTo(x, y + 6 * U); ctx.lineTo(x, H + 10); ctx.stroke();
-        const y2 = trackY(wx + step);
-        ctx.strokeStyle = "rgba(255,190,220,.45)"; ctx.lineWidth = 3 * U;
-        ctx.beginPath(); ctx.moveTo(x, y + 30 * U); ctx.lineTo(x + step, Math.min(H, y2 + 90 * U)); ctx.stroke();
-      }
-      // 레일
-      ctx.lineJoin = "round";
-      const rail = (off, color, w) => {
-        ctx.strokeStyle = color; ctx.lineWidth = w; ctx.beginPath();
-        for (let x = -20; x <= W + 20; x += 8) { const y = trackY(camX + x) + off; x === -20 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
-        ctx.stroke();
-      };
-      rail(6 * U, "#c2337a", 10 * U);
-      rail(0, "#ff6fb0", 9 * U);
-      rail(-4 * U, "#fff", 3 * U);
-      ctx.strokeStyle = "#7a3b5c"; ctx.lineWidth = 3 * U;
-      const tie = 30 * U;
-      for (let wx = Math.floor(camX / tie) * tie; wx < camX + W + tie; wx += tie) {
-        const x = wx - camX, y = trackY(wx);
-        ctx.beginPath(); ctx.moveTo(x, y - 2 * U); ctx.lineTo(x, y + 10 * U); ctx.stroke();
-      }
-      // 끝 정거장
-      const stX = L - camX + 150 * U;
-      if (stX < W + 300 * U) station(ctx, stX, trackY(L), U);
-      // 별
-      for (const s of stars) {
-        if (s.got) continue;
-        const x = s.x - camX;
-        if (x < -40 || x > W + 40) continue;
-        const y = trackY(s.x) - 44 * U - s.off + Math.sin(t * 4 + s.x) * 4 * U;
-        const glow = ctx.createRadialGradient(x, y, 4, x, y, 40 * U);
-        glow.addColorStop(0, "rgba(255,255,220,.95)"); glow.addColorStop(1, "rgba(255,255,200,0)");
-        ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(x, y, 40 * U, 0, 7); ctx.fill();
-        star(ctx, x, y, (s.off > 0 ? 26 : 22) * U, "#ffe14d", "#d97706", Math.sin(t * 2 + s.x) * 0.2);
-      }
-      // 코스터 차
-      const ang = hopY < 0 ? Math.atan(slope(carX)) * 0.4 : Math.atan(slope(carX));
-      const x = carScreenX(), y = trackY(carX) + hopY;
-      ctx.save();
-      ctx.translate(x, y); ctx.rotate(ang);
-      const cheer = hopY < -10 || phase === "fire";
-      upper(ctx, env.kid(cheer ? "cheer" : "travel", "buddy"), -44 * U, -56 * U, 150 * U, true);
-      upper(ctx, env.kid(cheer ? "cheer" : "travel", "player"), 36 * U, -54 * U, 160 * U, false);
-      car(ctx, U);
-      ctx.restore();
-      // 불꽃
-      for (const k of rockets) {
-        ctx.fillStyle = k.c[1];
-        ctx.beginPath(); ctx.arc(k.tx, k.y, 4 * U, 0, 7); ctx.fill();
-        ctx.strokeStyle = "rgba(255,230,180,.6)"; ctx.lineWidth = 3 * U;
-        ctx.beginPath(); ctx.moveTo(k.tx, k.y); ctx.lineTo(k.tx, k.y + 30 * U); ctx.stroke();
-      }
-      fx.draw(ctx);
-      if (phase === "fire") {
-        // 퍼레이드: 이 게임만의 마스코트 구름토끼와 별곰
+        for (const k of rockets) {
+          ctx.fillStyle = k.c[1];
+          ctx.beginPath(); ctx.arc(k.tx, k.y, 4 * U, 0, 7); ctx.fill();
+          ctx.strokeStyle = "rgba(255,230,180,.6)"; ctx.lineWidth = 3 * U;
+          ctx.beginPath(); ctx.moveTo(k.tx, k.y); ctx.lineTo(k.tx, k.y + 30 * U); ctx.stroke();
+        }
+        const kh = Math.min(190 * U, H * 0.2);
+        sprite(ctx, env.kid("cheer", "buddy"), W * 0.42, H - 70 * U, kh * 0.9, true);
+        sprite(ctx, env.kid("cheer", "player"), W * 0.58, H - 70 * U, kh);
         const span = W + 300 * U;
         for (let i = 0; i < 4; i++) {
           const px = ((fireT * 90 * U + i * span / 4) % span) - 150 * U;
           mascot(ctx, i % 2 ? "bear" : "bunny", px, H - 14 * U, U * 0.9, fireT + i);
         }
-        text(ctx, `🎆 ${launched}`, W - 70, 112, 34, { color: "#fff", stroke: "rgba(60,20,90,.8)" });
       }
-      fl.draw(ctx);
+      fx.draw(ctx); fl.draw(ctx);
     },
-    summary() { return { got, total: stars.length, launched, phase }; },
+    summary() {
+      return { phase, order, rides: Object.fromEntries(Object.entries(results).map(([k, v]) => [k, v.score])), cheered: totalCheered(), melts, launched, ride: ride && ride.summary ? ride.summary() : null, queue: queue ? queue.summary() : null };
+    },
+    // 점검용
+    menuCards: () => cards().map(c => ({ id: c.rd.id, x: c.x + c.w / 2, y: c.y + c.h / 2 })),
+    queueInfo: () => (queue ? queue.info() : null),
+    queueMeter: v => queue && queue.setMeter(v),
+    rideInfo: () => (ride && ride.info ? Object.assign({ id: ride.id }, ride.info()) : null),
   };
+  return api;
 }
 
-// 아이 그림의 윗부분만(코스터 의자에 앉은 모습)
-function upper(ctx, img, x, bottom, h, flip) {
-  if (!img) return;
-  const frac = 0.56, w = img.width * h / img.height;
-  ctx.save();
-  ctx.translate(x, bottom);
-  if (flip) ctx.scale(-1, 1);
-  ctx.drawImage(img, 0, 0, img.width, img.height * frac, -w / 2, -h * frac, w, h * frac);
-  ctx.restore();
-}
-
-function car(ctx, U) {
-  const w = 190 * U, h = 62 * U;
-  ctx.fillStyle = "#3b2448";
-  [-60, 60].forEach(dx => { ctx.beginPath(); ctx.arc(dx * U, -4 * U, 13 * U, 0, 7); ctx.fill(); });
-  const g = ctx.createLinearGradient(0, -h, 0, 0);
-  g.addColorStop(0, "#ff8cc6"); g.addColorStop(1, "#e2457f");
-  ctx.fillStyle = g;
-  rr(ctx, -w / 2, -h - 6 * U, w, h, 22 * U); ctx.fill();
-  ctx.lineWidth = 4 * U; ctx.strokeStyle = "#a8295e"; ctx.stroke();
-  ctx.fillStyle = "#ffd23f"; ctx.fillRect(-w / 2 + 10 * U, -h + 18 * U, w - 20 * U, 9 * U);
-  ctx.fillStyle = "#fff";
-  ctx.beginPath(); ctx.arc(w / 2 - 26 * U, -h + 4 * U, 9 * U, 0, 7); ctx.fill();
-  star(ctx, 0, -h * 0.42, 16 * U, "#fff36b", "#e88a00");
-}
-
-function station(ctx, x, y, U) {
-  // 도착 정거장: 줄무늬 차양과 창문이 있는 작은 매표소
-  const w = 170 * U, h = 96 * U, top = y - h;
-  ctx.fillStyle = "#fff4e0"; ctx.strokeStyle = "#c97a9a"; ctx.lineWidth = 4 * U;
-  rr(ctx, x, top, w, h, 12 * U); ctx.fill(); ctx.stroke();
-  ctx.fillStyle = "#9fd8f5";
-  rr(ctx, x + 18 * U, top + 34 * U, 50 * U, 36 * U, 8 * U); ctx.fill();
-  rr(ctx, x + w - 68 * U, top + 34 * U, 50 * U, 36 * U, 8 * U); ctx.fill();
-  const n = 7, sw = (w + 24 * U) / n;
-  for (let i = 0; i < n; i++) {
-    ctx.fillStyle = i % 2 ? "#ffffff" : "#ff7ab6";
-    ctx.beginPath(); ctx.moveTo(x - 12 * U + i * sw, top - 28 * U); ctx.lineTo(x - 12 * U + (i + 1) * sw, top - 28 * U);
-    ctx.lineTo(x - 12 * U + (i + 1) * sw, top + 6 * U); ctx.arc(x - 12 * U + (i + 0.5) * sw, top + 6 * U, sw / 2, 0, Math.PI); ctx.closePath(); ctx.fill();
+function card(ctx, c, res, U, t) {
+  const { rd, x, y, w, h } = c;
+  const port = h < w;
+  const s = res ? 1 : 1 + Math.sin(t * 3 + x) * 0.015;
+  ctx.save(); ctx.translate(x + w / 2, y + h / 2); ctx.scale(s, s); ctx.translate(-w / 2, -h / 2);
+  ctx.fillStyle = "rgba(0,0,0,.25)"; rr(ctx, 4, 8, w, h, 26 * U); ctx.fill();
+  const g = ctx.createLinearGradient(0, 0, 0, h);
+  g.addColorStop(0, rd.c2); g.addColorStop(1, rd.c);
+  ctx.fillStyle = g; rr(ctx, 0, 0, w, h, 26 * U); ctx.fill();
+  ctx.lineWidth = 5 * U; ctx.strokeStyle = "#fff"; ctx.stroke();
+  const ix = port ? 100 * U : w / 2, iy = port ? h / 2 : h * 0.36;
+  ctx.fillStyle = "rgba(255,255,255,.18)"; ctx.beginPath(); ctx.arc(ix, iy, 72 * U, 0, 7); ctx.fill();
+  emo(ctx, rd.icon, ix, iy, 84 * U);
+  const tx = port ? 200 * U + (w - 200 * U) / 2 : w / 2;
+  text(ctx, rd.name, tx, port ? h * 0.4 : h * 0.68, 42 * U, { color: "#fff", stroke: "rgba(0,0,0,.35)" });
+  text(ctx, rd.sub, tx, port ? h * 0.66 : h * 0.84, 21 * U, { color: "rgba(255,255,255,.92)", weight: 800 });
+  if (res) {
+    ctx.fillStyle = "rgba(255,255,255,.55)"; rr(ctx, 0, 0, w, h, 26 * U); ctx.fill();
+    ctx.save(); ctx.translate(w - 70 * U, 64 * U); ctx.rotate(-0.2);
+    ctx.strokeStyle = "#e0344f"; ctx.lineWidth = 6 * U; ctx.beginPath(); ctx.arc(0, 0, 52 * U, 0, 7); ctx.stroke();
+    text(ctx, "탔다!", 0, -6 * U, 28 * U, { color: "#e0344f" });
+    ctx.restore();
+    for (let i = 0; i < 3; i++) star(ctx, w / 2 + (i - 1) * 44 * U, port ? h * 0.86 : h * 0.52, 18 * U, i < res.score ? "#ffe14d" : "#ddd", i < res.score ? "#d97706" : "#aaa");
   }
-  ctx.strokeStyle = "#7a5230"; ctx.lineWidth = 3 * U;
-  ctx.beginPath(); ctx.moveTo(x + w / 2, top - 28 * U); ctx.lineTo(x + w / 2, top - 70 * U); ctx.stroke();
-  ctx.fillStyle = "#ffd23f"; ctx.beginPath(); ctx.moveTo(x + w / 2, top - 70 * U); ctx.lineTo(x + w / 2 + 30 * U, top - 61 * U); ctx.lineTo(x + w / 2, top - 52 * U); ctx.closePath(); ctx.fill();
+  ctx.restore();
 }
 
 export function mascot(ctx, kind, x, y, s, t) {
