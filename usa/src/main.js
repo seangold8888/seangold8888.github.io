@@ -4,7 +4,7 @@ import * as Save from "./save.js";
 import { sfx, unlock as audioUnlock, setMuted } from "./sfx.js";
 import { loadImage, text, rr } from "./engine.js";
 import * as vegas from "./games/vegas.js";
-import * as park from "./games/park.js?v=2";
+import * as park from "./games/park.js?v=3";
 import * as beverly from "./games/beverly.js";
 import * as santamonica from "./games/santamonica.js";
 import * as huntington from "./games/huntington.js";
@@ -199,6 +199,12 @@ const env = {
   toast(s, ms = 1800) {
     const t = $("#toast"); t.textContent = s; t.classList.add("show");
     clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), ms);
+  },
+  // 미니게임이 남겨 두는 작은 기록(예: 디즈니랜드 놀이기구 도감). 진행 저장과 같은 곳에 함께 저장한다.
+  memo(key, value) {
+    if (!S.memo || typeof S.memo !== "object" || Array.isArray(S.memo)) S.memo = {};
+    if (value !== undefined) { S.memo[key] = value; Save.save(S); }
+    return S.memo[key];
   },
   finish(res) {
     if (state !== "play") return;

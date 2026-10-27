@@ -1,5 +1,5 @@
 "use strict";
-// 미국 여행 점검: 여섯 미니게임을 끝까지 돌리고(디즈니랜드는 줄 서기·놀이기구 셋까지), 열리는 순서·도장·앨범(사진 0장/1장)·새로고침 저장·한 화면 맞춤·오류 0을 본다.
+// 미국 여행 점검: 여섯 미니게임을 끝까지 돌리고(디즈니랜드는 줄 서기·놀이기구 다섯 중 셋, 다시 하기로 나머지 둘까지), 열리는 순서·도장·앨범(사진 0장/1장)·새로고침 저장·놀이기구 도감·한 화면 맞춤·오류 0을 본다.
 // 사용: (사이트 뿌리에서) python -m http.server 8791  →  BASE=http://127.0.0.1:8791 SHOTS=<폴더> node usa/tests/smoke.cjs
 const { chromium } = require("playwright");
 const assert = require("node:assert/strict");
@@ -26,8 +26,8 @@ async function fitsOneScreen(page, label) {
   assert.deepEqual(r.off, [], `${label}: elements outside the screen`);
 }
 
-// 디즈니랜드 놀이기구 하루: 고르기 → 줄 서기(말풍선·떼쓰기·⚡ 라이트닝 패스) → 타기, 세 번. 진짜 손가락 입력도 섞는다.
-async function playPark(page, tag) {
+// 디즈니랜드 놀이기구 하루: 다섯 중에 고르기 → 줄 서기(말풍선·떼쓰기·⚡ 라이트닝 패스) → 타고, 세 번이면 하루 끝. 진짜 손가락 입력도 섞는다.
+async function playPark(page, tag, ORDER, everBefore) {
   const shot = n => page.screenshot({ path: path.join(SHOTS, `${tag}-park-${n}.png`) });
   const G = f => page.evaluate(f);
   // 조건이 될 때까지 1/60초씩 빨리 돌린다(bot=봇이 대신 누름)
@@ -39,11 +39,24 @@ async function playPark(page, tag) {
   }, [cond, bot, max]);
   const phase = () => G(() => __USA.game.summary().phase);
   assert.equal(await phase(), "menu", "park starts at the ride menu");
+  const menu0 = await G(() => __USA.game.menuCards());
+  assert.equal(menu0.length, 5, "menu shows all five rides");
+  assert.deepEqual(menu0.filter(c => c.ever).map(c => c.id).sort(), [...everBefore].sort(), "ride collection on the menu");
+  assert.ok(menu0.every(c => !c.ridden), "a new day: nothing ridden yet");
+  const vw = await G(() => [innerWidth, innerHeight]);
+  for (const c of menu0) assert.ok(c.x - c.w / 2 >= 0 && c.x + c.w / 2 <= vw[0] && c.y - c.h / 2 >= 70 && c.y + c.h / 2 <= vw[1], "menu card on screen: " + c.id);
   await page.waitForTimeout(400);
   await shot("01-menu");
-  const ORDER = ["racers", "space", "pan"];
   for (let k = 0; k < 3; k++) {
-    const c = (await G(() => __USA.game.menuCards())).find(c => c.id === ORDER[k]);
+    const cardsNow = await G(() => __USA.game.menuCards());
+    if (k > 0) {
+      // 이미 탄 카드는 '탔다!' 그대로, 다시 눌러도 줄이 안 생긴다
+      const old = cardsNow.find(c => c.id === ORDER[0]);
+      assert.ok(old.ridden, "ridden ride is marked");
+      await page.mouse.click(old.x, old.y);
+      assert.equal(await phase(), "menu", "a ride already ridden today can't be picked again");
+    }
+    const c = cardsNow.find(c => c.id === ORDER[k]);
     await page.mouse.click(c.x, c.y);
     assert.equal(await phase(), "queue", ORDER[k] + ": tapping a card starts its queue");
     if (k === 0) {
@@ -89,9 +102,13 @@ async function playPark(page, tag) {
       const d0 = (await G(() => __USA.game.rideInfo())).deflected;
       await page.mouse.click(bl.x, bl.y);
       assert.ok((await G(() => __USA.game.rideInfo())).deflected > d0, "space: tapping a blast deflects it");
-    } else {
+    } else if (ORDER[k] === "pan") {
       await page.mouse.click(W / 2, H * 0.3);
       assert.ok(Math.abs((await G(() => __USA.game.rideInfo())).ty - H * 0.3) < 2, "pan: ship flies to the finger height");
+    } else if (ORDER[k] === "toy") {
+      await playToy(page, G, ff, shot);
+    } else if (ORDER[k] === "web") {
+      await playWeb(page, G, ff, shot);
     }
     await G(() => __USA.bot(true));
     await page.waitForTimeout(4500);
@@ -112,13 +129,105 @@ async function playPark(page, tag) {
       await page.waitForTimeout(200);
       await shot("15-pan-neverland");
     }
+    if (ORDER[k] === "toy") {
+      assert.ok(await ff('g.rideInfo().stage === "final"') >= 0, "toy: three booths then the scoreboard");
+      await page.waitForTimeout(1600);
+      await shot("16-toy-scoreboard");
+      const ti = await G(() => __USA.game.rideInfo());
+      assert.ok(ti.score > 0 && ti.buddy > 0, "toy: both kids scored (vs sibling)");
+    }
+    if (ORDER[k] === "web") {
+      assert.ok(await ff('g.rideInfo().stage === "outro"') >= 0, "web: every robot caught");
+      await page.waitForTimeout(700);
+      await shot("17-web-all-caught");
+      const wi = await G(() => __USA.game.rideInfo());
+      assert.equal(wi.mine + wi.theirs, wi.cap, "web: caught them all");
+      assert.ok(wi.spawned >= wi.cap, "web: robots multiplied up to the cap");
+    }
     assert.ok(await ff('g.summary().phase !== "ride"') >= 0, ORDER[k] + " ride finishes");
     const sum = await G(() => __USA.game.summary());
     assert.ok(sum.rides[ORDER[k]] >= 1 && sum.rides[ORDER[k]] <= 3, ORDER[k] + " scored");
     console.log(tag, "park", ORDER[k], JSON.stringify(sum.rides), "cheered", sum.cheered);
-    if (k === 0) { await page.waitForTimeout(500); await shot("09-menu-after-racers"); }
+    if (k === 1) { await page.waitForTimeout(500); await shot("09-menu-two-ridden"); }
   }
   assert.equal(await phase(), "fire", "after three rides: fireworks finale");
+  const fin = await G(() => __USA.game.summary());
+  assert.equal(Object.keys(fin.rides).length, 3, "the day is three rides, not five");
+  return fin;
+}
+
+// 토이스토리: 부스 셋(접시·풍선·고리)에서 진짜로 과녁을 콕콕
+async function playToy(page, G, ff, shot) {
+  const info = () => G(() => __USA.game.rideInfo());
+  const pickT = async () => {
+    const vw = await G(() => [innerWidth, innerHeight]);
+    const list = (await info()).targets.filter(t => t.x > 70 && t.x < vw[0] - 70 && t.y > 150);
+    list.sort((a, b) => Math.abs(a.x - vw[0] / 2) - Math.abs(b.x - vw[0] / 2));
+    return list[0];
+  };
+  assert.equal((await info()).boothId, "plates");
+  await page.waitForTimeout(300);
+  for (let n = 0; n < 2; n++) {
+    const tg = await pickT();
+    assert.ok(tg, "toy: a target to tap");
+    const h0 = (await info()).hits;
+    await page.mouse.click(tg.x, tg.y);
+    assert.equal((await info()).hits, h0 + 1, "toy: tapping a plate hits it");
+  }
+  const ti = await info();
+  assert.ok(ti.combo >= 2, "toy: quick hits make a combo (" + ti.combo + ")");
+  assert.ok(ti.score >= 300, "toy: combo points");
+  const vh = await G(() => [innerWidth, innerHeight]);
+  await page.mouse.click(vh[0] / 2, vh[1] * 0.735 + 6); // 계산대(과녁 없는 곳)
+  assert.ok((await info()).misses >= 1, "toy: tapping empty space is just a miss");
+  await page.waitForTimeout(250);
+  await shot("16a-toy-plates");
+  for (const [b, id] of [[1, "balloons"], [2, "rings"]]) {
+    assert.ok(await ff(`g.rideInfo().booth === ${b} && g.rideInfo().stage === "play" && g.rideInfo().targets.length >= 3`, true) >= 0, "toy: car spins to booth " + id);
+    assert.equal((await info()).boothId, id);
+    await G(() => __USA.bot(false));
+    const tg = await pickT();
+    const h0 = (await info()).hits;
+    await page.mouse.click(tg.x, tg.y);
+    assert.equal((await info()).hits, h0 + 1, "toy: tap in booth " + id);
+    if (b === 2) { await page.waitForTimeout(350); await shot("16b-toy-rings"); }
+    else { await page.waitForTimeout(150); await shot("16b-toy-balloons"); }
+  }
+}
+
+// 스파이더맨: 로봇을 콕(거미줄 휙), 손가락으로 쓱 그어 끈끈이 거미줄 줄줄이
+async function playWeb(page, G, ff, shot) {
+  const info = () => G(() => __USA.game.rideInfo());
+  assert.ok(await ff("g.rideInfo().robots.length >= 3", false, 10) >= 0, "web: runaway robots appear");
+  const near = async () => {
+    const vw = await G(() => [innerWidth, innerHeight]);
+    const list = (await info()).robots.filter(b => b.x > 220 && b.x < vw[0] - 220 && b.y > 160);
+    return list[0] || (await info()).robots[0];
+  };
+  let b = await near();
+  const m0 = (await info()).mine;
+  await page.mouse.click(b.x, b.y);
+  assert.equal((await info()).mine, m0 + 1, "web: tapping a robot catches it");
+  // 쓱 긋기: 거미줄이 줄줄이 날아가고 빗나간 건 끈끈이 덫이 된다
+  assert.ok(await ff("g.rideInfo().robots.length >= 2", false, 10) >= 0);
+  b = await near();
+  const m1 = (await info()).mine;
+  await page.mouse.move(b.x - 150, b.y);
+  await page.mouse.down();
+  await page.mouse.move(b.x + 70, b.y, { steps: 8 });
+  assert.equal((await info()).fingers, 1, "web: finger tracked while swiping");
+  await page.mouse.up();
+  const after = await info();
+  assert.ok(after.mine > m1, "web: a swipe through a robot catches it");
+  assert.ok(after.traps >= 1, "web: missed webs stick as traps");
+  assert.equal(after.fingers, 0, "web: lifting the finger releases it");
+  // 로봇이 늘어나게 잠깐 두고 화면 보기
+  await page.waitForTimeout(2600);
+  const mid = await info();
+  if (mid.robots.length) { const r = mid.robots[0]; await page.mouse.click(r.x, r.y); }
+  await page.waitForTimeout(120);
+  await shot("17a-web-play");
+  assert.ok((await info()).spawned > 3, "web: robots multiply");
 }
 
 (async () => {
@@ -171,7 +280,7 @@ async function playPark(page, tag) {
         if (i === 0) await page.screenshot({ path: path.join(SHOTS, tag + "-03-intro-" + id + ".png") });
         await page.click("#startBtn");
         await page.waitForFunction(() => __USA.state.state === "play", null, { timeout: 6000 });
-        if (id === "park") await playPark(page, tag);
+        if (id === "park") await playPark(page, tag, ["toy", "web", "racers"], []);
         if (id === "beverly") {
           // 진짜 손가락 입력: 물건을 직접 눌러 본다
           const at = await page.evaluate(() => __USA.game.where());
@@ -217,6 +326,24 @@ async function playPark(page, tag) {
       assert.equal(await page.locator(".pin.locked").count(), 0);
       assert.equal(await page.evaluate(() => Object.values(__USA.save.places).filter(p => p.stamp).length), 6);
       await page.screenshot({ path: path.join(SHOTS, tag + "-31-map-done.png") });
+
+      // 놀이기구 도감은 새로고침 뒤에도 남는다 → 디즈니랜드 다시 하기: 안 탄 두 개(스타워즈·피터팬)를 고른다
+      assert.deepEqual([...(await page.evaluate(() => __USA.save.memo.parkRides))].sort(), ["racers", "toy", "web"], "ride collection saved");
+      await page.click('.pin[data-id="park"]');
+      await page.waitForSelector("#intro:not([hidden])");
+      await page.click("#startBtn");
+      await page.waitForFunction(() => __USA.state.state === "play", null, { timeout: 6000 });
+      const day2 = await playPark(page, tag + "-day2", ["space", "pan", "toy"], ["racers", "toy", "web"]);
+      assert.equal(day2.ever.length, 5, "collection complete 5/5");
+      const out2 = await page.evaluate(() => __USA.sim(240));
+      assert.ok(out2.res && out2.res.stars >= 1 && /도감 5\/5/.test(out2.res.text), "replay result shows the full collection");
+      console.log(tag, "park day2", JSON.stringify(out2));
+      await page.waitForSelector("#result:not([hidden])");
+      await page.waitForTimeout(900);
+      await page.screenshot({ path: path.join(SHOTS, tag + "-33-park-day2-result.png") });
+      await page.click("#nextBtn");
+      await page.waitForFunction(() => __USA.state.screen === "map");
+      assert.equal((await page.evaluate(() => __USA.save.memo.parkRides)).length, 5);
 
       // 사진 한 장(임시 파일)만 있을 때
       if (!fs.existsSync(tmpPhoto)) {
