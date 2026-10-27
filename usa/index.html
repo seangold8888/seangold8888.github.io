@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#ffe7c2">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>재이와 태오의 미국 여행</title>
+<link rel="icon" href="../favicon.ico">
+<link rel="preload" href="../sanguo/fonts/pretendard/PretendardVariable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css?v=1">
+<script src="../assets/study/play-timer.js?v=1"></script>
+<script src="../assets/touch-guard.js?v=1"></script>
+</head>
+<body>
+<div id="app">
+
+<!-- 첫 화면: 누구로 여행할까 -->
+<section id="home" class="screen">
+  <a class="back-hub" href="../game/">← 모험 상자</a>
+  <button class="corner-btn sound-btn" type="button" aria-label="소리 끄고 켜기">🔊</button>
+  <div class="home-title">
+    <p class="eyebrow">USA ROAD TRIP ✈️</p>
+    <h1>재이와 태오의<br><span>미국 여행</span></h1>
+    <p class="lead">누구로 여행할까?</p>
+  </div>
+  <div class="kid-pick" id="kidPick">
+    <button class="kid-card" type="button" data-kid="jaei"><img src="art/jaei-travel.webp" alt=""><b>재이</b><small>보통 🚀</small></button>
+    <button class="kid-card" type="button" data-kid="taeo"><img src="art/taeo-travel.webp" alt=""><b>태오</b><small>쉬움 🐣</small></button>
+  </div>
+  <p class="home-note" id="homeNote">한 명을 고르면 다른 한 명이 같이 가요!</p>
+</section>
+
+<!-- 여행 지도 -->
+<section id="map" class="screen" hidden>
+  <div class="map-box" id="mapBox">
+    <img class="map-img" src="art/map.webp" alt="여행 지도">
+    <svg class="route" id="route" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+    <div id="pins"></div>
+    <div class="map-car" id="mapCar" aria-hidden="true"><span>🚙</span></div>
+    <div class="map-plane" id="mapPlane" aria-hidden="true">✈️</div>
+  </div>
+  <aside class="map-side">
+    <div class="side-top">
+      <button class="pill-btn" type="button" data-go="home" aria-label="처음 화면">←</button>
+      <h2>어디로 갈까?</h2>
+      <button class="pill-btn sound-btn" type="button" aria-label="소리 끄고 켜기">🔊</button>
+    </div>
+    <div class="travelers" id="travelers"></div>
+    <div class="side-stats"><span id="statStars">⭐ 0</span><span id="statStamps">🏷️ 0/6</span></div>
+    <div class="mode-row" role="group" aria-label="난이도">
+      <button type="button" class="mode-btn" data-mode="easy">🐣 쉬움</button>
+      <button type="button" class="mode-btn" data-mode="normal">🚀 보통</button>
+    </div>
+    <button class="big-btn primary" id="goAlbum" type="button">📒 여행 앨범</button>
+    <a class="side-link" href="../game/">← 모험 상자로</a>
+  </aside>
+</section>
+
+<!-- 미니게임 -->
+<section id="play" class="screen" hidden>
+  <canvas id="stage" aria-label="게임 화면"></canvas>
+  <div class="hud">
+    <button id="pauseBtn" class="hud-btn" type="button" aria-label="잠깐 멈춤">⏸</button>
+    <div class="hud-title" id="hudTitle"></div>
+    <div class="hud-score" id="hudScore"></div>
+    <div class="hud-bar"><i id="hudBar"></i></div>
+  </div>
+  <div class="toast" id="toast" aria-live="polite"></div>
+</section>
+
+<!-- 게임 시작 카드 -->
+<section id="intro" class="overlay" hidden>
+  <div class="card intro-card">
+    <div class="intro-icon" id="introIcon"></div>
+    <p class="intro-place" id="introPlace"></p>
+    <h2 id="introTitle"></h2>
+    <p class="intro-goal" id="introGoal"></p>
+    <div class="mode-row" role="group" aria-label="난이도">
+      <button type="button" class="mode-btn" data-mode="easy">🐣 쉬움</button>
+      <button type="button" class="mode-btn" data-mode="normal">🚀 보통</button>
+    </div>
+    <div class="row-btns">
+      <button class="big-btn" type="button" data-go="map">🗺️ 지도</button>
+      <button class="big-btn primary" id="startBtn" type="button">시작! ▶</button>
+    </div>
+  </div>
+</section>
+
+<!-- 결과 -->
+<section id="result" class="overlay" hidden>
+  <div class="card result-card">
+    <h2 id="resultTitle"></h2>
+    <div class="result-stars" id="resultStars"></div>
+    <p id="resultText"></p>
+    <div class="result-stamp" id="resultStamp" hidden></div>
+    <div class="row-btns">
+      <button class="big-btn" id="againBtn" type="button">🔁 다시</button>
+      <button class="big-btn" type="button" data-go="map">🗺️ 지도</button>
+      <button class="big-btn primary" id="nextBtn" type="button">다음 ▶</button>
+    </div>
+  </div>
+</section>
+
+<!-- 멈춤 -->
+<section id="pause" class="overlay" hidden>
+  <div class="card">
+    <h2>잠깐 쉬어요</h2>
+    <div class="row-btns">
+      <button class="big-btn" id="quitBtn" type="button">🗺️ 그만</button>
+      <button class="big-btn primary" id="resumeBtn" type="button">▶ 계속</button>
+    </div>
+  </div>
+</section>
+
+<!-- 여행 앨범 -->
+<section id="album" class="screen" hidden>
+  <div class="album-top">
+    <button class="pill-btn" type="button" data-go="map" aria-label="지도로">←</button>
+    <h2 id="albumTitle">여행 앨범</h2>
+    <span class="album-count" id="albumCount"></span>
+  </div>
+  <div class="album-banner" id="albumBanner" hidden></div>
+  <div class="album-grid" id="albumGrid"></div>
+</section>
+
+</div>
+<script src="../assets/bgm/bgm-player.js?v=66"></script>
+<script type="module" src="src/main.js?v=1"></script>
+</body>
+</html>
