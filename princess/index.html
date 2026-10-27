@@ -20,6 +20,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 <title>공주 옷장: 마음대로 꾸며요!</title>
 <link rel="stylesheet" href="outings.css?v=1">
 <link rel="stylesheet" href="journey.css?v=1">
+<link rel="stylesheet" href="fashion.css?v=1">
 <style>
   :root{
     --rose:#ff74b8; --rose-deep:#d83e8a; --lilac:#a88cff; --cream:#fff8fc; --ink:#432449; --ink-soft:#806484;
@@ -243,6 +244,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 <script src="outings.js?v=1"></script>
 <script src="../assets/study/princess-growth.js?v=2"></script>
 <script src="journey.js?v=2"></script>
+<script src="fashion.js?v=1"></script>
 <script src="../assets/bgm/bgm-player.js?v=66"></script>
 <script>
 (function () {
@@ -1328,6 +1330,7 @@ function renderStage(){
   if(state.dress) parts.push(itemOf('dress',state.dress.id).name);
   document.getElementById('nameTag').innerHTML=`${p.name}<small>${parts.join(' · ')||'기본 옷'}</small>`;
   globalThis.princessOutingUI?.refresh();
+  globalThis.princessFashionUI?.refresh();
 }
 
 // 썸네일
@@ -1501,6 +1504,13 @@ async function addToAlbum(){
   tada();toast('앨범에 넣었어요! 📚');
   document.getElementById('photoOverlay').classList.remove('show');
 }
+// 다른 놀이(패션쇼)의 기념사진도 같은 앨범 규칙(최대 12장, 공간 부족 시 오래된 것부터)으로 넣는다.
+function pushAlbum(entry){
+  const list=album();list.unshift(entry);
+  while(list.length>12)list.pop();
+  while(list.length&&!saveAlbum(list))list.pop();
+  return list[0]===entry;
+}
 function openAlbum(){
   const list=album();
   const g=document.getElementById('albumGrid');
@@ -1545,6 +1555,16 @@ globalThis.princessJourneyUI=PrincessJourney.mount({
   snapshot:()=>({state:JSON.parse(JSON.stringify(state)),princess:princess()}),
   exportSvg:buildExportSvg,sound:kind=>({click,tada}[kind]||click)(),notify:toast,
   photo:async svg=>{const png=await svgToPng(svg,420,680),img=new Image();img.src=png;await img.decode();const canvas=document.createElement('canvas');canvas.width=420;canvas.height=680;canvas.getContext('2d').drawImage(img,0,0);return canvas.toDataURL('image/jpeg',.82);}
+});
+if(globalThis.PrincessFashion)globalThis.princessFashionUI=PrincessFashion.mount({
+  snapshot:()=>({state:JSON.parse(JSON.stringify(state)),princess:princess()}),
+  render:dollSVG,exportSvg:buildExportSvg,rasterize:svgToPng,
+  background:id=>PrincessStudio.path('bg',id),
+  selectTab:key=>{tab=key;renderTabs();renderPanel();},
+  itemName:(key,id)=>itemOf(key,id)?.name||'',
+  audio:()=>muted?null:ac(),
+  sound:kind=>({click,tada,shutter}[kind]||click)(),notify:toast,
+  saveAlbum:pushAlbum
 });
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{
   navigator.serviceWorker.register('../sw.js').catch(()=>{});
