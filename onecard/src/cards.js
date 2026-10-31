@@ -15,12 +15,12 @@ export const poseSrc = (s, n) => `art/${MASCOT[s].img}-${n}.webp`;
 // 그림 카드: J=아이들(히어로 배지), Q=장난꾸러기(반짝 티아라), K=아빠(♠♣)·엄마(♥♦)(왕관)
 export const FACE = {
   S11: "taeo", H11: "jaei", C11: "yunchan", D11: "yungeon",
-  S12: "taeppul", H12: "jaewing", C12: "chanppul", D12: "geonppul",
+  S12: "taeppul", H12: "jaewing", C12: "chanppul", D12: "geonppul2",
   S13: "appa", C13: "appa", H13: "eomma", D13: "eomma",
 };
 export const FACE_NAME = {
   taeo: "태오", jaei: "재이", yunchan: "윤찬", yungeon: "윤건",
-  taeppul: "태뿔", jaewing: "재윙", chanppul: "찬뿔", geonppul: "건뿔", appa: "아빠", eomma: "엄마",
+  taeppul: "태뿔", jaewing: "재윙", chanppul: "찬뿔", geonppul2: "건뿔", appa: "아빠", eomma: "엄마",
 };
 
 function el(tag, cls, text) {

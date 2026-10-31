@@ -1,7 +1,7 @@
 // 원카드: 화면·애니메이션·차례 진행. 규칙과 컴퓨터 생각은 rules.js(순수 모듈)에 있다.
 import * as R from "./rules.js";
 import * as Save from "./save.js";
-import { cardEl, backEl, MASCOT, poseSrc } from "./cards.js?v=2";
+import { cardEl, backEl, MASCOT, poseSrc } from "./cards.js?v=3";
 import { sfx, unlock as audioUnlock, setMuted } from "./sfx.js";
 
 const $ = s => document.querySelector(s);
