@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#2f7a5a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>원카드</title>
+<link rel="icon" href="../favicon.ico">
+<link rel="preload" href="../sanguo/fonts/pretendard/PretendardVariable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css?v=1">
+<script src="../assets/study/play-timer.js?v=1"></script>
+<script src="../assets/touch-guard.js?v=1"></script>
+</head>
+<body>
+<div id="app">
+
+<!-- 첫 화면: 누가 할까 -->
+<section id="home" class="screen">
+  <a class="back-hub" href="../game/">← 모험 상자</a>
+  <button class="corner-btn sound-btn" type="button" aria-label="소리 끄고 켜기">🔊</button>
+  <div class="home-title">
+    <div class="title-fan" aria-hidden="true" id="titleFan"></div>
+    <h1>원카드</h1>
+  </div>
+  <div class="home-body">
+    <div class="pick-box">
+      <p class="lead">누가 할까?</p>
+      <div class="kid-pick">
+        <button class="kid-card" type="button" data-kid="jaei"><img src="art/jaei.webp" alt=""><b>재이</b><small>보통 🚀</small><span class="stickers" data-stickers="jaei"></span></button>
+        <button class="kid-card" type="button" data-kid="taeo"><img src="art/taeo.webp" alt=""><b>태오</b><small>쉬움 🐣</small><span class="stickers" data-stickers="taeo"></span></button>
+      </div>
+    </div>
+    <div class="opp-box">
+      <p class="lead small">누구랑 할까?</p>
+      <div class="opp-pick" role="group" aria-label="상대">
+        <button class="opp-btn" type="button" data-opp="1"><span class="faces"><img src="art/appa.webp" alt=""></span><b>아빠랑</b></button>
+        <button class="opp-btn" type="button" data-opp="2"><span class="faces"><img src="art/appa.webp" alt=""><img src="art/eomma.webp" alt=""></span><b>아빠·엄마랑</b></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 게임 -->
+<section id="game" class="screen" hidden>
+  <header class="topbar">
+    <button class="pill-btn" id="quitBtn" type="button" aria-label="처음 화면">←</button>
+    <div class="opps" id="opps"></div>
+    <button class="pill-btn sound-btn" type="button" aria-label="소리 끄고 켜기">🔊</button>
+  </header>
+  <div class="table" id="table">
+    <button class="deck" id="deck" type="button" aria-label="카드 뽑기"><span class="deck-count" id="deckCount"></span></button>
+    <div class="pile" id="pile"></div>
+    <div class="info">
+      <div class="suit-badge" id="suitBadge"><small>지금 모양</small><b id="suitSym">♥</b></div>
+      <p class="status" id="status" aria-live="polite"></p>
+      <button class="pass-btn" id="passBtn" type="button" hidden>안 낼래 ➜</button>
+    </div>
+  </div>
+  <div class="hand-wrap" id="handWrap">
+    <div class="me-tag" id="meTag"></div>
+    <div class="hand" id="hand"></div>
+  </div>
+  <div class="toast" id="toast" aria-live="polite"></div>
+  <div class="fly" id="fly" aria-hidden="true"></div>
+</section>
+
+<!-- 모양 고르기 -->
+<section id="suitPick" class="overlay" hidden>
+  <div class="card suit-card">
+    <h2>어떤 모양으로 바꿀까?</h2>
+    <div class="suit-grid">
+      <button type="button" class="suit-btn black" data-suit="S"><b>♠</b><small>스페이드</small></button>
+      <button type="button" class="suit-btn red" data-suit="H"><b>♥</b><small>하트</small></button>
+      <button type="button" class="suit-btn red" data-suit="D"><b>♦</b><small>다이아</small></button>
+      <button type="button" class="suit-btn black" data-suit="C"><b>♣</b><small>클로버</small></button>
+    </div>
+    <button type="button" class="link-btn" id="suitCancel">← 다른 카드 낼래</button>
+  </div>
+</section>
+
+<!-- 원카드! -->
+<section id="oneCard" class="one-layer" hidden>
+  <p class="one-cap" id="oneCap"></p>
+  <button type="button" class="one-btn" id="oneBtn">원카드!</button>
+  <div class="one-bar"><i id="oneBar"></i></div>
+</section>
+<div class="burst" id="burst" hidden></div>
+
+<!-- 결과 -->
+<section id="result" class="overlay" hidden>
+  <div class="card result-card">
+    <div class="confetti" id="confetti" aria-hidden="true"></div>
+    <img class="result-face" id="resultFace" src="art/jaei.webp" alt="">
+    <h2 id="resultTitle"></h2>
+    <p id="resultText"></p>
+    <div class="result-stickers" id="resultStickers"></div>
+    <div class="row-btns">
+      <button class="big-btn" id="homeBtn" type="button">🏠 처음</button>
+      <button class="big-btn primary" id="againBtn" type="button">한 판 더! ▶</button>
+    </div>
+  </div>
+</section>
+
+</div>
+<script type="module" src="src/main.js?v=1"></script>
+</body>
+</html>

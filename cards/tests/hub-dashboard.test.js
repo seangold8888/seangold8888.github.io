@@ -103,7 +103,7 @@ test("별빛 로비 공유 카드는 로컬 이미지와 절대 URL 메타데이
 test("기존 게임 링크·티켓 게임과 상시 개방 구분을 보존한다", () => {
   const ticketRoutes = [
     "multiverse/", "cards/", "odyssey/", "kart3d/",
-    "sanguo/", "hogwarts/", "kedehun/", "bori/", "princess/", "slime/", "usa/"
+    "sanguo/", "hogwarts/", "kedehun/", "bori/", "princess/", "slime/", "usa/", "onecard/"
   ];
   ticketRoutes.forEach((route) => {
     const query=route==='princess/'?'\\?heads=natural&amp;v=picnic-1':'';
