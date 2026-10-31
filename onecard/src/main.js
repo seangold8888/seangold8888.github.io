@@ -1,7 +1,7 @@
 // 원카드: 화면·애니메이션·차례 진행. 규칙과 컴퓨터 생각은 rules.js(순수 모듈)에 있다.
 import * as R from "./rules.js";
 import * as Save from "./save.js";
-import { cardEl, backEl } from "./cards.js";
+import { cardEl, backEl, MASCOT, poseSrc } from "./cards.js?v=2";
 import { sfx, unlock as audioUnlock, setMuted } from "./sfx.js";
 
 const $ = s => document.querySelector(s);
@@ -77,7 +77,7 @@ $$(".kid-card").forEach(c => onTap(c, () => { sfx.pop(); startGame(c.dataset.kid
 $$(".opp-btn").forEach(b => onTap(b, () => { sfx.tap(); S.opp = Number(b.dataset.opp); Save.save(S); renderHome(); }));
 (function titleFan() {
   const fan = $("#titleFan");
-  [{ id: "H11", s: "H", r: 11 }, { id: "S7", s: "S", r: 7 }, { id: "D1", s: "D", r: 1 }, { id: "C13", s: "C", r: 13 }].forEach((c, i) => {
+  [{ id: "H1", s: "H", r: 1 }, { id: "D3", s: "D", r: 3 }, { id: "S7", s: "S", r: 7 }, { id: "C2", s: "C", r: 2 }].forEach((c, i) => {
     const e = cardEl(c);
     e.style.setProperty("--i", i - 1.5);
     fan.appendChild(e);
@@ -262,8 +262,9 @@ function renderTable() {
   badge.hidden = !showSuit;
   if (showSuit) {
     $("#suitSym").textContent = R.SUIT_SYM[showSuit];
-    badge.classList.toggle("red", R.isRed(showSuit));
-    badge.classList.toggle("wild", R.topCard(st).r === 7);
+    badge.className = `suit-badge s-${showSuit}` + (R.topCard(st).r === 7 ? " wild" : "");
+    badge.dataset.suit = showSuit;
+    badge.title = MASCOT[showSuit].name;
   }
   const mine = !G.dealt && st.turn === 0 && st.winner < 0 && G.phase === "play";
   const legal = mine ? R.legalCards(st, 0) : [];
@@ -520,8 +521,8 @@ async function aiPlay(p, m) {
 async function announceSuit(s, msg) {
   sfx.suit();
   const f = document.createElement("div");
-  f.className = "suit-flash " + (R.isRed(s) ? "red" : "black");
-  f.textContent = R.SUIT_SYM[s];
+  f.className = `suit-flash s-${s}`;
+  f.append(R.SUIT_SYM[s], Object.assign(document.createElement("img"), { src: poseSrc(s, 3), alt: "" }));
   $("#pile").appendChild(f);
   if (msg) toast(msg);
   await wait(900);
@@ -663,13 +664,15 @@ function finish() {
     const n = S.wins[k];
     $("#resultStickers").innerHTML = n ? `<em>🏆 ${n}승</em> <span>${stickerRow(n, 10)}</span>` : "";
     $("#resultStickers").classList.toggle("new", won);
+    $$("#result .rm").forEach((m, i) => { m.src = poseSrc(m.dataset.suit, won ? 2 : 4); m.style.setProperty("--d", (i * 0.12) + "s"); });
     const conf = $("#confetti");
     conf.innerHTML = "";
     if (won) for (let i = 0; i < 28; i++) {
       const c = document.createElement("i");
       c.style.left = (i * 37) % 100 + "%";
       c.style.setProperty("--d", ((i * 53) % 10) / 10 + "s");
-      c.style.background = ["#ff6f61", "#ffc94a", "#4cc9a7", "#5aa7ff", "#c58cff"][i % 5];
+      c.style.color = ["#ff5f9e", "#ffb21e", "#2fbf71", "#3b8cff", "#a46bff"][i % 5];
+      c.textContent = ["♥", "★", "♦", "⚡", "♣", "✦"][i % 6];
       conf.appendChild(c);
     }
     $("#result").classList.toggle("lost", !won);
@@ -688,7 +691,30 @@ window.__ONECARD = {
   setRng(seed) { rng = R.mulberry32(seed); },
   // 점검: 내 차례에 손패·탁자를 바꿔 놓고 다시 그린다
   rig(fn) { fn(G.st); L.lastN = -1; render(); if (G.st.turn === 0 && G.st.winner < 0 && !G.st.pending) startMyTurn(); },
+  cardEl, backEl,
 };
+
+// ?gallery=1 : 카드 52장 + 뒷면을 한눈에(그림 점검용)
+function gallery() {
+  const g = document.createElement("div");
+  g.className = "gallery";
+  for (const s of R.SUITS) {
+    const row = document.createElement("div");
+    row.className = "g-row";
+    const tag = document.createElement("div");
+    tag.className = `g-tag s-${s}`;
+    tag.innerHTML = `<img src="${poseSrc(s, 1)}" alt=""><b>${R.SUIT_SYM[s]} ${MASCOT[s].name}</b><small>${MASCOT[s].kind}</small>`;
+    row.appendChild(tag);
+    for (let r = 1; r <= 13; r++) row.appendChild(cardEl({ id: s + r, s, r }));
+    g.appendChild(row);
+  }
+  const last = document.createElement("div");
+  last.className = "g-row";
+  last.append(backEl());
+  g.appendChild(last);
+  document.body.appendChild(g);
+}
 
 layout();
 show("home");
+if (params.get("gallery")) gallery();

@@ -1,7 +1,18 @@
 // 카드 한 장을 HTML로 그린다. 크기는 부모의 CSS 변수 --cw(카드 너비)를 따른다.
+// 모양마다 요정·히어로 친구가 있다(모두 이 게임만의 새 캐릭터). 손에 20장이 있어도 가볍게: 카드 한 장 = 요소 10개 남짓, 그림은 모양마다 4장을 같이 쓴다.
 import { SUIT_SYM, isRed, rankLabel } from "./rules.js";
 
-// 그림 카드: J=아이들, Q=장난꾸러기, K=아빠(♠♣)·엄마(♥♦)
+// 모양 친구: ♥ 하트 요정, ♦ 보석 요정, ♠ 번개 히어로, ♣ 방패 히어로
+export const MASCOT = {
+  H: { name: "하트미", img: "heart", kind: "하트 요정" },
+  D: { name: "보라미", img: "gem", kind: "보석 요정" },
+  S: { name: "번개돌이", img: "bolt", kind: "번개 히어로" },
+  C: { name: "튼튼이", img: "clover", kind: "방패 히어로" },
+};
+// 1 손 흔들기 · 2 껑충 · 3 마법/힘 · 4 엄지척
+export const poseSrc = (s, n) => `art/${MASCOT[s].img}-${n}.webp`;
+
+// 그림 카드: J=아이들(히어로 배지), Q=장난꾸러기(반짝 티아라), K=아빠(♠♣)·엄마(♥♦)(왕관)
 export const FACE = {
   S11: "taeo", H11: "jaei", C11: "yunchan", D11: "yungeon",
   S12: "taeppul", H12: "jaewing", C12: "chanppul", D12: "geonppul",
@@ -12,20 +23,6 @@ export const FACE_NAME = {
   taeppul: "태뿔", jaewing: "재윙", chanppul: "찬뿔", geonppul: "건뿔", appa: "아빠", eomma: "엄마",
 };
 
-// 숫자 카드 무늬 자리 [가로%, 세로%] (가운데 칸 안에서). 아래쪽 절반은 거꾸로 선다.
-const L = 0, M = 50, R = 100;
-const PIPS = {
-  2: [[M, 0], [M, 100]],
-  3: [[M, 0], [M, 50], [M, 100]],
-  4: [[L, 0], [R, 0], [L, 100], [R, 100]],
-  5: [[L, 0], [R, 0], [M, 50], [L, 100], [R, 100]],
-  6: [[L, 0], [R, 0], [L, 50], [R, 50], [L, 100], [R, 100]],
-  7: [[L, 0], [R, 0], [M, 25], [L, 50], [R, 50], [L, 100], [R, 100]],
-  8: [[L, 0], [R, 0], [M, 25], [L, 50], [R, 50], [M, 75], [L, 100], [R, 100]],
-  9: [[L, 0], [R, 0], [L, 33.3], [R, 33.3], [M, 50], [L, 66.7], [R, 66.7], [L, 100], [R, 100]],
-  10: [[L, 0], [R, 0], [M, 16.7], [L, 33.3], [R, 33.3], [L, 66.7], [R, 66.7], [M, 83.3], [L, 100], [R, 100]],
-};
-
 function el(tag, cls, text) {
   const e = document.createElement(tag);
   if (cls) e.className = cls;
@@ -33,40 +30,45 @@ function el(tag, cls, text) {
   return e;
 }
 
+// 셀 수 있는 보석 줄: 5개까지 한 줄, 6개부터 두 줄(3+3, 4+3 …) — 요소 하나에 글자로 담아 가볍게
+function gemText(sym, n) {
+  if (n <= 5) return sym.repeat(n);
+  const top = Math.ceil(n / 2);
+  return sym.repeat(top) + "\n" + sym.repeat(n - top);
+}
+
 export function cardEl(card) {
   const sym = SUIT_SYM[card.s];
-  const c = el("div", `pc face-up ${isRed(card.s) ? "red" : "black"} r${card.r}`);
+  const c = el("div", `pc face-up s-${card.s} ${isRed(card.s) ? "red" : "black"} r${card.r}`);
   c.dataset.id = card.id;
   const face = FACE[card.id];
   if (face) {
-    c.classList.add("pic");
+    c.classList.add("pic", ["", "", "jack", "queen", "king"][card.r - 9]);
+    const frame = el("div", "frame");
     const art = el("div", "art");
     art.style.backgroundImage = `url("art/${face}.webp")`;
-    c.appendChild(art);
-  } else if (card.r === 1) {
-    c.appendChild(el("div", "ace", sym));
+    frame.appendChild(art);
+    c.append(frame, el("div", "deco"), el("div", "name", FACE_NAME[face]));
+  } else if (card.r === 7) {
+    c.classList.add("wild");
+    c.append(el("div", "crew"), el("div", "ribbon", "모양 바꾸기 ✨"));
   } else {
-    const box = el("div", "pips");
-    for (const [x, y] of PIPS[card.r]) {
-      const p = el("span", y > 50 ? "flip" : "", sym);
-      p.style.left = x + "%";
-      p.style.top = y + "%";
-      box.appendChild(p);
-    }
-    c.appendChild(box);
+    c.classList.add("num");
+    const art = el("div", "art");
+    art.style.backgroundImage = `url("${poseSrc(card.s, ((card.r - 1) % 4) + 1)}")`;
+    c.append(art, el("div", "gems" + (card.r > 5 ? " two" : card.r === 1 ? " one" : ""), gemText(sym, card.r)));
   }
   for (const corner of ["tl", "br"]) {
     const idx = el("div", "idx " + corner);
     idx.append(el("b", "", rankLabel(card.r)), el("i", "", sym));
     c.appendChild(idx);
   }
-  if (card.r === 7) c.appendChild(el("div", "wild-tag", "🌈"));
   c.setAttribute("aria-label", `${rankLabel(card.r)} ${sym}`);
   return c;
 }
 
 export function backEl() {
   const c = el("div", "pc back");
-  c.appendChild(el("span", "back-logo", "1"));
+  c.appendChild(el("span", "back-logo", "원카드"));
   return c;
 }

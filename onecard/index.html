@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<meta name="theme-color" content="#2f7a5a">
+<meta name="theme-color" content="#4a3db8">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>원카드</title>
 <link rel="icon" href="../favicon.ico">
 <link rel="preload" href="../sanguo/fonts/pretendard/PretendardVariable.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=1">
+<link rel="stylesheet" href="style.css?v=2">
 <script src="../assets/study/play-timer.js?v=1"></script>
 <script src="../assets/touch-guard.js?v=1"></script>
 </head>
@@ -22,6 +22,9 @@
   <div class="home-title">
     <div class="title-fan" aria-hidden="true" id="titleFan"></div>
     <h1>원카드</h1>
+    <div class="mascots" aria-hidden="true">
+      <img src="art/heart-1.webp" alt=""><img src="art/gem-4.webp" alt=""><img src="art/bolt-1.webp" alt=""><img src="art/clover-4.webp" alt="">
+    </div>
   </div>
   <div class="home-body">
     <div class="pick-box">
@@ -70,10 +73,10 @@
   <div class="card suit-card">
     <h2>어떤 모양으로 바꿀까?</h2>
     <div class="suit-grid">
-      <button type="button" class="suit-btn black" data-suit="S"><b>♠</b><small>스페이드</small></button>
-      <button type="button" class="suit-btn red" data-suit="H"><b>♥</b><small>하트</small></button>
-      <button type="button" class="suit-btn red" data-suit="D"><b>♦</b><small>다이아</small></button>
-      <button type="button" class="suit-btn black" data-suit="C"><b>♣</b><small>클로버</small></button>
+      <button type="button" class="suit-btn s-H" data-suit="H"><img src="art/heart-3.webp" alt=""><span class="lbl"><b>♥</b><small>하트미</small></span></button>
+      <button type="button" class="suit-btn s-D" data-suit="D"><img src="art/gem-3.webp" alt=""><span class="lbl"><b>♦</b><small>보라미</small></span></button>
+      <button type="button" class="suit-btn s-S" data-suit="S"><img src="art/bolt-3.webp" alt=""><span class="lbl"><b>♠</b><small>번개돌이</small></span></button>
+      <button type="button" class="suit-btn s-C" data-suit="C"><img src="art/clover-3.webp" alt=""><span class="lbl"><b>♣</b><small>튼튼이</small></span></button>
     </div>
     <button type="button" class="link-btn" id="suitCancel">← 다른 카드 낼래</button>
   </div>
@@ -91,7 +94,11 @@
 <section id="result" class="overlay" hidden>
   <div class="card result-card">
     <div class="confetti" id="confetti" aria-hidden="true"></div>
-    <img class="result-face" id="resultFace" src="art/jaei.webp" alt="">
+    <div class="result-hero">
+      <img class="rm" data-suit="H" src="art/heart-2.webp" alt=""><img class="rm" data-suit="D" src="art/gem-2.webp" alt="">
+      <img class="result-face" id="resultFace" src="art/jaei.webp" alt="">
+      <img class="rm" data-suit="S" src="art/bolt-2.webp" alt=""><img class="rm" data-suit="C" src="art/clover-2.webp" alt="">
+    </div>
     <h2 id="resultTitle"></h2>
     <p id="resultText"></p>
     <div class="result-stickers" id="resultStickers"></div>
@@ -103,6 +110,6 @@
 </section>
 
 </div>
-<script type="module" src="src/main.js?v=1"></script>
+<script type="module" src="src/main.js?v=2"></script>
 </body>
 </html>

@@ -15,7 +15,7 @@ async function fits(page, label) {
   const r = await page.evaluate(() => {
     const se = document.scrollingElement;
     const out = { sw: se.scrollWidth, sh: se.scrollHeight, iw: innerWidth, ih: innerHeight, off: [] };
-    document.querySelectorAll("button, a, .pc, .opp, .kid-card").forEach(el => {
+    document.querySelectorAll("button, a, .pc, .opp, .kid-card, .mascots img").forEach(el => {
       if (el.closest("[hidden]") || el.closest(".fly") || el.closest(".title-fan")) return;
       const b = el.getBoundingClientRect();
       if (!b.width || !b.height) return;
@@ -163,6 +163,7 @@ async function playFullGame(page, label, opts) {
       page.on("console", m => { if (m.type() === "error") errors.push(m.text()); if (process.env.DEBUG_TAP && m.text().startsWith("PD")) console.log(m.text()); });
       page.on("pageerror", e => errors.push(String(e)));
       page.on("requestfailed", r => errors.push("requestfailed " + r.url()));
+      page.on("response", r => { if (r.status() >= 400) errors.push(r.status() + " " + r.url()); });
       const kid = i % 2 ? "taeo" : "jaei";
       const opp = i % 3 === 2 ? 2 : 1;
       await page.goto(`${BASE}/onecard/?seed=${11 + i}&speed=4`, { waitUntil: "networkidle" });
@@ -176,6 +177,31 @@ async function playFullGame(page, label, opts) {
       assert.ok(s0.hands.every(n => n === (kid === "taeo" ? 5 : 7)), "dealt hand size");
       assert.ok(!s0.top.endsWith("7") || s0.top.length > 2, "never starts on a 7");
       await fits(page, label + " game start");
+      // 카드 모습: 숫자 카드엔 모양 친구 그림·보석, 7은 무지개 친구들, 그림 카드는 액자, 모서리 숫자는 두 곳
+      const look = await page.evaluate(() => {
+        const { cardEl, backEl } = __ONECARD;
+        const box = document.createElement("div");
+        box.style.cssText = "position:fixed;left:0;top:0;visibility:hidden";
+        const mk = (s, r) => cardEl({ id: s + r, s, r });
+        const n = mk("H", 9), w = mk("S", 7), q = mk("D", 12), bk = backEl();
+        box.append(n, w, q, bk);
+        document.body.appendChild(box);
+        const out = {
+          art: getComputedStyle(n.querySelector(".art")).backgroundImage, gems: n.querySelector(".gems").textContent.replace(/\s/g, "").length,
+          idx: n.querySelectorAll(".idx b").length, crew: getComputedStyle(w.querySelector(".crew")).backgroundImage.split("url(").length - 1,
+          ribbon: !!w.querySelector(".ribbon"), queen: q.classList.contains("queen") && !!q.querySelector(".frame .art"), back: bk.textContent,
+          idxPx: parseFloat(getComputedStyle(document.querySelector("#hand .pc .idx b")).fontSize),
+        };
+        box.remove();
+        return out;
+      });
+      assert.match(look.art, /heart-1\.webp/);
+      assert.equal(look.gems, 9);
+      assert.equal(look.idx, 2);
+      assert.equal(look.crew, 4);
+      assert.ok(look.ribbon && look.queen);
+      assert.equal(look.back, "원카드");
+      assert.ok(look.idxPx >= 13, `${label}: corner rank too small (${look.idxPx}px)`);
 
       // 한 판 끝까지(아이는 터치로, 원카드는 늘 외치고/잡고)
       const { stats, s } = await playFullGame(page, label, { midShot: NAMED[label] ? `game-${NAMED[label]}.png` : null, shots: label === "1024x768" });
