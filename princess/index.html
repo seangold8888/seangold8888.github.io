@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style id="no-zoom-style">*{touch-action:manipulation}</style>
 <script src="../assets/study/play-timer.js?v=1"></script>
+<script src="../assets/touch-guard.js?v=1"></script>
 <script id="no-zoom-guard">/* 게임 중 화면이 갑자기 확대되는 것 방지: 핀치·더블탭 줌 차단 */
 (function(){var s=function(e){e.preventDefault()};
 document.addEventListener('gesturestart',s,{passive:false});
@@ -192,6 +193,169 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   #toast.show{transform:translateX(-50%) translateY(0)}
   .sparkle{position:absolute;pointer-events:none;font-size:26px;animation:spark .8s ease-out forwards;z-index:5}
   @keyframes spark{0%{transform:translate(-50%,-50%) scale(.3);opacity:1}100%{transform:translate(-50%,-50%) translateY(-40px) scale(1.3);opacity:0}}
+  /* 놀이 버튼: 넓은 화면은 원래 글자, 폰에서는 아이콘+짧은 이름 칩 */
+  .nv-chip{display:none}
+  /* ---------- 폰 공통(세로 폭 540 이하 · 가로 높이 500 이하). 아이패드·PC는 위 규칙 그대로 ---------- */
+  @media (max-width:540px) and (orientation:portrait),(orientation:landscape) and (max-height:500px){
+    .outing-nav .nv .nv-full{display:none}
+    .outing-nav .nv .nv-chip{display:inline-flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap}
+    .outing-nav .nv-ic{font-size:1.2em;line-height:1}
+    .outing-nav-copy{display:none}
+    .outing-nav{overflow:visible}
+    .outing-nav>button,.pj-nav button{min-height:44px;padding:0 8px;font-size:14px;border-radius:14px;letter-spacing:-.02em;line-height:1}
+    #intro{display:none}
+    #swatches:not(:has(.sw)){display:none}
+    #swatches{padding:3px 6px;gap:7px}
+    #swatches .lbl{font-size:13px}
+    .tab{flex-direction:row;min-height:44px;padding:4px 11px 4px 5px;gap:5px;border-radius:15px;font-size:14px;min-width:0}
+    .tab .ic{width:34px;height:34px;border-radius:11px}
+    .tab .wardrobe-icon{width:30px;height:30px}
+    #tabs{gap:6px;padding:2px 2px 5px;scroll-snap-type:x proximity}
+    .item{border-radius:16px;padding:5px 4px 6px;gap:3px;font-size:12.5px}
+    .item svg{border-radius:11px;flex:none}
+    #albumEmpty{grid-column:1/-1}
+    .item.on::after{top:3px;right:4px;width:20px;height:20px;font-size:12px}
+    #nameTag{font-size:13px;padding:3px 10px;box-shadow:0 3px 0 rgba(111,61,117,.12),0 6px 14px rgba(74,44,79,.14)}
+    #nameTag small{margin-left:4px}
+    #stageCard{display:grid;grid-template-rows:auto minmax(0,1fr);justify-items:center;gap:5px;aspect-ratio:auto;width:100%;height:100%}
+    #stage{height:100%;width:auto;max-width:100%;aspect-ratio:420/680;flex:none}
+    #stage{border-radius:22px;border-width:4px;outline-offset:-7px}
+    .fs-bar{flex-wrap:wrap;gap:6px;padding:6px 8px;margin:0 8px 6px;border-radius:16px}
+    .fs-bar-title{flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:14px}
+    .fs-chips{order:5;flex:1 1 100%;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -2px;padding:0 2px}
+    .fs-chips::-webkit-scrollbar{display:none}
+    .fs-chip{flex:none;padding:6px 10px;font-size:13px}
+    .fs-bar .fs-button{min-height:44px;padding:8px 10px;font-size:14px}
+    .fs-bar .fs-go{padding-inline:12px;font-size:15px}
+    .fs-bar .fs-close{min-width:44px;padding-inline:0}
+    .outing-quest{gap:6px;padding:7px 8px;margin:0 8px 6px;border-radius:16px}
+    .outing-quest strong{font-size:14px}
+    .outing-quest p{font-size:13px;margin-top:1px}
+    .outing-quest .outing-button{min-height:44px;padding:6px 8px;font-size:13px}
+    .overlay{padding:8px}
+    .sheet{padding:12px;gap:9px;border-radius:24px;max-width:calc(100vw - 16px)}
+    .sheet h2{font-size:18px}
+  }
+  /* ---------- 폰 세로: 위 인형, 아래 옷장 시트 ---------- */
+  @media (max-width:540px) and (orientation:portrait){
+    header{padding:6px 8px 6px;gap:6px}
+    .outing-nav{padding:6px 8px;gap:6px}
+    .outing-nav>button,.pj-nav{flex:1 1 auto;min-width:0}
+    .pj-nav button{width:100%}
+    main{
+      grid-template-rows:minmax(0,1fr) clamp(312px,45dvh,410px);
+      gap:6px;padding:0;
+    }
+    /* 놀이 막대(초대장 부탁·패션쇼 준비)가 떠 있으면 시트를 줄여 인형이 사라지지 않게 */
+    body:has(.outing-quest:not([hidden])) main,body:has(.fs-bar:not([hidden])) main{grid-template-rows:minmax(0,1fr) clamp(262px,37dvh,380px)}
+    body:has(.outing-quest:not([hidden])):has(.fs-bar:not([hidden])) main{grid-template-rows:minmax(0,1fr) clamp(236px,32dvh,330px)}
+    #stageWrap{padding:0 8px}
+    #panel{
+      position:relative;gap:6px;border-radius:24px 24px 0 0;border-bottom:0;
+      padding:12px 10px calc(6px + env(safe-area-inset-bottom,0px));
+      box-shadow:inset 0 0 0 2px rgba(255,255,255,.7),0 -8px 26px rgba(91,45,99,.14);
+    }
+    #panel::before{content:"";position:absolute;top:4px;left:50%;width:38px;height:4px;margin-left:-19px;border-radius:4px;background:rgba(128,100,132,.28)}
+    #items{grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:max-content;gap:6px;padding:3px 1px 10px}
+    #items .item svg{aspect-ratio:10/9}
+    #tabs{padding-bottom:3px}
+    .outing-quest>div{flex-basis:100%}
+    .outing-quest .outing-button{flex:1 1 auto;white-space:nowrap;padding-inline:6px}
+  }
+  @media (max-width:374px) and (orientation:portrait){
+    .outing-nav{gap:5px;padding-inline:6px}
+    .outing-nav>button,.pj-nav button{padding:0 5px;font-size:13px;letter-spacing:-.04em}
+    .outing-nav .nv .nv-chip{gap:2px}
+    .outing-quest .outing-button{font-size:12px;padding-inline:4px;letter-spacing:-.03em}
+  }
+  /* ---------- 폰 가로: 왼쪽 인형(전체 높이), 오른쪽 옷장 ---------- */
+  @media (orientation:landscape) and (max-height:500px){
+    body{
+      --head-h:52px;
+      --stage-w:calc((100dvh - var(--head-h) - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 14px) * .5753 + 8px);
+      display:grid;
+      grid-template-columns:var(--stage-w) minmax(0,1fr) auto;
+      grid-template-rows:var(--head-h) auto auto minmax(0,1fr);
+      grid-template-areas:"head head nav" "stage quest quest" "stage fsbar fsbar" "stage panel panel";
+      column-gap:8px;
+      padding:env(safe-area-inset-top,0px) 0 calc(6px + env(safe-area-inset-bottom,0px));
+    }
+    header,.outing-nav{
+      background:linear-gradient(180deg,rgba(255,255,255,.64),rgba(255,255,255,.18));
+      border-bottom:1px solid rgba(255,255,255,.62);box-shadow:0 8px 24px rgba(101,51,108,.07);
+      height:var(--head-h);margin-bottom:6px;
+    }
+    header{grid-area:head;padding:4px 6px 4px max(10px,env(safe-area-inset-left,0px));gap:6px;min-width:0}
+    header h1{font-size:0}
+    header h1::after{content:"👑 공주 옷장";font-size:16px}
+    header .btn-label{display:none}
+    header .btn{width:44px;justify-content:center;padding-inline:0}
+    .outing-nav{grid-area:nav;padding:4px max(10px,env(safe-area-inset-right,0px)) 4px 0;gap:6px;flex-wrap:nowrap;margin-left:-8px}
+    .outing-nav>button,.pj-nav,.pj-nav button{flex:none}
+    .outing-nav>button,.pj-nav button{padding:0 10px}
+    .outing-quest{grid-area:quest;margin:0 max(8px,env(safe-area-inset-right,0px)) 6px 0;flex-wrap:nowrap}
+    .outing-quest p{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .fs-bar{grid-area:fsbar;margin:0 max(8px,env(safe-area-inset-right,0px)) 6px 0;flex-wrap:nowrap}
+    .fs-bar-title{flex:0 1 auto;max-width:30%}
+    .fs-chips{order:0;flex:1 1 0;min-width:0}
+    body:has(.fs-bar:not([hidden])) .outing-quest p{-webkit-line-clamp:1}
+    body:has(.fs-bar:not([hidden])) .outing-quest{padding-block:4px}
+    main{display:contents}
+    #stageWrap{grid-area:stage;padding-left:max(8px,env(safe-area-inset-left,0px))}
+    #stageWrap::before{width:140%}
+    #panel{grid-area:panel;margin-right:max(8px,env(safe-area-inset-right,0px));padding:8px;gap:6px;border-radius:22px}
+    #items{grid-template-columns:repeat(auto-fill,minmax(78px,1fr));grid-auto-rows:max-content;gap:6px;padding:3px 1px 8px}
+    /* 대화상자: 가로로 펼쳐 세로 넘침 줄이기 */
+    #photoOverlay .sheet{display:grid;grid-template-columns:auto minmax(170px,240px);grid-template-rows:auto 1fr auto;align-items:center;column-gap:14px}
+    #photoOverlay .sheet h2{grid-column:1/-1}
+    #photoImg{grid-row:2/4;max-height:calc(100dvh - 104px)}
+    #albumGrid{grid-template-columns:repeat(auto-fill,minmax(96px,1fr))}
+    .pj-dialog{padding:12px;width:calc(100% - 16px);max-height:calc(100dvh - 16px)}
+    .pj-dialog .pj-head{margin-bottom:6px}.pj-head h2{font-size:19px}
+    .pj-profile{margin-bottom:6px}
+    .pj-layout{grid-template-columns:auto minmax(0,1fr);gap:14px}
+    .pj-art{height:calc(100dvh - 140px);width:auto;max-height:none;min-height:180px}
+    .pj-story{gap:8px}.pj-story h3{font-size:20px}.pj-copy{font-size:15px;line-height:1.65}
+    .outing-dialog{padding:12px 14px;width:calc(100% - 16px);max-height:calc(100dvh - 16px)}
+    .outing-dialog-head{margin-bottom:6px}.outing-dialog-head h2{font-size:19px}
+    .outing-lead{margin-bottom:8px;font-size:14px}
+    .outing-invites{gap:10px}.outing-invite img{height:84px}.outing-invite-icon{top:52px;width:42px;height:42px;font-size:22px}
+    .outing-invite strong{font-size:16px}.outing-invite strong,.outing-invite>span:not(.outing-invite-icon){margin-top:5px}
+    .outing-scene-layout{grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:start}
+    .outing-stage{width:auto;height:calc(100dvh - 92px);max-height:none}
+    .outing-scene-side h3{font-size:20px;margin:4px 0}.outing-intro{font-size:14px;line-height:1.6}
+    .outing-live{margin:8px 0;min-height:0;padding:10px;font-size:14px}
+    .outing-actions{grid-template-columns:repeat(3,minmax(0,1fr))}.outing-actions button{padding:8px;font-size:14px}.outing-actions button:last-child{grid-column:auto}
+    .outing-pages{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+    .fs-dialog{padding:10px 14px 12px;width:calc(100% - 16px);max-height:calc(100dvh - 16px)}
+    .fs-head{margin-bottom:6px}.fs-head h2{font-size:18px}
+    .fs-pick[open]{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"head head" "card stitle" "card snote" "card shelf" "row shelf";column-gap:16px;align-content:start}
+    .fs-pick .fs-head{grid-area:head}.fs-pick .fs-card{grid-area:card;margin:0;max-width:none;padding:14px 16px}
+    .fs-pick .fs-row{grid-area:row;margin:12px 0 4px}.fs-pick .fs-shelf-title{grid-area:stitle;margin:0 0 2px}.fs-pick .fs-shelf-note{grid-area:snote}.fs-pick .fs-shelf{grid-area:shelf;align-self:start;grid-template-columns:repeat(2,minmax(0,1fr))}
+    .fs-card-icon{font-size:44px}.fs-card-title{font-size:24px}.fs-card-line{font-size:15px}.fs-card-likes{font-size:14px;margin-top:8px}
+    .fs-show-layout{grid-template-columns:auto minmax(0,1fr);gap:14px}
+    .fs-runway{height:calc(100dvh - 92px);justify-self:start}
+    .fs-side{max-height:calc(100dvh - 92px);overflow-y:auto;padding:2px 4px 6px 2px}
+    .fs-judges{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+    .fs-judge{padding:8px 9px;grid-template-columns:40px minmax(0,1fr);grid-template-areas:"face who" "stars stars" "text text" "tip tip"}
+    .fs-judge-face{width:40px;height:40px;font-size:24px}
+    .fs-judge-text{font-size:14px}.fs-judge-tip{font-size:13px}.fs-stars{font-size:20px}
+    .fs-result{padding:10px 12px}.fs-result-icon{font-size:36px}.fs-result-text{font-size:16px}
+    .fs-actions{grid-template-columns:repeat(4,minmax(0,1fr))}
+  }
+  @media (orientation:landscape) and (max-height:500px) and (max-width:780px){
+    header h1::after{content:"공주 옷장"}
+    .outing-nav>button,.pj-nav button{padding:0 7px}
+  }
+  @media (orientation:landscape) and (max-height:500px) and (max-width:700px){
+    header h1{display:none}
+  }
+  /* 폰 세로 대화상자 */
+  @media (max-width:540px) and (orientation:portrait){
+    #photoImg{max-height:calc(100dvh - 210px)}
+    .fs-runway{height:clamp(260px,50dvh,520px)}
+    .fs-pick .fs-card{padding:16px 14px}
+  }
   @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 </style>
 </head>
@@ -1566,6 +1730,18 @@ if(globalThis.PrincessFashion)globalThis.princessFashionUI=PrincessFashion.mount
   sound:kind=>({click,tada,shutter}[kind]||click)(),notify:toast,
   saveAlbum:pushAlbum
 });
+// 폰에서는 놀이 버튼을 아이콘+짧은 이름 칩으로 보여 준다. 넓은 화면은 원래 글자 그대로(.nv-full),
+// 버튼의 읽는 이름(aria-label)은 화면 크기와 상관없이 원래 글자로 고정.
+(function phoneNavChips(){
+  const chips=[['.outing-nav .pj-nav button','🌳','소풍'],['.outing-nav > .outing-primary','💌','초대장'],['.outing-nav > .outing-button:not(.outing-primary)','📖','이야기책'],['.outing-nav > .fs-entry','🎤','패션쇼']];
+  for(const [sel,ic,short] of chips){
+    const b=document.querySelector(sel);if(!b||b.querySelector('.nv-full'))continue;
+    const full=b.textContent,f=document.createElement('span'),c=document.createElement('span'),i=document.createElement('span'),t=document.createElement('span');
+    f.className='nv-full';f.textContent=full;c.className='nv-chip';c.setAttribute('aria-hidden','true');
+    i.className='nv-ic';i.textContent=ic;t.className='nv-t';t.textContent=short;c.append(i,t);
+    b.setAttribute('aria-label',full);b.classList.add('nv');b.replaceChildren(f,c);
+  }
+})();
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{
   navigator.serviceWorker.register('../sw.js').catch(()=>{});
 });
