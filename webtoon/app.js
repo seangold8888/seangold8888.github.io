@@ -50,7 +50,8 @@
     bubbles.forEach((b, i) => {
       const cls = ["bubble", b.k || "", b.tail ? `tail-${b.tail}` : ""].join(" ").trim();
       const w = b.w ? `max-width:${(b.w / 400) * 100}%;` : "";
-      s += `<div class="${cls}" style="left:${px(b.x)};top:${py(b.y)};${w}--d:${bubD(i)}s">${esc(b.t)}</div>`;
+      const v = b.v ? ` data-voice="${esc(b.v)}"` : "";
+      s += `<div class="${cls}"${v} style="left:${px(b.x)};top:${py(b.y)};${w}--d:${bubD(i)}s">${esc(b.t)}</div>`;
     });
     return s;
   }
@@ -223,9 +224,23 @@
       whoosh: (at) => tone("sawtooth", 900, 200, 0.22, 0.05, at),
     };
   })();
+  const voices = [];
+  function stopVoices() {
+    while (voices.length) {
+      const a = voices.pop();
+      a.pause();
+    }
+  }
   function playSounds(panel) {
+    stopVoices();
     const d = (el) => parseFloat(getComputedStyle(el).getPropertyValue("--d")) || 0;
-    panel.querySelectorAll(".bubble").forEach((b) => sfx.pop(d(b)));
+    // 말풍선에 v(녹음 파일 이름)가 있으면 뿅 소리 대신 그 목소리를 말풍선이 나올 때 틀어 준다. 파일은 voices/ 에 둔다.
+    panel.querySelectorAll(".bubble").forEach((b) => {
+      if (!b.dataset.voice) return sfx.pop(d(b));
+      const a = new Audio(`voices/${b.dataset.voice}`);
+      voices.push(a);
+      setTimeout(() => a.play().catch(() => {}), d(b) * 1000);
+    });
     panel.querySelectorAll("[data-m]").forEach((g) => {
       const m = g.dataset.m;
       if (m === "stomp") { sfx.thud(0.58); sfx.thud(1.38); }
