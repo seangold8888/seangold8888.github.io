@@ -33,11 +33,17 @@ test('dense icosahedral topology matches desktop and touch surface budgets',asyn
   s.release({x:12,y:10,z:9});tick(s,4);assert.ok(s.position.every(Number.isFinite));assert.ok(s.position.every((v,k)=>k%3!==1||v+s.body.y>=-.0001));
  }
 });
-test('new local rendering dependencies are all available to the offline worker',()=>{
- const worker=require('../../sw.js');
- for(const file of ['src/main.js?v=rainbow-16','src/physics.js?v=play-7','src/audio.js?v=playroom-9','src/material.js?v=rainbow-16','src/aurora-volume.js?v=rainbow-16','src/input.js?v=play-7','src/friend.js?v=playroom-9','src/toys.js?v=bubbles-10','src/bubble-material.js?v=bubbles-10','src/stage.js?v=play-7','src/geometry.js?v=5','src/optics.js?v=5','src/caustics.js?v=visual-1','vendor/RoomEnvironment.js','vendor/Reflector.js','vendor/THREE-LICENSE.txt']){
-  const asset='./slime/'+file;assert.equal(worker.BACKGROUND_ASSETS.filter(x=>x===asset).length,1,asset);
- }
+test('every local module, stylesheet and vendor file the page loads is in the offline worker',()=>{
+ // Walk the real import graph from index.html, so a ?v= bump cannot silently miss the worker.
+ const worker=require('../../sw.js'),root=path.join(__dirname,'..'),seen=new Set(),queue=[];
+ const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+ for(const m of html.matchAll(/(?:href|src)="((?!\.)[\w\-\/]+\.(?:css|js)\?v=[\w-]+)"/g))queue.push(m[1]);
+ while(queue.length){const f=queue.shift();if(seen.has(f))continue;seen.add(f);if(!/\.js(\?|$)/.test(f))continue;
+  const src=fs.readFileSync(path.join(root,f.split('?')[0]),'utf8'),dir=path.posix.dirname(f);
+  for(const m of src.matchAll(/from '(\.{1,2}\/[\w\-\/]+\.js(?:\?v=[\w-]+)?)'/g)){const next=path.posix.normalize(path.posix.join(dir,m[1]));if(!next.startsWith('..'))queue.push(next);}}
+ assert.ok(seen.has('src/workshop.js?v=workshop-17')&&seen.has('vendor/Reflector.js'));
+ const missing=[...seen,'vendor/THREE-LICENSE.txt'].filter(f=>worker.BACKGROUND_ASSETS.filter(x=>x==='./slime/'+f).length!==1);
+ assert.deepEqual(missing,[],'sw.js BACKGROUND_ASSETS needs exactly one entry for each of these');
 });
 test('raised trampoline floor supports the body and still permits jump, exit and reset',async()=>{
  const s=await jelly();s.setGround(.32);tick(s,.2);assert.equal(s.groundHeight,.32);assert.ok(s.body.y>=.32);

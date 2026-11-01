@@ -2,24 +2,47 @@
 // 자리는 트랙 진행 비율(t)로 정하되 점프대·아이템 상자·출발선과 겹치지 않게 자동으로 비킨다.
 // 모든 카트(AI 포함)에 똑같이 적용된다. 결과(효과음·말풍선)는 onEvent 로 알린다.
 import * as THREE from '../vendor/three.module.min.js';
+import { makeSnowObstacle, buildIceMesh } from './snowland.js?v=snow-1';
 
 // 코스별 장애물 주제
 //  roll  : 옆으로 왔다 갔다 하는 것(찻잔·사탕 공·꽃게). 부딪히면 빙글(방패로 막힘)
-//  bounce: 밟으면 통 튀어 오르는 것(구름·별 쿠션). 벌이 아니라 재미 — 살짝 부스터까지
+//  bounce: 밟으면 통 튀어 오르는 것(구름·별 쿠션·선물 상자). 벌이 아니라 재미 — 살짝 부스터까지
+//  stand : 길 한쪽에 버티고 선 것(눈사람). 반대쪽으로 비켜 가거나 점프로 넘는다
+// 눈꽃 마을은 장애물을 종류별로 자리까지 정해 둔다(obstacles). 얼음길(ice)은 조향이 미끄럽고,
+// 부스트 줄(padChain)은 점프대 바로 앞에 발판 셋을 이어 붙여 큰 점프를 만든다.
 export const COURSE_FX = {
   park:    { obstacle: 'cup',    rings: 0 },
   cloud:   { obstacle: 'cloud',  rings: 2 },
   candy:   { obstacle: 'candy',  rings: 0 },
   beach:   { obstacle: 'crab',   rings: 1 },
   night:   { obstacle: 'star',   rings: 2 },
-  rainbow: { obstacle: 'cup',    rings: 3 }
+  rainbow: { obstacle: 'cup',    rings: 3 },
+  snow: {
+    rings: 0,
+    pads: [0.1, 0.6, 0.9],
+    padChain: [0.364, 0.374, 0.384],          // 썰매 비탈 → 0.40 점프대
+    obstacles: [
+      { kind: 'snowball', t: 0.27 },
+      { kind: 'gift', t: 0.55, side: 1 },
+      { kind: 'snowman', t: 0.64, side: -1 },
+      { kind: 'snowman', t: 0.79, side: 1 },
+      { kind: 'snowball', t: 0.95 }
+    ],
+    // 얼음길은 아이템 상자(1/8 간격) 바로 뒤를 피한다 — 거기엔 바나나가 잘 깔려서 미끄러지며 연달아 맞는다
+    ice: [[0.115, 0.135], [0.49, 0.52], [0.862, 0.887]]
+  }
 };
-const ROLLERS = { cup: true, candy: true, crab: true };
+const ROLLERS = { cup: true, candy: true, crab: true, snowball: true };
+const STANDERS = { snowman: true };
+const SNOWY = { snowball: true, snowman: true, gift: true };
 
 const UP = new THREE.Vector3(0, 1, 0);
 
 // 아이템 상자와 같은 자리 계산(game.js 와 맞춘다)
 const BOX_T = Array.from({ length: 8 }, (_, s) => (s + 0.5) / 8);
+
+// 캔버스 텍스처는 한 번만 만든다. 경주를 끝낼 때 재질만 dispose 되므로 판마다 새로 만들면 쌓인다.
+let padTexShared = null, candyTexShared = null;
 
 export function buildCourseFx(track) {
   const def = track.def;
@@ -29,7 +52,7 @@ export function buildCourseFx(track) {
   const group = new THREE.Group();
   group.name = 'coursefx';
 
-  const taken = [0, 0.985].concat((def.ramps || []), BOX_T);
+  const taken = [0, 0.985].concat((def.ramps || []), BOX_T, cfg.padChain || []);
   function spot(target, gap) {
     // target 근처에서 다른 것과 gap 이상 떨어진 자리를 찾는다
     for (let k = 0; k < 40; k++) {
@@ -53,12 +76,10 @@ export function buildCourseFx(track) {
   }
 
   // ---------- 부스트 발판 ----------
-  const padTex = makePadTexture();
+  const padTex = padTexShared || (padTexShared = makePadTexture());
   const pads = [];
-  [0.1, 0.36, 0.6, 0.86].forEach((target, i) => {
-    const t = spot(target, 0.03);
-    const lateral = (i % 2 ? 1 : -1) * HALF * 0.42;
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(HALF * 0.75, 26),
+  function addPad(t, lateral, halfWidth) {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(halfWidth * 1.78, 26),
       new THREE.MeshBasicMaterial({ map: padTex, transparent: true, depthWrite: false }));
     m.rotation.x = -Math.PI / 2;
     const holder = new THREE.Group();
@@ -66,8 +87,13 @@ export function buildCourseFx(track) {
     holder.position.y += 0.7;
     holder.add(m);
     group.add(holder);
-    pads.push({ x: holder.position.x, z: holder.position.z, y: f.p.y, r: HALF * 0.42, len: 14, ang: holder.rotation.y });
+    pads.push({ x: holder.position.x, z: holder.position.z, y: f.p.y, r: halfWidth, len: 14, ang: holder.rotation.y });
+  }
+  (cfg.pads || [0.1, 0.36, 0.6, 0.86]).forEach((target, i) => {
+    addPad(spot(target, 0.03), (i % 2 ? 1 : -1) * HALF * 0.42, HALF * 0.42);
   });
+  // 부스트 줄: 길 한가운데 넓게, 누구나 밟고 점프대로 날아오른다
+  (cfg.padChain || []).forEach(t => addPad(t, 0, HALF * 0.8));
 
   // ---------- 코인 ----------
   const coins = [];
@@ -111,21 +137,30 @@ export function buildCourseFx(track) {
 
   // ---------- 장애물 ----------
   const obstacles = [];
-  [0.24, 0.54, 0.8].forEach((target, i) => {
-    const t = spot(target, 0.03);
-    const kind = cfg.obstacle;
+  const obstacleList = cfg.obstacles || [0.24, 0.54, 0.8].map(t => ({ kind: cfg.obstacle, t }));
+  obstacleList.forEach((ob, i) => {
+    const t = spot(ob.t, 0.03);
+    const kind = ob.kind;
     const holder = new THREE.Group();
     const f = place(holder, t, 0);
-    const mesh = makeObstacle(kind);
+    const mesh = SNOWY[kind] ? makeSnowObstacle(kind) : makeObstacle(kind);
     holder.add(mesh);
     group.add(holder);
+    const side = ob.side || (i % 2 ? 1 : -1);
     obstacles.push({
-      kind, roller: !!ROLLERS[kind], holder, mesh,
+      kind, roller: !!ROLLERS[kind], stand: !!STANDERS[kind], holder, mesh,
       cx: f.p.x, cz: f.p.z, y: f.p.y, sx: f.side.x, sz: f.side.z,
-      phase: i * 2.1, lateral: ROLLERS[kind] ? 0 : (i % 2 ? 1 : -1) * HALF * 0.38,
-      x: f.p.x, z: f.p.z, r: kind === 'crab' ? 10 : 12
+      phase: i * 2.1, lateral: ROLLERS[kind] ? 0 : side * HALF * (STANDERS[kind] ? 0.42 : 0.38),
+      x: f.p.x, z: f.p.z, r: kind === 'crab' ? 10 : kind === 'snowman' ? 9 : 12, squash: 0
     });
   });
+
+  // ---------- 얼음길 ----------
+  let ice = null;
+  if (cfg.ice && cfg.ice.length) {
+    ice = buildIceMesh(track, cfg.ice);
+    group.add(ice.mesh);
+  }
 
   // ---------- 무지개 링 ----------
   const rings = [];
@@ -159,6 +194,16 @@ export function buildCourseFx(track) {
         o.mesh.rotation.y += dt * (o.kind === 'cup' ? 3.2 : 0);
         if (o.kind === 'candy') o.mesh.rotation.z = -s / 9;
         if (o.kind === 'crab') o.mesh.position.y = Math.abs(Math.sin(time * 9 + o.phase)) * 1.2;
+        // 눈덩이는 옆으로 가는 만큼 진짜로 굴러간다(반지름 11)
+        if (o.kind === 'snowball') o.mesh.userData.spinner.rotation.z = s / 11;
+      } else if (o.stand) {
+        o.x = o.cx + o.sx * o.lateral; o.z = o.cz + o.sz * o.lateral;
+        o.holder.position.set(o.x, o.y, o.z);
+        // 부딪히면 잠깐 찌그러졌다 돌아온다. 평소엔 살랑살랑
+        o.squash = Math.max(0, o.squash - dt * 2.5);
+        const sq = 1 - o.squash * 0.35;
+        o.mesh.scale.set(1 + o.squash * 0.25, sq, 1 + o.squash * 0.25);
+        o.mesh.rotation.z = Math.sin(time * 2.2 + o.phase) * 0.06;
       } else {
         o.x = o.cx + o.sx * o.lateral; o.z = o.cz + o.sz * o.lateral;
         o.holder.position.set(o.x, o.y, o.z);
@@ -209,12 +254,19 @@ export function buildCourseFx(track) {
       obstacles.forEach((o, i) => {
         if (k.fxCool['ob' + i]) return;
         if (Math.hypot(k.x - o.x, k.z - o.z) > o.r + 7) return;
-        if (o.roller) {
+        if (o.roller || o.stand) {
           if (k.airborne && k.y > o.y + 9) return;          // 점프로 넘으면 무사
           k.fxCool['ob' + i] = 1.4;
+          if (o.stand) {
+            // 눈사람은 움직이지 않으니, 부딪힌 카트를 바깥으로 밀어내야 같은 자리에서 또 부딪히지 않는다
+            o.squash = 1;
+            const dx = k.x - o.x, dz = k.z - o.z, d = Math.hypot(dx, dz) || 1;
+            k.x = o.x + dx / d * (o.r + 8); k.z = o.z + dz / d * (o.r + 8);
+          }
           if (k.shield > 0) { k.shield = 0; onEvent('block', k); return; }
-          k.spin = o.kind === 'crab' ? 0.55 : 0.75;
-          k.speed *= 0.55;
+          // 눈사람은 딱 한 바퀴(8 rad/s × 0.785초 = 2π) 돌고 원래 방향을 본다
+          k.spin = o.kind === 'crab' ? 0.55 : o.kind === 'snowman' ? Math.PI * 2 / 8 : 0.75;
+          k.speed *= o.kind === 'snowman' ? 0.6 : 0.55;
           onEvent('bonk', k, o.kind);
         } else {
           if (k.airborne) return;
@@ -222,9 +274,25 @@ export function buildCourseFx(track) {
           k.airborne = true; k.vy = 96;
           k.boost = Math.max(k.boost, 0.5);
           k.trickWindow = 0.55;
-          onEvent('bounce', k);
+          if (o.kind === 'gift') {                         // 선물 상자는 코인 하나를 덤으로 준다
+            k.coins = Math.min(99, (k.coins || 0) + 1);
+            onEvent('gift', k);
+          } else onEvent('bounce', k);
         }
       });
+
+      // 얼음길: 밟고 있는 동안(그리고 아주 잠깐 뒤까지) 조향이 덜 먹고 옆으로 미끄러진다.
+      // 실제 미끄러짐은 karts.js 가 k.ice 를 보고 처리한다.
+      if (ice && !k.airborne) {
+        const near = track.nearest(k.x, k.z);
+        if (near.dist < HALF) {
+          ice.ranges.forEach((r, j) => {
+            if (near.index < r.i0 || near.index > r.i1) return;
+            k.ice = 0.15;
+            if (!k.fxCool['ice' + j]) { k.fxCool['ice' + j] = 4; onEvent('ice', k); }
+          });
+        }
+      }
 
       // 무지개 링
       rings.forEach((r, i) => {
@@ -241,7 +309,7 @@ export function buildCourseFx(track) {
   function reset() { coins.forEach(c => { c.alive = true; c.respawn = 0; }); }
 
   paintCoins(0);
-  return { group, update, reset, pads, coins, obstacles, rings, taken };
+  return { group, update, reset, pads, coins, obstacles, rings, taken, ice: ice ? ice.ranges : [] };
 }
 
 // ---------- 모양 ----------
@@ -279,10 +347,13 @@ function makeObstacle(kind) {
       const a = i * 2.1; dot.position.set(Math.cos(a) * 8.9, 6, Math.sin(a) * 8.9); g.add(dot);
     });
   } else if (kind === 'candy') {                  // 굴러다니는 사탕 공
-    const cv = document.createElement('canvas'); cv.width = 64; cv.height = 64;
-    const c = cv.getContext('2d');
-    for (let i = 0; i < 8; i++) { c.fillStyle = i % 2 ? '#ffffff' : '#ff5c8a'; c.fillRect(i * 8, 0, 8, 64); }
-    const tex = new THREE.CanvasTexture(cv);
+    if (!candyTexShared) {
+      const cv = document.createElement('canvas'); cv.width = 64; cv.height = 64;
+      const c = cv.getContext('2d');
+      for (let i = 0; i < 8; i++) { c.fillStyle = i % 2 ? '#ffffff' : '#ff5c8a'; c.fillRect(i * 8, 0, 8, 64); }
+      candyTexShared = new THREE.CanvasTexture(cv);
+    }
+    const tex = candyTexShared;
     const ball = new THREE.Mesh(new THREE.SphereGeometry(10, 18, 14), new THREE.MeshLambertMaterial({ map: tex }));
     ball.position.y = 10; g.add(ball);
   } else if (kind === 'crab') {                   // 옆걸음 꽃게

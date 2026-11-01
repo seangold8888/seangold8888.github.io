@@ -33,6 +33,11 @@
     let selected = [];
     let partyFilter = "";
     let restoredNow = null;
+    // 오늘의 보스 도전실. challengeView는 지금 보고 있는 보스, challengeBattle은 진행 중인 도전 대결.
+    const B = window.CardBossStage || null;
+    let challengeView = null;
+    let challengeBattle = null;
+    let challengeSerial = 0;
     const seen = new Set();
     const cardById = id => options.cards.find(card => card.id === id);
     // 모아 둔 카드도 원정에 데려간다. 앱이 획득 여부를 알려 준다.
@@ -86,6 +91,7 @@
       root.append(head);
     }
     function showMap() {
+      challengeView = null;
       shell("쓰구미 대마왕을 잡아라", progress.run > 1 ? "재이와 태오의 " + runName(progress.run) + " · 상대가 더 튼튼해요" + medals() : "재이와 태오의 이야기 원정" + medals());
       root.querySelector(".expedition-header button").replaceWith(button("← 모험 홈", "ghost-button", options.onExit));
       const intro = el("div", "expedition-map-intro");
@@ -124,11 +130,16 @@
         again.disabled = progress.run >= C.MAX_RUN;
         foot.append(el("strong", "", "쓰구미 대마왕도 우리 친구!" + medals()),
           el("p", "", "여덟 세계를 모두 되돌렸어요. 쓰구미가 또 장난을 칠지 몰라요. 다시 떠나면 상대가 더 튼튼해지고, 모은 카드를 모두 데려갈 수 있어요."),
-          again, button("친구가 된 카드 보러 가기", "ghost-button", options.onExit));
+          again);
+        const daily = dailyButton();
+        if (daily) foot.append(daily);
+        foot.append(button("친구가 된 카드 보러 가기", "ghost-button", options.onExit));
       } else {
         const chapter = C.CHAPTERS[progress.chapter];
-        foot.append(el("span", "", chapter.name + " · " + Math.min(progress.stage + 1, C.encounterIds(chapter.id).length) + "/" + C.encounterIds(chapter.id).length),
-          button(progress.phase === "intro" && !progress.battleSerial ? "책 속으로 출발 →" : "이어서 하기 →", "primary-button", resume));
+        foot.append(el("span", "", chapter.name + " · " + Math.min(progress.stage + 1, C.encounterIds(chapter.id).length) + "/" + C.encounterIds(chapter.id).length));
+        const daily = dailyButton();
+        if (daily) foot.append(daily);
+        foot.append(button(progress.phase === "intro" && !progress.battleSerial ? "책 속으로 출발 →" : "이어서 하기 →", "primary-button", resume));
       }
       root.append(foot);
       restoredNow = null;
@@ -339,6 +350,7 @@
           if (next.phase !== "battle") return;
           progress = next; persist();
           options.onBattle({campaign: true, player: card, enemy: opponent.card, options: opponent.options,
+            boss: opponent.boss, final: opponent.boss && progress.chapter === 7,
             serial: progress.battleSerial, label: progress.chapter + "장 · " + C.CHAPTERS[progress.chapter].name + " · " + (progress.stage + 1) + "/" + C.encounterIds(progress.chapter).length});
         }, resting ? " is-resting" : "");
         node.disabled = resting;
@@ -348,7 +360,106 @@
       });
       root.append(party);
     }
+    // ---- 오늘의 보스 (원정을 한 번 끝낸 뒤) ----
+    function today() { return B.localDay(new Date()); }
+    function dailyButton() {
+      if (!B || progress.ending < 1) return null;
+      const boss = cardById(B.dailyBoss(today()).id);
+      if (!boss) return null;
+      const done = B.loadCrowns().wonDay === today();
+      const node = button("👑 오늘의 보스 · " + boss.name + (done ? " ✓" : ""), "ghost-button expedition-daily-boss", () => showChallenge(boss.id));
+      node.dataset.bossId = boss.id;
+      return node;
+    }
+    // 보스 사본: 그 장의 보스 보정 + 두 번째 원정만큼 튼튼하게, 실수 없음. cards.json은 그대로다.
+    function challengeOpponent(bossId) {
+      const row = B.BOSSES.find(item => item.id === bossId);
+      return C.encounter(row.chapter, 3, options.cards, {run: 2});
+    }
+    // 재이·태오는 늘 나오고, 나머지 두 자리는 이 보스에게 잘 맞는 카드가 채운다.
+    function challengeCards(boss) {
+      syncOwned();
+      const pool = C.candidatesForChapter(7).concat(progress.ending > 0 ? ["sseugumi"] : [])
+        .filter((id, index, list) => list.indexOf(id) === index && id !== boss.id && cardById(id));
+      const ranked = pool.filter(id => !["jaei", "taeo"].includes(id)).map(cardById)
+        .map(card => {
+          // 보스 한 명과 붙으니 상성만큼 카드 세기도 본다. 약한 카드만 상성으로 끼지 않게.
+          const fit = chapterFit(card, [boss]);
+          return {card, score: fit.good * 2 - fit.bad * 2 + (5 - tierRank(card)) + card.hp / 100};
+        })
+        .sort((a, b) => b.score - a.score || a.card.name.localeCompare(b.card.name, "ko"))
+        .slice(0, 2).map(entry => entry.card.id);
+      return ["jaei", "taeo"].filter(id => pool.includes(id)).concat(ranked).map(cardById);
+    }
+    function showChallenge(bossId) {
+      if (!B) return showMap();
+      const day = today();
+      const daily = B.dailyBoss(day).id;
+      const crowns = B.loadCrowns();
+      const id = B.BOSSES.some(item => item.id === bossId) ? bossId : daily;
+      challengeView = id;
+      const opponent = challengeOpponent(id);
+      const boss = opponent.card;
+      const isDaily = id === daily;
+      const wonToday = crowns.wonDay === day;
+      shell("오늘의 보스", "왕관을 모아요 · 👑 " + B.totalCrowns(crowns) + "개" + (B.crownSetComplete(crowns) ? " · 보스 왕관 7종 완성!" : ""));
+      const target = el("div", "expedition-target boss-challenge-target");
+      target.append(art(boss, "expedition-target-art"));
+      const info = el("div");
+      info.append(el("p", "eyebrow", isDaily ? "👑 오늘의 보스" : "연습 대결 · 오늘의 보스는 " + cardById(daily).name),
+        el("h2", "", boss.name), el("strong", "", elementInfo(boss) + " · ♥ " + boss.hp));
+      const weak = window.CardEngine.ELEMENT_CHART[boss.element];
+      if (weak) info.append(el("p", "", "약점: " + elementInfo({element: weak.weakTo}) + "에게 피해 +10"));
+      info.append(el("p", "boss-challenge-reward", isDaily
+        ? (wonToday ? "오늘 왕관을 받았어요! 내일은 다른 보스가 기다려요. 연습은 몇 번이든 좋아요." : "이기면 왕관 +1! 져도 친구들은 쉬지 않아요.")
+        : "연습 대결은 왕관이 없어요. 마음껏 붙어 봐요."));
+      target.append(info);
+      const shelf = el("div", "boss-shelf");
+      shelf.setAttribute("aria-label", "보스 왕관 모음");
+      B.BOSSES.forEach(item => {
+        const card = cardById(item.id);
+        if (!card) return;
+        const count = crowns.crowns[item.id] || 0;
+        const node = button("", "boss-shelf-item" + (item.id === id ? " is-on" : "") + (item.id === daily ? " is-daily" : "") + (count ? " has-crown" : ""), () => showChallenge(item.id));
+        node.dataset.bossId = item.id;
+        node.setAttribute("aria-pressed", String(item.id === id));
+        node.append(art(card, "boss-shelf-art"), el("span", "boss-shelf-name", card.name),
+          el("b", "boss-shelf-crowns", count ? "👑×" + count : item.id === daily ? "오늘!" : "—"));
+        shelf.append(node);
+      });
+      root.append(target, shelf, el("p", "expedition-help", "누가 나설까요? 상대 색을 보고 골라요."));
+      const party = el("div", "expedition-slots expedition-deploy boss-challenge-party");
+      challengeCards(boss).forEach(card => {
+        const node = portraitButton(card, () => {
+          challengeSerial += 1;
+          challengeBattle = {serial: "boss:" + challengeSerial, bossId: id, day};
+          options.onBattle({campaign: true, challenge: true, boss: true, final: id === "sseugumi",
+            player: card, enemy: boss, options: opponent.options, serial: challengeBattle.serial,
+            label: (isDaily ? "👑 오늘의 보스 · " : "연습 대결 · ") + boss.name});
+        });
+        const advantage = weak && weak.weakTo === card.element;
+        node.append(el("span", "expedition-card-badge", advantage ? "상성 유리 · 피해 +10" : "출전하기 →"));
+        party.append(node);
+      });
+      root.append(party);
+    }
+    function settleChallenge(serial, winner) {
+      const battle = challengeBattle;
+      challengeBattle = null;
+      if (!battle || battle.serial !== serial) return "이미 기록한 대결이에요.";
+      const bossName = cardById(battle.bossId).name;
+      if (winner !== "player") return "아깝다! " + B.withSubject(bossName) + " 튼튼해요. 다른 친구로 다시 붙어 봐요.";
+      const result = B.awardCrown(B.loadCrowns(), battle.bossId, battle.day);
+      if (result.awarded) {
+        const saved = B.saveCrowns(result.state);
+        return saved
+          ? "왕관 +1! 👑 " + bossName + " 왕관이 " + result.state.crowns[battle.bossId] + "개가 됐어요. 내일은 다른 보스가 기다려요."
+          : "이겼어요! 그런데 왕관을 저장하지 못했어요.";
+      }
+      return "연습 승리! " + bossName + "의 장난을 또 풀었어요.";
+    }
     function resume() {
+      if (challengeView) return showChallenge(challengeView);
       if (progress.phase === "complete") return showMap();
       if (progress.chapter > LAST_PLAYABLE_CHAPTER) return showMap();
       if (progress.phase === "intro") return showScene("intro", () => {progress = C.finishIntro(progress); persist(); resume();});
@@ -367,6 +478,7 @@
       showEncounter();
     }
     function settle(serial, winner) {
+      if (challengeBattle && challengeBattle.serial === serial) return settleChallenge(serial, winner);
       if (progress.phase !== "battle" || progress.battleSerial !== serial || !["player", "enemy"].includes(winner)) return "이미 기록한 대결이에요.";
       const current = progress;
       progress = C.finishBattle(progress, serial, winner);

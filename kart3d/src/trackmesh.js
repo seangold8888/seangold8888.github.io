@@ -1,6 +1,7 @@
 // 산리오 카트 3D — 중심선에서 도로·난간·풍경 메시를 만든다
 import * as THREE from '../vendor/three.module.min.js';
 import { loadProps, prop, propsReady } from './props.js';
+import { addSnowScenery, makeSnowfall } from './snowland.js?v=snow-1';
 
 const UP = new THREE.Vector3(0, 1, 0);
 
@@ -217,6 +218,12 @@ export function buildTrackMesh(track, scene) {
       scenery.traverse((o) => { if (o.isMesh && o.geometry && !o.geometry.userData.shared) o.geometry.dispose(); });
       scenery = addScenery(def, track, group);
     });
+  }
+  // 내리는 눈은 풍경(소품 다시 끼우기)과 따로 둔다. game.js 가 매 프레임 카메라 둘레로 옮긴다.
+  if (def.scenery === 'snow') {
+    const snow = makeSnowfall();
+    group.add(snow);
+    group.userData.snow = snow.userData.update;
   }
   scene.add(group);
   return group;
@@ -436,6 +443,9 @@ function addScenery(def, track, parent) {
     }
     instance(new THREE.SphereGeometry(5, 6, 5),
       new THREE.MeshBasicMaterial({ color: 0xfffbe6 }), stars);
+
+  } else if (def.scenery === 'snow') {
+    addSnowScenery(def, track, group, rnd, away);
 
   } else if (def.scenery === 'rainbow') {
     // 무지개 아치 · 떠 있는 섬

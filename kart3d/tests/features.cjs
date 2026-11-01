@@ -76,6 +76,26 @@ function check(ok, msg) { if (!ok) { console.error('FAIL', msg); process.exitCod
   const g1 = await page.evaluate(() => JSON.parse(localStorage.getItem('sanrio-kart3d:garage:v1')));
   check(g1 && g1.coins > 20, '코인이 지갑에 쌓임 ' + (g1 && g1.coins));
 
+  // 눈꽃 컵(2026-10-27): 눈꽃 마을 → 사탕 숲 → 별빛 밤길, 자동 주행으로 세 경주 완주 → 시상식
+  const snowCup = await page.evaluate(() => {
+    const G = window.__game;
+    document.getElementById('podium').style.display = 'none';
+    G.pick(7, 0, 0); G.state.cupIndex = 2; G.startCup(); G.autopilot(true);
+    const out = { tracks: [], secs: [], finishers: [] };
+    for (let race = 0; race < 3; race++) {
+      out.tracks.push(G.state.track.def.id);
+      let n = 0; while (G.state.scene === 'race' && n < 60 * 240) { G.step(1 / 60); n++; }
+      out.secs.push(Math.round(n / 60));
+      out.finishers.push(G.state.results.filter(k => k.finishTime < 9000).length);
+      document.getElementById('result').style.display = 'none';
+      G.nextCupRace(); G.autopilot(true);
+    }
+    out.scene = G.state.scene;
+    return out;
+  });
+  check(snowCup.tracks.join(',') === 'snow,candy,night' && snowCup.scene === 'podium', '눈꽃 컵 세 경주 → 시상식 ' + JSON.stringify(snowCup));
+  await page.waitForTimeout(1200); await shot('snow-podium');
+
   // 번개: 예고 중 점프하면 피하고, 아니면 빙글
   const zap = await page.evaluate(() => {
     const G = window.__game;

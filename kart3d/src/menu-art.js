@@ -5,9 +5,9 @@ export function coursePhoto(track) {
   const cv = document.createElement('canvas'); cv.width = 520; cv.height = 260;
   const c = cv.getContext('2d');
   const color = n => '#' + n.toString(16).padStart(6, '0');
-  const night = track.id === 'night';
+  const night = track.id === 'night', snow = track.id === 'snow';
   const sky = c.createLinearGradient(0,0,0,260);
-  sky.addColorStop(0,color(track.sky)); sky.addColorStop(1,night?'#56669f':'#fff6dd');
+  sky.addColorStop(0,color(track.sky)); sky.addColorStop(1,night?'#56669f':snow?'#eef5ff':'#fff6dd');
   c.fillStyle=sky; c.fillRect(0,0,520,260);
   const circle=(x,y,r,fill)=>{c.fillStyle=fill;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();};
   circle(428,50,26,night?'#fff3ab':'#fff5c2');
@@ -21,10 +21,24 @@ export function coursePhoto(track) {
   for(let i=0;i<5;i++) {
     const x=35+i*104,y=155+(i%2)*50;
     if(track.id==='candy'){c.strokeStyle='#fff';c.lineWidth=5;c.beginPath();c.moveTo(x,y+30);c.lineTo(x,y);c.stroke();circle(x,y,15,i%2?'#ff6a9c':'#fff1a6');circle(x,y,7,'#ffffffa0');}
+    else if(snow){
+      if(i===2){circle(x,y+22,15,'#fff');circle(x,y+2,11,'#fff');circle(x,y-14,8,'#fff');c.fillStyle='#ff8a3d';c.beginPath();c.moveTo(x,y-14);c.lineTo(x+10,y-12);c.lineTo(x,y-11);c.fill();c.fillStyle='#2b2b3a';c.fillRect(x-7,y-27,14,7);c.fillRect(x-10,y-21,20,2);c.fillStyle='#ff5c7a';c.fillRect(x-9,y-6,18,4);}
+      else{
+        const tri=(b,w,top,fill)=>{c.fillStyle=fill;c.beginPath();c.moveTo(x-w,b);c.lineTo(x+w,b);c.lineTo(x,top);c.fill();};
+        c.fillStyle='#7a4f2e';c.fillRect(x-3,y+18,6,14);
+        tri(y+20,22,y-6,'#2f8a5b');tri(y+20,22,y+15,'#ffffff');tri(y+6,16,y-20,'#3a9c66');tri(y-11,7,y-24,'#ffffff');
+      }
+    }
     else if(track.id==='park'||track.id==='beach'){c.fillStyle='#866047';c.fillRect(x-3,y,6,35);circle(x,y,19,track.id==='beach'?'#53b595':'#53aa73');circle(x+12,y+3,12,'#7ac88b');}
     else {circle(x,y,20,'#ffffffb0');circle(x+17,y+7,15,'#ffffffb0');}
   }
   if(track.id==='rainbow') ['#ff7c96','#ffc761','#ffe58c','#8cdbb0','#81cafa'].forEach((cl,i)=>{c.beginPath();c.arc(260,100,62-i*7,Math.PI,Math.PI*2);c.strokeStyle=cl;c.lineWidth=8;c.stroke();});
+  if(snow){
+    // 눈 내리는 마을: 빨간 지붕 집 하나와 눈송이
+    c.fillStyle='#ff8f8f';c.fillRect(455,176,46,32);c.fillStyle='#fff';c.beginPath();c.moveTo(449,178);c.lineTo(507,178);c.lineTo(478,154);c.fill();
+    c.fillStyle='#ffe08a';c.fillRect(463,186,10,10);c.fillRect(484,186,10,10);
+    for(let i=0;i<46;i++) circle((i*71+13)%520,(i*43+7)%250,1.6+(i%3)*0.9,'#ffffffe0');
+  }
   // A physical start gantry on each miniature course.
   c.fillStyle='#27375b';c.fillRect(366,145,5,32);c.fillRect(397,145,5,32);
   for(let y=0;y<2;y++)for(let x=0;x<6;x++){c.fillStyle=(x+y)%2?'#fff':'#27375b';c.fillRect(366+x*6,145+y*6,6,6);}

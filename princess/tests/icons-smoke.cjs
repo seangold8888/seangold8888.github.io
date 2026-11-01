@@ -18,7 +18,9 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
       const geometry=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,panel:document.querySelector('#panel').getBoundingClientRect().right,stage:document.querySelector('#stage').getBoundingClientRect().right}));
       assert.ok(geometry.scroll<=geometry.width,JSON.stringify(geometry));
       assert.ok(geometry.panel<=geometry.width&&geometry.stage<=geometry.width,JSON.stringify(geometry));
-      assert.ok((await page.locator('#items .item').first().boundingBox()).height>=126,'portrait choices must scroll rather than squash');
+      // Phones (<=540 wide) use a 4-column bottom sheet with ~100px cards; tablets keep the 126px cards.
+      const card=await page.locator('#items .item').first().boundingBox(),art=await page.locator('#items .item svg').first().boundingBox();
+      assert.ok(card.height>=(viewport.width<=540?90:126)&&art.height>=art.width*.85,'portrait choices must scroll rather than squash');
       assert.deepEqual(errors,[]);
       await page.waitForTimeout(1500); // Allow the painted doll assets to decode for the review screenshot.
       await page.screenshot({path:path.join(output,viewport.width+'.png')});

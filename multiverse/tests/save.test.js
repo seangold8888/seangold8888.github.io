@@ -34,9 +34,11 @@ test("캡슐은 별 3개로 아직 없는 조각만 주고, 다 모으면 더 �
     const r = S.openCapsule(s, D, () => 0.999);
     if (!r.item) break;
     assert.ok(!seen.has(r.item.id), "같은 조각이 두 번 나오면 안 된다");
+    assert.ok(!r.item.drop, "보스 선물은 캡슐에서 안 나온다");
     seen.add(r.item.id); s = r.state;
   }
-  assert.equal(s.owned.length, D.ITEMS.length);
+  assert.equal(s.owned.length, S.capsulePool(D).length);
+  assert.ok(S.capsuleDone(s, D));
   assert.equal(S.openCapsule(s, D).item, null);
   const poor = Object.assign(S.fresh(D), { stars: 2 });
   assert.equal(S.openCapsule(poor, D).item, null);
@@ -78,4 +80,26 @@ test("사촌 넷 중 주인공과 동료를 고르고, 옛 저장도 새 아이 
   assert.equal(picked.buddy, "taeo");
   const same = S.normalise(Object.assign({}, old, { hero: "yungeon", buddy: "yungeon" }), D);
   assert.equal(same.buddy, "yunchan", "주인공과 같은 동료는 짝꿍으로 바꾼다");
+});
+
+test("공룡 화산섬은 쓰구미 메카를 이겨야 열리고, 티라노를 이길 때마다 선물 조각을 하나씩 준다", () => {
+  const wi = D.WORLDS.findIndex(w => w.id === "volcano");
+  assert.equal(wi, 4, "다섯째 세계");
+  assert.equal(D.WORLDS[wi].boss, "trex");
+  let s = S.fresh(D);
+  ["city", "web", "sky"].forEach(w => { s.best[w + ":boss"] = 1; });
+  assert.equal(S.missionOpen(s, D, wi, 0), false);
+  s = S.recordMission(s, "core", "boss", 2).state;
+  assert.equal(S.missionOpen(s, D, wi, 0), true);
+  const drops = D.BOSSES.trex.drops;
+  assert.ok(drops.length >= 3);
+  drops.forEach(id => assert.ok(D.ITEMS.some(it => it.id === id && it.drop === "trex"), id));
+  const got = [];
+  for (let i = 0; i < drops.length; i++) { const r = S.bossDrop(s, D, "trex"); got.push(r.item.id); s = r.state; }
+  assert.deepEqual(got, [...drops], "차례로 하나씩");
+  assert.equal(S.bossDrop(s, D, "trex").item, null, "다 받으면 더 없다");
+  assert.equal(S.bossDrop(s, D, "spider").item, null, "다른 보스는 선물 없음");
+  const back = S.normalise(JSON.parse(JSON.stringify(s)), D);
+  assert.ok(drops.every(id => back.owned.includes(id)), "선물은 저장에 남는다");
+  assert.ok(S.missionOpen(S.normalise(Object.assign({}, s, { best: { "volcano:rescue": 3 } }), D), D, 0, 0));
 });

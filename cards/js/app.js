@@ -73,6 +73,7 @@
   let combatParticleContext = null;
   let combatCinema = null;
   let elementTheater = null;
+  let bossStage = null;
   let combatParticleMetrics = { width: 0, height: 0, dpr: 1 };
   let battleSession = 0;
   let pendingCoinAction = null;
@@ -710,6 +711,7 @@
     if (window.CardFamilyVoice) window.CardFamilyVoice.stop();
     if (elementTheater) elementTheater.reset();
     if (combatCinema) combatCinema.reset();
+    if (bossStage) bossStage.reset();
     battleSession += 1;
     clearTimeout(effectTimer);
     clearTimeout(actionTimer);
@@ -787,6 +789,22 @@
     dom.battleMessage.textContent = selectedCard.name + "의 별빛 무대가 열렸어요!";
     setEffect("READY!");
     renderBattle();
+    // 보스전은 등장 장면을 먼저 보여 준다. 끝나거나 톡 누르면 내 턴이 시작된다.
+    if (expedition && expedition.boss) {
+      if (!bossStage && window.CardBossStage && dom.arena) bossStage = window.CardBossStage.createStage(dom.arena);
+      if (bossStage) {
+        const session = battleSession;
+        busy = true;
+        dom.battleMessage.textContent = enemy.name + " 등장!";
+        renderBattle();
+        bossStage.begin(game.sides.enemy.card, {final: Boolean(expedition.final), where: expedition.label}, function () {
+          if (session !== battleSession || !game || game.winner) return;
+          busy = false;
+          dom.battleMessage.textContent = "보스를 이겨라! 기술을 골라 주세요.";
+          renderBattle();
+        });
+      }
+    }
   }
 
   function createFxPart(className, text) {
@@ -2514,6 +2532,7 @@
       window.CardAudio.updateBattleHp(player.hp, player.card.hp);
     }
     dom.leaveBattleButton.disabled = busy;
+    if (bossStage && bossStage.isActive()) bossStage.update(enemy.hp, enemy.card.hp);
     updateWeaknessHint(player.card, enemy.card);
     renderFragmentHand();
     renderActions();
@@ -3210,14 +3229,19 @@
     }
     if (campaignBattle) {
       dom.resultText.textContent = campaignBattle.resultText;
-      dom.rematchButton.textContent = victory ? "다음으로 →" : "다른 카드로 다시";
+      dom.rematchButton.textContent = victory
+        ? (campaignBattle.challenge ? "보스 도전실로 →" : "다음으로 →")
+        : "다른 카드로 다시";
     }
+    // 보스를 이기면 결과 창 전에 "보스 격파!" 도장을 먼저 찍는다.
+    const bossWait = victory && bossStage && bossStage.isActive() ? bossStage.defeat() : 0;
+    if (bossWait) dom.resultKicker.textContent = campaignBattle && campaignBattle.final ? "최종 보스 격파" : "보스 격파";
     victory ? window.CardAudio.win() : window.CardAudio.lose();
     resultTimer = setTimeout(function () {
       if (session === battleSession && game && !dom.resultDialog.open) {
         dom.resultDialog.showModal();
       }
-    }, 350);
+    }, Math.max(350, bossWait));
   }
 
   function returnToCollection() {

@@ -265,7 +265,7 @@ test("양쪽 전투 카드가 같은 전투 정보 렌더러를 사용하고 카
   assert.match(viewSource, /else if \(options\.compact\) \{[\s\S]*?crown, facts, art/);
   assert.equal((html.match(/\?v=70/g) || []).length, 5);
   assert.match(html, /js\/audio\.js\?v=71/);
-  assert.match(html, /js\/app\.js\?v=75/);
+  assert.match(html, /js\/app\.js\?v=76/);
   assert.match(html, /js\/tactics\.js\?v=1/);
   assert.match(html, /bgm-player\.js\?v=66/);
   assert.doesNotMatch(html, /\?v=(?:25|26|27|28|29|30|31)/);

@@ -68,7 +68,7 @@ export function showWorkSelect(root,{onConfirm,onBack}) {
             <div class="cm-section-heading"><h2 id="cm-hero-heading"><span>02</span> ${familyMode?'우리 영웅 선택':rosterMode?'대표 장수 선택':'장수 선택'}</h2><small>${visibleHeroes.filter(heroHasArt).length}명 출전 가능</small></div>
             <nav class="cm-factions cm-parties" aria-label="영웅 모음 선택"><button type="button" data-party="story" aria-pressed="${!familyMode}">이야기 장수</button><button type="button" data-party="family" aria-pressed="${familyMode}">우리 영웅 <small>태오 · 재이 · 윤찬 · 윤건</small></button></nav>
             ${familyMode?`<p class="cm-family-note">${FAMILY_FICTION_NOTE}</p><p class="cm-family-note"><b>${FAMILY_CALLOUTS[heroId]?.special.name || ''}</b> · ${FAMILY_TECHNIQUES[heroId]?.tip || ''}<br>필살 버튼 · 기운 100이면 무쌍으로 강화</p>`:''}
-            ${rosterMode?`<nav class="cm-factions" aria-label="대표 장수 진영 필터">${[['all','전체'],['shu','촉'],['wei','위'],['wu','오']].map(([key,label])=>`<button type="button" data-faction="${key}" aria-pressed="${key===faction}">${label}</button>`).join('')}</nav>`:''}
+            ${rosterMode?`<nav class="cm-factions" aria-label="대표 장수 진영 필터">${[['all','전체'],['shu','촉'],['wei','위'],['wu','오'],['qun','군웅']].map(([key,label])=>`<button type="button" data-faction="${key}" aria-pressed="${key===faction}">${label}</button>`).join('')}</nav>`:''}
             <div class="cm-heroes" id="hero-grid" data-roster="${rosterMode}">${visibleHeroes.map(id=>{
               const {p,s}=infoFor(id), ready=heroHasArt(id), level=getHeroProgress(id).level;
               return `<button type="button" class="cm-hero ${ready?'':'coming'}" data-hero="${id}" aria-pressed="${id===heroId}" ${ready?'':'disabled'}>
@@ -95,7 +95,7 @@ export function showWorkSelect(root,{onConfirm,onBack}) {
     }));
     root.querySelector('.cm-stage-toggle').addEventListener('click',()=>{pickerOpen=!pickerOpen;render('.cm-stage-toggle');});
     root.querySelectorAll('[data-stage]').forEach(b=>b.addEventListener('click',()=>{
-      stageKey=b.dataset.stage;const key=factionKey(heroId);faction=stageKey===SANGUO_DRILL_STAGE_KEY && ['shu','wei','wu'].includes(key) ? key : stageKey===SANGUO_DRILL_STAGE_KEY ? 'shu' : 'all';pickerOpen=false;
+      stageKey=b.dataset.stage;const key=factionKey(heroId);faction=stageKey===SANGUO_DRILL_STAGE_KEY && ['shu','wei','wu','qun'].includes(key) ? key : stageKey===SANGUO_DRILL_STAGE_KEY ? 'shu' : 'all';pickerOpen=false;
       render(matchMedia('(max-width: 680px)').matches?'.cm-stage-toggle':'[data-stage="'+stageKey+'"]');
     }));
     root.querySelectorAll('[data-faction]').forEach(b=>b.addEventListener('click',()=>{faction=b.dataset.faction;render('[data-faction="'+faction+'"]');}));
