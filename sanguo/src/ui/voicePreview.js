@@ -13,6 +13,8 @@ async function start() {
   const response = await fetch('audio/warrior-callouts-eleven-v2/manifest.json');
   if (!response.ok) throw new Error('목소리 목록을 읽을 수 없습니다.');
   const manifest = await response.json();
+  // 전투 기본 함성(Gemini TTS). 목록을 못 읽어도 선택 화면은 그대로 쓴다.
+  const defaults = await fetch('audio/hero-callouts-gemini-v1/manifest.json').then(r => r.ok ? r.json() : null).catch(() => null);
   const ids = [...Object.keys(FAMILY_VOICE_PREVIEWS), 'liubei', 'guanyu', 'zhangfei', ...Object.keys(WARRIOR_VOICE_PREVIEWS).filter(id => !['liubei', 'guanyu'].includes(id))];
   for (const id of ids) {
     const saved = id === 'zhangfei';
@@ -30,15 +32,29 @@ async function start() {
     const button = document.createElement('button'); button.type = 'button';
     const update = () => {
       const selected = !!family || warriorVoiceSelected(id);
-      button.textContent = FAMILY_SKILL_LINES[id] ? '기술별 함성 적용 · 멀티버스 / 삼국지' : family ? '게임 적용 중 · 돌진 / 필살 / 무쌍' : saved ? '지금 목소리 유지' : selected ? '선택됨 · 원래 목소리로 바꾸기' : '이 목소리 전투에서 쓰기';
+      button.textContent = FAMILY_SKILL_LINES[id] ? '기술별 함성 적용 · 멀티버스 / 삼국지' : family ? '게임 적용 중 · 돌진 / 필살 / 무쌍' : saved ? '지금 목소리 유지' : selected ? '선택됨 · 기본 함성으로 돌아가기' : '이 목소리 전투에서 쓰기';
       button.setAttribute('aria-pressed', String(selected)); button.disabled = saved || !!family;
     };
     button.addEventListener('click', () => {
       const selected = !warriorVoiceSelected(id);
       if (!selectWarriorVoice(id, selected)) { status.textContent = '이 브라우저에서 선택을 저장할 수 없어요.'; return; }
-      update(); status.textContent = `${nameOf(id)}의 ${selected ? '새' : '원래'} 필살기 음성을 선택했어요. 다음 출진부터 적용됩니다.`;
+      update(); status.textContent = `${nameOf(id)}의 ${selected ? '이 목소리' : '기본 함성'}를 선택했어요. 다음 출진부터 적용됩니다.`;
     });
     update(); card.append(title, phrase, audio, button);
+    const base = !family && !saved && defaults?.heroes?.[id];
+    if (base) {
+      for (const action of ['special', 'musou']) {
+        const take = base[action]; if (!take) continue;
+        const label = document.createElement('p'); label.className = 'voice-default';
+        label.textContent = `기본 함성 · ${action === 'musou' ? '무쌍' : '필살'}: ${take.text}!`;
+        const clip = document.createElement('audio'); clip.controls = true; clip.preload = 'none';
+        clip.src = `audio/hero-callouts-gemini-v1/${take.file}`;
+        clip.setAttribute('aria-label', `${nameOf(id)} 기본 ${action === 'musou' ? '무쌍' : '필살'} 함성 듣기`);
+        clip.addEventListener('play', () => { if (activeAudio && activeAudio !== clip) activeAudio.pause(); activeAudio = clip; });
+        clip.addEventListener('error', () => { status.textContent = `${nameOf(id)} 기본 함성을 읽지 못했어요.`; });
+        card.append(label, clip);
+      }
+    }
     if (family?.specialPhrase && !FAMILY_SKILL_LINES[id]) {
       const catchphrase = document.createElement('p'); catchphrase.textContent = `돌진 / 무쌍: ${family.phrase}`;
       const catchphraseAudio = audio.cloneNode(); catchphraseAudio.src = ELEVEN_VOICE_PACKS[id].dash;
@@ -62,7 +78,7 @@ async function start() {
     if (saved) { const note = document.createElement('p'); note.className = 'voice-note'; note.textContent = '기존 장판뇌후 음성 그대로'; card.append(note); }
     grid.append(card);
   }
-  status.textContent = '우리 영웅 4명 적용 · 새 장수 함성 29명 · 장비 기존 함성 유지';
+  status.textContent = '우리 영웅 4명 적용 · 장수 기본 함성 새로 녹음 · 다른 목소리 29명 선택 가능 · 장비 장판뇌후 유지';
   document.querySelectorAll('nav [data-work]').forEach(button => button.addEventListener('click', () => {
     document.querySelectorAll('nav [data-work]').forEach(other => other.setAttribute('aria-pressed', String(other === button)));
     for (const card of grid.children) card.hidden = button.dataset.work !== 'all' && card.dataset.work !== button.dataset.work;

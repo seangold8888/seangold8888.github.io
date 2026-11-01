@@ -4,7 +4,7 @@ Run from the site repository root with Node.js and Playwright/Chromium installed
 (or point NODE_PATH at an existing Playwright installation).
 
 ```sh
-node --test sanguo/tests/combat-bounds.test.cjs sanguo/tests/dash-skills.test.cjs sanguo/tests/mounted-sprites.test.cjs sanguo/tests/mounted-moves.test.cjs sanguo/tests/battle-cries.test.cjs sanguo/tests/hero-render-scale.test.cjs
+node --test sanguo/tests/combat-bounds.test.cjs sanguo/tests/dash-skills.test.cjs sanguo/tests/mounted-sprites.test.cjs sanguo/tests/mounted-moves.test.cjs sanguo/tests/battle-cries.test.cjs sanguo/tests/hero-render-scale.test.cjs sanguo/tests/gemini-callouts.test.cjs
 node --test --test-name-pattern="cache generation" cards/tests/pwa.test.js
 node sanguo/tests/menu.cjs
 node sanguo/tests/art-atlas.cjs

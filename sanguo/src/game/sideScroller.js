@@ -369,6 +369,12 @@ const SPECIAL_CALLOUTS = {
   lizhishen: { special: { name: '금강선장풍', cry: '수마선장이 대지를 울린다' }, musou: { name: '도해붕산진', cry: '산을 뽑는 금강의 괴력' } },
   husanniang: { special: { name: '일월홍금쇄', cry: '쌍도와 홍금투삭의 연계' }, musou: { name: '일장청월무', cry: '달빛처럼 빠른 쌍도 난무' } },
 };
+// Gemini TTS 기술명 함성(audio/hero-callouts-gemini-v1, manifest.json). 받아쓰기 검증을 통과한 줄만 싣고,
+// 통과 못 한 줄은 예전 v6 녹음을 그대로 쓴다. 가족 영웅은 각자 승인된 목소리를 쓴다.
+const GEMINI_CALLOUTS = Object.freeze({
+  special: new Set(['euljimundeok','ganggamchan','kwonyul','yisunsin','liubei','guanyu','caocao','machao','huangzhong','xiahoudun','zhangliao','xuchu','simayi','sunquan','taishici','ganning','lvbu','diaochan','dongzhuo','menghuo','zhurong','zhaoyun','huanggai','zhugeliang','wukong','bajie','nezha','erlangshen','tieshangongzhu','linchong','lizhishen']),
+  musou: new Set(['euljimundeok','ganggamchan','kwonyul','yisunsin','liubei','guanyu','zhangfei','caocao','machao','xiahoudun','zhangliao','simayi','sunquan','taishici','ganning','lvbu','diaochan','dongzhuo','menghuo','zhurong','zhouyu','huanggai','zhugeliang','sunshangxiang','wukong','wujing','erlangshen','honghaier','tieshangongzhu','wusong','linchong','lizhishen','husanniang']),
+});
 const DEFAULT_CALLOUT = { special: { name: '고유 필살기', cry: '혼신을 다한 일격' }, musou: { name: '무쌍난무', cry: '전장을 뒤덮는 무쌍의 기세' } };
 
 // 각 탑승 스프라이트의 활 손 위치. 합성 시트마다 기수의 몸 비율이 달라
@@ -470,6 +476,18 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
   // 무기 효과음만 사용한다. 없는 WAV를 요청해 콘솔 404를 만들지 않는다.
   const recordedHeroCallouts = new Set(['xiahoudun','zhangliao','xuchu','simayi','sunquan','taishici','ganning','luxun','lvbu','diaochan','dongzhuo','menghuo','zhurong','liubei','guanyu','zhangfei','caocao','zhaoyun','zhouyu','huanggai','zhugeliang','machao','huangzhong','sunshangxiang','wukong','bajie','wujing','tieshangongzhu','wusong','linchong','lizhishen','husanniang']);
   const hasRecordedHeroCallouts = recordedHeroCallouts.has(heroId);
+  // 기본 기술명 외침은 Gemini TTS로 새로 녹음한 장수별 전투 함성이다.
+  // 들숨까지 한 테이크에 담긴 완성 연기라 공용 함성·들숨을 겹치지 않는다.
+  // 파일을 못 읽으면 예전 v6 원음과 공용 함성으로 내려간다. 장비의 장판뇌후는 기존 녹음 유지.
+  const geminiCallout = (action) => GEMINI_CALLOUTS[action].has(heroId)
+    ? 'audio/hero-callouts-gemini-v1/' + heroId + '-' + action + '-g1.mp3' : null;
+  const v6Callout = (action) => hasRecordedHeroCallouts ? ['audio/hero-callouts-ko-v6/' + heroId + '-' + action + '-v6.wav'] : [];
+  const calloutFallbacks = {};
+  const completeCallout = {};
+  for (const [group, action] of [['voiceSpecial', 'special'], ['voiceMusou', 'musou']]) {
+    completeCallout[group] = !!geminiCallout(action);
+    if (completeCallout[group]) calloutFallbacks[group] = v6Callout(action);
+  }
   const battleCry = battleCryProfile(heroId);
   const elevenVoices = elevenVoiceFiles(heroId);
   const sampleManifest = {
@@ -491,8 +509,8 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
     // Family heroes use their dedicated callouts, never an unrelated general's fallback.
     battleCry: BATTLE_CRY_PACKS[battleCry.pack],
     // v6는 피치업·더블링·소프트클립을 제거한 자연스러운 기술명 원음이다.
-    voiceSpecial: hasRecordedHeroCallouts ? ['audio/hero-callouts-ko-v6/' + heroId + '-special-v6.wav'] : [],
-    voiceMusou: hasRecordedHeroCallouts ? ['audio/hero-callouts-ko-v6/' + heroId + '-musou-v6.wav'] : [],
+    voiceSpecial: geminiCallout('special') ? [geminiCallout('special')] : v6Callout('special'),
+    voiceMusou: geminiCallout('musou') ? [geminiCallout('musou')] : v6Callout('musou'),
     waterSplashLight: [1, 2, 3].map((index) => 'audio/cinematic-water/water-splash-light-0' + index + '-cc0-v1.ogg'),
     waterSplashHeavy: [1, 2, 3].map((index) => 'audio/cinematic-water/water-splash-heavy-0' + index + '-cc0-v1.ogg'),
     breathNeutral: isFamilyHero(heroId) ? [] : ['audio/cinematic-breath/battle-inhale-neutral-cc0-v1.ogg'],
@@ -531,11 +549,19 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
   const loadSamples = () => {
     if (loading) return;
     loading = true;
+    const fetchDecoded = (urls) => Promise.all(urls.map((url) => fetch(url)
+      .then((response) => { if (!response.ok) throw new Error('HTTP ' + response.status + ': ' + url); return response.arrayBuffer(); })
+      .then((data) => ctx.decodeAudioData(data))));
     for (const [group, urls] of Object.entries(sampleManifest)) {
       if (!urls.length) { buffers[group] = []; sampleReady[group] = Promise.resolve([]); continue; }
-      sampleReady[group] = Promise.all(urls.map((url) => fetch(url)
-        .then((response) => { if (!response.ok) throw new Error('HTTP ' + response.status + ': ' + url); return response.arrayBuffer(); })
-        .then((data) => ctx.decodeAudioData(data))))
+      sampleReady[group] = fetchDecoded(urls)
+        .catch((error) => {
+          const fallback = calloutFallbacks[group];
+          if (!fallback?.length) throw error;
+          console.warn('[audio] callout fallback:', group, error);
+          completeCallout[group] = false;
+          return fetchDecoded(fallback);
+        })
         .then((decoded) => (buffers[group] = decoded))
         .catch((error) => { console.warn('[audio] sample load failed:', group, error); return (buffers[group] = []); });
     }
@@ -1072,6 +1098,9 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
       duckMusic(powerful ? .095 : .11, powerful ? 1600 : 1320);
 
       const performed = playElevenVoice(powerful ? 'musou' : 'special');
+      const voiceGroup = powerful ? 'voiceMusou' : 'voiceSpecial';
+      // Gemini 기본 함성은 숨과 기합까지 담긴 완성 연기: 공용 함성·들숨을 겹치지 않는다.
+      const completeTake = !performed && completeCallout[voiceGroup];
       if (!performed) {
         // 기존 기술명과 공용 함성은 새 녹음이 없거나 로드되지 않았을 때만 쓴다.
         const voiceToken = lastSpecialVoiceAt;
@@ -1095,7 +1124,7 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
         });
 
         const battleCryDelay = powerful ? .18 : .11;
-        const playHeroCry = () => playBattleCry(powerful, battleCryDelay);
+        const playHeroCry = () => completeTake || playBattleCry(powerful, battleCryDelay);
         if (!playHeroCry()) sampleReady.battleCry?.then(() => {
           if (muted || lastSpecialVoiceAt !== voiceToken || performance.now() - voiceToken > 240) return;
           playHeroCry();
@@ -1104,7 +1133,7 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
 
       // 독자적인 호흡→응축→날 세움→접촉→잔향의 한 타임라인. 실제 CC0
       // 들숨은 낮게 깔고, 물·비·빙결 계열은 접촉(414/451ms)에 물보라가 터진다.
-      if (!performed) playSample(powerful ? 'breathDeep' : 'breathNeutral', powerful ? .21 : .16, 1, -.10, .025, {
+      if (!performed && !completeTake) playSample(powerful ? 'breathDeep' : 'breathNeutral', powerful ? .21 : .16, 1, -.10, .025, {
         highpass: 105, lowpass: 7200, gainCeiling: .23, fixedRate: true,
       }, true);
       burst({ type: 'bandpass', from: 520, to: 2850, q: .48, gain: powerful ? .09 : .062, decay: impactAt - .035, attack: .14, delay: .01, pan: -.18, wet: .06 });
