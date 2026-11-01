@@ -5,6 +5,7 @@ import { difficultyLevels, getDifficulty, setDifficulty } from '../game/difficul
 import { getCombatGrowth, getHeroProgress, nextPerk, weaponEnhanceText } from '../game/progression.js';
 import { heroHasArt, heroPortraitArt } from '../game/sideScroller.js';
 import { dashSkill } from '../game/dashSkills.js';
+import { canRide, mountFlavor, mountKindOf } from '../game/mountedMoves.js';
 import { FAMILY_HERO_IDS, FAMILY_FICTION_NOTE, FAMILY_TECHNIQUES, FAMILY_CALLOUTS, isFamilyHero } from '../data/familyHeroes.js';
 
 // 초상은 전투가 실제로 쓰는 시트의 대기 칸이다 — 시트 판이 올라가도 따라간다.
@@ -79,7 +80,7 @@ export function showWorkSelect(root,{onConfirm,onBack}) {
             }).join('')}</div>
             ${!hero?'<p class="cm-unavailable" role="status">이 전장은 장수 원화 준비 중입니다. 다른 전장을 선택해 주세요.</p>':''}
             <div class="cm-difficulty"><div class="cm-section-heading"><h2><span>03</span> 난이도</h2></div><div class="cm-difficulties" aria-label="난이도 선택">${difficultyLevels().map(d=>`<button type="button" data-diff="${d.id}" aria-pressed="${d.id===difficulty.id}" title="${d.sub}"><b>${d.name}</b><small>${{easy:'편하게',normal:'균형 있게',hard:'도전적으로'}[d.id] || d.sub}</small></button>`).join('')}</div></div>
-            <details class="cm-details"><summary>임무 · 성장 · 기술 자세히</summary><div><p><b>이번 임무</b> ${mission}</p>${hero?`<p><b>${hero.p.name}</b> ${hero.w} ${weaponEnhanceText(progress)} · 체력 ${hero.s.hp} · 공격 ${hero.s.power} · 사거리 ${hero.s.range}</p><p><b>돌진기</b> ${dashSkill(heroId).name} — ${dashSkill(heroId).tip}</p><p><b>누적 성장</b> 체력 +${Math.round((growth.hp-1)*100)}% · 공격 +${Math.round((growth.power-1)*100)}%</p>${upcoming?`<p><b>다음 성장</b> ${upcoming.name}</p>`:''}`:''}<p>${info?.real || selected.lesson || ''}</p>${info?.fiction?`<p>${info.fiction}</p>`:''}</div></details>
+            <details class="cm-details"><summary>임무 · 성장 · 기술 자세히</summary><div><p><b>이번 임무</b> ${mission}</p>${hero?`<p><b>${hero.p.name}</b> ${hero.w} ${weaponEnhanceText(progress)} · 체력 ${hero.s.hp} · 공격 ${hero.s.power} · 사거리 ${hero.s.range}</p><p><b>돌진기</b> ${dashSkill(heroId).name} — ${dashSkill(heroId).tip}</p>${canRide(heroId)?`<p><b>말 위 기술</b> 공격=찌르기→휩쓸기 · 꾹=${mountFlavor(mountKindOf(heroId)).stomp} · 돌진=${mountFlavor(mountKindOf(heroId)).charge}</p>`:''}<p><b>누적 성장</b> 체력 +${Math.round((growth.hp-1)*100)}% · 공격 +${Math.round((growth.power-1)*100)}%</p>${upcoming?`<p><b>다음 성장</b> ${upcoming.name}</p>`:''}`:''}<p>${info?.real || selected.lesson || ''}</p>${info?.fiction?`<p>${info.fiction}</p>`:''}</div></details>
           </section>
         </div>
         <footer class="cm-launchbar">

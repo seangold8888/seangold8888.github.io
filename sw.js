@@ -1105,6 +1105,7 @@ const OPTIONAL_SHELL = [
   "./sanguo/src/game/heroRenderScale.js",
   "./sanguo/src/game/combatBounds.js",
   "./sanguo/src/game/mountedSprites.js",
+  "./sanguo/src/game/mountedMoves.js",
   "./sanguo/art/side-scroller/zhaoyun-bow-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/caocao-bow-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/machao-bow-painted-sheet-v1.png",
