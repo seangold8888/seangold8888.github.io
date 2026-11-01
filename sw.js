@@ -1278,7 +1278,7 @@ const SANGUO_RUNTIME_ASSETS = [
   "./sanguo/art/side-scroller/liubei-bow-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/liubei-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/luxun-painted-sheet-v1.png",
-  "./sanguo/art/side-scroller/lvbu-painted-sheet-v1.png",
+  "./sanguo/art/side-scroller/lvbu-painted-sheet-v2.png",
   "./sanguo/art/side-scroller/lvbu-bow-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/diaochan-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/dongzhuo-painted-sheet-v1.png",

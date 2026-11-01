@@ -7,7 +7,7 @@ import { heroHasArt } from '../game/sideScroller.js';
 import { dashSkill } from '../game/dashSkills.js';
 import { FAMILY_HERO_IDS, FAMILY_FICTION_NOTE, FAMILY_TECHNIQUES, FAMILY_CALLOUTS, isFamilyHero } from '../data/familyHeroes.js';
 
-const sheets = {guanyu:'guanyu-painted-sheet-v4',tieshangongzhu:'tieshangongzhu-painted-sheet-v2',erlangshen:'erlangshen-hero-painted-sheet-v1'};
+const sheets = {guanyu:'guanyu-painted-sheet-v4',lvbu:'lvbu-painted-sheet-v2',tieshangongzhu:'tieshangongzhu-painted-sheet-v2',erlangshen:'erlangshen-hero-painted-sheet-v1'};
 const portraitFor = id => 'art/side-scroller/' + (sheets[id] || id + '-painted-sheet-v1') + '.png';
 const infoFor = id => WORK_PEOPLE[id]
   ? {p:WORK_PEOPLE[id],s:WORK_STATS[id],w:WORK_WEAPONS[WORK_PEOPLE[id].weapon]?.name}

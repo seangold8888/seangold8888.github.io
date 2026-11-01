@@ -65,7 +65,7 @@ const HERO_ART = {
   taishici: { hero: 'art/side-scroller/taishici-painted-sheet-v1.png', heroBow: 'art/side-scroller/taishici-bow-painted-sheet-v1.png' },
   ganning: { hero: 'art/side-scroller/ganning-painted-sheet-v1.png', heroBow: 'art/side-scroller/ganning-bow-painted-sheet-v1.png' },
   luxun: { hero: 'art/side-scroller/luxun-painted-sheet-v1.png' },
-  lvbu: { hero: 'art/side-scroller/lvbu-painted-sheet-v1.png', heroBow: 'art/side-scroller/lvbu-bow-painted-sheet-v1.png' },
+  lvbu: { hero: 'art/side-scroller/lvbu-painted-sheet-v2.png', heroBow: 'art/side-scroller/lvbu-bow-painted-sheet-v1.png' },
   diaochan: { hero: 'art/side-scroller/diaochan-painted-sheet-v1.png' },
   dongzhuo: { hero: 'art/side-scroller/dongzhuo-painted-sheet-v1.png' },
   menghuo: { hero: 'art/side-scroller/menghuo-painted-sheet-v1.png' },
