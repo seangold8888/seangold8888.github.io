@@ -12,9 +12,9 @@ test('every mount profile asset is shipped and registered for offline caching',a
   assert.ok(sw.includes('/sanguo/'+profile[key]),'cached '+profile[key]);
  }
 });
-test('four distinct mounts retain their own horse in every combat pose',async()=>{
+test('five distinct mounts retain their own horse in every combat pose',async()=>{
  const {MOUNT_PROFILES,drawConsistentMount}=await mod();
- assert.equal(new Set(Object.values(MOUNT_PROFILES).map(p=>p.horse)).size,4);
+ assert.equal(new Set(Object.values(MOUNT_PROFILES).map(p=>p.horse)).size,5);
  for(const [id,profile] of Object.entries(MOUNT_PROFILES)){
   const horse={src:profile.horse},rider={src:profile.rider,width:1280,height:1280},draws=[];
   const ctx={save(){},restore(){},translate(){},scale(){},beginPath(){},moveTo(){},lineTo(){},closePath(){},clip(){},drawImage(...args){draws.push(args);}};

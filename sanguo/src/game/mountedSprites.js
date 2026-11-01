@@ -9,6 +9,8 @@ export const MOUNT_PROFILES = Object.freeze({
   zhaoyun: { horse:art('mount-zhaoyun-painted-sheet-v1'), rider:art('rider-zhaoyun-combat-bow-v1'), bow:art('zhaoyun-bow-painted-sheet-v1'), label:'은빛 백마', seats:[[301,198],[947,205],[346,838]], hip:365 },
   caocao: { horse:art('mount-caocao-painted-sheet-v1'), rider:art('rider-caocao-combat-bow-v1'), bow:art('caocao-bow-painted-sheet-v1'), label:'흑영 전마', seats:[[294,198],[934,205],[346,832]], hip:375 },
   machao: { horse:art('mount-machao-painted-sheet-v1'), rider:art('rider-machao-combat-bow-v1'), bow:art('machao-bow-painted-sheet-v1'), label:'서량 황마', seats:[[307,205],[934,205],[346,832]], hip:350 },
+  // 적토마 그림은 관우의 말과 같은 파일 내용이라 안장 좌표도 같다.
+  lvbu: { horse:art('red-hare-painted-sheet-v3'), rider:art('rider-lvbu-combat-bow-v1'), label:'적토마', seats:[[294,227],[934,230],[307,877]], hip:443 },
 });
 export const RIDER_SCALE = .62;
 const DEFAULT_SEATS = [[294,218],[934,218],[320,858]];
@@ -43,6 +45,7 @@ const RIDER_REGIONS = {
     [[660,0],[1280,0],[1280,605],[610,605],[610,560],[550,560],[550,160],[660,160]],
     rect(0,560,610,720),rect(610,605,670,675),
   ],
+  'rider-lvbu-combat-bow-v1.png': [rect(0,0,640,640),rect(640,0,640,640),rect(0,640,640,640),rect(640,640,640,640)],
 };
 
 export function drawConsistentMount(ctx, drawFrame, {horse, rider, x, y, height, facing=1, alpha=1, frame=0, ranged=false, moving=false, now=0, seats=DEFAULT_SEATS, hip=365, frameTransform=genericFrameTransform}) {
