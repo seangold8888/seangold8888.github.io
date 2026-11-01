@@ -3,12 +3,12 @@ import { factionKey, person, stats, signature, stage, stageKeys, stageHeroes } f
 import { SANGUO_DRILL_STAGE_KEY } from '../data/sanguoRoster.js';
 import { difficultyLevels, getDifficulty, setDifficulty } from '../game/difficulty.js';
 import { getCombatGrowth, getHeroProgress, nextPerk, weaponEnhanceText } from '../game/progression.js';
-import { heroHasArt } from '../game/sideScroller.js';
+import { heroHasArt, heroPortraitArt } from '../game/sideScroller.js';
 import { dashSkill } from '../game/dashSkills.js';
 import { FAMILY_HERO_IDS, FAMILY_FICTION_NOTE, FAMILY_TECHNIQUES, FAMILY_CALLOUTS, isFamilyHero } from '../data/familyHeroes.js';
 
-const sheets = {guanyu:'guanyu-painted-sheet-v4',lvbu:'lvbu-painted-sheet-v2',tieshangongzhu:'tieshangongzhu-painted-sheet-v2',erlangshen:'erlangshen-hero-painted-sheet-v1'};
-const portraitFor = id => 'art/side-scroller/' + (sheets[id] || id + '-painted-sheet-v1') + '.png';
+// 초상은 전투가 실제로 쓰는 시트의 대기 칸이다 — 시트 판이 올라가도 따라간다.
+const portraitFor = id => heroPortraitArt(id) || 'art/side-scroller/' + id + '-painted-sheet-v1.png';
 const infoFor = id => WORK_PEOPLE[id]
   ? {p:WORK_PEOPLE[id],s:WORK_STATS[id],w:WORK_WEAPONS[WORK_PEOPLE[id].weapon]?.name}
   : {p:person(id),s:stats(id),w:signature(id).name};

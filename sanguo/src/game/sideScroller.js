@@ -20,9 +20,9 @@ const CANVAS_IMPACT_FONT = CANVAS_UI_FONT;
 
 const HERO_ART = {
   ...Object.fromEntries(FAMILY_HERO_IDS.map(id => [id, { hero: `art/side-scroller/${id}-painted-sheet-v1.png` }])),
-  euljimundeok: { hero: 'art/side-scroller/euljimundeok-painted-sheet-v1.png', heroBow: 'art/side-scroller/euljimundeok-bow-painted-sheet-v1.png' },
-  ganggamchan: { hero: 'art/side-scroller/ganggamchan-painted-sheet-v1.png', heroBow: 'art/side-scroller/ganggamchan-bow-painted-sheet-v1.png' },
-  kwonyul: { hero: 'art/side-scroller/kwonyul-painted-sheet-v1.png', heroBow: 'art/side-scroller/kwonyul-bow-painted-sheet-v1.png' },
+  euljimundeok: { hero: 'art/side-scroller/euljimundeok-painted-sheet-v2.png', heroBow: 'art/side-scroller/euljimundeok-bow-painted-sheet-v1.png' },
+  ganggamchan: { hero: 'art/side-scroller/ganggamchan-painted-sheet-v2.png', heroBow: 'art/side-scroller/ganggamchan-bow-painted-sheet-v1.png' },
+  kwonyul: { hero: 'art/side-scroller/kwonyul-painted-sheet-v2.png', heroBow: 'art/side-scroller/kwonyul-bow-painted-sheet-v1.png' },
   yisunsin: { hero: 'art/side-scroller/yisunsin-painted-sheet-v1.png', heroBow: 'art/side-scroller/yisunsin-bow-painted-sheet-v1.png' },
   erlangshen: { hero: 'art/side-scroller/erlangshen-hero-painted-sheet-v1.png', heroBow: 'art/side-scroller/erlangshen-hero-bow-painted-sheet-v1.png' },
   honghaier: { hero: 'art/side-scroller/honghaier-painted-sheet-v1.png', heroBow: 'art/side-scroller/honghaier-bow-painted-sheet-v1.png' },
@@ -33,36 +33,36 @@ const HERO_ART = {
     mountedBow: 'art/side-scroller/mounted-nezha-bow-painted-sheet-v1.png',
   },
   liubei: {
-    hero: 'art/side-scroller/liubei-painted-sheet-v1.png',
-    heroBow: 'art/side-scroller/liubei-bow-painted-sheet-v1.png',
+    hero: 'art/side-scroller/liubei-painted-sheet-v2.png',
+    heroBow: 'art/side-scroller/liubei-bow-painted-sheet-v2.png',
     mounted: 'art/side-scroller/mounted-liubei-painted-sheet-v1.png',
-    mountedBow: 'art/side-scroller/mounted-liubei-bow-painted-sheet-v1.png',
+    mountedBow: 'art/side-scroller/mounted-liubei-bow-painted-sheet-v2.png',
   },
   guanyu: {
-    hero: 'art/side-scroller/guanyu-painted-sheet-v4.png',
+    hero: 'art/side-scroller/guanyu-painted-sheet-v5.png',
     heroBow: 'art/side-scroller/guanyu-bow-painted-sheet-v1.png',
     mounted: 'art/side-scroller/mounted-guanyu-painted-sheet-v2.png',
     mountedBow: 'art/side-scroller/mounted-guanyu-bow-painted-sheet-v1.png',
   },
   zhangfei: {
-    hero: 'art/side-scroller/zhangfei-painted-sheet-v1.png',
-    heroBow: 'art/side-scroller/zhangfei-bow-painted-sheet-v1.png',
-    mounted: 'art/side-scroller/mounted-zhangfei-painted-sheet-v1.png',
+    hero: 'art/side-scroller/zhangfei-painted-sheet-v2.png',
+    heroBow: 'art/side-scroller/zhangfei-bow-painted-sheet-v2.png',
+    mounted: 'art/side-scroller/mounted-zhangfei-painted-sheet-v2.png',
     mountedBow: 'art/side-scroller/mounted-zhangfei-bow-painted-sheet-v1.png',
   },
   caocao: { hero: 'art/side-scroller/caocao-painted-sheet-v1.png' },
-  zhaoyun: { hero: 'art/side-scroller/zhaoyun-painted-sheet-v1.png' },
+  zhaoyun: { hero: 'art/side-scroller/zhaoyun-painted-sheet-v2.png' },
   machao: { hero: 'art/side-scroller/machao-painted-sheet-v1.png' },
   huangzhong: {
     hero: 'art/side-scroller/huangzhong-painted-sheet-v1.png',
     heroBow: 'art/side-scroller/huangzhong-bow-painted-sheet-v1.png',
   },
   xiahoudun: { hero: 'art/side-scroller/xiahoudun-painted-sheet-v1.png', heroBow: 'art/side-scroller/xiahoudun-bow-painted-sheet-v1.png' },
-  zhangliao: { hero: 'art/side-scroller/zhangliao-painted-sheet-v1.png', heroBow: 'art/side-scroller/zhangliao-bow-painted-sheet-v1.png' },
-  xuchu: { hero: 'art/side-scroller/xuchu-painted-sheet-v1.png', heroBow: 'art/side-scroller/xuchu-bow-painted-sheet-v1.png' },
+  zhangliao: { hero: 'art/side-scroller/zhangliao-painted-sheet-v1.png', heroBow: 'art/side-scroller/zhangliao-bow-painted-sheet-v2.png' },
+  xuchu: { hero: 'art/side-scroller/xuchu-painted-sheet-v2.png', heroBow: 'art/side-scroller/xuchu-bow-painted-sheet-v1.png' },
   simayi: { hero: 'art/side-scroller/simayi-painted-sheet-v1.png', heroBow: 'art/side-scroller/simayi-bow-painted-sheet-v1.png' },
   sunquan: { hero: 'art/side-scroller/sunquan-painted-sheet-v1.png', heroBow: 'art/side-scroller/sunquan-bow-painted-sheet-v1.png' },
-  taishici: { hero: 'art/side-scroller/taishici-painted-sheet-v1.png', heroBow: 'art/side-scroller/taishici-bow-painted-sheet-v1.png' },
+  taishici: { hero: 'art/side-scroller/taishici-painted-sheet-v1.png', heroBow: 'art/side-scroller/taishici-bow-painted-sheet-v2.png' },
   ganning: { hero: 'art/side-scroller/ganning-painted-sheet-v1.png', heroBow: 'art/side-scroller/ganning-bow-painted-sheet-v1.png' },
   luxun: { hero: 'art/side-scroller/luxun-painted-sheet-v1.png' },
   lvbu: { hero: 'art/side-scroller/lvbu-painted-sheet-v2.png', heroBow: 'art/side-scroller/lvbu-bow-painted-sheet-v1.png' },
@@ -70,12 +70,12 @@ const HERO_ART = {
   dongzhuo: { hero: 'art/side-scroller/dongzhuo-painted-sheet-v1.png' },
   menghuo: { hero: 'art/side-scroller/menghuo-painted-sheet-v1.png' },
   zhurong: { hero: 'art/side-scroller/zhurong-painted-sheet-v1.png' },
-  zhouyu: { hero: 'art/side-scroller/zhouyu-painted-sheet-v1.png', heroBow: 'art/side-scroller/zhouyu-bow-painted-sheet-v1.png' },
-  huanggai: { hero: 'art/side-scroller/huanggai-painted-sheet-v1.png', heroBow: 'art/side-scroller/huanggai-bow-painted-sheet-v1.png' },
+  zhouyu: { hero: 'art/side-scroller/zhouyu-painted-sheet-v2.png', heroBow: 'art/side-scroller/zhouyu-bow-painted-sheet-v1.png' },
+  huanggai: { hero: 'art/side-scroller/huanggai-painted-sheet-v2.png', heroBow: 'art/side-scroller/huanggai-bow-painted-sheet-v1.png' },
   zhugeliang: { hero: 'art/side-scroller/zhugeliang-painted-sheet-v1.png' },
   wukong: {
     hero: 'art/side-scroller/wukong-painted-sheet-v1.png',
-    heroBow: 'art/side-scroller/wukong-bow-painted-sheet-v1.png',
+    heroBow: 'art/side-scroller/wukong-bow-painted-sheet-v2.png',
     mounted: 'art/side-scroller/mounted-wukong-painted-sheet-v1.png',
     mountedBow: 'art/side-scroller/mounted-wukong-bow-painted-sheet-v1.png',
   },
@@ -86,32 +86,32 @@ const HERO_ART = {
     mountedBow: 'art/side-scroller/mounted-bajie-bow-painted-sheet-v1.png',
   },
   wujing: {
-    hero: 'art/side-scroller/wujing-painted-sheet-v1.png',
-    heroBow: 'art/side-scroller/wujing-bow-painted-sheet-v1.png',
+    hero: 'art/side-scroller/wujing-painted-sheet-v2.png',
+    heroBow: 'art/side-scroller/wujing-bow-painted-sheet-v2.png',
     mounted: 'art/side-scroller/mounted-wujing-painted-sheet-v1.png',
     mountedBow: 'art/side-scroller/mounted-wujing-bow-painted-sheet-v1.png',
   },
   wusong: {
     hero: 'art/side-scroller/wusong-painted-sheet-v1.png',
     heroBow: 'art/side-scroller/wusong-bow-painted-sheet-v1.png',
-    mounted: 'art/side-scroller/mounted-wusong-painted-sheet-v1.png',
-    mountedBow: 'art/side-scroller/mounted-wusong-bow-painted-sheet-v1.png',
+    mounted: 'art/side-scroller/mounted-wusong-painted-sheet-v2.png',
+    mountedBow: 'art/side-scroller/mounted-wusong-bow-painted-sheet-v2.png',
   },
   linchong: {
-    hero: 'art/side-scroller/linchong-painted-sheet-v1.png',
+    hero: 'art/side-scroller/linchong-painted-sheet-v2.png',
     heroBow: 'art/side-scroller/linchong-bow-painted-sheet-v1.png',
-    mounted: 'art/side-scroller/mounted-linchong-painted-sheet-v1.png',
+    mounted: 'art/side-scroller/mounted-linchong-painted-sheet-v2.png',
     mountedBow: 'art/side-scroller/mounted-linchong-bow-painted-sheet-v1.png',
   },
   lizhishen: {
-    hero: 'art/side-scroller/lizhishen-painted-sheet-v1.png',
-    heroBow: 'art/side-scroller/lizhishen-bow-painted-sheet-v1.png',
-    mounted: 'art/side-scroller/mounted-lizhishen-painted-sheet-v1.png',
-    mountedBow: 'art/side-scroller/mounted-lizhishen-bow-painted-sheet-v1.png',
+    hero: 'art/side-scroller/lizhishen-painted-sheet-v2.png',
+    heroBow: 'art/side-scroller/lizhishen-bow-painted-sheet-v2.png',
+    mounted: 'art/side-scroller/mounted-lizhishen-painted-sheet-v2.png',
+    mountedBow: 'art/side-scroller/mounted-lizhishen-bow-painted-sheet-v2.png',
   },
   sunshangxiang: { hero: 'art/side-scroller/sunshangxiang-painted-sheet-v1.png' },
-  tieshangongzhu: { hero: 'art/side-scroller/tieshangongzhu-painted-sheet-v2.png' },
-  husanniang: { hero: 'art/side-scroller/husanniang-painted-sheet-v1.png' },
+  tieshangongzhu: { hero: 'art/side-scroller/tieshangongzhu-painted-sheet-v3.png' },
+  husanniang: { hero: 'art/side-scroller/husanniang-painted-sheet-v2.png' },
 };
 
 for (const [id, profile] of Object.entries(MOUNT_PROFILES)) {
@@ -121,7 +121,7 @@ for (const [id, profile] of Object.entries(MOUNT_PROFILES)) {
 
 const ART = {
   enemy: 'art/side-scroller/enemy-painted-sheet-v4.png',
-  boss: 'art/side-scroller/hulao-boss-painted-sheet-v1.png',
+  boss: 'art/side-scroller/hulao-boss-painted-sheet-v2.png',
   background: 'art/side-scroller/hulao-arcade-bg-v3.png',
   horse: 'art/side-scroller/red-hare-painted-sheet-v3.png',
   jindouyun: 'art/side-scroller/jindouyun-painted-sheet-v1.png',
@@ -130,7 +130,7 @@ const ART = {
 };
 
 const MOUNT_ART = {
-  liubei: 'art/side-scroller/mount-liubei-painted-sheet-v1.png',
+  liubei: 'art/side-scroller/mount-liubei-painted-sheet-v2.png',
   guanyu: 'art/side-scroller/mount-guanyu-painted-sheet-v1.png',
   zhangfei: 'art/side-scroller/mount-zhangfei-painted-sheet-v1.png',
   wukong: 'art/side-scroller/jindouyun-painted-sheet-v1.png',
@@ -147,9 +147,9 @@ const MOUNT_ART = {
 for (const [id, profile] of Object.entries(MOUNT_PROFILES)) MOUNT_ART[id] = profile.horse;
 
 const BOSS_ART = {
-  suiVanguard: 'art/side-scroller/boss-sui-vanguard-painted-sheet-v1.png',
+  suiVanguard: 'art/side-scroller/boss-sui-vanguard-painted-sheet-v2.png',
   khitanVanguard: 'art/side-scroller/boss-khitan-vanguard-painted-sheet-v1.png',
-  haengjuVanguard: 'art/side-scroller/boss-haengju-vanguard-painted-sheet-v1.png',
+  haengjuVanguard: 'art/side-scroller/boss-haengju-vanguard-painted-sheet-v2.png',
   myeongnyangVanguard: 'art/side-scroller/boss-myeongnyang-vanguard-painted-sheet-v1.png',
   yinjiao: 'art/side-scroller/boss-yinjiao-painted-sheet-v1.png',
   honghaier: 'art/side-scroller/boss-honghaier-painted-sheet-v1.png',
@@ -157,19 +157,19 @@ const BOSS_ART = {
   hunshimowang: 'art/side-scroller/boss-hunshimowang-painted-sheet-v1.png',
   aoguang: 'art/side-scroller/boss-aoguang-painted-sheet-v1.png',
   baigujing: 'art/side-scroller/boss-baigujing-painted-sheet-v1.png',
-zhangjiao: 'art/side-scroller/boss-zhangjiao-painted-sheet-v1.png',
-  huaxiong: 'art/side-scroller/boss-huaxiong-painted-sheet-v1.png',
-  chunyuqiong: 'art/side-scroller/boss-chunyuqiong-painted-sheet-v1.png',
-  caochun: 'art/side-scroller/boss-caochun-painted-sheet-v1.png',
-  caimao: 'art/side-scroller/boss-caimao-painted-sheet-v1.png',
+zhangjiao: 'art/side-scroller/boss-zhangjiao-painted-sheet-v2.png',
+  huaxiong: 'art/side-scroller/boss-huaxiong-painted-sheet-v2.png',
+  chunyuqiong: 'art/side-scroller/boss-chunyuqiong-painted-sheet-v2.png',
+  caochun: 'art/side-scroller/boss-caochun-painted-sheet-v2.png',
+  caimao: 'art/side-scroller/boss-caimao-painted-sheet-v2.png',
   xiahoudun: 'art/side-scroller/boss-xiahoudun-painted-sheet-v1.png',
-  luxun: 'art/side-scroller/boss-luxun-painted-sheet-v1.png',
+  luxun: 'art/side-scroller/boss-luxun-painted-sheet-v2.png',
   dongzhuo: 'art/side-scroller/dongzhuo-painted-sheet-v1.png',
   sunquan: 'art/side-scroller/sunquan-painted-sheet-v1.png',
   menghuo: 'art/side-scroller/menghuo-painted-sheet-v1.png',
   simayi: 'art/side-scroller/boss-simayi-painted-sheet-v1.png',
-  wumawang: 'art/side-scroller/boss-wumawang-painted-sheet-v1.png',
-  erlangshen: 'art/side-scroller/boss-erlangshen-painted-sheet-v1.png',
+  wumawang: 'art/side-scroller/boss-wumawang-painted-sheet-v2.png',
+  erlangshen: 'art/side-scroller/boss-erlangshen-painted-sheet-v2.png',
   gaoqiu: 'art/side-scroller/boss-gaoqiu-painted-sheet-v1.png',
   luqian: 'art/side-scroller/boss-luqian-painted-sheet-v1.png',
 };
@@ -413,6 +413,10 @@ async function loadOptional(src, label) {
  * 절대 하면 안 된다. 그래서 선택 화면이 이 함수로 미리 걸러 낸다.
  */
 export const heroHasArt = (heroId) => !!HERO_ART[heroId];
+// 이 시트들은 공격 두 칸이 '베기(2) → 치켜들기(3)' 순으로 그려져 있어, 그대로 쓰면
+// 공격이 칼을 들어 올린 채 끝난다. 화면에서는 3→2로 바꿔 '들기 → 베기'로 보인다.
+const ATTACK_FRAMES_SWAPPED = new Set(['euljimundeok', 'ganggamchan', 'kwonyul', 'yisunsin', 'wukong', 'wusong']);
+export const heroPortraitArt = (heroId) => HERO_ART[heroId]?.hero;
 
 export function preloadSideScroller(heroId = 'guanyu', stageKey = 'hulao') {
   const resolvedHeroId = HERO_ART[heroId] ? heroId : 'guanyu';
@@ -1269,7 +1273,8 @@ const PAINTED_FRAME_LAYOUTS = {
     // Seventh field is the standing figure height in the atlas's 1280-unit space.
     'nezha-painted-sheet-v1.png': [[0,0,640,640,300,606,490],[640,0,640,640,310,604,490],[0,640,640,640,310,530,490],[640,640,640,640,310,524,490]],
     'nezha-bow-painted-sheet-v1.png': [[0,0,640,640,320,636,598],[640,0,640,640,320,636,598],[0,640,640,640,340,586,598],[640,640,640,640,320,586,598]],
-    'honghaier-painted-sheet-v1.png': [[0,0,640,640,320,624,598],[640,0,640,640,320,612,598],[0,640,640,640,320,604,598],[640,640,640,640,320,606,598]],
+    // The idle cut stops at x=590: the neighbouring run frame's flame tips reach into it.
+    'honghaier-painted-sheet-v1.png': [[0,0,590,640,320,624,598],[640,0,640,640,320,612,598],[0,640,640,640,320,604,598],[640,640,640,640,320,606,598]],
     'honghaier-bow-painted-sheet-v1.png': [[0,0,640,640,320,582,560],[640,0,640,640,320,582,560],[0,640,700,640,340,598,560],[640,640,640,640,320,598,560]],
     'mount-fenghuolun-painted-sheet-v1.png': [[0,0,640,640,320,572,440],[640,0,640,640,320,566,440],[0,640,640,640,320,524,440],[640,640,640,640,320,514,440]],
     'mounted-nezha-painted-sheet-v1.png': [[0,0,640,640,320,610,590],[640,0,640,640,320,608,590],[0,640,640,640,320,610,590],[640,640,640,640,320,612,590]],
@@ -1284,6 +1289,13 @@ const PAINTED_FRAME_LAYOUTS = {
     'huangzhong-painted-sheet-v1.png': [[0,0,640,640,320,583],[640,0,640,640,320,575],[0,640,640,640,320,544],[640,640,640,640,310,510]],
     'huangzhong-bow-painted-sheet-v1.png': [[0,0,620,600,320,583],[620,0,660,600,350,575],[0,600,620,680,320,605],[620,600,660,680,250,605]],
 };
+// Where a 1280-unit atlas point lands for drawAtlasFrame(…, x, groundY, height):
+// screen = (x + facing*(u-ox)*scale, groundY + (v-oy)*scale). Used to seat riders.
+function atlasFrameTransform(image, frame, height) {
+  const layout = PAINTED_FRAME_LAYOUTS[image.src?.split('/').pop()]?.[frame];
+  if (layout) { const [sx,sy,,,ax,ay,referenceHeight=576] = layout; return { scale: height / referenceHeight, ox: sx + ax, oy: sy + ay }; }
+  return { scale: height / 640, ox: (frame % 2) * 640 + 320, oy: Math.floor(frame / 2) * 640 + 640 };
+}
 function drawAtlasFrame(ctx, image, frame, x, groundY, height, facing = 1, alpha = 1) {
   const layout = PAINTED_FRAME_LAYOUTS[image.src?.split('/').pop()]?.[frame];
   if (layout) {
@@ -1421,6 +1433,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   const heroAssets = assets.heroes[heroId] || assets.heroes.guanyu;
   const combatProfile = COMBAT_PROFILES[heroId] || COMBAT_PROFILES.guanyu;
   const heroVisualScale = heroRenderScale(heroId);
+  const attackFramesSwapped = ATTACK_FRAMES_SWAPPED.has(heroId);
   const dashTechnique = dashSkill(heroId);
   const callouts = SPECIAL_CALLOUTS[heroId] || DEFAULT_CALLOUT;
   const mountAsset = assets.mounts[heroId] || assets.horse;
@@ -1634,7 +1647,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     }
     if (usesConsistentMount) {
       const layout = mountLayout(depthScale);
-      return { height:layout.mountHeight*.84, fx:38, launch:76 };
+      return { height:layout.mountHeight*.86, fx:70, launch:96 };
     }
     // 특수 탈것은 같은 단독 탈것의 안장 기준에서 손 위치를 계산한다.
     const layout = mountLayout(depthScale);
@@ -2412,7 +2425,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     }
     if ((['musou', 'whirlwind', 'dash', 'heavy'].includes(player.action) || (player.action === 'attack' && player.attackStep === 3)) && now > player.afterimageAt) {
       player.afterimageAt = now + (player.action === 'musou' ? 52 : player.action === 'dash' || player.action === 'attack' ? 62 : 72);
-      const frame = player.action === 'run' ? 1 : Math.max(2, Math.min(3, (now - player.actionStarted) / Math.max(1, player.actionDuration) < .46 ? 2 : 3));
+      const swing = (now - player.actionStarted) / Math.max(1, player.actionDuration) < .46 ? 2 : 3, frame = attackFramesSwapped ? 5 - swing : swing;
       afterimages.push({ x: player.x, lane: player.lane, y: player.y, mounted: player.mounted, ranged: player.action === 'ranged', frame, facing: player.facing, life: .24, max: .24 });
     }
     effects.forEach((effect) => effect.life -= dt); effects = effects.filter((effect) => effect.life > 0);
@@ -2853,7 +2866,9 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       drawAtlasFrame(ctx, riderImage, frame, 0, 0, layout.riderHeight, facing, alpha);
       ctx.restore();
     }
-    drawAtlasFrame(ctx, mountAsset, frame, screenX, baseY, layout.mountHeight, facing, alpha);
+    // 군마(여포 적토마)는 공격 칸에서 앞발을 들지 않는다 — 달릴 때만 속보·습보를 번갈아.
+    const mountFrame = mountKind === 'horse' && rider ? (player.action === 'run' || player.action === 'dash' ? 1 + Math.floor(performance.now() / 125) % 2 : 0) : frame;
+    drawAtlasFrame(ctx, mountAsset, mountFrame, screenX, baseY, layout.mountHeight, facing, alpha);
     if (!rider || mountKind === 'horse') return;
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = alpha * (.16 + Math.sin(performance.now() * .008) * .035);
     ctx.strokeStyle = layout.glow; ctx.lineWidth = 3; ctx.shadowColor = layout.glow; ctx.shadowBlur = isBoarMount ? 11 : 18;
@@ -2866,7 +2881,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       drawConsistentMount(ctx,drawAtlasFrame,{
         horse:mountAsset,rider:heroAssets.rider,x:screenX,y:baseY,
         height:mountLayout(depthScale).mountHeight,facing,alpha,frame,ranged,
-        seatY:({guanyu:.53,zhaoyun:.60,caocao:.66,machao:.63})[heroId],
+        seats:MOUNT_PROFILES[heroId].seats,hip:MOUNT_PROFILES[heroId].hip,frameTransform:atlasFrameTransform,
         moving:player.action==='run'||player.action==='dash',now:performance.now(),
       });
       return;
@@ -2908,12 +2923,15 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
         const actionProgress = attacking ? Math.max(0, Math.min(1, (now - player.actionStarted) / Math.max(1, player.actionDuration))) : 0;
         let heroFrame = 0;
         if (player.action === 'ranged') heroFrame = familyRanged ? (actionProgress < .28 ? 0 : actionProgress < .6 ? 2 : 3) : actionProgress < .22 ? 0 : actionProgress < .38 ? 1 : actionProgress < .48 ? 2 : 3;
-        else if (player.action === 'run') heroFrame = Math.floor(now / (player.mounted ? 105 : 135)) % 2;
+        // 달리기·공중은 옆모습 보폭 칸(1)을 유지한다. 대기 칸(0)은 정면·3/4라 둘을 번갈아
+        // 쓰면 몸이 카메라와 옆을 오가며 꽃게처럼 미끄러진다. 걸음감은 아래 흔들림이 낸다.
+        else if (player.action === 'run' || (player.y > 0 && player.action === 'idle')) heroFrame = 1;
         else if (player.action === 'counter') heroFrame = 2;
         else if (attacking) {
           const activeTechnique = player.familyTechnique?.action === player.action && player.familyTechnique.started === player.actionStarted;
           const beatProgress = activeTechnique ? (actionProgress * player.familyTechnique.beats.length) % 1 : actionProgress;
           heroFrame = beatProgress < .28 ? 0 : beatProgress < .58 ? 2 : 3;
+          if (heroFrame >= 2 && attackFramesSwapped) heroFrame = 5 - heroFrame;
         }
         const strideBob = player.action === 'run' ? Math.abs(Math.sin(now * (player.mounted ? .018 : .023))) * (player.mounted ? 5 : 4) : 0;
         const attackLunge = attacking && !['counter', 'ranged'].includes(player.action) ? Math.sin(Math.PI * actionProgress) * (player.mounted ? 22 : player.action === 'dash' ? 34 : 13) * player.facing : 0;
@@ -2931,7 +2949,13 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
           const mountedBowDip = usesSeatedMountSheet || usesConsistentMount ? 0 : bowDip;
           drawHorse(player.x + attackLunge + mountedBowShift, baseY - strideBob + mountedBowDip, player.facing, true, heroFrame, flicker, player.action === 'ranged');
         }
-        else drawAtlasFrame(ctx, player.action === 'ranged' && !rangedUsesBase ? heroAssets.heroBow : heroAssets.hero, heroFrame, player.x + attackLunge + bowShift - cameraX, baseY - player.y - strideBob + bowDip, standingHeroHeight(1 + player.lane * .0014), player.facing, flicker);
+        else {
+          // 한 칸 보폭에 발끝 기준 앞기울기를 걸음마다 살짝 흔들어 걷는 박자를 만든다.
+          const runLean = player.action === 'run' && !player.y ? player.facing * (.03 + Math.sin(now * .023) * .02) : 0;
+          ctx.save(); ctx.translate(player.x + attackLunge + bowShift - cameraX, baseY - player.y - strideBob + bowDip); if (runLean) ctx.rotate(runLean);
+          drawAtlasFrame(ctx, player.action === 'ranged' && !rangedUsesBase ? heroAssets.heroBow : heroAssets.hero, heroFrame, 0, 0, standingHeroHeight(1 + player.lane * .0014), player.facing, flicker);
+          ctx.restore();
+        }
         if (familyRanged && ['special', 'musou'].includes(player.action)) drawFamilySpecial(ctx, heroId, player.x - cameraX, baseY - player.y, player.facing, standingHeroHeight(), actionProgress, now, player.action === 'musou');
         if (growth.weaponLevel >= 4) {
           const tier = growth.weaponLevel >= 16 ? 3 : growth.weaponLevel >= 10 ? 2 : 1;

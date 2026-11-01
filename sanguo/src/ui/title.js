@@ -4,9 +4,9 @@ import { getHeroProgress, nextPerk, weaponEnhanceText } from '../game/progressio
 
 const HEROES = ['liubei', 'guanyu', 'zhangfei'];
 const PORTRAITS = {
-  liubei: 'art/side-scroller/liubei-painted-sheet-v1.png',
-  guanyu: 'art/side-scroller/guanyu-painted-sheet-v4.png',
-  zhangfei: 'art/side-scroller/zhangfei-painted-sheet-v1.png',
+  liubei: 'art/side-scroller/liubei-painted-sheet-v2.png',
+  guanyu: 'art/side-scroller/guanyu-painted-sheet-v5.png',
+  zhangfei: 'art/side-scroller/zhangfei-painted-sheet-v2.png',
 };
 
 export function showTitle(root, { onStart, onBrowse }) {

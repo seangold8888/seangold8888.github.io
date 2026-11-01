@@ -69,7 +69,7 @@ test("install is strict only for core and card art; optional warmup is bounded a
     assert.equal(sw.backgroundCacheName(shell), sw.STATIC_CACHE, shell);
   }
   for (const runtime of [
-    "./sanguo/art/side-scroller/guanyu-painted-sheet-v4.png",
+    "./sanguo/art/side-scroller/guanyu-painted-sheet-v5.png",
     "./sanguo/audio/the_final_battle.ogg",
     "./sanguo/fonts/pretendard/PretendardVariable.woff2",
   ]) {
