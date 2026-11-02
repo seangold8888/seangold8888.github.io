@@ -51,7 +51,9 @@ test('manifest takes say the exact skill name, stay short and are cached', () =>
       assert.ok(sw.includes(`"./sanguo/audio/hero-callouts-gemini-v1/${take.file}"`), `${take.file} cached`);
       voices.add(take.voice); bytes += size;
     }
-    assert.equal(voices.size, 1, id + ' one voice per hero');
+    // 11-02: Wu Song's special is an approved ElevenLabs take; his musou stays Gemini.
+    if (id === 'wusong') assert.equal(lines.special.voice, 'ElevenLabs SOYHLrjzK2X1ezoPC6cr');
+    else assert.equal(voices.size, 1, id + ' one voice per hero');
   }
   const shipped = fs.readdirSync(dir).filter(f => f.endsWith('.mp3')).sort();
   assert.deepEqual(shipped, Object.values(manifest.heroes).flatMap(h => Object.values(h).map(t => t.file)).sort(), 'no stray files');

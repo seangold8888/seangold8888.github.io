@@ -1,7 +1,7 @@
 {
  "model": "gemini-2.5-pro-tts (Vertex, us-central1)",
  "format": "mp3 24kHz mono 64kbps",
- "note": "3 takes per line (+1-2 retakes for failures); kept only takes whose blind Gemini transcription matched the skill name (exact, or near: same syllable count, one non-final syllable differing only by aspiration/vowel class), then loudest/shortest lead. Lines in keptV6 keep the old v6 recording. zhangfei special keeps hero-callouts-ko-v6/zhangfei-special-v6.wav by request. 11-02: failed lines re-recorded as a split shout with a tail word cut off (june account); zhangfei special replaced on request.",
+ "note": "3 takes per line (+1-2 retakes for failures); kept only takes whose blind Gemini transcription matched the skill name (exact, or near: same syllable count, one non-final syllable differing only by aspiration/vowel class), then loudest/shortest lead. Lines in keptV6 keep the old v6 recording. zhangfei special keeps hero-callouts-ko-v6/zhangfei-special-v6.wav by request. 11-02: failed lines re-recorded as a split shout with a tail word cut off (june account); zhangfei special replaced on request. 11-02: wusong special recorded with ElevenLabs eleven_v3 (voice SOYHLrjzK2X1ezoPC6cr), transcribed exact.",
  "heroes": {
   "euljimundeok": {
    "special": {
@@ -762,6 +762,17 @@
    }
   },
   "wusong": {
+   "special": {
+    "hero": "wusong",
+    "action": "special",
+    "text": "경양취호격",
+    "voice": "ElevenLabs SOYHLrjzK2X1ezoPC6cr",
+    "model": "eleven_v3",
+    "take": 1,
+    "duration": 1.577,
+    "file": "wusong-special-g1.mp3",
+    "check": "exact"
+   },
    "musou": {
     "hero": "wusong",
     "action": "musou",
@@ -865,8 +876,6 @@
    }
   }
  },
- "keptV6": [
-  "wusong-special"
- ],
+ "keptV6": [],
  "noVoice": []
 }

@@ -372,7 +372,7 @@ const SPECIAL_CALLOUTS = {
 // Gemini TTS 기술명 함성(audio/hero-callouts-gemini-v1, manifest.json). 받아쓰기 검증을 통과한 줄만 싣고,
 // 통과 못 한 줄은 예전 v6 녹음을 그대로 쓴다. 가족 영웅은 각자 승인된 목소리를 쓴다.
 const GEMINI_CALLOUTS = Object.freeze({
-  special: new Set(['euljimundeok','ganggamchan','kwonyul','yisunsin','liubei','guanyu','caocao','machao','huangzhong','xiahoudun','zhangliao','xuchu','simayi','sunquan','taishici','ganning','lvbu','diaochan','dongzhuo','menghuo','zhurong','zhaoyun','huanggai','zhugeliang','wukong','bajie','nezha','erlangshen','tieshangongzhu','linchong','lizhishen','zhangfei','luxun','zhouyu','sunshangxiang','wujing','husanniang','honghaier']),
+  special: new Set(['euljimundeok','ganggamchan','kwonyul','yisunsin','liubei','guanyu','caocao','machao','huangzhong','xiahoudun','zhangliao','xuchu','simayi','sunquan','taishici','ganning','lvbu','diaochan','dongzhuo','menghuo','zhurong','zhaoyun','huanggai','zhugeliang','wukong','bajie','nezha','erlangshen','tieshangongzhu','linchong','lizhishen','zhangfei','luxun','zhouyu','sunshangxiang','wujing','husanniang','honghaier','wusong']),
   musou: new Set(['euljimundeok','ganggamchan','kwonyul','yisunsin','liubei','guanyu','zhangfei','caocao','machao','xiahoudun','zhangliao','simayi','sunquan','taishici','ganning','lvbu','diaochan','dongzhuo','menghuo','zhurong','zhouyu','huanggai','zhugeliang','sunshangxiang','wukong','wujing','erlangshen','honghaier','tieshangongzhu','wusong','linchong','lizhishen','husanniang','huangzhong','xuchu','luxun','zhaoyun','bajie','nezha']),
 });
 const DEFAULT_CALLOUT = { special: { name: '고유 필살기', cry: '혼신을 다한 일격' }, musou: { name: '무쌍난무', cry: '전장을 뒤덮는 무쌍의 기세' } };
