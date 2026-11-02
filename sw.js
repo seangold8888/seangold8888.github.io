@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v231";
+const CACHE_VERSION = "v232";
 const CACHE_PREFIX = "adventure-box-";
 // 큰 그림과 소리(삼국지 배경 200MB+, 저장한 이야기 오디오)는 배포 번호와 따로 둔다.
 // 배포마다 이 캐시를 버리면 기기가 236MB를 다시 받고, "여행 전에 이야기 저장"도 지워졌다.
@@ -128,7 +128,7 @@ const CORE_SHELL = [
   "./multiverse/data.js?v=6",
   "./multiverse/save.js?v=3",
   "./multiverse/game.js?v=volcano-1",
-  "./assets/audio/family-skill-voices.js?v=2",
+  "./assets/audio/family-skill-voices.js?v=3",
   "./multiverse/art/cover.webp",
   "./multiverse/art/jaei-idle.webp",
   "./multiverse/art/taeo-idle.webp",
@@ -1143,10 +1143,10 @@ const SANGUO_RUNTIME_ASSETS = [
   "./sanguo/audio/family-skills-v1/jaei-special-eleven-no-v1.mp3",
   "./sanguo/audio/family-skills-v1/jaei-special-eleven-water-v1.wav",
   "./sanguo/audio/family-skills-v1/jaei-special-eleven-water-v1.mp3",
-  "./sanguo/audio/family-skills-v1/jaei-special-gemini-sireo-v1.wav",
-  "./sanguo/audio/family-skills-v1/jaei-special-gemini-sireo-v1.mp3",
-  "./sanguo/audio/family-skills-v1/jaei-special-gemini-wait-v1.wav",
-  "./sanguo/audio/family-skills-v1/jaei-special-gemini-wait-v1.mp3",
+  "./sanguo/audio/family-skills-v1/jaei-special-eleven-sireo-v1.wav",
+  "./sanguo/audio/family-skills-v1/jaei-special-eleven-sireo-v1.mp3",
+  "./sanguo/audio/family-skills-v1/jaei-special-eleven-wait-v1.wav",
+  "./sanguo/audio/family-skills-v1/jaei-special-eleven-wait-v1.mp3",
   "./sanguo/audio/family-skills-v1/taeo-special-eleven-kiap-v1.wav",
   "./sanguo/audio/family-skills-v1/taeo-special-eleven-kiap-v1.mp3",
   "./sanguo/audio/family-skills-v1/taeo-special-eleven-sseugumi-only-v1.wav",

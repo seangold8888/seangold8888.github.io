@@ -1,6 +1,6 @@
 // 재이와 태오의 멀티버스 2 — 90초 히어로 미션.
 // 혼자 하는 게임: 고른 아이가 주인공, 다른 아이는 컴퓨터 동료. 깨면 별, 별로 캡슐, 캡슐로 꾸미기.
-import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family-skill-voices.js?v=2';
+import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family-skill-voices.js?v=3';
 (function () {
   "use strict";
 

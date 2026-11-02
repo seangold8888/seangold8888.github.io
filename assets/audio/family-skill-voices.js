@@ -6,8 +6,8 @@ export const FAMILY_SKILL_LINES = Object.freeze({
     kim: take('김태오!', 'sanguo/audio/hero-callouts-eleven-v2/jaei-callout-v2.wav'),
     no: take('아니야!', 'sanguo/audio/family-skills-v1/jaei-special-eleven-no-v1.wav'),
     water: take('물통 바꿔줘!', 'sanguo/audio/family-skills-v1/jaei-special-eleven-water-v1.wav'),
-    sireo: take('시러!', 'sanguo/audio/family-skills-v1/jaei-special-gemini-sireo-v1.wav'),
-    wait: take('기다려!', 'sanguo/audio/family-skills-v1/jaei-special-gemini-wait-v1.wav'),
+    sireo: take('시러!', 'sanguo/audio/family-skills-v1/jaei-special-eleven-sireo-v1.wav'),
+    wait: take('기다려!', 'sanguo/audio/family-skills-v1/jaei-special-eleven-wait-v1.wav'),
   }),
   taeo: Object.freeze({
     kiap: take('치앗! 촤! 치앗! 촤!', 'sanguo/audio/family-skills-v1/taeo-special-eleven-kiap-v1.wav'),

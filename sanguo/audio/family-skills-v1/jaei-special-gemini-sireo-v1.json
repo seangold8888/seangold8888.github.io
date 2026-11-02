@@ -1,9 +1,0 @@
-{
- "hero": "jaei",
- "model": "gemini-2.5-pro-tts",
- "voice": "Leda",
- "text": "시러!",
- "take": "jaei-sireo-Leda-t1",
- "duration": 1.047,
- "reviewed": false
-}

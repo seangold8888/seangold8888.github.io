@@ -22,7 +22,7 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
    // Actual recordings decode and start in the browser, not only mocked paths.
    await p.goto(base+'/sanguo/voices.html');await p.waitForSelector('[data-hero="taeo"] audio');
    for(const hero of ['taeo','jaei']){
-    const clips=p.locator('[data-hero="'+hero+'"] audio');a.equal(await clips.count(),hero==='taeo'?5:3);
+    const clips=p.locator('[data-hero="'+hero+'"] audio');a.equal(await clips.count(),5);
     for(let i=0;i<await clips.count();i++){
       await clips.nth(i).evaluate(async e=>{await e.play();});
       await p.waitForFunction(({hero,i})=>{const e=document.querySelectorAll('[data-hero="'+hero+'"] audio')[i];return Number.isFinite(e.duration)&&e.readyState>=2;},{hero,i});
