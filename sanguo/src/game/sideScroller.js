@@ -372,8 +372,8 @@ const SPECIAL_CALLOUTS = {
 // Gemini TTS 기술명 함성(audio/hero-callouts-gemini-v1, manifest.json). 받아쓰기 검증을 통과한 줄만 싣고,
 // 통과 못 한 줄은 예전 v6 녹음을 그대로 쓴다. 가족 영웅은 각자 승인된 목소리를 쓴다.
 const GEMINI_CALLOUTS = Object.freeze({
-  special: new Set(['euljimundeok','ganggamchan','kwonyul','yisunsin','liubei','guanyu','caocao','machao','huangzhong','xiahoudun','zhangliao','xuchu','simayi','sunquan','taishici','ganning','lvbu','diaochan','dongzhuo','menghuo','zhurong','zhaoyun','huanggai','zhugeliang','wukong','bajie','nezha','erlangshen','tieshangongzhu','linchong','lizhishen']),
-  musou: new Set(['euljimundeok','ganggamchan','kwonyul','yisunsin','liubei','guanyu','zhangfei','caocao','machao','xiahoudun','zhangliao','simayi','sunquan','taishici','ganning','lvbu','diaochan','dongzhuo','menghuo','zhurong','zhouyu','huanggai','zhugeliang','sunshangxiang','wukong','wujing','erlangshen','honghaier','tieshangongzhu','wusong','linchong','lizhishen','husanniang']),
+  special: new Set(['euljimundeok','ganggamchan','kwonyul','yisunsin','liubei','guanyu','caocao','machao','huangzhong','xiahoudun','zhangliao','xuchu','simayi','sunquan','taishici','ganning','lvbu','diaochan','dongzhuo','menghuo','zhurong','zhaoyun','huanggai','zhugeliang','wukong','bajie','nezha','erlangshen','tieshangongzhu','linchong','lizhishen','zhangfei','luxun','zhouyu','sunshangxiang','wujing','husanniang','honghaier']),
+  musou: new Set(['euljimundeok','ganggamchan','kwonyul','yisunsin','liubei','guanyu','zhangfei','caocao','machao','xiahoudun','zhangliao','simayi','sunquan','taishici','ganning','lvbu','diaochan','dongzhuo','menghuo','zhurong','zhouyu','huanggai','zhugeliang','sunshangxiang','wukong','wujing','erlangshen','honghaier','tieshangongzhu','wusong','linchong','lizhishen','husanniang','huangzhong','xuchu','luxun','zhaoyun','bajie','nezha']),
 });
 const DEFAULT_CALLOUT = { special: { name: '고유 필살기', cry: '혼신을 다한 일격' }, musou: { name: '무쌍난무', cry: '전장을 뒤덮는 무쌍의 기세' } };
 
@@ -478,7 +478,7 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
   const hasRecordedHeroCallouts = recordedHeroCallouts.has(heroId);
   // 기본 기술명 외침은 Gemini TTS로 새로 녹음한 장수별 전투 함성이다.
   // 들숨까지 한 테이크에 담긴 완성 연기라 공용 함성·들숨을 겹치지 않는다.
-  // 파일을 못 읽으면 예전 v6 원음과 공용 함성으로 내려간다. 장비의 장판뇌후는 기존 녹음 유지.
+  // 파일을 못 읽으면 예전 v6 원음과 공용 함성으로 내려간다. 장판뇌후도 11-02 새로 녹음(대표님 요청).
   const geminiCallout = (action) => GEMINI_CALLOUTS[action].has(heroId)
     ? 'audio/hero-callouts-gemini-v1/' + heroId + '-' + action + '-g1.mp3' : null;
   const v6Callout = (action) => hasRecordedHeroCallouts ? ['audio/hero-callouts-ko-v6/' + heroId + '-' + action + '-v6.wav'] : [];

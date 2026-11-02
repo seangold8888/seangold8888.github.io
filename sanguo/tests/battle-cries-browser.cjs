@@ -28,7 +28,7 @@ const instrumented = source
     // v6 = kept recording + shared battle cry, fallback = Gemini file unreachable -> v6 + cry.
     const cases = [
       ['liubei', 'hulao', 'noble', 'gemini'],
-      ['zhangfei', 'hulao', 'fierce', 'v6'],
+      ['zhangfei', 'hulao', 'fierce', 'gemini'],
       ['lvbu', 'hulao', 'fierce', 'gemini'],
       ['machao', 'changban', 'fierce', 'gemini'],
       ['diaochan', 'hulao', 'female', 'fallback'],

@@ -114,7 +114,7 @@ const { createServer } = require('../preview-server.cjs');
     assert.match(await taeoCard.innerText(), /메가냅터킥!/);
     assert.match(await taeoCard.innerText(), /쓰구미!/);
     assert.ok((await taeoCard.locator('audio').first().getAttribute('src')).includes('meganaptor'));
-    assert.equal(await page.locator('[data-hero="jaei"] audio').count(), 3);
+    assert.equal(await page.locator('[data-hero="jaei"] audio').count(), 5);
     assert.deepEqual(errors, []);
     console.log('PASS real family voices: 4 heroes × 3 actions; no double actor, crossfade, natural rate, mute and legacy fallback');
   } finally {

@@ -1,7 +1,7 @@
 {
  "model": "gemini-2.5-pro-tts (Vertex, us-central1)",
  "format": "mp3 24kHz mono 64kbps",
- "note": "3 takes per line (+1-2 retakes for failures); kept only takes whose blind Gemini transcription matched the skill name (exact, or near: same syllable count, one non-final syllable differing only by aspiration/vowel class), then loudest/shortest lead. Lines in keptV6 keep the old v6 recording. zhangfei special keeps hero-callouts-ko-v6/zhangfei-special-v6.wav by request.",
+ "note": "3 takes per line (+1-2 retakes for failures); kept only takes whose blind Gemini transcription matched the skill name (exact, or near: same syllable count, one non-final syllable differing only by aspiration/vowel class), then loudest/shortest lead. Lines in keptV6 keep the old v6 recording. zhangfei special keeps hero-callouts-ko-v6/zhangfei-special-v6.wav by request. 11-02: failed lines re-recorded as a split shout with a tail word cut off (june account); zhangfei special replaced on request.",
  "heroes": {
   "euljimundeok": {
    "special": {
@@ -145,6 +145,17 @@
     "duration": 3.326,
     "file": "zhangfei-musou-g1.mp3",
     "check": "exact"
+   },
+   "special": {
+    "hero": "zhangfei",
+    "action": "special",
+    "text": "장판뇌후",
+    "voice": "Algenib",
+    "take": "zhangfei-special-r1t2",
+    "duration": 1.524,
+    "file": "zhangfei-special-g1.mp3",
+    "check": "exact",
+    "method": "split shout + cut tail (11-02)"
    }
   },
   "caocao": {
@@ -201,6 +212,17 @@
     "duration": 3.153,
     "file": "huangzhong-special-g1.mp3",
     "check": "near"
+   },
+   "musou": {
+    "hero": "huangzhong",
+    "action": "musou",
+    "text": "한승백보궁",
+    "voice": "Schedar",
+    "take": "huangzhong-musou-r1t1",
+    "duration": 3.15,
+    "file": "huangzhong-musou-g1.mp3",
+    "check": "exact",
+    "method": "split shout + cut tail (11-02)"
    }
   },
   "xiahoudun": {
@@ -257,6 +279,17 @@
     "duration": 1.671,
     "file": "xuchu-special-g1.mp3",
     "check": "exact"
+   },
+   "musou": {
+    "hero": "xuchu",
+    "action": "musou",
+    "text": "맹호진압격",
+    "voice": "Enceladus",
+    "take": "xuchu-musou-r1t0",
+    "duration": 2.641,
+    "file": "xuchu-musou-g1.mp3",
+    "check": "exact",
+    "method": "split shout + cut tail (11-02)"
    }
   },
   "simayi": {
@@ -467,6 +500,17 @@
     "duration": 1.51,
     "file": "zhaoyun-special-g1.mp3",
     "check": "near"
+   },
+   "musou": {
+    "hero": "zhaoyun",
+    "action": "musou",
+    "text": "칠진칠출격",
+    "voice": "Iapetus",
+    "take": "zhaoyun-musou-r1t0",
+    "duration": 1.911,
+    "file": "zhaoyun-musou-g1.mp3",
+    "check": "near",
+    "method": "split shout + cut tail (11-02)"
    }
   },
   "zhouyu": {
@@ -479,6 +523,17 @@
     "duration": 1.643,
     "file": "zhouyu-musou-g1.mp3",
     "check": "near"
+   },
+   "special": {
+    "hero": "zhouyu",
+    "action": "special",
+    "text": "적벽화신계",
+    "voice": "Puck",
+    "take": "zhouyu-special-r1t0",
+    "duration": 1.541,
+    "file": "zhouyu-special-g1.mp3",
+    "check": "exact",
+    "method": "split shout + cut tail (11-02)"
    }
   },
   "huanggai": {
@@ -535,6 +590,17 @@
     "duration": 2.522,
     "file": "sunshangxiang-musou-g1.mp3",
     "check": "exact"
+   },
+   "special": {
+    "hero": "sunshangxiang",
+    "action": "special",
+    "text": "강동비연무",
+    "voice": "Zephyr",
+    "take": "sunshangxiang-special-r1t0",
+    "duration": 1.579,
+    "file": "sunshangxiang-special-g1.mp3",
+    "check": "exact",
+    "method": "split shout + cut tail (11-02)"
    }
   },
   "wukong": {
@@ -569,6 +635,17 @@
     "duration": 2.952,
     "file": "bajie-special-g1.mp3",
     "check": "near"
+   },
+   "musou": {
+    "hero": "bajie",
+    "action": "musou",
+    "text": "구치붕산격",
+    "voice": "Umbriel",
+    "take": "bajie-musou-r1t2",
+    "duration": 1.889,
+    "file": "bajie-musou-g1.mp3",
+    "check": "near",
+    "method": "split shout + cut tail (11-02)"
    }
   },
   "wujing": {
@@ -581,6 +658,17 @@
     "duration": 2.875,
     "file": "wujing-musou-g1.mp3",
     "check": "near"
+   },
+   "special": {
+    "hero": "wujing",
+    "action": "special",
+    "text": "유사항요참",
+    "voice": "Charon",
+    "take": "wujing-special-r1t0",
+    "duration": 2.333,
+    "file": "wujing-special-g1.mp3",
+    "check": "exact",
+    "method": "split shout + cut tail (11-02)"
    }
   },
   "nezha": {
@@ -593,6 +681,17 @@
     "duration": 1.301,
     "file": "nezha-special-g1.mp3",
     "check": "exact"
+   },
+   "musou": {
+    "hero": "nezha",
+    "action": "musou",
+    "text": "삼단해회진",
+    "voice": "Sadachbia",
+    "take": "nezha-musou-r1t0",
+    "duration": 2.384,
+    "file": "nezha-musou-g1.mp3",
+    "check": "near-manual",
+    "method": "split shout + cut tail (11-02)"
    }
   },
   "erlangshen": {
@@ -627,6 +726,17 @@
     "duration": 1.57,
     "file": "honghaier-musou-g1.mp3",
     "check": "exact"
+   },
+   "special": {
+    "hero": "honghaier",
+    "action": "special",
+    "text": "삼매진화포",
+    "voice": "Puck",
+    "take": "honghaier-special-r1t0",
+    "duration": 1.897,
+    "file": "honghaier-special-g1.mp3",
+    "check": "exact",
+    "method": "split shout + cut tail (11-02)"
    }
   },
   "tieshangongzhu": {
@@ -717,24 +827,46 @@
     "duration": 1.487,
     "file": "husanniang-musou-g1.mp3",
     "check": "exact"
+   },
+   "special": {
+    "hero": "husanniang",
+    "action": "special",
+    "text": "일월홍금쇄",
+    "voice": "Pulcherrima",
+    "take": "husanniang-special-r2t1",
+    "duration": 1.248,
+    "file": "husanniang-special-g1.mp3",
+    "check": "near-manual",
+    "method": "split shout + cut tail (11-02)"
+   }
+  },
+  "luxun": {
+   "special": {
+    "hero": "luxun",
+    "action": "special",
+    "text": "연영화계",
+    "voice": "Sadachbia",
+    "take": "luxun-special-r1t0",
+    "duration": 2.684,
+    "file": "luxun-special-g1.mp3",
+    "check": "exact",
+    "method": "split shout + cut tail (11-02)"
+   },
+   "musou": {
+    "hero": "luxun",
+    "action": "musou",
+    "text": "백리화공진",
+    "voice": "Sadachbia",
+    "take": "luxun-musou-r1t1",
+    "duration": 1.731,
+    "file": "luxun-musou-g1.mp3",
+    "check": "exact",
+    "method": "split shout + cut tail (11-02)"
    }
   }
  },
  "keptV6": [
-  "huangzhong-musou",
-  "xuchu-musou",
-  "luxun-special",
-  "luxun-musou",
-  "zhaoyun-musou",
-  "zhouyu-special",
-  "sunshangxiang-special",
-  "bajie-musou",
-  "wujing-special",
-  "wusong-special",
-  "husanniang-special"
+  "wusong-special"
  ],
- "noVoice": [
-  "nezha-musou",
-  "honghaier-special"
- ]
+ "noVoice": []
 }

@@ -1,7 +1,7 @@
 import { loadData, person } from '../data.js';
 import { workPerson } from '../data/works.js';
 import { ELEVEN_VOICE_PACKS, FAMILY_VOICE_PREVIEWS, WARRIOR_VOICE_PREVIEWS, selectWarriorVoice, warriorVoiceSelected } from '../game/elevenVoicePacks.js';
-import { FAMILY_SKILL_LINES } from '../../../assets/audio/family-skill-voices.js?v=1';
+import { FAMILY_SKILL_LINES } from '../../../assets/audio/family-skill-voices.js?v=2';
 
 const grid = document.getElementById('voice-grid');
 const status = document.getElementById('voice-status');
@@ -25,7 +25,7 @@ async function start() {
     const title = document.createElement('h2'); title.textContent = nameOf(id);
     const phrase = document.createElement('p'); phrase.textContent = saved ? '장판뇌후!' : info?.specialPhrase || info?.phrase || '필살기 함성';
     const audio = document.createElement('audio'); audio.controls = true; audio.preload = 'none';
-    audio.src = family ? ELEVEN_VOICE_PACKS[id].special : saved ? 'audio/hero-callouts-ko-v6/zhangfei-special-v6.wav' : WARRIOR_VOICE_PREVIEWS[id];
+    audio.src = family ? [].concat(ELEVEN_VOICE_PACKS[id].special)[0] : saved ? 'audio/hero-callouts-ko-v6/zhangfei-special-v6.wav' : WARRIOR_VOICE_PREVIEWS[id];
     audio.setAttribute('aria-label', `${nameOf(id)} 필살기 함성 듣기`);
     audio.addEventListener('play', () => { if (activeAudio && activeAudio !== audio) activeAudio.pause(); activeAudio = audio; });
     audio.addEventListener('error', () => { status.textContent = `${nameOf(id)} 목소리를 읽지 못했어요. 연결을 확인하고 다시 들어보세요.`; });
@@ -57,7 +57,7 @@ async function start() {
     }
     if (family?.specialPhrase && !FAMILY_SKILL_LINES[id]) {
       const catchphrase = document.createElement('p'); catchphrase.textContent = `돌진 / 무쌍: ${family.phrase}`;
-      const catchphraseAudio = audio.cloneNode(); catchphraseAudio.src = ELEVEN_VOICE_PACKS[id].dash;
+      const catchphraseAudio = audio.cloneNode(); catchphraseAudio.src = [].concat(ELEVEN_VOICE_PACKS[id].dash)[0];
       catchphraseAudio.setAttribute('aria-label', `${nameOf(id)} 기존 돌진과 무쌍 기합 듣기`);
       catchphraseAudio.addEventListener('play', () => { if (activeAudio && activeAudio !== catchphraseAudio) activeAudio.pause(); activeAudio = catchphraseAudio; });
       catchphraseAudio.addEventListener('error', () => { status.textContent = `${nameOf(id)} 기존 기합을 읽지 못했어요.`; });
@@ -65,7 +65,7 @@ async function start() {
     }
     if (FAMILY_SKILL_LINES[id]) {
       for (const line of Object.values(FAMILY_SKILL_LINES[id])) {
-        if (line.file.replace(/^sanguo\//, '') === ELEVEN_VOICE_PACKS[id].special) continue;
+        if (line.file.replace(/^sanguo\//, '') === [].concat(ELEVEN_VOICE_PACKS[id].special)[0]) continue;
         const label = document.createElement('p'); label.textContent = line.phrase;
         const clip = document.createElement('audio'); clip.controls = true; clip.preload = 'none'; clip.src = line.file.replace(/^sanguo\//, '');
         clip.setAttribute('aria-label', `${nameOf(id)} ${line.phrase} 듣기`);

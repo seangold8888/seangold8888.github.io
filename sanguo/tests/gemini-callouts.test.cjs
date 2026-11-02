@@ -22,12 +22,12 @@ test('game routes exactly the manifest lines, never family heroes or the kept Zh
     assert.deepEqual(routed(action).sort(), fromManifest, action);
     for (const id of FAMILY) assert.ok(!routed(action).includes(id), `${id} keeps the approved family voice`);
   }
-  assert.ok(!routed('special').includes('zhangfei'), 'Zhang Fei special keeps the existing v6 recording');
-  assert.ok(fs.existsSync(path.join(root, 'audio/hero-callouts-ko-v6/zhangfei-special-v6.wav')));
+  assert.ok(routed('special').includes('zhangfei'), 'Zhang Fei special was re-recorded on request (11-02)');
+  assert.ok(fs.existsSync(path.join(root, 'audio/hero-callouts-ko-v6/zhangfei-special-v6.wav')), 'v6 stays as the load-failure fallback');
 });
 
 test('every non-family line is either a Gemini take or a documented fallback', () => {
-  const kept = new Set([...(manifest.keptV6 || []), ...(manifest.noVoice || []), 'zhangfei-special']);
+  const kept = new Set([...(manifest.keptV6 || []), ...(manifest.noVoice || [])]);
   for (const id of Object.keys(names).filter(id => !FAMILY.includes(id))) {
     for (const action of ['special', 'musou']) {
       const key = `${id}-${action}`;

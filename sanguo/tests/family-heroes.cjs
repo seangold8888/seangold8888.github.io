@@ -20,9 +20,11 @@ const root = path.resolve(__dirname, '..');
     assert.ok(workWeapon(id) && FAMILY_STATS[id] && FAMILY_CALLOUTS[id]);
     assert.equal(BATTLE_CRY_PACKS[BATTLE_CRY_PROFILES[id].pack].length, 0, 'no unapproved adult voice');
     for (const files of Object.values(elevenVoiceFiles(id))) {
-      assert.equal(files.length, 1, id + ' dedicated voice');
-      assert.ok(fs.statSync(path.join(root, files[0])).size > 10000);
-      assert.ok(sw.includes(`"./sanguo/${files[0]}"`), id + ' voice cached');
+      assert.ok(files.length >= 1, id + ' dedicated voice');
+      for (const file of files) {
+        assert.ok(fs.statSync(path.join(root, file)).size > 10000);
+        assert.ok(sw.includes(`"./sanguo/${file}"`), id + ' voice cached');
+      }
     }
     assert.ok(fs.statSync(path.join(root, `art/side-scroller/${id}-painted-sheet-v1.png`)).size > 100000);
     for (const facing of [-1, 1]) {
