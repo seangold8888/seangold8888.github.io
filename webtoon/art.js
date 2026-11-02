@@ -627,6 +627,8 @@
       let screen = `<rect x="-44" y="-30" width="88" height="56" rx="3" fill="#2a2d36"/>`;
       if (o.show === "news") screen = `<rect x="-44" y="-30" width="88" height="56" rx="3" fill="#cfe3f7"/><rect x="-44" y="12" width="88" height="14" fill="#1f4f99"/><text x="0" y="23" text-anchor="middle" font-size="10" font-family="Jua, sans-serif" fill="#fff">뉴스</text><rect x="-10" y="-20" width="20" height="26" rx="8" fill="#9aa0a8"/>`;
       if (o.show === "kids") screen = `<rect x="-44" y="-30" width="88" height="56" rx="3" fill="#ffe27a"/><circle cx="-18" cy="0" r="10" fill="#6cc27a"/><circle cx="16" cy="-4" r="12" fill="#ff8fb3"/><path d="M-40 20 q20 -10 40 0 t40 0" stroke="#fff" stroke-width="3" fill="none"/>`;
+      if (o.show === "movie") screen = `<rect x="-44" y="-30" width="88" height="56" rx="3" fill="#1d2748"/><path d="M-44 14 H44 V26 H-44Z" fill="#101626"/><path d="M-26 14 V-6 L-18 -14 L-10 -6 V14 M-4 14 V-16 L4 -24 L12 -16 V14 M18 14 V-2 L26 -10 L34 -2 V14" fill="#2c3a66" stroke="#0c1020" stroke-width="1.5"/><circle cx="30" cy="-18" r="5" fill="#ffe27a"/>`;
+      if (o.show === "monster") screen = `<rect x="-44" y="-30" width="88" height="56" rx="3" fill="#0b0d16"/><path d="M0 -26 Q-22 -22 -22 4 L-30 26 H30 L22 4 Q22 -22 0 -26Z" fill="#171a2b" stroke="#313756" stroke-width="1.6"/><ellipse cx="0" cy="-8" rx="9" ry="11" fill="#06070d"/><path d="M-14 24 Q-8 12 -3 24 M3 24 Q8 12 14 24" stroke="#313756" stroke-width="1.6" fill="none"/>`;
       return `<g transform="translate(${x} ${y}) scale(${o.s || 1})"><rect x="-50" y="-36" width="100" height="68" rx="6" fill="#3b3f47" stroke="${INK}" stroke-width="2.4"/>${screen}<rect x="-20" y="32" width="40" height="8" rx="2" fill="#3b3f47" stroke="${INK}" stroke-width="1.6"/></g>`;
     },
     // 아빠가 끼는 장난감 인피니티 건틀렛(금색 장갑에 색깔 보석 여섯 개).
@@ -782,6 +784,22 @@
     },
     moon(x, y, o) {
       return `<path transform="translate(${x} ${y})" d="M8 -16 A16 16 0 1 0 8 16 A12 12 0 1 1 8 -16Z" fill="#ffe27a"/>`;
+    },
+    // 벽에 붙은 키 재는 자(80~120cm). y는 자의 윗부분(120cm). o.marks = [{ v: 95, c: "#e0443e" }]
+    heightchart(x, y, o) {
+      const k = 6, top = 120, bot = 80, hh = (top - bot) * k, w = 58;
+      let s = `<g transform="translate(${x} ${y}) scale(${o.s || 1})"><rect x="${-w / 2}" y="-8" width="${w}" height="${hh + 16}" rx="6" fill="#fff3c9" stroke="${INK}" stroke-width="2.6"/>`;
+      for (let v = bot; v <= top; v += 5) {
+        const yy = (top - v) * k, big = v % 10 === 0;
+        s += `<path d="M${-w / 2} ${yy} H${-w / 2 + (big ? 20 : 11)}" stroke="${INK}" stroke-width="${big ? 2.4 : 1.6}"/>`;
+        if (big) s += `<text x="${-w / 2 + 24}" y="${yy + 5}" font-size="15" font-weight="800" fill="${INK}" font-family="inherit">${v}</text>`;
+      }
+      for (const m of o.marks || []) {
+        const yy = (top - m.v) * k;
+        const x0 = -w / 2 - 14 - (m.reach || 0);
+        s += `<path d="M${x0} ${yy} H${w / 2 + 14}" stroke="${m.c || "#e0443e"}" stroke-width="4" stroke-linecap="round"/><circle cx="${x0}" cy="${yy}" r="5" fill="${m.c || "#e0443e"}"/>`;
+      }
+      return s + `</g>`;
     },
     // 동그라미 네 개가 이어진 자동차 로고(아우디). 태오 눈에는 콩콩이차.
     rings(x, y, o) {
