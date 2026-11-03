@@ -48,9 +48,35 @@ export function createPlayerHud(hudRoot, name, progress = null) {
   const combo = el.querySelector('#combo-n'), ko = el.querySelector('#ko-n'), objective = el.querySelector('#objective-text'), stageCount = el.querySelector('#stage-count'), stageFill = el.querySelector('#stage-meter-fill'), mountReadout = el.querySelector('#mount-readout');
   const vignette = el.querySelector('.damage-vignette'), skillButton = el.querySelector('[data-touch-action=skill]');
   const dashButton = el.querySelector('[data-touch-action=dash]');
-  let dashText = '';
+  const attackButton = el.querySelector('[data-touch-action=attack]'), mountButton = el.querySelector('[data-touch-action=mount]');
+  let dashText = '', dashSkillInfo = null, footMountLabel = '승마', mountedMode = false, mountedLabels = null;
+  const setText = (node, text) => { if (node && node.textContent !== text) node.textContent = text; };
+  // 도보/기마에 따라 같은 버튼의 글자를 바꾼다. 아이가 '지금 누르면 무엇이 나가는지'를 버튼에서 읽는다.
+  const applyMode = () => {
+    const labels = mountedMode ? mountedLabels : null;
+    let attackIcon = attackButton.querySelector('.key-icon');
+    if (!attackIcon) { attackIcon = document.createElement('span'); attackIcon.className = 'key-icon'; attackIcon.setAttribute('aria-hidden', 'true'); attackButton.insertBefore(attackIcon, attackButton.querySelector('.key-label')); }
+    attackIcon.hidden = !labels; setText(attackIcon, labels ? labels.icon : '');
+    setText(attackButton.querySelector('.key-label'), labels ? labels.attack : '공격');
+    setText(attackButton.querySelector('.key-sub'), labels ? labels.attackSub : '꾹 · 강공');
+    attackButton.setAttribute('aria-label', labels ? '말 위 공격 ' + labels.attack + ', 길게 누르면 짓밟기' : '공격, 길게 누르면 강공');
+    if (dashSkillInfo) {
+      setText(dashButton.querySelector('.key-label'), labels ? labels.dash : dashSkillInfo.name);
+      dashButton.setAttribute('aria-label', labels ? labels.dashName : '돌진기 ' + dashSkillInfo.name);
+      dashButton.title = labels ? labels.dashName + ' · 말을 달려 적진을 뚫어요 · I / C' : dashSkillInfo.name + ' · ' + dashSkillInfo.tip + ' · I / C';
+      setText(el.querySelector('.dash-readout'), labels ? labels.dashName + ' · 말을 달려 적진을 뚫어요' : '돌진기 · ' + dashSkillInfo.tip);
+    }
+    if (!mountButton.classList.contains('unavailable')) {
+      setText(mountButton.querySelector('.key-label'), labels ? labels.mount : footMountLabel);
+      mountButton.setAttribute('aria-label', labels ? (labels.mountName || '탈것') + '에서 내리기' : footMountLabel);
+      mountButton.title = labels ? (labels.mountName || '탈것') + '에서 내리기 · F' : footMountLabel;
+    }
+    el.classList.toggle('mounted-mode', !!labels);
+    dashText = '';
+  };
   return {
     setDashSkill(skill) {
+      dashSkillInfo = skill;
       dashButton.querySelector('.key-label').textContent = skill.name;
       dashButton.style.setProperty('--dash-color', skill.color);
       dashButton.setAttribute('aria-label', '돌진기 ' + skill.name);
@@ -62,10 +88,11 @@ export function createPlayerHud(hudRoot, name, progress = null) {
       dashButton.classList.toggle('cooling', cooling);
       dashButton.setAttribute('aria-disabled', String(cooling));
       dashButton.style.setProperty('--cooldown', Math.max(0, Math.min(1, remaining / total)));
-      const text = cooling ? (remaining / 1000).toFixed(1) + '초' : '돌진기 · 준비 완료';
+      const text = cooling ? (remaining / 1000).toFixed(1) + '초' : mountedMode ? '준비 완료' : '돌진기 · 준비 완료';
       if (text !== dashText) { dashButton.querySelector('.key-sub').textContent = text; dashText = text; }
     },
     setCapabilities(ranged, mounted, rangedLabel = '활', mountLabel = '승마') {
+      footMountLabel = mountLabel;
       for (const [action, enabled, label] of [['ranged', ranged, rangedLabel], ['mount', mounted, mountLabel]]) {
         const button = el.querySelector('[data-touch-action=' + action + ']');
         button.classList.toggle('unavailable', !enabled);
@@ -87,12 +114,28 @@ export function createPlayerHud(hudRoot, name, progress = null) {
     setKo(n) { ko.textContent = n; },
     setObjective(text) { objective.textContent = text; },
     setStage(wave, total) { const safeTotal = Math.max(1, total || 1); stageCount.textContent = `${Math.min(safeTotal, Math.max(1, wave || 1))} / ${safeTotal}`; stageFill.style.transform = `scaleX(${Math.max(0, Math.min(1, (wave || 0) / safeTotal))})`; },
+    // labels: mountedButtonLabels() 결과. 같은 값이면 DOM을 건드리지 않는다.
+    setMountedMode(mounted, labels = null) {
+      const next = !!mounted && !!labels;
+      if (next === mountedMode && (!next || (labels.attack === mountedLabels?.attack && labels.dash === mountedLabels?.dash && labels.icon === mountedLabels?.icon))) return;
+      mountedMode = next; mountedLabels = next ? labels : null; applyMode();
+    },
     setMount(mounted, label, supported = true) { mountReadout.textContent = !supported ? '도보 전투' : mounted ? `탑승 · ${label || '군마'}` : `하마 · ${label || '군마'} 대기`; mountReadout.classList.toggle('mounted', !!mounted); },
     hurt() { vignette.classList.remove('on'); void vignette.offsetWidth; vignette.classList.add('on'); },
   };
 }
 
 const bannerState = new WeakMap();
+
+// 배너와 겹치지 않는 작은 안내 쪽지. 처음 말에 탔을 때 한 번만 쓴다.
+export function showToast(hudRoot, text, duration = 3600) {
+  const toast = document.createElement('div');
+  toast.className = 'hud-toast'; toast.setAttribute('role', 'status'); toast.textContent = String(text ?? '');
+  hudRoot.appendChild(toast);
+  requestAnimationFrame(() => toast.classList.add('on'));
+  setTimeout(() => { toast.classList.remove('on'); setTimeout(() => toast.remove(), 260); }, Math.max(800, duration));
+  return toast;
+}
 
 export function showBanner(hudRoot, title, sub, duration = 2200) {
   const previous = bannerState.get(hudRoot);

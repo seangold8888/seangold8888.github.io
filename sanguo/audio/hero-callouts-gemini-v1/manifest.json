@@ -1,0 +1,881 @@
+{
+ "model": "gemini-2.5-pro-tts (Vertex, us-central1)",
+ "format": "mp3 24kHz mono 64kbps",
+ "note": "3 takes per line (+1-2 retakes for failures); kept only takes whose blind Gemini transcription matched the skill name (exact, or near: same syllable count, one non-final syllable differing only by aspiration/vowel class), then loudest/shortest lead. Lines in keptV6 keep the old v6 recording. zhangfei special keeps hero-callouts-ko-v6/zhangfei-special-v6.wav by request. 11-02: failed lines re-recorded as a split shout with a tail word cut off (june account); zhangfei special replaced on request. 11-02: wusong special recorded with ElevenLabs eleven_v3 (voice SOYHLrjzK2X1ezoPC6cr), transcribed exact.",
+ "heroes": {
+  "euljimundeok": {
+   "special": {
+    "hero": "euljimundeok",
+    "action": "special",
+    "text": "살수 역습",
+    "voice": "Schedar",
+    "take": 5,
+    "duration": 1.682,
+    "file": "euljimundeok-special-g1.mp3",
+    "check": "exact"
+   },
+   "musou": {
+    "hero": "euljimundeok",
+    "action": "musou",
+    "text": "살수 결진",
+    "voice": "Schedar",
+    "take": 3,
+    "duration": 3.065,
+    "file": "euljimundeok-musou-g1.mp3",
+    "check": "exact"
+   }
+  },
+  "ganggamchan": {
+   "special": {
+    "hero": "ganggamchan",
+    "action": "special",
+    "text": "귀주 결진",
+    "voice": "Sadaltager",
+    "take": 3,
+    "duration": 1.542,
+    "file": "ganggamchan-special-g1.mp3",
+    "check": "exact"
+   },
+   "musou": {
+    "hero": "ganggamchan",
+    "action": "musou",
+    "text": "귀주 대승",
+    "voice": "Sadaltager",
+    "take": 3,
+    "duration": 2.851,
+    "file": "ganggamchan-musou-g1.mp3",
+    "check": "exact"
+   }
+  },
+  "kwonyul": {
+   "special": {
+    "hero": "kwonyul",
+    "action": "special",
+    "text": "행주 호령",
+    "voice": "Alnilam",
+    "take": 2,
+    "duration": 3.263,
+    "file": "kwonyul-special-g1.mp3",
+    "check": "exact"
+   },
+   "musou": {
+    "hero": "kwonyul",
+    "action": "musou",
+    "text": "행주 수성진",
+    "voice": "Alnilam",
+    "take": 3,
+    "duration": 3.361,
+    "file": "kwonyul-musou-g1.mp3",
+    "check": "exact"
+   }
+  },
+  "yisunsin": {
+   "special": {
+    "hero": "yisunsin",
+    "action": "special",
+    "text": "명량 파도진",
+    "voice": "Charon",
+    "take": 1,
+    "duration": 2.057,
+    "file": "yisunsin-special-g1.mp3",
+    "check": "exact"
+   },
+   "musou": {
+    "hero": "yisunsin",
+    "action": "musou",
+    "text": "명량 수군진",
+    "voice": "Charon",
+    "take": 3,
+    "duration": 2.093,
+    "file": "yisunsin-musou-g1.mp3",
+    "check": "exact"
+   }
+  },
+  "liubei": {
+   "special": {
+    "hero": "liubei",
+    "action": "special",
+    "text": "덕의검기",
+    "voice": "Sadaltager",
+    "take": 1,
+    "duration": 1.954,
+    "file": "liubei-special-g1.mp3",
+    "check": "exact"
+   },
+   "musou": {
+    "hero": "liubei",
+    "action": "musou",
+    "text": "인왕쌍룡참",
+    "voice": "Sadaltager",
+    "take": 1,
+    "duration": 2.176,
+    "file": "liubei-musou-g1.mp3",
+    "check": "exact"
+   }
+  },
+  "guanyu": {
+   "special": {
+    "hero": "guanyu",
+    "action": "special",
+    "text": "청룡일섬",
+    "voice": "Charon",
+    "take": 3,
+    "duration": 1.795,
+    "file": "guanyu-special-g1.mp3",
+    "check": "near"
+   },
+   "musou": {
+    "hero": "guanyu",
+    "action": "musou",
+    "text": "청룡언월참",
+    "voice": "Charon",
+    "take": 4,
+    "duration": 2.631,
+    "file": "guanyu-musou-g1.mp3",
+    "check": "near"
+   }
+  },
+  "zhangfei": {
+   "musou": {
+    "hero": "zhangfei",
+    "action": "musou",
+    "text": "만군벽력진",
+    "voice": "Algenib",
+    "take": 3,
+    "duration": 3.326,
+    "file": "zhangfei-musou-g1.mp3",
+    "check": "exact"
+   },
+   "special": {
+    "hero": "zhangfei",
+    "action": "special",
+    "text": "장판뇌후",
+    "voice": "Algenib",
+    "take": "zhangfei-special-r1t2",
+    "duration": 1.524,
+    "file": "zhangfei-special-g1.mp3",
+    "check": "exact",
+    "method": "split shout + cut tail (11-02)"
+   }
+  },
+  "caocao": {
+   "special": {
+    "hero": "caocao",
+    "action": "special",
+    "text": "패왕기습진",
+    "voice": "Rasalgethi",
+    "take": 1,
+    "duration": 2.144,
+    "file": "caocao-special-g1.mp3",
+    "check": "exact"
+   },
+   "musou": {
+    "hero": "caocao",
+    "action": "musou",
+    "text": "간웅천하참",
+    "voice": "Rasalgethi",
+    "take": 1,
+    "duration": 3.688,
+    "file": "caocao-musou-g1.mp3",
+    "check": "near"
+   }
+  },
+  "machao": {
+   "special": {
+    "hero": "machao",
+    "action": "special",
+    "text": "서량질풍창",
+    "voice": "Fenrir",
+    "take": 1,
+    "duration": 1.658,
+    "file": "machao-special-g1.mp3",
+    "check": "exact"
+   },
+   "musou": {
+    "hero": "machao",
+    "action": "musou",
+    "text": "신위천장군",
+    "voice": "Fenrir",
+    "take": 2,
+    "duration": 2.199,
+    "file": "machao-musou-g1.mp3",
+    "check": "exact"
+   }
+  },
+  "huangzhong": {
+   "special": {
+    "hero": "huangzhong",
+    "action": "special",
+    "text": "정군산일격",
+    "voice": "Schedar",
+    "take": 1,
+    "duration": 3.153,
+    "file": "huangzhong-special-g1.mp3",
+    "check": "near"
+   },
+   "musou": {
+    "hero": "huangzhong",
+    "action": "musou",
+    "text": "한승백보궁",
+    "voice": "Schedar",
+    "take": "huangzhong-musou-r1t1",
+    "duration": 3.15,
+    "file": "huangzhong-musou-g1.mp3",
+    "check": "exact",
+    "method": "split shout + cut tail (11-02)"
+   }
+  },
+  "xiahoudun": {
+   "special": {
+    "hero": "xiahoudun",
+    "action": "special",
+    "text": "독안진파",
+    "voice": "Alnilam",
+    "take": 2,
+    "duration": 2.1,
+    "file": "xiahoudun-special-g1.mp3",
+    "check": "near"
+   },
+   "musou": {
+    "hero": "xiahoudun",
+    "action": "musou",
+    "text": "하후철벽진",
+    "voice": "Alnilam",
+    "take": 1,
+    "duration": 1.99,
+    "file": "xiahoudun-musou-g1.mp3",
+    "check": "exact"
+   }
+  },
+  "zhangliao": {
+   "special": {
+    "hero": "zhangliao",
+    "action": "special",
+    "text": "소요진돌파령",
+    "voice": "Achird",
+    "take": 1,
+    "duration": 2.509,
+    "file": "zhangliao-special-g1.mp3",
+    "check": "exact"
+   },
+   "musou": {
+    "hero": "zhangliao",
+    "action": "musou",
+    "text": "합비뇌격진",
+    "voice": "Achird",
+    "take": 3,
+    "duration": 1.816,
+    "file": "zhangliao-musou-g1.mp3",
+    "check": "near"
+   }
+  },
+  "xuchu": {
+   "special": {
+    "hero": "xuchu",
+    "action": "special",
+    "text": "호위철벽",
+    "voice": "Enceladus",
+    "take": 2,
+    "duration": 1.671,
+    "file": "xuchu-special-g1.mp3",
+    "check": "exact"
+   },
+   "musou": {
+    "hero": "xuchu",
+    "action": "musou",
+    "text": "맹호진압격",
+    "voice": "Enceladus",
+    "take": "xuchu-musou-r1t0",
+    "duration": 2.641,
+    "file": "xuchu-musou-g1.mp3",
+    "check": "exact",
+    "method": "split shout + cut tail (11-02)"
+   }
+  },
+  "simayi": {
+   "special": {
+    "hero": "simayi",
+    "action": "special",
+    "text": "위수봉쇄진",
+    "voice": "Algieba",
+    "take": 2,
+    "duration": 1.938,
+    "file": "simayi-special-g1.mp3",
+    "check": "exact"
+   },
+   "musou": {
+    "hero": "simayi",
+    "action": "musou",
+    "text": "낭고천뢰진",
+    "voice": "Algieba",
+    "take": 1,
+    "duration": 2.718,
+    "file": "simayi-musou-g1.mp3",
+    "check": "exact"
+   }
+  },
+  "sunquan": {
+   "special": {
+    "hero": "sunquan",
+    "action": "special",
+    "text": "강동결집령",
+    "voice": "Puck",
+    "take": 3,
+    "duration": 2.336,
+    "file": "sunquan-special-g1.mp3",
+    "check": "exact"
+   },
+   "musou": {
+    "hero": "sunquan",
+    "action": "musou",
+    "text": "장강패왕진",
+    "voice": "Puck",
+    "take": 4,
+    "duration": 4.017,
+    "file": "sunquan-musou-g1.mp3",
+    "check": "exact"
+   }
+  },
+  "taishici": {
+   "special": {
+    "hero": "taishici",
+    "action": "special",
+    "text": "동래관통시",
+    "voice": "Umbriel",
+    "take": 2,
+    "duration": 2.42,
+    "file": "taishici-special-g1.mp3",
+    "check": "near"
+   },
+   "musou": {
+    "hero": "taishici",
+    "action": "musou",
+    "text": "태사연노진",
+    "voice": "Umbriel",
+    "take": 3,
+    "duration": 2.736,
+    "file": "taishici-musou-g1.mp3",
+    "check": "exact"
+   }
+  },
+  "ganning": {
+   "special": {
+    "hero": "ganning",
+    "action": "special",
+    "text": "금범급습",
+    "voice": "Zubenelgenubi",
+    "take": 1,
+    "duration": 1.09,
+    "file": "ganning-special-g1.mp3",
+    "check": "near"
+   },
+   "musou": {
+    "hero": "ganning",
+    "action": "musou",
+    "text": "강야난무",
+    "voice": "Zubenelgenubi",
+    "take": 1,
+    "duration": 3.693,
+    "file": "ganning-musou-g1.mp3",
+    "check": "exact"
+   }
+  },
+  "lvbu": {
+   "special": {
+    "hero": "lvbu",
+    "action": "special",
+    "text": "방천무쌍",
+    "voice": "Orus",
+    "take": 2,
+    "duration": 1.662,
+    "file": "lvbu-special-g1.mp3",
+    "check": "exact"
+   },
+   "musou": {
+    "hero": "lvbu",
+    "action": "musou",
+    "text": "적토천하참",
+    "voice": "Orus",
+    "take": 3,
+    "duration": 2.534,
+    "file": "lvbu-musou-g1.mp3",
+    "check": "exact"
+   }
+  },
+  "diaochan": {
+   "special": {
+    "hero": "diaochan",
+    "action": "special",
+    "text": "연환화선무",
+    "voice": "Despina",
+    "take": 5,
+    "duration": 1.204,
+    "file": "diaochan-special-g1.mp3",
+    "check": "near"
+   },
+   "musou": {
+    "hero": "diaochan",
+    "action": "musou",
+    "text": "월하폐월진",
+    "voice": "Despina",
+    "take": 4,
+    "duration": 2.539,
+    "file": "diaochan-musou-g1.mp3",
+    "check": "near"
+   }
+  },
+  "dongzhuo": {
+   "special": {
+    "hero": "dongzhuo",
+    "action": "special",
+    "text": "폭군대도",
+    "voice": "Algenib",
+    "take": 2,
+    "duration": 2.809,
+    "file": "dongzhuo-special-g1.mp3",
+    "check": "near"
+   },
+   "musou": {
+    "hero": "dongzhuo",
+    "action": "musou",
+    "text": "장안압살진",
+    "voice": "Algenib",
+    "take": 4,
+    "duration": 4.108,
+    "file": "dongzhuo-musou-g1.mp3",
+    "check": "near"
+   }
+  },
+  "menghuo": {
+   "special": {
+    "hero": "menghuo",
+    "action": "special",
+    "text": "남만왕철퇴",
+    "voice": "Enceladus",
+    "take": 1,
+    "duration": 2.372,
+    "file": "menghuo-special-g1.mp3",
+    "check": "exact"
+   },
+   "musou": {
+    "hero": "menghuo",
+    "action": "musou",
+    "text": "칠종불굴진",
+    "voice": "Enceladus",
+    "take": 2,
+    "duration": 1.689,
+    "file": "menghuo-musou-g1.mp3",
+    "check": "exact"
+   }
+  },
+  "zhurong": {
+   "special": {
+    "hero": "zhurong",
+    "action": "special",
+    "text": "화신비도",
+    "voice": "Gacrux",
+    "take": 2,
+    "duration": 1.262,
+    "file": "zhurong-special-g1.mp3",
+    "check": "exact"
+   },
+   "musou": {
+    "hero": "zhurong",
+    "action": "musou",
+    "text": "축융화염진",
+    "voice": "Gacrux",
+    "take": 3,
+    "duration": 1.917,
+    "file": "zhurong-musou-g1.mp3",
+    "check": "exact"
+   }
+  },
+  "zhaoyun": {
+   "special": {
+    "hero": "zhaoyun",
+    "action": "special",
+    "text": "용담은룡파",
+    "voice": "Iapetus",
+    "take": 5,
+    "duration": 1.51,
+    "file": "zhaoyun-special-g1.mp3",
+    "check": "near"
+   },
+   "musou": {
+    "hero": "zhaoyun",
+    "action": "musou",
+    "text": "칠진칠출격",
+    "voice": "Iapetus",
+    "take": "zhaoyun-musou-r1t0",
+    "duration": 1.911,
+    "file": "zhaoyun-musou-g1.mp3",
+    "check": "near",
+    "method": "split shout + cut tail (11-02)"
+   }
+  },
+  "zhouyu": {
+   "musou": {
+    "hero": "zhouyu",
+    "action": "musou",
+    "text": "신화주유진",
+    "voice": "Puck",
+    "take": 4,
+    "duration": 1.643,
+    "file": "zhouyu-musou-g1.mp3",
+    "check": "near"
+   },
+   "special": {
+    "hero": "zhouyu",
+    "action": "special",
+    "text": "적벽화신계",
+    "voice": "Puck",
+    "take": "zhouyu-special-r1t0",
+    "duration": 1.541,
+    "file": "zhouyu-special-g1.mp3",
+    "check": "exact",
+    "method": "split shout + cut tail (11-02)"
+   }
+  },
+  "huanggai": {
+   "special": {
+    "hero": "huanggai",
+    "action": "special",
+    "text": "고육화공진",
+    "voice": "Alnilam",
+    "take": 3,
+    "duration": 2.518,
+    "file": "huanggai-special-g1.mp3",
+    "check": "near"
+   },
+   "musou": {
+    "hero": "huanggai",
+    "action": "musou",
+    "text": "맹장화선충",
+    "voice": "Alnilam",
+    "take": 5,
+    "duration": 2.27,
+    "file": "huanggai-musou-g1.mp3",
+    "check": "exact"
+   }
+  },
+  "zhugeliang": {
+   "special": {
+    "hero": "zhugeliang",
+    "action": "special",
+    "text": "팔진동남풍",
+    "voice": "Iapetus",
+    "take": 3,
+    "duration": 1.48,
+    "file": "zhugeliang-special-g1.mp3",
+    "check": "near"
+   },
+   "musou": {
+    "hero": "zhugeliang",
+    "action": "musou",
+    "text": "와룡천변진",
+    "voice": "Iapetus",
+    "take": 3,
+    "duration": 2.235,
+    "file": "zhugeliang-musou-g1.mp3",
+    "check": "exact"
+   }
+  },
+  "sunshangxiang": {
+   "musou": {
+    "hero": "sunshangxiang",
+    "action": "musou",
+    "text": "화우연환진",
+    "voice": "Zephyr",
+    "take": 1,
+    "duration": 2.522,
+    "file": "sunshangxiang-musou-g1.mp3",
+    "check": "exact"
+   },
+   "special": {
+    "hero": "sunshangxiang",
+    "action": "special",
+    "text": "강동비연무",
+    "voice": "Zephyr",
+    "take": "sunshangxiang-special-r1t0",
+    "duration": 1.579,
+    "file": "sunshangxiang-special-g1.mp3",
+    "check": "exact",
+    "method": "split shout + cut tail (11-02)"
+   }
+  },
+  "wukong": {
+   "special": {
+    "hero": "wukong",
+    "action": "special",
+    "text": "제천분신격",
+    "voice": "Fenrir",
+    "take": 1,
+    "duration": 3.591,
+    "file": "wukong-special-g1.mp3",
+    "check": "exact"
+   },
+   "musou": {
+    "hero": "wukong",
+    "action": "musou",
+    "text": "대성천궁파",
+    "voice": "Fenrir",
+    "take": 2,
+    "duration": 2.318,
+    "file": "wukong-musou-g1.mp3",
+    "check": "near"
+   }
+  },
+  "bajie": {
+   "special": {
+    "hero": "bajie",
+    "action": "special",
+    "text": "천봉구치진",
+    "voice": "Umbriel",
+    "take": 2,
+    "duration": 2.952,
+    "file": "bajie-special-g1.mp3",
+    "check": "near"
+   },
+   "musou": {
+    "hero": "bajie",
+    "action": "musou",
+    "text": "구치붕산격",
+    "voice": "Umbriel",
+    "take": "bajie-musou-r1t2",
+    "duration": 1.889,
+    "file": "bajie-musou-g1.mp3",
+    "check": "near",
+    "method": "split shout + cut tail (11-02)"
+   }
+  },
+  "wujing": {
+   "musou": {
+    "hero": "wujing",
+    "action": "musou",
+    "text": "창해항요진",
+    "voice": "Charon",
+    "take": 3,
+    "duration": 2.875,
+    "file": "wujing-musou-g1.mp3",
+    "check": "near"
+   },
+   "special": {
+    "hero": "wujing",
+    "action": "special",
+    "text": "유사항요참",
+    "voice": "Charon",
+    "take": "wujing-special-r1t0",
+    "duration": 2.333,
+    "file": "wujing-special-g1.mp3",
+    "check": "exact",
+    "method": "split shout + cut tail (11-02)"
+   }
+  },
+  "nezha": {
+   "special": {
+    "hero": "nezha",
+    "action": "special",
+    "text": "건곤환 연격",
+    "voice": "Sadachbia",
+    "take": 3,
+    "duration": 1.301,
+    "file": "nezha-special-g1.mp3",
+    "check": "exact"
+   },
+   "musou": {
+    "hero": "nezha",
+    "action": "musou",
+    "text": "삼단해회진",
+    "voice": "Sadachbia",
+    "take": "nezha-musou-r1t0",
+    "duration": 2.384,
+    "file": "nezha-musou-g1.mp3",
+    "check": "near-manual",
+    "method": "split shout + cut tail (11-02)"
+   }
+  },
+  "erlangshen": {
+   "special": {
+    "hero": "erlangshen",
+    "action": "special",
+    "text": "천안 관통참",
+    "voice": "Rasalgethi",
+    "take": 3,
+    "duration": 1.471,
+    "file": "erlangshen-special-g1.mp3",
+    "check": "near"
+   },
+   "musou": {
+    "hero": "erlangshen",
+    "action": "musou",
+    "text": "현성이랑진",
+    "voice": "Rasalgethi",
+    "take": 1,
+    "duration": 2.465,
+    "file": "erlangshen-musou-g1.mp3",
+    "check": "exact"
+   }
+  },
+  "honghaier": {
+   "musou": {
+    "hero": "honghaier",
+    "action": "musou",
+    "text": "성영화운진",
+    "voice": "Puck",
+    "take": 3,
+    "duration": 1.57,
+    "file": "honghaier-musou-g1.mp3",
+    "check": "exact"
+   },
+   "special": {
+    "hero": "honghaier",
+    "action": "special",
+    "text": "삼매진화포",
+    "voice": "Puck",
+    "take": "honghaier-special-r1t0",
+    "duration": 1.897,
+    "file": "honghaier-special-g1.mp3",
+    "check": "exact",
+    "method": "split shout + cut tail (11-02)"
+   }
+  },
+  "tieshangongzhu": {
+   "special": {
+    "hero": "tieshangongzhu",
+    "action": "special",
+    "text": "파초열풍진",
+    "voice": "Kore",
+    "take": 5,
+    "duration": 2.687,
+    "file": "tieshangongzhu-special-g1.mp3",
+    "check": "exact"
+   },
+   "musou": {
+    "hero": "tieshangongzhu",
+    "action": "musou",
+    "text": "화염파초풍",
+    "voice": "Kore",
+    "take": 4,
+    "duration": 2.588,
+    "file": "tieshangongzhu-musou-g1.mp3",
+    "check": "exact"
+   }
+  },
+  "wusong": {
+   "special": {
+    "hero": "wusong",
+    "action": "special",
+    "text": "경양취호격",
+    "voice": "ElevenLabs SOYHLrjzK2X1ezoPC6cr",
+    "model": "eleven_v3",
+    "take": 1,
+    "duration": 1.577,
+    "file": "wusong-special-g1.mp3",
+    "check": "exact"
+   },
+   "musou": {
+    "hero": "wusong",
+    "action": "musou",
+    "text": "타호천강진",
+    "voice": "Orus",
+    "take": 1,
+    "duration": 2.25,
+    "file": "wusong-musou-g1.mp3",
+    "check": "near"
+   }
+  },
+  "linchong": {
+   "special": {
+    "hero": "linchong",
+    "action": "special",
+    "text": "표자두빙창진",
+    "voice": "Achird",
+    "take": 2,
+    "duration": 1.428,
+    "file": "linchong-special-g1.mp3",
+    "check": "exact"
+   },
+   "musou": {
+    "hero": "linchong",
+    "action": "musou",
+    "text": "설풍백련창",
+    "voice": "Achird",
+    "take": 1,
+    "duration": 1.596,
+    "file": "linchong-musou-g1.mp3",
+    "check": "near"
+   }
+  },
+  "lizhishen": {
+   "special": {
+    "hero": "lizhishen",
+    "action": "special",
+    "text": "금강선장풍",
+    "voice": "Algenib",
+    "take": 2,
+    "duration": 2.567,
+    "file": "lizhishen-special-g1.mp3",
+    "check": "exact"
+   },
+   "musou": {
+    "hero": "lizhishen",
+    "action": "musou",
+    "text": "도해붕산진",
+    "voice": "Algenib",
+    "take": 2,
+    "duration": 1.723,
+    "file": "lizhishen-musou-g1.mp3",
+    "check": "near"
+   }
+  },
+  "husanniang": {
+   "musou": {
+    "hero": "husanniang",
+    "action": "musou",
+    "text": "일장청월무",
+    "voice": "Pulcherrima",
+    "take": 1,
+    "duration": 1.487,
+    "file": "husanniang-musou-g1.mp3",
+    "check": "exact"
+   },
+   "special": {
+    "hero": "husanniang",
+    "action": "special",
+    "text": "일월홍금쇄",
+    "voice": "Pulcherrima",
+    "take": "husanniang-special-r2t1",
+    "duration": 1.248,
+    "file": "husanniang-special-g1.mp3",
+    "check": "near-manual",
+    "method": "split shout + cut tail (11-02)"
+   }
+  },
+  "luxun": {
+   "special": {
+    "hero": "luxun",
+    "action": "special",
+    "text": "연영화계",
+    "voice": "Sadachbia",
+    "take": "luxun-special-r1t0",
+    "duration": 2.684,
+    "file": "luxun-special-g1.mp3",
+    "check": "exact",
+    "method": "split shout + cut tail (11-02)"
+   },
+   "musou": {
+    "hero": "luxun",
+    "action": "musou",
+    "text": "백리화공진",
+    "voice": "Sadachbia",
+    "take": "luxun-musou-r1t1",
+    "duration": 1.731,
+    "file": "luxun-musou-g1.mp3",
+    "check": "exact",
+    "method": "split shout + cut tail (11-02)"
+   }
+  }
+ },
+ "keptV6": [],
+ "noVoice": []
+}

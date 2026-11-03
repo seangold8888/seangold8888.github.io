@@ -1,0 +1,16 @@
+{
+  "hero": "jaei",
+  "action": "special",
+  "model": "eleven_v3",
+  "voice_id": "cgSgspJ2msm6clMCkdW9",
+  "text": "[8-year-old girl voice][childlike tone][playful][whiny] 시러!",
+  "voice_settings": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "use_speaker_boost": false
+  },
+  "take_id": "sireo-v1",
+  "duration": "00:00:01.15",
+  "reviewed": false,
+  "note": "11-02 same voice as 아니야!/물통 바꿔줘!; replaces the Gemini stand-in"
+}

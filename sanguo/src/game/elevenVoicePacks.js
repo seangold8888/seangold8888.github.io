@@ -1,7 +1,8 @@
 // Local ElevenLabs recordings only: the game never calls a paid API.
 // Catchphrases stay intact; named techniques may have their own performance.
-import { FAMILY_SKILL_MAP, familySkillLine } from '../../../assets/audio/family-skill-voices.js?v=1';
-const skillPack = hero => Object.freeze(Object.fromEntries(Object.keys(FAMILY_SKILL_MAP[hero]).map(action => [action, familySkillLine(hero, action).file.replace(/^sanguo\//, '')])));
+import { FAMILY_SKILL_MAP, familySkillLines } from '../../../assets/audio/family-skill-voices.js?v=3';
+// Actions with several lines keep them all; playback picks among them without repeating.
+const skillPack = hero => Object.freeze(Object.fromEntries(Object.keys(FAMILY_SKILL_MAP[hero]).map(action => [action, Object.freeze(familySkillLines(hero, action).map(line => line.file.replace(/^sanguo\//, '')))])));
 const familyPack = file => Object.freeze(Object.fromEntries(
   ['dash', 'special', 'musou'].map(action => [action, `audio/hero-callouts-eleven-v2/${file}`]),
 ));
@@ -44,6 +45,6 @@ export function selectWarriorVoice(heroId, selected) {
 export function elevenVoiceFiles(heroId) {
   const pack = ELEVEN_VOICE_PACKS[heroId] || (warriorVoiceSelected(heroId) ? { special: WARRIOR_VOICE_PREVIEWS[heroId] } : null);
   return Object.fromEntries(['attack', 'heavy', 'ranged', 'whirlwind', 'counter', 'dash', 'special', 'musou'].map(action => [
-    action, typeof pack?.[action] === 'string' ? [pack[action]] : [],
+    action, typeof pack?.[action] === 'string' ? [pack[action]] : Array.isArray(pack?.[action]) ? [...pack[action]] : [],
   ]));
 }

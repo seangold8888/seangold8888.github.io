@@ -10,9 +10,9 @@ const root = path.resolve(__dirname, '..');
 const heroIds = ['euljimundeok', 'ganggamchan', 'kwonyul', 'yisunsin'];
 const stageKeys = ['salsu', 'gwiju', 'haengju', 'myeongnyang'];
 const bossSheets = {
-  suiVanguard: 'boss-sui-vanguard-painted-sheet-v1.png',
+  suiVanguard: 'boss-sui-vanguard-painted-sheet-v2.png',
   khitanVanguard: 'boss-khitan-vanguard-painted-sheet-v1.png',
-  haengjuVanguard: 'boss-haengju-vanguard-painted-sheet-v1.png',
+  haengjuVanguard: 'boss-haengju-vanguard-painted-sheet-v2.png',
   myeongnyangVanguard: 'boss-myeongnyang-vanguard-painted-sheet-v1.png',
 };
 
@@ -27,8 +27,10 @@ const bossSheets = {
   for (const id of heroIds) {
     assert.equal(WORK_PEOPLE[id].work, 'korea');
     assert.ok(WORK_STATS[id] && DASH_SKILLS[id] && BATTLE_CRY_PROFILES[id], id);
-    for (const suffix of ['painted-sheet-v1.png', 'bow-painted-sheet-v1.png']) {
-      assert.ok(fs.existsSync(path.join(root, 'art/side-scroller', `${id}-${suffix}`)), id + ' ' + suffix);
+    // 시트는 다듬을 때 판(v2, v3…)이 올라가므로 판 번호와 무관하게 확인한다.
+    const sheets = fs.readdirSync(path.join(root, 'art/side-scroller'));
+    for (const suffix of ['painted-sheet', 'bow-painted-sheet']) {
+      assert.ok(sheets.some(name => name.startsWith(`${id}-${suffix}-v`) && /^\d+\.png$/.test(name.slice(`${id}-${suffix}-v`.length))), id + ' ' + suffix);
     }
   }
   for (const key of stageKeys) {

@@ -12,9 +12,9 @@ test('every mount profile asset is shipped and registered for offline caching',a
   assert.ok(sw.includes('/sanguo/'+profile[key]),'cached '+profile[key]);
  }
 });
-test('four distinct mounts retain their own horse in every combat pose',async()=>{
+test('five distinct mounts retain their own horse in every combat pose',async()=>{
  const {MOUNT_PROFILES,drawConsistentMount}=await mod();
- assert.equal(new Set(Object.values(MOUNT_PROFILES).map(p=>p.horse)).size,4);
+ assert.equal(new Set(Object.values(MOUNT_PROFILES).map(p=>p.horse)).size,5);
  for(const [id,profile] of Object.entries(MOUNT_PROFILES)){
   const horse={src:profile.horse},rider={src:profile.rider,width:1280,height:1280},draws=[];
   const ctx={save(){},restore(){},translate(){},scale(){},beginPath(){},moveTo(){},lineTo(){},closePath(){},clip(){},drawImage(...args){draws.push(args);}};
@@ -35,5 +35,22 @@ test('rider switches melee and bow overlays; gallop uses the same horse sheet',a
  for(const now of [0,125,250]){
   let args;drawConsistentMount(ctx,(...a)=>args=a,{horse,rider:{width:1280,height:1280},height:240,moving:true,now});
   assert.equal(args[1],horse);assert.ok([1,2].includes(args[2]));
+ }
+});
+test('rider sits on the saddle of the drawn horse pose at horse scale, both facings',async()=>{
+ const {MOUNT_PROFILES,RIDER_SCALE,drawConsistentMount,genericFrameTransform}=await mod();
+ assert.ok(RIDER_SCALE<.7,'a seated rider must not be as tall as the horse cell');
+ for(const [id,profile] of Object.entries(MOUNT_PROFILES)){
+  assert.equal(profile.seats.length,3,id);
+  for(const facing of [1,-1])for(const now of [0,125]){
+   const ops=[];const ctx={save(){},restore(){},translate(x,y){ops.push(['t',x,y]);},scale(x,y){ops.push(['s',x,y]);},beginPath(){},moveTo(){},lineTo(){},closePath(){},clip(){},drawImage(){}};
+   let horseFrame;
+   drawConsistentMount(ctx,(c,img,f)=>{horseFrame=f;},{horse:{src:profile.horse},rider:{src:profile.rider,width:1280,height:1280},x:500,y:400,height:300,facing,moving:true,now,seats:profile.seats,hip:profile.hip});
+   const t=genericFrameTransform(null,horseFrame,300),[u,v]=profile.seats[horseFrame];
+   const [,sx,sy]=ops[0];
+   assert.ok(Math.abs(sx-(500+facing*(u-t.ox)*t.scale))<1e-6&&Math.abs(sy-(400+(v-t.oy)*t.scale))<1e-6,id+' seat '+horseFrame+' facing '+facing);
+   assert.ok(sy<400-300*.55&&sy>400-300*.8,id+' saddle height is on the horse back');
+   assert.ok(Math.abs(ops[1][1])===300*RIDER_SCALE/640&&Math.sign(ops[1][1])===facing,id+' rider scale/facing');
+  }
  }
 });

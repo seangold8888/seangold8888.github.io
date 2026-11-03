@@ -36,7 +36,9 @@ const { createServer } = require('../preview-server.cjs');
     await page.locator('nav [data-work=family]').click();
     assert.equal(await page.locator('.voice-card:visible').count(), 4);
     for (const id of ['taeo', 'jaei', 'yunchan', 'yungeon']) {
-      assert.equal(await page.locator(`[data-hero=${id}] audio`).getAttribute('src'), `audio/hero-callouts-eleven-v2/${id}-callout-v2.wav`);
+      const src = await page.locator(`[data-hero=${id}] audio`).first().getAttribute('src');
+      if (['taeo', 'jaei'].includes(id)) assert.ok(src.startsWith(`audio/family-skills-v1/${id}-`), id + ' named technique first');
+      else assert.equal(src, `audio/hero-callouts-eleven-v2/${id}-callout-v2.wav`);
       assert.ok(await page.locator(`[data-hero=${id}] button`).isDisabled());
     }
     await page.screenshot({ path: path.join(output, 'phone-family-voices.png'), fullPage: true });
@@ -86,8 +88,8 @@ const { createServer } = require('../preview-server.cjs');
       assert.ok(playback[id].filter(e => e.group === 'elevenSpecial').every(e => e.rate === 1));
       assert.ok(!playback[id].some(e => ['voiceSpecial', 'battleCry', 'breathDeep', 'breathNeutral'].includes(e.group)), id + ' one performance');
     }
-    assert.deepEqual(playback.zhangfei, { dash: [], special: [], musou: [] });
-    assert.deepEqual(playback.restored, { dash: [], special: [], musou: [] });
+    assert.ok(Object.values(playback.zhangfei).every(files => files.length === 0), 'Zhang Fei has no ElevenLabs override');
+    assert.ok(Object.values(playback.restored).every(files => files.length === 0), 'deselecting restores the default callout');
     await page.screenshot({ path: path.join(output, 'phone-voices.png'), fullPage: false });
     assert.ok(!requests.some(url => url.includes('api.elevenlabs.io')));
     assert.deepEqual(errors, []);

@@ -84,7 +84,8 @@ const instrumented=source.replace(marker,hook+marker).replace('function loop(now
     b.prepare(1);Object.assign(p,{mounted:true,actionUntil:0});Object.assign(b.horse,{active:true,mounted:true,x:330,lane:0});now+=2000;b.beginAttack('ranged',now,{charged:true});now+=360;b.update(0,now);check(b.arrows.at(-1)?.kind==='ring','mounted ring');
     return {melee,mountKind:b.mountKind,mountedRanged:b.supportsMountedRanged};
    });
-   assert.match(await page.locator('[data-touch-action=ranged]').innerText(),/건곤권/);assert.match(await page.locator('[data-touch-action=mount]').innerText(),/풍화륜/);assert.ok(await page.locator('[data-touch-action=mount]').isEnabled());
+   assert.match(await page.locator('[data-touch-action=ranged]').innerText(),/건곤권/);// 탑승 중 버튼은 '내리기'가 되고, 탈것 이름(풍화륜)은 탑승 표시와 버튼 이름에 남는다.
+   assert.match(await page.locator('[data-touch-action=mount]').innerText(),/내리기/);assert.match(await page.locator('[data-touch-action=mount]').getAttribute('aria-label'),/풍화륜/);assert.match(await page.locator('#mount-readout').innerText(),/풍화륜/);assert.ok(await page.locator('[data-touch-action=mount]').isEnabled());
    if(output){await page.evaluate(()=>{const b=__x3,n=performance.now()+2000;b.prepare(1);Object.assign(b.player,{mounted:true,actionUntil:0});Object.assign(b.horse,{active:true,mounted:true,x:b.player.x,lane:b.player.lane});b.beginAttack('ranged',n,{charged:true});b.render(n+310);});await page.screenshot({path:path.join(output,'x3-nezha-fenghuolun.png')});}
    console.log(JSON.stringify({hero:'nezha',...result}));await context.close();
   }

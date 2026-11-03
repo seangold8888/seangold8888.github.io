@@ -2,7 +2,7 @@ const test=require('node:test'),a=require('node:assert/strict'),fs=require('node
 const root=path.resolve(__dirname,'../..');
 test('all eight requested lines exist, match the two skill maps, and are offline cached',async()=>{
   const {FAMILY_SKILL_LINES,familySkillLine}=await import('../../assets/audio/family-skill-voices.js');
-  a.equal(Object.keys(FAMILY_SKILL_LINES.jaei).length,3);a.equal(Object.keys(FAMILY_SKILL_LINES.taeo).length,5);
+  a.equal(Object.keys(FAMILY_SKILL_LINES.jaei).length,5);a.equal(Object.keys(FAMILY_SKILL_LINES.taeo).length,5);
   a.equal(familySkillLine('taeo','special').phrase,'메가냅터킥!');a.equal(familySkillLine('jaei','special').phrase,'물통 바꿔줘!');
   const {elevenVoiceFiles}=await import('../../sanguo/src/game/elevenVoicePacks.js');
   const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');

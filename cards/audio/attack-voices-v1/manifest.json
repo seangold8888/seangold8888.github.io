@@ -1,0 +1,1481 @@
+{
+ "model": "eleven_v3 (ElevenLabs, language ko)",
+ "format": "mp3 24kHz mono 64kbps, trimmed, highpass 65 Hz, loudnorm -18 LUFS",
+ "note": "One shout per non-family card: its big (last) attack name. Blind Gemini transcription (june) checked every take; exact = same pronunciation as the attack name (spelling-blind); near = differs only by aspiration/tensing; minor = after 3 takes the best take differs by an accent-level slip (both blind passes listed in heard). Family cards (jaei, taeo, yunchan, yungeon) keep their own voices in family-voices.js.",
+ "cards": {
+  "heracles": {
+   "cardId": "heracles",
+   "card": "헤라클레스",
+   "attack": "열두 과업",
+   "text": "열두 과업!",
+   "voice": "Harry",
+   "voice_id": "SOYHLrjzK2X1ezoPC6cr",
+   "direction": "[confident][loud]",
+   "takes": 3,
+   "take": 3,
+   "heard": [
+    "열두 곽"
+   ],
+   "check": "minor",
+   "duration": 0.902,
+   "file": "heracles.mp3"
+  },
+  "honggildong": {
+   "cardId": "honggildong",
+   "card": "홍길동",
+   "attack": "의적의 화살",
+   "text": "의적의 화살!",
+   "voice": "Liam",
+   "voice_id": "TX3LPaxmHKxFdv7VOQHJ",
+   "direction": "[shouting][confident]",
+   "takes": 2,
+   "take": 2,
+   "heard": [
+    "의적의 화살"
+   ],
+   "check": "exact",
+   "duration": 1.387,
+   "file": "honggildong.mp3"
+  },
+  "perseus": {
+   "cardId": "perseus",
+   "card": "페르세우스",
+   "attack": "메두사의 머리",
+   "text": "메두사의 머리!",
+   "voice": "Will",
+   "voice_id": "bIHbv24MWmeRgasZH58o",
+   "direction": "[shouting][heroic]",
+   "takes": 3,
+   "take": 1,
+   "heard": [
+    "메두사여 모리",
+    "메두사의 머리"
+   ],
+   "check": "exact",
+   "duration": 1.168,
+   "file": "perseus.mp3"
+  },
+  "jack": {
+   "cardId": "jack",
+   "card": "콩나무 잭",
+   "attack": "황금 거위 훔치기",
+   "text": "황금 거위 훔치기!",
+   "voice": "Charlie",
+   "voice_id": "IKne3meq5aSn9XLyUdCD",
+   "direction": "[excited][shouting]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "황금 거위 훔치기"
+   ],
+   "check": "exact",
+   "duration": 1.714,
+   "file": "jack.mp3"
+  },
+  "threepigs": {
+   "cardId": "threepigs",
+   "card": "아기돼지 삼형제",
+   "attack": "삼형제 박치기",
+   "text": "삼형제 박치기!",
+   "voice": "Mimi",
+   "voice_id": "zrHiDhphv9ZnVXBqCLjz",
+   "direction": "[squeaky][excited]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "삼형제 박치기"
+   ],
+   "check": "exact",
+   "duration": 1.433,
+   "file": "threepigs.mp3"
+  },
+  "arthur": {
+   "cardId": "arthur",
+   "card": "아서왕",
+   "attack": "엑스칼리버",
+   "text": "엑스칼리버!",
+   "voice": "Daniel",
+   "voice_id": "onwK4e9ZLuTAKqWW03F9",
+   "direction": "[shouting][heroic]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "엑스칼리버"
+   ],
+   "check": "exact",
+   "duration": 1.113,
+   "file": "arthur.mp3"
+  },
+  "odysseus": {
+   "cardId": "odysseus",
+   "card": "오디세우스",
+   "attack": "트로이 목마",
+   "text": "트로이 목마!",
+   "voice": "George",
+   "voice_id": "JBFqnCBsd6RMkjVDRZzb",
+   "direction": "[shouting][confident]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "트로이 몽마"
+   ],
+   "check": "exact",
+   "duration": 1.071,
+   "file": "odysseus.mp3"
+  },
+  "cinderella": {
+   "cardId": "cinderella",
+   "card": "신데렐라",
+   "attack": "호박마차 돌진",
+   "text": "호박마차 돌진!",
+   "voice": "Sarah",
+   "voice_id": "EXAVITQu4vr4xnSDxMaL",
+   "direction": "[excited]",
+   "takes": 3,
+   "take": 3,
+   "heard": [
+    "호박마차 돌진"
+   ],
+   "check": "exact",
+   "duration": 1.791,
+   "file": "cinderella.mp3"
+  },
+  "tortoisehare": {
+   "cardId": "tortoisehare",
+   "card": "토끼와 거북",
+   "attack": "느림보 역전",
+   "text": "느림보 역전!",
+   "voice": "Bill",
+   "voice_id": "pqHfZKP75CvOlQylNhV4",
+   "direction": "[slowly][proud]",
+   "takes": 3,
+   "take": 2,
+   "heard": [
+    "누림보 역전"
+   ],
+   "check": "minor",
+   "duration": 1.97,
+   "file": "tortoisehare.mp3"
+  },
+  "redhood": {
+   "cardId": "redhood",
+   "card": "빨간 모자",
+   "attack": "사냥꾼 부르기",
+   "text": "사냥꾼 부르기!",
+   "voice": "Dorothy",
+   "voice_id": "ThT5KcBeYPX3keUQqHPh",
+   "direction": "[calling out][shouting]",
+   "takes": 2,
+   "take": 2,
+   "heard": [
+    "사냥꾼 부르기"
+   ],
+   "check": "exact",
+   "duration": 2.02,
+   "file": "redhood.mp3"
+  },
+  "bremen": {
+   "cardId": "bremen",
+   "card": "브레멘 음악대",
+   "attack": "왁자지껄 대소동",
+   "text": "왁자지껄 대소동!",
+   "voice": "Gigi",
+   "voice_id": "jBpfuIE2acCO8z3wKNLl",
+   "direction": "[squeaky][excited]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "왁자지껄 대소동"
+   ],
+   "check": "exact",
+   "duration": 1.776,
+   "file": "bremen.mp3"
+  },
+  "pinocchio": {
+   "cardId": "pinocchio",
+   "card": "피노키오",
+   "attack": "참새 친구 부르기",
+   "text": "참새 친구 부르기!",
+   "voice": "Gigi",
+   "voice_id": "jBpfuIE2acCO8z3wKNLl",
+   "direction": "[childlike][excited]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "참새 친구 부르기"
+   ],
+   "check": "exact",
+   "duration": 1.25,
+   "file": "pinocchio.mp3"
+  },
+  "sunwukong": {
+   "cardId": "sunwukong",
+   "card": "손오공",
+   "attack": "여의봉 크게!",
+   "text": "여의봉 크게!",
+   "voice": "Charlie",
+   "voice_id": "IKne3meq5aSn9XLyUdCD",
+   "direction": "[excited][shouting]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "여의봉 크게"
+   ],
+   "check": "exact",
+   "duration": 1.284,
+   "file": "sunwukong.mp3"
+  },
+  "fairygodmother": {
+   "cardId": "fairygodmother",
+   "card": "요정 대모",
+   "attack": "자정의 기적",
+   "text": "자정의 기적!",
+   "voice": "Lily",
+   "voice_id": "pFZP5JQG7iQjIQuC4Bku",
+   "direction": "[warmly][excited]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "자정의 기적"
+   ],
+   "check": "exact",
+   "duration": 1.404,
+   "file": "fairygodmother.mp3"
+  },
+  "genie": {
+   "cardId": "genie",
+   "card": "램프의 요정",
+   "attack": "소원 펑!",
+   "text": "소원 펑!",
+   "voice": "Eric",
+   "voice_id": "cjVigY5qzO86Huf0OWal",
+   "direction": "[cheerful]",
+   "takes": 3,
+   "take": 3,
+   "heard": [
+    "소환 펑"
+   ],
+   "check": "minor",
+   "duration": 1.674,
+   "file": "genie.mp3"
+  },
+  "snowqueen": {
+   "cardId": "snowqueen",
+   "card": "눈의 여왕",
+   "attack": "눈보라",
+   "text": "눈보라!",
+   "voice": "Alice",
+   "voice_id": "Xb7hH8MSUJpSbSDYk0k2",
+   "direction": "[cold][commanding]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "눈보라"
+   ],
+   "check": "exact",
+   "duration": 0.836,
+   "file": "snowqueen.mp3"
+  },
+  "witch": {
+   "cardId": "witch",
+   "card": "과자집 마녀",
+   "attack": "오븐 밀치기",
+   "text": "오븐 밀치기!",
+   "voice": "Glinda",
+   "voice_id": "z9fAnlkpzviPz146aGWa",
+   "direction": "[wickedly]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "오븐 밀치기"
+   ],
+   "check": "exact",
+   "duration": 1.202,
+   "file": "witch.mp3"
+  },
+  "mermaid": {
+   "cardId": "mermaid",
+   "card": "인어공주",
+   "attack": "바다의 노래",
+   "text": "바다의 노래!",
+   "voice": "Matilda",
+   "voice_id": "XrExE9yKIg1WjnnlVkGX",
+   "direction": "[gently]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "바다의 노래"
+   ],
+   "check": "exact",
+   "duration": 0.903,
+   "file": "mermaid.mp3"
+  },
+  "polyphemus": {
+   "cardId": "polyphemus",
+   "card": "폴리페모스",
+   "attack": "바위 던지기",
+   "text": "바위 던지기!",
+   "voice": "Adam",
+   "voice_id": "pNInz6obpgDQGcFmaJgB",
+   "direction": "[growling][booming]",
+   "takes": 3,
+   "take": 1,
+   "heard": [
+    "파위 던지기"
+   ],
+   "check": "near",
+   "duration": 0.91,
+   "file": "polyphemus.mp3"
+  },
+  "wolf": {
+   "cardId": "wolf",
+   "card": "커다란 늑대",
+   "attack": "후― 불어 날리기",
+   "text": "후우 불어 날리기!",
+   "voice": "Callum",
+   "voice_id": "N2lVS1w4EtoT3dr4eOWO",
+   "direction": "[growling]",
+   "takes": 3,
+   "take": 1,
+   "heard": [
+    "불의 날리기",
+    "불아 날리기"
+   ],
+   "check": "minor",
+   "duration": 1.923,
+   "file": "wolf.mp3"
+  },
+  "beanstalkgiant": {
+   "cardId": "beanstalkgiant",
+   "card": "콩나무 거인",
+   "attack": "쿵쿵 발구르기",
+   "text": "쿵쿵 발구르기!",
+   "voice": "Fin",
+   "voice_id": "D38z5RcWu1voky8WS1ja",
+   "direction": "[booming][slow]",
+   "takes": 2,
+   "take": 2,
+   "heard": [
+    "쿵쿵 발구르기"
+   ],
+   "check": "exact",
+   "duration": 2.302,
+   "file": "beanstalkgiant.mp3"
+  },
+  "medusa": {
+   "cardId": "medusa",
+   "card": "메두사",
+   "attack": "돌로 만들기",
+   "text": "돌로 만들기!",
+   "voice": "Charlotte",
+   "voice_id": "XB0fDUnXU5powFXDhCwa",
+   "direction": "[menacing]",
+   "takes": 3,
+   "take": 3,
+   "heard": [
+    "돌로 만들기"
+   ],
+   "check": "exact",
+   "duration": 1.421,
+   "file": "medusa.mp3"
+  },
+  "midas": {
+   "cardId": "midas",
+   "card": "미다스 왕",
+   "attack": "황금 손",
+   "text": "황금 손!",
+   "voice": "Roger",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "direction": "[greedy][excited]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "황금 손"
+   ],
+   "check": "exact",
+   "duration": 1.087,
+   "file": "midas.mp3"
+  },
+  "tiger": {
+   "cardId": "tiger",
+   "card": "호랑이",
+   "attack": "어흥!",
+   "text": "어흥!",
+   "voice": "Clyde",
+   "voice_id": "2EiwWnXFnvU5JabPnv8n",
+   "direction": "[playful]",
+   "takes": 3,
+   "take": 3,
+   "heard": [
+    "아흥",
+    "아훔"
+   ],
+   "check": "minor",
+   "duration": 0.873,
+   "file": "tiger.mp3"
+  },
+  "zeus": {
+   "cardId": "zeus",
+   "card": "제우스",
+   "attack": "천둥 심판",
+   "text": "천둥 심판!",
+   "voice": "Brian",
+   "voice_id": "nPczCjzI2devNBz1zQrb",
+   "direction": "[booming][shouting]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "천둥 심판"
+   ],
+   "check": "exact",
+   "duration": 1.531,
+   "file": "zeus.mp3"
+  },
+  "poseidon": {
+   "cardId": "poseidon",
+   "card": "포세이돈",
+   "attack": "해일",
+   "text": "해일!",
+   "voice": "Bill",
+   "voice_id": "pqHfZKP75CvOlQylNhV4",
+   "direction": "[booming][shouting]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "헤일"
+   ],
+   "check": "exact",
+   "duration": 0.822,
+   "file": "poseidon.mp3"
+  },
+  "hades": {
+   "cardId": "hades",
+   "card": "하데스",
+   "attack": "망자의 물결",
+   "text": "망자의 물결!",
+   "voice": "Callum",
+   "voice_id": "N2lVS1w4EtoT3dr4eOWO",
+   "direction": "[menacing]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "망자의 물결"
+   ],
+   "check": "exact",
+   "duration": 1.587,
+   "file": "hades.mp3"
+  },
+  "apollo": {
+   "cardId": "apollo",
+   "card": "아폴론",
+   "attack": "리라의 심판",
+   "text": "리라의 심판!",
+   "voice": "Will",
+   "voice_id": "bIHbv24MWmeRgasZH58o",
+   "direction": "[heroic][shouting]",
+   "takes": 3,
+   "take": 2,
+   "heard": [
+    "리다의 심판"
+   ],
+   "check": "minor",
+   "duration": 1.404,
+   "file": "apollo.mp3"
+  },
+  "minotaur": {
+   "cardId": "minotaur",
+   "card": "미노타우로스",
+   "attack": "미궁의 포효",
+   "text": "미궁의 포효!",
+   "voice": "Adam",
+   "voice_id": "pNInz6obpgDQGcFmaJgB",
+   "direction": "[roaring]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "미궁의 포효"
+   ],
+   "check": "exact",
+   "duration": 1.034,
+   "file": "minotaur.mp3"
+  },
+  "cerberus": {
+   "cardId": "cerberus",
+   "card": "케르베로스",
+   "attack": "저승문 지키기",
+   "text": "저승문 지키기!",
+   "voice": "Clyde",
+   "voice_id": "2EiwWnXFnvU5JabPnv8n",
+   "direction": "[growling][barking]",
+   "takes": 3,
+   "take": 1,
+   "heard": [
+    "철선문 지키기",
+    "초승문 지키기"
+   ],
+   "check": "minor",
+   "duration": 2.5,
+   "file": "cerberus.mp3"
+  },
+  "hydra": {
+   "cardId": "hydra",
+   "card": "히드라",
+   "attack": "독 안개",
+   "text": "독 안개!",
+   "voice": "River",
+   "voice_id": "SAz9YHcvj6GT2YYXdXww",
+   "direction": "[hissing]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "독 안개"
+   ],
+   "check": "exact",
+   "duration": 0.901,
+   "file": "hydra.mp3"
+  },
+  "sphinx": {
+   "cardId": "sphinx",
+   "card": "스핑크스",
+   "attack": "날개 급습",
+   "text": "날개 급습!",
+   "voice": "Aria",
+   "voice_id": "9BWtsMINqrJLrRacOk9x",
+   "direction": "[mysterious]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "날개 급습"
+   ],
+   "check": "exact",
+   "duration": 1.134,
+   "file": "sphinx.mp3"
+  },
+  "achilles": {
+   "cardId": "achilles",
+   "card": "아킬레우스",
+   "attack": "분노의 돌격",
+   "text": "분노의 돌격!",
+   "voice": "Harry",
+   "voice_id": "SOYHLrjzK2X1ezoPC6cr",
+   "direction": "[furious][shouting]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "분노의 돌격"
+   ],
+   "check": "exact",
+   "duration": 1.445,
+   "file": "achilles.mp3"
+  },
+  "theseus": {
+   "cardId": "theseus",
+   "card": "테세우스",
+   "attack": "미궁 돌파",
+   "text": "미궁 돌파!",
+   "voice": "Liam",
+   "voice_id": "TX3LPaxmHKxFdv7VOQHJ",
+   "direction": "[heroic][shouting]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "미궁 돌파"
+   ],
+   "check": "exact",
+   "duration": 1.903,
+   "file": "theseus.mp3"
+  },
+  "artemis": {
+   "cardId": "artemis",
+   "card": "아르테미스",
+   "attack": "사냥의 여신",
+   "text": "사냥의 여신!",
+   "voice": "Alice",
+   "voice_id": "Xb7hH8MSUJpSbSDYk0k2",
+   "direction": "[fierce][shouting]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "사냥의 여신"
+   ],
+   "check": "exact",
+   "duration": 1.326,
+   "file": "artemis.mp3"
+  },
+  "atalanta": {
+   "cardId": "atalanta",
+   "card": "아탈란테",
+   "attack": "사냥 창",
+   "text": "사냥 창!",
+   "voice": "Laura",
+   "voice_id": "FGY2WhTYpPnrIDTdsKH5",
+   "direction": "[energetic][shouting]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "사냥창"
+   ],
+   "check": "exact",
+   "duration": 1.049,
+   "file": "atalanta.mp3"
+  },
+  "athena": {
+   "cardId": "athena",
+   "card": "아테나",
+   "attack": "전략의 창",
+   "text": "전략의 창!",
+   "voice": "Lily",
+   "voice_id": "pFZP5JQG7iQjIQuC4Bku",
+   "direction": "[commanding]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "전략의 창"
+   ],
+   "check": "exact",
+   "duration": 1.245,
+   "file": "athena.mp3"
+  },
+  "hermes": {
+   "cardId": "hermes",
+   "card": "헤르메스",
+   "attack": "전령의 지팡이",
+   "text": "전령의 지팡이!",
+   "voice": "Charlie",
+   "voice_id": "IKne3meq5aSn9XLyUdCD",
+   "direction": "[playful]",
+   "takes": 2,
+   "take": 2,
+   "heard": [
+    "전령의 지팡이"
+   ],
+   "check": "exact",
+   "duration": 1.36,
+   "file": "hermes.mp3"
+  },
+  "orpheus": {
+   "cardId": "orpheus",
+   "card": "오르페우스",
+   "attack": "저승의 노래",
+   "text": "저승의 노래!",
+   "voice": "Chris",
+   "voice_id": "iP95p4xoKVk53GoZ742B",
+   "direction": "[passionately]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "저승의 노래"
+   ],
+   "check": "exact",
+   "duration": 1.52,
+   "file": "orpheus.mp3"
+  },
+  "prometheus": {
+   "cardId": "prometheus",
+   "card": "프로메테우스",
+   "attack": "인류의 불",
+   "text": "인류의 불!",
+   "voice": "George",
+   "voice_id": "JBFqnCBsd6RMkjVDRZzb",
+   "direction": "[passionately][shouting]",
+   "takes": 3,
+   "take": 1,
+   "heard": [
+    "인유에 불",
+    "인유에불"
+   ],
+   "check": "minor",
+   "duration": 1.248,
+   "file": "prometheus.mp3"
+  },
+  "guanyu": {
+   "cardId": "guanyu",
+   "card": "관우",
+   "attack": "청룡일섬",
+   "text": "청룡일섬!",
+   "voice": "Adam",
+   "voice_id": "pNInz6obpgDQGcFmaJgB",
+   "direction": "[shouting][heroic]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "청룡일섬"
+   ],
+   "check": "exact",
+   "duration": 1.358,
+   "file": "guanyu.mp3"
+  },
+  "zhangfei": {
+   "cardId": "zhangfei",
+   "card": "장비",
+   "attack": "장판교 호통",
+   "text": "장판교 호통!",
+   "voice": "Harry",
+   "voice_id": "SOYHLrjzK2X1ezoPC6cr",
+   "direction": "[shouting][furious]",
+   "takes": 3,
+   "take": 2,
+   "heard": [
+    "창판교 호통",
+    "참판교 호통"
+   ],
+   "check": "near",
+   "duration": 2.32,
+   "file": "zhangfei.mp3"
+  },
+  "zhaoyun": {
+   "cardId": "zhaoyun",
+   "card": "조운",
+   "attack": "아두 구출",
+   "text": "아두 구출!",
+   "voice": "Liam",
+   "voice_id": "TX3LPaxmHKxFdv7VOQHJ",
+   "direction": "[shouting][heroic]",
+   "takes": 2,
+   "take": 2,
+   "heard": [
+    "아두 구출"
+   ],
+   "check": "exact",
+   "duration": 1.802,
+   "file": "zhaoyun.mp3"
+  },
+  "zhugeliang": {
+   "cardId": "zhugeliang",
+   "card": "제갈량",
+   "attack": "화공",
+   "text": "화공!",
+   "voice": "George",
+   "voice_id": "JBFqnCBsd6RMkjVDRZzb",
+   "direction": "[confident]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "화공"
+   ],
+   "check": "exact",
+   "duration": 0.621,
+   "file": "zhugeliang.mp3"
+  },
+  "caocao": {
+   "cardId": "caocao",
+   "card": "조조",
+   "attack": "관도 대공세",
+   "text": "관도 대공세!",
+   "voice": "Callum",
+   "voice_id": "N2lVS1w4EtoT3dr4eOWO",
+   "direction": "[shouting][commanding]",
+   "takes": 3,
+   "take": 2,
+   "heard": [
+    "관도 태공세"
+   ],
+   "check": "near",
+   "duration": 1.47,
+   "file": "caocao.mp3"
+  },
+  "simayi": {
+   "cardId": "simayi",
+   "card": "사마의",
+   "attack": "낙양 진군",
+   "text": "낙양 진군!",
+   "voice": "Callum",
+   "voice_id": "N2lVS1w4EtoT3dr4eOWO",
+   "direction": "[commanding]",
+   "takes": 3,
+   "take": 1,
+   "heard": [
+    "나강 진군"
+   ],
+   "check": "minor",
+   "duration": 1.208,
+   "file": "simayi.mp3"
+  },
+  "nezha": {
+   "cardId": "nezha",
+   "card": "나타",
+   "attack": "풍화륜 돌진",
+   "text": "풍화륜 돌진!",
+   "voice": "Sarah",
+   "voice_id": "EXAVITQu4vr4xnSDxMaL",
+   "direction": "[excited]",
+   "takes": 3,
+   "take": 3,
+   "heard": [
+    "풍하련 돌진",
+    "풍하리온 돌진"
+   ],
+   "check": "minor",
+   "duration": 1.552,
+   "file": "nezha.mp3"
+  },
+  "erlangshen": {
+   "cardId": "erlangshen",
+   "card": "이랑진군",
+   "attack": "삼첨양인도",
+   "text": "삼첨양인도!",
+   "voice": "Adam",
+   "voice_id": "pNInz6obpgDQGcFmaJgB",
+   "direction": "[shouting]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "삼첨양인도"
+   ],
+   "check": "exact",
+   "duration": 1.359,
+   "file": "erlangshen.mp3"
+  },
+  "wumawang": {
+   "cardId": "wumawang",
+   "card": "우마왕",
+   "attack": "소 돌진",
+   "text": "소 돌진!",
+   "voice": "Brian",
+   "voice_id": "nPczCjzI2devNBz1zQrb",
+   "direction": "[roaring]",
+   "takes": 2,
+   "take": 2,
+   "heard": [
+    "소 돌진"
+   ],
+   "check": "exact",
+   "duration": 1.106,
+   "file": "wumawang.mp3"
+  },
+  "honghaier": {
+   "cardId": "honghaier",
+   "card": "홍해아",
+   "attack": "삼매진화",
+   "text": "삼매진화!",
+   "voice": "Laura",
+   "voice_id": "FGY2WhTYpPnrIDTdsKH5",
+   "direction": "[mischievous][shouting]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "삼메진화"
+   ],
+   "check": "exact",
+   "duration": 1.038,
+   "file": "honghaier.mp3"
+  },
+  "baigujing": {
+   "cardId": "baigujing",
+   "card": "백골정",
+   "attack": "백골 손톱",
+   "text": "백골 손톱!",
+   "voice": "Charlotte",
+   "voice_id": "XB0fDUnXU5powFXDhCwa",
+   "direction": "[creepy]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "백골 손톱"
+   ],
+   "check": "exact",
+   "duration": 1.284,
+   "file": "baigujing.mp3"
+  },
+  "appa": {
+   "cardId": "appa",
+   "card": "아빠",
+   "attack": "간지럽히기",
+   "text": "간지럽히기!",
+   "voice": "Eric",
+   "voice_id": "cjVigY5qzO86Huf0OWal",
+   "direction": "[playful][laughing]",
+   "takes": 3,
+   "take": 1,
+   "heard": [
+    "칸지라피기",
+    "칸지로 피기"
+   ],
+   "check": "minor",
+   "duration": 1.882,
+   "file": "appa.mp3"
+  },
+  "eomma": {
+   "cardId": "eomma",
+   "card": "엄마",
+   "attack": "엄마의 한마디",
+   "text": "엄마의 한마디!",
+   "voice": "Matilda",
+   "voice_id": "XrExE9yKIg1WjnnlVkGX",
+   "direction": "[firm]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "엄마의 한마디"
+   ],
+   "check": "exact",
+   "duration": 1.133,
+   "file": "eomma.mp3"
+  },
+  "yisunshin": {
+   "cardId": "yisunshin",
+   "card": "이순신",
+   "attack": "거북선 돌진",
+   "text": "거북선 돌진!",
+   "voice": "Brian",
+   "voice_id": "nPczCjzI2devNBz1zQrb",
+   "direction": "[shouting][heroic]",
+   "takes": 2,
+   "take": 2,
+   "heard": [
+    "거북선 돌진"
+   ],
+   "check": "exact",
+   "duration": 1.47,
+   "file": "yisunshin.mp3"
+  },
+  "euljimundeok": {
+   "cardId": "euljimundeok",
+   "card": "을지문덕",
+   "attack": "유인 작전",
+   "text": "유인 작전!",
+   "voice": "George",
+   "voice_id": "JBFqnCBsd6RMkjVDRZzb",
+   "direction": "[confident]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "유인 작전"
+   ],
+   "check": "exact",
+   "duration": 0.87,
+   "file": "euljimundeok.mp3"
+  },
+  "ganggamchan": {
+   "cardId": "ganggamchan",
+   "card": "강감찬",
+   "attack": "귀주대첩",
+   "text": "귀주대첩!",
+   "voice": "Bill",
+   "voice_id": "pqHfZKP75CvOlQylNhV4",
+   "direction": "[shouting]",
+   "takes": 3,
+   "take": 1,
+   "heard": [
+    "피주대첩"
+   ],
+   "check": "minor",
+   "duration": 0.845,
+   "file": "ganggamchan.mp3"
+  },
+  "kwonyul": {
+   "cardId": "kwonyul",
+   "card": "권율",
+   "attack": "화차 일제사격",
+   "text": "화차 일제사격!",
+   "voice": "Harry",
+   "voice_id": "SOYHLrjzK2X1ezoPC6cr",
+   "direction": "[commanding]",
+   "takes": 3,
+   "take": 3,
+   "heard": [
+    "화차! 일제 사격!"
+   ],
+   "check": "exact",
+   "duration": 1.591,
+   "file": "kwonyul.mp3"
+  },
+  "sherlockholmes": {
+   "cardId": "sherlockholmes",
+   "card": "셜록 홈즈",
+   "attack": "완벽한 추리",
+   "text": "완벽한 추리!",
+   "voice": "Daniel",
+   "voice_id": "onwK4e9ZLuTAKqWW03F9",
+   "direction": "[confident]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "완벽한 추리"
+   ],
+   "check": "exact",
+   "duration": 1.065,
+   "file": "sherlockholmes.mp3"
+  },
+  "doctorwatson": {
+   "cardId": "doctorwatson",
+   "card": "왓슨 박사",
+   "attack": "믿음직한 동행",
+   "text": "믿음직한 동행!",
+   "voice": "Roger",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "direction": "[warmly]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "미듬직한 동행"
+   ],
+   "check": "exact",
+   "duration": 1.508,
+   "file": "doctorwatson.mp3"
+  },
+  "arsenelupin": {
+   "cardId": "arsenelupin",
+   "card": "아르센 뤼팽",
+   "attack": "달빛 탈출",
+   "text": "달빛 탈출!",
+   "voice": "Eric",
+   "voice_id": "cjVigY5qzO86Huf0OWal",
+   "direction": "[smugly]",
+   "takes": 2,
+   "take": 2,
+   "heard": [
+    "달빛 탈출"
+   ],
+   "check": "exact",
+   "duration": 1.316,
+   "file": "arsenelupin.mp3"
+  },
+  "moriarty": {
+   "cardId": "moriarty",
+   "card": "모리어티",
+   "attack": "최후의 수",
+   "text": "최후의 수!",
+   "voice": "Callum",
+   "voice_id": "N2lVS1w4EtoT3dr4eOWO",
+   "direction": "[sinister]",
+   "takes": 2,
+   "take": 2,
+   "heard": [
+    "최후의 수"
+   ],
+   "check": "exact",
+   "duration": 1.48,
+   "file": "moriarty.mp3"
+  },
+  "gearwing": {
+   "cardId": "gearwing",
+   "card": "기어윙",
+   "attack": "기어 폭풍",
+   "text": "기어 폭풍!",
+   "voice": "River",
+   "voice_id": "SAz9YHcvj6GT2YYXdXww",
+   "direction": "[robotic]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "기어 폭풍"
+   ],
+   "check": "exact",
+   "duration": 1.214,
+   "file": "gearwing.mp3"
+  },
+  "starshield": {
+   "cardId": "starshield",
+   "card": "별방패 대장",
+   "attack": "모두를 지켜",
+   "text": "모두를 지켜!",
+   "voice": "Will",
+   "voice_id": "bIHbv24MWmeRgasZH58o",
+   "direction": "[heroic][shouting]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "모두를 지켜"
+   ],
+   "check": "exact",
+   "duration": 1.395,
+   "file": "starshield.mp3"
+  },
+  "thunderguard": {
+   "cardId": "thunderguard",
+   "card": "천둥북 수호자",
+   "attack": "천둥 장단",
+   "text": "천둥 장단!",
+   "voice": "Brian",
+   "voice_id": "nPczCjzI2devNBz1zQrb",
+   "direction": "[booming][shouting]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "천둥 장단"
+   ],
+   "check": "exact",
+   "duration": 1.289,
+   "file": "thunderguard.mp3"
+  },
+  "redknot": {
+   "cardId": "redknot",
+   "card": "붉은매듭 첩보원",
+   "attack": "그림자 포획",
+   "text": "그림자 포획!",
+   "voice": "Aria",
+   "voice_id": "9BWtsMINqrJLrRacOk9x",
+   "direction": "[coolly]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "그림자 포획"
+   ],
+   "check": "exact",
+   "duration": 1.195,
+   "file": "redknot.mp3"
+  },
+  "walllizard": {
+   "cardId": "walllizard",
+   "card": "벽달림 도마뱀",
+   "attack": "꼬리 회전",
+   "text": "꼬리 회전!",
+   "voice": "Chris",
+   "voice_id": "iP95p4xoKVk53GoZ742B",
+   "direction": "[squeaky][playful]",
+   "takes": 3,
+   "take": 2,
+   "heard": [
+    "고리 회전"
+   ],
+   "check": "near",
+   "duration": 0.726,
+   "file": "walllizard.mp3"
+  },
+  "neonjumper": {
+   "cardId": "neonjumper",
+   "card": "네온도약자",
+   "attack": "차원 발차기",
+   "text": "차원 발차기!",
+   "voice": "Liam",
+   "voice_id": "TX3LPaxmHKxFdv7VOQHJ",
+   "direction": "[excited][shouting]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "차원 발차기"
+   ],
+   "check": "exact",
+   "duration": 1.764,
+   "file": "neonjumper.mp3"
+  },
+  "moonmoth": {
+   "cardId": "moonmoth",
+   "card": "달빛 나방수호자",
+   "attack": "초승 날개",
+   "text": "초승 날개!",
+   "voice": "Sarah",
+   "voice_id": "EXAVITQu4vr4xnSDxMaL",
+   "direction": "[softly][mysterious]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "초승날개"
+   ],
+   "check": "exact",
+   "duration": 0.864,
+   "file": "moonmoth.mp3"
+  },
+  "ppungdetective": {
+   "cardId": "ppungdetective",
+   "card": "뿡경감",
+   "attack": "범인은 너야",
+   "text": "범인은 너야!",
+   "voice": "Roger",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "direction": "[dramatic]",
+   "takes": 2,
+   "take": 2,
+   "heard": [
+    "범인은 너야"
+   ],
+   "check": "exact",
+   "duration": 1.08,
+   "file": "ppungdetective.mp3"
+  },
+  "circe": {
+   "cardId": "circe",
+   "card": "키르케",
+   "attack": "돼지 변신",
+   "text": "돼지 변신!",
+   "voice": "Alice",
+   "voice_id": "Xb7hH8MSUJpSbSDYk0k2",
+   "direction": "[playful]",
+   "takes": 3,
+   "take": 3,
+   "heard": [
+    "돼지 변신"
+   ],
+   "check": "exact",
+   "duration": 0.962,
+   "file": "circe.mp3"
+  },
+  "siren": {
+   "cardId": "siren",
+   "card": "세이렌",
+   "attack": "마음을 끄는 합창",
+   "text": "마음을 끄는 합창!",
+   "voice": "Lily",
+   "voice_id": "pFZP5JQG7iQjIQuC4Bku",
+   "direction": "[enchanting]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "마음을 끄는 합창"
+   ],
+   "check": "exact",
+   "duration": 1.74,
+   "file": "siren.mp3"
+  },
+  "scylla": {
+   "cardId": "scylla",
+   "card": "스킬라",
+   "attack": "여섯 머리 급습",
+   "text": "여섯 머리 급습!",
+   "voice": "Aria",
+   "voice_id": "9BWtsMINqrJLrRacOk9x",
+   "direction": "[growling]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "여섯 머리 급습"
+   ],
+   "check": "exact",
+   "duration": 1.552,
+   "file": "scylla.mp3"
+  },
+  "helios": {
+   "cardId": "helios",
+   "card": "헬리오스",
+   "attack": "태양 마차",
+   "text": "태양 마차!",
+   "voice": "Daniel",
+   "voice_id": "onwK4e9ZLuTAKqWW03F9",
+   "direction": "[booming][shouting]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "태양 마차"
+   ],
+   "check": "exact",
+   "duration": 1.173,
+   "file": "helios.mp3"
+  },
+  "sseugumi": {
+   "cardId": "sseugumi",
+   "card": "쓰구미 대마왕",
+   "attack": "대왕 장난",
+   "text": "대왕 장난!",
+   "voice": "Clyde",
+   "voice_id": "2EiwWnXFnvU5JabPnv8n",
+   "direction": "[evil][shouting]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "대왕 장난"
+   ],
+   "check": "exact",
+   "duration": 1.653,
+   "file": "sseugumi.mp3"
+  },
+  "sejong": {
+   "cardId": "sejong",
+   "card": "세종대왕",
+   "attack": "지혜를 나누다",
+   "text": "지혜를 나누다!",
+   "voice": "Bill",
+   "voice_id": "pqHfZKP75CvOlQylNhV4",
+   "direction": "[warmly]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "지혜를 나누다"
+   ],
+   "check": "exact",
+   "duration": 1.274,
+   "file": "sejong.mp3"
+  },
+  "jangyeongsil": {
+   "cardId": "jangyeongsil",
+   "card": "장영실",
+   "attack": "혼천의 별길",
+   "text": "혼천의 별길!",
+   "voice": "Will",
+   "voice_id": "bIHbv24MWmeRgasZH58o",
+   "direction": "[excited]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "혼천의 별길"
+   ],
+   "check": "exact",
+   "duration": 1.241,
+   "file": "jangyeongsil.mp3"
+  },
+  "heojun": {
+   "cardId": "heojun",
+   "card": "허준",
+   "attack": "동의보감의 빛",
+   "text": "동의보감의 빛!",
+   "voice": "Eric",
+   "voice_id": "cjVigY5qzO86Huf0OWal",
+   "direction": "[gently]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "동의보감의 빛"
+   ],
+   "check": "exact",
+   "duration": 1.327,
+   "file": "heojun.mp3"
+  },
+  "shinsaimdang": {
+   "cardId": "shinsaimdang",
+   "card": "신사임당",
+   "attack": "풀잎 정원",
+   "text": "풀잎 정원!",
+   "voice": "Matilda",
+   "voice_id": "XrExE9yKIg1WjnnlVkGX",
+   "direction": "[gracefully]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "풀잎 정원"
+   ],
+   "check": "exact",
+   "duration": 0.976,
+   "file": "shinsaimdang.mp3"
+  },
+  "jeongyakyong": {
+   "cardId": "jeongyakyong",
+   "card": "정약용",
+   "attack": "거중기의 힘",
+   "text": "거중기의 힘!",
+   "voice": "Roger",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "direction": "[confident]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "거중기의 힘"
+   ],
+   "check": "exact",
+   "duration": 1.466,
+   "file": "jeongyakyong.mp3"
+  },
+  "kimhongdo": {
+   "cardId": "kimhongdo",
+   "card": "김홍도",
+   "attack": "풍속화 한 장",
+   "text": "풍속화 한 장!",
+   "voice": "Chris",
+   "voice_id": "iP95p4xoKVk53GoZ742B",
+   "direction": "[cheerful]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "풍속화 한 장"
+   ],
+   "check": "exact",
+   "duration": 1.01,
+   "file": "kimhongdo.mp3"
+  },
+  "yugwansun": {
+   "cardId": "yugwansun",
+   "card": "유관순",
+   "attack": "아우내의 메아리",
+   "text": "아우내의 메아리!",
+   "voice": "Sarah",
+   "voice_id": "EXAVITQu4vr4xnSDxMaL",
+   "direction": "[determined][shouting]",
+   "takes": 3,
+   "take": 1,
+   "heard": [
+    "아우네 메아리"
+   ],
+   "check": "minor",
+   "duration": 1.448,
+   "file": "yugwansun.mp3"
+  },
+  "kimgu": {
+   "cardId": "kimgu",
+   "card": "김구",
+   "attack": "문화의 힘",
+   "text": "문화의 힘!",
+   "voice": "Brian",
+   "voice_id": "nPczCjzI2devNBz1zQrb",
+   "direction": "[resolute]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "문화의 힘"
+   ],
+   "check": "exact",
+   "duration": 1.133,
+   "file": "kimgu.mp3"
+  },
+  "jaewing": {
+   "cardId": "jaewing",
+   "card": "재윙",
+   "attack": "바이킹 그네 밀기",
+   "text": "바이킹 그네 밀기!",
+   "voice": "Jessica",
+   "voice_id": "cgSgspJ2msm6clMCkdW9",
+   "direction": "[mischievous]",
+   "takes": 3,
+   "take": 3,
+   "heard": [
+    "파이킹 그느미기",
+    "파이킹 그네미기"
+   ],
+   "check": "minor",
+   "duration": 1.641,
+   "file": "jaewing.mp3"
+  },
+  "taeppul": {
+   "cardId": "taeppul",
+   "card": "태뿔",
+   "attack": "꼴통 떼쓰기",
+   "text": "꼴통 떼쓰기!",
+   "voice": "Liam",
+   "voice_id": "TX3LPaxmHKxFdv7VOQHJ",
+   "direction": "[childlike][whiny]",
+   "takes": 3,
+   "take": 1,
+   "heard": [
+    "고통의 쓰기",
+    "고통대쓰기"
+   ],
+   "check": "minor",
+   "duration": 1.854,
+   "file": "taeppul.mp3"
+  },
+  "chanppul": {
+   "cardId": "chanppul",
+   "card": "찬뿔",
+   "attack": "번개맨 천둥쇼",
+   "text": "번개맨 천둥쇼!",
+   "voice": "Will",
+   "voice_id": "bIHbv24MWmeRgasZH58o",
+   "direction": "[childlike][excited]",
+   "takes": 1,
+   "take": 1,
+   "heard": [
+    "번개맨 천둥 쇼"
+   ],
+   "check": "exact",
+   "duration": 1.704,
+   "file": "chanppul.mp3"
+  },
+  "geonppul": {
+   "cardId": "geonppul",
+   "card": "건뿔",
+   "attack": "헐크 박치기",
+   "text": "헐크 박치기!",
+   "voice": "Liam",
+   "voice_id": "TX3LPaxmHKxFdv7VOQHJ",
+   "direction": "[childlike][growling]",
+   "takes": 3,
+   "take": 2,
+   "heard": [
+    "하르크 박치기",
+    "하크 박치기"
+   ],
+   "check": "minor",
+   "duration": 1.748,
+   "file": "geonppul.mp3"
+  }
+ },
+ "noVoice": []
+}

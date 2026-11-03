@@ -64,8 +64,11 @@ for (const [id, [age, gender, phrase]] of Object.entries(expected)) {
     assert.equal(FAMILY_CALLOUTS[id].special.cry, id === 'taeo' ? '메가냅터킥!' : id === 'jaei' ? '물통 바꿔줘!' : phrase);
     assert.equal(FAMILY_CALLOUTS[id].musou.cry, id === 'taeo' ? '싸우자!' : phrase);
     const file = `audio/hero-callouts-eleven-v2/${info.file}`;
-    const { familySkillLine } = await import('../../assets/audio/family-skill-voices.js');
-    for (const action of ['dash', 'special', 'musou']) assert.deepEqual(elevenVoiceFiles(id)[action], [familySkillLine(id, action)?.file.replace(/^sanguo\//, '') || file]);
+    const { familySkillLines } = await import('../../assets/audio/family-skill-voices.js');
+    for (const action of ['dash', 'special', 'musou']) {
+      const lines = familySkillLines(id, action).map(line => line.file.replace(/^sanguo\//, ''));
+      assert.deepEqual(elevenVoiceFiles(id)[action], lines.length ? lines : [file]);
+    }
     assert.ok(fs.readFileSync(path.join(root, '../sw.js'), 'utf8').includes(`"./sanguo/${file}"`));
     const wav = fs.readFileSync(path.join(root, file));
     assert.equal(wav.toString('ascii', 0, 4), 'RIFF'); assert.equal(wav.toString('ascii', 8, 12), 'WAVE');

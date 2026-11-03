@@ -44,10 +44,10 @@ test('all source recordings exist, are cached for offline play and female takes 
   }
 });
 
-test('specials always trigger the real cry layer and make space in the music mix', () => {
+test('specials without a complete Gemini take trigger the real cry layer and make space in the music mix', () => {
   const source = fs.readFileSync(path.join(__dirname, '../src/game/sideScroller.js'), 'utf8');
   assert.match(source, /battleCry: BATTLE_CRY_PACKS\[battleCry\.pack\]/);
-  assert.match(source, /const playHeroCry = \(\) => playBattleCry\(powerful, battleCryDelay\)/);
+  assert.match(source, /const playHeroCry = \(\) => completeTake \|\| playBattleCry\(powerful, battleCryDelay\)/);
   assert.match(source, /duckMusic\(powerful \? \.095 : \.11, powerful \? 1600 : 1320\)/);
   assert.match(source, /sampleReady\.battleCry/);
   assert.match(source, /source\.start\(startedAt, sourceOffset, sourceDuration\)/);

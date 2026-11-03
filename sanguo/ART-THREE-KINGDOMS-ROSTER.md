@@ -8,11 +8,11 @@
 | 진영 | 장수 | 기본 전투 시트 | 원거리 시트 | 전투 정체성 |
 | --- | --- | --- | --- | --- |
 | 위 | 하후돈 | `xiahoudun-painted-sheet-v1.png` | `xiahoudun-bow-painted-sheet-v1.png` | 장극 철벽 돌파 |
-| 위 | 장료 | `zhangliao-painted-sheet-v1.png` | `zhangliao-bow-painted-sheet-v1.png` | 빠른 장극 기동전 |
-| 위 | 허저 | `xuchu-painted-sheet-v1.png` | `xuchu-bow-painted-sheet-v1.png` | 대부 중갑 파쇄 |
+| 위 | 장료 | `zhangliao-painted-sheet-v1.png` | `zhangliao-bow-painted-sheet-v2.png` | 빠른 장극 기동전 |
+| 위 | 허저 | `xuchu-painted-sheet-v2.png` | `xuchu-bow-painted-sheet-v1.png` | 대부 중갑 파쇄 |
 | 위 | 사마의 | `simayi-painted-sheet-v1.png` | `simayi-bow-painted-sheet-v1.png` | 지휘검 진형 제어 |
 | 오 | 손권 | `sunquan-painted-sheet-v1.png` | `sunquan-bow-painted-sheet-v1.png` | 지휘형 검술 |
-| 오 | 태사자 | `taishici-painted-sheet-v1.png` | `taishici-bow-painted-sheet-v1.png` | 창·궁 연계 |
+| 오 | 태사자 | `taishici-painted-sheet-v1.png` | `taishici-bow-painted-sheet-v2.png` | 창·궁 연계 |
 | 오 | 감녕 | `ganning-painted-sheet-v1.png` | `ganning-bow-painted-sheet-v1.png` | 쌍도 수상 기습 |
 | 오 | 육손 | `luxun-painted-sheet-v1.png` | 없음 — 우선 투사체 사용 | 화공 책략 |
 | 오 | 주유 | 기존 기본 시트 | `zhouyu-bow-painted-sheet-v1.png` | 장검·궁 보완 |

@@ -3,12 +3,13 @@ import { workPerson, workStats, workStage, workWeapon } from '../data/works.js';
 import { createScenery, SCENES } from './scenery.js';
 import { tintSheet, TROOP_TINT, BOSS_TINT } from './tint.js';
 import { getDifficulty, attackerBudget } from './difficulty.js';
-import { createHudRoot, createEnemyHud, createPlayerHud, showBanner } from './hud.js';
+import { createHudRoot, createEnemyHud, createPlayerHud, showBanner, showToast } from './hud.js';
 import { showResult } from '../ui/result.js';
 import { awardBattleProgress, getCombatGrowth, weaponEnhanceText } from './progression.js';
 import { dashSkill, startDashState, collectDashHits } from './dashSkills.js';
 import { combatBounds, clampCombatX, constrainEnemy, waveSpawnX } from './combatBounds.js';
 import { MOUNT_PROFILES, drawConsistentMount } from './mountedSprites.js';
+import { MOUNT_KIND_BY_HERO, MOUNTED_SPEED_SCALE, MOUNTED_LANE_SCALE, MOUNTED_MOVES, MOUNTED_CHARGE, MOUNTED_SURGE, isMountedAction, mountFlavor, nextMountedChainAction, peekMountedChainAction, mountedHitReady, mountedMoveTargets, mountedKnockback, startMountedCharge, mountedChargeStep, collectChargeHits, mountedSurgeStep, mountedButtonLabels } from './mountedMoves.js';
 import { BATTLE_CRY_PACKS, FEMALE_BATTLE_CRY_SEGMENTS, battleCryProfile } from './battleCries.js';
 import { elevenVoiceFiles } from './elevenVoicePacks.js';
 import { heroRenderScale } from './heroRenderScale.js';
@@ -17,12 +18,14 @@ import { familyProjectile, drawFamilyProjectile, drawFamilySpecial, startFamilyT
 
 const CANVAS_UI_FONT = '"Pretendard Variable", Pretendard, "Noto Sans KR", "Malgun Gothic", sans-serif';
 const CANVAS_IMPACT_FONT = CANVAS_UI_FONT;
+// 처음 말에 오를 때 한 번만 보여 주는 안내. 같은 페이지에서 다시 싸워도 반복하지 않는다.
+let mountedTipShown = false;
 
 const HERO_ART = {
   ...Object.fromEntries(FAMILY_HERO_IDS.map(id => [id, { hero: `art/side-scroller/${id}-painted-sheet-v1.png` }])),
-  euljimundeok: { hero: 'art/side-scroller/euljimundeok-painted-sheet-v1.png', heroBow: 'art/side-scroller/euljimundeok-bow-painted-sheet-v1.png' },
-  ganggamchan: { hero: 'art/side-scroller/ganggamchan-painted-sheet-v1.png', heroBow: 'art/side-scroller/ganggamchan-bow-painted-sheet-v1.png' },
-  kwonyul: { hero: 'art/side-scroller/kwonyul-painted-sheet-v1.png', heroBow: 'art/side-scroller/kwonyul-bow-painted-sheet-v1.png' },
+  euljimundeok: { hero: 'art/side-scroller/euljimundeok-painted-sheet-v2.png', heroBow: 'art/side-scroller/euljimundeok-bow-painted-sheet-v1.png' },
+  ganggamchan: { hero: 'art/side-scroller/ganggamchan-painted-sheet-v2.png', heroBow: 'art/side-scroller/ganggamchan-bow-painted-sheet-v1.png' },
+  kwonyul: { hero: 'art/side-scroller/kwonyul-painted-sheet-v2.png', heroBow: 'art/side-scroller/kwonyul-bow-painted-sheet-v1.png' },
   yisunsin: { hero: 'art/side-scroller/yisunsin-painted-sheet-v1.png', heroBow: 'art/side-scroller/yisunsin-bow-painted-sheet-v1.png' },
   erlangshen: { hero: 'art/side-scroller/erlangshen-hero-painted-sheet-v1.png', heroBow: 'art/side-scroller/erlangshen-hero-bow-painted-sheet-v1.png' },
   honghaier: { hero: 'art/side-scroller/honghaier-painted-sheet-v1.png', heroBow: 'art/side-scroller/honghaier-bow-painted-sheet-v1.png' },
@@ -33,49 +36,49 @@ const HERO_ART = {
     mountedBow: 'art/side-scroller/mounted-nezha-bow-painted-sheet-v1.png',
   },
   liubei: {
-    hero: 'art/side-scroller/liubei-painted-sheet-v1.png',
-    heroBow: 'art/side-scroller/liubei-bow-painted-sheet-v1.png',
+    hero: 'art/side-scroller/liubei-painted-sheet-v2.png',
+    heroBow: 'art/side-scroller/liubei-bow-painted-sheet-v2.png',
     mounted: 'art/side-scroller/mounted-liubei-painted-sheet-v1.png',
-    mountedBow: 'art/side-scroller/mounted-liubei-bow-painted-sheet-v1.png',
+    mountedBow: 'art/side-scroller/mounted-liubei-bow-painted-sheet-v3.png',
   },
   guanyu: {
-    hero: 'art/side-scroller/guanyu-painted-sheet-v4.png',
+    hero: 'art/side-scroller/guanyu-painted-sheet-v5.png',
     heroBow: 'art/side-scroller/guanyu-bow-painted-sheet-v1.png',
     mounted: 'art/side-scroller/mounted-guanyu-painted-sheet-v2.png',
     mountedBow: 'art/side-scroller/mounted-guanyu-bow-painted-sheet-v1.png',
   },
   zhangfei: {
-    hero: 'art/side-scroller/zhangfei-painted-sheet-v1.png',
-    heroBow: 'art/side-scroller/zhangfei-bow-painted-sheet-v1.png',
-    mounted: 'art/side-scroller/mounted-zhangfei-painted-sheet-v1.png',
+    hero: 'art/side-scroller/zhangfei-painted-sheet-v2.png',
+    heroBow: 'art/side-scroller/zhangfei-bow-painted-sheet-v2.png',
+    mounted: 'art/side-scroller/mounted-zhangfei-painted-sheet-v2.png',
     mountedBow: 'art/side-scroller/mounted-zhangfei-bow-painted-sheet-v1.png',
   },
   caocao: { hero: 'art/side-scroller/caocao-painted-sheet-v1.png' },
-  zhaoyun: { hero: 'art/side-scroller/zhaoyun-painted-sheet-v1.png' },
+  zhaoyun: { hero: 'art/side-scroller/zhaoyun-painted-sheet-v2.png' },
   machao: { hero: 'art/side-scroller/machao-painted-sheet-v1.png' },
   huangzhong: {
     hero: 'art/side-scroller/huangzhong-painted-sheet-v1.png',
     heroBow: 'art/side-scroller/huangzhong-bow-painted-sheet-v1.png',
   },
   xiahoudun: { hero: 'art/side-scroller/xiahoudun-painted-sheet-v1.png', heroBow: 'art/side-scroller/xiahoudun-bow-painted-sheet-v1.png' },
-  zhangliao: { hero: 'art/side-scroller/zhangliao-painted-sheet-v1.png', heroBow: 'art/side-scroller/zhangliao-bow-painted-sheet-v1.png' },
-  xuchu: { hero: 'art/side-scroller/xuchu-painted-sheet-v1.png', heroBow: 'art/side-scroller/xuchu-bow-painted-sheet-v1.png' },
+  zhangliao: { hero: 'art/side-scroller/zhangliao-painted-sheet-v1.png', heroBow: 'art/side-scroller/zhangliao-bow-painted-sheet-v2.png' },
+  xuchu: { hero: 'art/side-scroller/xuchu-painted-sheet-v2.png', heroBow: 'art/side-scroller/xuchu-bow-painted-sheet-v1.png' },
   simayi: { hero: 'art/side-scroller/simayi-painted-sheet-v1.png', heroBow: 'art/side-scroller/simayi-bow-painted-sheet-v1.png' },
   sunquan: { hero: 'art/side-scroller/sunquan-painted-sheet-v1.png', heroBow: 'art/side-scroller/sunquan-bow-painted-sheet-v1.png' },
-  taishici: { hero: 'art/side-scroller/taishici-painted-sheet-v1.png', heroBow: 'art/side-scroller/taishici-bow-painted-sheet-v1.png' },
+  taishici: { hero: 'art/side-scroller/taishici-painted-sheet-v1.png', heroBow: 'art/side-scroller/taishici-bow-painted-sheet-v2.png' },
   ganning: { hero: 'art/side-scroller/ganning-painted-sheet-v1.png', heroBow: 'art/side-scroller/ganning-bow-painted-sheet-v1.png' },
   luxun: { hero: 'art/side-scroller/luxun-painted-sheet-v1.png' },
-  lvbu: { hero: 'art/side-scroller/lvbu-painted-sheet-v1.png', heroBow: 'art/side-scroller/lvbu-bow-painted-sheet-v1.png' },
+  lvbu: { hero: 'art/side-scroller/lvbu-painted-sheet-v2.png', heroBow: 'art/side-scroller/lvbu-bow-painted-sheet-v2.png' },
   diaochan: { hero: 'art/side-scroller/diaochan-painted-sheet-v1.png' },
-  dongzhuo: { hero: 'art/side-scroller/dongzhuo-painted-sheet-v1.png' },
-  menghuo: { hero: 'art/side-scroller/menghuo-painted-sheet-v1.png' },
+  dongzhuo: { hero: 'art/side-scroller/dongzhuo-painted-sheet-v2.png' },
+  menghuo: { hero: 'art/side-scroller/menghuo-painted-sheet-v2.png' },
   zhurong: { hero: 'art/side-scroller/zhurong-painted-sheet-v1.png' },
-  zhouyu: { hero: 'art/side-scroller/zhouyu-painted-sheet-v1.png', heroBow: 'art/side-scroller/zhouyu-bow-painted-sheet-v1.png' },
-  huanggai: { hero: 'art/side-scroller/huanggai-painted-sheet-v1.png', heroBow: 'art/side-scroller/huanggai-bow-painted-sheet-v1.png' },
+  zhouyu: { hero: 'art/side-scroller/zhouyu-painted-sheet-v2.png', heroBow: 'art/side-scroller/zhouyu-bow-painted-sheet-v1.png' },
+  huanggai: { hero: 'art/side-scroller/huanggai-painted-sheet-v2.png', heroBow: 'art/side-scroller/huanggai-bow-painted-sheet-v1.png' },
   zhugeliang: { hero: 'art/side-scroller/zhugeliang-painted-sheet-v1.png' },
   wukong: {
     hero: 'art/side-scroller/wukong-painted-sheet-v1.png',
-    heroBow: 'art/side-scroller/wukong-bow-painted-sheet-v1.png',
+    heroBow: 'art/side-scroller/wukong-bow-painted-sheet-v2.png',
     mounted: 'art/side-scroller/mounted-wukong-painted-sheet-v1.png',
     mountedBow: 'art/side-scroller/mounted-wukong-bow-painted-sheet-v1.png',
   },
@@ -86,32 +89,32 @@ const HERO_ART = {
     mountedBow: 'art/side-scroller/mounted-bajie-bow-painted-sheet-v1.png',
   },
   wujing: {
-    hero: 'art/side-scroller/wujing-painted-sheet-v1.png',
-    heroBow: 'art/side-scroller/wujing-bow-painted-sheet-v1.png',
+    hero: 'art/side-scroller/wujing-painted-sheet-v2.png',
+    heroBow: 'art/side-scroller/wujing-bow-painted-sheet-v2.png',
     mounted: 'art/side-scroller/mounted-wujing-painted-sheet-v1.png',
     mountedBow: 'art/side-scroller/mounted-wujing-bow-painted-sheet-v1.png',
   },
   wusong: {
     hero: 'art/side-scroller/wusong-painted-sheet-v1.png',
     heroBow: 'art/side-scroller/wusong-bow-painted-sheet-v1.png',
-    mounted: 'art/side-scroller/mounted-wusong-painted-sheet-v1.png',
-    mountedBow: 'art/side-scroller/mounted-wusong-bow-painted-sheet-v1.png',
+    mounted: 'art/side-scroller/mounted-wusong-painted-sheet-v2.png',
+    mountedBow: 'art/side-scroller/mounted-wusong-bow-painted-sheet-v2.png',
   },
   linchong: {
-    hero: 'art/side-scroller/linchong-painted-sheet-v1.png',
+    hero: 'art/side-scroller/linchong-painted-sheet-v2.png',
     heroBow: 'art/side-scroller/linchong-bow-painted-sheet-v1.png',
-    mounted: 'art/side-scroller/mounted-linchong-painted-sheet-v1.png',
+    mounted: 'art/side-scroller/mounted-linchong-painted-sheet-v2.png',
     mountedBow: 'art/side-scroller/mounted-linchong-bow-painted-sheet-v1.png',
   },
   lizhishen: {
-    hero: 'art/side-scroller/lizhishen-painted-sheet-v1.png',
-    heroBow: 'art/side-scroller/lizhishen-bow-painted-sheet-v1.png',
-    mounted: 'art/side-scroller/mounted-lizhishen-painted-sheet-v1.png',
-    mountedBow: 'art/side-scroller/mounted-lizhishen-bow-painted-sheet-v1.png',
+    hero: 'art/side-scroller/lizhishen-painted-sheet-v2.png',
+    heroBow: 'art/side-scroller/lizhishen-bow-painted-sheet-v2.png',
+    mounted: 'art/side-scroller/mounted-lizhishen-painted-sheet-v2.png',
+    mountedBow: 'art/side-scroller/mounted-lizhishen-bow-painted-sheet-v2.png',
   },
   sunshangxiang: { hero: 'art/side-scroller/sunshangxiang-painted-sheet-v1.png' },
-  tieshangongzhu: { hero: 'art/side-scroller/tieshangongzhu-painted-sheet-v2.png' },
-  husanniang: { hero: 'art/side-scroller/husanniang-painted-sheet-v1.png' },
+  tieshangongzhu: { hero: 'art/side-scroller/tieshangongzhu-painted-sheet-v3.png' },
+  husanniang: { hero: 'art/side-scroller/husanniang-painted-sheet-v2.png' },
 };
 
 for (const [id, profile] of Object.entries(MOUNT_PROFILES)) {
@@ -121,7 +124,7 @@ for (const [id, profile] of Object.entries(MOUNT_PROFILES)) {
 
 const ART = {
   enemy: 'art/side-scroller/enemy-painted-sheet-v4.png',
-  boss: 'art/side-scroller/hulao-boss-painted-sheet-v1.png',
+  boss: 'art/side-scroller/hulao-boss-painted-sheet-v2.png',
   background: 'art/side-scroller/hulao-arcade-bg-v3.png',
   horse: 'art/side-scroller/red-hare-painted-sheet-v3.png',
   jindouyun: 'art/side-scroller/jindouyun-painted-sheet-v1.png',
@@ -130,7 +133,7 @@ const ART = {
 };
 
 const MOUNT_ART = {
-  liubei: 'art/side-scroller/mount-liubei-painted-sheet-v1.png',
+  liubei: 'art/side-scroller/mount-liubei-painted-sheet-v2.png',
   guanyu: 'art/side-scroller/mount-guanyu-painted-sheet-v1.png',
   zhangfei: 'art/side-scroller/mount-zhangfei-painted-sheet-v1.png',
   wukong: 'art/side-scroller/jindouyun-painted-sheet-v1.png',
@@ -147,9 +150,9 @@ const MOUNT_ART = {
 for (const [id, profile] of Object.entries(MOUNT_PROFILES)) MOUNT_ART[id] = profile.horse;
 
 const BOSS_ART = {
-  suiVanguard: 'art/side-scroller/boss-sui-vanguard-painted-sheet-v1.png',
+  suiVanguard: 'art/side-scroller/boss-sui-vanguard-painted-sheet-v2.png',
   khitanVanguard: 'art/side-scroller/boss-khitan-vanguard-painted-sheet-v1.png',
-  haengjuVanguard: 'art/side-scroller/boss-haengju-vanguard-painted-sheet-v1.png',
+  haengjuVanguard: 'art/side-scroller/boss-haengju-vanguard-painted-sheet-v2.png',
   myeongnyangVanguard: 'art/side-scroller/boss-myeongnyang-vanguard-painted-sheet-v1.png',
   yinjiao: 'art/side-scroller/boss-yinjiao-painted-sheet-v1.png',
   honghaier: 'art/side-scroller/boss-honghaier-painted-sheet-v1.png',
@@ -157,19 +160,19 @@ const BOSS_ART = {
   hunshimowang: 'art/side-scroller/boss-hunshimowang-painted-sheet-v1.png',
   aoguang: 'art/side-scroller/boss-aoguang-painted-sheet-v1.png',
   baigujing: 'art/side-scroller/boss-baigujing-painted-sheet-v1.png',
-zhangjiao: 'art/side-scroller/boss-zhangjiao-painted-sheet-v1.png',
-  huaxiong: 'art/side-scroller/boss-huaxiong-painted-sheet-v1.png',
-  chunyuqiong: 'art/side-scroller/boss-chunyuqiong-painted-sheet-v1.png',
-  caochun: 'art/side-scroller/boss-caochun-painted-sheet-v1.png',
-  caimao: 'art/side-scroller/boss-caimao-painted-sheet-v1.png',
+zhangjiao: 'art/side-scroller/boss-zhangjiao-painted-sheet-v2.png',
+  huaxiong: 'art/side-scroller/boss-huaxiong-painted-sheet-v2.png',
+  chunyuqiong: 'art/side-scroller/boss-chunyuqiong-painted-sheet-v2.png',
+  caochun: 'art/side-scroller/boss-caochun-painted-sheet-v2.png',
+  caimao: 'art/side-scroller/boss-caimao-painted-sheet-v2.png',
   xiahoudun: 'art/side-scroller/boss-xiahoudun-painted-sheet-v1.png',
-  luxun: 'art/side-scroller/boss-luxun-painted-sheet-v1.png',
-  dongzhuo: 'art/side-scroller/dongzhuo-painted-sheet-v1.png',
+  luxun: 'art/side-scroller/boss-luxun-painted-sheet-v2.png',
+  dongzhuo: 'art/side-scroller/dongzhuo-painted-sheet-v2.png',
   sunquan: 'art/side-scroller/sunquan-painted-sheet-v1.png',
-  menghuo: 'art/side-scroller/menghuo-painted-sheet-v1.png',
+  menghuo: 'art/side-scroller/menghuo-painted-sheet-v2.png',
   simayi: 'art/side-scroller/boss-simayi-painted-sheet-v1.png',
-  wumawang: 'art/side-scroller/boss-wumawang-painted-sheet-v1.png',
-  erlangshen: 'art/side-scroller/boss-erlangshen-painted-sheet-v1.png',
+  wumawang: 'art/side-scroller/boss-wumawang-painted-sheet-v2.png',
+  erlangshen: 'art/side-scroller/boss-erlangshen-painted-sheet-v2.png',
   gaoqiu: 'art/side-scroller/boss-gaoqiu-painted-sheet-v1.png',
   luqian: 'art/side-scroller/boss-luqian-painted-sheet-v1.png',
 };
@@ -192,11 +195,7 @@ const MOUNT_LABELS = {
 // 소리를 내거나 저팔계의 야저가 군마처럼 처리되는 폴백을 막는다.
 for (const [id, profile] of Object.entries(MOUNT_PROFILES)) MOUNT_LABELS[id] = profile.label;
 
-const MOUNT_KINDS = {
-  liubei: 'horse', guanyu: 'horse', zhangfei: 'horse',
-  wukong: 'cloud', nezha: 'wheels', bajie: 'boar', wujing: 'waterBeast',
-  wusong: 'horse', linchong: 'horse', lizhishen: 'horse', lvbu: 'horse',
-};
+const MOUNT_KINDS = MOUNT_KIND_BY_HERO;
 
 // 소설별 적장 프로필. 이름만 바뀌고 같은 화웅 스프라이트를 쓰지 않도록
 // 색상·무기·실루엣 장식·공격 사거리까지 보스마다 따로 둔다.
@@ -370,6 +369,12 @@ const SPECIAL_CALLOUTS = {
   lizhishen: { special: { name: '금강선장풍', cry: '수마선장이 대지를 울린다' }, musou: { name: '도해붕산진', cry: '산을 뽑는 금강의 괴력' } },
   husanniang: { special: { name: '일월홍금쇄', cry: '쌍도와 홍금투삭의 연계' }, musou: { name: '일장청월무', cry: '달빛처럼 빠른 쌍도 난무' } },
 };
+// Gemini TTS 기술명 함성(audio/hero-callouts-gemini-v1, manifest.json). 받아쓰기 검증을 통과한 줄만 싣고,
+// 통과 못 한 줄은 예전 v6 녹음을 그대로 쓴다. 가족 영웅은 각자 승인된 목소리를 쓴다.
+const GEMINI_CALLOUTS = Object.freeze({
+  special: new Set(['euljimundeok','ganggamchan','kwonyul','yisunsin','liubei','guanyu','caocao','machao','huangzhong','xiahoudun','zhangliao','xuchu','simayi','sunquan','taishici','ganning','lvbu','diaochan','dongzhuo','menghuo','zhurong','zhaoyun','huanggai','zhugeliang','wukong','bajie','nezha','erlangshen','tieshangongzhu','linchong','lizhishen','zhangfei','luxun','zhouyu','sunshangxiang','wujing','husanniang','honghaier','wusong']),
+  musou: new Set(['euljimundeok','ganggamchan','kwonyul','yisunsin','liubei','guanyu','zhangfei','caocao','machao','xiahoudun','zhangliao','simayi','sunquan','taishici','ganning','lvbu','diaochan','dongzhuo','menghuo','zhurong','zhouyu','huanggai','zhugeliang','sunshangxiang','wukong','wujing','erlangshen','honghaier','tieshangongzhu','wusong','linchong','lizhishen','husanniang','huangzhong','xuchu','luxun','zhaoyun','bajie','nezha']),
+});
 const DEFAULT_CALLOUT = { special: { name: '고유 필살기', cry: '혼신을 다한 일격' }, musou: { name: '무쌍난무', cry: '전장을 뒤덮는 무쌍의 기세' } };
 
 // 각 탑승 스프라이트의 활 손 위치. 합성 시트마다 기수의 몸 비율이 달라
@@ -413,6 +418,10 @@ async function loadOptional(src, label) {
  * 절대 하면 안 된다. 그래서 선택 화면이 이 함수로 미리 걸러 낸다.
  */
 export const heroHasArt = (heroId) => !!HERO_ART[heroId];
+// 이 시트들은 공격 두 칸이 '베기(2) → 치켜들기(3)' 순으로 그려져 있어, 그대로 쓰면
+// 공격이 칼을 들어 올린 채 끝난다. 화면에서는 3→2로 바꿔 '들기 → 베기'로 보인다.
+const ATTACK_FRAMES_SWAPPED = new Set(['euljimundeok', 'ganggamchan', 'kwonyul', 'yisunsin', 'wukong', 'wusong']);
+export const heroPortraitArt = (heroId) => HERO_ART[heroId]?.hero;
 
 export function preloadSideScroller(heroId = 'guanyu', stageKey = 'hulao') {
   const resolvedHeroId = HERO_ART[heroId] ? heroId : 'guanyu';
@@ -467,6 +476,18 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
   // 무기 효과음만 사용한다. 없는 WAV를 요청해 콘솔 404를 만들지 않는다.
   const recordedHeroCallouts = new Set(['xiahoudun','zhangliao','xuchu','simayi','sunquan','taishici','ganning','luxun','lvbu','diaochan','dongzhuo','menghuo','zhurong','liubei','guanyu','zhangfei','caocao','zhaoyun','zhouyu','huanggai','zhugeliang','machao','huangzhong','sunshangxiang','wukong','bajie','wujing','tieshangongzhu','wusong','linchong','lizhishen','husanniang']);
   const hasRecordedHeroCallouts = recordedHeroCallouts.has(heroId);
+  // 기본 기술명 외침은 Gemini TTS로 새로 녹음한 장수별 전투 함성이다.
+  // 들숨까지 한 테이크에 담긴 완성 연기라 공용 함성·들숨을 겹치지 않는다.
+  // 파일을 못 읽으면 예전 v6 원음과 공용 함성으로 내려간다. 장판뇌후도 11-02 새로 녹음(대표님 요청).
+  const geminiCallout = (action) => GEMINI_CALLOUTS[action].has(heroId)
+    ? 'audio/hero-callouts-gemini-v1/' + heroId + '-' + action + '-g1.mp3' : null;
+  const v6Callout = (action) => hasRecordedHeroCallouts ? ['audio/hero-callouts-ko-v6/' + heroId + '-' + action + '-v6.wav'] : [];
+  const calloutFallbacks = {};
+  const completeCallout = {};
+  for (const [group, action] of [['voiceSpecial', 'special'], ['voiceMusou', 'musou']]) {
+    completeCallout[group] = !!geminiCallout(action);
+    if (completeCallout[group]) calloutFallbacks[group] = v6Callout(action);
+  }
   const battleCry = battleCryProfile(heroId);
   const elevenVoices = elevenVoiceFiles(heroId);
   const sampleManifest = {
@@ -488,8 +509,8 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
     // Family heroes use their dedicated callouts, never an unrelated general's fallback.
     battleCry: BATTLE_CRY_PACKS[battleCry.pack],
     // v6는 피치업·더블링·소프트클립을 제거한 자연스러운 기술명 원음이다.
-    voiceSpecial: hasRecordedHeroCallouts ? ['audio/hero-callouts-ko-v6/' + heroId + '-special-v6.wav'] : [],
-    voiceMusou: hasRecordedHeroCallouts ? ['audio/hero-callouts-ko-v6/' + heroId + '-musou-v6.wav'] : [],
+    voiceSpecial: geminiCallout('special') ? [geminiCallout('special')] : v6Callout('special'),
+    voiceMusou: geminiCallout('musou') ? [geminiCallout('musou')] : v6Callout('musou'),
     waterSplashLight: [1, 2, 3].map((index) => 'audio/cinematic-water/water-splash-light-0' + index + '-cc0-v1.ogg'),
     waterSplashHeavy: [1, 2, 3].map((index) => 'audio/cinematic-water/water-splash-heavy-0' + index + '-cc0-v1.ogg'),
     breathNeutral: isFamilyHero(heroId) ? [] : ['audio/cinematic-breath/battle-inhale-neutral-cc0-v1.ogg'],
@@ -528,11 +549,19 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
   const loadSamples = () => {
     if (loading) return;
     loading = true;
+    const fetchDecoded = (urls) => Promise.all(urls.map((url) => fetch(url)
+      .then((response) => { if (!response.ok) throw new Error('HTTP ' + response.status + ': ' + url); return response.arrayBuffer(); })
+      .then((data) => ctx.decodeAudioData(data))));
     for (const [group, urls] of Object.entries(sampleManifest)) {
       if (!urls.length) { buffers[group] = []; sampleReady[group] = Promise.resolve([]); continue; }
-      sampleReady[group] = Promise.all(urls.map((url) => fetch(url)
-        .then((response) => { if (!response.ok) throw new Error('HTTP ' + response.status + ': ' + url); return response.arrayBuffer(); })
-        .then((data) => ctx.decodeAudioData(data))))
+      sampleReady[group] = fetchDecoded(urls)
+        .catch((error) => {
+          const fallback = calloutFallbacks[group];
+          if (!fallback?.length) throw error;
+          console.warn('[audio] callout fallback:', group, error);
+          completeCallout[group] = false;
+          return fetchDecoded(fallback);
+        })
         .then((decoded) => (buffers[group] = decoded))
         .catch((error) => { console.warn('[audio] sample load failed:', group, error); return (buffers[group] = []); });
     }
@@ -1069,6 +1098,9 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
       duckMusic(powerful ? .095 : .11, powerful ? 1600 : 1320);
 
       const performed = playElevenVoice(powerful ? 'musou' : 'special');
+      const voiceGroup = powerful ? 'voiceMusou' : 'voiceSpecial';
+      // Gemini 기본 함성은 숨과 기합까지 담긴 완성 연기: 공용 함성·들숨을 겹치지 않는다.
+      const completeTake = !performed && completeCallout[voiceGroup];
       if (!performed) {
         // 기존 기술명과 공용 함성은 새 녹음이 없거나 로드되지 않았을 때만 쓴다.
         const voiceToken = lastSpecialVoiceAt;
@@ -1092,7 +1124,7 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
         });
 
         const battleCryDelay = powerful ? .18 : .11;
-        const playHeroCry = () => playBattleCry(powerful, battleCryDelay);
+        const playHeroCry = () => completeTake || playBattleCry(powerful, battleCryDelay);
         if (!playHeroCry()) sampleReady.battleCry?.then(() => {
           if (muted || lastSpecialVoiceAt !== voiceToken || performance.now() - voiceToken > 240) return;
           playHeroCry();
@@ -1101,7 +1133,7 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
 
       // 독자적인 호흡→응축→날 세움→접촉→잔향의 한 타임라인. 실제 CC0
       // 들숨은 낮게 깔고, 물·비·빙결 계열은 접촉(414/451ms)에 물보라가 터진다.
-      if (!performed) playSample(powerful ? 'breathDeep' : 'breathNeutral', powerful ? .21 : .16, 1, -.10, .025, {
+      if (!performed && !completeTake) playSample(powerful ? 'breathDeep' : 'breathNeutral', powerful ? .21 : .16, 1, -.10, .025, {
         highpass: 105, lowpass: 7200, gainCeiling: .23, fixedRate: true,
       }, true);
       burst({ type: 'bandpass', from: 520, to: 2850, q: .48, gain: powerful ? .09 : .062, decay: impactAt - .035, attack: .14, delay: .01, pan: -.18, wet: .06 });
@@ -1269,7 +1301,8 @@ const PAINTED_FRAME_LAYOUTS = {
     // Seventh field is the standing figure height in the atlas's 1280-unit space.
     'nezha-painted-sheet-v1.png': [[0,0,640,640,300,606,490],[640,0,640,640,310,604,490],[0,640,640,640,310,530,490],[640,640,640,640,310,524,490]],
     'nezha-bow-painted-sheet-v1.png': [[0,0,640,640,320,636,598],[640,0,640,640,320,636,598],[0,640,640,640,340,586,598],[640,640,640,640,320,586,598]],
-    'honghaier-painted-sheet-v1.png': [[0,0,640,640,320,624,598],[640,0,640,640,320,612,598],[0,640,640,640,320,604,598],[640,640,640,640,320,606,598]],
+    // The idle cut stops at x=590: the neighbouring run frame's flame tips reach into it.
+    'honghaier-painted-sheet-v1.png': [[0,0,590,640,320,624,598],[640,0,640,640,320,612,598],[0,640,640,640,320,604,598],[640,640,640,640,320,606,598]],
     'honghaier-bow-painted-sheet-v1.png': [[0,0,640,640,320,582,560],[640,0,640,640,320,582,560],[0,640,700,640,340,598,560],[640,640,640,640,320,598,560]],
     'mount-fenghuolun-painted-sheet-v1.png': [[0,0,640,640,320,572,440],[640,0,640,640,320,566,440],[0,640,640,640,320,524,440],[640,640,640,640,320,514,440]],
     'mounted-nezha-painted-sheet-v1.png': [[0,0,640,640,320,610,590],[640,0,640,640,320,608,590],[0,640,640,640,320,610,590],[640,640,640,640,320,612,590]],
@@ -1284,6 +1317,13 @@ const PAINTED_FRAME_LAYOUTS = {
     'huangzhong-painted-sheet-v1.png': [[0,0,640,640,320,583],[640,0,640,640,320,575],[0,640,640,640,320,544],[640,640,640,640,310,510]],
     'huangzhong-bow-painted-sheet-v1.png': [[0,0,620,600,320,583],[620,0,660,600,350,575],[0,600,620,680,320,605],[620,600,660,680,250,605]],
 };
+// Where a 1280-unit atlas point lands for drawAtlasFrame(…, x, groundY, height):
+// screen = (x + facing*(u-ox)*scale, groundY + (v-oy)*scale). Used to seat riders.
+function atlasFrameTransform(image, frame, height) {
+  const layout = PAINTED_FRAME_LAYOUTS[image.src?.split('/').pop()]?.[frame];
+  if (layout) { const [sx,sy,,,ax,ay,referenceHeight=576] = layout; return { scale: height / referenceHeight, ox: sx + ax, oy: sy + ay }; }
+  return { scale: height / 640, ox: (frame % 2) * 640 + 320, oy: Math.floor(frame / 2) * 640 + 640 };
+}
 function drawAtlasFrame(ctx, image, frame, x, groundY, height, facing = 1, alpha = 1) {
   const layout = PAINTED_FRAME_LAYOUTS[image.src?.split('/').pop()]?.[frame];
   if (layout) {
@@ -1421,11 +1461,13 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   const heroAssets = assets.heroes[heroId] || assets.heroes.guanyu;
   const combatProfile = COMBAT_PROFILES[heroId] || COMBAT_PROFILES.guanyu;
   const heroVisualScale = heroRenderScale(heroId);
+  const attackFramesSwapped = ATTACK_FRAMES_SWAPPED.has(heroId);
   const dashTechnique = dashSkill(heroId);
   const callouts = SPECIAL_CALLOUTS[heroId] || DEFAULT_CALLOUT;
   const mountAsset = assets.mounts[heroId] || assets.horse;
   const mountLabel = MOUNT_LABELS[heroId] || '군마';
   const mountKind = MOUNT_KINDS[heroId] || 'horse';
+  const mountStyle = mountFlavor(mountKind);
   const isCloudMount = mountKind === 'cloud', isFireWheelMount = mountKind === 'wheels', isBoarMount = mountKind === 'boar', isWaterMount = mountKind === 'waterBeast';
   const familyRanged = FAMILY_RANGED[heroId];
   const rangedStyle = familyRanged ? familyRanged.kind : ['wukong', 'tieshangongzhu', 'zhugeliang', 'luxun', 'diaochan'].includes(heroId) ? 'fan'
@@ -1525,6 +1567,19 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     hudRoot.querySelector('.controls').innerHTML = '<span>WASD 이동 · W 두 번 점프</span><span>J 공격 · 꾹 강공</span><span>K ' + rangedControl + '</span>' + mountControl + '<span>L 필살기</span><span>I 돌진기</span>';
   }
   playerHud.setDashSkill(dashTechnique);
+  // 말 위에서는 조작 안내도 기마 기술로 바뀐다. 내리면 원래 안내로 돌아간다.
+  const footControlsHtml = hudRoot.querySelector('.controls').innerHTML;
+  const mountedControlsHtml = '<span>WASD 이동 · 말 위 점프 없음</span><span>J 찌르기→휩쓸기 · 꾹 ' + mountStyle.stomp + '</span>'
+    + (supportsMountedRanged ? '<span>K 말 위 원거리</span>' : '') + '<span>L 필살기 · 달리며</span><span>I ' + mountStyle.charge + '</span><span>F 내리기</span>';
+  let shownMountedMode = null;
+  const refreshMountedUi = (now) => {
+    const mounted = !!player.mounted;
+    playerHud.setMountedMode(mounted, mounted ? { ...mountedButtonLabels(mountKind, peekMountedChainAction(player, now)), mountName: mountLabel } : null);
+    if (shownMountedMode === mounted) return;
+    shownMountedMode = mounted;
+    const controls = hudRoot.querySelector('.controls');
+    if (controls) controls.innerHTML = mounted ? mountedControlsHtml : footControlsHtml;
+  };
   playerHud.setCapabilities(supportsRanged, supportsMount, familyRanged?.label || { fan: heroId === 'diaochan' ? '비단 부채' : ['zhugeliang','luxun'].includes(heroId) ? '우선' : '파초선', ring: heroId === 'nezha' ? '건곤권' : '쌍환', lasso: '투삭', fire: heroId === 'zhurong' ? '화염 비도' : '화염탄', bow: heroId === 'erlangshen' ? '탄궁' : '활' }[rangedStyle], isFireWheelMount ? '풍화륜' : '승마');
   bossHud.show(false); bossHud.setWeapon(bossProfile.weapon); bossHud.setPhase('결전 대기'); playerHud.setObjective(stageInfo?.mission || '호로관의 적군을 돌파하라'); playerHud.setMount(false, mountLabel, supportsMount);
   const input = createInput(canvas), audio = makeAudio(heroId, stageKey), worldWidth = 7800;
@@ -1634,7 +1689,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     }
     if (usesConsistentMount) {
       const layout = mountLayout(depthScale);
-      return { height:layout.mountHeight*.84, fx:38, launch:76 };
+      return { height:layout.mountHeight*.86, fx:70, launch:96 };
     }
     // 특수 탈것은 같은 단독 탈것의 안장 기준에서 손 위치를 계산한다.
     const layout = mountLayout(depthScale);
@@ -1650,8 +1705,8 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   function standingHeroHeight(depthScale = 1) {
     return Math.min(320, height * .50) * depthScale * heroVisualScale;
   }
-  function mountTransition(phase, x = player.x, lane = player.lane, facing = player.facing) {
-    audio.mountEvent(mountKind, phase);
+  function mountTransition(phase, x = player.x, lane = player.lane, facing = player.facing, withSound = true) {
+    if (withSound) audio.mountEvent(mountKind, phase);
     const palette = isCloudMount ? ['#fff2b8', '#ffc95e']
       : isFireWheelMount ? ['#fff0a2', '#ff5b28']
       : isBoarMount ? ['#d8a56b', '#70462e']
@@ -1758,8 +1813,8 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       : weaponStyle === 'crescent' ? (attackStep === 2 ? 'thrust' : attackStep === 3 ? 'spin' : 'sweep')
       : weaponStyle === 'monkstaff' ? (attackStep === 2 ? 'wide' : attackStep === 3 ? 'spin' : 'overhead')
       : attackStep === 2 ? 'reverse' : attackStep === 3 ? 'wide' : 'sweep';
-    const kind = type === 'dash' ? dashTechnique.kind : combatProfile.kinds?.[type === 'attack' ? attackStep : type] || defaultKind;
-    const theme = type === 'dash' ? dashTechnique.theme : musou ? combatProfile.musouTheme : type === 'special' ? combatProfile.specialTheme : type === 'whirlwind' ? combatProfile.whirlwindTheme : combatProfile.attackTheme;
+    const kind = type === 'dash' ? dashTechnique.kind : type === 'mountedCharge' ? 'thrust' : MOUNTED_MOVES[type] ? MOUNTED_MOVES[type].kind : combatProfile.kinds?.[type === 'attack' ? attackStep : type] || defaultKind;
+    const theme = type === 'dash' || type === 'mountedCharge' ? dashTechnique.theme : type === 'mountedStomp' ? 'earth' : musou ? combatProfile.musouTheme : type === 'special' ? combatProfile.specialTheme : type === 'whirlwind' ? combatProfile.whirlwindTheme : combatProfile.attackTheme;
     const palettes = {
       water: ['#07364f', '#21bce8', '#dffbff'],
       jade: ['#073f38', '#35d6a2', '#e8fff4'],
@@ -1779,8 +1834,10 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     // 쌍고검은 칼이 짧다 — 호를 작게 그려야 "단검 두 자루"로 읽힌다.
     const baseScale = weaponStyle === 'dual' && type === 'attack' ? .78 : weaponStyle === 'fan' && type === 'attack' ? 1.12 : 1;
     const scale = baseScale * growth.effectScale;
+    // 말 위 필살기·무쌍은 기수가 앞으로 내달리므로 궤적도 함께 따라간다.
+    const ride = player.mounted && !!MOUNTED_SURGE[type];
     for (let layer = 0; layer < count; layer++) {
-      effects.push({ x: player.x + player.facing * (kind === 'thrust' ? 155 : burst ? 120 : 92), y: ground() + player.lane - player.y - (player.mounted ? 190 : kind === 'overhead' ? 148 : 132), facing: player.facing, heavy, musou: burst, kind, theme, palette, scale, seed: Math.random() * 20, layer, life: max + layer * .045, max: max + layer * .045 });
+      effects.push({ x: player.x + player.facing * (kind === 'thrust' ? 155 : burst ? 120 : 92), y: ground() + player.lane - player.y - (player.mounted ? 190 : kind === 'overhead' ? 148 : 132), facing: player.facing, heavy, musou: burst, kind, theme, palette, scale, seed: Math.random() * 20, layer, life: max + layer * .045, max: max + layer * .045, ride });
     }
     if (heroId === 'honghaier' && ['special', 'musou'].includes(type)) {
       const fireLayers = musou ? 3 : 2;
@@ -1913,6 +1970,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     if (now < player.actionUntil) return;
     if (type === 'musou' && player.rage < 100) { showBanner(hudRoot, '무쌍 기운 부족', Math.floor(player.rage) + ' / 100', 950); return; }
     if (type === 'dash' && now < player.dashReady) { showBanner(hudRoot, '돌진 재사용 대기', Math.ceil((player.dashReady - now) / 1000) + '초', 950); return; }
+    if (type === 'mountedCharge' && now < player.dashReady) { showBanner(hudRoot, '돌격 준비 중', ((player.dashReady - now) / 1000).toFixed(1) + '초', 700); return; }
     if (type === 'whirlwind' && now < player.whirlwindReady) { showBanner(hudRoot, '선풍참 재사용 대기', Math.ceil((player.whirlwindReady - now) / 1000) + '초', 950); return; }
     if (type === 'whirlwind' && player.rage < 25) { showBanner(hudRoot, '선풍참 기운 부족', Math.floor(player.rage) + ' / 25', 950); return; }
     if (type === 'counter' && now < player.counterReady) { showBanner(hudRoot, '반격 재사용 대기', Math.ceil((player.counterReady - now) / 1000) + '초', 950); return; }
@@ -1932,29 +1990,45 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       player.dashCooldownScale = growth.cooldown;
       player.dashReachScale = heroTuning.reach;
       startDashState(player, dashTechnique, now);
+      player.dashCooldownTotal = dashTechnique.cooldown * growth.cooldown;
       player.invulnerableUntil = Math.max(player.invulnerableUntil, now + 180);
       showBanner(hudRoot, dashTechnique.name, dashTechnique.tip, 950);
       floatText(dashTechnique.name, player.x, player.lane, dashTechnique.color, 1.15);
     }
+    if (type === 'mountedCharge') {
+      // 기마 돌격: 고정 거리를 질주하며 길 위의 적을 모두 들이받는다. 질주 중에는 맞지 않는다.
+      const direction = input.axis();
+      if (Math.abs(direction) > .22) player.facing = Math.sign(direction);
+      startMountedCharge(player, now, growth.cooldown);
+      showBanner(hudRoot, mountStyle.charge + '!', '말을 달려 적진을 뚫어요', 800);
+      floatText(mountStyle.charge + '!', player.x, player.lane, '#ffd36a', 1.22);
+      audio.mountEvent(mountKind, 'mount');
+      mountTransition('charge', player.x, player.lane, player.facing, false);
+      shake = Math.max(shake, 6);
+    } else if (MOUNTED_MOVES[type]) {
+      floatText((type === 'mountedStomp' ? mountStyle.stomp : MOUNTED_MOVES[type].name.replace(/^말 위 /, '')) + '!', player.x, player.lane - 30, '#ffe6a6', type === 'mountedStomp' ? 1.08 : .9);
+    }
     if (type === 'whirlwind') { player.whirlwindReady = now + 4200 * growth.cooldown; player.rage = Math.max(0, player.rage - 25); }
     if (player.grab && type === 'heavy') type = 'throw';
     else if (player.grab && type === 'attack') type = 'grab';
-    const heavy = ['heavy', 'throw', 'special', 'dash', 'whirlwind', 'mountedThrust'].includes(type), musou = type === 'musou';
+    const heavy = ['heavy', 'throw', 'special', 'dash', 'whirlwind', 'mountedThrust', 'mountedSweep', 'mountedStomp', 'mountedCharge'].includes(type), musou = type === 'musou';
     if (musou) { const move = callouts.musou; player.rage = 0; player.invulnerableUntil = now + 1120; audio.specialCry(true, combatProfile.musouTheme); showBanner(hudRoot, move.name, move.cry); floatText(move.name, player.x, player.lane, combatProfile.hitColor, 1.34); }
     else if (type === 'special') { const move = callouts.special; audio.specialCry(false, combatProfile.specialTheme); showBanner(hudRoot, move.name, move.cry); floatText(move.name, player.x, player.lane, combatProfile.hitColor, 1.24); }
     else if (type === 'whirlwind') { audio.musou(false); audio.shout(true); }
     else if (type !== 'ranged') {
       audio.swing(heavy, combatProfile.audioStyle || weaponStyle);
       if (type === 'dash') audio.dashCry();
+      // 기마 기술은 이름 음성이 없다. 기존 함성만 재사용한다(돌격·짓밟기는 큰 함성).
+      else if (type === 'mountedCharge' || type === 'mountedStomp') audio.shout(true);
       else if (!['taeo', 'jaei'].includes(heroId) || type === 'mountedThrust') {
-        if (type === 'heavy' || type === 'mountedThrust') audio.shout(false);
+        if (type === 'heavy' || isMountedAction(type)) audio.shout(false);
         else if (type === 'attack' && Math.random() < .24) audio.shout(false);
       }
     }
-    const duration = musou ? 980 : type === 'whirlwind' ? 720 : type === 'special' ? 900 : type === 'ranged' ? 640 : type === 'dash' ? dashTechnique.duration : type === 'throw' ? 560 : heavy ? 510 : lightAttackMs;
+    const duration = musou ? 980 : type === 'whirlwind' ? 720 : type === 'special' ? 900 : type === 'ranged' ? 640 : type === 'dash' ? dashTechnique.duration : type === 'mountedCharge' ? MOUNTED_CHARGE.duration : MOUNTED_MOVES[type] ? MOUNTED_MOVES[type].duration : type === 'throw' ? 560 : heavy ? 510 : lightAttackMs;
     if (type === 'attack') player.attackStep = (now < player.comboUntil ? player.comboStep % 3 : 0) + 1;
     if ((heroId === 'taeo' || heroId === 'jaei') && !['dash', 'special', 'musou'].includes(type) && (type !== 'attack' || player.attackStep === 1)) audio.skillCry(type);
-    cameraKick = Math.max(cameraKick, musou || type === 'special' ? .085 : type === 'whirlwind' ? .065 : type === 'heavy' || type === 'dash' || (type === 'attack' && player.attackStep === 3) ? .038 : .012);
+    cameraKick = Math.max(cameraKick, musou || type === 'special' ? .085 : type === 'whirlwind' ? .065 : type === 'mountedCharge' || type === 'mountedStomp' ? .05 : type === 'heavy' || type === 'dash' || type === 'mountedSweep' || (type === 'attack' && player.attackStep === 3) ? .038 : .012);
     player.action = type; player.rangedCharged = type === 'ranged' && charged; player.actionStarted = now; player.actionDuration = duration; player.actionUntil = now + duration; player.hitDone = false;
     player.familyTechnique = startFamilyTechnique(heroId, type, now);
     if (heroId === 'wukong' && ['special', 'musou'].includes(type)) {
@@ -2024,9 +2098,78 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     }
   }
 
+  // 기마 기술 한 대. 적장은 덜 밀리고 넘어지지 않는다.
+  function landMountedHit(enemy, action, base, stunMs, now, knockdown = false) {
+    const critical = growth.critChance > 0 && Math.random() < growth.critChance;
+    const damage = Math.round((base * heroTuning.power + (now < player.weaponBoost ? 18 : 0)) * (critical ? 1.65 : 1));
+    const pan = Math.max(-.8, Math.min(.8, (enemy.x - player.x) / 600));
+    enemy.hp = Math.max(0, enemy.hp - damage);
+    const shove = mountedKnockback(action, player, enemy), resist = enemy.boss ? .5 : enemy.role === 'heavy' ? .78 : 1;
+    enemy.x += shove.x * resist; enemy.lane += shove.lane * resist;
+    enemy.hitUntil = Math.max(enemy.hitUntil || 0, now + stunMs * (enemy.boss ? .5 : 1));
+    if (knockdown && !enemy.boss) { enemy.knockdownStarted = now; enemy.knockdownUntil = now + stunMs; }
+    constrainEnemy(enemy, combatBounds(worldWidth, waveGate, combatLocked));
+    floatText(enemy.boss ? `${critical ? '✦ ' : ''}◆ ${damage}` : critical ? `✦ ${damage}` : damage, enemy.x, enemy.lane, enemy.boss ? bossProfile.glow : critical ? '#fff0a6' : combatProfile.hitColor, enemy.boss ? 1.18 : critical ? 1.14 : 1.04);
+    addImpact(enemy.x, enemy.lane, true, enemy.hp <= 0);
+    if (enemy.hp <= 0) { enemy.deadAt = now; player.ko += 1; rewardKoHeal(); audio.enemyVoice(true, pan, enemy); gainRage(16); }
+    else audio.enemyVoice(false, pan, enemy);
+  }
+  function mountedDustBurst(x, lane, count, spread, lift) {
+    const [a, b, c] = mountStyle.colors;
+    for (let i = 0; i < count; i++) {
+      const side = i % 2 ? 1 : -1;
+      dust.push({ x: x + side * Math.random() * spread, y: ground() + lane - (mountKind === 'cloud' ? 60 + Math.random() * 40 : Math.random() * 14), vx: side * (60 + Math.random() * 260), vy: -lift * (.3 + Math.random() * .9), life: .3 + Math.random() * .4, max: .7, color: i % 5 === 0 ? c : i % 2 ? a : b, glow: mountKind !== 'horse' && mountKind !== 'boar', element: mountStyle.element, rotation: Math.random() * 6.28, spin: (Math.random() - .5) * 8, size: 4 + Math.random() * 8 });
+    }
+  }
+  function resolveMountedMove(action, now) {
+    const move = MOUNTED_MOVES[action];
+    const targets = mountedMoveTargets(action, player, enemies);
+    for (const enemy of targets) landMountedHit(enemy, action, move.damage, move.stun, now, !!move.knockdown);
+    let crates = 0;
+    for (const prop of props) {
+      if (prop.collected || prop.type !== 'crate') continue;
+      const ahead = (prop.x - player.x) * player.facing;
+      if (ahead > move.forward || ahead < -move.back || Math.abs(prop.lane - player.lane) > Math.min(move.lane, 110)) continue;
+      prop.hp -= 1; crates += 1; if (prop.hp <= 0) { prop.type = prop.drop; prop.drop = null; addImpact(prop.x, prop.lane, true, false); }
+    }
+    if (action === 'mountedStomp') {
+      // 앞발이 땅을 찍는 순간: 말 둘레로 균열과 흙먼지가 퍼진다(맞은 적이 없어도).
+      impacts.push({ x: player.x + player.facing * 60, y: ground() + player.lane, heavy: true, defeated: true, color: mountStyle.colors[1], style: 'crack', life: .9, max: .9 });
+      impacts.push({ x: player.x - player.facing * 70, y: ground() + player.lane, heavy: true, defeated: false, color: mountStyle.colors[0], style: 'crack', life: .7, max: .7 });
+      mountedDustBurst(player.x, player.lane, Math.round(34 * q()), 150, 330);
+      audio.hit(true, action); shake = Math.max(shake, move.shake); colorFlash = Math.max(colorFlash, .10);
+    }
+    if (targets.length || crates) {
+      if (action !== 'mountedStomp') audio.hit(true, action);
+      shake = Math.max(shake, move.shake); hitstopUntil = now + (action === 'mountedThrust' ? 52 : 66);
+      if (action !== 'mountedThrust') slowUntil = Math.max(slowUntil, now + 150);
+      gainRage(targets.length * 7);
+    }
+  }
+  function resolveMountedCharge(now) {
+    const targets = collectChargeHits(player, enemies, now);
+    for (const enemy of targets) landMountedHit(enemy, 'mountedCharge', MOUNTED_CHARGE.damage, MOUNTED_CHARGE.stun, now, true);
+    if (targets.length) { audio.hit(true, 'dash'); gainRage(targets.length * 6); shake = Math.max(shake, 9); hitstopUntil = now + 34; }
+    for (const prop of props) {
+      if (!prop.collected && prop.type === 'crate' && Math.abs(prop.x - player.x) < MOUNTED_CHARGE.front && Math.abs(prop.lane - player.lane) < MOUNTED_CHARGE.lane) {
+        prop.type = prop.drop; prop.drop = null; addImpact(prop.x, prop.lane, true, false);
+      }
+    }
+    if (now >= player.dashEffectAt) {
+      addSlash('mountedCharge'); player.dashEffectAt = now + 120;
+      // 탈것마다 다른 꼬리: 말·야저는 흙먼지, 근두운은 금빛 구름, 풍화륜은 불꽃, 수마는 물보라.
+      mountedDustBurst(player.x - player.facing * 90, player.lane, Math.round(12 * q()), 60, 160);
+    }
+  }
+
   function resolveAttack(now) {
     const action = player.action;
     if (player.familyTechnique && ['special', 'musou'].includes(action)) return;
+    if (action === 'mountedCharge') { resolveMountedCharge(now); return; }
+    if (MOUNTED_MOVES[action]) {
+      if (!player.hitDone && mountedHitReady(action, player, now)) { player.hitDone = true; resolveMountedMove(action, now); }
+      return;
+    }
     if (action === 'dash') {
       // Swept collision: even a fast dash must hit enemies between frame positions.
       const targets = collectDashHits(player, enemies, dashTechnique, now);
@@ -2058,7 +2201,9 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     if (player.actionUntil - now > duration * (action === 'dash' ? .66 : .54)) return;
     player.hitDone = true;
     if (action === 'ranged') { fireArrow(now, player.rangedCharged); player.rangedCharged = false; return; }
-    const mountedBonus = player.mounted ? 100 : 0, areaAttack = ['musou', 'special', 'whirlwind'].includes(action);
+    const areaAttack = ['musou', 'special', 'whirlwind'].includes(action);
+    // 말 위 필살기·무쌍은 앞으로 내달리며 더 멀리 닿는다.
+    const mountedBonus = !player.mounted ? 0 : MOUNTED_SURGE[action] ? MOUNTED_SURGE[action].rangeBonus : 100;
     // 무기별 사거리·피해. 찌르기(spear)는 멀리 좁게, 쌍고검(dual)은 짧고 잦게,
     // 언월도(guandao)는 그 사이에서 가장 무겁게.
     const stepRange = weaponStyle === 'spear' ? (player.attackStep === 3 ? 280 : 295)
@@ -2084,7 +2229,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       : weaponStyle === 'crescent' ? (player.attackStep === 3 ? 48 : player.attackStep === 2 ? 35 : 30)
       : weaponStyle === 'monkstaff' ? (player.attackStep === 3 ? 60 : player.attackStep === 2 ? 48 : 38)
       : (player.attackStep === 3 ? 46 : player.attackStep === 2 ? 34 : 28);
-    const range = (action === 'attack' ? stepRange + mountedBonus : action === 'dash' ? 385 + mountedBonus : action === 'mountedThrust' ? 410 : areaAttack ? (action === 'whirlwind' ? 310 : 430) : ['heavy', 'throw'].includes(action) ? (weaponStyle === 'spear' ? 320 : 270) + mountedBonus : 205 + mountedBonus) * heroTuning.reach;
+    const range = (action === 'attack' ? stepRange + mountedBonus : action === 'dash' ? 385 + mountedBonus : action === 'mountedThrust' ? 410 : areaAttack ? (action === 'whirlwind' ? 310 : 430 + mountedBonus) : ['heavy', 'throw'].includes(action) ? (weaponStyle === 'spear' ? 320 : 270) + mountedBonus : 205 + mountedBonus) * heroTuning.reach;
     const critical = growth.critChance > 0 && Math.random() < growth.critChance;
     const finisherBoost = action === 'attack' && player.attackStep === 3 ? growth.finisher : 1;
     const damage = Math.round(((action === 'attack' ? stepDamage : action === 'musou' ? 110 : action === 'special' ? 82 : action === 'whirlwind' ? 66 : action === 'dash' ? 58 : action === 'mountedThrust' ? 64 : action === 'throw' ? 68 : action === 'heavy' ? 54 : player.mounted ? 44 : 30) * heroTuning.power + (now < player.weaponBoost ? 18 : 0)) * finisherBoost * (critical ? 1.65 : 1));
@@ -2137,6 +2282,14 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     setTimeout(() => { document.getElementById('ui').innerHTML = ''; showResult(document.getElementById('ui'), { win, heroName, enemyName: bossLabel, weaponName, rewards, story: stageInfo?.work === 'xiyou' || stageInfo?.work === 'korea' ? stageInfo : null, onRetry: () => startSideBattle(heroId, stageKey, { onExit }), onMenu: () => onExit?.() }); }, 450);
   }
 
+  // 맞아서 떨어지면 말은 뒤에 남고, 말 위 기술은 그 자리에서 끊긴다.
+  function knockOffMount(now, title, sub) {
+    player.mounted = false; horse.mounted = false; horse.active = true;
+    horse.x = player.x - player.facing * 120; horse.lane = player.lane; horse.facing = player.facing;
+    if (isMountedAction(player.action)) { player.action = 'idle'; player.actionUntil = now; player.hitDone = true; }
+    player.mountedChainUntil = 0;
+    mountTransition('forced', horse.x, horse.lane, horse.facing); showBanner(hudRoot, title, sub);
+  }
   function update(dt, now) {
     const bounds = combatBounds(worldWidth, waveGate, combatLocked);
     // Also recover live units displaced by asynchronous counters/boss attacks.
@@ -2175,7 +2328,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     if (now >= player.actionUntil) player.action = axis || laneAxis ? 'run' : 'idle';
     const canStartAction = now >= player.actionUntil;
     if (canStartAction && input.consume('counter')) beginAttack('counter', now);
-    else if (canStartAction && input.consume('dash')) beginAttack('dash', now);
+    else if (canStartAction && input.consume('dash')) beginAttack(player.mounted ? 'mountedCharge' : 'dash', now);
     else if (canStartAction && input.consume('whirlwind')) beginAttack('whirlwind', now);
     // 터치 '필살' 버튼 하나가 필살기와 무쌍을 겸한다 — 게이지가 찼으면 무쌍.
     else if (canStartAction && input.consume('skill')) beginAttack(player.rage >= 100 ? 'musou' : 'special', now);
@@ -2191,12 +2344,14 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       if (canRanged) beginAttack('ranged', now);
       else showBanner(hudRoot, player.mounted ? '기마 원거리 자세 없음' : '원거리 자세 없음', player.mounted ? '하마 후 원거리 공격을 사용하세요' : '이 장수는 근접전에 특화되어 있습니다', 1050);
     }
-    else if (canStartAction && input.consumeHold('attack')) beginAttack('heavy', now);
+    else if (canStartAction && input.consumeHold('attack')) beginAttack(player.mounted ? 'mountedStomp' : 'heavy', now);
     // 연속기: 약·약·약 뒤 네 번째 공격은 강공 마무리. 버튼 하나로 강공까지
     // 닿게 하되, 마무리 뒤엔 사슬을 끊어 다음 연타가 1단부터 다시 붙는다.
     else if (canStartAction && input.consumeTap('attack')) {
-      if (!player.mounted && player.comboStep === 3 && now < player.comboUntil) { beginAttack('heavy', now); player.comboStep = 0; }
-      else beginAttack(player.mounted ? 'mountedThrust' : 'attack', now);
+      // 말 위에서는 찌르기 → 휩쓸기 2단을 돌려 쓴다(세 번째 탭은 다시 찌르기).
+      if (player.mounted) beginAttack(nextMountedChainAction(player, now), now);
+      else if (player.comboStep === 3 && now < player.comboUntil) { beginAttack('heavy', now); player.comboStep = 0; }
+      else beginAttack('attack', now);
     }
 
     if (input.consume('mount')) {
@@ -2206,23 +2361,34 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
         showBanner(hudRoot, '보병 전용 장수', '이 작품의 승마 시트는 사용하지 않습니다');
       } else if (player.mounted) {
         player.mounted = false; horse.mounted = false; horse.active = true; horse.x = player.x - player.facing * 80; horse.lane = player.lane; horse.facing = player.facing;
+        player.mountedChainUntil = 0;
         mountTransition('dismount', horse.x, horse.lane, horse.facing);
-        showBanner(hudRoot, mountLabel + ' 하강', 'F를 누르면 다시 탑승');
+        showBanner(hudRoot, mountLabel + ' 하강', touchMode ? '승마 버튼으로 다시 탑승' : 'F를 누르면 다시 탑승');
       } else if (horse.active && Math.abs(player.x - horse.x) < 150 && Math.abs(player.lane - horse.lane) < 75) {
-        player.mounted = true; horse.mounted = true; horse.facing = player.facing;
+        player.mounted = true; horse.mounted = true; horse.facing = player.facing; player.mountedChainUntil = 0;
         mountTransition('mount', player.x, player.lane, player.facing);
-        showBanner(hudRoot, mountLabel + ' 탑승', isCloudMount ? '활=파초선 · 공격=여의봉 연격 · 돌진기=질풍봉' : isFireWheelMount ? '활=건곤권 · 공격=화첨창 · 돌진기=풍화륜 돌파' : '활=기마궁술 · 공격=기마 연격 · 돌진기=돌파');
+        showBanner(hudRoot, mountLabel + ' 탑승', '공격=찌르기→휩쓸기 · 꾹=' + mountStyle.stomp + ' · 돌진=' + mountStyle.charge);
+        if (!mountedTipShown) { mountedTipShown = true; showToast(hudRoot, '말 위 기술! 돌격으로 적진을 뚫어요', 4200); }
       } else {
         showBanner(hudRoot, mountLabel + '이(가) 멀리 있다', mountLabel + ' 가까이에서 F를 눌러 탑승');
       }
     }
     if (input.consume('jump') && player.y <= 0.1 && !player.mounted) { player.vy = 760; audio.jump(); }
-    const locked = ['heavy', 'musou', 'special', 'throw', 'dash', 'whirlwind', 'counter', 'ranged', 'mountedThrust'].includes(player.action);
+    const locked = ['heavy', 'musou', 'special', 'throw', 'dash', 'whirlwind', 'counter', 'ranged', 'mountedThrust', 'mountedSweep', 'mountedStomp', 'mountedCharge'].includes(player.action);
     // 스틱은 아날로그(-1~1)라 facing 은 부호만 취한다 — 소수 facing 이
     // 렌더 scale(facing,1)로 들어가면 스프라이트가 홀쭉해진다.
-    if (axis && !locked) { player.facing = Math.sign(axis); player.x += axis * (player.mounted ? 470 : 330) * heroTuning.speed * dt; if (player.action === 'idle') player.action = 'run'; }
-    if (laneAxis && !locked) { player.lane += laneAxis * (player.mounted ? 245 : 205) * heroTuning.speed * dt; if (player.action === 'idle') player.action = 'run'; }
+    if (axis && !locked) { player.facing = Math.sign(axis); player.x += axis * 330 * (player.mounted ? MOUNTED_SPEED_SCALE : 1) * heroTuning.speed * dt; if (player.action === 'idle') player.action = 'run'; }
+    if (laneAxis && !locked) { player.lane += laneAxis * 205 * (player.mounted ? MOUNTED_LANE_SCALE : 1) * heroTuning.speed * dt; if (player.action === 'idle') player.action = 'run'; }
     if (player.action === 'dash') player.x += player.facing * dashTechnique.speed * (player.mounted ? 1.15 : 1) * dt;
+    // 기마 돌격은 정해진 거리만 질주한다. 찌르기는 말이 반 발짝 내딛고, 필살기·무쌍은 앞으로 내달린다.
+    if (player.action === 'mountedCharge') { player.x += mountedChargeStep(player, dt); if (laneAxis) player.lane += laneAxis * 120 * dt; }
+    else if (MOUNTED_MOVES[player.action] && player.mounted) {
+      const move = MOUNTED_MOVES[player.action], progress = (now - player.actionStarted) / move.duration;
+      if (progress < move.hitAt) player.x += player.facing * move.step / (move.duration * move.hitAt / 1000) * dt;
+    } else if (player.mounted && MOUNTED_SURGE[player.action]) {
+      const surge = mountedSurgeStep(player.action, player, now, dt);
+      player.x += surge; if (surge) for (const effect of effects) if (effect.ride) effect.x += surge;
+    }
     player.lane = Math.max(-92, Math.min(72, player.lane));
     player.vy -= 1750 * dt; player.y = Math.max(0, player.y + player.vy * dt); if (player.y === 0) player.vy = Math.max(0, player.vy);
     player.x = clampCombatX(player.x, bounds); resolveAttack(now); if (now > player.comboUntil) { player.combo = 0; player.comboStep = 0; }
@@ -2265,7 +2431,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
         if (now >= player.invulnerableUntil) {
           const damage = Math.round(arrow.damage * (1 + Math.max(0, wave - 2) * .06) * diff.enemyDamage * growth.enemyDamage);
           player.hp = Math.max(0, player.hp - damage); player.invulnerableUntil = now + 440; playerHud.hurt(); floatText(`-${damage}`, player.x, player.lane, '#ff9b80', 1.08); audio.hit(false); shake = 7; colorFlash = Math.max(colorFlash, .10); addImpact(player.x, player.lane, false, false);
-          if (player.mounted && Math.random() < .18) { player.mounted = false; horse.mounted = false; horse.active = true; horse.x = player.x - player.facing * 85; horse.lane = player.lane; horse.facing = player.facing; mountTransition('forced', horse.x, horse.lane, horse.facing); showBanner(hudRoot, mountLabel + '에서 이탈', '다시 가까이 가서 F로 탑승'); }
+          if (player.mounted && Math.random() < .15) knockOffMount(now, mountLabel + '에서 이탈', '다시 가까이 가서 F로 탑승');
           if (player.hp <= 0) finish(false);
         }
       }
@@ -2385,7 +2551,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
           if (strikeNow < player.invulnerableUntil) return;
           const enemyDamage = Math.round((enemy.boss ? bossProfile.damage : enemy.role === 'heavy' ? 16 : 11) * (1 + Math.max(0, wave - 2) * .09) * diff.enemyDamage * growth.enemyDamage * (enemy.rallied ? 1.12 : 1));
           player.hp = Math.max(0, player.hp - enemyDamage); player.invulnerableUntil = strikeNow + 520; floatText(`-${enemyDamage}`, player.x, player.lane, enemy.boss ? bossProfile.glow : '#ff9b80', enemy.boss ? 1.18 : 1.04); shake = enemy.boss ? 14 : 8; audio.hit(enemy.boss); playerHud.hurt();
-          if (player.mounted && Math.random() < (enemy.boss ? .42 : .32)) { player.mounted = false; horse.mounted = false; horse.active = true; horse.x = player.x - player.facing * 85; horse.lane = player.lane; horse.facing = player.facing; mountTransition('forced', horse.x, horse.lane, horse.facing); showBanner(hudRoot, '충격으로 ' + mountLabel + ' 이탈', mountLabel + ' 가까이에서 F로 다시 탑승'); }
+          if (player.mounted && Math.random() < (enemy.boss ? .38 : .25)) knockOffMount(strikeNow, '충격으로 ' + mountLabel + ' 이탈', mountLabel + ' 가까이에서 F로 다시 탑승');
           if (player.hp <= 0) finish(false);
         }, enemy.role === 'archer' ? 360 : 250);
       } else if (now > enemy.actionUntil) {
@@ -2410,9 +2576,9 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       ambientAt = now + 220 + Math.random() * 260;
       dust.push({ x: cameraX + Math.random() * width, y: ground() - 40 - Math.random() * height * .55, vx: -12 + Math.random() * 28, vy: -18 - Math.random() * 34, life: 1.2 + Math.random() * 1.8, max: 3, color: Math.random() > .32 ? '#df7b32' : '#f4c45e', ambient: true, glow: true });
     }
-    if ((['musou', 'whirlwind', 'dash', 'heavy'].includes(player.action) || (player.action === 'attack' && player.attackStep === 3)) && now > player.afterimageAt) {
-      player.afterimageAt = now + (player.action === 'musou' ? 52 : player.action === 'dash' || player.action === 'attack' ? 62 : 72);
-      const frame = player.action === 'run' ? 1 : Math.max(2, Math.min(3, (now - player.actionStarted) / Math.max(1, player.actionDuration) < .46 ? 2 : 3));
+    if ((['musou', 'whirlwind', 'dash', 'heavy', 'mountedCharge', 'mountedSweep'].includes(player.action) || (player.action === 'attack' && player.attackStep === 3)) && now > player.afterimageAt) {
+      player.afterimageAt = now + (player.action === 'mountedCharge' ? 46 : player.action === 'musou' ? 52 : player.action === 'dash' || player.action === 'attack' ? 62 : 72);
+      const swing = (now - player.actionStarted) / Math.max(1, player.actionDuration) < .46 ? 2 : 3, frame = attackFramesSwapped ? 5 - swing : swing;
       afterimages.push({ x: player.x, lane: player.lane, y: player.y, mounted: player.mounted, ranged: player.action === 'ranged', frame, facing: player.facing, life: .24, max: .24 });
     }
     effects.forEach((effect) => effect.life -= dt); effects = effects.filter((effect) => effect.life > 0);
@@ -2429,8 +2595,9 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     const zoomTarget = now < bossIntroUntil ? (touchCapable ? 1 : 1.085) : 1 + cameraKick * (touchCapable ? .35 : 1);
     cameraZoom += (zoomTarget - cameraZoom) * (1 - Math.exp(-dt * 9));
     colorFlash *= Math.exp(-dt * 15); shake *= Math.exp(-dt * 11);
-    playerHud.setDashCooldown(player.dashReady - now, dashTechnique.cooldown * growth.cooldown);
+    playerHud.setDashCooldown(player.dashReady - now, player.dashCooldownTotal || dashTechnique.cooldown * growth.cooldown);
     playerHud.setHp(player.hp / player.maxHp); playerHud.setRage(player.rage / 100); playerHud.setCombo(player.combo); playerHud.setKo(player.ko); playerHud.setStage(wave, TOTAL_WAVES); playerHud.setMount(player.mounted, mountLabel, supportsMount);
+    refreshMountedUi(now);
   }
   function drawBackground() {
     if (paintedBackground) {
@@ -2853,7 +3020,10 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       drawAtlasFrame(ctx, riderImage, frame, 0, 0, layout.riderHeight, facing, alpha);
       ctx.restore();
     }
-    drawAtlasFrame(ctx, mountAsset, frame, screenX, baseY, layout.mountHeight, facing, alpha);
+    // 군마(여포 적토마)는 공격 칸에서 앞발을 들지 않는다 — 달릴 때만 속보·습보를 번갈아.
+    const galloping = ['run', 'dash', 'mountedCharge'].includes(player.action);
+    const mountFrame = mountKind === 'horse' && rider ? (galloping ? 1 + Math.floor(performance.now() / (player.action === 'mountedCharge' ? 80 : 125)) % 2 : 0) : frame;
+    drawAtlasFrame(ctx, mountAsset, mountFrame, screenX, baseY, layout.mountHeight, facing, alpha);
     if (!rider || mountKind === 'horse') return;
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = alpha * (.16 + Math.sin(performance.now() * .008) * .035);
     ctx.strokeStyle = layout.glow; ctx.lineWidth = 3; ctx.shadowColor = layout.glow; ctx.shadowBlur = isBoarMount ? 11 : 18;
@@ -2866,8 +3036,8 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       drawConsistentMount(ctx,drawAtlasFrame,{
         horse:mountAsset,rider:heroAssets.rider,x:screenX,y:baseY,
         height:mountLayout(depthScale).mountHeight,facing,alpha,frame,ranged,
-        seatY:({guanyu:.53,zhaoyun:.60,caocao:.66,machao:.63})[heroId],
-        moving:player.action==='run'||player.action==='dash',now:performance.now(),
+        seats:MOUNT_PROFILES[heroId].seats,hip:MOUNT_PROFILES[heroId].hip,frameTransform:atlasFrameTransform,
+        moving:['run','dash','mountedCharge'].includes(player.action),now:performance.now()*(player.action==='mountedCharge'?1.55:1),
       });
       return;
     }
@@ -2879,6 +3049,26 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     drawLayeredMount(screenX, baseY, facing, frame, alpha, ranged, depthScale, true);
   }
 
+  function mountedPoseTilt(now) {
+    const pivot = mountLayout(1 + player.lane * .0014).mountHeight * .34;
+    if (player.action === 'mountedStomp') {
+      const move = MOUNTED_MOVES.mountedStomp, p = Math.max(0, Math.min(1, (now - player.actionStarted) / move.duration));
+      const rearEnd = move.hitAt - .12, rise = p < rearEnd ? 1 - Math.pow(1 - p / rearEnd, 2) : p < move.hitAt ? 1 - (p - rearEnd) / .12 : Math.max(0, .12 - (p - move.hitAt)) * .5;
+      return { angle: -player.facing * .30 * rise, lift: 0, pivot };
+    }
+    if (player.action === 'mountedCharge') return { angle: player.facing * .045, lift: 0, pivot: 0 };
+    return { angle: 0, lift: 0, pivot };
+  }
+  function drawChargeStreaks(screenX, baseY, progress) {
+    const fade = Math.sin(Math.PI * Math.min(1, progress * 1.1));
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
+    for (let i = 0; i < 6; i++) {
+      const y = baseY - 30 - i * 38 + Math.sin(i * 2.3) * 8, len = 120 + (i % 3) * 70, start = screenX - player.facing * (60 + (i % 2) * 40);
+      ctx.globalAlpha = fade * (.20 + (i % 3) * .08); ctx.strokeStyle = i % 2 ? mountStyle.colors[2] : dashTechnique.color; ctx.lineWidth = 3 + (i % 2) * 2;
+      ctx.beginPath(); ctx.moveTo(start, y); ctx.lineTo(start - player.facing * len, y); ctx.stroke();
+    }
+    ctx.restore();
+  }
   function drawHorse(x, baseY, facing, mounted = false, frame = 0, alpha = 1, ranged = false) {
     const sx = x - cameraX, depthScale = 1 + (mounted ? player.lane : horse.lane) * .0014;
     if (mounted) drawMountedFigure(sx, baseY, facing, frame, alpha, ranged, depthScale);
@@ -2898,25 +3088,28 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     }
     const actors = enemies.map((enemy) => ({ kind: 'enemy', lane: enemy.lane, enemy }));
     actors.push({ kind: 'player', lane: player.lane });
-    if (horse.active && !horse.mounted) actors.push({ kind: 'horse', lane: horse.lane });
+    if (horse.active && !horse.mounted) actors.push({ kind: 'horse', lane: horse.lane - .5 });
     actors.sort((a, b) => a.lane - b.lane);
     for (const actor of actors) {
       if (actor.kind === 'player') {
         const baseY = floorY + player.lane;
         drawShadow(player.x, baseY + 4, player.mounted ? (isCloudMount ? .98 : isFireWheelMount ? 1.18 : isBoarMount ? 1.45 : 1.5) : 1.15 * heroVisualScale, player.y ? 0.22 : (player.mounted ? (isCloudMount ? .24 : isFireWheelMount ? .28 : isBoarMount ? .40 : .48) : .48));
-        const attacking = ['attack', 'heavy', 'musou', 'special', 'throw', 'grab', 'dash', 'whirlwind', 'counter', 'ranged', 'mountedThrust'].includes(player.action);
+        const attacking = ['attack', 'heavy', 'musou', 'special', 'throw', 'grab', 'dash', 'whirlwind', 'counter', 'ranged', 'mountedThrust', 'mountedSweep', 'mountedStomp', 'mountedCharge'].includes(player.action);
         const actionProgress = attacking ? Math.max(0, Math.min(1, (now - player.actionStarted) / Math.max(1, player.actionDuration))) : 0;
         let heroFrame = 0;
         if (player.action === 'ranged') heroFrame = familyRanged ? (actionProgress < .28 ? 0 : actionProgress < .6 ? 2 : 3) : actionProgress < .22 ? 0 : actionProgress < .38 ? 1 : actionProgress < .48 ? 2 : 3;
-        else if (player.action === 'run') heroFrame = Math.floor(now / (player.mounted ? 105 : 135)) % 2;
+        // 달리기·공중은 옆모습 보폭 칸(1)을 유지한다. 대기 칸(0)은 정면·3/4라 둘을 번갈아
+        // 쓰면 몸이 카메라와 옆을 오가며 꽃게처럼 미끄러진다. 걸음감은 아래 흔들림이 낸다.
+        else if (player.action === 'run' || (player.y > 0 && player.action === 'idle')) heroFrame = 1;
         else if (player.action === 'counter') heroFrame = 2;
         else if (attacking) {
           const activeTechnique = player.familyTechnique?.action === player.action && player.familyTechnique.started === player.actionStarted;
           const beatProgress = activeTechnique ? (actionProgress * player.familyTechnique.beats.length) % 1 : actionProgress;
-          heroFrame = beatProgress < .28 ? 0 : beatProgress < .58 ? 2 : 3;
+          heroFrame = player.action === 'mountedCharge' ? 2 : beatProgress < .28 ? 0 : beatProgress < .58 ? 2 : 3;
+          if (heroFrame >= 2 && attackFramesSwapped) heroFrame = 5 - heroFrame;
         }
         const strideBob = player.action === 'run' ? Math.abs(Math.sin(now * (player.mounted ? .018 : .023))) * (player.mounted ? 5 : 4) : 0;
-        const attackLunge = attacking && !['counter', 'ranged'].includes(player.action) ? Math.sin(Math.PI * actionProgress) * (player.mounted ? 22 : player.action === 'dash' ? 34 : 13) * player.facing : 0;
+        const attackLunge = attacking && !['counter', 'ranged', 'mountedCharge', 'mountedStomp'].includes(player.action) ? Math.sin(Math.PI * actionProgress) * (player.mounted ? 22 : player.action === 'dash' ? 34 : 13) * player.facing : 0;
         // 활 모션 — 스프라이트 프레임만으론 밋밋하다. 시위를 당기는 동안
         // 몸이 뒤로 기울며 낮아지고, 놓는 순간(47%) 앞으로 튕겨 반동을 준다.
         let bowShift = 0, bowDip = 0;
@@ -2924,14 +3117,28 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
           if (actionProgress < .47) { const drawPull = actionProgress / .47; bowShift = -player.facing * (3 + 12 * drawPull); bowDip = 4 * drawPull; }
           else { const recoil = 1 - (actionProgress - .47) / .53; bowShift = player.facing * 14 * recoil; bowDip = 4 * recoil * .4; }
         }
-        const flicker = now < player.invulnerableUntil && Math.floor(now / 55) % 2 ? 0.38 : 1;
+        const flicker = now < player.invulnerableUntil && player.action !== 'mountedCharge' && Math.floor(now / 55) % 2 ? 0.38 : 1;
         if (player.mounted) {
           // 전용 합성 시트에서는 활 반동으로 말 전체가 미끄러지지 않게 한다.
           const mountedBowShift = usesSeatedMountSheet || usesConsistentMount ? 0 : bowShift;
           const mountedBowDip = usesSeatedMountSheet || usesConsistentMount ? 0 : bowDip;
+          const mountTilt = mountedPoseTilt(now);
+          if (mountTilt.angle || mountTilt.lift) {
+            // 짓밟기: 뒷발을 축으로 앞발을 들었다가 내리찍는다. 돌격: 앞으로 살짝 숙인다.
+            const pivotX = player.x - cameraX - player.facing * mountTilt.pivot;
+            ctx.save(); ctx.translate(pivotX, baseY); ctx.rotate(mountTilt.angle); ctx.translate(-pivotX, -baseY - mountTilt.lift);
+          }
+          if (player.action === 'mountedCharge') drawChargeStreaks(player.x - cameraX, baseY, actionProgress);
           drawHorse(player.x + attackLunge + mountedBowShift, baseY - strideBob + mountedBowDip, player.facing, true, heroFrame, flicker, player.action === 'ranged');
+          if (mountTilt.angle || mountTilt.lift) ctx.restore();
         }
-        else drawAtlasFrame(ctx, player.action === 'ranged' && !rangedUsesBase ? heroAssets.heroBow : heroAssets.hero, heroFrame, player.x + attackLunge + bowShift - cameraX, baseY - player.y - strideBob + bowDip, standingHeroHeight(1 + player.lane * .0014), player.facing, flicker);
+        else {
+          // 한 칸 보폭에 발끝 기준 앞기울기를 걸음마다 살짝 흔들어 걷는 박자를 만든다.
+          const runLean = player.action === 'run' && !player.y ? player.facing * (.03 + Math.sin(now * .023) * .02) : 0;
+          ctx.save(); ctx.translate(player.x + attackLunge + bowShift - cameraX, baseY - player.y - strideBob + bowDip); if (runLean) ctx.rotate(runLean);
+          drawAtlasFrame(ctx, player.action === 'ranged' && !rangedUsesBase ? heroAssets.heroBow : heroAssets.hero, heroFrame, 0, 0, standingHeroHeight(1 + player.lane * .0014), player.facing, flicker);
+          ctx.restore();
+        }
         if (familyRanged && ['special', 'musou'].includes(player.action)) drawFamilySpecial(ctx, heroId, player.x - cameraX, baseY - player.y, player.facing, standingHeroHeight(), actionProgress, now, player.action === 'musou');
         if (growth.weaponLevel >= 4) {
           const tier = growth.weaponLevel >= 16 ? 3 : growth.weaponLevel >= 10 ? 2 : 1;
@@ -3062,7 +3269,8 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
           const warning = Math.max(0, Math.min(1, 1 - (enemy.actionUntil - now) / Math.max(1, enemy.actionDuration || 430))), charge = Math.min(1, warning * 1.45);
           ctx.save(); ctx.translate(enemyX, baseY + 5); ctx.scale(enemy.facing, 1); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = .45 + charge * .45; ctx.strokeStyle = '#ff8074'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(52, -88, 22 + charge * 7, -1.15, 1.15); ctx.stroke(); ctx.beginPath(); ctx.moveTo(52, -88); ctx.lineTo(52 + 46 * charge, -88); ctx.stroke(); ctx.restore();
         }
-        if (enemy.hitUntil > now && !enemy.deadAt) { const hitAlpha = .16 + Math.sin((enemy.hitUntil - now) * .045) * .10; ctx.save(); ctx.globalCompositeOperation = 'screen'; ctx.globalAlpha = hitAlpha; ctx.fillStyle = enemy.role === 'archer' ? '#ffb27c' : '#fff4d6'; ctx.beginPath(); ctx.ellipse(enemyX, baseY - 138, enemy.boss ? 112 : 74, enemy.boss ? 174 : 116, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
+        const knockdown = !enemy.deadAt && enemy.knockdownUntil > now ? Math.max(0, Math.min(1, (now - enemy.knockdownStarted) / Math.max(1, enemy.knockdownUntil - enemy.knockdownStarted))) : -1;
+        if (enemy.hitUntil > now && !enemy.deadAt && !(knockdown >= 0 && now - enemy.knockdownStarted > 260)) { const hitAlpha = .16 + Math.sin((enemy.hitUntil - now) * .045) * .10; ctx.save(); ctx.globalCompositeOperation = 'screen'; ctx.globalAlpha = hitAlpha; ctx.fillStyle = enemy.role === 'archer' ? '#ffb27c' : '#fff4d6'; ctx.beginPath(); ctx.ellipse(enemyX, baseY - 138, enemy.boss ? 112 : 74, enemy.boss ? 174 : 116, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
         if (enemy.boss && !enemy.deadAt) {
           const pulse = (enemy.enraged ? 1.02 : .72) + Math.sin(now * .008) * .14;
           // 보스마다 오라 색도 다르다. 우마왕은 화염 주홍, 이랑진군은 천광,
@@ -3076,7 +3284,11 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
           ctx.restore();
         }
         ctx.save();
-        if (enemy.deadAt) {
+        const knockFall = knockdown < 0 ? 0 : knockdown < .2 ? 1 - Math.pow(1 - knockdown / .2, 2) : knockdown > .74 ? (1 - knockdown) / .26 : 1;
+        if (knockdown >= 0) {
+          // 짓밟기·돌격에 넘어졌다가 일어난다. 넘어진 동안 머리 위에 별이 돈다.
+          ctx.translate(enemyX, baseY); ctx.rotate(-enemy.facing * knockFall * 1.15); ctx.translate(-enemyX, -baseY + knockFall * 26);
+        } else if (enemy.deadAt) {
           // 쓰러지며 뒤로 밀려나고, 넘어가는 순간 몸이 살짝 눌린다.
           const fall = 1 - Math.pow(1 - Math.min(1, sinceDeath * 1.35), 3);
           ctx.translate(enemyX, baseY);
@@ -3097,6 +3309,17 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
           }
         }
         ctx.restore();
+        if (knockdown >= 0 && knockdown < .9) {
+          const headH = (enemy.boss ? Math.min(448, height * .67) : Math.min(300, height * .47)) * .8, tilt = enemy.facing * knockFall * 1.15;
+          const starX = enemyX - Math.sin(tilt) * headH, starY = baseY + knockFall * 26 - Math.cos(tilt) * headH - 18;
+          ctx.save(); ctx.globalAlpha = Math.min(1, (.9 - knockdown) * 5); ctx.fillStyle = '#ffe27a'; ctx.strokeStyle = 'rgba(40,20,5,.85)'; ctx.lineWidth = 3;
+          ctx.font = `900 18px ${CANVAS_IMPACT_FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          for (let star = 0; star < 3; star++) {
+            const angle = now * .008 + star * Math.PI * 2 / 3, sx = starX + Math.cos(angle) * 30, sy = starY + Math.sin(angle) * 9;
+            ctx.strokeText('★', sx, sy); ctx.fillText('★', sx, sy);
+          }
+          ctx.restore();
+        }
         // 이름난 적장은 공통 스프라이트 위에 소설 속 무기·상징을 얹어
         // 화웅, 우마왕, 이랑진군, 고구, 육겸이 서로 다른 장수로 읽히게 한다.
         if (enemy.boss && !enemy.deadAt && !dedicatedBossArt) {

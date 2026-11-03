@@ -52,9 +52,18 @@ const instrumented=source.replace('  function loop(now) {',hook+'  function loop
    await page.keyboard.press('j');await page.evaluate(()=>__mountQA.step(.001));
    assert.equal(await page.evaluate(()=>__mountQA.player.action),'mountedThrust');
    await advance();const mountedMelee=meleeHp-await page.evaluate(()=>__mountQA.hp());assert.ok(mountedMelee>0);
+   // Second tap inside the chain window is the wide sweep; holding is the stomp.
+   const sweepHp=await page.evaluate(()=>{__mountQA.player.actionUntil=0;return __mountQA.target(150);});
+   await page.keyboard.press('j');await page.evaluate(()=>__mountQA.step(.001));
+   assert.equal(await page.evaluate(()=>__mountQA.player.action),'mountedSweep');
+   await advance();assert.ok(sweepHp-await page.evaluate(()=>__mountQA.hp())>0,hero+' mounted sweep damage');
+   const stompHp=await page.evaluate(()=>__mountQA.target(-150));
+   await page.keyboard.down('j');await page.waitForTimeout(300);await page.evaluate(()=>__mountQA.step(.001));await page.keyboard.up('j');
+   assert.equal(await page.evaluate(()=>__mountQA.player.action),'mountedStomp');
+   await advance();assert.ok(stompHp-await page.evaluate(()=>__mountQA.hp())>0,hero+' stomp hits behind the horse');
    const dashHp=await page.evaluate(()=>__mountQA.target(180));
    await page.keyboard.press('i');await page.evaluate(()=>__mountQA.step(.001));
-   assert.equal(await page.evaluate(()=>__mountQA.player.action),'dash');
+   assert.equal(await page.evaluate(()=>__mountQA.player.action),'mountedCharge');
    await advance();const mountedDash=dashHp-await page.evaluate(()=>__mountQA.hp());assert.ok(mountedDash>0);
    // Let the real 240 ms dash afterimages expire before comparing idle/bow poses.
    await advance();
