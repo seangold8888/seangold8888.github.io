@@ -15,11 +15,12 @@ function node() {
 }
 function setup(options={}) {
   let now=0, timerId=0, passes=0;
-  const timers=new Map(), events=[], recognizers=[], audios=[], contexts=[], utterances=[], retries=[], gains=[];
+  const timers=new Map(), events=[], recognizers=[], audios=[], contexts=[], utterances=[], retries=[], gains=[], passInfo=[];
+  let startFailures=options.startErrorOnce?1:0;
   const doc=Object.assign(target(),{hidden:false,createElement:node});
   class Recognition {
     constructor() { if(options.constructorError)throw Error('unavailable');recognizers.push(this); }
-    start() { if(options.startError)throw Error('start');events.push("start"); this.live=true; if(options.assertReleased)assert.ok(audios.every(a=>!a.src),'media src must be released before microphone start'); if(!options.neverStarts&&this.onstart)this.onstart(); }
+    start() { if(options.startError)throw Error('start');if(startFailures>0){startFailures--;const e=Error('busy');e.name='InvalidStateError';throw e;}events.push("start"); this.live=true; if(options.assertReleased)assert.ok(audios.every(a=>!a.src),'media src must be released before microphone start'); if(!options.neverStarts&&this.onstart)this.onstart(); }
     stop() { events.push("stop"); this.stopped=true; }
     end() { events.push("end");this.live=false; if(this.onend)this.onend(); }
     abort() {events.push("abort");this.live=false;}
@@ -66,14 +67,17 @@ function setup(options={}) {
   }
   function mount(sentence=reading.sentences[0], callbacks={}) {
     const container=node();
-    const view=reading.mount(container,sentence,()=>passes++,env,Object.assign({onRetry:w=>retries.push(w)},callbacks));
+    const view=reading.mount(container,sentence,info=>{passes++;passInfo.push(info);},env,Object.assign({onRetry:w=>retries.push(w)},callbacks));
     return {container,view,mic:container.children[3].children[0],stop:container.children[3].children[1],status:container.children[4],words:container.children[1].children};
   }
   function result(text) {
     const result=Object.assign([{transcript:text}],{isFinal:true});
     recognizers.at(-1).onresult({results:[result]});
   }
-  return {env,doc,events,recognizers,audios,contexts,utterances,retries,gains,timers,tick,mount,result,passes:()=>passes};
+  function interim(text) { recognizers.at(-1).onresult({results:[Object.assign([{transcript:text}],{isFinal:false})]}); }
+  // The recognizer ends by itself (iOS at a pause): quiet restart, then SILENCE_MS with no new words.
+  function pause() { recognizers.at(-1).end(); tick(150); tick(2500); }
+  return {env,doc,events,recognizers,audios,contexts,utterances,retries,gains,timers,tick,mount,result,interim,pause,passInfo,passes:()=>passes};
 }
 test("first/retry praise pools, every third first-attempt pass and 100 nonrepeating draws",()=>{
   const session=reading.createFeedbackSession();
@@ -348,8 +352,15 @@ test("a denied recovery leaves the controls usable and never scores a mistake", 
 test("empty ends and every microphone error expose recovery and a non-scoring alternative",()=>{
  for(const error of [null,'no-speech','aborted','network','not-allowed','audio-capture','service-not-allowed','language-not-supported']){
   const s=setup(),v=s.mount(undefined,{onUnavailable(){}});v.mic.fire('click');
-  if(error)s.recognizers[0].onerror({error});else s.recognizers[0].end();
+  const quiet=error===null||error==='no-speech'||error==='aborted';
+  for(let round=0;round<10;round++){
+   const r=s.recognizers.at(-1),before=s.recognizers.length;
+   if(error)r.onerror({error});else r.end();
+   s.tick(200);if(s.recognizers.length===before)break;
+  }
+  assert.equal(s.recognizers.length,quiet?1+reading.limits.maxRestarts:1,'quiet restarts: '+error);
   assert.equal(v.container.children[3].children[2].hidden,false,String(error));
+  assert.match(v.status.textContent,/틀린 게 아니에요/);assert.doesNotMatch(v.status.textContent,/틀렸어요/);
   assert(v.container.children[3].children.some(n=>n.className==='reading-recovery'&&!n.hidden));
   assert.equal(v.mic.disabled,false);assert.equal(s.passes(),0);assert.equal(s.retries.length,0);
   assert(v.words.every(w=>!w.classList.contains('retry')));assert(s.contexts.every(c=>c.closed));
@@ -357,16 +368,16 @@ test("empty ends and every microphone error expose recovery and a non-scoring al
 });
 
 test("confirmed prefixes survive a natural pause, but interim words cannot pass",()=>{
- const s=setup({noAudio:true}),v=s.mount();v.mic.fire('click');s.result('I like');s.recognizers[0].end();
+ const s=setup({noAudio:true}),v=s.mount();v.mic.fire('click');s.result('I like');s.pause();
  assert.equal(v.mic.textContent,'🎤 이어 읽기');assert.equal(s.retries.length,0);
- v.mic.fire('click');s.recognizers[1].onresult({results:[Object.assign([{transcript:'apples'}],{isFinal:false})]});
- assert.equal(s.passes(),0);s.result('apples');s.recognizers[1].end();s.tick(2000);assert.equal(s.passes(),1);
+ v.mic.fire('click');s.recognizers[2].onresult({results:[Object.assign([{transcript:'apples'}],{isFinal:false})]});
+ assert.equal(s.passes(),0);s.result('apples');s.recognizers[2].end();s.tick(2000);assert.equal(s.passes(),1);
 });
 
 test("a full restart supersedes the prefix; missing and wrong remaining words never pass",()=>{
  for(const text of ['I like apples','bananas','']){
-  const s=setup({noAudio:true}),v=s.mount();v.mic.fire('click');s.result('I like');s.recognizers[0].end();v.mic.fire('click');
-  if(text)s.result(text);s.recognizers[1].end();s.tick(2000);assert.equal(s.passes(),text==='I like apples'?1:0,text);
+  const s=setup({noAudio:true}),v=s.mount();v.mic.fire('click');s.result('I like');s.pause();v.mic.fire('click');
+  if(text)s.result(text);s.recognizers.at(-1).end();s.tick(5000);assert.equal(s.passes(),text==='I like apples'?1:0,text);
  }
 });
 
@@ -456,9 +467,9 @@ test("recognizer alternatives can pass; display uses the first guess; session sh
 test("the hub clears stale permanent silence and the worker precaches every clip", () => {
   const sw = require("../../sw.js"), html = fs.readFileSync(path.join(__dirname, "../../game/index.html"), "utf8");
   assert.equal(sw.CACHE_VERSION, "v233");
-  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=23"));
+  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=24"));
   assert.ok(sw.CORE_SHELL.includes("./assets/study/praise/perfect-v2.wav"));
-  assert.match(html, /english-reading\.js\?v=23/);
+  assert.match(html, /english-reading\.js\?v=24/);
   assert.match(html, /removeItem\('hub2_reading_silent'\)/);
   assert.doesNotMatch(html, /setItem\('hub2_reading_silent'/);
   assert.match(html, /silent: readingSilent/);
@@ -487,4 +498,129 @@ test("offline praise reads static precache for full and Safari byte-range reques
     assert.equal(partial.status, 206); assert.equal(partial.headers.get("Content-Range"), "bytes 0-31/" + bytes.length);
     assert.deepEqual(Buffer.from(await partial.arrayBuffer()), bytes.subarray(0, 32));
   } finally { global.caches = originalCaches; global.fetch = originalFetch; }
+});
+
+/* ---- 2026-11 인식 오류 개선: 한 번 누름 안에서 조용히 다시 듣기 · 오류는 시도가 아님 · 세 번이면 통과 ---- */
+test("a recognizer that ends at a pause restarts quietly and merges both segments in order",()=>{
+ const s=setup(),v=s.mount();v.mic.fire('click');
+ s.result('I like');s.recognizers[0].end();
+ assert.equal(s.recognizers.length,1,'restart waits a moment for the old session to let go');
+ assert.equal(v.mic.disabled,true,'the same press keeps going');assert.equal(v.stop.disabled,false);
+ assert.match(v.status.textContent,/이어서 읽어/);assert.equal(s.retries.length,0);
+ assert.ok(v.words.every(w=>!w.classList.contains('retry')));
+ s.tick(150);assert.equal(s.recognizers.length,2);assert.equal(s.recognizers[1].live,true);
+ s.result('apples');
+ assert.ok(v.status.children.some(n=>n.className==='reading-praise'));
+ s.recognizers[1].end();s.audios[0].onended();s.tick(0);assert.equal(s.passes(),1);assert.equal(s.retries.length,0);
+});
+test("iOS-style interim-only segments are sealed when the recognizer ends, then merged",()=>{
+ const s=setup(),v=s.mount({text:"The bird can fly.",meaning:"새"});v.mic.fire('click');
+ s.interim('the bird');s.recognizers[0].end();s.tick(150);
+ s.interim('can fly');assert.equal(s.passes(),0,'interim words never pass while she is reading');
+ s.recognizers[1].end();
+ assert.ok(v.status.children.some(n=>n.className==='reading-praise'),'the ended segment counts');
+});
+test("no-speech or aborted before she starts reading is retried quietly, then a full reading passes",()=>{
+ for(const error of ['no-speech','aborted']){
+  const s=setup(),v=s.mount();v.mic.fire('click');
+  s.recognizers[0].onerror({error});s.tick(150);
+  assert.equal(s.recognizers.length,2,error);assert.equal(v.mic.disabled,true);
+  s.result('I like apples');s.recognizers[1].end();s.audios[0].onended();s.tick(0);
+  assert.equal(s.passes(),1,error);assert.equal(s.retries.length,0);
+ }
+});
+test("silence after a quiet restart ends the take as 이어 읽기, never as a mistake",()=>{
+ const s=setup({noAudio:true}),v=s.mount({text:"I see a red flower.",meaning:"꽃"});v.mic.fire('click');
+ s.result('I see a');s.recognizers[0].end();s.tick(150);s.tick(2499);
+ assert.equal(s.recognizers[1].live,true,'still listening just before 2.5s');
+ s.tick(1);
+ assert.equal(v.mic.textContent,'🎤 이어 읽기');assert.equal(s.retries.length,0);assert.equal(v.mic.disabled,false);
+ assert.ok(v.words.every(w=>!w.classList.contains('retry')));
+});
+test("다 읽었어요 during the restart gap checks what was read right away",()=>{
+ const s=setup({noAudio:true}),v=s.mount();v.mic.fire('click');s.result('I like');s.recognizers[0].end();
+ v.stop.fire('click');assert.equal(v.mic.textContent,'🎤 이어 읽기');s.tick(5000);assert.equal(s.recognizers.length,1);
+});
+test("quiet restarts stop at the window limit for the sentence length",()=>{
+ const s=setup({noAudio:true}),v=s.mount();v.mic.fire('click');s.result('I');
+ s.tick(reading.limits.windowBaseMs+3*reading.limits.windowPerWordMs);
+ s.recognizers.at(-1).end();s.tick(200);
+ assert.equal(s.recognizers.length,1,'window closed: no restart');assert.equal(v.mic.textContent,'🎤 이어 읽기');
+});
+test("permission denied shows the parent guide once, never scores and never auto-passes",()=>{
+ const s=setup();s.env.navigator.userAgent='Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X)';
+ const texts=[];
+ for(let i=0;i<4;i++){
+  const v=s.mount(undefined,{onUnavailable(){}});v.mic.fire('click');s.recognizers.at(-1).onerror({error:'not-allowed'});
+  texts.push(v.status.textContent);assert.equal(v.mic.disabled,false);
+  assert.equal(v.container.children[3].children[2].hidden,false,'other questions stay available');
+  v.view.destroy();
+ }
+ assert.match(texts[0],/설정 → Safari → 마이크/);assert.match(texts[0],/틀린 게 아니에요/);
+ assert.doesNotMatch(texts[1],/설정/,'the long guide appears only once');
+ assert.equal(s.passes(),0);assert.equal(s.retries.length,0);
+ const one=setup(),w=one.mount(undefined,{onUnavailable(){}});
+ for(let i=0;i<3;i++){w.mic.fire('click');one.recognizers.at(-1).onerror({error:'not-allowed'});}
+ assert.equal(one.passes(),0,'a blocked microphone is not a free pass');one.tick(5000);assert.equal(one.passes(),0);
+});
+test("InvalidStateError on start gets one immediate fresh recognizer",()=>{
+ const s=setup({startErrorOnce:true}),v=s.mount();v.mic.fire('click');
+ assert.equal(s.recognizers.length,2);assert.equal(s.recognizers[1].live,true);
+ s.result('I like apples');s.recognizers[1].end();s.audios[0].onended();s.tick(0);assert.equal(s.passes(),1);
+});
+test("stuck protection: third try at 2 of 3 words passes gently; below the bar it does not",()=>{
+ const s=setup(),v=s.mount();
+ for(let i=0;i<2;i++){v.mic.fire('click');s.result('I like bananas');s.recognizers.at(-1).end();s.audios.at(-1).onended();s.tick(1000);}
+ assert.equal(s.passes(),0);assert.equal(s.retries.length,2);
+ v.mic.fire('click');s.result('I like bananas');s.recognizers.at(-1).end();
+ const praise=v.status.children.find(n=>n.className==='reading-praise');
+ assert.ok(praise);assert.equal(praise.textContent,'⭐ 잘 읽었어요! 다음으로 가요');
+ assert.equal(v.container.children[2].hidden,false,'the meaning appears with the praise');
+ assert.ok(v.words.every(w=>!w.classList.contains('retry')));
+ assert.equal(s.passes(),0,'praise plays to the end first');
+ s.audios.at(-1).onended();s.tick(0);
+ assert.equal(s.passes(),1);assert.deepEqual(s.passInfo,[{gentle:true}]);
+ assert.ok(!s.events.some(e=>e.endsWith('words/apples.mp3')&&s.events.lastIndexOf(e)>s.events.lastIndexOf('start')),'no word clips on the gentle pass');
+ const low=setup(),w=low.mount(undefined,{onUnavailable(){}});
+ for(let i=0;i<4;i++){w.mic.fire('click');low.result('you like bananas');low.recognizers.at(-1).end();low.tick(12000);}
+ assert.equal(low.passes(),0,'1 of 3 words is not enough');
+ assert.equal(w.container.children[3].children[2].hidden,false,'after three tries the alternative is offered');
+});
+test("device-error presses never count as reading tries, but three of them with nothing heard pass gently",()=>{
+ const mixed=setup(),m=mixed.mount();
+ m.mic.fire('click');mixed.recognizers.at(-1).onerror({error:'network'});
+ for(let i=0;i<2;i++){m.mic.fire('click');mixed.result('I like bananas');mixed.recognizers.at(-1).end();mixed.audios.at(-1).onended();mixed.tick(1000);}
+ assert.equal(mixed.passes(),0);assert.ok(!m.status.children.some(n=>n.className==='reading-praise'),'two reading tries + one network error is not yet three tries');
+ m.mic.fire('click');mixed.result('I like bananas');mixed.recognizers.at(-1).end();
+ assert.ok(m.status.children.some(n=>n.className==='reading-praise'),'the third reading try passes');
+});
+test("stuck protection counts presses that ended in device errors, not silence",()=>{
+ const s=setup(),v=s.mount();
+ for(let i=0;i<3;i++){v.mic.fire('click');s.recognizers.at(-1).onerror({error:'network'});}
+ assert.ok(v.status.children.some(n=>n.className==='reading-praise'),'three network failures never trap her');
+ s.recognizers.at(-1).end();s.audios.at(-1).onended();s.tick(0);assert.equal(s.passes(),1);assert.deepEqual(s.passInfo,[{gentle:true}]);assert.equal(s.retries.length,0);
+ const quiet=setup(),w=quiet.mount();
+ for(let i=0;i<3;i++){
+  w.mic.fire('click');
+  for(let round=0;round<10;round++){const r=quiet.recognizers.at(-1),before=quiet.recognizers.length;r.onerror({error:'no-speech'});quiet.tick(200);if(quiet.recognizers.length===before)break;}
+ }
+ assert.equal(quiet.passes(),0,'tapping without reading never passes');
+});
+test("diagnostics keep codes and scores only, survive a reload and stay at 30 lines",()=>{
+ const saved={};const store={getItem:k=>k in saved?saved[k]:null,setItem:(k,v)=>{saved[k]=String(v);}};
+ const s=setup(),v=s.mount({text:"The bird can fly.",meaning:"새"},{diagnostics:store});
+ for(let i=0;i<12;i++){v.mic.fire('click');s.result('the cat can swim');s.recognizers.at(-1).end();s.tick(12000);}
+ const lines=JSON.parse(saved.hub2_reading_diag);
+ assert.ok(lines.length<=30&&lines.length>=20);
+ assert.ok(lines.some(l=>/ try wrong read \d+ device 0 best 2\/4/.test(l)));assert.ok(lines.some(l=>/ take segs 1 restarts 0 covered 2\/4/.test(l)));
+ assert.doesNotMatch(saved.hub2_reading_diag,/cat|swim|bird|fly/i,'never the recognised or expected words');
+ const again=setup();again.env.location={search:'?readinglog=1'};
+ const view=again.mount(undefined,{diagnostics:store});const logNode=view.container.children.find(n=>n.className==='reading-log');
+ assert.ok(logNode);assert.match(logNode.textContent,/try wrong read \d+/,'a reload still shows what failed before');
+});
+test("no speech synthesis anywhere in the reading module or its pages",()=>{
+ for(const rel of ["../../assets/study/english-reading.js","../../game/index.html","../../story/english/index.html"]){
+  const source=fs.readFileSync(path.join(__dirname,rel),"utf8");
+  assert.doesNotMatch(source,/speechSynthesis\.speak|new SpeechSynthesisUtterance/,rel);
+ }
 });

@@ -1486,7 +1486,7 @@
 <script src="math/store.js?v=32"></script>
 <script src="assets/study/math-bridge.js?v=2"></script>
 <script src="assets/study/math-credits.js?v=2"></script>
-<script src="assets/study/english-reading.js?v=23"></script>
+<script src="assets/study/english-reading.js?v=24"></script>
 <script src="story/english/books.js?v=7"></script>
 <script src="assets/bgm/bgm-player.js?v=66"></script>
 <script src="assets/study/play-timer.js?v=1" data-mode="hub"></script>
@@ -2480,8 +2480,10 @@
     if (current.reading) {
       choicesEl.classList.remove('wordy');
       var target = current;
-      readingView = window.EnglishReading.mount(choicesEl, current.reading, function () {
+      readingView = window.EnglishReading.mount(choicesEl, current.reading, function (info) {
         if (current !== target || isFree() || hasTicket() || target.answered) return;
+        // 세 번 읽고 넘어가는 "부드러운 통과"는 한 번에 맞힌 기록·단계 승급에 넣지 않는다.
+        if (info && info.gentle) target.gentle = true;
         if (target.story) {
           target.bookDone = advanceBook(target.seed.idx);
         } else {
@@ -2491,6 +2493,7 @@
         pick(target.answer, null);
       }, window, {
         silent: readingSilent,
+        diagnostics: (function () { try { return window.localStorage; } catch (_) { return null; } })(),
         onRetry: function (words) {
           readingMistake(target, words);
           var listenHelp = document.getElementById('bookListeningHelp');
@@ -2576,7 +2579,7 @@
     if (!current || current.answered) return;
     if (n === current.answer) {
       current.answered = true;
-      var firstTry = !current.missed;
+      var firstTry = !current.missed && !current.gentle;
       var readingPromoted = !!(current.reading && !current.story && firstTry && recordReadingPass(current.reading));
       var bookGrowth = null;
       if (current.story) {

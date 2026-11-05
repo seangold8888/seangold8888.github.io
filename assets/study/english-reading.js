@@ -314,10 +314,31 @@
   // 2단계 이상에서 새 단계 문장을 낼 확률. 나머지는 아래 단계 복습.
   const FOCUS_SHARE = 0.75;
 
+  // 숫자·줄임말·소유격·하이픈은 문장과 인식 결과 양쪽에서 똑같이 풀어 쓴다.
+  // "2"="two", "it's"="it is", "Dad's"="dad", "ice-cream"="ice cream".
+  const NUMBER_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty"];
+  const TENS_WORDS = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
+  function numberWords(digits) {
+    if (digits === "100") return "one hundred";
+    if (!/^\d{1,2}$/.test(digits)) return digits;
+    const n = Number(digits);
+    if (n <= 20) return NUMBER_WORDS[n];
+    return TENS_WORDS[Math.floor(n / 10)] + (n % 10 ? " " + NUMBER_WORDS[n % 10] : "");
+  }
+  const CONTRACTIONS = [
+    [/\bi'm\b/g, "i am"], [/\b(you|we|they)'re\b/g, "$1 are"],
+    [/\b(it|he|she|that|what|where|who|there|here|how)'s\b/g, "$1 is"], [/\blet's\b/g, "let us"],
+    [/\bcan't\b/g, "cannot"], [/\bwon't\b/g, "will not"], [/\b([a-z]+)n't\b/g, "$1 not"],
+    [/\b(i|you|we|they|he|she|it)'ll\b/g, "$1 will"], [/\b(i|you|we|they)'ve\b/g, "$1 have"],
+    [/\b(i|you|we|they|he|she)'d\b/g, "$1 would"]
+  ];
   function normalize(text) {
-    return String(text || "").toLowerCase().replace(/[’‘]/g, "'")
-      .replace(/\bi'm\b/g, "i am").replace(/\bcan't\b/g, "cannot")
-      .replace(/\bcan not\b/g, "cannot").replace(/[^a-z0-9\s]/g, " ")
+    let t = String(text || "").toLowerCase().replace(/[’‘`´]/g, "'");
+    CONTRACTIONS.forEach(function (rule) { t = t.replace(rule[0], rule[1]); });
+    return t.replace(/\bcan not\b/g, "cannot")
+      .replace(/([a-z])'s\b/g, "$1").replace(/s'(?![a-z])/g, "s").replace(/'/g, "")
+      .replace(/(\d),(\d)/g, "$1$2").replace(/[^a-z0-9\s]/g, " ")
+      .replace(/\d+/g, function (digits) { return " " + numberWords(digits) + " "; })
       .trim().replace(/\s+/g, " ");
   }
   // Recognizer tolerance for a Korean first grader: homophones and the
@@ -439,59 +460,186 @@
     PHRASES.forEach(function (pair) { text = text.split(pair[0]).join(pair[1]); });
     return text ? text.split(" ") : [];
   }
+  function lookup() { return Object.create(null); }
+  // ALIASES is keyed by the sentence word; compare against normalised heard tokens.
+  const ALIAS_LOOKUP = lookup();
+  Object.keys(ALIASES).forEach(function (word) {
+    const set = ALIAS_LOOKUP[word] = lookup();
+    ALIASES[word].forEach(function (alias) {
+      const token = normalize(alias);
+      if (token && token !== word && token.indexOf(" ") < 0) set[token] = true;
+    });
+  });
+  ALIAS_LOOKUP.cannot = ALIAS_LOOKUP.cannot || lookup();
+  ["cant", "canot", "cannon"].forEach(function (token) { ALIAS_LOOKUP.cannot[token] = true; });
+  // 같은 소리 다른 글자: 인식기는 어느 쪽 글자로든 적을 수 있다 (양방향).
+  const HOMOPHONES = [["to", "two", "too"], ["there", "their"], ["for", "four"], ["i", "eye"], ["see", "sea"],
+    ["ate", "eight"], ["son", "sun"], ["hear", "here"], ["know", "no"], ["right", "write"], ["by", "buy", "bye"],
+    ["one", "won"], ["new", "knew"], ["blue", "blew"], ["red", "read"], ["night", "knight"], ["wood", "would"],
+    ["be", "bee"], ["meet", "meat"], ["flower", "flour"], ["tail", "tale"], ["whole", "hole"], ["pear", "pair"],
+    ["high", "hi"], ["week", "weak"], ["road", "rode"], ["our", "hour"], ["dear", "deer"], ["bear", "bare"],
+    ["sail", "sale"], ["wait", "weight"], ["made", "maid"], ["not", "knot"], ["way", "weigh"], ["peace", "piece"],
+    ["plane", "plain"], ["break", "brake"], ["ant", "aunt"], ["toe", "tow"], ["sent", "cent", "scent"], ["hair", "hare"]];
+  const HOMOPHONE_LOOKUP = lookup();
+  HOMOPHONES.forEach(function (group) {
+    group.forEach(function (word) {
+      const set = HOMOPHONE_LOOKUP[word] = HOMOPHONE_LOOKUP[word] || lookup();
+      group.forEach(function (other) { if (other !== word) set[other] = true; });
+    });
+  });
+  // 문장이 다섯 단어 이상이면 빠뜨린 a/an/the 는 실수로 세지 않는다 (빠짐만, 바꿔 읽기·추가는 그대로 센다).
+  const FREE_MISSING = { a: true, an: true, the: true };
+  const FREE_MISSING_MIN_WORDS = 5;
+  // 아이가 생각하며 내는 소리. 인식기가 글자로 적어도 추가 단어로 세지 않는다.
+  const FILLERS = { um: true, umm: true, uh: true, uhm: true, hmm: true, erm: true, mm: true };
+  // 소리 비슷한 단어 허용(phonetic fallback)은 내용어에만 쓴다. 짧은 기능어끼리 섞이면 문장이 달라진다.
+  const FUNCTION_WORDS = {};
+  ("a an the is am are was were be i you he she it we they my your his her our their me him us them this that these those " +
+    "to in on at of for with and or but so not no yes do does did can will what where who how when why here there have has had")
+    .split(" ").forEach(function (word) { FUNCTION_WORDS[word] = true; });
+  const PHONETIC_MIN_LETTERS = 4;
+  // Korean-accent-aware consonant skeleton: b/p/f/v, d/t, g/k/c/q, l/r, s/z/sh, j/ch/z merge;
+  // vowels after the first letter drop out ("seed"="seat", "hare"="hair", "fish"="pish").
+  const keyCache = lookup();
+  function phoneticKey(word) {
+    if (keyCache[word] !== undefined) return keyCache[word];
+    let w = word.replace(/[^a-z]/g, "");
+    if (w.length > 3) w = w.replace(/s$/, "");
+    w = w.replace(/^kn/, "n").replace(/^wr/, "r").replace(/^wh/, "w")
+      .replace(/ph/g, "f").replace(/gh/g, "").replace(/ck/g, "k").replace(/th/g, "t").replace(/sh/g, "s")
+      .replace(/ch|dg|j|z/g, "j").replace(/c(?=[eiy])/g, "s").replace(/x/g, "ks")
+      .replace(/[bpfv]/g, "p").replace(/[dt]/g, "t").replace(/[gkcq]/g, "k").replace(/[lr]/g, "l");
+    const first = /[aeiouy]/.test(w.charAt(0)) ? "a" : w.charAt(0);
+    const key = (first + w.slice(1).replace(/[aeiouyhw]/g, "")).replace(/(.)\1+/g, "$1");
+    keyCache[word] = key;
+    return key;
+  }
+  function editDistanceAtMostOne(a, b) {
+    if (Math.abs(a.length - b.length) > 1) return false;
+    let i = 0, j = 0, edits = 0;
+    while (i < a.length && j < b.length) {
+      if (a[i] === b[j]) { i++; j++; continue; }
+      if (++edits > 1) return false;
+      if (a.length > b.length) i++;
+      else if (b.length > a.length) j++;
+      else { i++; j++; }
+    }
+    return edits + (a.length - i) + (b.length - j) <= 1;
+  }
+  function soundsAlike(expected, got) {
+    if (FUNCTION_WORDS[expected]) return false;
+    // One noun, plural or possessive: "dad's"→"dads", "apple"/"apples", "box"/"boxes".
+    if (expected.length >= 3 && (got === expected + "s" || expected === got + "s" || got === expected + "es" || expected === got + "es")) return true;
+    if (expected.length < PHONETIC_MIN_LETTERS || got.length < 3) return false;
+    if (got.length >= PHONETIC_MIN_LETTERS && editDistanceAtMostOne(expected, got)) return true;
+    const key = phoneticKey(expected);
+    return key.length >= 2 && key === phoneticKey(got);
+  }
+  // Exact, alias or homophone only (no sound-alike). Used when words are split or joined.
+  function listedSame(expected, got) {
+    if (expected === got) return true;
+    const alias = ALIAS_LOOKUP[expected], homophone = HOMOPHONE_LOOKUP[expected];
+    return !!(alias && alias[got]) || !!(homophone && homophone[got]);
+  }
+  const sameCache = new Map();
   function sameWord(expected, got) {
     if (expected === got) return true;
-    const list = ALIASES[expected];
-    return !!list && list.indexOf(got) >= 0;
+    if (!expected || !got) return false;
+    const cacheKey = expected + "|" + got;
+    let hit = sameCache.get(cacheKey);
+    if (hit === undefined) {
+      hit = listedSame(expected, got) || soundsAlike(expected, got);
+      if (sameCache.size > 20000) sameCache.clear();
+      sameCache.set(cacheKey, hit);
+    }
+    return hit;
+  }
+  // One heard token for two sentence words: "its"=it is, "dont"=do not, "icecream"=ice cream.
+  function splitSame(first, second, got) {
+    if (listedSame(first + second, got)) return true;
+    if (second === "is" && got === first + "s") return true;
+    if (second === "not" && got === first + "nt") return true;
+    if (second === "are" && got === first + "re") return true;
+    if (second === "will" && got === first + "ll" && first !== "i") return true;
+    if (second === "have" && got === first + "ve") return true;
+    return (first === "i" && second === "am" && got === "im") || (first === "let" && second === "us" && got === "lets");
   }
   // 긴 문장(7·8단계 등)은 인식기가 한두 단어를 잘못 듣거나 빼먹어도 통과시킨다.
-  // 10단어 이하는 예전처럼 한 단어도 틀리면 안 된다.
+  // 10단어 이하는 예전처럼 한 단어도 틀리면 안 된다 (같은 소리·비슷한 소리·빠진 a/the 는 틀린 게 아니다).
   function allowedSlips(wordCount) {
     return wordCount >= 17 ? 2 : wordCount >= 11 ? 1 : 0;
   }
-  function tokenDistance(words, got, limit) {
-    let prev = [];
-    for (let j = 0; j <= got.length; j++) prev.push(j);
-    for (let i = 1; i <= words.length; i++) {
-      const row = [i];
-      let best = row[0];
-      for (let j = 1; j <= got.length; j++) {
-        const cost = sameWord(words[i - 1], got[j - 1]) ? 0 : 1;
-        row.push(Math.min(prev[j] + 1, row[j - 1] + 1, prev[j - 1] + cost));
-        if (row[j] < best) best = row[j];
-      }
-      if (best > limit) return limit + 1;
-      prev = row;
+  // Ordered alignment of sentence words with heard tokens (weighted edit distance).
+  // cost: misread/missing/extra word = 1; a/an/the missing in 5+ word sentences, fillers,
+  // and split/joined words ("birth day", "its") = 0. flags[i] = word i was heard;
+  // forgiven[i] = word i was heard or is a forgiven missing function word.
+  function align(words, got) {
+    const n = words.length, m = got.length, INF = 1e9;
+    const free = n >= FREE_MISSING_MIN_WORDS;
+    const cost = [], back = [];
+    for (let i = 0; i <= n; i++) { cost.push(new Array(m + 1).fill(INF)); back.push(new Array(m + 1).fill(null)); }
+    cost[0][0] = 0;
+    function relax(i, j, value, from, kind) {
+      if (value < cost[i][j]) { cost[i][j] = value; back[i][j] = [from[0], from[1], kind]; }
     }
-    return prev[got.length];
+    for (let i = 0; i <= n; i++) {
+      for (let j = 0; j <= m; j++) {
+        const here = cost[i][j];
+        if (here >= INF) continue;
+        const at = [i, j];
+        if (i < n && j < m) { const same = sameWord(words[i], got[j]); relax(i + 1, j + 1, here + (same ? 0 : 1), at, same ? "ok" : "sub"); }
+        if (i < n && j + 1 < m && listedSame(words[i], got[j] + got[j + 1])) relax(i + 1, j + 2, here, at, "ok");
+        if (i + 1 < n && j < m && splitSame(words[i], words[i + 1], got[j])) relax(i + 2, j + 1, here, at, "ok2");
+        if (i < n) { const skip = free && FREE_MISSING[words[i]]; relax(i + 1, j, here + (skip ? 0 : 1), at, skip ? "skip" : "miss"); }
+        if (j < m) relax(i, j + 1, here + (FILLERS[got[j]] ? 0 : 1), at, "extra");
+      }
+    }
+    return { cost: cost, back: back, n: n, m: m };
+  }
+  function alignFlags(table) {
+    const flags = new Array(table.n).fill(false), forgiven = new Array(table.n).fill(false);
+    let i = table.n, j = table.m;
+    while (i > 0 || j > 0) {
+      const step = table.back[i][j];
+      if (!step) break;
+      const kind = step[2];
+      if (kind === "ok") { flags[i - 1] = forgiven[i - 1] = true; }
+      else if (kind === "ok2") { flags[i - 1] = flags[i - 2] = forgiven[i - 1] = forgiven[i - 2] = true; }
+      else if (kind === "skip") forgiven[i - 1] = true;
+      i = step[0]; j = step[1];
+    }
+    return { flags: flags, forgiven: forgiven };
+  }
+  function expectedWords(expected) {
+    const text = normalize(expected);
+    return text ? text.split(" ") : [];
   }
   function matches(expected, heard) {
-    const words = normalize(expected) ? normalize(expected).split(" ") : [], got = heardTokens(heard);
+    const words = expectedWords(expected), got = heardTokens(heard);
     if (!words.length || !got.length) return false;
-    const slips = allowedSlips(words.length);
-    if (!slips) {
-      if (words.length !== got.length) return false;
-      return words.every(function (word, i) { return sameWord(word, got[i]); });
-    }
-    return tokenDistance(words, got, slips) <= slips;
+    return align(words, got).cost[words.length][got.length] <= allowedSlips(words.length);
   }
   // True while the heard words are still a valid beginning of the sentence.
-  function isPrefix(expected, heard) {
-    const words = normalize(expected).split(" "), got = heardTokens(heard);
-    if (got.length > words.length) return false;
-    return got.every(function (token, i) { return sameWord(words[i], token); });
+  // `limit` overrides the slip budget (0 = only exact/equivalent words).
+  function isPrefix(expected, heard, limit) {
+    const words = expectedWords(expected), got = heardTokens(heard);
+    if (!got.length) return true;
+    const slips = typeof limit === "number" ? limit : allowedSlips(words.length);
+    const table = align(words, got);
+    for (let i = 0; i <= words.length; i++) { if (table.cost[i][got.length] <= slips) return true; }
+    return false;
   }
   // Ordered alignment is feedback, never a partial-credit scoring rule.
   function matchedWords(expected, heard) {
-    const words = normalize(expected).split(" "), got = heardTokens(heard);
-    let position = 0;
-    return words.map(function (word) {
-      let index = -1;
-      for (let i = position; i < got.length; i++) { if (sameWord(word, got[i])) { index = i; break; } }
-      if (index < 0) return false;
-      position = index + 1;
-      return true;
-    });
+    const words = expectedWords(expected), got = heardTokens(heard);
+    if (!got.length) return words.map(function () { return false; });
+    return alignFlags(align(words, got)).flags;
+  }
+  // How many sentence words one heard text covers (forgiven a/the count). Stuck protection only.
+  function coveredWords(expected, heard) {
+    const words = expectedWords(expected), got = heardTokens(heard);
+    if (!got.length) return 0;
+    return alignFlags(align(words, got)).forgiven.filter(Boolean).length;
   }
   // The recognizer sends up to MAX_ALTERNATIVES guesses per final result. The
   // sentence passes when the first guesses match, or when swapping any single
@@ -506,6 +654,35 @@
         texts.push(copy.join(" "));
       }
     });
+    return texts;
+  }
+  // Every alternative of every result segment: all combinations when they are few,
+  // otherwise single and pair swaps (first guesses first), capped for slow tablets.
+  const MAX_CANDIDATES = 240;
+  function candidateTexts(finals) {
+    const texts = alternativeTexts(finals), seen = new Set(texts);
+    function add(parts) {
+      if (texts.length >= MAX_CANDIDATES) return;
+      const text = parts.join(" ");
+      if (!seen.has(text)) { seen.add(text); texts.push(text); }
+    }
+    const product = finals.reduce(function (total, alts) { return total * Math.max(1, alts.length); }, 1);
+    if (product <= MAX_CANDIDATES) {
+      const pick = finals.map(function () { return 0; });
+      for (let c = 0; c < product; c++) {
+        add(finals.map(function (alts, i) { return alts[pick[i]] || ""; }));
+        for (let i = finals.length - 1; i >= 0; i--) { if (++pick[i] < finals[i].length) break; pick[i] = 0; }
+      }
+    } else {
+      const base = finals.map(function (alts) { return alts[0] || ""; });
+      for (let a = 0; a < finals.length; a++) {
+        for (let b = a + 1; b < finals.length; b++) {
+          for (let x = 1; x < finals[a].length; x++) {
+            for (let y = 1; y < finals[b].length; y++) { const copy = base.slice(); copy[a] = finals[a][x]; copy[b] = finals[b][y]; add(copy); }
+          }
+        }
+      }
+    }
     return texts;
   }
   // 결과 조각이 앞 조각들을 그대로 다시 담고 있으면(안드로이드 크롬) 앞 조각을 버리고 새 조각만 남긴다.
@@ -523,7 +700,25 @@
     return out;
   }
   function anyMatches(expected, finals) {
-    return alternativeTexts(finals).some(function (text) { return matches(expected, text); });
+    return candidateTexts(finals).some(function (text) { return matches(expected, text); });
+  }
+  function anyPrefix(expected, finals, limit) {
+    return candidateTexts(finals).some(function (text) { return isPrefix(expected, text, limit); });
+  }
+  function matchScore(expected, finals) {
+    let best = 0;
+    candidateTexts(finals).forEach(function (text) { best = Math.max(best, coveredWords(expected, text)); });
+    return best;
+  }
+  // Stuck protection: after STUCK_TRIES reading attempts on the same sentence (presses in
+  // which words were heard), a best attempt that covered at least 70% of the words passes
+  // gently. Short lines forgive one word, so a 3-word sentence needs 2 and a 10-word one 7.
+  // If nothing was ever heard and STUCK_TRIES presses ended in device errors (network, busy
+  // mic, stalled recognizer — never plain silence or a blocked permission), it passes too.
+  const STUCK_TRIES = 3, STUCK_SHARE = 0.7;
+  function stuckRequired(wordCount) {
+    if (wordCount <= 1) return wordCount;
+    return Math.min(Math.ceil(wordCount * STUCK_SHARE - 1e-9), wordCount - 1);
   }
 
   function cleanWordScores(input) {
@@ -585,7 +780,17 @@
   const FIRST_PRAISE = ["excellent", "perfect", "awesome", "wonderful"];
   const RETRY_PRAISE = ["great", "verygood", "youdidit", "super"];
   const PRAISE_TEXT = { excellent: "Excellent!", perfect: "Perfect!", awesome: "Awesome!", wonderful: "Wonderful!", great: "Great!", verygood: "Very good!", youdidit: "You did it!", super: "Super!", threeinarow: "Three in a row!" };
-  const PRAISE_PATH = "assets/study/praise/", WORD_PATH = "assets/study/words/";
+  // Clips live beside this script. Resolve them from the script's own URL so a page in
+  // another folder (story/english/ has no <base>) loads the same precached files; the hub
+  // (<base href="../">) gets the same URLs as before. Without a document (tests) they stay relative.
+  const ASSET_ROOT = (function () {
+    try {
+      const script = typeof document !== "undefined" && document.currentScript;
+      if (script && script.src) return new URL("../../", script.src).href;
+    } catch (_) {}
+    return "";
+  })();
+  const PRAISE_PATH = ASSET_ROOT + "assets/study/praise/", WORD_PATH = ASSET_ROOT + "assets/study/words/";
   const PRAISE_FILES = { perfect: PRAISE_PATH + "perfect-v2.wav" };
   function praiseFile(clip) { return PRAISE_FILES[clip] || PRAISE_PATH + clip + ".mp3"; }
   const WORD_CLIPS = {};
@@ -602,6 +807,11 @@
     });
   }
   const LOG_LIMIT = 40;
+  // Listening window for one 🎤 press (see mount → read/startRecognizer).
+  const MAX_RESTARTS = 4, RESTART_DELAY_MS = 150, RESTART_START_MS = 2000, SILENCE_MS = 2500;
+  const WINDOW_BASE_MS = 9000, WINDOW_PER_WORD_MS = 900, WINDOW_MAX_MS = 45000;
+  const PERMANENT_ERRORS = { "not-allowed": true, "service-not-allowed": true, "language-not-supported": true };
+  const permissionGuided = new WeakSet();
   const sessions = new WeakMap();
   const completionPlayed = new WeakSet();
   function mountCelebration(container, env) {
@@ -655,13 +865,29 @@
     if (flags.every(Boolean)) return [];
     return Array.from(new Set(normalize(expected).split(" ").filter(function (_, i) { return !flags[i]; }))).slice(0, 3);
   }
-  // Diagnostic trail (no transcripts, only event names and codes), kept in
-  // memory for the page and shown under the sentence when the URL carries
-  // readinglog=1. Nothing is written to storage.
+  // Diagnostic trail: event names, error codes, segment counts and match scores
+  // only — never the recognised words or audio. Kept in memory for the page and
+  // shown under the sentence when the URL carries readinglog=1. When the page
+  // hands over a key-value store (callbacks.diagnostics), the last DIAG_KEEP
+  // lines also survive a reload so a parent can see what failed on the iPad.
+  const DIAG_KEY = "hub2_reading_diag", DIAG_KEEP = 30;
+  function clockStamp(env) {
+    const D = env.Date || Date, d = new D();
+    const two = function (n) { return (n < 10 ? "0" : "") + n; };
+    return two(d.getMonth() + 1) + "-" + two(d.getDate()) + " " + two(d.getHours()) + ":" + two(d.getMinutes()) + ":" + two(d.getSeconds());
+  }
   function record(env, session, event) {
-    const now = env.Date ? env.Date.now() : Date.now();
-    session.log.push(Math.round(now / 1000) % 100000 + " " + event);
+    session.log.push(clockStamp(env) + " " + event);
     if (session.log.length > LOG_LIMIT) session.log.splice(0, session.log.length - LOG_LIMIT);
+  }
+  function loadDiagnostics(store) {
+    try {
+      const saved = JSON.parse(store.getItem(DIAG_KEY) || "[]");
+      return Array.isArray(saved) ? saved.filter(function (line) { return typeof line === "string" && line.length <= 80 && /^[\w\s.:\/+#=-]*$/.test(line); }).slice(-DIAG_KEEP) : [];
+    } catch (_) { return []; }
+  }
+  function saveDiagnostics(store, lines) {
+    try { store.setItem(DIAG_KEY, JSON.stringify(lines.slice(-DIAG_KEEP))); } catch (_) {}
   }
   function mount(container, sentence, onPass, env, callbacks) {
     env = env || root;
@@ -679,6 +905,15 @@
     let retried = false, soundActive = false, soundTimer = null, stopTimer = null, passDone = false, stopping = null;
     let audioCtx = null, primedCtx = null, playing = null, healthTimer = null, recovering = false;
     let recoveryButton = null, retryTimer = null, carry = [], lastFinals = [], finishing = false;
+    // One 🎤 press = one take. Inside a take the recognizer may end early (iOS ends at a
+    // child's pause); it is restarted quietly and the segments are merged in order.
+    let takeId = -1, windowOpen = false, windowTimer = null, restarts = 0, restarting = false, restartTimer = null;
+    let silenceTimer = null, tailInterim = null, segmentHeard = false, autoRead = false, pressPending = false;
+    // Stuck protection for this sentence (see STUCK_TRIES): presses that ended without a pass.
+    let tries = 0, deviceTries = 0, bestCovered = 0, heardEver = false, permanentBlock = false, gentle = false;
+    const wordCount = expectedWords(sentence.text).length;
+    const diagStore = callbacks.diagnostics && typeof callbacks.diagnostics.getItem === "function" ? callbacks.diagnostics : null;
+    if (diagStore && !session.log.length) loadDiagnostics(diagStore).forEach(function (entry) { session.log.push(entry); });
     const Recognition = env.SpeechRecognition || env.webkitSpeechRecognition;
     const showLog = !!(env.location && /(?:\?|&)readinglog=1/.test(env.location.search || ""));
     const nodes = {};
@@ -719,20 +954,21 @@
     nodes.heard = element("p", "reading-heard");
     nodes.heard.lang = "en";
     const privacy = element("p", "reading-privacy",
-      "부모님 안내: ‘읽어 보기’ 또는 ‘마이크 복구’를 누를 때만 마이크를 켭니다. 음성은 브라우저의 인식 서비스로 전송될 수 있어요. 복구용 마이크 연결은 즉시 닫으며 녹음하지 않아요. 음성과 인식 문장은 저장하지 않고, 연습할 교재 단어와 복습 횟수만 이 기기에 기억해요. 발음 점수가 아닌 문장 읽기를 확인해요.");
+      "부모님 안내: ‘읽어 보기’ 또는 ‘마이크 복구’를 누를 때만 마이크를 켭니다. 음성은 브라우저의 인식 서비스로 전송될 수 있어요. 복구용 마이크 연결은 즉시 닫으며 녹음하지 않아요. 음성과 인식 문장은 저장하지 않고, 연습할 교재 단어와 복습 횟수, 문제 확인용 오류 기록(오류 이름과 횟수만)을 이 기기에 기억해요. 발음 점수가 아닌 문장 읽기를 확인해요.");
     [label, line, meaning, actions, nodes.status, nodes.heard, privacy].forEach(function (node) { container.appendChild(node); });
     const logNode = showLog ? element("pre", "reading-log") : null;
     if (logNode) container.appendChild(logNode);
     function log(event) {
       record(env, session, event);
+      if (diagStore) saveDiagnostics(diagStore, session.log);
       if (logNode && !disposed) logNode.textContent = session.log.join("\n");
     }
-    log("mount-v23" + (touchIOS ? " ios-quiet-round" : ""));
+    log("mount-v24 w" + wordCount + (touchIOS ? " ios-quiet-round" : ""));
 
     function controls() {
-      nodes.mic.disabled = disposed || awarded || recovering || !!active || soundActive || !Recognition || env.isSecureContext === false || nav.onLine === false;
+      nodes.mic.disabled = disposed || awarded || recovering || !!active || restarting || soundActive || !Recognition || env.isSecureContext === false || nav.onLine === false;
       if (recoveryButton) recoveryButton.disabled = disposed || awarded || recovering || !!active || soundActive || !Recognition || env.isSecureContext === false || nav.onLine === false;
-      nodes.stop.disabled = disposed || awarded || finishing || !!stopping || (!active && !soundActive);
+      nodes.stop.disabled = disposed || awarded || finishing || !!stopping || (!active && !soundActive && !restarting);
       nodes.stop.textContent = soundActive && !awarded ? "안내 멈추고 읽기" : "다 읽었어요";
     }
     // 소리를 낼 수 있는 상태인가 (무음 모드가 아니고 Web Audio 를 쓸 수 있을 때)
@@ -767,6 +1003,7 @@
       env.clearTimeout(healthTimer); healthTimer = null;
       env.clearTimeout(timer); timer = null;
       env.clearTimeout(stopTimer); stopTimer = null;
+      clearTake();
       cancelSound();
       if (stopping) { stopping.onend = null; try { stopping.abort(); } catch (_) {} stopping = null; }
       const previous = active; active = null;
@@ -796,6 +1033,12 @@
       if (!previous && after) after(true);
     }
     function resetFlow() { retried = true; session.streak = 0; }
+    function clearTake() {
+      env.clearTimeout(windowTimer); windowTimer = null;
+      env.clearTimeout(restartTimer); restartTimer = null;
+      env.clearTimeout(silenceTimer); silenceTimer = null;
+      windowOpen = false; restarting = false; tailInterim = null;
+    }
     // iPad Safari only guarantees Web Audio playback when AudioContext.resume()
     // happens inside a user gesture. Prime an idle context on the microphone tap;
     // it makes no sound and is reused only after recognition has fully stopped.
@@ -816,7 +1059,7 @@
       passDone = true;
       cancelSound();
       log("next");
-      onPass();
+      onPass(gentle ? { gentle: true } : undefined);
     }
     function armWatchdog(ms, fn) {
       env.clearTimeout(soundTimer);
@@ -908,8 +1151,9 @@
       if (nodes.meaning) nodes.meaning.hidden = false;
       const clip = choosePraise(session, !retried);
       nodes.status.textContent = "";
-      nodes.status.appendChild(element("span", "reading-praise", (clip === "threeinarow" ? "🌟 " : "⭐ ") + PRAISE_TEXT[clip]));
-      nodes.status.appendChild(element("span", "reading-praise-detail", clip === "threeinarow" ? "세 문장 연속 성공! 최고야!" : retried ? "다시 읽어서 해냈어! 멋져!" : "와! 한 번에 성공! 다음 문장도 가자!"));
+      nodes.status.classList.remove("retry");
+      nodes.status.appendChild(element("span", "reading-praise", gentle ? "⭐ 잘 읽었어요! 다음으로 가요" : (clip === "threeinarow" ? "🌟 " : "⭐ ") + PRAISE_TEXT[clip]));
+      nodes.status.appendChild(element("span", "reading-praise-detail", gentle ? "여러 번 끝까지 읽었어요. 정말 멋져요!" : clip === "threeinarow" ? "세 문장 연속 성공! 최고야!" : retried ? "다시 읽어서 해냈어! 멋져!" : "와! 한 번에 성공! 다음 문장도 가자!"));
       const stars = element("span", "reading-star-burst", clip === "threeinarow" ? "★ ✦ ⭐ ✦ ★" : "✦ ★ ✦");
       stars.setAttribute("aria-hidden", "true"); nodes.status.appendChild(stars);
       log("pass " + clip + (retried ? " retry" : " first"));
@@ -996,11 +1240,56 @@
       nodes.heard.classList.toggle("retry", !!retry);
       nodes.mic.textContent = retry ? "🎤 다시 읽기" : "🎤 읽어 보기";
     }
+    function award() {
+      awarded = true;
+      feedback(sentence.text);
+      praise();
+    }
+    // A trailing interim result is the recognizer's last guess. Once the recognizer
+    // has ended (by itself or after 다 읽었어요) it counts as final, as Chrome would.
+    function sealInterim() {
+      const tail = tailInterim; tailInterim = null;
+      if (!tail || !normalize(tail[0] || "")) return;
+      lastFinals = collapseRepeats(lastFinals.concat([tail.slice()]));
+      finalText = lastFinals.map(function (alts) { return alts[0]; }).join(" ");
+      log("seal-interim");
+    }
+    function noteCoverage() {
+      if (!lastFinals.length) return 0;
+      heardEver = true;
+      const covered = matchScore(sentence.text, lastFinals);
+      if (covered > bestCovered) bestCovered = covered;
+      return covered;
+    }
+    // Counts one finished 🎤 press that did not pass: a reading attempt (words were
+    // heard) or a device failure (nothing heard because of the device). Silence counts
+    // as neither. Returns true when stuck protection lets the child move on.
+    function concludePress(kind, device, readAttempt) {
+      if (!pressPending || awarded || disposed) return false;
+      pressPending = false;
+      if (readAttempt) tries++;
+      else if (device) deviceTries++;
+      log("try " + kind + " read " + tries + " device " + deviceTries + " best " + bestCovered + "/" + wordCount);
+      if ((tries >= STUCK_TRIES && bestCovered >= stuckRequired(wordCount)) ||
+          (!heardEver && !permanentBlock && deviceTries >= STUCK_TRIES)) {
+        gentle = true; retried = true; carry = [];
+        log("gentle-pass " + kind);
+        award();
+        return true;
+      }
+      if (tries + deviceTries >= STUCK_TRIES) fallback.hidden = false;
+      return false;
+    }
     function finishAttempt() {
+      sealInterim();
+      if (lastFinals.length && anyMatches(sentence.text, lastFinals)) { log("pass-at-end"); award(); return; }
+      const covered = noteCoverage();
+      log("take segs " + lastFinals.length + " restarts " + restarts + " covered " + covered + "/" + wordCount);
       // A browser ending at a child's pause is not a pronunciation mistake.
-      // Keep only confirmed final words in memory, scoped to this question.
-      if (finalText && isPrefix(sentence.text, finalText) && !matches(sentence.text, finalText)) {
+      // Keep only confirmed words in memory, scoped to this question.
+      if (finalText && anyPrefix(sentence.text, lastFinals)) {
         carry = lastFinals.map(function (alts) { return alts.slice(); });
+        if (concludePress("partial", false, true)) return;
         stop("여기까지 잘 들었어요. ‘이어 읽기’를 누르고 남은 말을 읽어 주세요. 처음부터 다시 읽어도 괜찮아요.");
         releasePrimedAudio();
         feedback(finalText);
@@ -1008,29 +1297,94 @@
         fallback.hidden = false;
         return;
       }
-      resetFlow();
-      if (finalText && !matches(sentence.text, finalText)) {
+      if (finalText) {
+        resetFlow();
         const flags = matchedWords(sentence.text, finalText);
-        const words = normalize(sentence.text).split(" ").filter(function (_, i) { return !flags[i]; });
+        const words = expectedWords(sentence.text).filter(function (_, i) { return !flags[i]; });
         feedback(finalText, true);
         const spoken = retryWords(sentence.text, finalText);
         carry = []; lastFinals = [];
         log("retry " + spoken.length);
-        stop(spoken.length ? "이렇게 읽어요 👂 " + spoken[0] : "문장에 있는 말만 읽어 주세요", function (safe) { speakWords(spoken, safe); });
         if (callbacks.onRetry) callbacks.onRetry(Array.from(new Set(words)));
+        if (concludePress("wrong", false, true)) return;
+        stop(spoken.length ? "이렇게 읽어요 👂 " + spoken[0] : "문장에 있는 말만 읽어 주세요", function (safe) { speakWords(spoken, safe); });
       } else {
         log("empty");
-        stop("잘 듣지 못했어요. 읽어 보기를 눌러 다시 읽어 주세요.");
+        if (concludePress("empty", false, false)) return;
+        stop("목소리가 잘 안 들렸어요. 🎤를 누르고 마이크 가까이에서 천천히 읽어 주세요. 틀린 게 아니에요.");
         releasePrimedAudio();
         fallback.hidden = false;
         showRecoveryButton();
       }
     }
+    function errorMessage(code) {
+      const calm = " 틀린 게 아니에요.";
+      if (code === "not-allowed" || code === "service-not-allowed") {
+        if (!permissionGuided.has(env)) { permissionGuided.add(env); return permissionGuide(code); }
+        return "마이크 허락이 필요해요." + calm + " 다른 문제를 풀어도 괜찮아요.";
+      }
+      const messages = {
+        "audio-capture": "마이크가 잠깐 바빠요. ‘마이크 다시 켜기’를 누르고 다시 읽어 주세요.",
+        network: "인터넷이 잠깐 끊겼어요. 🎤를 다시 눌러 읽어 주세요.",
+        "no-speech": "목소리가 아직 안 들렸어요. 🎤를 누르고 마이크 가까이에서 천천히 읽어 주세요.",
+        aborted: "듣기가 잠깐 멈췄어요. 🎤를 다시 눌러 읽어 주세요.",
+        "language-not-supported": "영어 음성 인식을 지원하지 않는 기기예요."
+      };
+      return (messages[code] || "잘 듣지 못했어요. 🎤를 다시 눌러 읽어 주세요.") + calm;
+    }
+    // Shown once per page; afterwards a short line, so the child is not buried in text.
+    function permissionGuide(code) {
+      const tail = " 틀린 게 아니에요.";
+      if (touchIOS && code === "service-not-allowed") return "음성 인식이 꺼져 있어요. 부모님: 아이패드 설정 → 일반 → 키보드 → ‘받아쓰기 활성화’를 켜고, 설정 → Safari → 마이크를 ‘허용’으로 바꾼 뒤 🎤를 다시 눌러 주세요." + tail;
+      if (touchIOS) return "마이크 허락이 필요해요. 부모님: 아이패드 설정 → Safari → 마이크 → ‘허용’을 고르고 페이지를 새로 연 뒤 🎤를 다시 눌러 주세요." + tail;
+      if (/Android/i.test(nav.userAgent || "")) return "마이크 허락이 필요해요. 부모님: Chrome 주소창 왼쪽 아이콘 → 권한 → 마이크 ‘허용’ (또는 Chrome 설정 → 사이트 설정 → 마이크) 뒤 🎤를 다시 눌러 주세요." + tail;
+      return "마이크 허락이 필요해요. 부모님: 주소창 왼쪽 아이콘 → 사이트 설정 → 마이크를 ‘허용’으로 바꾼 뒤 🎤를 다시 눌러 주세요." + tail;
+    }
+    function canRestart() {
+      if (!windowOpen || restarts >= MAX_RESTARTS || doc.hidden || nav.onLine === false) return false;
+      return !finalText || anyPrefix(sentence.text, lastFinals);
+    }
+    // Same 🎤 press: keep the words heard so far and open a fresh recognizer quietly.
+    function restartListening(reason, recognizer) {
+      recognizer.onresult = recognizer.onerror = recognizer.onend = recognizer.onstart = null;
+      try { recognizer.abort(); } catch (_) {}
+      active = null;
+      env.clearTimeout(healthTimer); healthTimer = null;
+      env.clearTimeout(silenceTimer); silenceTimer = null;
+      carry = lastFinals.map(function (alts) { return alts.slice(); });
+      restarts++; restarting = true;
+      log("restart " + restarts + " " + reason + " segs " + carry.length);
+      nodes.status.textContent = carry.length ? "듣고 있어요… 이어서 읽어 주세요." : "듣고 있어요… 문장을 끝까지 읽어 주세요.";
+      controls();
+      const id = serial;
+      restartTimer = env.setTimeout(function () {
+        restartTimer = null;
+        if (disposed || awarded || id !== serial) return;
+        restarting = false;
+        startRecognizer(true, false);
+      }, RESTART_DELAY_MS);
+    }
+    // After a quiet restart, SILENCE_MS without new words ends the take and checks it.
+    function armSilence(recognizer) {
+      env.clearTimeout(silenceTimer);
+      const id = serial;
+      silenceTimer = env.setTimeout(function () {
+        silenceTimer = null;
+        if (disposed || awarded || id !== serial || active !== recognizer || finishing) return;
+        log("silence");
+        if (segmentHeard) { finishListening(); return; }
+        // Nothing new since the restart, so there is no pending word to flush.
+        recognizer.onresult = recognizer.onerror = recognizer.onend = recognizer.onstart = null;
+        active = null;
+        try { recognizer.abort(); } catch (_) {}
+        finishAttempt();
+      }, SILENCE_MS);
+    }
     function scheduleRetry() {
       const id = serial;
       retryTimer = env.setTimeout(function () {
         retryTimer = null;
-        if (!disposed && !awarded && id === serial && !doc.hidden && !nodes.mic.disabled) read();
+        if (!disposed && !awarded && id === serial && !doc.hidden && !nodes.mic.disabled) { autoRead = true; read(); }
       }, 500);
     }
     function finishListening() {
@@ -1049,11 +1403,11 @@
     function offerRecovery(reason) {
       if (disposed || awarded || recovering) return;
       log(reason);
-      resetFlow();
       releasePrimedAudio();
       fallback.hidden = false;
-      if (finalText && isPrefix(sentence.text, finalText)) { finishAttempt(); return; }
+      if (finalText && anyPrefix(sentence.text, lastFinals)) { finishAttempt(); return; }
       if (touchIOS) {
+        if (concludePress("stall", true, false)) return;
         stop('마이크 응답이 멈췄어요. 마이크 다시 켜기를 눌러 연결을 새로 준비해 주세요. 오답으로 세지 않아요.');
         showRecoveryButton();
         return;
@@ -1078,6 +1432,7 @@
         scheduleRetry();
         return;
       }
+      if (concludePress("stall", true, false)) return;
       stop("마이크가 응답하지 않아요. 아래 ‘마이크 다시 켜기’를 눌러 주세요. 오답으로 세지 않아요.");
       showRecoveryButton();
     }
@@ -1126,73 +1481,99 @@
         // offerRecovery 가 조기 반환하지 않고 컨트롤이 되살아난다.
         recovering = false;
         offerRecovery("recovery-denied");
-        nodes.status.textContent = "마이크 권한을 확인한 뒤 다시 눌러 주세요. 정답 기록은 그대로예요.";
+        if (!awarded) nodes.status.textContent = "마이크 권한을 확인한 뒤 다시 눌러 주세요. 정답 기록은 그대로예요.";
       });
     }
+    function maxWindowMs() { return Math.min(WINDOW_MAX_MS, WINDOW_BASE_MS + wordCount * WINDOW_PER_WORD_MS); }
     function read(rearmed) {
       if (nodes.mic.disabled) return;
       if (touchIOS && completionPlayed.has(env) && rearmed !== true && env.navigator.mediaDevices && env.navigator.mediaDevices.getUserMedia) { recoverMicrophone(); return; }
+      const automatic = autoRead; autoRead = false;
       stop();
+      if (!automatic) pressPending = true;
       if (!touchIOS) unlockAudio();
       else session.silent = false;
       lastFinals = carry.map(function (alts) { return alts.slice(); });
       finalText = lastFinals.map(function (alts) { return alts[0]; }).join(" ");
       feedback(finalText);
+      const take = takeId = serial;
+      restarts = 0; windowOpen = true;
+      // Slow readers get up to a minute; the shorter inactivity watchdog still
+      // detects a dead recognizer. Each real result refreshes that watchdog.
+      timer = env.setTimeout(function () { if (!disposed && !awarded && take === serial) { log("timeout"); finishAttempt(); } }, 60000);
+      // Quiet restarts are allowed only inside this window (longer sentences get longer).
+      windowTimer = env.setTimeout(function () { windowTimer = null; windowOpen = false; }, maxWindowMs());
+      startRecognizer(false, false);
+    }
+    function startRecognizer(isRestart, secondTry) {
       const id = serial;
       let recognizer;
       try { recognizer = new Recognition(); } catch (_) {
-        resetFlow(); log("mic-create-fail");
+        log("mic-create-fail");
+        if (isRestart) { finishAttempt(); return; }
+        permanentBlock = true;
         releasePrimedAudio();
         fallback.hidden = false;
-        nodes.status.textContent = "이 브라우저에서 음성 인식을 시작할 수 없어요. Safari 또는 Chrome에서 다시 열어 주세요."; controls(); return;
+        if (concludePress("create-fail", true, false)) return;
+        stop("이 브라우저에서 음성 인식을 시작할 수 없어요. Safari 또는 Chrome에서 다시 열어 주세요.");
+        return;
       }
       active = recognizer;
+      segmentHeard = false;
       recognizer.lang = "en-US";
       recognizer.continuous = true;
       recognizer.interimResults = true;
       recognizer.maxAlternatives = MAX_ALTERNATIVES;
       const valid = function () { return !disposed && !awarded && active === recognizer && id === serial; };
+      const drop = function () {
+        recognizer.onresult = recognizer.onerror = recognizer.onend = recognizer.onstart = null;
+        try { recognizer.abort(); } catch (_) {}
+        if (active === recognizer) active = null;
+      };
       recognizer.onstart = function () {
         if (!valid()) return;
         env.clearTimeout(healthTimer);
         healthTimer = env.setTimeout(function () { if (valid()) offerRecovery("result-timeout"); }, 12000);
-        log("mic-on"); nodes.status.textContent = "듣고 있어요… 문장을 끝까지 읽어 주세요.";
+        log(isRestart ? "mic-on again" : "mic-on");
+        nodes.status.textContent = isRestart && lastFinals.length ? "듣고 있어요… 이어서 읽어 주세요." : "듣고 있어요… 문장을 끝까지 읽어 주세요.";
+        if (isRestart && lastFinals.length) armSilence(recognizer);
       };
       recognizer.onresult = function (event) {
         if (!valid()) return;
         env.clearTimeout(healthTimer);
         healthTimer = env.setTimeout(function () { if (valid()) { if (finishing) finishAttempt(); else offerRecovery("result-stalled"); } }, finishing ? 2500 : 12000);
-        const finals = [], visible = [];
-        for (let i = 0; i < event.results.length; i++) {
-          const result = event.results[i];
+        const results = event.results || [], finals = [];
+        let tail = [];
+        for (let i = 0; i < results.length; i++) {
+          const result = results[i];
           const alts = [];
           const count = Math.min(result.length || 1, MAX_ALTERNATIVES);
           for (let k = 0; k < count; k++) { if (result[k] && typeof result[k].transcript === "string") alts.push(result[k].transcript); }
           if (!alts.length) alts.push("");
-          visible.push(alts[0]);
-          if (result.isFinal) finals.push(alts);
+          if (result.isFinal) { finals.push(alts); tail = []; } else tail.push(alts);
         }
-        // Prefer a new full-sentence attempt over a carried prefix; otherwise
-        // append only confirmed results. Interim words never earn a pass.
-        const fresh = collapseRepeats(finals);
-        const restarted = anyMatches(sentence.text, fresh) || (fresh.length && isPrefix(sentence.text, fresh.map(function (alts) { return alts[0]; }).join(" ")));
-        if (restarted) carry = [];
-        finals.unshift.apply(finals, carry);
-        visible.unshift.apply(visible, carry.map(function (alts) { return alts[0]; }));
+        tailInterim = !tail.length ? null : tail.length === 1 ? tail[0] : [tail.map(function (alts) { return alts[0]; }).join(" ")];
+        const heardNow = finals.concat(tail).some(function (alts) { return !!normalize(alts[0] || ""); });
+        if (heardNow) { segmentHeard = true; heardEver = true; }
         // 안드로이드 크롬은 앞에서 들은 말을 다음 결과에 다시 넣어 준다("I" · "I like" · "I like apples").
         // 그대로 이으면 "I I like I like apples"가 되어 맞게 읽어도 틀린다. 겹친 앞 조각은 버린다.
-        const merged = collapseRepeats(finals);
-        finals.length = 0;
-        merged.forEach(function (alts) { finals.push(alts); });
-        lastFinals = finals;
-        finalText = finals.map(function (alts) { return alts[0]; }).join(" ");
-        feedback(collapseRepeats(visible.map(function (text) { return [text]; })).map(function (alts) { return alts[0]; }).join(" "));
-        if (finals.length) log("result " + finals.length + "/" + event.results.length);
-        if (finals.length && anyMatches(sentence.text, finals)) {
-          awarded = true;
-          feedback(sentence.text);
-          praise();
-        } else if (finalText && !isPrefix(sentence.text, finalText) && Array.from(event.results).every(function (result) { return result.isFinal; })) {
+        // Earlier segments (a quiet restart or 이어 읽기) come first, in order. A new
+        // full reading, or a fresh start that got at least as far, replaces them.
+        // Interim words never earn a pass while she is still reading.
+        const fresh = collapseRepeats(finals);
+        const joined = carry.length ? collapseRepeats(carry.concat(finals)) : fresh;
+        if (carry.length && fresh.length && (anyMatches(sentence.text, fresh) ||
+            (anyPrefix(sentence.text, fresh, 0) && heardTokens(fresh.map(function (alts) { return alts[0]; }).join(" ")).length >= heardTokens(carry.map(function (alts) { return alts[0]; }).join(" ")).length))) {
+          carry = []; lastFinals = fresh;
+        } else lastFinals = joined;
+        finalText = lastFinals.map(function (alts) { return alts[0]; }).join(" ");
+        const shown = lastFinals.map(function (alts) { return [alts[0]]; }).concat(tail.map(function (alts) { return [alts[0]]; }));
+        feedback(collapseRepeats(shown).map(function (alts) { return alts[0]; }).join(" "));
+        if (finals.length) log("result " + lastFinals.length + "/" + results.length);
+        if (restarts && heardNow) armSilence(recognizer);
+        if (lastFinals.length && anyMatches(sentence.text, lastFinals)) {
+          award();
+        } else if (finalText && !anyPrefix(sentence.text, lastFinals) && Array.from(results).every(function (result) { return result.isFinal; })) {
           finishAttempt();
         } else {
           nodes.status.textContent = "듣고 있어요… 문장을 끝까지 읽어 주세요.";
@@ -1200,38 +1581,61 @@
       };
       recognizer.onerror = function (event) {
         if (!valid()) return;
-        if (finalText && isPrefix(sentence.text, finalText) && !matches(sentence.text, finalText)) {
-          carry = lastFinals.map(function (alts) { return alts.slice(); });
-        }
-        resetFlow();
-        log("error " + (event && event.error));
+        const code = (event && event.error) || "unknown";
+        log("error " + code + (isRestart ? " after-restart " + restarts : ""));
+        sealInterim();
+        if (lastFinals.length && anyMatches(sentence.text, lastFinals)) { award(); return; }
+        // A child's pause or an interrupted audio session is not an attempt: listen again quietly.
+        if ((code === "no-speech" || code === "aborted") && !finishing && canRestart()) { restartListening(code, recognizer); return; }
+        if (finalText && anyPrefix(sentence.text, lastFinals)) carry = lastFinals.map(function (alts) { return alts.slice(); });
+        noteCoverage();
+        const permanent = PERMANENT_ERRORS[code] === true;
+        if (permanent) permanentBlock = true;
         fallback.hidden = false;
-        const messages = {
-          "not-allowed": "마이크 또는 음성 인식 권한을 허용해 주세요. 정답 기록은 바뀌지 않았어요.",
-          "service-not-allowed": "음성 인식 서비스를 사용할 수 없어요. Safari의 Siri·받아쓰기 설정을 확인해 주세요.",
-          "audio-capture": "마이크를 찾지 못했어요. 연결과 사용 권한을 확인해 주세요.",
-          network: "인터넷 연결을 확인하고 다시 읽어 주세요.",
-          "no-speech": "목소리를 듣지 못했어요. 마이크 가까이에서 다시 읽어 주세요.",
-          "language-not-supported": "영어 음성 인식을 지원하지 않는 기기예요."
-        };
-        stop(messages[event.error] || "잘 듣지 못했어요. 오답이 아니니 다시 시도해 주세요.");
         releasePrimedAudio();
+        if (concludePress("error " + code, !permanent && code !== "no-speech", lastFinals.length > 0)) return;
+        stop(errorMessage(code));
         showRecoveryButton();
       };
-      recognizer.onend = function () { if (valid()) { log("end"); active = null; finishAttempt(); } };
+      recognizer.onend = function () {
+        if (!valid()) return;
+        log("end");
+        sealInterim();
+        if (lastFinals.length && anyMatches(sentence.text, lastFinals)) { active = null; award(); return; }
+        // iOS Safari ends at a short pause even in continuous mode: keep the take going.
+        if (!finishing && canRestart()) { restartListening("end", recognizer); return; }
+        active = null;
+        finishAttempt();
+      };
+      if (isRestart) {
+        // A restart that never reports onstart (possible on iOS) ends the take with what was heard.
+        healthTimer = env.setTimeout(function () { if (valid()) { log("restart-start-timeout"); drop(); finishAttempt(); } }, RESTART_START_MS);
+      } else {
+        healthTimer = env.setTimeout(function () { if (valid()) offerRecovery("start-timeout"); }, (session.lastClip || session.silent) ? 4000 : 12000);
+        nodes.status.textContent = "마이크를 준비하고 있어요…";
+      }
       controls();
-      nodes.status.textContent = "마이크를 준비하고 있어요…";
-      // Slow readers get up to a minute; the shorter inactivity watchdog still
-      // detects a dead recognizer. Each real result refreshes that watchdog.
-      timer = env.setTimeout(function () { if (valid()) { log("timeout"); finishAttempt(); } }, 60000);
-      healthTimer = env.setTimeout(function () { if (valid()) offerRecovery("start-timeout"); }, (session.lastClip || session.silent) ? 4000 : 12000);
-      try { recognizer.start(); log("start"); } catch (_) { resetFlow(); log("start-fail"); fallback.hidden = false; stop("마이크를 시작하지 못했어요. 마이크 다시 켜기를 눌러 주세요. 오답이 아니에요."); releasePrimedAudio(); showRecoveryButton(); }
+      try { recognizer.start(); log(isRestart ? "start again" : "start"); }
+      catch (error) {
+        log("start-fail " + String((error && error.name) || "error").replace(/[^\w-]/g, ""));
+        drop();
+        env.clearTimeout(healthTimer); healthTimer = null;
+        if (isRestart) { finishAttempt(); return; }
+        // InvalidStateError: the previous session had not let go yet. One immediate fresh try.
+        if (!secondTry) { startRecognizer(false, true); return; }
+        fallback.hidden = false;
+        releasePrimedAudio();
+        if (concludePress("start-fail", true, false)) return;
+        stop("마이크를 시작하지 못했어요. ‘마이크 다시 켜기’를 눌러 주세요. 틀린 게 아니에요.");
+        showRecoveryButton();
+      }
     }
     nodes.mic.addEventListener("click", read);
     nodes.stop.addEventListener("click", function () {
       if (disposed || awarded) return;
       if (soundActive) { stop(); read(); }
       else if (active) finishListening();
+      else if (restarting) { env.clearTimeout(restartTimer); restartTimer = null; restarting = false; finishAttempt(); }
     });
     const hide = function () { if (doc.hidden) { if (active) resetFlow(); stop("잠시 멈췄어요. 읽어 보기를 눌러 다시 시작해요."); releasePrimedAudio(); if (awarded) completePass(); } };
     const leave = function () { if (active) resetFlow(); stop(); releasePrimedAudio(); if (awarded) completePass(); };
@@ -1259,7 +1663,11 @@
       }
     };
   }
-  const api = { sentences: sentences, normalize: normalize, matches: matches, sameWord: sameWord, aliases: ALIASES, isPrefix: isPrefix, alternativeTexts: alternativeTexts, anyMatches: anyMatches, collapseRepeats: collapseRepeats, wordClips: WORD_CLIPS, praiseFile: praiseFile, matchedWords: matchedWords, cleanWordScores: cleanWordScores, chooseSentence: chooseSentence, recentLimit: RECENT_LIMIT, maxLevel: MAX_LEVEL, levelNames: LEVEL_NAMES, passesToLevelUp: PASSES_TO_LEVEL_UP, clampLevel: clampLevel, createFeedbackSession: createFeedbackSession, choosePraise: choosePraise, retryWords: retryWords, mount: mount };
+  const api = { sentences: sentences, normalize: normalize, matches: matches, sameWord: sameWord, aliases: ALIASES, isPrefix: isPrefix, alternativeTexts: alternativeTexts, anyMatches: anyMatches, collapseRepeats: collapseRepeats, wordClips: WORD_CLIPS, praiseFile: praiseFile, matchedWords: matchedWords, cleanWordScores: cleanWordScores, chooseSentence: chooseSentence, recentLimit: RECENT_LIMIT, maxLevel: MAX_LEVEL, levelNames: LEVEL_NAMES, passesToLevelUp: PASSES_TO_LEVEL_UP, clampLevel: clampLevel, createFeedbackSession: createFeedbackSession, choosePraise: choosePraise, retryWords: retryWords, mount: mount,
+    candidateTexts: candidateTexts, anyPrefix: anyPrefix, matchScore: matchScore, coveredWords: coveredWords, stuckRequired: stuckRequired,
+    phoneticKey: phoneticKey, allowedSlips: allowedSlips,
+    limits: { stuckTries: STUCK_TRIES, stuckShare: STUCK_SHARE, maxRestarts: MAX_RESTARTS, silenceMs: SILENCE_MS, restartDelayMs: RESTART_DELAY_MS,
+      restartStartMs: RESTART_START_MS, windowBaseMs: WINDOW_BASE_MS, windowPerWordMs: WINDOW_PER_WORD_MS, windowMaxMs: WINDOW_MAX_MS, freeMissingMinWords: FREE_MISSING_MIN_WORDS, diagKeep: DIAG_KEEP } };
   api.mountCelebration = mountCelebration;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.EnglishReading = api;

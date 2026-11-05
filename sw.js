@@ -144,7 +144,7 @@ const CORE_SHELL = [
   "./math/store.js?v=32",
   "./assets/study/math-bridge.js?v=2",
   "./assets/study/math-credits.js?v=2",
-  "./assets/study/english-reading.js?v=23",
+  "./assets/study/english-reading.js?v=24",
   "./assets/study/praise/excellent.mp3",
   "./assets/study/praise/perfect-v2.wav",
   "./assets/study/praise/awesome.mp3",
