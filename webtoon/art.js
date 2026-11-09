@@ -636,6 +636,25 @@
       const gems = ["#ff4d4d", "#ffd34d", "#4c7fd0", "#6cc27a", "#ff9f1c", "#b99ad9"].map((c, i) => i < 4 ? `<circle cx="${-11 + i * 7.3}" cy="-24" r="2.8" fill="${c}" stroke="${INK}" stroke-width=".8"/>` : "").join("");
       return `<g transform="translate(${x} ${y}) rotate(${o.rot || 0}) scale(${o.s || 1})"><path d="M-14 16 L-14 -6 L-16 -22 Q-16 -26 -12 -26 Q-9 -26 -9 -22 L-8 -12 L-7 -28 Q-7 -32 -3 -32 Q1 -32 1 -28 L1 -12 L3 -28 Q3 -32 7 -32 Q11 -32 11 -28 L10 -10 L13 -20 Q14 -24 18 -22 Q20 -20 19 -16 L14 6 L14 16Z" fill="#f2c14e" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><path d="M-12 -4 Q0 -8 12 -4" stroke="#c9962a" stroke-width="1.6" fill="none"/><rect x="-16" y="14" width="32" height="10" rx="3" fill="#e0ad3a" stroke="${INK}" stroke-width="2"/>${gems}<circle cx="-1" cy="4" r="4.5" fill="#6cc27a" stroke="${INK}" stroke-width="1"/><circle cx="-12" cy="-6" r="2.6" fill="#ff9f1c" stroke="${INK}" stroke-width=".8"/></g>`;
     },
+    // 알록달록 동그란 초콜릿 알(에메넴). n = 알 개수.
+    candies(x, y, o) {
+      const cols = ["#e0443e", "#ffd34d", "#3b9cff", "#4caf50", "#ff9f1c", "#8b5a2b"];
+      const spots = [[0, 0], [-16, -4], [16, -3], [-8, -14], [9, -13], [-24, 6], [24, 7], [0, -24], [-15, 12], [15, 12]];
+      let g = "";
+      spots.slice(0, o.n || 7).forEach(([dx, dy], i) => {
+        g += `<g transform="translate(${dx} ${dy})"><ellipse rx="8" ry="6.5" fill="${cols[i % cols.length]}" stroke="${INK}" stroke-width="1.5"/><text y="2.6" text-anchor="middle" font-size="7" font-weight="700" fill="#fff">m</text></g>`;
+      });
+      return `<g transform="translate(${x} ${y}) scale(${o.s || 1})">${g}</g>`;
+    },
+    // 알록달록 동그란 주먹밥 접시(밥 + 계란·당근·김·완두콩 옷).
+    riceballs(x, y, o) {
+      const cols = ["#ffd34d", "#ff9f1c", "#2e3b2e", "#7cc26b", "#fff"];
+      let g = `<ellipse cx="0" cy="8" rx="58" ry="16" fill="#fff" stroke="${INK}" stroke-width="2.2"/>`;
+      [[-30, -4], [0, -8], [30, -4], [-15, -22], [15, -22]].forEach(([dx, dy], i) => {
+        g += `<circle cx="${dx}" cy="${dy}" r="13" fill="#fffdf6" stroke="${INK}" stroke-width="1.8"/><path d="M${dx - 12} ${dy + 3} Q${dx} ${dy + 15} ${dx + 12} ${dy + 3}Z" fill="${cols[i]}" stroke="${INK}" stroke-width="1.2"/>`;
+      });
+      return `<g transform="translate(${x} ${y}) scale(${o.s || 1})">${g}</g>`;
+    },
     // 원카드 카드. 기본은 바닥에 놓인 더미(뒷면)와 펼친 카드 한 장, fan: true 면 손에 든 부채꼴 카드.
     cards(x, y, o) {
       const s = o.s || 1;
