@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v236";
+const CACHE_VERSION = "v237";
 const CACHE_PREFIX = "adventure-box-";
 // 큰 그림과 소리(삼국지 배경 200MB+, 저장한 이야기 오디오)는 배포 번호와 따로 둔다.
 // 배포마다 이 캐시를 버리면 기기가 236MB를 다시 받고, "여행 전에 이야기 저장"도 지워졌다.
@@ -144,7 +144,7 @@ const CORE_SHELL = [
   "./math/store.js?v=32",
   "./assets/study/math-bridge.js?v=2",
   "./assets/study/math-credits.js?v=2",
-  "./assets/study/english-reading.js?v=23",
+  "./assets/study/english-reading.js?v=24",
   "./assets/study/praise/excellent.mp3",
   "./assets/study/praise/perfect-v2.wav",
   "./assets/study/praise/awesome.mp3",

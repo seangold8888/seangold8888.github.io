@@ -24,7 +24,7 @@ test("family picture-book names are Jay and Teo without changing progress or ass
   for (const entry of ["game/index.html", "story/english/index.html"]) {
     const html = fs.readFileSync(path.join(root, entry), "utf8");
     assert.match(html, /books\.js\?v=7/);
-    assert.match(html, /english-reading\.js\?v=23/);
+    assert.match(html, /english-reading\.js\?v=24/);
   }
 });
 function target() {
@@ -188,9 +188,11 @@ test("long sentences forgive one or two misheard or dropped words; ten words or 
   const eight = "The hare was very fast. The tortoise was very slow. The hare took a nap. The tortoise won the race.";
   assert.equal(reading.matches(seven, "I plant a seat I give it water it grows into a flower"), true);
   assert.equal(reading.matches(seven, "I plant seed I give it water it grows into a flower"), true);
-  assert.equal(reading.matches(seven, "I plant a seat I give water it grows into a flower"), false);
+  assert.equal(reading.matches(seven, "I plant a tree I give water it grows into a flower"), false);
+  assert.equal(reading.matches(seven, "I plant a seat I give water it grows into a flower"), true, "seat≈seed sounds alike; one dropped word is allowed");
   assert.equal(reading.matches(eight, "the hair was very fast the tortoise was so slow the hare took a nap the tortoise won the race"), true);
-  assert.equal(reading.matches(eight, "the hair was very fast the tortoise was slow the hare took nap the tortoise won the race"), false);
+  assert.equal(reading.matches(eight, "the hare was fast the tortoise was slow the hare took a nap the tortoise the race"), false, "three content words missing");
+  assert.equal(reading.matches(eight, "the hair was very fast the tortoise was slow the hare took nap the tortoise won the race"), true, "a missing 'a' is not a mistake");
   assert.equal(reading.matches(eight, "the hare was very fast"), false);
   assert.equal(reading.matches("Where is my cat? It is under the bed.", "where is my cat it is under a bed"), false, "10단어는 정확히");
 });
@@ -219,7 +221,7 @@ test("microphone waits for a click, interim text never passes, final full senten
   assert.equal(s.timers.size, 0);
 });
 test("mismatch and permission/network failures allow retry without a wrong answer", () => {
-  for (const error of ["not-allowed", "network", "no-speech", "audio-capture", "service-not-allowed"]) {
+  for (const error of ["not-allowed", "network", "audio-capture", "service-not-allowed"]) {
     const s = setup(); s.mic.fire("click"); s.result([["I like", true]]);
     assert.equal(s.passes(), 0);
     s.instances[0].onerror({ error });
@@ -272,10 +274,9 @@ test("interim mistakes and valid final prefixes are not prematurely red", () => 
   assert.equal(s.passes(), 1);
 });
 test("unfinished confirmed prefix offers continuation on end, stop or timeout, without a mistake", () => {
-  for (const ending of ["end", "stop", "timeout"]) {
+  for (const ending of ["stop", "timeout"]) {
     const s = setup(); s.mic.fire("click"); s.result([["I like", true]]);
-    if (ending === "end") s.instances[0].onend();
-    else if (ending === "stop") { s.stop.fire("click"); s.instances[0].onend(); }
+    if (ending === "stop") { s.stop.fire("click"); s.instances[0].onend(); }
     else [...s.timers.values()][0]();
     assert.equal(s.container.children[1].children[2].classList.contains("retry"), false, ending);
     assert.equal(s.mic.textContent, "🎤 이어 읽기");
@@ -342,8 +343,8 @@ test("a reading success advances progress once and earns the fifteenth-answer ti
 });
 test("reading support is cached and its script loads before the study controller", () => {
   const sw = require("../../sw.js");
-  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=23"));
-  assert.ok(html.indexOf('src="assets/study/english-reading.js?v=23"') < html.indexOf("var BANK_SIZES"));
+  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=24"));
+  assert.ok(html.indexOf('src="assets/study/english-reading.js?v=24"') < html.indexOf("var BANK_SIZES"));
   assert.match(html, /\.reading-word\.retry\s*\{[^}]*text-decoration:underline wavy/);
   assert.match(html, /if \(current !== target \|\| isFree\(\) \|\| hasTicket\(\) \|\| target\.answered\) return/);
   assert.match(html, /function stopReading\(\)[\s\S]*?clearTimeout\(answerTimer\)/);
@@ -363,4 +364,92 @@ test("recognizer aliases pass a correctly read word the ASR mishears, never miss
   for (const word of Object.keys(reading.aliases)) {
     assert.ok(reading.aliases[word].every(alias => alias !== word && alias === alias.toLowerCase()), word);
   }
+});
+
+test("numbers, contractions, possessives, hyphens and punctuation read the same both ways", () => {
+  const yes = [
+    ["I have two cats.", "I have 2 cats"], ["I am seven.", "I am 7"], ["My brother is little. He is five.", "my brother is little he is 5"],
+    ["It is hot.", "it's hot"], ["It is hot.", "its hot"], ["I am happy.", "Im happy"], ["Let's go.", "let us go"], ["Let's go.", "lets go"],
+    ["I do not like it.", "I don't like it"], ["I do not like it.", "I dont like it"], ["It cannot come down.", "it can't come down"],
+    ["It cannot come down.", "it can not come down"], ["It is Dad's car.", "it is dads car"], ["It is Dad's car.", "it is dad car"],
+    ["I like ice cream.", "I like ice-cream!"], ["I like ice cream.", "I like icecream"], ["My dad and I build a sandcastle.", "my dad and I build a sand castle"],
+    ["Happy birthday, Dad.", "happy birth day dad"], ["Good morning, Mom!", "good morning mom"]
+  ];
+  for (const [expected, heard] of yes) assert.equal(reading.matches(expected, heard), true, expected + " / " + heard);
+  assert.equal(reading.normalize("I'm 10, it's Dad's ice-cream"), "i am ten it is dad ice cream");
+  assert.equal(reading.normalize("We have 21 stars"), "we have twenty one stars");
+});
+test("homophones pass in either spelling", () => {
+  const yes = [
+    ["I go to school.", "I go two school"], ["I go to school.", "I go too school"], ["I have two cats.", "I have to cats"],
+    ["I see a cat.", "I sea a cat"], ["The sun is bright.", "the son is bright"], ["Please come here.", "please come hear"],
+    ["Thank you for the red flower.", "thank you four the red flour"], ["I ate an egg.", "I eight an egg"], ["Can I have one?", "can I have won"],
+    ["I know the way.", "I no the weigh"], ["Write your name.", "right your name"], ["I like their hats.", "I like there hats"],
+    ["Good night, Dad.", "good knight dad"], ["The wind blew.", "the wind blue"]
+  ];
+  for (const [expected, heard] of yes) assert.equal(reading.matches(expected, heard), true, expected + " / " + heard);
+});
+test("missing a/an/the is forgiven in 5+ word sentences; short lines and extra or changed words still count", () => {
+  assert.equal(reading.matches("The little cat is on the bed.", "little cat is on bed"), true);
+  assert.equal(reading.matches("I have a blue bag and a pen.", "I have blue bag and pen"), true);
+  assert.equal(reading.matches("I see a big dog.", "I see big dog"), true, "5 words");
+  assert.equal(reading.matches("I see a cat.", "I see cat"), false, "4 words stay exact");
+  assert.equal(reading.matches("The dog is big.", "dog is big"), false);
+  assert.equal(reading.matches("The little cat is on the bed.", "the little cat is on a bed"), false, "the→a is a different word");
+  assert.equal(reading.matches("The little cat is on the bed.", "the little cat is on the the bed"), false, "extra words still count");
+  assert.equal(reading.matches("The little cat is on the bed.", "little cat on bed"), false, "a missing content word still counts");
+  assert.equal(reading.matches("I like apples.", "I like um apples"), true, "a thinking sound is not an extra word");
+});
+test("sound-alike fallback helps content words of 4+ letters only", () => {
+  const yes = [
+    ["I drink water.", "I drink wotter"], ["I see a red flower.", "I see a red flawer"], ["The rabbit is white.", "the labbit is white"],
+    ["The fish can swim.", "the pish can swim"], ["I plant a seed. I give it water. It grows into a flower.", "I plant a seat I give it water it grows into a flower"],
+    ["I like bananas.", "I like banana"], ["The monkey climbs up the tall tree.", "the mongkey crimbs up the tall tree"]
+  ];
+  for (const [expected, heard] of yes) assert.equal(reading.matches(expected, heard), true, expected + " / " + heard);
+  const no = [
+    ["The bird can fly.", "the cat can fly"], ["I like apples.", "I like bananas"], ["I see a cat.", "I see a dog"],
+    ["This is my book.", "that is my book"], ["The cat is small.", "a cat is small"], ["Jay sees a butterfly.", "Mom sees a butterfly"],
+    ["I can run.", "I can swim"], ["We go home.", "we go school"]
+  ];
+  for (const [expected, heard] of no) assert.equal(reading.matches(expected, heard), false, expected + " / " + heard);
+  assert.equal(reading.phoneticKey("seed"), reading.phoneticKey("seat"));
+  assert.notEqual(reading.phoneticKey("bird"), reading.phoneticKey("boat"));
+});
+test("every alternative of every segment is tried, including two swaps across segments", () => {
+  const finals = [["the boat", "the bird"], ["can flee", "can fly"]];
+  assert.equal(reading.alternativeTexts(finals).some(t => reading.matches("The bird can fly.", t)), false, "old single-swap list misses it");
+  assert.equal(reading.anyMatches("The bird can fly.", finals), true);
+  assert.ok(reading.candidateTexts(finals).includes("the bird can fly"));
+  const many = Array.from({ length: 6 }, () => ["x", "y", "z", "w", "v"]);
+  assert.ok(reading.candidateTexts(many).length <= 240, "bounded for slow tablets");
+});
+test("stuck threshold: 70% of the words, one word always forgivable on short lines", () => {
+  assert.equal(reading.limits.stuckTries, 3);
+  assert.equal(reading.stuckRequired(3), 2);
+  assert.equal(reading.stuckRequired(4), 3);
+  assert.equal(reading.stuckRequired(10), 7);
+  assert.equal(reading.stuckRequired(20), 14);
+  assert.equal(reading.matchScore("I like apples.", [["I like bananas"]]), 2);
+  assert.equal(reading.matchScore("The little cat is on the bed.", [["little cat is on"]]), 6, "forgiven 'the' words count as covered, 'bed' does not");
+});
+test("a gentle stuck pass moves on but never counts as a first-try pass", () => {
+  const skill = { s: 0, d: 0 };
+  let recorded = 0;
+  const ctx = { isFree: () => false, hasTicket: () => false, readingLevel: {level:1,passes:0}, recordReadingPass: () => { recorded++; return false; },
+    current: { answer: "I like apples.", reading: {level:1}, seed: { type: "reading", idx: 0 }, gentle: true },
+    state: { solved: 3, credit: 0, streak: 0, level: 1, readingWords: {} }, setCorrect: 3, SET: 15, DAILY: 100,
+    CHEERS: ["잘했어요"], BANK_SIZES: { reading: 16 }, MASTER_AT: 9, cheerEl: {},
+    skillOf: () => skill, dayNum: () => 100, drawSetStars() {}, drawDaily() {}, saveState() {},
+    setTimeout: () => 1, applyState() {}, renderProblem() {}, celebrateRound() {} };
+  ctx.window = { EnglishReading: reading };
+  vm.runInNewContext(fn("pick"), ctx);
+  ctx.pick("I like apples.", null);
+  assert.equal(ctx.state.solved, 4, "the question still moves on");
+  assert.equal(recorded, 0, "no level-up credit");
+  assert.equal(skill.s, 0, "no first-try skill point");
+  assert.match(html, /if \(info && info\.gentle\) target\.gentle = true/);
+  assert.match(html, /diagnostics: \(function \(\) \{ try \{ return window\.localStorage/);
+  const story = fs.readFileSync(path.join(__dirname, "../../story/english/index.html"), "utf8");
+  assert.match(story, /challenge\.firstTry = !missed && !\(info && info\.gentle\)/);
 });

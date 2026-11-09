@@ -125,7 +125,7 @@
   </section>
 </div>
 
-<script src="../../assets/study/english-reading.js?v=23"></script>
+<script src="../../assets/study/english-reading.js?v=24"></script>
 <script src="books.js?v=7"></script>
 <script>
 (function () {
@@ -305,20 +305,21 @@
       stopAudio();
       if (!practice.hidden) { stopPractice(); practice.hidden = true; return; }
       practice.hidden = false;
-      practiceView = window.EnglishReading.mount(practice, line, function () {
+      practiceView = window.EnglishReading.mount(practice, line, function (info) {
         if (serial !== renderSerial || accepted || !book) return;
         accepted = true;
         // 다 읽으면 칭찬이 끝난 뒤 다음 쪽으로 넘어간다.
         stopPractice();
         if (part < parts.length - 1) part += 1;
         else { index += 1; part = 0; }
-        challenge.firstTry = !missed;
+        challenge.firstTry = !missed && !(info && info.gentle);
         var growth = window.EnglishBooks.recordPass(localStorage, challenge);
         readingMode = growth.mode;
         growthNotice = growth.promoted ? '🌟 잘 읽어서 「' + window.EnglishBooks.modeLabels[readingMode] + '」로 올라가요!'
           : growth.eased ? '잘 끝냈어요! 다음 쪽은 조금 짧게 읽어요 🌱' : '';
         renderPage();
-      }, window, { onRetry: function () { if (serial === renderSerial && !accepted) missed = true; } });
+      }, window, { onRetry: function () { if (serial === renderSerial && !accepted) missed = true; },
+        diagnostics: (function () { try { return window.localStorage; } catch (_) { return null; } })() });
     });
   }
 

@@ -42,18 +42,23 @@ const server=http.createServer((req,res)=>{
    const before=await page.evaluate(()=>({solved:localStorage.hub2_solved,credit:localStorage.hub2_credit,book:localStorage.hub2_book_cursor,review:localStorage.hub2_wrongbook}));
    const text=await page.locator('.reading-sentence').getAttribute('aria-label'),words=text.split(/\s+/);
    const mic=()=>page.locator('.reading-actions button').first();
-   await mic().click();await page.evaluate(()=>__mic.instances.at(-1).error('no-speech'));
+   // no-speech is retried quietly inside the same press; a busy microphone shows recovery.
+   await mic().click();await page.evaluate(()=>__mic.instances.at(-1).error('no-speech'));await page.clock.runFor(200);
+   assert.equal(await page.evaluate(()=>__mic.instances.length),2,'no-speech restarts quietly');
+   assert.equal(await page.getByRole('button',{name:'🎤 마이크 다시 켜기',exact:true}).count(),0);
+   await page.evaluate(()=>__mic.instances.at(-1).error('audio-capture'));
    assert(await page.getByRole('button',{name:'🎤 마이크 다시 켜기',exact:true}).isVisible());
    assert(await page.getByRole('button',{name:'마이크가 안 돼요 · 다른 문제 풀기',exact:true}).isVisible());
    assert.equal(await page.locator('.reading-word.retry').count(),0);
    await page.getByRole('button',{name:'🎤 마이크 다시 켜기',exact:true}).click();
-   await page.clock.runFor(400);await page.waitForFunction(()=>__mic.closed===1&&__mic.instances.length===2);
+   await page.clock.runFor(400);await page.waitForFunction(()=>__mic.closed===1&&__mic.instances.length===3);
+   // The recognizer ends at her pause: quiet restart, then 2.5 s of silence offers 이어 읽기.
    await page.evaluate(prefix=>{__mic.instances.at(-1).result(prefix);__mic.instances.at(-1).end();},words.slice(0,1).join(' '));
+   await page.clock.runFor(150);assert.equal(await page.evaluate(()=>__mic.instances.length),4);await page.clock.runFor(2500);
    assert.equal(await mic().innerText(),'🎤 이어 읽기');
    await mic().click();await page.evaluate(t=>__mic.instances.at(-1).result(t,false),words.slice(1).join(' '));
    assert.equal(await page.evaluate(()=>localStorage.hub2_solved),'0','interim tail must never award a pass');
    // Deliberately switch to alternative study: neither book cursor nor score advances.
-   await page.evaluate(()=>__mic.instances.at(-1).end());
    await page.getByRole('button',{name:'마이크가 안 돼요 · 다른 문제 풀기',exact:true}).click();
    await page.getByRole('button',{name:'🎤 영어 읽기 다시 시도',exact:true}).waitFor();
    const after=await page.evaluate(()=>({solved:localStorage.hub2_solved,credit:localStorage.hub2_credit,book:localStorage.hub2_book_cursor,review:localStorage.hub2_wrongbook}));
