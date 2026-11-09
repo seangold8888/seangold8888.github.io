@@ -801,7 +801,7 @@
       }
       return s + `</g>`;
     },
-    // 동그라미 네 개가 이어진 자동차 로고(아우디). 태오 눈에는 콩콩이차.
+    // 동그라미 네 개가 이어진 자동차 로고(아우디). 태오 눈에는 똥그리차.
     rings(x, y, o) {
       const r = 22, dx = 26;
       let s = `<g transform="translate(${x} ${y}) scale(${o.s || 1})" fill="none" stroke="#c9ced6" stroke-width="7">`;
