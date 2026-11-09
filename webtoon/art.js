@@ -801,7 +801,7 @@
       }
       return s + `</g>`;
     },
-    // 동그라미 네 개가 이어진 자동차 로고(아우디). 태오 눈에는 콩콩이차.
+    // 동그라미 네 개가 이어진 자동차 로고(아우디). 태오 눈에는 똥그리차.
     rings(x, y, o) {
       const r = 22, dx = 26;
       let s = `<g transform="translate(${x} ${y}) scale(${o.s || 1})" fill="none" stroke="#c9ced6" stroke-width="7">`;
@@ -952,9 +952,15 @@
     const H = panel.h || 320;
     const gy = H - 24;
     let s = defs() + background(panel.bg, W, H);
-    for (const p of panel.bp || []) s += drawProp(p, W, H);
-    for (const c of panel.chars || []) s += drawChar({ y: gy, ...c });
-    for (const p of panel.fp || []) s += drawProp(p, W, H);
+    // 움직이는 화(motion)에서 CSS 가 인물·소품을 따로 움직일 수 있게 한 겹씩 감싼다. m = 움직임 이름, 기준점은 발(소품은 놓인 자리).
+    const wrap = (cls, m, x, y, inner) => `<g class="${cls}"${m ? ` data-m="${m}"` : ""} style="--ox:${x}px;--oy:${y}px">${inner}</g>`;
+    const prop = (p) => wrap("wt-p", (p[3] || {}).m, p[1], p[2], drawProp(p, W, H));
+    for (const p of panel.bp || []) s += prop(p);
+    (panel.chars || []).forEach((c, i) => {
+      const y = c.y == null ? gy : c.y;
+      s += wrap("wt-c", c.m, c.x, y, drawChar({ ...c, y })).replace('class="wt-c"', `class="wt-c" data-i="${i}"`);
+    });
+    for (const p of panel.fp || []) s += prop(p);
     return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true" preserveAspectRatio="xMidYMid slice" id="${uid || ""}">${s}</svg>`;
   }
 

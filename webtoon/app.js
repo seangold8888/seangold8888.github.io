@@ -36,24 +36,29 @@
     const H = panel.h || 320;
     const px = (x) => `${(x / 400) * 100}%`;
     const py = (y) => `${(y / H) * 100}%`;
+    // --d: 움직이는 화에서 나오는 순서(초). 내레이션 → 말풍선 차례로 → 효과음 → 아래 내레이션.
+    const bubbles = panel.b || [];
+    const bubD = (i) => 0.3 + i * 0.5;
+    const afterBub = bubD(bubbles.length);
     let s = "";
-    if (panel.n) s += `<div class="narr top">${esc(panel.n)}</div>`;
-    if (panel.n2) s += `<div class="narr bottom">${esc(panel.n2)}</div>`;
-    for (const f of panel.sfx || []) {
-      const style = `left:${px(f.x)};top:${py(f.y)};color:${f.c || "#ff6b6b"};transform:translate(-50%,-50%) rotate(${f.rot || 0}deg);font-size:${9 * (f.size || 1)}cqw`;
+    if (panel.n) s += `<div class="narr top" style="--d:0s">${esc(panel.n)}</div>`;
+    if (panel.n2) s += `<div class="narr bottom" style="--d:${afterBub + 0.2}s">${esc(panel.n2)}</div>`;
+    (panel.sfx || []).forEach((f, i) => {
+      const style = `left:${px(f.x)};top:${py(f.y)};color:${f.c || "#ff6b6b"};transform:translate(-50%,-50%) rotate(${f.rot || 0}deg);font-size:${9 * (f.size || 1)}cqw;--d:${(panel.sh ? 0.58 : 0.45) + i * 0.25}s`;
       s += `<div class="sfx" style="${style}">${esc(f.t)}</div>`;
-    }
-    for (const b of panel.b || []) {
+    });
+    bubbles.forEach((b, i) => {
       const cls = ["bubble", b.k || "", b.tail ? `tail-${b.tail}` : ""].join(" ").trim();
       const w = b.w ? `max-width:${(b.w / 400) * 100}%;` : "";
-      s += `<div class="${cls}" style="left:${px(b.x)};top:${py(b.y)};${w}">${esc(b.t)}</div>`;
-    }
+      const v = b.v ? ` data-voice="${esc(b.v)}"` : "";
+      s += `<div class="${cls}"${v} style="left:${px(b.x)};top:${py(b.y)};${w}--d:${bubD(i)}s">${esc(b.t)}</div>`;
+    });
     return s;
   }
 
   function renderPanel(panel, i) {
     const alt = [panel.n, ...(panel.b || []).map((b) => b.t), panel.n2].filter(Boolean).join(" / ");
-    return `<figure class="panel" data-i="${i}" aria-label="${esc(alt || "그림 컷")}" style="margin:0">${panelSVG(panel)}${overlay(panel)}</figure>`;
+    return `<figure class="panel${panel.sh ? " sh" : ""}" data-i="${i}" aria-label="${esc(alt || "그림 컷")}" style="margin:0">${panelSVG(panel)}${overlay(panel)}</figure>`;
   }
 
   // ── 목록 ──
@@ -87,7 +92,7 @@
     $("jaeiWords").innerHTML = JAEI_WORDS.map((w) => wordCard(w, "jaei")).join("");
     $("episodeList").innerHTML = EPISODES.map((ep) => {
       const cover = ep.panels[ep.cover || 0];
-      const chips = (state.read[ep.id] ? `<span class="chip">✔ 읽음</span>` : "") + (state.like[ep.id] ? `<span class="chip like">♥</span>` : "");
+      const chips = (ep.motion ? `<span class="chip motion">🎬 움직여요</span>` : "") + (state.read[ep.id] ? `<span class="chip">✔ 읽음</span>` : "") + (state.like[ep.id] ? `<span class="chip like">♥</span>` : "");
       return `<li><a class="ep-card" href="#ep=${ep.id}"><div class="ep-thumb">${panelSVG({ ...cover })}</div><div class="ep-info"><div class="ep-no">${ep.id}화 ${chips}</div><div class="ep-title">${esc(ep.title)}</div><p class="ep-sum">${esc(ep.summary)}</p></div></a></li>`;
     }).join("");
     document.querySelectorAll(".ep-thumb svg").forEach((svg) => svg.setAttribute("preserveAspectRatio", "xMidYMid slice"));
@@ -103,8 +108,13 @@
     const idx = EPISODES.indexOf(ep);
     const prev = EPISODES[idx - 1];
     const next = EPISODES[idx + 1];
-    $("epHead").innerHTML = `<div class="ep-num">${ep.id}화</div><h1>${esc(ep.title)}</h1><p>${esc(ep.summary)}</p><div class="hint">▼ 아래로 내려 읽어요</div>`;
+    const motionBar = ep.motion
+      ? `<div class="motion-bar"><span class="chip motion">🎬 움직이는 화 · 컷을 누르면 다시 움직여요</span><button class="btn" id="soundBtn" type="button" aria-pressed="${!!state.sound}">${state.sound ? "🔊 소리 켜짐" : "🔈 소리 켜기"}</button></div>`
+      : "";
+    $("epHead").innerHTML = `<div class="ep-num">${ep.id}화</div><h1>${esc(ep.title)}</h1><p>${esc(ep.summary)}</p>${motionBar}<div class="hint">▼ 아래로 내려 읽어요</div>`;
     $("strip").innerHTML = ep.panels.map(renderPanel).join("");
+    $("strip").classList.toggle("motion", !!ep.motion);
+    if (ep.motion) setupMotion();
     const liked = !!state.like[ep.id];
     $("epEnd").innerHTML =
       `<div class="lesson"><div class="label">오늘의 한 줄</div><div class="text">${esc(ep.lesson)}</div></div>` +
@@ -142,6 +152,102 @@
     } else {
       panels.forEach((p) => p.classList.add("in"));
     }
+  }
+
+  // ── 움직이는 화 ──
+  // 컷이 화면에 들어올 때마다(.play) 움직이고, 컷을 누르면 처음부터 다시 움직인다.
+  let motionObserver = null;
+  function play(panel) {
+    panel.classList.remove("play");
+    void panel.offsetWidth; // 애니메이션을 처음부터 다시 시작하게 한다
+    panel.classList.add("play");
+    if (state.sound) playSounds(panel);
+  }
+  function setupMotion() {
+    const btn = $("soundBtn");
+    btn.addEventListener("click", () => {
+      state.sound = !state.sound;
+      save(state);
+      btn.setAttribute("aria-pressed", String(state.sound));
+      btn.textContent = state.sound ? "🔊 소리 켜짐" : "🔈 소리 켜기";
+      if (state.sound) sfx.unlock();
+    });
+    const panels = document.querySelectorAll(".strip.motion .panel");
+    panels.forEach((p) => p.addEventListener("click", () => play(p)));
+    if (motionObserver) motionObserver.disconnect();
+    if (!("IntersectionObserver" in window)) return;
+    motionObserver = new IntersectionObserver(
+      (entries) => {
+        for (const en of entries) {
+          if (en.isIntersecting) play(en.target);
+          else en.target.classList.remove("play");
+        }
+      },
+      { threshold: 0.45 }
+    );
+    panels.forEach((p) => motionObserver.observe(p));
+  }
+
+  // 소리: 파일 없이 브라우저에서 바로 만드는 짧은 효과음. 기본은 꺼짐, 버튼을 눌러야 켜진다.
+  const sfx = (() => {
+    let ctx = null;
+    const ac = () => {
+      if (!ctx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return null;
+        ctx = new AC();
+      }
+      if (ctx.state === "suspended") ctx.resume();
+      return ctx;
+    };
+    function tone(type, f0, f1, dur, vol, at) {
+      const c = ac();
+      if (!c) return;
+      const t = c.currentTime + (at || 0);
+      const o = c.createOscillator();
+      const g = c.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(f0, t);
+      o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol, t + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g).connect(c.destination);
+      o.start(t);
+      o.stop(t + dur + 0.02);
+    }
+    return {
+      unlock: () => ac(),
+      pop: (at) => tone("sine", 520, 1250, 0.12, 0.18, at),
+      thud: (at) => { tone("sine", 150, 42, 0.32, 0.5, at); tone("triangle", 90, 40, 0.2, 0.25, at); },
+      boing: (at) => tone("triangle", 260, 520, 0.16, 0.12, at),
+      whoosh: (at) => tone("sawtooth", 900, 200, 0.22, 0.05, at),
+    };
+  })();
+  const voices = [];
+  function stopVoices() {
+    while (voices.length) {
+      const a = voices.pop();
+      a.pause();
+    }
+  }
+  function playSounds(panel) {
+    stopVoices();
+    const d = (el) => parseFloat(getComputedStyle(el).getPropertyValue("--d")) || 0;
+    // 말풍선에 v(녹음 파일 이름)가 있으면 뿅 소리 대신 그 목소리를 말풍선이 나올 때 틀어 준다. 파일은 voices/ 에 둔다.
+    panel.querySelectorAll(".bubble").forEach((b) => {
+      if (!b.dataset.voice) return sfx.pop(d(b));
+      const a = new Audio(`voices/${b.dataset.voice}`);
+      voices.push(a);
+      setTimeout(() => a.play().catch(() => {}), d(b) * 1000);
+    });
+    panel.querySelectorAll("[data-m]").forEach((g) => {
+      const m = g.dataset.m;
+      if (m === "stomp") { sfx.thud(0.58); sfx.thud(1.38); }
+      else if (m === "stompdance") { sfx.thud(0.58); for (let i = 0; i < 6; i++) sfx.boing(0.9 + i * 0.4); }
+      else if (m === "wiggle" || m === "dance" || m === "dance2") { for (let i = 0; i < 6; i++) sfx.boing(0.3 + i * 0.4); }
+      else if (m === "drop") sfx.whoosh(0.15);
+    });
   }
 
   // 말풍선이 컷 밖으로 삐져나가면 안쪽으로 밀어 넣는다(글꼴·화면 폭에 따라 크기가 달라진다).

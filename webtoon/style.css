@@ -194,7 +194,50 @@ a { color: inherit; }
   .ep-title { font-size: 19px; }
   .cast { grid-template-columns: 1fr; }
 }
+/* ── 움직이는 화(motion: true) ──
+   컷이 화면에 들어오면(.play) 인물·소품이 움직이고 말풍선이 차례로 뿅 나온다. 컷을 누르면 다시 움직인다.
+   말풍선·효과음은 이미 transform 을 쓰므로 scale·translate 속성으로만 움직인다. */
+.chip.motion { background: #fff1d6; color: #c46a00; }
+.motion-bar { display: flex; gap: 8px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
+.motion-bar .btn { font-size: 14px; min-height: 38px; padding: 6px 14px; }
+.strip.motion .panel { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.strip.motion .wt-c, .strip.motion .wt-p { transform-box: view-box; transform-origin: var(--ox) var(--oy); }
+
+.strip.motion .panel.play .bubble { animation: wt-bub 0.42s cubic-bezier(.3, 1.6, .5, 1) var(--d, 0s) both; }
+.strip.motion .panel.play .sfx { animation: wt-sfx 0.5s cubic-bezier(.3, 1.8, .5, 1) var(--d, 0s) both; }
+.strip.motion .panel.play .narr { animation: wt-narr 0.5s ease var(--d, 0s) both; }
+.strip.motion .panel.play.sh { animation: wt-panelshake 0.32s linear 0.62s 2; }
+
+.strip.motion .panel.play [data-m="pop"] { animation: wt-pop 0.5s cubic-bezier(.3, 1.6, .5, 1) both; }
+.strip.motion .panel.play [data-m="hop"] { animation: wt-hop 0.45s ease-out 0.2s 2; }
+.strip.motion .panel.play [data-m="bob"] { animation: wt-bob 0.6s ease-in-out 3; }
+.strip.motion .panel.play [data-m="stomp"] { animation: wt-stomp 0.8s ease-in 2; }
+.strip.motion .panel.play [data-m="shake"] { animation: wt-shake 0.12s linear 8; }
+.strip.motion .panel.play [data-m="wiggle"] { animation: wt-wiggle 0.34s ease-in-out 0.3s 8 alternate; }
+.strip.motion .panel.play [data-m="dance"] { animation: wt-dance 0.4s ease-in-out 10 alternate; }
+.strip.motion .panel.play [data-m="dance2"] { animation: wt-dance 0.4s ease-in-out 10 alternate-reverse; }
+.strip.motion .panel.play [data-m="stompdance"] { animation: wt-stomp 0.8s ease-in 1, wt-dance 0.4s ease-in-out 0.8s 8 alternate; }
+.strip.motion .panel.play [data-m="float"] { animation: wt-float 1.6s ease-in-out 3; }
+.strip.motion .panel.play [data-m="wave"] { animation: wt-wave 0.3s ease-in-out 6 alternate; }
+.strip.motion .panel.play [data-m="drop"] { animation: wt-drop 0.6s cubic-bezier(.3, 1.5, .5, 1) 0.15s both; }
+
+@keyframes wt-bub { from { scale: 0; } 70% { scale: 1.12; } to { scale: 1; } }
+@keyframes wt-sfx { from { scale: 2.2; opacity: 0; } 60% { scale: 0.9; opacity: 1; } to { scale: 1; opacity: 1; } }
+@keyframes wt-narr { from { opacity: 0; translate: 0 -8px; } to { opacity: 1; translate: 0 0; } }
+@keyframes wt-panelshake { 25% { translate: -6px 0; } 50% { translate: 5px 2px; } 75% { translate: -3px -1px; } }
+@keyframes wt-pop { from { transform: scale(0.6); opacity: 0; } 70% { transform: scale(1.06); opacity: 1; } to { transform: none; } }
+@keyframes wt-hop { 50% { transform: translateY(-16px); } }
+@keyframes wt-bob { 50% { transform: translateY(-6px) rotate(-2deg); } }
+@keyframes wt-stomp { 0% { transform: none; } 55% { transform: translateY(-34px) rotate(-7deg); } 72% { transform: translateY(0) scale(1.04, 0.92); } 85% { transform: scale(0.98, 1.03); } 100% { transform: none; } }
+@keyframes wt-shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+@keyframes wt-wiggle { from { transform: rotate(-9deg); } to { transform: rotate(9deg); } }
+@keyframes wt-dance { from { transform: rotate(-11deg) translateY(0); } 50% { transform: rotate(0deg) translateY(-8px); } to { transform: rotate(11deg) translateY(0); } }
+@keyframes wt-float { 50% { transform: translateY(-12px) scale(1.12); } }
+@keyframes wt-wave { from { transform: rotate(-8deg); } to { transform: rotate(8deg); } }
+@keyframes wt-drop { from { transform: translateY(-90px); opacity: 0; } to { transform: none; opacity: 1; } }
+
 @media (prefers-reduced-motion: reduce) {
   .panel { opacity: 1; transform: none; transition: none; }
   .ep-head .hint { animation: none; }
+  .strip.motion .panel.play *, .strip.motion .panel.play { animation: none !important; }
 }
