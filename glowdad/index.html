@@ -1,0 +1,2312 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Glow Dad: a free K-beauty treasure hunt for dads shopping in Korea. Picture clues, shelf signs, Plan B swaps, price compare, tax refund estimate and nearest stores.">
+<meta property="og:title" content="Glow Dad">
+<meta property="og:description" content="The K-beauty treasure hunt for dads in Korea. She picks the list, you hunt it down.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#16202b">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 28'%3E%3Cpath d='M4 12 Q16 1 28 12 Z' fill='%238b5a2b'/%3E%3Crect x='4' y='12' width='24' height='14' rx='2' fill='%238b5a2b'/%3E%3Crect x='4' y='15' width='24' height='3' fill='%23ffd34d'/%3E%3Crect x='14' y='13' width='4' height='7' rx='1' fill='%23ffd34d'/%3E%3C/svg%3E">
+<style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<title>Glow Dad</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Inter:wght@500;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Noto+Sans+KR:wght@500;700;900&display=swap">
+<style>
+/* Layout: a shopping errand in four steps (list, shop, tax, stores). One column, big type, one product per screen while shopping. Mom = teal, daughter = berry. */
+:root{
+  --bg:#eef1f4; --paper:#ffffff; --ink:#16202b; --muted:#566273; --line:#d6dce4; --plate:#e4e9ef;
+  --mom:#16736b; --mom-soft:#dcefec; --teen:#c2306b; --teen-soft:#fbe1ea;
+  --act:#16202b; --act-ink:#ffffff;
+  --good:#1d7f4f; --good-soft:#e0f3e8; --warn:#9a5600; --warn-soft:#fff0d6;
+  --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
+  --f-num:"Inter","Segoe UI",system-ui,sans-serif;
+  --gold:#b7791f; --gold-soft:#fdf1d8; --trap:#b42318; --trap-soft:#fde4e1;
+  --f-ko:"Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f141a; --paper:#18202a; --ink:#e9eef4; --muted:#9ba7b7; --line:#2b3644; --plate:#222c38;
+  --mom:#4cc3b6; --mom-soft:#14312e; --teen:#ff6fa3; --teen-soft:#3a1828;
+  --act:#e9eef4; --act-ink:#0f141a;
+  --good:#5fd39c; --good-soft:#143326; --warn:#ffb54d; --warn-soft:#3a2a12; --gold:#ffc94d; --gold-soft:#33260c; --trap:#ff8a7a; --trap-soft:#3d1713; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f141a; --paper:#18202a; --ink:#e9eef4; --muted:#9ba7b7; --line:#2b3644; --plate:#222c38;
+  --mom:#4cc3b6; --mom-soft:#14312e; --teen:#ff6fa3; --teen-soft:#3a1828;
+  --act:#e9eef4; --act-ink:#0f141a;
+  --good:#5fd39c; --good-soft:#143326; --warn:#ffb54d; --warn-soft:#3a2a12; --gold:#ffc94d; --gold-soft:#33260c; --trap:#ff8a7a; --trap-soft:#3d1713; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.5}
+.wrap{max-width:760px;margin:0 auto;padding-block:18px 90px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
+h1{font:800 clamp(22px,4.6vw,30px)/1.15 var(--f-display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+.logo{margin:0;display:flex;align-items:baseline;gap:.18em;font:800 clamp(44px,12vw,72px)/.9 var(--f-display);letter-spacing:-.03em}
+.logo .lg1{color:var(--gold)}
+.logo .lg2{color:var(--ink);background:var(--gold-soft);padding:0 .12em;border-radius:.12em}
+h2{font:800 24px/1.15 var(--f-display);margin:0;text-wrap:balance}
+h3{font:700 18px/1.25 var(--f-body);margin:0}
+p{margin:0}
+.sub{color:var(--muted)}
+.ko{font-family:var(--f-ko)}
+.note{font-size:14px;color:var(--muted)}
+.unv{color:var(--warn);font-weight:700}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--teen);outline-offset:2px}
+.top{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:flex-end;justify-content:space-between}
+.top>div{min-width:0}
+.country{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}
+.country select{font-size:17px;padding:10px 12px;border-radius:10px;border:2px solid var(--ink);background:var(--paper);color:var(--ink);font-weight:700}
+nav{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:8px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+nav button{border:2px solid var(--line);background:var(--paper);border-radius:12px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:0;line-height:1.15}
+nav button b{font:800 20px var(--f-display)}
+nav button span{font-size:13px;font-weight:700}
+nav button[aria-current="page"]{background:var(--act);color:var(--act-ink);border-color:var(--act)}
+.who{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.who button{border:3px solid var(--line);background:var(--paper);border-radius:16px;padding:12px;text-align:left;display:flex;flex-direction:column;gap:2px}
+.who button b{font:800 21px var(--f-display)}
+.who button span{font-size:14px;color:var(--muted)}
+.who .m[aria-pressed="true"]{border-color:var(--mom);background:var(--mom-soft)}
+.who .t[aria-pressed="true"]{border-color:var(--teen);background:var(--teen-soft)}
+.who .m b{color:var(--mom)}.who .t b{color:var(--teen)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr));gap:12px}
+.card{--c:var(--mom);--cs:var(--mom-soft);background:var(--paper);border:2px solid var(--line);border-radius:18px;display:grid;grid-template-columns:118px 1fr;overflow:hidden;min-width:0}
+.card.teen,.big.teen,.row.teen{--c:var(--teen);--cs:var(--teen-soft)}
+.card.on{border-color:var(--c);box-shadow:0 0 0 2px var(--c)}
+.shelf{background:var(--cs);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:12px 6px;position:relative}
+.tag{font:800 11px var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--paper);background:var(--c);padding:2px 8px;border-radius:99px}
+.cbody{padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.kind{font:800 22px/1.1 var(--f-display);color:var(--c)}
+.plain{font-weight:700;line-height:1.35}
+.pname{font-size:14px;color:var(--muted);line-height:1.35}
+.sign{display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:6px;font-size:14px}
+.sign .ko{font-weight:900;font-size:17px;background:var(--ink);color:var(--paper);padding:1px 8px;border-radius:6px}
+.alike{font-size:14px;background:var(--warn-soft);color:var(--ink);border-radius:8px;padding:6px 8px;line-height:1.35}
+.alike b{color:var(--warn)}
+.price{font-variant-numeric:tabular-nums;font-size:15px;line-height:1.4}
+.save{color:var(--good);font-weight:700}
+.dear{color:var(--warn);font-weight:700}
+.add{margin-top:4px;border:2px solid var(--c);background:transparent;color:var(--c);border-radius:10px;padding:10px;font-weight:700}
+.card.on .add{background:var(--c);color:var(--paper)}
+.bar{position:sticky;bottom:max(10px,env(safe-area-inset-bottom,0px));background:var(--paper);border:2px solid var(--ink);border-radius:16px;padding:10px 12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;z-index:4}
+.primary{border:0;background:var(--act);color:var(--act-ink);font-weight:700;padding:13px 18px;border-radius:12px;font-size:17px}
+.ghost{border:2px solid var(--line);background:var(--paper);font-weight:700;padding:10px 14px;border-radius:12px}
+.box{background:var(--paper);border:2px solid var(--line);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.code{display:flex;gap:8px;flex-wrap:wrap}
+.code input{flex:1 1 180px;min-width:0;border:2px solid var(--line);background:var(--bg);border-radius:10px;padding:10px;font:500 15px ui-monospace,Consolas,monospace}
+/* shop: one product per screen */
+.prog{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dots{display:flex;gap:5px;flex-wrap:wrap}
+.dots i{width:14px;height:14px;border-radius:50%;background:var(--line);display:block}
+.dots i.got{background:var(--good)}.dots i.out{background:var(--warn)}.dots i.cur{outline:3px solid var(--ink);outline-offset:1px}
+.big{--c:var(--mom);--cs:var(--mom-soft);background:var(--paper);border:3px solid var(--c);border-radius:22px;overflow:hidden;display:flex;flex-direction:column}
+.big .shelf{padding:18px 10px 14px}
+.big .who-l{font:800 15px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--c)}
+.big .in{padding:16px 18px 18px;display:flex;flex-direction:column;gap:12px}
+.big .kind{font-size:34px}
+.big .plain{font-size:20px}
+.big .koname{font:900 26px/1.3 var(--f-ko);word-break:keep-all}
+.findsign{border:2px dashed var(--ink);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.findsign .ko{font-size:30px;font-weight:900;line-height:1.2}
+.big .alike{font-size:16px;padding:10px 12px}
+.big.got{border-color:var(--good)}
+.stamp{font:800 18px var(--f-display);color:var(--good)}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.acts .gotit{grid-column:1/-1;border:0;background:var(--good);color:var(--paper);font-size:22px;font-weight:700;padding:16px;border-radius:14px}
+.acts .staffb{border:0;background:var(--act);color:var(--act-ink);font-weight:700;padding:14px;border-radius:14px;font-size:17px}
+.acts .soldb{border:2px solid var(--warn);background:transparent;color:var(--warn);font-weight:700;padding:12px;border-radius:14px}
+.nav2{display:flex;justify-content:space-between;gap:10px}
+.nav2 button{flex:1}
+.list{display:flex;flex-direction:column;background:var(--paper);border:2px solid var(--line);border-radius:18px;overflow:hidden}
+.row{--c:var(--mom);display:grid;grid-template-columns:8px 44px 1fr auto;gap:10px;align-items:center;padding:8px 12px 8px 0;border-top:1px solid var(--line);background:transparent;border-left:0;border-right:0;border-bottom:0;text-align:left;width:100%}
+.row:first-child{border-top:0}
+.row .stripe{align-self:stretch;background:var(--c)}
+.row .st{font-size:14px;font-weight:700}
+.row.got .st{color:var(--good)}.row.out .st{color:var(--warn)}
+.row.got .rn{text-decoration:line-through;color:var(--muted)}
+.totals{display:grid;grid-template-columns:1fr auto;gap:6px 14px;font-variant-numeric:tabular-nums;align-items:baseline}
+.totals .bigsave{font:800 30px var(--f-display);color:var(--good)}
+.empty{padding:24px;text-align:center;color:var(--muted)}
+/* tax */
+.amt{display:flex;align-items:center;gap:8px;border:2px solid var(--ink);border-radius:12px;padding:6px 12px;background:var(--bg)}
+.amt span{font:800 22px var(--f-display)}
+.amt input{border:0;background:transparent;font:800 26px var(--f-display);width:100%;min-width:0;font-variant-numeric:tabular-nums}
+.refund{font:800 40px/1 var(--f-display);color:var(--good);font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:15px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap;vertical-align:top}
+td:last-child{white-space:normal;min-width:160px}
+th{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+tr.hit td{background:var(--good-soft);font-weight:700}
+.steps{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+/* stores */
+.locrow{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.locrow label{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted);flex:1 1 200px}
+.locrow select{padding:10px;border-radius:10px;border:2px solid var(--line);background:var(--paper);font-size:16px}
+#map{height:320px;border-radius:16px;overflow:hidden;border:2px solid var(--line);background:var(--plate);position:relative}
+#map svg text{font-family:var(--f-body)}
+.stores{display:flex;flex-direction:column;gap:10px}
+.store{background:var(--paper);border:2px solid var(--line);border-radius:16px;padding:12px 14px;display:grid;grid-template-columns:36px 1fr;gap:4px 12px;min-width:0}
+.store .n{grid-row:span 3;width:34px;height:34px;border-radius:50%;background:var(--act);color:var(--act-ink);font:800 16px var(--f-display);display:flex;align-items:center;justify-content:center}
+.store .addr{font-size:14px;color:var(--muted);min-width:0;overflow-wrap:anywhere}
+.store .links{display:flex;flex-wrap:wrap;gap:8px}
+.store .links a{border:2px solid var(--ink);border-radius:10px;padding:7px 12px;font-weight:700;color:var(--ink);text-decoration:none;font-size:15px}
+.dist{font-weight:700;font-variant-numeric:tabular-nums}
+/* leaflet essentials (inlined; map only runs where tiles are allowed) */
+.leaflet-pane,.leaflet-tile,.leaflet-marker-icon,.leaflet-tile-container,.leaflet-pane>svg,.leaflet-pane>canvas,.leaflet-layer{position:absolute;left:0;top:0}
+.leaflet-container{overflow:hidden;font:inherit;-webkit-tap-highlight-color:transparent;touch-action:none}
+.leaflet-container img.leaflet-tile{max-width:none!important;max-height:none!important;width:256px;height:256px;user-select:none}
+.leaflet-tile{visibility:hidden}.leaflet-tile-loaded{visibility:inherit}
+.leaflet-pane{z-index:400}.leaflet-tile-pane{z-index:200}.leaflet-overlay-pane{z-index:400}.leaflet-marker-pane{z-index:600}.leaflet-tooltip-pane{z-index:650}
+.leaflet-top,.leaflet-bottom{position:absolute;z-index:1000;pointer-events:none}.leaflet-top{top:0}.leaflet-right{right:0}.leaflet-bottom{bottom:0}.leaflet-left{left:0}
+.leaflet-control{position:relative;z-index:800;pointer-events:auto;float:left;clear:both;margin:8px}
+.leaflet-right .leaflet-control{float:right}
+.leaflet-control-zoom a{display:block;width:34px;height:34px;line-height:34px;text-align:center;background:#fff;color:#111;text-decoration:none;font:700 20px sans-serif;border-bottom:1px solid #ccc}
+.leaflet-control-attribution{background:rgba(255,255,255,.85);color:#333;font-size:11px;padding:0 6px;margin:0}
+.leaflet-control-attribution a{color:#235}
+.leaflet-interactive{cursor:pointer}
+.leaflet-tooltip{position:absolute;padding:1px 6px;background:#fff;color:#111;border:1px solid #888;border-radius:6px;white-space:nowrap;pointer-events:none;font:700 12px sans-serif}
+/* staff screen */
+.overlay{position:fixed;inset:0;background:var(--paper);z-index:20;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:16px;overflow:auto;padding-block:max(20px,env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-bottom,0px));padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));text-align:center}
+.overlay .q{font:900 clamp(30px,8.5vw,46px)/1.2 var(--f-ko);word-break:keep-all}
+.overlay .pn{font:900 clamp(24px,7vw,34px)/1.3 var(--f-ko);color:var(--teen);word-break:keep-all}
+.overlay .sg{font:700 20px var(--f-ko)}
+.overlay .alt{font:500 18px/1.4 var(--f-ko);color:var(--muted)}
+.overlay .pe{color:var(--muted);font-size:15px}
+.foot{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
+details summary{cursor:pointer;font-weight:700}
+
+/* numbers: Atkinson's slashed zero reads like a crossed-out price */
+.price,.totals,.dist,td,.stats b{font-family:var(--f-num)}
+.planb{font-size:14px;line-height:1.35}
+.shadein{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;flex-wrap:wrap}
+.shadein input{width:90px;border:2px solid var(--c);border-radius:8px;padding:6px 8px;background:var(--bg);font:700 16px var(--f-num)}
+/* treasure hunt */
+body.hunting .top{display:none}
+body.hunting .wrap{padding-block-start:6px}
+body.hunting nav button{padding:4px;flex-direction:row;justify-content:center;gap:6px}
+body.hunting nav button b{font-size:16px}
+.hud{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px;background:var(--paper);border:2px solid var(--line);border-radius:16px;padding:8px 10px}
+.chests{display:flex;flex-wrap:wrap;gap:4px}
+.cbtn{border:2px solid transparent;background:transparent;border-radius:10px;padding:2px 3px;line-height:0}
+.cbtn.cur{border-color:var(--gold);background:var(--gold-soft)}
+.cbtn.skip{opacity:.35}
+.stats{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-left:auto}
+.stats span{display:flex;flex-direction:column;line-height:1.1}
+.stats small{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.stats b{font-size:19px;color:var(--gold)}
+.stats .lootbig b{font-size:24px;color:var(--good)}
+.music{border:2px solid var(--line);background:var(--bg);border-radius:99px;padding:6px 12px;font-weight:700;font-size:14px}
+.music.on{border-color:var(--gold);color:var(--gold);background:var(--gold-soft)}
+.brief,.win{background:var(--paper);border:3px solid var(--gold);border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.win{align-items:flex-start}
+.eyebrow{font:800 13px var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+.rules{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.primary.go{font-size:20px;padding:16px}
+.big.hunt .hhead{display:flex;justify-content:space-between;gap:8px;background:var(--c);color:var(--paper);padding:8px 14px;font:800 14px var(--f-body);letter-spacing:.06em;text-transform:uppercase}
+.big.hunt{gap:0}
+.big.hunt>*:not(.hhead){margin:0 14px}
+.big.hunt>.hgrid{margin-top:12px}
+.big.hunt>*:last-child{margin-bottom:14px}
+.big.hunt{display:flex;flex-direction:column;row-gap:10px}
+.hgrid{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center}
+.hpic{background:var(--cs);border-radius:14px;padding:8px 10px}
+.htxt{display:flex;flex-direction:column;gap:4px;min-width:0}
+.big .kind{font-size:28px}
+.big .plain{font-size:17px}
+.big .koname{font-size:21px}
+.clue{border:2px dashed var(--c);border-radius:14px;padding:6px 12px;display:flex;flex-direction:column;gap:2px}
+.cn{font:800 12px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--c)}
+.clue .ko.sg{font-size:30px;font-weight:900;line-height:1.2}
+.shadebig{font-size:17px}.shadebig b{font:800 26px var(--f-num);color:var(--c)}
+.trap{background:var(--trap-soft);border-radius:10px;padding:6px 10px;font-size:15px;line-height:1.4;margin-top:4px}
+.trap>b:first-child{color:var(--trap);font-family:var(--f-display);font-size:18px;margin-right:4px}
+.foundmsg{display:flex;align-items:center;gap:8px;font:800 22px var(--f-display);color:var(--gold)}
+.foundmsg.skip{color:var(--muted)}
+.planbox{border:3px solid var(--gold);background:var(--gold-soft);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.planbox .hpic{background:var(--paper)}
+.bigchest{width:72px;height:63px}
+.win h2{font-size:30px}
+.boss{border:2px solid var(--ink);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px;width:100%}
+.toast{position:fixed;left:50%;bottom:max(24px,calc(env(safe-area-inset-bottom,0px) + 16px));transform:translateX(-50%);background:var(--gold);color:#1d1406;font:800 22px var(--f-display);padding:12px 22px;border-radius:99px;z-index:30;box-shadow:0 8px 24px rgba(0,0,0,.25);white-space:nowrap}
+@media (prefers-reduced-motion:no-preference){.toast.pop{animation:pop .45s cubic-bezier(.2,1.6,.4,1)}@keyframes pop{from{transform:translateX(-50%) scale(.4);opacity:0}to{transform:translateX(-50%) scale(1);opacity:1}}}
+@media (max-width:420px){.card{grid-template-columns:96px 1fr}.who button b{font-size:18px}nav button span{font-size:12px}}
+@media (prefers-reduced-motion:no-preference){.card,.row,.who button{transition:background .15s,border-color .15s}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <p class="logo" aria-label="Glow Dad"><span class="lg1">GLOW</span><span class="lg2">DAD</span></p>
+      <h1>The K-beauty treasure hunt for dads in Korea</h1>
+      <p class="sub">She picks the list at home. You hunt it down in the store, with picture clues, shelf signs and a screen for the staff.</p>
+    </div>
+    <label class="country" for="country">You live in
+      <select id="country">
+        <option value="US">United States (US$)</option>
+        <option value="JP">Japan (¥)</option>
+        <option value="SG">Singapore (S$)</option>
+        <option value="UK">United Kingdom (£)</option>
+      </select>
+    </label>
+  </header>
+
+  <nav aria-label="Steps">
+    <button data-go="pick"><b>1</b><span>Her list</span></button>
+    <button data-go="shop"><b>2</b><span>Hunt</span></button>
+    <button data-go="tax"><b>3</b><span>Tax back</span></button>
+    <button data-go="stores"><b>4</b><span>Stores</span></button>
+  </nav>
+
+  <!-- 1. PICK -->
+  <section id="v-pick" style="display:flex;flex-direction:column;gap:14px">
+    <div class="who" role="group" aria-label="Who is it for">
+      <button class="m" data-who="mom" aria-pressed="true"><b>For Mom</b><span id="momHint">Grown-up skin care</span></button>
+      <button class="t" data-who="teen" aria-pressed="false"><b>For daughter</b><span id="teenHint">Teen favourites</span></button>
+    </div>
+    <p class="note" id="pickNote"></p>
+    <div class="grid" id="grid"></div>
+    <div class="bar">
+      <span id="count" style="font-weight:700">0 items</span>
+      <button class="primary" id="send">Send the list to him</button>
+    </div>
+    <div class="box" id="sendbox" hidden>
+      <h2>Send this to him</h2>
+      <p>Copy the link and message it to him. It opens straight on his shopping list.</p>
+      <div class="code"><input id="linkOut" readonly aria-label="List link"><button class="ghost" id="copyLink">Copy link</button><button class="primary" id="share" hidden>Share…</button></div>
+      <p class="note">Link not working? Send the short code instead. He taps “2 Shop” and pastes it.</p>
+      <div class="code"><input id="codeOut" readonly aria-label="List code"><button class="ghost" id="copyCode">Copy code</button></div>
+      <p class="note" id="copied" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <!-- 2. SHOP -->
+  <section id="v-shop" hidden style="display:flex;flex-direction:column;gap:14px">
+    <div id="shopMain" style="display:flex;flex-direction:column;gap:14px"></div>
+    <details class="box" id="codebox">
+      <summary>Got a list code from her? Paste it here</summary>
+      <div class="code"><input id="codeIn" placeholder="e.g. list-m1-m3-t2" aria-label="Paste list code"><button class="ghost" id="load">Open list</button></div>
+      <p class="note" id="loadMsg" aria-live="polite"></p>
+    </details>
+  </section>
+
+  <!-- 3. TAX -->
+  <section id="v-tax" hidden style="display:flex;flex-direction:column;gap:14px">
+    <div class="box">
+      <h2>How much tax do you get back?</h2>
+      <p>Most beauty stores in tourist areas take the tax off right at the till. Show your passport <b>before</b> you pay.</p>
+      <label for="taxAmt" class="note">Total on one receipt (Korean won)</label>
+      <div class="amt"><span>₩</span><input id="taxAmt" inputmode="numeric" autocomplete="off" value="150,000"></div>
+      <div class="code" id="taxQuick"></div>
+      <div id="taxOut" aria-live="polite" style="display:flex;flex-direction:column;gap:6px"></div>
+    </div>
+    <div class="box">
+      <h3>Rules in plain words</h3>
+      <ul class="steps" id="taxRules"></ul>
+    </div>
+    <div class="box">
+      <h3>The refund table</h3>
+      <div class="tablewrap"><table id="taxTable"></table></div>
+      <p class="note" id="taxSrc"></p>
+    </div>
+  </section>
+
+  <!-- 4. STORES -->
+  <section id="v-stores" hidden style="display:flex;flex-direction:column;gap:14px">
+    <div class="box">
+      <h2>Nearest stores</h2>
+      <div class="locrow">
+        <button class="primary" id="locBtn">Use my location</button>
+        <label for="area">Or pick where you're staying
+          <select id="area"></select>
+        </label>
+      </div>
+      <p class="note" id="locMsg" aria-live="polite"></p>
+    </div>
+    <div id="map" aria-label="Map of nearby stores"></div>
+    <div class="stores" id="stores"></div>
+    <p class="note" id="storeSrc"></p>
+  </section>
+
+  <footer class="foot" id="foot"></footer>
+</div>
+
+<div class="overlay" id="overlay" hidden role="dialog" aria-modal="true" aria-label="Show this to the staff">
+  <p class="q">이 제품 어디 있어요?</p>
+  <div id="ovPic"></div>
+  <p class="pn" id="ovKo"></p>
+  <p class="sg" id="ovSign"></p>
+  <p class="alt" id="ovAlt"></p>
+  <p class="alt">품절이면 비슷한 제품을 추천해 주세요.</p>
+  <p class="pe" id="ovEn"></p>
+  <button class="ghost" id="close">Close</button>
+</div>
+
+<div class="toast" id="toast" hidden role="status"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script>
+// Original adventure-march loop + sound effects, synthesized with Web Audio (no audio files, no borrowed melody).
+const Music=(()=>{
+  let ctx=null, master=null, on=false, timer=null, nextT=0, step=0;
+  const BPM=112, Q=60/BPM; // seconds per beat
+  const f=m=>440*Math.pow(2,(m-69)/12);
+  // melody: [midi or null, beats]; 8 bars of 4 beats
+  const MEL=[[72,1],[67,.5],[72,.5],[76,1.5],[74,.5], [72,.75],[74,.25],[76,.5],[77,.5],[79,2],
+    [81,1],[79,.5],[77,.5],[76,1],[72,1], [74,.75],[76,.25],[74,.5],[71,.5],[67,2],
+    [72,1],[67,.5],[72,.5],[76,1.5],[79,.5], [81,.75],[79,.25],[77,.5],[81,.5],[84,2],
+    [83,1],[81,.5],[79,.5],[77,1],[74,1], [72,3],[null,1]];
+  const CH=[[48,55],[48,55],[53,60],[55,62],[48,55],[53,60],[55,62],[48,55]]; // bass root/fifth per bar
+  const PAD=[[60,64,67],[60,64,67],[60,65,69],[59,62,67],[60,64,67],[60,65,69],[59,62,65],[60,64,67]];
+  function init(){
+    if(ctx) return true;
+    try{ctx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return false}
+    master=ctx.createGain(); master.gain.value=.16;
+    const comp=ctx.createDynamicsCompressor(); master.connect(comp); comp.connect(ctx.destination);
+    return true;
+  }
+  function brass(t,m,d,vol=.5,dest=master){
+    const o1=ctx.createOscillator(),o2=ctx.createOscillator(),g=ctx.createGain(),lp=ctx.createBiquadFilter();
+    o1.type="sawtooth";o2.type="sawtooth";o1.frequency.value=f(m);o2.frequency.value=f(m)*1.004;
+    lp.type="lowpass";lp.frequency.setValueAtTime(700,t);lp.frequency.linearRampToValueAtTime(2600,t+.06);lp.frequency.linearRampToValueAtTime(1400,t+d);
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.03);g.gain.setValueAtTime(vol*.8,t+Math.max(.04,d-.06));g.gain.linearRampToValueAtTime(0,t+d);
+    o1.connect(lp);o2.connect(lp);lp.connect(g);g.connect(dest);o1.start(t);o2.start(t);o1.stop(t+d+.02);o2.stop(t+d+.02);
+  }
+  function tone(t,m,d,type,vol){
+    const o=ctx.createOscillator(),g=ctx.createGain();o.type=type;o.frequency.value=f(m);
+    g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(master);o.start(t);o.stop(t+d+.02);
+  }
+  function timp(t){const o=ctx.createOscillator(),g=ctx.createGain();o.type="sine";o.frequency.setValueAtTime(110,t);o.frequency.exponentialRampToValueAtTime(55,t+.35);
+    g.gain.setValueAtTime(.9,t);g.gain.exponentialRampToValueAtTime(.001,t+.45);o.connect(g);g.connect(master);o.start(t);o.stop(t+.5);}
+  let noiseBuf=null;
+  function snare(t,vol=.35){
+    if(!noiseBuf){noiseBuf=ctx.createBuffer(1,ctx.sampleRate*.25,ctx.sampleRate);const d=noiseBuf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;}
+    const s=ctx.createBufferSource(),g=ctx.createGain(),hp=ctx.createBiquadFilter();s.buffer=noiseBuf;hp.type="highpass";hp.frequency.value=1200;
+    g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+.16);s.connect(hp);hp.connect(g);g.connect(master);s.start(t);s.stop(t+.2);
+  }
+  // build one 32-beat loop of events
+  const EV=[];(function(){
+    let b=0;MEL.forEach(([m,d])=>{if(m)EV.push({b,k:"mel",m,d});b+=d;});
+    for(let bar=0;bar<8;bar++){const s=bar*4,[r,fi]=CH[bar];
+      EV.push({b:s,k:"timp"});
+      [0,1,2,3].forEach(i=>EV.push({b:s+i,k:"bass",m:i%2?fi:r}));
+      [1,3].forEach(i=>EV.push({b:s+i,k:"snare"}));
+      [.5,1.5,2.5,3.5].forEach(i=>EV.push({b:s+i,k:"pad",ms:PAD[bar]}));
+      if(bar===7)[2,2.25,2.5,2.75,3,3.25,3.5,3.75].forEach((i,j)=>EV.push({b:s+i,k:"snare",v:.12+j*.04}));
+    }
+    EV.sort((a,c)=>a.b-c.b);
+  })();
+  function play(e,t){
+    if(e.k==="mel") brass(t,e.m,e.d*Q*.92,.42);
+    else if(e.k==="bass") tone(t,e.m-12,Q*.8,"triangle",.55);
+    else if(e.k==="timp") timp(t);
+    else if(e.k==="snare") snare(t,e.v||.3);
+    else if(e.k==="pad") e.ms.forEach(m=>brass(t,m,Q*.3,.07));
+  }
+  let loopStart=0, idx=0;
+  function tick(){
+    const ahead=ctx.currentTime+.25;
+    while(true){
+      const e=EV[idx], t=loopStart+e.b*Q;
+      if(t>ahead) break;
+      if(t>=ctx.currentTime-.02) play(e,t);
+      idx++; if(idx>=EV.length){idx=0;loopStart+=32*Q;}
+    }
+  }
+  function start(){
+    if(!init()) return false;
+    ctx.resume&&ctx.resume();
+    if(on) return true; on=true;
+    master.gain.cancelScheduledValues(ctx.currentTime);master.gain.setValueAtTime(.16,ctx.currentTime);
+    loopStart=ctx.currentTime+.08; idx=0; timer=setInterval(tick,60); tick(); return true;
+  }
+  function stop(){ if(!on) return; on=false; clearInterval(timer); timer=null;
+    master.gain.setTargetAtTime(0,ctx.currentTime,.08); setTimeout(()=>{if(!on&&master)master.gain.value=.16},400); }
+  function sfx(kind){
+    if(!init()) return; ctx.resume&&ctx.resume();
+    const t=ctx.currentTime+.02, g=ctx.createGain(); g.gain.value=1.4; g.connect(master);
+    if(kind==="found") [[72,0],[76,.09],[79,.18],[84,.27]].forEach(([m,d])=>brass(t+d,m,d===.27?.5:.12,.5,g));
+    else if(kind==="planb") [[67,0],[72,.12]].forEach(([m,d])=>brass(t+d,m,.25,.45,g));
+    else if(kind==="trap") [[64,0],[63,.14]].forEach(([m,d])=>brass(t+d,m,.18,.35,g));
+    else if(kind==="win") [[72,0],[72,.15],[72,.3],[76,.45],[79,.75],[84,1.05]].forEach(([m,d],i)=>brass(t+d,m,i===5?1.1:.13,.55,g));
+  }
+  return {start,stop,toggle(){return on?(stop(),false):start()},sfx,get on(){return on}};
+})();
+
+</script>
+<script>
+// Draws a generic package (shape + colours + a short label word). No logos, no brand art.
+function hx(h){h=String(h).replace("#","");return h.length===3?h.replace(/./g,"$&$&"):h}
+function shade(hex,amt){
+  const n=parseInt(hx(hex),16),_=0;let r=n>>16,g=n>>8&255,b=n&255;
+  const f=v=>Math.max(0,Math.min(255,Math.round(amt<0?v*(1+amt):v+(255-v)*amt)));
+  return "#"+((1<<24)|(f(r)<<16)|(f(g)<<8)|f(b)).toString(16).slice(1);
+}
+function lum(hex){const n=parseInt(hx(hex),16);return (0.299*(n>>16)+0.587*(n>>8&255)+0.114*(n&255))/255}
+function pack(p,size,label){
+  const B=p.body||"#dddddd",C=p.cap||shade(B,-.35),L=p.label||"#ffffff",E=shade(B,-.45),CE=shade(C,-.4);
+  const T=p.ink||(lum(L)>.55?"#1d232b":"#ffffff");
+  const st=`stroke="${E}" stroke-width="1.6" stroke-linejoin="round"`, cst=`stroke="${CE}" stroke-width="1.6" stroke-linejoin="round"`;
+  const words=String(p.txt||"").split(" ").filter(Boolean);
+  const lines=words.length>2?[words.slice(0,Math.ceil(words.length/2)).join(" "),words.slice(Math.ceil(words.length/2)).join(" ")]:words;
+  const text=(cx,cy,fs,rot)=>lines.length?`<text x="${cx}" y="${cy-(lines.length-1)*fs*.55}" ${rot?`transform="rotate(-90 ${cx} ${cy})"`:""} text-anchor="middle" dominant-baseline="middle" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="${fs}" fill="${T}">${lines.map((l,i)=>`<tspan x="${cx}" dy="${i?fs*1.1:0}">${l}</tspan>`).join("")}</text>`:"";
+  const lab=(x,y,w,h,r=2)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" fill="${L}" ${p.label?"":`fill-opacity="0"`}/>`;
+  const gloss=(x,y,w,h)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${w/2}" fill="#ffffff" fill-opacity=".38"/>`;
+  let g="";
+  switch(p.s){
+    case "tube": g=`<rect x="35" y="106" width="30" height="22" rx="3" fill="${C}" ${cst}/>
+      <path d="M20,14 H80 V22 L66,108 H34 L20,22 Z" fill="${B}" ${st}/>
+      <rect x="20" y="14" width="60" height="8" fill="${shade(B,-.12)}" ${st}/>
+      ${lab(30,46,40,34)}${gloss(27,26,5,60)}${text(50,63,9)}`;break;
+    case "bottle": g=`<rect x="24" y="36" width="52" height="92" rx="10" fill="${B}" ${st}/>
+      <rect x="41" y="29" width="18" height="9" fill="${shade(B,-.15)}" ${st}/>
+      <rect x="37" y="8" width="26" height="23" rx="3" fill="${C}" ${cst}/>
+      ${lab(28,66,44,38)}${gloss(29,44,5,70)}${text(50,85,9)}`;break;
+    case "pump": g=`<rect x="25" y="50" width="50" height="78" rx="12" fill="${B}" ${st}/>
+      <rect x="37" y="40" width="26" height="11" rx="2" fill="${C}" ${cst}/>
+      <rect x="46" y="26" width="8" height="15" fill="${C}" ${cst}/>
+      <path d="M34,18 H64 V27 H34 Z M64,20 H80 V25 H64 Z" fill="${C}" ${cst}/>
+      ${lab(30,74,40,34)}${gloss(30,58,5,58)}${text(50,91,9)}`;break;
+    case "dropper": g=`<rect x="28" y="62" width="44" height="66" rx="8" fill="${B}" ${st}/>
+      <rect x="33" y="46" width="34" height="17" rx="2" fill="${C}" ${cst}/>
+      <ellipse cx="50" cy="31" rx="11" ry="16" fill="${shade(C,-.15)}" ${cst}/>
+      ${lab(32,80,36,32)}${gloss(32,68,4,50)}${text(50,96,8.5)}`;break;
+    case "jar": g=`<rect x="20" y="72" width="60" height="56" rx="8" fill="${B}" ${st}/>
+      <rect x="17" y="52" width="66" height="22" rx="4" fill="${C}" ${cst}/>
+      ${lab(26,86,48,30)}${gloss(24,80,5,38)}${text(50,101,9)}`;break;
+    case "balm": g=`<rect x="15" y="90" width="70" height="38" rx="6" fill="${B}" ${st}/>
+      <rect x="12" y="70" width="76" height="22" rx="5" fill="${C}" ${cst}/>
+      ${lab(22,74,56,14)}${text(50,81.5,9)}`;break;
+    case "cushion": g=`<ellipse cx="50" cy="112" rx="38" ry="14" fill="${shade(B,-.2)}" ${st}/>
+      <rect x="12" y="84" width="76" height="28" fill="${B}" stroke="none"/>
+      <path d="M12,84 V112 M88,84 V112" ${st} fill="none"/>
+      <ellipse cx="50" cy="84" rx="38" ry="14" fill="${C}" ${cst}/>
+      <ellipse cx="50" cy="84" rx="18" ry="6" fill="${L}" ${p.label?"":`fill-opacity="0"`}/>
+      ${text(50,99,8.5)}`;break;
+    case "sheet": g=`<rect x="18" y="14" width="64" height="114" rx="3" fill="${B}" ${st}/>
+      <rect x="18" y="14" width="64" height="9" fill="${C}" ${cst}/><rect x="18" y="119" width="64" height="9" fill="${C}" ${cst}/>
+      <path d="M18,30 l5,3 l-5,3 Z" fill="${E}"/>
+      ${lab(24,52,52,40)}${text(50,72,9.5)}`;break;
+    case "pack": g=`${[0,1,2].map(i=>`<rect x="${10+i*9}" y="${26-i*7}" width="58" height="100" rx="3" fill="${shade(B,-.06*(2-i))}" ${st}/>`).join("")}
+      <rect x="28" y="12" width="58" height="8" fill="${C}" ${cst}/>
+      ${lab(33,52,48,40)}${text(57,72,9)}`;break;
+    case "tint": g=`<rect x="39" y="66" width="22" height="62" rx="4" fill="${B}" ${st}/>
+      <rect x="39" y="10" width="22" height="58" rx="4" fill="${C}" ${cst}/>
+      ${gloss(42,72,3,48)}${text(51,97,7.5,true)}`;break;
+    case "stick": g=`<rect x="32" y="44" width="36" height="84" rx="7" fill="${B}" ${st}/>
+      <rect x="32" y="12" width="36" height="34" rx="7" fill="${C}" ${cst}/>
+      ${lab(36,70,28,36)}${text(50,88,8)}`;break;
+    case "box": g=`<path d="M68,26 L82,16 V118 L68,128 Z" fill="${shade(B,-.2)}" ${st}/>
+      <path d="M22,26 L36,16 H82 L68,26 Z" fill="${shade(B,.25)}" ${st}/>
+      <rect x="22" y="26" width="46" height="102" fill="${B}" ${st}/>
+      <rect x="22" y="26" width="46" height="14" fill="${C}" ${cst}/>
+      ${lab(26,64,38,36)}${text(45,82,8.5)}`;break;
+    case "spray": g=`<rect x="28" y="46" width="44" height="82" rx="14" fill="${B}" ${st}/>
+      <rect x="38" y="24" width="24" height="23" rx="3" fill="${C}" ${cst}/>
+      <rect x="62" y="30" width="8" height="5" fill="${C}" ${cst}/>
+      ${lab(32,74,36,32)}${gloss(32,56,4,58)}${text(50,90,8.5)}`;break;
+    case "palette": g=`<rect x="10" y="58" width="80" height="58" rx="8" fill="${C}" ${cst}/>
+      ${[0,1,2,3].map(i=>`<circle cx="${24+i*17.3}" cy="80" r="7" fill="${(p.pans||[])[i]||shade(B,-.1*i)}" ${st}/>`).join("")}
+      ${lab(20,94,60,14)}${text(50,101,8)}`;break;
+    default: g=`<rect x="22" y="22" width="56" height="106" rx="8" fill="${B}" ${st}/>${lab(28,60,44,36)}${text(50,78,9)}`;
+  }
+  return `<svg viewBox="0 0 100 140" width="${size}" height="${size*1.4}" role="img" aria-label="${label||"Drawing of the package"}" style="display:block;overflow:visible">
+    <ellipse cx="50" cy="132" rx="34" ry="5" fill="#000" fill-opacity=".12"/>${g}</svg>`;
+}
+
+</script>
+<script>
+const DATA={
+"asOf": "10 Nov 2026",
+"priceSrc": "Korea: list prices from Glowpick, Kurly and 11st (the store's own site blocks price checks; in-store prices and sets can differ). Abroad: the named shop in each country, mostly from search listings on 10 Nov 2026, so some may be out of date. Product picks: the store chain's 2025 awards, based on customer purchases from Jul 2024 to Jun 2025.",
+"fxSrc": "mid-market rates, open.er-api.com, 2026-11-10 00:02 UTC; your card rate will be a little worse",
+"fx": {
+"US": {
+"name": "US",
+"sym": "$",
+"dec": 2,
+"krwPer": 1344.09
+},
+"JP": {
+"name": "Japan",
+"sym": "¥",
+"dec": 0,
+"krwPer": 8.52
+},
+"SG": {
+"name": "Singapore",
+"sym": "S$",
+"dec": 2,
+"krwPer": 1051.53
+},
+"UK": {
+"name": "UK",
+"sym": "£",
+"dec": 2,
+"krwPer": 1805.05
+}
+},
+"hints": {
+"mom": "Skin care, sun cream, foundation",
+"teen": "Lip tints, masks, spot pads"
+},
+"example": [
+"m1",
+"m4",
+"t1",
+"t6"
+],
+"products": [
+{
+"id": "m1",
+"who": "mom",
+"kind": "Face toner",
+"brand": "Round Lab",
+"name": "1025 Dokdo Toner",
+"ko": "라운드랩 1025 독도 토너",
+"size": "200ml",
+"plain": "Watery face toner, used right after washing",
+"shelfKo": "스킨/토너",
+"shelfEn": "Toner",
+"alike": "**1025 독도 로션** (Lotion) looks the same, but it is milky white inside. Buy the clear liquid.",
+"sub": {
+"en": "Anua Heartleaf 77% Soothing Toner",
+"ko": "아누아 어성초 77 수딩 토너",
+"why": "Another best-selling gentle toner"
+},
+"shade": null,
+"look": "usually no box; clear bottle, clear liquid, blue-white label, white cap",
+"why": "Olive Young Awards 2025 Toner #1",
+"pkg": {
+"s": "bottle",
+"body": "#e6f0f8",
+"cap": "#ffffff",
+"label": "#d3e5f5",
+"ink": "#1f5fae",
+"txt": "TONER"
+},
+"price": {
+"KR": 15000,
+"US": 16.99,
+"JP": 2645,
+"SG": 23.2,
+"UK": 17.0
+},
+"krSale": 13500,
+"krSrc": "Glowpick list price; Kurly 15,000, sale 13,500",
+"store": {
+"US": "Ulta",
+"JP": "Qoo10 JP seller (reference price)",
+"SG": "Watsons SG",
+"UK": "Boots"
+},
+"unv": [
+"JP"
+],
+"noCmp": [],
+"packNote": {}
+},
+{
+"id": "m2",
+"who": "mom",
+"kind": "Moisture serum",
+"brand": "Torriden",
+"name": "DIVE-IN Low Molecular Hyaluronic Acid Serum",
+"ko": "토리든 다이브인 저분자 히알루론산 세럼",
+"size": "50ml",
+"plain": "Light moisture drops for dry skin",
+"shelfKo": "에센스/세럼/앰플",
+"shelfEn": "Serum",
+"alike": "The same blue DIVE-IN line has a big toner bottle and a cream jar. You want the small dropper bottle.",
+"sub": {
+"en": "SKIN1004 Madagascar Centella Ampoule",
+"ko": "스킨1004 마다가스카르 센텔라 앰플",
+"why": "Light calming drops, similar use"
+},
+"shade": null,
+"look": "box: white, blue DIVE-IN text; bottle: clear with blue print, white dropper",
+"why": "Olive Young Awards 2025 Essence/Serum #1",
+"pkg": {
+"s": "dropper",
+"body": "#eef4fa",
+"cap": "#ffffff",
+"label": "#ffffff",
+"ink": "#1f5fae",
+"txt": "DIVE-IN SERUM"
+},
+"price": {
+"KR": 22000,
+"US": 24.0,
+"JP": 2420,
+"SG": 23.5,
+"UK": 19.0
+},
+"krSale": null,
+"krSrc": "Glowpick; OY sells 50ml+50ml refill set 36,000 (sale 27,000)",
+"store": {
+"US": "Sephora",
+"JP": "Matsukiyo Cocokara / @cosme",
+"SG": "Watsons SG",
+"UK": "Just My Look (RRP)"
+},
+"unv": [],
+"noCmp": [],
+"packNote": {}
+},
+{
+"id": "m3",
+"who": "mom",
+"kind": "Face cream",
+"brand": "Aestura",
+"name": "Atobarrier 365 Cream",
+"ko": "에스트라 아토베리어365 크림",
+"size": "80ml",
+"plain": "Thick moisturizer for dry, sensitive skin",
+"shelfKo": "크림",
+"shelfEn": "Cream",
+"alike": "A box saying **하이드로 수딩** (Hydro Soothing) is a lighter gel at the same price. Skip it.",
+"sub": {
+"en": "Illiyoon Ceramide Ato Concentrate Cream",
+"ko": "일리윤 세라마이드 아토 집중 크림",
+"why": "Rich cream for dry skin, cheaper"
+},
+"shade": null,
+"look": "box: white with blue/teal text; tube: white, blue lettering, white cap",
+"why": "Olive Young Awards 2025 Cream #1",
+"pkg": {
+"s": "tube",
+"body": "#ffffff",
+"cap": "#ffffff",
+"ink": "#1f7f8f",
+"txt": "CREAM 80ml"
+},
+"price": {
+"KR": 33000,
+"US": 32.0,
+"JP": 3300,
+"SG": 58.17,
+"UK": 26.0
+},
+"krSale": 22400,
+"krSrc": "Glowpick list price; 11st single about 22,400",
+"store": {
+"US": "Sephora / Amazon US",
+"JP": "Matsukiyo Cocokara / @cosme",
+"SG": "Cosmetis SG (reseller)",
+"UK": "Sephora UK"
+},
+"unv": [
+"SG"
+],
+"noCmp": [],
+"packNote": {}
+},
+{
+"id": "m4",
+"who": "mom",
+"kind": "Sunscreen",
+"brand": "Round Lab",
+"name": "Birch Juice Moisturizing Sun Cream SPF50+",
+"ko": "라운드랩 자작나무 수분 선크림",
+"size": "50ml",
+"plain": "Moisturizing face sunscreen, use every morning",
+"shelfKo": "선케어",
+"shelfEn": "Sun care",
+"alike": "The **톤업** (Tone-up) version is slightly pink. Buy the one without **톤업**.",
+"sub": {
+"en": "Beauty of Joseon Relief Sun: Rice + Probiotics",
+"ko": "조선미녀 맑은쌀 선크림",
+"why": "Hugely popular light sunscreen"
+},
+"shade": null,
+"look": "usually no box; white tube with light blue birch print, white cap",
+"why": "OY Awards 2025 Sun Care #1 + Global Best Performer",
+"pkg": {
+"s": "tube",
+"body": "#f7fbff",
+"cap": "#ffffff",
+"label": "#d8ecf8",
+"ink": "#2a6fa8",
+"txt": "SUN 50ml"
+},
+"price": {
+"KR": 25000,
+"US": 24.99,
+"JP": 3310,
+"SG": 32.0,
+"UK": 20.99
+},
+"krSale": 16020,
+"krSrc": "Glowpick list price; 11st seller 16,020-18,500",
+"store": {
+"US": "Ulta (US version: UVLOCK SPF45)",
+"JP": "Qoo10 JP third-party seller",
+"SG": "Watsons SG (implied regular)",
+"UK": "Superdrug"
+},
+"unv": [
+"JP",
+"SG"
+],
+"noCmp": [
+"US"
+],
+"packNote": {
+"US": "US sells a different SPF45 version"
+}
+},
+{
+"id": "m5",
+"who": "mom",
+"kind": "Makeup remover oil",
+"brand": "ma:nyo",
+"name": "Pure Cleansing Oil",
+"ko": "마녀공장 퓨어 클렌징 오일",
+"size": "200ml",
+"plain": "Oil that removes makeup, rinse with water",
+"shelfKo": "클렌징",
+"shelfEn": "Cleansing",
+"alike": "**소이빈** (Soybean) oil sits right next to it. Skip the one that says **소이빈**.",
+"sub": {
+"en": "Banila Co Clean It Zero Cleansing Balm Original",
+"ko": "바닐라코 클린잇제로 클렌징밤 오리지널",
+"why": "Makeup-removing balm, same job"
+},
+"shade": null,
+"look": "no box; clear bottle showing golden oil, dark pump, dark print",
+"why": "Olive Young Awards 2025 Cleansing #1",
+"pkg": {
+"s": "pump",
+"body": "#e8c46a",
+"cap": "#2a2a2a",
+"label": "#fff6dc",
+"ink": "#2a2a2a",
+"txt": "OIL 200ml"
+},
+"price": {
+"KR": 29000,
+"US": 17.5,
+"JP": 2530,
+"SG": 38.51,
+"UK": 18.0
+},
+"krSale": 17900,
+"krSrc": "Kurly 29,000, sale 17,900",
+"store": {
+"US": "Amazon US",
+"JP": "Tsuruha Online / BicCamera.com",
+"SG": "Cosmetis SG (reseller)",
+"UK": "Just My Look"
+},
+"unv": [
+"SG"
+],
+"noCmp": [],
+"packNote": {}
+},
+{
+"id": "m6",
+"who": "mom",
+"kind": "Glow serum",
+"brand": "medicube",
+"name": "PDRN Pink Peptide Ampoule (Serum)",
+"ko": "메디큐브 PDRN 핑크 펩타이드 앰플",
+"size": "30ml",
+"plain": "Pink skin-glow serum in a dropper",
+"shelfKo": "에센스/세럼/앰플",
+"shelfEn": "Serum",
+"alike": "The big pink spray (**미스트**, mist) is a different product. Buy the small dropper.",
+"sub": {
+"en": "Beauty of Joseon Glow Serum: Propolis + Niacinamide",
+"ko": "조선미녀 광채 프로폴리스 세럼",
+"why": "Glow serum, lower price"
+},
+"shade": null,
+"look": "box: pink; bottle: pink with pink dropper",
+"why": "OY Awards 2025 Trend: Slow Aging",
+"pkg": {
+"s": "dropper",
+"body": "#f4a6bf",
+"cap": "#e8789e",
+"label": "#fde7ee",
+"ink": "#9c2652",
+"txt": "PINK SERUM"
+},
+"price": {
+"KR": 31400,
+"US": 21.0,
+"JP": 2530,
+"SG": 26.9,
+"UK": 24.0
+},
+"krSale": null,
+"krSrc": "Glowpick; OY mostly sells 30ml+refill sets (11st 29,400-35,250)",
+"store": {
+"US": "Ulta",
+"JP": "@cosme list price",
+"SG": "Watsons SG (implied regular)",
+"UK": "Lookfantastic"
+},
+"unv": [
+"SG"
+],
+"noCmp": [],
+"packNote": {}
+},
+{
+"id": "m7",
+"who": "mom",
+"kind": "Tingle essence",
+"brand": "VT Cosmetics",
+"name": "Reedle Shot 100 Essence",
+"ko": "VT 리들샷 100",
+"size": "50ml",
+"plain": "Tingly essence that helps skin absorb products",
+"shelfKo": "에센스/세럼/앰플",
+"shelfEn": "Serum",
+"alike": "**리들샷 300** looks the same but is much stronger. Check the big number says **100**.",
+"sub": {
+"en": "VT Reedle Shot 50",
+"ko": "VT 리들샷 50",
+"why": "Same product, milder strength"
+},
+"shade": null,
+"look": "box and bottle: pastel pink with big number 100",
+"why": "OY Awards 2025 Global Best Performer",
+"pkg": {
+"s": "pump",
+"body": "#f7cfd8",
+"cap": "#f2b8c6",
+"ink": "#b0285e",
+"txt": "100"
+},
+"price": {
+"KR": 32000,
+"US": 26.0,
+"JP": 3520,
+"SG": 39.5,
+"UK": 25.0
+},
+"krSale": null,
+"krSrc": "Glowpick list price",
+"store": {
+"US": "Ulta",
+"JP": "Tsuruha Online / @cosme",
+"SG": "Watsons SG",
+"UK": "Lookfantastic / Cult Beauty"
+},
+"unv": [],
+"noCmp": [],
+"packNote": {}
+},
+{
+"id": "m8",
+"who": "mom",
+"kind": "Face mist",
+"brand": "d'Alba",
+"name": "White Truffle First Spray Serum",
+"ko": "달바 화이트 트러플 퍼스트 스프레이 세럼",
+"size": "100ml",
+"plain": "Face mist serum, spray on any time",
+"shelfKo": "스킨/토너·미스트",
+"shelfEn": "Toner/Mist) (uncertain",
+"alike": "Newer peptide and yellow versions look alike. Check the label says White Truffle First Spray Serum.",
+"sub": {
+"id": "m2",
+"why": "Moisture boost in a dropper instead of a spray"
+},
+"shade": null,
+"look": "box: white with gold; bottle: white/frosted, gold spray collar",
+"why": "OY Awards 2025 Trend: Slow Aging",
+"pkg": {
+"s": "spray",
+"body": "#f4f2ee",
+"cap": "#c9a24a",
+"ink": "#8a6a20",
+"txt": "MIST SERUM"
+},
+"price": {
+"KR": 29900,
+"US": 24.0,
+"JP": 2420,
+"SG": 35.0,
+"UK": 26.0
+},
+"krSale": 25900,
+"krSrc": "Glowpick/KREAM 29,900; Kurly about 25,900",
+"store": {
+"US": "d'Alba US official",
+"JP": "Matsukiyo Cocokara / @cosme",
+"SG": "Watsons SG",
+"UK": "Pure Seoul / Just My Look"
+},
+"unv": [],
+"noCmp": [],
+"packNote": {}
+},
+{
+"id": "m9",
+"who": "mom",
+"kind": "Foundation compact",
+"brand": "JUNG SAEM MOOL",
+"name": "Essential Skin Nuder Cushion SPF50+",
+"ko": "정샘물 에센셜 스킨 누더 쿠션",
+"size": "14g x2 (with refill)",
+"plain": "Foundation compact with a sponge puff",
+"shelfKo": "베이스메이크업",
+"shelfEn": "Base makeup",
+"alike": "**롱웨어** (Long-wear) and **커버 레이어** (Cover layer) cost the same. Buy the plain one, in her shade.",
+"sub": {
+"id": "t3",
+"why": "Another top cushion compact (same shade number problem)"
+},
+"shade": "21",
+"look": "box and compact: white/light grey, grey text",
+"why": "Olive Young Awards 2025 Cushion #1",
+"pkg": {
+"s": "cushion",
+"body": "#e3e3e3",
+"cap": "#f6f6f6",
+"ink": "#555555",
+"txt": "CUSHION"
+},
+"price": {
+"KR": 48000,
+"US": 32.0,
+"JP": 4180,
+"SG": 31.92,
+"UK": 13.91
+},
+"krSale": null,
+"krSrc": "Glowpick list price (14g x2)",
+"store": {
+"US": "Olive Young US (single)",
+"JP": "MAQUIA/@cosme list price",
+"SG": "YesStyle (SGD)",
+"UK": "Stylevana UK (uncertain)"
+},
+"unv": [
+"UK"
+],
+"noCmp": [
+"US"
+],
+"packNote": {
+"US": "single compact; Korea price includes a refill"
+}
+},
+{
+"id": "m10",
+"who": "mom",
+"kind": "Eye cream",
+"brand": "AHC",
+"name": "Pro Shot Collagen Jufination Lift4 Eye Cream for Face",
+"ko": "AHC 프로샷 콜라 쥬비네이션 리프트4 캡슐 인퓨즈드 아이크림 포 페이스",
+"size": "30ml",
+"plain": "Firming eye cream, also used on face",
+"shelfKo": "아이케어/크림",
+"shelfEn": "Eye care/Cream",
+"alike": "Other AHC eye creams look alike. Check for **프로샷** (Pro Shot) or Lift4 on the box.",
+"sub": {
+"en": "AHC Ten Revolution Real Eye Cream for Face",
+"ko": "AHC 텐 레볼루션 리얼 아이크림 포 페이스",
+"why": "Same brand's other eye cream for face"
+},
+"shade": null,
+"look": "box: white/silver; tube: white with silver metal tip",
+"why": "No.1 in total Olive Young sales 2025 (per Elle Korea)",
+"pkg": {
+"s": "tube",
+"body": "#ffffff",
+"cap": "#b9bec4",
+"ink": "#6b7280",
+"txt": "EYE CREAM"
+},
+"price": {
+"KR": 31000,
+"US": 50.0,
+"JP": null,
+"SG": 43.9,
+"UK": null
+},
+"krSale": 20850,
+"krSrc": "Glowpick/Elle 31,000; 11st 20,850",
+"store": {
+"US": "Target (3rd-party seller SleekShop)",
+"JP": "",
+"SG": "Watsons SG (implied regular)",
+"UK": ""
+},
+"unv": [
+"US",
+"SG"
+],
+"noCmp": [],
+"packNote": {}
+},
+{
+"id": "t1",
+"who": "teen",
+"kind": "Lip tint, shiny",
+"brand": "rom&nd",
+"name": "The Juicy Lasting Tint",
+"ko": "롬앤 더 쥬시 래스팅 틴트",
+"size": "3.5g (old 5.5g discontinued)",
+"plain": "Glossy long-lasting lip colour",
+"shelfKo": "립메이크업",
+"shelfEn": "Lip makeup",
+"alike": "**블러 퍼지** (Blur Fudge) tint is matte. Juicy is the shiny one. Get her shade number.",
+"sub": {
+"id": "t2",
+"why": "Other best-selling shiny tint"
+},
+"shade": "03",
+"look": "no box; clear tube showing the lip colour, clear cap",
+"why": "Olive Young Awards 2025 Lip Makeup #1",
+"pkg": {
+"s": "tint",
+"body": "#a8476a",
+"cap": "#e6eaee",
+"ink": "#ffffff",
+"txt": "JUICY"
+},
+"price": {
+"KR": 13000,
+"US": 15.0,
+"JP": 1320,
+"SG": 20.9,
+"UK": 14.5
+},
+"krSale": 9900,
+"krSrc": "Glowpick 13,000; W Concept sale 9,900",
+"store": {
+"US": "Ulta",
+"JP": "Matsukiyo Cocokara",
+"SG": "Guardian SG (approx.)",
+"UK": "Superdrug"
+},
+"unv": [
+"SG"
+],
+"noCmp": [],
+"packNote": {}
+},
+{
+"id": "t2",
+"who": "teen",
+"kind": "Lip tint, sheer",
+"brand": "Peripera",
+"name": "Ink Mood Glowy Tint",
+"ko": "페리페라 잉크 무드 글로이 틴트",
+"size": "4g",
+"plain": "Shiny sheer lip colour",
+"shelfKo": "립메이크업",
+"shelfEn": "Lip makeup",
+"alike": "**블러** (Blur) tints are matte. Buy **글로이** (Glowy). Get her shade number.",
+"sub": {
+"id": "t1",
+"why": "Other best-selling shiny tint"
+},
+"shade": "03",
+"look": "no box; tube showing the lip colour",
+"why": "Olive Young Awards 2025 Lip Makeup #3",
+"pkg": {
+"s": "tint",
+"body": "#d8576e",
+"cap": "#f3d3da",
+"ink": "#ffffff",
+"txt": "GLOWY"
+},
+"price": {
+"KR": 13000,
+"US": 9.9,
+"JP": 1100,
+"SG": 15.9,
+"UK": 12.99
+},
+"krSale": 8370,
+"krSrc": "Glowpick 13,000; 11st 8,370",
+"store": {
+"US": "Amazon US",
+"JP": "@cosme list price",
+"SG": "Watsons SG",
+"UK": "Superdrug marketplace"
+},
+"unv": [],
+"noCmp": [],
+"packNote": {}
+},
+{
+"id": "t3",
+"who": "teen",
+"kind": "Foundation compact",
+"brand": "CLIO",
+"name": "Kill Cover Founwear Cushion",
+"ko": "클리오 킬 커버 파운웨어 쿠션",
+"size": "15g x2 (with refill)",
+"plain": "Full-coverage foundation compact",
+"shelfKo": "베이스메이크업",
+"shelfEn": "Base makeup",
+"alike": "Several versions sit together. Check the name on the box, and get her shade number.",
+"sub": {
+"id": "m9",
+"why": "Other top cushion compact"
+},
+"shade": "21",
+"look": "box: black/white; compact: black",
+"why": "Olive Young Awards 2025 Cushion #2",
+"pkg": {
+"s": "cushion",
+"body": "#1d1d1d",
+"cap": "#2e2e2e",
+"ink": "#ffffff",
+"txt": "COVER"
+},
+"price": {
+"KR": 36000,
+"US": 29.0,
+"JP": 2970,
+"SG": 52.9,
+"UK": 37.0
+},
+"krSale": 23930,
+"krSrc": "Glowpick 36,000; Coupang 23,930",
+"store": {
+"US": "Olive Young US",
+"JP": "@cosme (The New Founwear)",
+"SG": "Watsons SG (with refill)",
+"UK": "Cult Beauty (with refill, sold out)"
+},
+"unv": [
+"UK"
+],
+"noCmp": [
+"JP",
+"SG",
+"UK"
+],
+"packNote": {
+"JP": "different version",
+"SG": "set with refill",
+"UK": "set with refill"
+}
+},
+{
+"id": "t4",
+"who": "teen",
+"kind": "Eyeshadow set",
+"brand": "WAKEMAKE",
+"name": "Soft Blurring Eye Palette",
+"ko": "웨이크메이크 소프트 블러링 아이팔레트",
+"size": "14g (uncertain)",
+"plain": "Eyeshadow set, soft pink and brown shades",
+"shelfKo": "아이메이크업",
+"shelfEn": "Eye makeup",
+"alike": "The **믹스** (Mix) palette looks similar. Check the name and the shade number.",
+"sub": {
+"en": "rom&nd Better Than Palette",
+"ko": "롬앤 베러 댄 팔레트",
+"why": "Popular eyeshadow set"
+},
+"shade": "08",
+"look": "flat palette, pastel cover in shade tone",
+"why": "Olive Young Awards 2025 Eye Shadow #1",
+"pkg": {
+"s": "palette",
+"body": "#e9a08f",
+"cap": "#f2c6c0",
+"label": "#ffffff",
+"ink": "#9a4b3c",
+"txt": "EYES",
+"pans": [
+"#f6c9b8",
+"#e9a08f",
+"#c98a72",
+"#b8735f"
+]
+},
+"price": {
+"KR": 34000,
+"US": 38.0,
+"JP": 2970,
+"SG": null,
+"UK": null
+},
+"krSale": null,
+"krSrc": "Glowpick snippet (uncertain); OY own brand, often big sale",
+"store": {
+"US": "Olive Young Global",
+"JP": "MAQUIA list price",
+"SG": "",
+"UK": ""
+},
+"unv": [
+"KR"
+],
+"noCmp": [],
+"packNote": {}
+},
+{
+"id": "t5",
+"who": "teen",
+"kind": "Lip & cheek colour",
+"brand": "fwee",
+"name": "Lip & Cheek Blurry Pudding Pot",
+"ko": "퓌 립앤치크 블러리 푸딩팟",
+"size": "5g",
+"plain": "Soft colour pot for lips and cheeks",
+"shelfKo": "립메이크업/치크",
+"shelfEn": "Lip/Cheek) (uncertain",
+"alike": "Special collab boxes hold the same product, so those are fine. Get her shade number.",
+"sub": {
+"en": "rom&nd Better Than Cheek",
+"ko": "롬앤 베러 댄 치크",
+"why": "Soft cheek colour"
+},
+"shade": "ND03",
+"look": "small clear pot, colour visible, pastel lid",
+"why": "Olive Young Awards 2025 Contouring #1",
+"pkg": {
+"s": "jar",
+"body": "#e9b3a6",
+"cap": "#f6dcd6",
+"label": "#ffffff",
+"ink": "#9a4b3c",
+"txt": "PUDDING"
+},
+"price": {
+"KR": 22000,
+"US": 20.0,
+"JP": 1980,
+"SG": 26.0,
+"UK": 16.0
+},
+"krSale": null,
+"krSrc": "Glowpick list price",
+"store": {
+"US": "Ulta",
+"JP": "cosme.com (uncertain)",
+"SG": "Watsons SG",
+"UK": "Lookfantastic (RRP)"
+},
+"unv": [
+"JP"
+],
+"noCmp": [],
+"packNote": {}
+},
+{
+"id": "t6",
+"who": "teen",
+"kind": "Sheet masks",
+"brand": "Torriden",
+"name": "DIVE-IN Low Molecular Hyaluronic Acid Mask",
+"ko": "토리든 다이브인 저분자 히알루론산 마스크",
+"size": "1 sheet 27ml (10-packs sold)",
+"plain": "One-use moisture face sheet mask",
+"shelfKo": "마스크팩",
+"shelfEn": "Sheet masks",
+"alike": "The green Torriden mask (**시카**, cica) is a different one. Buy the blue DIVE-IN.",
+"sub": {
+"id": "t7",
+"why": "Other award-winning face mask"
+},
+"shade": null,
+"look": "pouch: white/light blue, blue DIVE-IN text",
+"why": "OY Awards 2025 Face Mask #1; top foreign buy 2023-24 (Harper's Bazaar Korea)",
+"pkg": {
+"s": "pack",
+"body": "#eaf3fb",
+"cap": "#9cc6ea",
+"label": "#ffffff",
+"ink": "#1f5fae",
+"txt": "DIVE-IN MASK"
+},
+"price": {
+"KR": 3000,
+"US": 33.0,
+"JP": 275,
+"SG": 32.0,
+"UK": 30.0
+},
+"krSale": null,
+"krSrc": "Glowpick per sheet; 10-pack price not found",
+"store": {
+"US": "Torriden US / Amazon US (10 sheets)",
+"JP": "MAQUIA (1 sheet)",
+"SG": "Watsons SG (6 sheets)",
+"UK": "Just My Look RRP (10 sheets)"
+},
+"unv": [],
+"noCmp": [
+"US",
+"JP",
+"SG",
+"UK"
+],
+"packNote": {
+"US": "pack of 10",
+"JP": "1 sheet",
+"SG": "pack of 6",
+"UK": "pack of 10"
+}
+},
+{
+"id": "t7",
+"who": "teen",
+"kind": "Overnight gel mask",
+"brand": "BIODANCE",
+"name": "Bio-Collagen Real Deep Mask",
+"ko": "바이오던스 바이오 콜라겐 리얼 딥 마스크",
+"size": "34g x1; box of 4",
+"plain": "Overnight gel face mask, turns clear",
+"shelfKo": "마스크팩",
+"shelfEn": "Sheet masks",
+"alike": "Other Biodance masks look the same. Check for **콜라겐** (Collagen).",
+"sub": {
+"id": "t6",
+"why": "Other award-winning face mask"
+},
+"shade": null,
+"look": "pouch/box: dark navy with white text",
+"why": "Olive Young Awards 2025 Face Mask #2",
+"pkg": {
+"s": "sheet",
+"body": "#1f2a4a",
+"cap": "#141c33",
+"ink": "#ffffff",
+"txt": "COLLAGEN MASK"
+},
+"price": {
+"KR": 5000,
+"US": 19.0,
+"JP": 2640,
+"SG": 26.0,
+"UK": 14.9
+},
+"krSale": null,
+"krSrc": "Glowpick per sheet; 4-pack 11st 12,900-15,300",
+"store": {
+"US": "Sephora / Amazon US (4 sheets)",
+"JP": "@cosme / e-Fujiyakuhin (4 sheets)",
+"SG": "Watsons SG (4 sheets)",
+"UK": "Boots (4 sheets)"
+},
+"unv": [],
+"noCmp": [
+"US",
+"JP",
+"SG",
+"UK"
+],
+"packNote": {
+"US": "pack of 4",
+"JP": "pack of 4",
+"SG": "pack of 4",
+"UK": "pack of 4"
+}
+},
+{
+"id": "t8",
+"who": "teen",
+"kind": "Spot pads",
+"brand": "MEDIHEAL",
+"name": "Madecassoside Blemish Pad",
+"ko": "메디힐 마데카소사이드 흔적 패드",
+"size": "100 pads",
+"plain": "Soaked cotton pads, wipe face for spots",
+"shelfKo": "스킨/토너",
+"shelfEn": "패드) (Toner pads",
+"alike": "Other Mediheal pad jars sit nearby. Check for **마데카소사이드** (Madecassoside).",
+"sub": {
+"en": "Anua Heartleaf 77 Clear Pad",
+"ko": "아누아 어성초 77 클리어 패드",
+"why": "Soaked pads for spots, similar use"
+},
+"shade": null,
+"look": "white jar, pink/red accents",
+"why": "OY Awards 2025 Toner Pads #1 + Global Best Performer",
+"pkg": {
+"s": "jar",
+"body": "#ffffff",
+"cap": "#d94a5c",
+"ink": "#d94a5c",
+"txt": "PADS 100"
+},
+"price": {
+"KR": 26000,
+"US": 26.4,
+"JP": 2860,
+"SG": 35.3,
+"UK": 22.0
+},
+"krSale": null,
+"krSrc": "Glowpick; Kurly 200-pad set 28,900",
+"store": {
+"US": "Ulta / Mediheal official",
+"JP": "MAQUIA list price",
+"SG": "Metro SG",
+"UK": "Cult Beauty"
+},
+"unv": [],
+"noCmp": [],
+"packNote": {}
+},
+{
+"id": "t9",
+"who": "teen",
+"kind": "Hair conditioner",
+"brand": "UNOVE",
+"name": "Deep Damage Treatment EX",
+"ko": "어노브 딥 데미지 트리트먼트 이엑스",
+"size": "207ml (also 320ml)",
+"plain": "Hair conditioner for damaged hair, rinse off",
+"shelfKo": "헤어케어",
+"shelfEn": "Hair care",
+"alike": "The same line has hair mask, shampoo and oil. Buy **트리트먼트** (Treatment) EX. Two scents, both fine.",
+"sub": {
+"en": "UNOVE Deep Damage Hair Mask",
+"ko": "어노브 딥 데미지 헤어 마스크",
+"why": "Same line, thicker, also rinse off"
+},
+"shade": null,
+"look": "white tube, dark text",
+"why": "OY Awards 2025 Hair Care #1 + Global Best Performer",
+"pkg": {
+"s": "tube",
+"body": "#ffffff",
+"cap": "#2b2b2b",
+"ink": "#2b2b2b",
+"txt": "HAIR TREAT"
+},
+"price": {
+"KR": 22000,
+"US": 21.6,
+"JP": 2600,
+"SG": 29.0,
+"UK": 22.0
+},
+"krSale": null,
+"krSrc": "Glowpick 207ml (uncertain match); 320ml OY double set 29,800",
+"store": {
+"US": "Amazon US",
+"JP": "MAQUIA list price",
+"SG": "Silverglass SG",
+"UK": "John Lewis"
+},
+"unv": [
+"KR"
+],
+"noCmp": [],
+"packNote": {}
+},
+{
+"id": "t10",
+"who": "teen",
+"kind": "Lip balm",
+"brand": "Torriden",
+"name": "Solid In Ceramide Lip Essence",
+"ko": "토리든 솔리드인 세라마이드 립 에센스",
+"size": "11ml",
+"plain": "Lip balm for dry lips",
+"shelfKo": "립케어",
+"shelfEn": "Lip care",
+"alike": "Torriden's collagen lip essence looks similar. Buy **솔리드인 세라마이드** (Solid-in Ceramide).",
+"sub": {
+"en": "Laneige Lip Sleeping Mask",
+"ko": "라네즈 립 슬리핑 마스크",
+"why": "Famous lip balm for dry lips"
+},
+"shade": null,
+"look": "small white tube",
+"why": "Olive Young Awards 2025 Lip Care #1",
+"pkg": {
+"s": "tube",
+"body": "#ffffff",
+"cap": "#ffffff",
+"ink": "#1f5fae",
+"txt": "LIP"
+},
+"price": {
+"KR": 7000,
+"US": 11.0,
+"JP": 880,
+"SG": 10.1,
+"UK": 8.0
+},
+"krSale": 5450,
+"krSrc": "Glowpick 7,000; 11st 5,450",
+"store": {
+"US": "Torriden US official",
+"JP": "MAQUIA / Create SD",
+"SG": "Guardian SG (approx.)",
+"UK": "Just My Look RRP"
+},
+"unv": [
+"SG"
+],
+"noCmp": [],
+"packNote": {}
+}
+]
+};
+DATA.tax={min:15000,instantMax:1000000,
+band:[[30000,5.0,6.7],[100000,6.0,7.0],[500000,7.0,8.0]],
+examples:[[30000,"₩1,500 – ₩2,000","Global Blue ₩1,500 · GTF and Easy Tax Refund ₩2,000"],[100000,"₩6,000 – ₩7,000","Easy Tax Refund ₩6,000 · Global Blue ₩6,500 · GTF ₩7,000"],[500000,'about ₩37,500 <span class="unv">*</span>',"Estimate. No official table found for this amount"]],
+rules:["Who can get it: visitors staying in Korea under 6 months.","Bring your <b>real passport</b>. Photos and copies are not accepted. Show it <b>before</b> you pay.","Smallest receipt: ₩15,000. You can't add receipts together.","Instant refund at the till: under ₩1,000,000 per receipt, and up to ₩5,000,000 for the whole trip. Only in stores with a <b>TAX FREE</b> sign, not every branch.","Bigger buys: keep the tax-free receipt and claim at the airport kiosk.","Take the things out of Korea within 3 months.","The refund is usually about 3–8% of the receipt."],
+src:'Sources: Korea.net (28 Nov 2023) for the limits; Creatrip guide (updated Jan 2026) and k-calc.com (GTF table, checked 24 Aug 2026) for the examples. The full official table could not be opened, so the calculator shows a range. <span class="unv">*</span> = estimate.'};
+DATA.areas=[{"id": "myeongdong", "label": "Myeongdong", "lat": 37.5609, "lng": 126.986}, {"id": "seoulstn", "label": "Seoul Station", "lat": 37.5547, "lng": 126.9707}, {"id": "jongno", "label": "Jongno, Insadong, Gwanghwamun", "lat": 37.572, "lng": 126.985}, {"id": "dongdaemun", "label": "Dongdaemun", "lat": 37.5665, "lng": 127.009}, {"id": "hongdae", "label": "Hongdae", "lat": 37.5563, "lng": 126.9236}, {"id": "itaewon", "label": "Itaewon", "lat": 37.5345, "lng": 126.9946}, {"id": "seongsu", "label": "Seongsu", "lat": 37.5446, "lng": 127.0559}, {"id": "gangnam", "label": "Gangnam Station", "lat": 37.4979, "lng": 127.0276}, {"id": "sinsa", "label": "Sinsa, Garosu-gil", "lat": 37.5203, "lng": 127.023}, {"id": "coex", "label": "COEX, Samseong", "lat": 37.5125, "lng": 127.059}, {"id": "jamsil", "label": "Jamsil, Lotte World", "lat": 37.5133, "lng": 127.1001}, {"id": "bs-seomyeon", "label": "Busan: Seomyeon", "lat": 35.1578, "lng": 129.06}, {"id": "bs-haeundae", "label": "Busan: Haeundae", "lat": 35.1631, "lng": 129.1635}, {"id": "bs-nampo", "label": "Busan: Nampo", "lat": 35.098, "lng": 129.03}, {"id": "icn", "label": "Incheon Airport", "lat": 37.4602, "lng": 126.4407}, {"id": "jeju", "label": "Jeju Airport", "lat": 33.507, "lng": 126.493}];
+DATA.stores=[
+{
+"id": "DF9C",
+"name": "Olive Young Central Myeongdong Town",
+"nameKo": "올리브영 센트럴 명동 타운",
+"area": "Myeongdong, Jung-gu",
+"city": "Seoul",
+"addrKo": "서울특별시 중구 명동8길 27 엠플라자 B1층~3층",
+"lat": 37.56253,
+"lng": 126.98517,
+"hours": "Daily 10:00-22:30 (entry closes 10 min before)",
+"tax": "yes",
+"approx": false,
+"note": "Opened 2026-03-26"
+},
+{
+"id": "D176",
+"name": "Olive Young Myeongdong Global (Myeongdong Town)",
+"nameKo": "올리브영 명동 타운",
+"area": "Myeongdong, Jung-gu",
+"city": "Seoul",
+"addrKo": "서울특별시 중구 명동길 53 1~2층",
+"lat": 37.56409,
+"lng": 126.98518,
+"hours": "Daily 10:00-22:30",
+"tax": "check",
+"approx": false,
+"note": "Former flagship (2012)"
+},
+{
+"id": "DDEC",
+"name": "Myeongdong Branch",
+"nameKo": "올리브영 명동점",
+"area": "Myeongdong, Jung-gu",
+"city": "Seoul",
+"addrKo": "서울특별시 중구 명동8길 14",
+"lat": 37.56305,
+"lng": 126.98452,
+"hours": "Daily 10:00-22:30",
+"tax": "yes",
+"approx": false,
+"note": "One of ~9 stores in Myeongdong"
+},
+{
+"id": "DE25",
+"name": "Olive Young N Seongsu",
+"nameKo": "올리브영N 성수",
+"area": "Seongsu-dong, Seongdong-gu",
+"city": "Seoul",
+"addrKo": "서울특별시 성동구 연무장7길 13 팩토리얼 성수",
+"lat": 37.54421,
+"lng": 127.05398,
+"hours": "Daily 10:00-22:00",
+"tax": "yes",
+"approx": false,
+"note": "Largest Olive Young (5 floors, ~4,628 m2), opened 2024-11-22, experience zones, pop-ups"
+},
+{
+"id": "DF81",
+"name": "Olive Young Beauty Mansion Seongsu",
+"nameKo": "올리브영 뷰티 맨션 성수",
+"area": "Seongsu-dong, Seongdong-gu",
+"city": "Seoul",
+"addrKo": "서울특별시 성동구 성수이로 108 B1F~4F",
+"lat": 37.54455,
+"lng": 127.05737,
+"hours": "Daily 10:00-22:00",
+"tax": "yes",
+"approx": false,
+"note": "Opened 2026-06-30, 5 floors, near Olive Young N Seongsu"
+},
+{
+"id": "DF26",
+"name": "Olive Young Central Gangnam Town",
+"nameKo": "올리브영 센트럴 강남 타운",
+"area": "Gangnam Station, Seocho-gu",
+"city": "Seoul",
+"addrKo": "서울특별시 서초구 강남대로 403 지하1층~지상4층",
+"lat": 37.49846,
+"lng": 127.02682,
+"hours": "Daily 10:00-22:30",
+"tax": "yes",
+"approx": false,
+"note": "Largest in Gangnam (2025-07-02)"
+},
+{
+"id": "DAEA",
+"name": "Olive Young Gangnam Town",
+"nameKo": "올리브영 강남 타운",
+"area": "Gangnam Station, Seocho-gu",
+"city": "Seoul",
+"addrKo": "서울특별시 서초구 강남대로 429 동일빌딩 1~3층",
+"lat": 37.50079,
+"lng": 127.02576,
+"hours": "Daily 10:00-22:30",
+"tax": "yes",
+"approx": false,
+"note": "Original Gangnam Town store (2017), 3 floors"
+},
+{
+"id": "DB3D",
+"name": "Olive Young Garosu-gil Town",
+"nameKo": "올리브영 가로수길 타운",
+"area": "Sinsa-dong, Gangnam-gu",
+"city": "Seoul",
+"addrKo": "서울특별시 강남구 도산대로 133",
+"lat": 37.51793,
+"lng": 127.02305,
+"hours": "Mon-Fri 09:00-23:00, Sat-Sun 10:00-23:00",
+"tax": "yes",
+"approx": false,
+"note": "Open until 23:00"
+},
+{
+"id": "DE3C",
+"name": "Olive Young Hongdae Town",
+"nameKo": "올리브영 홍대 타운",
+"area": "Hongdae, Mapo-gu",
+"city": "Seoul",
+"addrKo": "서울특별시 마포구 홍익로6길 57",
+"lat": 37.55662,
+"lng": 126.92435,
+"hours": "Daily 10:00-22:30 (Sat to 23:00)",
+"tax": "yes",
+"approx": false,
+"note": "K-beauty experience store (2024-04), fragrance bar, men's zone"
+},
+{
+"id": "DD49",
+"name": "Lotte World Mall Branch",
+"nameKo": "올리브영 롯데월드몰점",
+"area": "Jamsil, Songpa-gu",
+"city": "Seoul",
+"addrKo": "서울특별시 송파구 올림픽로 300 롯데월드몰 5층",
+"lat": 37.51385,
+"lng": 127.10448,
+"hours": "Daily 10:30-22:00",
+"tax": "yes",
+"approx": false,
+"note": "Lotte World Mall 5F, next to Lotte World Tower"
+},
+{
+"id": "D403",
+"name": "Itaewon Entrance Branch",
+"nameKo": "올리브영 이태원입구점",
+"area": "Itaewon, Yongsan-gu",
+"city": "Seoul",
+"addrKo": "서울특별시 용산구 이태원로 145",
+"lat": 37.5345,
+"lng": 126.98995,
+"hours": "Daily 11:00-22:00",
+"tax": "yes",
+"approx": false,
+"note": "West end of Itaewon main road"
+},
+{
+"id": "DD5E",
+"name": "Itaewon Central Branch",
+"nameKo": "올리브영 이태원중앙점",
+"area": "Itaewon, Yongsan-gu",
+"city": "Seoul",
+"addrKo": "서울특별시 용산구 이태원로 179 해밀톤쇼핑센터 1층",
+"lat": 37.53481,
+"lng": 126.99374,
+"hours": "Daily 11:00-22:30",
+"tax": "yes",
+"approx": false,
+"note": "Hamilton Shopping Center, near Itaewon Stn"
+},
+{
+"id": "D295",
+"name": "Dongdaemun History & Culture Park Station Branch",
+"nameKo": "올리브영 동대문역사문화공원역점",
+"area": "Dongdaemun, Jung-gu",
+"city": "Seoul",
+"addrKo": "서울특별시 중구 장충단로 251 1층",
+"lat": 37.56725,
+"lng": 127.00809,
+"hours": "Daily 10:00-23:30",
+"tax": "yes",
+"approx": false,
+"note": "Open late, near DDP"
+},
+{
+"id": "GWANGJANG",
+"name": "Olive Young Gwangjang Market",
+"nameKo": "올리브영 광장마켓점",
+"area": "Gwangjang Market, Jongno-gu",
+"city": "Seoul",
+"addrKo": "서울특별시 종로구 창경궁로 88 광장시장 2층",
+"lat": 37.5701,
+"lng": 126.99983,
+"hours": "Daily 10:00-22:00",
+"tax": "check",
+"approx": true,
+"note": "Opened 2026-04-30, 1960s retro theme, hanbok photo zone"
+},
+{
+"id": "DG01",
+"name": "Insadong Branch",
+"nameKo": "올리브영 인사동점",
+"area": "Insadong, Jongno-gu",
+"city": "Seoul",
+"addrKo": "서울특별시 종로구 인사동길 49 안녕인사동 지상1층·M층",
+"lat": 37.57459,
+"lng": 126.98381,
+"hours": "Daily 10:30-21:30",
+"tax": "yes",
+"approx": false,
+"note": "Opened 2026-07-15 in Annyeong Insadong"
+},
+{
+"id": "D171",
+"name": "Jongno 1-ga Branch",
+"nameKo": "올리브영 종로1가점",
+"area": "Gwanghwamun/Jonggak, Jongno-gu",
+"city": "Seoul",
+"addrKo": "서울특별시 종로구 종로 19 르미에르종로타운 1층",
+"lat": 37.5705,
+"lng": 126.97981,
+"hours": "Mon-Fri 08:00-22:30, Sat 09:00-22:30, Sun/holidays 10:00-22:30",
+"tax": "yes",
+"approx": false,
+"note": "Nearest full store to Gwanghwamun, Jonggak Stn exit 1, 3 min"
+},
+{
+"id": "DD1D",
+"name": "Seoul Station Branch",
+"nameKo": "올리브영 서울역점",
+"area": "Seoul Station, Jung-gu",
+"city": "Seoul",
+"addrKo": "서울특별시 중구 한강대로 405",
+"lat": 37.55631,
+"lng": 126.97215,
+"hours": "Mon-Fri 08:00-22:00, Sat-Sun/holidays 09:00-22:00",
+"tax": "yes",
+"approx": false,
+"note": "In Seoul Station, handy before the airport train"
+},
+{
+"id": "D321",
+"name": "COEX Mall Branch",
+"nameKo": "올리브영 코엑스몰점",
+"area": "Samseong-dong, Gangnam-gu",
+"city": "Seoul",
+"addrKo": "서울특별시 강남구 테헤란로87길 22",
+"lat": 37.50993,
+"lng": 127.05906,
+"hours": "Daily 10:00-22:00",
+"tax": "yes",
+"approx": false,
+"note": "B1 of City Air Terminal, linked to Samseong Stn and COEX"
+},
+{
+"id": "DE9F",
+"name": "Olive Young Parnas Samseong Town",
+"nameKo": "올리브영 파르나스삼성 타운",
+"area": "Samseong-dong, Gangnam-gu",
+"city": "Seoul",
+"addrKo": "서울특별시 강남구 테헤란로 521 파르나스몰 지하1층 R6, 7호",
+"lat": 37.50908,
+"lng": 127.0609,
+"hours": "Daily 10:00-22:00",
+"tax": "yes",
+"approx": false,
+"note": "Parnas Mall (2024-11), next to COEX"
+},
+{
+"id": "DE4D",
+"name": "Olive Young Seomyeon Town",
+"nameKo": "올리브영 서면 타운",
+"area": "Seomyeon, Busanjin-gu",
+"city": "Busan",
+"addrKo": "부산광역시 부산진구 중앙대로 704-1",
+"lat": 35.15563,
+"lng": 129.05955,
+"hours": "Daily 10:00-23:00",
+"tax": "yes",
+"approx": false,
+"note": "Busan main Town store (2024-10)"
+},
+{
+"id": "DA6B",
+"name": "Haeundae Station Branch",
+"nameKo": "올리브영 해운대역점",
+"area": "Haeundae, Haeundae-gu",
+"city": "Busan",
+"addrKo": "부산광역시 해운대구 구남로8번길 7-5",
+"lat": 35.16281,
+"lng": 129.15911,
+"hours": "Daily 10:00-23:00",
+"tax": "yes",
+"approx": false,
+"note": "Haeundae Stn exit 5, 1 min, on the way to the beach"
+},
+{
+"id": "DFB7",
+"name": "Olive Young Nampo Town",
+"nameKo": "올리브영 남포 타운",
+"area": "Nampo-dong, Jung-gu",
+"city": "Busan",
+"addrKo": "부산광역시 중구 비프광장로 40",
+"lat": 35.09824,
+"lng": 129.02891,
+"hours": "Daily 10:00-22:30",
+"tax": "check",
+"approx": false,
+"note": "Enlarged 2026-08-28, 4 floors, largest Town store outside Seoul area, cruise passengers"
+},
+{
+"id": "D188",
+"name": "Busan Nampo Branch",
+"nameKo": "올리브영 부산남포점",
+"area": "Gwangbok-ro, Jung-gu",
+"city": "Busan",
+"addrKo": "부산광역시 중구 광복로 64-1",
+"lat": 35.09894,
+"lng": 129.03193,
+"hours": "Daily 10:00-22:30",
+"tax": "yes",
+"approx": false,
+"note": "Gwangbok-ro, Nampo Stn exit 1, 7 min"
+},
+{
+"id": "DE6D",
+"name": "Incheon International Airport T1",
+"nameKo": "올리브영 인천공항제1여객터미널점",
+"area": "Incheon Airport T1 (landside B1)",
+"city": "Incheon",
+"addrKo": "인천광역시 영종구 공항로 272 지하 1층 중앙",
+"lat": 37.45835,
+"lng": 126.4277,
+"hours": "Daily 06:00-22:00",
+"tax": "yes",
+"approx": false,
+"note": "Before security, B1 centre"
+},
+{
+"id": "DB40",
+"name": "Incheon International Airport T2",
+"nameKo": "올리브영 인천공항제2여객터미널점",
+"area": "Incheon Airport T2 (landside B1)",
+"city": "Incheon",
+"addrKo": "인천광역시 영종구 제2터미널대로 446 인천국제공항 제2여객터미널 지하1층",
+"lat": 37.46687,
+"lng": 126.43378,
+"hours": "Daily 06:00-22:00",
+"tax": "yes",
+"approx": false,
+"note": "Before security, B1, across from food court"
+},
+{
+"id": "DB81",
+"name": "Olive Young Jeju Airport Branch",
+"nameKo": "올리브영 제주국제공항점",
+"area": "Jeju International Airport",
+"city": "Jeju",
+"addrKo": "제주특별자치도 제주시 공항로 2 제주국제공항 1층",
+"lat": 33.50714,
+"lng": 126.49472,
+"hours": "Daily 07:30-21:30",
+"tax": "yes",
+"approx": false,
+"note": "Airport 1F"
+}
+];
+DATA.storeSrc='Store list: 26 stores in tourist areas, with addresses, map points and hours from the chain’s own store finder, checked 10 Nov 2026. Gwangjang Market map point is approximate. Many more small branches exist.';
+
+</script>
+<script>
+const D=DATA, P=D.products, $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const bold=s=>esc(s).replace(/\*\*(.+?)\*\*/g,'<b class="ko">$1</b>');
+function store(k,v){try{localStorage.setItem("kb2_"+k,JSON.stringify(v))}catch(e){}}
+function load(k){try{return JSON.parse(localStorage.getItem("kb2_"+k)||"null")}catch(e){return null}}
+const won=v=>"₩"+Math.round(v).toLocaleString("en-US");
+let C=load("country")||({"ja":"JP"}[navigator.language.slice(0,2)])||({"en-GB":"UK","en-SG":"SG"}[navigator.language])||"US";
+if(!D.fx[C]) C="US";
+const fx=()=>D.fx[C];
+const money=(v,c=C)=>{const f=D.fx[c];return f.sym+(f.dec?v.toFixed(f.dec):Math.round(v).toLocaleString("en-US"))};
+const toLocal=krw=>krw/fx().krwPer;
+const ARTIFACT_URL="https://claude.ai/artifact/E8KW5sGNE1d2BFFsjfcFGU";
+const inFrame=(()=>{try{return window.self!==window.top}catch(e){return true}})();
+let who="mom", list=new Set(), shades={}, cur=0, view="pick";
+let got=new Set(), out=new Set(), alt=new Set(), skip=new Set(), help=new Set(), t0=null;
+
+/* ---------- prices ---------- */
+function cmp(p){ // Korea list price vs the same item at home
+  const kr=p.price.KR, home=p.price[C];
+  if(kr==null) return null;
+  const krLocal=toLocal(kr), unv=(p.unv||[]).includes(C)||(p.unv||[]).includes("KR");
+  if(home==null) return {kr,krLocal,home:null};
+  if((p.noCmp||[]).includes(C)) return {kr,krLocal,home,diff:true,unv};
+  return {kr,krLocal,home,save:home-krLocal,pct:Math.round((home-krLocal)/home*100),unv};
+}
+function priceHTML(p){
+  const c=cmp(p);
+  if(!c) return `<span class="price note">Seoul price: check the shelf</span>`;
+  const krStar=(p.unv||[]).includes("KR")?'<span class="unv">*</span>':"";
+  const seoul=`Seoul <b>${won(c.kr)}</b>${krStar} <span class="note">≈ ${money(c.krLocal)}</span>${p.krSale?`<br><span class="note">Often on sale near ${won(p.krSale)}</span>`:""}`;
+  if(c.home==null) return `<span class="price">${seoul}<br><span class="note">No ${D.fx[C].name} price found</span></span>`;
+  const star=(p.unv||[]).includes(C)?'<span class="unv" title="One source only, not double-checked">*</span>':"";
+  const at=`${D.fx[C].name} ${money(c.home)}${star} <span class="note">(${esc(p.store[C])})</span>`;
+  if(c.diff) return `<span class="price">${seoul}<br>${at}<br><span class="note">Different size or pack there (${esc(p.packNote[C]||"")}), so no saving shown</span></span>`;
+  const tag=c.save>0.01*c.home?`<span class="save">Save ${money(c.save)} (${c.pct}%)</span>`:`<span class="dear">Not cheaper in Seoul at full price</span>`;
+  return `<span class="price">${seoul}<br>${at}<br>${tag}</span>`;
+}
+
+/* ---------- 1. pick ---------- */
+function subOf(p){const x=p.sub||{};if(x.id){const q=P.find(y=>y.id===x.id);return {p:q,en:q.brand+" "+q.name,ko:q.ko,why:x.why};}return {en:x.en,ko:x.ko,why:x.why};}
+function card(p){
+  const on=list.has(p.id), sb=subOf(p);
+  return `<article class="card ${p.who} ${on?"on":""}">
+    <div class="shelf"><span class="tag">${p.who==="mom"?"Mom":"Daughter"}</span>${pack(p.pkg,82,"Drawing of "+p.kind)}</div>
+    <div class="cbody">
+      <span class="kind">${esc(p.kind)}</span>
+      <span class="plain">${esc(p.plain)}</span>
+      <span class="pname">${esc(p.brand)} · ${esc(p.name)}<br><span class="ko">${esc(p.ko)}</span></span>
+      <span class="sign">Shelf sign <span class="ko">${esc(p.shelfKo)}</span> ${esc(p.shelfEn)}</span>
+      <span class="alike"><b>Look-alike:</b> ${bold(p.alike)}</span>
+      <span class="planb"><b>Plan B if sold out:</b> ${esc(sb.en)} <span class="ko note">${esc(sb.ko)}</span></span>
+      ${priceHTML(p)}
+      ${p.shade?`<label class="shadein" for="sh-${p.id}">Her shade number <input id="sh-${p.id}" data-shade="${p.id}" maxlength="6" placeholder="e.g. ${esc(p.shade)}" value="${esc(shades[p.id]||"")}" autocomplete="off"></label>`:""}
+      <button class="add" data-add="${p.id}" aria-pressed="${on}">${on?"On the list ✓":"Add to list"}</button>
+    </div></article>`;
+}
+function renderPick(){
+  document.querySelectorAll(".who button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.who===who));
+  $("#grid").innerHTML=P.filter(p=>p.who===who).map(card).join("");
+  $("#count").textContent=list.size+(list.size===1?" item":" items")+" on the list";
+}
+const code=()=>"list-"+P.filter(p=>list.has(p.id)).map(p=>p.id+(p.shade&&shades[p.id]?"s"+shades[p.id].replace(/[^a-z0-9]/gi,"").toUpperCase():"")).join("-");
+function parse(s){
+  const m=String(s||"").trim().replace(/^.*#/,"").match(/^list((?:-[mt]\d+(?:s[a-z0-9]+)?)+)$/i);
+  if(!m) return null;
+  const set=new Set(), sh={};
+  m[1].split("-").filter(Boolean).forEach(x=>{const r=x.match(/^([mt]\d+)(?:s([a-z0-9]+))?$/i);const id=r[1].toLowerCase();if(P.some(p=>p.id===id)){set.add(id);if(r[2])sh[id]=r[2].toUpperCase();}});
+  set.shades=sh; return set;
+}
+
+/* ---------- 2. treasure hunt ---------- */
+function items(){return P.filter(p=>list.has(p.id))}
+const isDone=id=>got.has(id)||alt.has(id)||skip.has(id);
+const pts=id=>got.has(id)?(help.has(id)?100:125):alt.has(id)?60:0;
+function loot(it){return it.filter(p=>got.has(p.id)).reduce((s,p)=>{const c=cmp(p);return s+(c&&c.save>0?c.save:0)},0)}
+function chest(open,cls){return `<svg class="chest ${cls||""}" viewBox="0 0 32 28" width="26" height="23" aria-hidden="true">
+  ${open?`<path d="M4 12 L8 2 H24 L28 12 Z" fill="#7a4a1c" stroke="#3b230c" stroke-width="1.5"/><circle cx="12" cy="10" r="2.6" fill="#ffd34d"/><circle cx="18" cy="9" r="2.6" fill="#ffd34d"/><circle cx="15" cy="12" r="2.6" fill="#ffe27a"/>`
+  :`<path d="M4 12 Q16 1 28 12 Z" fill="#8b5a2b" stroke="#3b230c" stroke-width="1.5"/>`}
+  <rect x="4" y="12" width="24" height="14" rx="2" fill="#8b5a2b" stroke="#3b230c" stroke-width="1.5"/>
+  <rect x="4" y="15" width="24" height="3" fill="${open?"#ffd34d":"#c99a3a"}"/><rect x="14" y="13" width="4" height="7" rx="1" fill="${open?"#ffd34d":"#c99a3a"}" stroke="#3b230c" stroke-width="1"/></svg>`}
+function rank(score,max){const r=score/max;return r>=.9?"Seoul Treasure Legend":r>=.7?"Master Hunter":r>=.4?"Brave Explorer":"Rookie Hunter"}
+function renderShop(){
+  const it=items(), el=$("#shopMain");
+  document.body.classList.toggle("hunting",!!it.length);
+  $("#codebox").open=!it.length;
+  if(!it.length){el.innerHTML='<p class="box empty">No treasure map yet. Paste her code below, or pick items in step 1.</p>';return;}
+  cur=Math.min(Math.max(cur,0),it.length-1);
+  const score=it.reduce((s,p)=>s+pts(p.id),0), max=it.length*125, nDone=it.filter(p=>isDone(p.id)).length;
+  const hud=`<div class="hud">
+    <div class="chests">${it.map((x,i)=>`<button class="cbtn ${i===cur?"cur":""} ${skip.has(x.id)?"skip":""}" data-jump="${i}" aria-label="Treasure ${i+1}${isDone(x.id)?", done":""}">${chest(got.has(x.id)||alt.has(x.id))}</button>`).join("")}</div>
+    <div class="stats"><span class="lootbig"><small>Money saved</small><b>${money(loot(it))}</b></span><span><small>Score</small><b>${score}</b></span>
+    <button class="music ${Music.on?"on":""}" id="musicBtn" aria-pressed="${Music.on}">${Music.on?"♪ Music on":"♪ Music off"}</button></div></div>`;
+  if(t0===null&&nDone===0){
+    el.innerHTML=hud+`<div class="brief">
+      <span class="eyebrow">Mission from home</span>
+      <h2>Find ${it.length} treasure${it.length>1?"s":""} in the store</h2>
+      <p>Each treasure has two clues: the <b>sign</b> above the shelf and the <b>pack</b> to look for. Watch out for traps: look-alike packs.</p>
+      <ul class="rules"><li>Found it: <b>+125</b> (+100 if you used the staff lifeline)</li><li>Sold out? Grab the Plan B: <b>+60</b></li><li>Money you save goes in your loot bag</li></ul>
+      <button class="primary go" id="startHunt">Earphones in. Start the hunt ♪</button>
+      <button class="ghost" id="startQuiet">Start without music</button></div>`+listHTML(it);
+    return;
+  }
+  if(nDone===it.length){ el.innerHTML=hud+winHTML(it,score,max)+listHTML(it); return; }
+  const p=it[cur], g=got.has(p.id), a=alt.has(p.id), o=out.has(p.id)&&!isDone(p.id), sb=subOf(p), c=cmp(p), sh=shades[p.id];
+  el.innerHTML=hud+`
+   <article class="big hunt ${p.who} ${isDone(p.id)?"got":""}">
+     <div class="hhead"><span>Treasure ${cur+1} of ${it.length}</span><span>For ${p.who==="mom"?"Mom":"your daughter"}</span></div>
+     <div class="hgrid">
+       <div class="hpic">${pack(p.pkg,78,"Drawing of "+p.kind)}</div>
+       <div class="htxt"><span class="kind">${esc(p.kind)}</span><span class="plain">${esc(p.plain)}</span>
+         <span class="koname">${esc(p.ko)}</span></div>
+     </div>
+     ${g||a?`<div class="foundmsg">${chest(true)} ${g?`Treasure found! +${pts(p.id)}`:`Plan B found! +60`}</div>`:skip.has(p.id)?`<div class="foundmsg skip">Skipped. Ask her later.</div>`:""}
+     <div class="clue"><span class="cn">Clue 1</span><span>Find this sign above the shelf</span><span class="ko sg">${esc(p.shelfKo)}</span><span class="note">${esc(p.shelfEn)}</span></div>
+     <div class="clue"><span class="cn">Clue 2</span><span>The pack: ${esc(p.look)}${p.size?` · ${esc(p.size)}`:""}</span>
+       ${p.shade?`<span class="shadebig">Shade <b>${esc(sh||"?")}</b>${sh?"":` <span class="note">She didn't say. Ask her, or the award shade is ${esc(p.shade)}.</span>`}</span>`:""}
+       <div class="trap"><b>Trap!</b> ${bold(p.alike)}</div></div>
+     ${o?`<div class="planbox"><span class="eyebrow">Sold out. Plan B treasure</span>
+         <div class="hgrid">${sb.p?`<div class="hpic">${pack(sb.p.pkg,60,"Drawing of Plan B")}</div>`:""}<div class="htxt">
+         <b>${esc(sb.en)}</b><span class="koname" style="font-size:20px">${esc(sb.ko)}</span><span class="note">${esc(sb.why)}${sb.p?"":". Price not checked."}</span></div></div>
+         <div class="acts"><button class="gotit" data-alt="${p.id}">Got Plan B +60</button>
+         <button class="staffb" data-staffalt="${p.id}">Show staff Plan B</button><button class="soldb" data-skip="${p.id}">Skip this one</button></div></div>`
+     :isDone(p.id)?`<div class="acts"><button class="gotit" data-next="1">Next treasure →</button><button class="soldb" data-undo="${p.id}">Undo</button></div>`
+     :`<div class="acts"><button class="gotit" data-got="${p.id}">Found it! ${help.has(p.id)?"+100":"+125"}</button>
+         <button class="staffb" data-staff="${p.id}">Lifeline: ask staff</button>
+         <button class="soldb" data-out="${p.id}">Sold out</button></div>
+       <span class="note">Plan B if sold out: ${esc(sb.en)}</span>`}
+     ${c?`<span class="price note">Should cost about <b>${won(c.kr)}</b> (≈${money(c.krLocal)}). Sale stickers change it.</span>`:""}
+   </article>
+   <div class="nav2"><button class="ghost" data-step="-1" ${cur?"":"disabled"}>← Previous</button><button class="ghost" data-step="1" ${cur<it.length-1?"":"disabled"}>Next →</button></div>
+   ${listHTML(it)}`;
+}
+function listHTML(it){
+  return `<div class="list" aria-label="Whole list">${it.map((x,i)=>`
+     <button class="row ${x.who} ${got.has(x.id)||alt.has(x.id)?"got":""} ${out.has(x.id)&&!isDone(x.id)?"out":""}" data-jump="${i}">
+       <span class="stripe"></span>${pack(x.pkg,30,x.kind)}
+       <span style="min-width:0"><span class="rn"><b>${esc(x.kind)}</b> · ${esc(x.brand)}${shades[x.id]?` · shade ${esc(shades[x.id])}`:""}</span><br><span class="ko note">${esc(x.ko)}</span></span>
+       <span class="st">${got.has(x.id)?"✓ Found":alt.has(x.id)?"✓ Plan B":skip.has(x.id)?"Skipped":out.has(x.id)?"Sold out":""}</span>
+     </button>`).join("")}</div>${totalsHTML(it)}`;
+}
+function winHTML(it,score,max){
+  const mins=t0?Math.max(1,Math.round((Date.now()-t0)/60000)):null, krGot=it.filter(p=>got.has(p.id)).reduce((s,p)=>s+(p.price.KR||0),0);
+  const nAlt=it.filter(p=>alt.has(p.id)).length, nSkip=it.filter(p=>skip.has(p.id)).length;
+  return `<div class="win"><span class="eyebrow">Mission complete</span>${chest(true,"bigchest")}
+    <h2>${rank(score,max)}</h2>
+    <div class="totals"><span>Score</span><b>${score} / ${max}</b><span>Treasures</span><b>${it.filter(p=>got.has(p.id)).length} found · ${nAlt} Plan B · ${nSkip} skipped</b>
+    <span>Loot saved</span><b class="bigsave">${money(loot(it))}</b>${mins?`<span>Time</span><b>${mins} min</b>`:""}</div>
+    <div class="boss"><span class="eyebrow">Final boss: the till</span><p>Hand over your <b>real passport before you pay</b>. Under ₩1,000,000 on one receipt, the tax comes off right there.</p>
+    <button class="primary" data-go="tax" data-amt="${krGot}">How much tax do I get back? →</button></div>
+    <button class="ghost" id="replay">Play this list again</button></div>`;
+}
+function totalsHTML(it){
+  const pr=it.filter(p=>{const c=cmp(p);return c&&c.home!=null&&!c.diff});
+  const kr=pr.reduce((s,p)=>s+p.price.KR,0), home=pr.reduce((s,p)=>s+p.price[C],0), krAll=it.reduce((s,p)=>s+(p.price.KR||0),0);
+  const unv=pr.some(p=>cmp(p).unv), sv=home-toLocal(kr);
+  return `<div class="box"><h3>What this list saves you</h3><div class="totals">
+    <span>Whole list in Seoul (full price)</span><span>${won(krAll)} ≈ ${money(toLocal(krAll))}</span>
+    <span>Items we could compare</span><span>${pr.length} of ${it.length}</span>
+    <span>Those items in the ${D.fx[C].name}</span><span>${money(home)}${unv?'<span class="unv">*</span>':""}</span>
+    <span>Same items in Seoul</span><span>${money(toLocal(kr))}</span>
+    <span><b>${sv>=0?"You save":"Seoul costs more by"}</b></span><span class="bigsave" ${sv<0?'style="color:var(--warn)"':""}>${money(Math.abs(sv))}</span>
+    </div><p class="note">Seoul full price before sales and before the tax refund, so the real saving is usually bigger. ${unv?'<span class="unv">*</span> = includes a price from one source only.':""}</p>
+    <button class="ghost" data-go="tax" data-amt="${krAll}">Work out the tax back on ${won(krAll)} →</button></div>`;
+}
+function toast(txt){const t=$("#toast");t.textContent=txt;t.hidden=false;t.classList.remove("pop");void t.offsetWidth;t.classList.add("pop");clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,1700);}
+function nextOpen(){const it=items();const n=it.findIndex((x,i)=>i>cur&&!isDone(x.id));const m=n>=0?n:it.findIndex(x=>!isDone(x.id));if(m>=0)cur=m;}
+function afterFind(){const it=items();if(it.every(p=>isDone(p.id))) setTimeout(()=>Music.sfx("win"),600); else nextOpen(); save(); renderShop(); window.scrollTo({top:0,behavior:"smooth"});}
+function resetHunt(){got=new Set();out=new Set();alt=new Set();skip=new Set();help=new Set();t0=null;cur=0;}
+
+/* ---------- 3. tax ---------- */
+const T=D.tax;
+function refundRange(a){ // rough % band, read between the published examples
+  const pts=T.band; if(a<pts[0][0]) return [a*pts[0][1]/100,a*pts[0][2]/100];
+  for(let i=1;i<pts.length;i++){ if(a<=pts[i][0]){const [x0,l0,h0]=pts[i-1],[x1,l1,h1]=pts[i],f=Math.log(a/x0)/Math.log(x1/x0);return [a*(l0+(l1-l0)*f)/100,a*(h0+(h1-h0)*f)/100];} }
+  const z=pts[pts.length-1]; return [a*z[1]/100,a*z[2]/100];
+}
+const r100=v=>Math.round(v/100)*100;
+function renderTax(){
+  const a=+String($("#taxAmt").value).replace(/[^\d]/g,"")||0;
+  let msg;
+  if(a<T.min) msg=`<span class="refund" style="color:var(--muted)">₩0</span><span>Under ${won(T.min)} on one receipt, there is no refund. Put more on one receipt.</span>`;
+  else{const [lo,hi]=refundRange(a);
+    msg=`<span class="note">You get back roughly</span><span class="refund">${won(r100(lo))} – ${won(r100(hi))}</span><span>≈ ${money(toLocal(r100(lo)))} – ${money(toLocal(r100(hi)))}. <span class="unv">*</span> Estimate; the exact number is printed on your receipt.</span>`;}
+  const inst=a>=T.min&&a<T.instantMax?`<span class="save">At the till: taken off straight away, if the store shows a TAX FREE sign.</span>`:
+    a>=T.instantMax?`<span class="dear">${won(T.instantMax)} or more on one receipt: no instant refund. Keep the tax-free receipt and claim at the airport kiosk.</span>`:"";
+  $("#taxOut").innerHTML=msg+inst;
+  $("#taxTable").innerHTML=`<thead><tr><th>Receipt</th><th>You get back</th><th>Refund company</th></tr></thead><tbody>`+
+    T.examples.map(x=>`<tr class="${Math.abs(a-x[0])<1?"hit":""}"><td>${won(x[0])}</td><td>${x[1]}</td><td>${x[2]}</td></tr>`).join("")+"</tbody>";
+}
+function initTax(){
+  $("#taxRules").innerHTML=T.rules.map(r=>`<li>${r}</li>`).join("");
+  $("#taxSrc").innerHTML=T.src;
+  $("#taxQuick").innerHTML=[30000,100000,200000,500000].map(v=>`<button class="ghost" data-amt="${v}">${won(v)}</button>`).join("");
+}
+
+/* ---------- 4. stores ---------- */
+let here=null, map=null, mapLayer=null, mapOK=false;
+function km(a,b){const R=6371,r=x=>x*Math.PI/180,dl=r(b.lat-a.lat),dn=r(b.lng-a.lng);
+  const h=Math.sin(dl/2)**2+Math.cos(r(a.lat))*Math.cos(r(b.lat))*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
+function near(){return D.stores.map(s=>({...s,d:km(here,s)})).sort((a,b)=>a.d-b.d).slice(0,6)}
+const fmtD=d=>C==="US"||C==="UK"?`${d<1?Math.round(d*1000)+" m":d.toFixed(1)+" km"} · ${(d*0.621).toFixed(d<1.6?2:1)} mi`:(d<1?Math.round(d*1000)+" m":d.toFixed(1)+" km");
+function gLink(s){return `https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}&travelmode=walking`}
+function nLink(s){return `https://map.naver.com/p/search/${encodeURIComponent(s.nameKo)}`}
+function renderStores(){
+  if(!here) return;
+  const ns=near();
+  $("#stores").innerHTML=ns.map((s,i)=>`<div class="store"><span class="n">${i+1}</span>
+    <span><b>${esc(s.name)}</b><br><span class="ko note">${esc(s.nameKo)}</span></span>
+    <span class="addr"><span class="dist">${fmtD(s.d)}</span> · ${esc(s.area)}<br>Open: ${esc(s.hours)}<br>
+      ${s.tax==="yes"?'<span class="save">Tax off at the till</span>':'<span class="dear">Tax refund: check in store</span>'}${s.note?` · ${esc(s.note)}`:""}
+      <br><span class="ko">${esc(s.addrKo)}</span>${s.approx?' <span class="unv">* map point approximate</span>':""}</span>
+    <span class="links"><a href="${gLink(s)}" target="_blank" rel="noopener">Google Maps</a><a href="${nLink(s)}" target="_blank" rel="noopener">Naver Map</a></span></div>`).join("");
+  $("#storeSrc").innerHTML=D.storeSrc;
+  drawMap(ns);
+}
+function drawMap(ns){
+  if(mapOK&&map){
+    mapLayer.clearLayers();
+    L.circleMarker([here.lat,here.lng],{radius:9,color:"#fff",weight:3,fillColor:"#c2306b",fillOpacity:1}).bindTooltip("You",{permanent:true,direction:"top"}).addTo(mapLayer);
+    ns.forEach((s,i)=>L.circleMarker([s.lat,s.lng],{radius:12,color:"#fff",weight:2,fillColor:"#16202b",fillOpacity:1}).bindTooltip(String(i+1),{permanent:true,direction:"center"}).addTo(mapLayer));
+    map.fitBounds(L.latLngBounds([[here.lat,here.lng],...ns.slice(0,5).map(s=>[s.lat,s.lng])]).pad(.15));
+    return;
+  }
+  // drawn fallback (artifact preview blocks map tiles): nearest 3 at true positions, no street map
+  ns=ns.slice(0,3);
+  const pts=[{lat:here.lat,lng:here.lng},...ns], k=Math.cos(here.lat*Math.PI/180);
+  const xs=pts.map(p=>p.lng*k), ys=pts.map(p=>p.lat);
+  const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  const W=600,H=320, span=Math.max((x1-x0)*H/W,y1-y0,0.003)*1.35, cx=(x0+x1)/2, cy=(y0+y1)/2, s=H/span;
+  const X=p=>W/2+(p.lng*k-cx)*s, Y=p=>H/2-(p.lat-cy)*s;
+  const kmPx=s/111.32, bar=[0.1,0.2,0.5,1,2,5,10].find(v=>v*kmPx>60)||10;
+  $("#map").innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Where the nearest stores are compared with you">
+    <defs><pattern id="gr" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="var(--line)" stroke-width="1"/></pattern></defs>
+    <rect width="${W}" height="${H}" fill="url(#gr)"/>
+    ${ns.map(p=>`<line x1="${X(here)}" y1="${Y(here)}" x2="${X(p)}" y2="${Y(p)}" stroke="var(--muted)" stroke-dasharray="4 4" stroke-width="1.5"/>`).join("")}
+    ${ns.map((p,i)=>`<g><circle cx="${X(p)}" cy="${Y(p)}" r="16" fill="var(--act)" stroke="var(--paper)" stroke-width="3"/><text x="${X(p)}" y="${Y(p)+6}" text-anchor="middle" font-size="17" font-weight="700" fill="var(--act-ink)">${i+1}</text></g>`).join("")}
+    <circle cx="${X(here)}" cy="${Y(here)}" r="10" fill="var(--teen)" stroke="var(--paper)" stroke-width="3"/>
+    <text x="${X(here)}" y="${Y(here)-16}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)">You</text>
+    <g transform="translate(16 ${H-18})"><rect x="0" y="-3" width="${bar*kmPx}" height="4" fill="var(--ink)"/><text x="0" y="-9" font-size="13" fill="var(--ink)">${bar<1?bar*1000+" m":bar+" km"}</text></g>
+    <text x="${W-12}" y="24" text-anchor="end" font-size="14" font-weight="700" fill="var(--ink)">N ↑</text>
+    <text x="${W-12}" y="${H-12}" text-anchor="end" font-size="12" fill="var(--muted)">Nearest 3. Street map on the full website.</text>
+  </svg>`;
+}
+function tryLeaflet(){
+  if(typeof L==="undefined") return;
+  try{
+    const el=$("#map"); el.innerHTML="";
+    map=L.map(el,{zoomAnimation:false,fadeAnimation:false,markerZoomAnimation:false,attributionControl:true}).setView([37.5636,126.985],14);
+    const t=L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'}).addTo(map);
+    mapLayer=L.layerGroup().addTo(map);
+    let ok=false, gave=false;
+    const giveUp=()=>{if(ok||gave)return;gave=true;try{map.remove()}catch(e){} map=null;mapOK=false;renderStores();};
+    t.once("tileload",()=>{if(gave)return;ok=true;mapOK=true;renderStores();});
+    t.on("tileerror",()=>setTimeout(giveUp,1500)); // blocked tiles (artifact frame) fail fast
+    setTimeout(giveUp,10000); // slow roaming data: wait longer before giving up
+  }catch(e){map=null;mapOK=false}
+}
+function setArea(id){
+  const a=D.areas.find(x=>x.id===id)||D.areas[0];
+  here={lat:a.lat,lng:a.lng,label:a.label}; $("#area").value=a.id; store("area",a.id);
+  $("#locMsg").textContent=`Showing stores near ${a.label}.`;
+  renderStores();
+}
+function locate(){
+  $("#locMsg").textContent="Asking your phone for your location…";
+  if(!navigator.geolocation){$("#locMsg").textContent="Location isn't available here. Pick your area instead.";return;}
+  navigator.geolocation.getCurrentPosition(pos=>{
+    here={lat:pos.coords.latitude,lng:pos.coords.longitude};
+    $("#locMsg").textContent="Showing stores near you."+(near()[0].d>30?" You seem far from these stores. Pick your area to plan ahead.":"");
+    renderStores();
+  },()=>{$("#locMsg").textContent="Location was blocked or isn't allowed on this page. Pick your area instead.";},{timeout:8000,maximumAge:60000});
+}
+
+/* ---------- shared ---------- */
+function staff(id,useAlt){
+  const p0=P.find(x=>x.id===id), sb=subOf(p0), p=useAlt&&sb.p?sb.p:p0, ext=useAlt&&!sb.p;
+  $("#ovPic").innerHTML=ext?"":pack(p.pkg,90,"Drawing of the product");
+  $("#ovKo").textContent=ext?sb.ko:p.ko;
+  $("#ovSign").textContent="코너: "+p0.shelfKo+(!useAlt&&shades[id]?` · 색상: ${shades[id]}호`:"");
+  $("#ovAlt").textContent=useAlt?"원래 제품이 품절이라 이걸 찾아요.":`품절이면 이것도 괜찮아요: ${sb.ko}`;
+  $("#ovEn").textContent=ext?sb.en:p.brand+" · "+p.name;
+  staff.music=Music.on; if(Music.on) Music.stop(); // quiet while talking to the staff
+  document.body.style.overflow="hidden";
+  $("#overlay").hidden=false; $("#close").focus();
+}
+function closeStaff(){
+  if($("#overlay").hidden) return;
+  $("#overlay").hidden=true; document.body.style.overflow="";
+  if(staff.music){Music.start(); staff.music=false;}
+  if(view==="shop") renderShop();
+}
+const PRAISE=["Great eye, Dad!","She'll be impressed.","Nailed it.","Treasure secured.","Like a pro."];
+function buzz(){try{navigator.vibrate&&navigator.vibrate([60,40,60])}catch(e){}}
+function go(v){
+  view=v;
+  ["pick","shop","tax","stores"].forEach(x=>$("#v-"+x).hidden=x!==v);
+  document.querySelectorAll("nav button").forEach(b=>b.dataset.go===v?b.setAttribute("aria-current","page"):b.removeAttribute("aria-current"));
+  document.body.classList.remove("hunting");
+  if(v==="pick") renderPick(); if(v==="shop") renderShop(); if(v==="tax") renderTax();
+  if(v==="stores"){ if(!here) setArea(load("area")||D.areas[0].id); if(!map&&!mapOK&&!go.tried){go.tried=true;tryLeaflet();} }
+  try{ if(!location.hash.startsWith("#list-")||v!=="shop") history.replaceState(null,"","#"+v); }catch(e){}
+}
+function save(){store("list",[...list]);store("shades",shades);store("got",[...got]);store("out",[...out]);store("alt",[...alt]);store("skip",[...skip]);store("help",[...help]);store("t0",t0);store("cur",cur)}
+function renderAll(){ if(view==="pick")renderPick(); if(view==="shop")renderShop(); if(view==="tax")renderTax(); if(view==="stores")renderStores(); renderFoot(); }
+function renderFoot(){
+  $("#foot").innerHTML=`<span><b>Prices checked ${esc(D.asOf)}.</b> ${D.priceSrc}</span>
+   <span>Exchange rates used: ${Object.entries(D.fx).map(([k,f])=>`${f.sym}1 = ₩${f.krwPer.toLocaleString("en-US")}`).join(" · ")} (${D.fxSrc}).</span>
+   <span><span class="unv">*</span> = number from a single source, not double-checked. Shelf prices and sales change every month; the shelf price wins.</span>
+   <span>Plan B items are our suggestions, not a ranking. Shelf sign names are the usual section names; the sign in your store may read a little differently.</span>
+   <span>Package pictures are simple drawings of shape and colour, from memory, not brand artwork. Music is an original tune made in your browser. Glow Dad is a free page. Not linked to any store or brand.</span>`;
+}
+
+document.addEventListener("click",e=>{
+  const t=e.target.closest("button,[data-go]"); if(!t) return;
+  const d=t.dataset;
+  if(d.who){who=d.who;store("who",who);renderPick();}
+  else if(d.add){const id=d.add;list.has(id)?list.delete(id):list.add(id);save();renderPick();$("#sendbox").hidden=true;}
+  else if(d.got){const id=d.got;got.add(id);out.delete(id);save();Music.sfx("found");buzz();toast(`+${pts(id)} · ${PRAISE[got.size%PRAISE.length]}`);afterFind();}
+  else if(d.alt){alt.add(d.alt);save();Music.sfx("planb");buzz();toast("Plan B found! +60");afterFind();}
+  else if(d.skip){skip.add(d.skip);afterFind();}
+  else if(d.out){out.add(d.out);Music.sfx("trap");save();renderShop();}
+  else if(d.undo){const id=d.undo;got.delete(id);alt.delete(id);skip.delete(id);out.delete(id);save();renderShop();}
+  else if(d.next){nextOpen();save();renderShop();window.scrollTo({top:0,behavior:"smooth"});}
+  else if(d.staff){help.add(d.staff);save();renderShop();staff(d.staff);}
+  else if(d.staffalt) staff(d.staffalt,true);
+  else if(d.step){cur+=+d.step;save();renderShop();}
+  else if(d.jump){cur=+d.jump;if(t0===null)t0=Date.now();save();renderShop();window.scrollTo({top:0,behavior:"smooth"});}
+  else if(d.go){ if(d.amt){$("#taxAmt").value=(+d.amt).toLocaleString("en-US");} go(d.go); window.scrollTo({top:0}); }
+  else if(d.amt){$("#taxAmt").value=(+d.amt).toLocaleString("en-US");renderTax();}
+  else if(t.id==="close") closeStaff();
+  else if(t.id==="startHunt"||t.id==="startQuiet"){t0=Date.now();save();if(t.id==="startHunt")Music.start();renderShop();window.scrollTo({top:0});}
+  else if(t.id==="musicBtn"){Music.toggle();renderShop();}
+  else if(t.id==="replay"){resetHunt();save();renderShop();}
+  else if(t.id==="send"){
+    if(!list.size){$("#count").textContent="Add at least one item first";return;}
+    const c=code(); $("#codeOut").value=c;
+    const base=inFrame?ARTIFACT_URL:location.href.split("#")[0]; $("#linkOut").value=base+"#"+c;
+    $("#sendbox").hidden=false; $("#copied").textContent=""; $("#sendbox").scrollIntoView({behavior:"smooth",block:"nearest"});
+  }
+  else if(t.id==="copyLink"||t.id==="copyCode"){
+    const inp=$(t.id==="copyLink"?"#linkOut":"#codeOut");
+    const ok=()=>{$("#copied").textContent="Copied. Paste it into your chat with him."};
+    const fb=()=>{inp.focus();inp.select();let done=false;try{done=document.execCommand("copy")}catch(err){}
+      if(done)ok();else $("#copied").textContent="Select the text and copy it.";};
+    try{navigator.clipboard.writeText(inp.value).then(ok).catch(fb)}catch(err){fb()}
+  }
+  else if(t.id==="share"){
+    const url=$("#linkOut").value;
+    if(navigator.share) navigator.share({title:"Glow Dad: my Seoul beauty list",text:"Here's my list. Open it in the store:",url}).catch(()=>{});
+    else $("#copied").textContent="Sharing isn't available here. Use Copy link.";
+  }
+  else if(t.id==="load"){
+    const s=parse($("#codeIn").value);
+    if(!s||!s.size){$("#loadMsg").textContent="That code didn't work. It looks like list-m1-m3-t2.";return;}
+    list=s;shades=s.shades;resetHunt();save();$("#loadMsg").textContent="";renderShop();window.scrollTo({top:0});
+  }
+  else if(t.id==="locBtn") locate();
+});
+document.addEventListener("input",e=>{const id=e.target.dataset&&e.target.dataset.shade;if(!id)return;const v=e.target.value.trim();if(v)shades[id]=v;else delete shades[id];save();$("#sendbox").hidden=true;});
+$("#area").addEventListener("change",e=>setArea(e.target.value));
+$("#country").addEventListener("change",e=>{C=e.target.value;store("country",C);renderAll();});
+$("#taxAmt").addEventListener("input",()=>{const el=$("#taxAmt"),v=el.value.replace(/[^\d]/g,"");el.value=v?(+v).toLocaleString("en-US"):"";renderTax();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeStaff();});
+$("#overlay").addEventListener("click",e=>{if(e.target.closest("button"))return;closeStaff();}); // tap anywhere to close
+
+// start: list from a link, else saved list, else an example list so the page shows what it does
+$("#country").value=C;
+$("#share").hidden=!(navigator.share&&!inFrame);
+$("#area").innerHTML=D.areas.map(a=>`<option value="${a.id}">${esc(a.label)}</option>`).join("");
+$("#momHint").textContent=D.hints.mom; $("#teenHint").textContent=D.hints.teen;
+initTax();
+who=load("who")||"mom";
+const fromHash=parse(location.hash);
+if(fromHash&&fromHash.size){list=fromHash;shades=fromHash.shades;}
+else{const l=load("list");list=new Set(Array.isArray(l)&&l.length?l.filter(id=>P.some(p=>p.id===id)):D.example);shades=load("shades")||{};
+  got=new Set(load("got")||[]);out=new Set(load("out")||[]);alt=new Set(load("alt")||[]);skip=new Set(load("skip")||[]);help=new Set(load("help")||[]);t0=load("t0");cur=+load("cur")||0;}
+renderFoot();
+const h=location.hash.slice(1);
+go(fromHash&&fromHash.size?"shop":(["pick","shop","tax","stores"].includes(h)?h:"pick"));
+window.addEventListener("hashchange",()=>{const s=parse(location.hash);if(s&&s.size){list=s;shades=s.shades;resetHunt();save();go("shop");}else{const h=location.hash.slice(1);if(["pick","shop","tax","stores"].includes(h)&&h!==view)go(h);}});
+
+</script>
+
+</html>

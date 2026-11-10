@@ -2059,9 +2059,9 @@ if (typeof self !== "undefined" && typeof self.addEventListener === "function") 
     if (request.method !== "GET") return;
     const url = new URL(request.url);
     if (url.origin !== SITE_ROOT_URL.origin) return;
-    // 같은 도메인의 다른 사이트(점심 사이트 SIKPAN, 옛 주소 포함)는 이 워커 범위(/) 안에 있지만
+    // 같은 도메인의 다른 사이트(점심 사이트 SIKPAN, 옛 주소 포함, K뷰티 아빠 사이트 glowdad)는 이 워커 범위(/) 안에 있지만
     // 모험 상자 것이 아니다. 캐시하면 어제 메뉴를 먼저 보여 주므로 손대지 않는다.
-    if (/^\/(?:sikpan|gasan-lunch)(?:\/|$)/.test(url.pathname)) return;
+    if (/^\/(?:sikpan|gasan-lunch|glowdad)(?:\/|$)/.test(url.pathname)) return;
     // 여행 사진은 나중에 같은 이름으로 넣거나 바꾸므로 캐시하지 않고 늘 서버에서 받는다.
     if (/^\/usa\/photos\//.test(url.pathname)) return;
     if (!backgroundWarmupFinished) {
