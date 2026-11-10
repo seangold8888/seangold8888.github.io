@@ -126,6 +126,16 @@ C("taeo", 300, "angry", "kick", { o: "pajama", m: "stomp" })
 
 새 화를 넣으면 `sw.js`의 `episodes.js?v=` 숫자와 `index.html`의 같은 숫자를 함께 올리고, 허브 입구 설명의 화 수를 고친다.
 
+## 컴퓨터의 Claude Code로 이어 만들기 (두 대본 합치기)
+
+컴퓨터에서는 gcloud 로그인(Vertex)이 되어 있어서, Claude가 제미나이 대본까지 직접 받아 올 수 있다.
+
+1. 처음 한 번: `pip install google-genai` 와 `gcloud auth application-default login`.
+2. 저장소 폴더에서 `git pull` 후 `claude` 를 켜고, 이야기를 이렇게 알려 준다.
+   > 웹툰 새 화 만들어 줘. 실제 있었던 일: (이야기). webtoon/README.md 의 “두 대본 합치기” 순서대로 해 줘.
+3. Claude가 할 일: ① 한 방 버전 대본을 쓴다 ② `python webtoon/tools/gemini-script.py "이야기"` 로 제미나이 대본을 받는다
+   ③ 두 대본에서 좋은 장면을 골라 합쳐 `episodes.js` 에 넣는다 ④ `preview.cjs` 로 겹침을 확인한다 ⑤ 말 모음·버전 숫자·엑셀을 고친다.
+
 ## 로컬에서 이어 만들기
 
 ```
