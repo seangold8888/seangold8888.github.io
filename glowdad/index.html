@@ -176,6 +176,11 @@ tr.hit td{background:var(--good-soft);font-weight:700}
 .overlay .pe{color:var(--muted);font-size:15px}
 .foot{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
 details summary{cursor:pointer;font-weight:700}
+.more{display:flex;flex-direction:column;gap:6px;font-size:14px}
+.more[open] summary{margin-bottom:6px}
+.more summary{font-size:14px;color:var(--muted)}
+.foot details{display:flex;flex-direction:column;gap:6px}
+.foot details span{display:block;margin-top:6px}
 
 /* numbers: Atkinson's slashed zero reads like a crossed-out price */
 .price,.totals,.dist,td,.stats b{font-family:var(--f-num)}
@@ -240,7 +245,7 @@ body.hunting nav button b{font-size:16px}
     <div style="display:flex;flex-direction:column;gap:6px">
       <p class="logo" aria-label="Glow Dad"><span class="lg1">GLOW</span><span class="lg2">DAD</span></p>
       <h1>The K-beauty treasure hunt for dads in Korea</h1>
-      <p class="sub">She picks the list at home. You hunt it down in the store, with picture clues, shelf signs and a screen for the staff.</p>
+      <p class="sub">She picks the list. You hunt it down.</p>
     </div>
     <label class="country" for="country">You live in
       <select id="country">
@@ -1553,7 +1558,7 @@ const DATA={
 DATA.tax={min:15000,instantMax:1000000,
 band:[[30000,5.0,6.7],[100000,6.0,7.0],[500000,7.0,8.0]],
 examples:[[30000,"₩1,500 – ₩2,000","Global Blue ₩1,500 · GTF and Easy Tax Refund ₩2,000"],[100000,"₩6,000 – ₩7,000","Easy Tax Refund ₩6,000 · Global Blue ₩6,500 · GTF ₩7,000"],[500000,'about ₩37,500 <span class="unv">*</span>',"Estimate. No official table found for this amount"]],
-rules:["Who can get it: visitors staying in Korea under 6 months.","Bring your <b>real passport</b>. Photos and copies are not accepted. Show it <b>before</b> you pay.","Smallest receipt: ₩15,000. You can't add receipts together.","Instant refund at the till: under ₩1,000,000 per receipt, and up to ₩5,000,000 for the whole trip. Only in stores with a <b>TAX FREE</b> sign, not every branch.","Bigger buys: keep the tax-free receipt and claim at the airport kiosk.","Take the things out of Korea within 3 months.","The refund is usually about 3–8% of the receipt."],
+rules:["Bring your <b>real passport</b> (no photos) and show it <b>before</b> you pay. Visitors staying under 6 months.","One receipt from ₩15,000 to under ₩1,000,000: tax comes off at the till, in stores with a <b>TAX FREE</b> sign. Up to ₩5,000,000 per trip.","Bigger receipt: keep the tax-free receipt and claim at the airport kiosk."],
 src:'Sources: Korea.net (28 Nov 2023) for the limits; Creatrip guide (updated Jan 2026) and k-calc.com (GTF table, checked 24 Aug 2026) for the examples. The full official table could not be opened, so the calculator shows a range. <span class="unv">*</span> = estimate.'};
 DATA.areas=[{"id": "myeongdong", "label": "Myeongdong", "lat": 37.5609, "lng": 126.986}, {"id": "seoulstn", "label": "Seoul Station", "lat": 37.5547, "lng": 126.9707}, {"id": "jongno", "label": "Jongno, Insadong, Gwanghwamun", "lat": 37.572, "lng": 126.985}, {"id": "dongdaemun", "label": "Dongdaemun", "lat": 37.5665, "lng": 127.009}, {"id": "hongdae", "label": "Hongdae", "lat": 37.5563, "lng": 126.9236}, {"id": "itaewon", "label": "Itaewon", "lat": 37.5345, "lng": 126.9946}, {"id": "seongsu", "label": "Seongsu", "lat": 37.5446, "lng": 127.0559}, {"id": "gangnam", "label": "Gangnam Station", "lat": 37.4979, "lng": 127.0276}, {"id": "sinsa", "label": "Sinsa, Garosu-gil", "lat": 37.5203, "lng": 127.023}, {"id": "coex", "label": "COEX, Samseong", "lat": 37.5125, "lng": 127.059}, {"id": "jamsil", "label": "Jamsil, Lotte World", "lat": 37.5133, "lng": 127.1001}, {"id": "bs-seomyeon", "label": "Busan: Seomyeon", "lat": 35.1578, "lng": 129.06}, {"id": "bs-haeundae", "label": "Busan: Haeundae", "lat": 35.1631, "lng": 129.1635}, {"id": "bs-nampo", "label": "Busan: Nampo", "lat": 35.098, "lng": 129.03}, {"id": "icn", "label": "Incheon Airport", "lat": 37.4602, "lng": 126.4407}, {"id": "jeju", "label": "Jeju Airport", "lat": 33.507, "lng": 126.493}];
 DATA.stores=[
@@ -1964,6 +1969,13 @@ function priceHTML(p){
   return `<span class="price">${seoul}<br>${at}<br>${tag}</span>`;
 }
 
+function shortPrice(p){ // one line: Seoul price and the saving, details live under "More"
+  const c=cmp(p); if(!c) return "";
+  const star=c.unv?'<span class="unv">*</span>':"";
+  const tail=c.home==null||c.diff?"":c.save>0.01*c.home?` · <span class="save">save ${c.pct}%</span>${star}`:` · <span class="dear">same or cheaper at home</span>`;
+  return `<span class="price"><b>${won(c.kr)}</b> <span class="note">≈ ${money(c.krLocal)}</span>${tail}</span>`;
+}
+
 /* ---------- 1. pick ---------- */
 function subOf(p){const x=p.sub||{};if(x.id){const q=P.find(y=>y.id===x.id);return {p:q,en:q.brand+" "+q.name,ko:q.ko,why:x.why};}return {en:x.en,ko:x.ko,why:x.why};}
 function card(p){
@@ -1973,11 +1985,15 @@ function card(p){
     <div class="cbody">
       <span class="kind">${esc(p.kind)}</span>
       <span class="plain">${esc(p.plain)}</span>
-      <span class="pname">${esc(p.brand)} · ${esc(p.name)}<br><span class="ko">${esc(p.ko)}</span></span>
-      <span class="sign">Shelf sign <span class="ko">${esc(p.shelfKo)}</span> ${esc(p.shelfEn)}</span>
-      <span class="alike"><b>Look-alike:</b> ${bold(p.alike)}</span>
-      <span class="planb"><b>Plan B if sold out:</b> ${esc(sb.en)} <span class="ko note">${esc(sb.ko)}</span></span>
-      ${priceHTML(p)}
+      <span class="pname">${esc(p.brand)}</span>
+      ${shortPrice(p)}
+      <details class="more"><summary>More: price details, look-alike, Plan B</summary>
+        <span class="pname">${esc(p.name)}<br><span class="ko">${esc(p.ko)}</span></span>
+        <span class="sign">Shelf sign <span class="ko">${esc(p.shelfKo)}</span> ${esc(p.shelfEn)}</span>
+        <span class="alike"><b>Look-alike:</b> ${bold(p.alike)}</span>
+        <span class="planb"><b>Plan B if sold out:</b> ${esc(sb.en)}</span>
+        ${priceHTML(p)}
+      </details>
       ${p.shade?`<label class="shadein" for="sh-${p.id}">Her shade number <input id="sh-${p.id}" data-shade="${p.id}" maxlength="6" placeholder="e.g. ${esc(p.shade)}" value="${esc(shades[p.id]||"")}" autocomplete="off"></label>`:""}
       <button class="add" data-add="${p.id}" aria-pressed="${on}">${on?"On the list ✓":"Add to list"}</button>
     </div></article>`;
@@ -2022,10 +2038,9 @@ function renderShop(){
     el.innerHTML=hud+`<div class="brief">
       <span class="eyebrow">Mission from home</span>
       <h2>Find ${it.length} treasure${it.length>1?"s":""} in the store</h2>
-      <p>Each treasure has two clues: the <b>sign</b> above the shelf and the <b>pack</b> to look for. Watch out for traps: look-alike packs.</p>
-      <ul class="rules"><li>Found it: <b>+125</b> (+100 if you used the staff lifeline)</li><li>Sold out? Grab the Plan B: <b>+60</b></li><li>Money you save goes in your loot bag</li></ul>
+      <p>Two clues each: the <b>sign</b> above the shelf, then the <b>pack</b>. Dodge the look-alike traps.</p>
       <button class="primary go" id="startHunt">Earphones in. Start the hunt ♪</button>
-      <button class="ghost" id="startQuiet">Start without music</button></div>`+listHTML(it);
+      <button class="ghost" id="startQuiet">Start without music</button></div>`;
     return;
   }
   if(nDone===it.length){ el.innerHTML=hud+winHTML(it,score,max)+listHTML(it); return; }
@@ -2035,13 +2050,12 @@ function renderShop(){
      <div class="hhead"><span>Treasure ${cur+1} of ${it.length}</span><span>For ${p.who==="mom"?"Mom":"your daughter"}</span></div>
      <div class="hgrid">
        <div class="hpic">${pack(p.pkg,78,"Drawing of "+p.kind)}</div>
-       <div class="htxt"><span class="kind">${esc(p.kind)}</span><span class="plain">${esc(p.plain)}</span>
-         <span class="koname">${esc(p.ko)}</span></div>
+       <div class="htxt"><span class="kind">${esc(p.kind)}</span><span class="koname">${esc(p.ko)}</span></div>
      </div>
      ${g||a?`<div class="foundmsg">${chest(true)} ${g?`Treasure found! +${pts(p.id)}`:`Plan B found! +60`}</div>`:skip.has(p.id)?`<div class="foundmsg skip">Skipped. Ask her later.</div>`:""}
-     <div class="clue"><span class="cn">Clue 1</span><span>Find this sign above the shelf</span><span class="ko sg">${esc(p.shelfKo)}</span><span class="note">${esc(p.shelfEn)}</span></div>
-     <div class="clue"><span class="cn">Clue 2</span><span>The pack: ${esc(p.look)}${p.size?` · ${esc(p.size)}`:""}</span>
-       ${p.shade?`<span class="shadebig">Shade <b>${esc(sh||"?")}</b>${sh?"":` <span class="note">She didn't say. Ask her, or the award shade is ${esc(p.shade)}.</span>`}</span>`:""}
+     <div class="clue"><span class="cn">Clue 1 · Sign above the shelf</span><span class="ko sg">${esc(p.shelfKo)}</span></div>
+     <div class="clue"><span class="cn">Clue 2 · Check the pack</span>
+       ${p.shade?`<span class="shadebig">Shade <b>${esc(sh||"?")}</b>${sh?"":` <span class="note">Ask her (award shade ${esc(p.shade)})</span>`}</span>`:""}
        <div class="trap"><b>Trap!</b> ${bold(p.alike)}</div></div>
      ${o?`<div class="planbox"><span class="eyebrow">Sold out. Plan B treasure</span>
          <div class="hgrid">${sb.p?`<div class="hpic">${pack(sb.p.pkg,60,"Drawing of Plan B")}</div>`:""}<div class="htxt">
@@ -2051,20 +2065,18 @@ function renderShop(){
      :isDone(p.id)?`<div class="acts"><button class="gotit" data-next="1">Next treasure →</button><button class="soldb" data-undo="${p.id}">Undo</button></div>`
      :`<div class="acts"><button class="gotit" data-got="${p.id}">Found it! ${help.has(p.id)?"+100":"+125"}</button>
          <button class="staffb" data-staff="${p.id}">Lifeline: ask staff</button>
-         <button class="soldb" data-out="${p.id}">Sold out</button></div>
-       <span class="note">Plan B if sold out: ${esc(sb.en)}</span>`}
-     ${c?`<span class="price note">Should cost about <b>${won(c.kr)}</b> (≈${money(c.krLocal)}). Sale stickers change it.</span>`:""}
+         <button class="soldb" data-out="${p.id}">Sold out</button></div>`}
+     ${c?`<span class="note">About ${won(c.kr)}</span>`:""}
    </article>
-   <div class="nav2"><button class="ghost" data-step="-1" ${cur?"":"disabled"}>← Previous</button><button class="ghost" data-step="1" ${cur<it.length-1?"":"disabled"}>Next →</button></div>
-   ${listHTML(it)}`;
+   <details class="box"><summary>Whole list (${it.length})</summary>${listHTML(it,true)}</details>`;
 }
-function listHTML(it){
+function listHTML(it,noTotals){
   return `<div class="list" aria-label="Whole list">${it.map((x,i)=>`
      <button class="row ${x.who} ${got.has(x.id)||alt.has(x.id)?"got":""} ${out.has(x.id)&&!isDone(x.id)?"out":""}" data-jump="${i}">
        <span class="stripe"></span>${pack(x.pkg,30,x.kind)}
        <span style="min-width:0"><span class="rn"><b>${esc(x.kind)}</b> · ${esc(x.brand)}${shades[x.id]?` · shade ${esc(shades[x.id])}`:""}</span><br><span class="ko note">${esc(x.ko)}</span></span>
        <span class="st">${got.has(x.id)?"✓ Found":alt.has(x.id)?"✓ Plan B":skip.has(x.id)?"Skipped":out.has(x.id)?"Sold out":""}</span>
-     </button>`).join("")}</div>${totalsHTML(it)}`;
+     </button>`).join("")}</div>${noTotals?"":totalsHTML(it)}`;
 }
 function winHTML(it,score,max){
   const mins=t0?Math.max(1,Math.round((Date.now()-t0)/60000)):null, krGot=it.filter(p=>got.has(p.id)).reduce((s,p)=>s+(p.price.KR||0),0);
@@ -2135,7 +2147,7 @@ function renderStores(){
   $("#stores").innerHTML=ns.map((s,i)=>`<div class="store"><span class="n">${i+1}</span>
     <span><b>${esc(s.name)}</b><br><span class="ko note">${esc(s.nameKo)}</span></span>
     <span class="addr"><span class="dist">${fmtD(s.d)}</span> · ${esc(s.area)}<br>Open: ${esc(s.hours)}<br>
-      ${s.tax==="yes"?'<span class="save">Tax off at the till</span>':'<span class="dear">Tax refund: check in store</span>'}${s.note?` · ${esc(s.note)}`:""}
+      ${s.tax==="yes"?'<span class="save">Tax off at the till</span>':'<span class="dear">Tax refund: check in store</span>'}
       <br><span class="ko">${esc(s.addrKo)}</span>${s.approx?' <span class="unv">* map point approximate</span>':""}</span>
     <span class="links"><a href="${gLink(s)}" target="_blank" rel="noopener">Google Maps</a><a href="${nLink(s)}" target="_blank" rel="noopener">Naver Map</a></span></div>`).join("");
   $("#storeSrc").innerHTML=D.storeSrc;
@@ -2231,11 +2243,12 @@ function go(v){
 function save(){store("list",[...list]);store("shades",shades);store("got",[...got]);store("out",[...out]);store("alt",[...alt]);store("skip",[...skip]);store("help",[...help]);store("t0",t0);store("cur",cur)}
 function renderAll(){ if(view==="pick")renderPick(); if(view==="shop")renderShop(); if(view==="tax")renderTax(); if(view==="stores")renderStores(); renderFoot(); }
 function renderFoot(){
-  $("#foot").innerHTML=`<span><b>Prices checked ${esc(D.asOf)}.</b> ${D.priceSrc}</span>
+  $("#foot").innerHTML=`<span><b>Prices checked ${esc(D.asOf)}.</b> <span class="unv">*</span> = one source only. Shelf price wins. Free page, not linked to any store or brand.</span>
+   <details><summary>Sources and notes</summary><span>${D.priceSrc}</span>
    <span>Exchange rates used: ${Object.entries(D.fx).map(([k,f])=>`${f.sym}1 = ₩${f.krwPer.toLocaleString("en-US")}`).join(" · ")} (${D.fxSrc}).</span>
    <span><span class="unv">*</span> = number from a single source, not double-checked. Shelf prices and sales change every month; the shelf price wins.</span>
    <span>Plan B items are our suggestions, not a ranking. Shelf sign names are the usual section names; the sign in your store may read a little differently.</span>
-   <span>Package pictures are simple drawings of shape and colour, from memory, not brand artwork. Music is an original tune made in your browser. Glow Dad is a free page. Not linked to any store or brand.</span>`;
+   <span>Package pictures are simple drawings of shape and colour, from memory, not brand artwork. Music is an original tune made in your browser.</span></details>`;
 }
 
 document.addEventListener("click",e=>{
