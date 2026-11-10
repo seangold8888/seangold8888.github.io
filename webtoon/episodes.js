@@ -4050,22 +4050,25 @@
       motion: true,
       panels: [
         {
-          h: 400, bg: "living",
+          // 어깨 너머: 아빠 뒷모습 너머로 달려온 태오
+          h: 420, bg: "living",
           sh: true,
-          chars: [C("appa", 300, "surprised", "stand", { o: "work", m: "pop" }), C("taeo", 110, "angry", "kick", { m: "stomp" })],
-          b: [B("아빠! 에메넴 먹고 싶었는데 엄마가 못 먹게 했어!", 130, 100, "b", { k: "shout", w: 200 })],
-          sfx: [FX("쾅!", 110, 370, { rot: -6, c: "#e0443e" })],
+          chars: [C("taeo", 150, "angry", "kick", { m: "stomp" })],
+          fp: [["shoulder", 330, 330, { who: "appa", s: 1.25, m: "pop" }]],
+          b: [B("아빠! 에메넴 먹고 싶었는데 엄마가 못 먹게 했어!", 150, 100, "b", { k: "shout", w: 220 })],
+          sfx: [FX("쾅!", 150, 390, { rot: -6, c: "#e0443e" })],
         },
         {
-          h: 400, bg: "living",
-          chars: [C("appa", 110, "blank", "think", { o: "work", m: "bob" }), C("taeo", 300, "angry", "point", { m: "shake" })],
-          b: [B("애미멀? 동물?", 110, 110, "b", { w: 120 }), B("아니!! 에메넴!!", 300, 140, "b", { k: "shout", w: 150 })],
+          // 둘로 나눈 컷: 아빠와 태오의 엇갈린 반응
+          h: 360, bg: "split:dfeaf5:ffd1e1",
+          chars: [bust("appa", 95, 235, 1.05, "blank", "think", { o: "work", m: "bob" }), bust("taeo", 305, 235, 1.15, "angry", "fist", { m: "shake" })],
+          b: [B("애미멀? 동물?", 100, 70, "b", { w: 130 }), B("아니!! 에메넴!!", 300, 70, "b", { k: "shout", w: 150 })],
         },
         {
-          h: 400, bg: "living",
-          chars: [C("jaei", 110, "smile", "point", { m: "pop" }), C("taeo", 300, "proud", "hip", { m: "bob" })],
-          fp: [["candies", 205, 330, { n: 7, m: "pop" }]],
-          b: [B("엠앤엠 말하는 거야.", 110, 110, "b", { w: 140 }), B("그래, 에메넴!", 300, 140, "b", { w: 120 })],
+          // 손 클로즈업: 누나 손바닥 위의 초콜릿
+          h: 300, bg: "plain:fff3d6",
+          fp: [["hand", 190, 190, { c: "#ee5fa0", s: 1.5, m: "pop" }], ["candies", 215, 150, { n: 7, s: 1.9, m: "float" }], ["sparkle", 330, 70, { m: "float" }], ["sparkle", 60, 250, { s: 0.8, m: "float" }]],
+          b: [B("엠앤엠 말하는 거야.", 110, 60, "", { w: 150 }), B("그래, 에메넴!", 315, 250, "", { k: "shout", w: 130 })],
         },
         {
           h: 420, bg: "sparkle:fff4c7",
@@ -4075,46 +4078,58 @@
           b: [B("맛있는 거 죠!", 200, 200, "b", { k: "shout", w: 140 })],
         },
         {
-          h: 400, bg: "kitchen",
-          chars: [C("eomma", 110, "worried", "give", { m: "pop" }), C("taeo", 300, "angry", "kick", { m: "stomp" })],
-          fp: [["bowl", 170, 260, { s: 0.9 }]],
-          b: [B("밥부터 먹자, 태오야.", 120, 110, "b", { w: 150 }), B("흥!! 밥 싫어!", 300, 150, "b", { k: "shout", w: 120 })],
-          sfx: [FX("쾅!", 310, 380, { rot: 8, c: "#e0443e" })],
+          // 멀리서 본 컷: 넓은 부엌, 멀찍이 떨어진 엄마와 태오
+          h: 360, bg: "kitchen",
+          chars: [C("eomma", 95, "worried", "give", { s: 0.55, m: "pop" }), C("taeo", 320, "angry", "kick", { s: 0.55, m: "stomp" })],
+          fp: [["bowl", 130, 255, { s: 0.5 }]],
+          n: "엄마와 태오 사이, 식탁 하나만큼의 거리.",
+          b: [B("밥부터 먹자, 태오야.", 110, 150, "b", { w: 140 }), B("흥!! 밥 싫어!", 310, 180, "b", { k: "shout", w: 120 })],
         },
         {
+          // 눈만 크게: 가로로 긴 좁은 컷
+          h: 130, bg: "burst:ffd1e1",
+          chars: [bust("taeo", 200, 62, 2.5, "angry", "stand", { nl: true, m: "shake" })],
+          sfx: [FX("찌릿", 345, 100, { rot: 8, c: "#e0443e", size: 0.9 })],
+        },
+        {
+          // 기울어진 컷: 지친 엄마
           h: 340, bg: "gloom",
-          chars: [bust("eomma", 200, 205, 1.3, "sad", "cover", { m: "bob" })],
+          chars: [bust("eomma", 200, 215, 1.3, "sad", "cover", { rot: -9, m: "bob" })],
           b: [B("(매일매일 맛있는 거 죠… 밥은 언제 먹니…)", 200, 44, "", { k: "think", w: 280 })],
         },
         {
-          h: 400, bg: "kitchen",
-          chars: [C("halmeoni", 110, "sly", "hold", { m: "bob" }), C("eomma", 300, "surprised", "stand", { m: "pop" })],
-          fp: [["riceballs", 200, 330, { m: "pop" }]],
-          b: [B("밥을 에메넴으로 만들면 되지~", 120, 110, "b", { w: 160 }), B("네?", 300, 150, "b", { w: 70 })],
+          // 어깨 너머: 엄마 뒷모습 너머의 할머니
+          h: 420, bg: "kitchen",
+          chars: [C("halmeoni", 150, "sly", "hold", { m: "bob" })],
+          fp: [["shoulder", 325, 340, { who: "eomma", s: 1.2, m: "pop" }]],
+          b: [B("밥을 에메넴으로 만들면 되지~", 150, 110, "b", { w: 180 }), B("네?", 330, 200, "b", { w: 70 })],
         },
         {
-          h: 360, bg: "sparkle:fff0d6",
-          fp: [["riceballs", 200, 230, { s: 1.6, m: "pop" }], ["sparkle", 70, 90, { m: "float" }], ["sparkle", 330, 80, { m: "float" }]],
+          // 위에서 내려다본 식탁
+          h: 400, bg: "tabletop",
+          fp: [["dish", 200, 200, { r: 105 }], ["riceballs", 200, 215, { s: 1.5, m: "pop" }], ["hand", 40, 330, { c: "#b99ad9", rot: -35, s: 1, m: "wave" }], ["hand", 365, 70, { c: "#4c7fd0", rot: 145, s: 0.8, m: "wave" }]],
           n: "노랑은 계란, 주황은 당근, 까망은 김, 초록은 완두콩.",
           n2: "할머니표 에메넴 주먹밥.",
         },
         {
+          // 앞에 크게, 뒤에 작게: 주먹밥 너머로 빼꼼 보는 태오
           h: 400, bg: "kitchen",
-          chars: [C("taeo", 200, "surprised", "point", { m: "hop" })],
-          fp: [["riceballs", 320, 370, { s: 1 }]],
-          b: [B("…에메넴이다!", 200, 120, "b", { k: "shout", w: 150 })],
+          chars: [C("taeo", 315, "surprised", "up", { s: 0.75, y: 345, m: "hop" })],
+          fp: [["riceballs", 150, 360, { s: 2.3, m: "pop" }]],
+          b: [B("…에메넴이다!", 290, 130, "b", { k: "shout", w: 150 })],
         },
         {
+          // 얼굴 가득
           h: 340, bg: "burst:ffe27a",
-          chars: [bust("taeo", 200, 205, 1.45, "eating", "cheer", { m: "wiggle" })],
-          b: [B("맛있는 거 죠! 에메넴 밥 또 죠!", 200, 44, "", { k: "shout", w: 310 })],
-          sfx: [FX("냠냠", 70, 270, { rot: -8, c: "#ff9f1c", size: 1.1 })],
+          chars: [bust("taeo", 200, 215, 1.9, "eating", "cheer", { m: "wiggle" })],
+          b: [B("맛있는 거 죠! 에메넴 밥 또 죠!", 200, 40, "", { k: "shout", w: 310 })],
+          sfx: [FX("냠냠", 60, 300, { rot: -8, c: "#ff9f1c", size: 1.1 })],
         },
         {
-          h: 400, bg: "kitchen",
-          chars: [C("eomma", 110, "happy", "give", { m: "pop" }), C("taeo", 300, "love", "hands", { m: "dance" })],
-          fp: [["candies", 175, 250, { n: 3, s: 0.9, m: "float" }]],
-          b: [B("밥 다 먹었으니까 진짜 에메넴 세 알!", 120, 110, "b", { w: 170 }), B("하나, 둘, 짝!", 300, 150, "b", { w: 120 })],
+          // 손 클로즈업: 엄마 손에서 태오 손으로
+          h: 320, bg: "plain:fff0d6",
+          fp: [["hand", 175, 110, { c: "#f7b6cc", rot: 20, s: 1.25, m: "pop" }], ["hand", 235, 250, { c: "#4c7fd0", rot: 195, s: 0.95, m: "hop" }], ["candies", 205, 180, { n: 3, s: 1.7, m: "float" }]],
+          b: [B("밥 다 먹었으니까 진짜 에메넴 세 알!", 280, 50, "", { w: 190 }), B("하나, 둘, 짝!", 90, 280, "", { w: 120 })],
         },
         {
           h: 200, bg: "sparkle:fff0d6",
