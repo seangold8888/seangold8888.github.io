@@ -636,6 +636,36 @@
       const gems = ["#ff4d4d", "#ffd34d", "#4c7fd0", "#6cc27a", "#ff9f1c", "#b99ad9"].map((c, i) => i < 4 ? `<circle cx="${-11 + i * 7.3}" cy="-24" r="2.8" fill="${c}" stroke="${INK}" stroke-width=".8"/>` : "").join("");
       return `<g transform="translate(${x} ${y}) rotate(${o.rot || 0}) scale(${o.s || 1})"><path d="M-14 16 L-14 -6 L-16 -22 Q-16 -26 -12 -26 Q-9 -26 -9 -22 L-8 -12 L-7 -28 Q-7 -32 -3 -32 Q1 -32 1 -28 L1 -12 L3 -28 Q3 -32 7 -32 Q11 -32 11 -28 L10 -10 L13 -20 Q14 -24 18 -22 Q20 -20 19 -16 L14 6 L14 16Z" fill="#f2c14e" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><path d="M-12 -4 Q0 -8 12 -4" stroke="#c9962a" stroke-width="1.6" fill="none"/><rect x="-16" y="14" width="32" height="10" rx="3" fill="#e0ad3a" stroke="${INK}" stroke-width="2"/>${gems}<circle cx="-1" cy="4" r="4.5" fill="#6cc27a" stroke="${INK}" stroke-width="1"/><circle cx="-12" cy="-6" r="2.6" fill="#ff9f1c" stroke="${INK}" stroke-width=".8"/></g>`;
     },
+    // 어깨 너머 구도: 앞사람의 뒷머리와 어깨를 컷 앞쪽에 크게 그린다(얼굴은 그리지 않는다). who = 누구의 뒷모습인지.
+    shoulder(x, y, o) {
+      const who = {
+        taeo: { hair: "#2e2a28", top: "#4c7fd0", ears: true },
+        jaei: { hair: "#3a302c", top: "#ee5fa0", bun: "side" },
+        eomma: { hair: "#3a302c", top: "#f7b6cc", bun: "top" },
+        appa: { hair: "#3d3a38", top: "#9aa0a8" },
+        halmeoni: { hair: "#8d8985", top: "#b99ad9", curly: true },
+        harabeoji: { hair: "#8d8985", top: "#8a6d52", bald: true },
+      }[o.who || "appa"];
+      const skin = "#fbe9dc";
+      let g = `<path d="M-95 150 Q-95 60 -40 48 L40 48 Q95 60 95 150Z" fill="${who.top}" stroke="${INK}" stroke-width="3"/><rect x="-16" y="26" width="32" height="30" fill="${skin}" stroke="${INK}" stroke-width="2.4"/>`;
+      if (who.ears) g += `<ellipse cx="-56" cy="-10" rx="11" ry="15" fill="${skin}" stroke="${INK}" stroke-width="2.4"/><ellipse cx="56" cy="-10" rx="11" ry="15" fill="${skin}" stroke="${INK}" stroke-width="2.4"/>`;
+      if (who.bald) g += `<ellipse cx="0" cy="-14" rx="50" ry="56" fill="${skin}" stroke="${INK}" stroke-width="3"/><path d="M-50 -6 Q-52 36 -22 40 L22 40 Q52 36 50 -6 Q30 14 0 14 Q-30 14 -50 -6Z" fill="${who.hair}" stroke="${INK}" stroke-width="2.4"/>`;
+      else g += `<ellipse cx="0" cy="-14" rx="50" ry="56" fill="${who.hair}" stroke="${INK}" stroke-width="3"/>`;
+      if (who.curly) for (let i = 0; i < 9; i++) g += `<circle cx="${Math.cos(i * 0.7) * 44}" cy="${-14 + Math.sin(i * 0.7) * 50}" r="13" fill="${who.hair}" stroke="${INK}" stroke-width="2"/>`;
+      if (who.bun === "top") g += `<circle cx="0" cy="-76" r="20" fill="${who.hair}" stroke="${INK}" stroke-width="3"/>`;
+      if (who.bun === "side") g += `<circle cx="0" cy="-74" r="16" fill="#fff" stroke="${INK}" stroke-width="2.4" opacity=".9"/><path d="M44 -20 Q78 -10 70 26 Q58 12 46 8Z" fill="${who.hair}" stroke="${INK}" stroke-width="2.4"/>`;
+      return `<g filter="url(#wt-pencil)" transform="translate(${x} ${y}) scale(${(o.s || 1) * (o.f || 1)} ${o.s || 1})">${g}</g>`;
+    },
+    // 손만 크게 잡는 컷: 소매(c)와 손. rot 로 뻗는 방향을 정한다(0 = 왼쪽에서 오른쪽으로).
+    hand(x, y, o) {
+      const skin = "#fbe9dc";
+      return `<g filter="url(#wt-pencil)" transform="translate(${x} ${y}) rotate(${o.rot || 0}) scale(${o.s || 1})"><rect x="-150" y="-22" width="124" height="44" rx="14" fill="${o.c || "#4c7fd0"}" stroke="${INK}" stroke-width="3"/><path d="M-30 -18 Q-4 -24 14 -14 Q30 -6 30 6 Q30 20 10 22 L-30 20Z" fill="${skin}" stroke="${INK}" stroke-width="2.6"/><path d="M-8 -20 Q4 -34 14 -26 Q16 -18 6 -14" fill="${skin}" stroke="${INK}" stroke-width="2.4"/></g>`;
+    },
+    // 위에서 내려다본 접시.
+    dish(x, y, o) {
+      const r = o.r || 50;
+      return `<g><circle cx="${x}" cy="${y}" r="${r}" fill="#fff" stroke="${INK}" stroke-width="2.6"/><circle cx="${x}" cy="${y}" r="${r * 0.72}" fill="none" stroke="#d9dfe6" stroke-width="2"/></g>`;
+    },
     // 알록달록 동그란 초콜릿 알(에메넴). n = 알 개수.
     candies(x, y, o) {
       const cols = ["#e0443e", "#ffd34d", "#3b9cff", "#4caf50", "#ff9f1c", "#8b5a2b"];
@@ -865,9 +895,26 @@
   }
 
   function background(bg, W, H) {
-    const [kind, arg] = String(bg || "plain").split(":");
+    const [kind, arg, arg2] = String(bg || "plain").split(":");
     const gy = H - 60;
     switch (kind) {
+      // 그림 파일 배경: "img:이름" → webtoon/bg/이름.webp 를 컷에 꽉 채운다(인물·소품은 그 위에 그린다).
+      case "img":
+        return `<rect width="${W}" height="${H}" fill="#f3ead8"/><image href="bg/${arg}.webp" width="${W}" height="${H}" preserveAspectRatio="xMidYMid slice"/>`;
+      // 위에서 내려다본 마룻바닥. "tabletop" 은 그 위에 둥근 식탁까지.
+      case "floortop":
+      case "tabletop": {
+        let s = `<rect width="${W}" height="${H}" fill="${arg ? `#${arg}` : "#e2bd8c"}"/>`;
+        for (let x = 0; x < W; x += 50) s += `<path d="M${x} 0 V${H}" stroke="#c79c68" stroke-width="2"/>`;
+        for (let i = 0; i < 14; i++) s += `<path d="M${(i % 8) * 50} ${(i * 67) % H} h50" stroke="#c79c68" stroke-width="1.6"/>`;
+        if (kind === "tabletop") s += `<circle cx="${W / 2}" cy="${H / 2}" r="${Math.min(W, H) * 0.46}" fill="#b98352" stroke="${INK}" stroke-width="3"/><circle cx="${W / 2}" cy="${H / 2}" r="${Math.min(W, H) * 0.41}" fill="#cf9a66" stroke="#a8743f" stroke-width="2"/>`;
+        return s;
+      }
+      // 사선으로 둘로 나눈 컷: "split:왼쪽색:오른쪽색". 두 사람의 반응을 한 컷에 나란히.
+      case "split": {
+        const a = `#${arg || "dfeaf5"}`, b = `#${arg2 || "ffd1e1"}`;
+        return `<rect width="${W}" height="${H}" fill="${a}"/><path d="M${W * 0.58} 0 H${W} V${H} H${W * 0.42}Z" fill="${b}"/><path d="M${W * 0.58} 0 L${W * 0.42} ${H}" stroke="${INK}" stroke-width="5"/><path d="M${W * 0.58} 0 L${W * 0.42} ${H}" stroke="#fff" stroke-width="2"/>`;
+      }
       case "kitchen": {
         let s = `<rect width="${W}" height="${H}" fill="#fff4dc"/>`;
         for (let y = gy - 110; y < gy - 20; y += 18) for (let x = 0; x < W; x += 18) s += `<rect x="${x + 1}" y="${y + 1}" width="16" height="16" fill="#e5f3f1" stroke="#cfe5e2" stroke-width="1"/>`;
