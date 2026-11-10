@@ -90,7 +90,18 @@
     $("taeoSayings").innerHTML = TAEO_SAYINGS.map((w) => `<li class="word saying"><span class="word-say">“${esc(w.say)}”</span><span class="word-what">${esc(w.when)}</span></li>`).join("");
     $("jaeiSayings").innerHTML = JAEI_SAYINGS.map((w) => `<li class="word saying jaei"><span class="word-say">“${esc(w.say)}”</span><span class="word-what">${esc(w.when)}</span></li>`).join("");
     $("jaeiWords").innerHTML = JAEI_WORDS.map((w) => wordCard(w, "jaei")).join("");
-    $("episodeList").innerHTML = EPISODES.map((ep) => {
+    // 에피소드 목록: 기본은 최신화부터. 버튼으로 1화부터 보기로 바꿀 수 있고, 고른 순서는 이 기기에 기억한다.
+    const newestFirst = state.sort !== "old";
+    const list = newestFirst ? EPISODES.slice().reverse() : EPISODES;
+    $("epCount").textContent = `모두 ${EPISODES.length}화`;
+    $("sortBtn").textContent = newestFirst ? "↕ 순서: 최신화부터" : "↕ 순서: 1화부터";
+    // 이어 보기: 아직 안 읽은 화 중 가장 앞의 화. 다 읽었으면 최신화.
+    const unread = EPISODES.find((ep) => !state.read[ep.id]);
+    const readAny = EPISODES.some((ep) => state.read[ep.id]);
+    const target = unread || EPISODES[EPISODES.length - 1];
+    $("continueBtn").setAttribute("href", `#ep=${target.id}`);
+    $("continueBtn").textContent = !readAny ? "▶ 첫 화 보기" : unread ? `▶ ${target.id}화 이어 보기` : `▶ 최신 ${target.id}화 다시 보기`;
+    $("episodeList").innerHTML = list.map((ep) => {
       const cover = ep.panels[ep.cover || 0];
       const chips = (ep.motion ? `<span class="chip motion">🎬 움직여요</span>` : "") + (state.read[ep.id] ? `<span class="chip">✔ 읽음</span>` : "") + (state.like[ep.id] ? `<span class="chip like">♥</span>` : "");
       return `<li><a class="ep-card" href="#ep=${ep.id}"><div class="ep-thumb">${panelSVG({ ...cover })}</div><div class="ep-info"><div class="ep-no">${ep.id}화 ${chips}</div><div class="ep-title">${esc(ep.title)}</div><p class="ep-sum">${esc(ep.summary)}</p></div></a></li>`;
@@ -313,6 +324,15 @@
     markReadIfDone(current);
   }
 
+  $("sortBtn").addEventListener("click", () => {
+    state.sort = state.sort === "old" ? "new" : "old";
+    save(state);
+    renderHome();
+  });
+  // 바로 가기: 주소의 # 은 회차 이동에 쓰므로 링크 대신 버튼으로 해당 구역까지 스크롤한다.
+  document.querySelectorAll(".jump [data-jump]").forEach((b) =>
+    b.addEventListener("click", () => document.getElementById(b.dataset.jump).scrollIntoView({ behavior: "smooth", block: "start" }))
+  );
   $("toTop").addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("hashchange", route);

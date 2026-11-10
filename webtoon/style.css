@@ -58,7 +58,22 @@ a { color: inherit; }
 .hero h1 { margin: 2px 0 6px; font-size: clamp(34px, 8vw, 48px); line-height: 1.1; font-weight: 400; }
 .tagline { margin: 0; color: var(--ink-soft); font-size: 16px; }
 
-.section { margin-top: 28px; }
+.section { margin-top: 28px; scroll-margin-top: 112px; }
+.jump {
+  position: sticky; top: calc(env(safe-area-inset-top) + 50px); z-index: 15;
+  display: flex; gap: 8px; overflow-x: auto; margin: 14px -16px 0; padding: 8px 16px;
+  background: rgba(255, 244, 228, 0.94); backdrop-filter: blur(8px);
+  scrollbar-width: none;
+}
+.jump::-webkit-scrollbar { display: none; }
+.jump button {
+  appearance: none; flex: 0 0 auto; font: inherit; font-size: 15px; cursor: pointer; min-height: 38px;
+  padding: 6px 14px; border-radius: 999px; background: var(--card); border: 1.5px solid var(--line); color: inherit;
+}
+.jump button:focus-visible { outline: 3px solid var(--accent-2); outline-offset: 2px; }
+.jump button:active { transform: translateY(1px); }
+.ep-tools { display: flex; gap: 10px; flex-wrap: wrap; margin: 0 0 14px; }
+.ep-tools .btn { font-size: 15px; min-height: 42px; padding: 8px 16px; }
 .section h2 { font-weight: 400; font-size: 24px; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; }
 .section h2::before { content: ""; width: 10px; height: 22px; border-radius: 4px; background: var(--accent); }
 

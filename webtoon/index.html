@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&display=swap">
-<link rel="stylesheet" href="style.css?v=4">
+<link rel="stylesheet" href="style.css?v=5">
 <title>오늘도 우리 집</title>
 </head>
 <body>
@@ -36,18 +36,34 @@
     </div>
   </section>
 
-  <section class="section">
+  <nav class="jump" aria-label="바로 가기">
+    <button type="button" data-jump="sec-episodes">에피소드</button>
+    <button type="button" data-jump="sec-cast">등장인물</button>
+    <button type="button" data-jump="sec-words">태오어 사전</button>
+    <button type="button" data-jump="sec-sayings">말 모음</button>
+  </nav>
+
+  <section class="section" id="sec-episodes">
+    <h2>에피소드 <small class="count" id="epCount"></small></h2>
+    <div class="ep-tools">
+      <a class="btn primary" id="continueBtn" href="#ep=1">▶ 첫 화 보기</a>
+      <button class="btn" id="sortBtn" type="button"></button>
+    </div>
+    <ol class="episodes" id="episodeList"></ol>
+  </section>
+
+  <section class="section" id="sec-cast">
     <h2>등장인물</h2>
     <div class="cast" id="cast"></div>
   </section>
 
-  <section class="section">
+  <section class="section" id="sec-words">
     <h2>태오어 사전 <small class="count" id="wordCount"></small></h2>
     <p class="section-lead">태오는 태오만의 말로 세상을 불러요. 틀린 말이 아니라, 지금만 들을 수 있는 보물 같은 말.</p>
     <ul class="words" id="taeoWords"></ul>
   </section>
 
-  <section class="section">
+  <section class="section" id="sec-sayings">
     <h2>우리 집 말 모음</h2>
     <p class="section-lead">태오가 매일 하는 말</p>
     <ul class="words" id="taeoSayings"></ul>
@@ -55,11 +71,6 @@
     <ul class="words" id="jaeiSayings"></ul>
     <p class="section-lead sub">재이가 아기 때 한 말</p>
     <ul class="words" id="jaeiWords"></ul>
-  </section>
-
-  <section class="section">
-    <h2>에피소드</h2>
-    <ol class="episodes" id="episodeList"></ol>
   </section>
 
   <p class="foot">가족 얼굴은 아이가 연필로 그린 그림을 고치지 않고 그대로 옮겼어요.</p>
@@ -76,6 +87,6 @@
 <script src="art.js?v=26"></script>
 <script src="words.js?v=44"></script>
 <script src="episodes.js?v=47"></script>
-<script src="app.js?v=8"></script>
+<script src="app.js?v=9"></script>
 </body>
 </html>
