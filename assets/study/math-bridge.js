@@ -50,7 +50,11 @@
       var review = L.variant(original.problem, rng, []) || original.problem;
       return Object.assign({}, review, { review: true, reviewKey: original.key });
     }
-    return C.makeProblem(activeLevel, rng);
+    // 아직 덜 풀어 본 유형부터 낸다. 무작위로만 내면 유형이 많은 단계(5단계 17개)는
+    // 몇몇 유형이 한참 안 나와서, 다 아는데도 단계가 오르지 않는다.
+    var rows = L.summary(state, activeLevel), fewest = Math.min.apply(null, rows.map(function (row) { return row.count; }));
+    var pool = rows.filter(function (row) { return row.count === fewest; });
+    return C.makeProblem(activeLevel, rng, pool[Math.floor(rng() * pool.length) % pool.length].type);
   }
 
   function choices(problem, rng) {

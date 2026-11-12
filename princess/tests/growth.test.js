@@ -44,5 +44,5 @@ test('player names remain separate from the princess companion',()=>{
 test('worker caches integration, and hub records only inside its accepted-answer branch',()=>{
  const fs=require('fs'),path=require('path'),root=path.resolve(__dirname,'../..'),sw=require('../../sw.js');
  for(const file of ['assets/study/princess-growth.js','assets/study/princess-growth.css','princess/journey.js','princess/journey.css'])assert(sw.OPTIONAL_SHELL.includes('./'+file+'?v='+(file.endsWith('.js')?2:1)));
- const h=fs.readFileSync(path.join(root,'game/index.html'),'utf8');assert(h.indexOf('window.PrincessGrowth.record')>h.indexOf('current.answered = true'));assert(h.includes('parentMode: state.parentMode'));assert(h.includes('var SET = 10, DAILY = 100;'));
+ const h=fs.readFileSync(path.join(root,'game/index.html'),'utf8');assert(h.indexOf('window.PrincessGrowth.record')>h.indexOf('current.answered = true'));assert(h.includes('parentMode: state.parentMode'));assert(h.includes('var SET = 15, DAILY = 100;'));
 });

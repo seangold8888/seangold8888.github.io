@@ -832,5 +832,8 @@
   } else if (hubEntry) {
     if (state.pending && state.pending.level === state.level) start();
     else showHubChoices();
-  } else if (!state.placed) showSetup(); else show("home");
+  } else if (!state.placed) showSetup();
+  // ?placement=1: 모험상자 설정의 '수학 실력 다시 확인하기'. 기록은 그대로 두고 단계만 다시 잡는다.
+  else if (new URLSearchParams(window.location.search).get("placement") === "1") showSetup();
+  else show("home");
 })();

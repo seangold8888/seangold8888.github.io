@@ -1520,7 +1520,9 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   const dedicatedBossArt = assets.bosses?.[bossId];
   const bossSheet = dedicatedBossArt || tintSheet(assets.boss, 'boss:' + bossId, bossProfile.tint ? [bossProfile.tint] : BOSS_TINT[troop]);
   ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
-  let width = innerWidth, height = innerHeight, dpr = Math.min(devicePixelRatio || 1, 1.75);
+  // renderScale: 품질을 바닥까지 내려도 느린 기기에서만 캔버스 해상도를 한 단계씩 낮춘다(전투 중 다시 올리지 않는다).
+  let renderScale = 1;
+  let width = innerWidth, height = innerHeight, dpr = Math.min(devicePixelRatio || 1, 1.75) * renderScale;
   let paintedBackground = assets.backgroundLayers || null;
   let paintedGroundLayer = null;
   if (paintedBackground) {
@@ -1540,14 +1542,18 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   let scenery = stageInfo && stageKey !== 'hulao' ? createScenery(stageInfo.scene, innerWidth, innerHeight, { painted: !!paintedBackground }) : null;
   // 숨겨진 창의 0×0만 안전 크기로 대체한다. 실제 모바일 뷰포트를 640px로
   // 강제하면 캔버스와 DOM HUD의 중심이 달라지고 오른쪽 화면이 잘린다.
+  // 캔버스 픽셀 크기만 다시 잡는다. 배경 소품은 건드리지 않아 해상도를 낮출 때 화면이 바뀌어 보이지 않는다.
+  const applyCanvasSize = () => {
+    dpr = Math.min(devicePixelRatio || 1, 1.75) * renderScale;
+    canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr);
+    canvas.style.width = `${width}px`; canvas.style.height = `${height}px`;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
+  };
   const resize = () => {
     const viewportWidth = innerWidth > 0 ? innerWidth : (document.documentElement.clientWidth || 640);
     const viewportHeight = innerHeight > 0 ? innerHeight : (document.documentElement.clientHeight || 360);
     width = Math.max(1, viewportWidth); height = Math.max(1, viewportHeight);
-    dpr = Math.min(devicePixelRatio || 1, 1.75);
-    canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr);
-    canvas.style.width = `${width}px`; canvas.style.height = `${height}px`;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
+    applyCanvasSize();
     if (stageInfo && stageKey !== 'hulao') scenery = createScenery(stageInfo.scene, width, height, { painted: !!paintedBackground });
   };
   let resizeFrame = 0;
@@ -1653,7 +1659,14 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   globalThis.visualViewport?.addEventListener('scroll', onViewportChange);
   // 적응형 품질. 프레임이 밀리면 화려함을 스스로 깎는다 — 난전에서 끊기는
   // 것보다 파티클 몇 개 덜 나오는 쪽이 훨씬 낫다. 1 = 최상, 0.45 = 최소.
-  let quality = 1, frameAvg = 16.7;
+  let quality = 1, frameAvg = 16.7, qualityCap = 1, rescaleAfter = 0;
+  // shadowBlur 는 iPad 에서 가장 비싼 캔버스 기능이다. 품질이 .7 아래로 내려가면 어디서 켜든 전부 0 으로 만든다.
+  const shadowBlurNative = Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype, 'shadowBlur');
+  if (shadowBlurNative && shadowBlurNative.set) Object.defineProperty(ctx, 'shadowBlur', {
+    configurable: true,
+    get() { return shadowBlurNative.get.call(this); },
+    set(value) { shadowBlurNative.set.call(this, quality > .7 ? value : 0); },
+  });
   const q = () => quality;
   const props = [
     { type: 'crate', x: 920, lane: -46, hp: 2, drop: 'food' },
@@ -2750,6 +2763,8 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   function drawProp(prop, floorY, now = 0) {
     if (prop.collected) return;
     const x = prop.x - cameraX, y = floorY + prop.lane;
+    // 화면 밖 소품은 그리지 않는다. 상자 하나가 그림자 붙은 그리기 4번이라 전장 전체를 매 프레임 그리면 느리다.
+    if (x < -220 || x > width + 220) return;
     const style = PICKUP_STYLE[prop.type];
 
     if (style) {
@@ -3741,8 +3756,11 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     // 반응하면 품질이 깜빡거려 오히려 거슬린다.
     const frameMs = Math.min(now - lastTime, 60);
     frameAvg += (frameMs - frameAvg) * .05;
-    if (frameAvg > 26 && quality > .45) quality = Math.max(.45, quality - .02);
-    else if (frameAvg < 19 && quality < 1) quality = Math.min(1, quality + .008);
+    // 한 번 느려져 그림자를 끈 전투에서는 다시 켜지 않는다. 켰다 껐다를 되풀이하면 그게 곧 주기적인 버벅임이 된다.
+    if (frameAvg > 26 && quality > .45) { quality = Math.max(.45, quality - .02); if (quality <= .7) qualityCap = .7; }
+    else if (frameAvg < 19 && quality < qualityCap) quality = Math.min(qualityCap, quality + .008);
+    // 품질을 바닥까지 내려도 느리면 해상도를 낮춘다(최저 60%, 2.5초에 한 단계).
+    if (quality <= .46 && frameAvg > 26 && renderScale > .6 && now > rescaleAfter) { renderScale = Math.max(.6, renderScale - .2); rescaleAfter = now + 2500; frameAvg = 20; applyCanvasSize(); }
     lastTime = now;
     if (now >= hitstopUntil) update(dt, now);
     render(now);

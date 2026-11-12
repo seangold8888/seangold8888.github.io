@@ -10,8 +10,10 @@ function master(st,level,dates=['2026-09-07','2026-09-08']) {
     const again=C.makeProblem(level,random,type);L.record(st,again,true,dates[dates.length-1]);
   });
 }
-test('mastery needs varied independent answers on different days for every concept',()=>{
- const st=S.defaults();master(st,5,['2026-09-07']);assert.equal(L.ready(st,5),false);
+test('a level opens the same day only when every concept is answered right in a row; one miss needs the two-day mastery',()=>{
+ const random=rng(77),st=S.defaults();master(st,5,['2026-09-07']);assert.equal(L.ready(st,5),true);
+ const type=C.levelById(5).types[0];L.record(st,C.makeProblem(5,random,type),false,'2026-09-08');assert.equal(L.ready(st,5),false);
+ const short=S.defaults();C.levelById(9).types.forEach(t=>{for(let i=0;i<3;i++)L.record(short,C.makeProblem(9,random,t),true,'2026-09-07');});assert.equal(L.ready(short,9),false);
  master(st,5);assert.equal(L.ready(st,5),true);
  const missing=Object.keys(st.skills)[0];delete st.skills[missing];assert.equal(L.ready(st,5),false);
 });

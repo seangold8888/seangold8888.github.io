@@ -1187,6 +1187,28 @@
     .math-launch-copy > span { font-size: 12px; }
   }
 </style>
+<style id="lobby-tidy">
+  /* 2026-11-12 메인화면 정리: 카드마다 붙던 설명·태그·새소식·이모지 배지를 숨기고 그림+이름만 남긴다.
+     DOM 은 그대로 두고 보이는 것만 줄였다(스크린리더와 테스트가 읽는 글은 그대로). */
+  .lobby-shell .games { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+  .lobby-shell .games .card { grid-column: auto; min-height: 150px; padding: 12px; }
+  @media (max-width: 899px) { .lobby-shell .games { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 599px) { .lobby-shell .games { grid-template-columns: repeat(2, minmax(0, 1fr)); } .lobby-shell .games .card { min-height: 128px; } }
+  .lobby-shell .card .desc, .lobby-shell .card .tags, .lobby-shell .card .update, .lobby-shell .card .badge,
+  .lobby-shell .shop .desc, .lobby-shell .shop .tags, .lobby-shell .shop .badge { display: none; }
+  .lobby-shell .card .name { font-size: clamp(16px, 1.9vw, 20px); }
+  .lobby-shell .open-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .lobby-shell .open-grid .shop { grid-column: auto; min-height: 84px; }
+  .lobby-shell .shop .name { font-size: clamp(16px, 1.9vw, 20px); }
+  @media (max-width: 599px) { .lobby-shell .open-grid { grid-template-columns: 1fr; } }
+  .lobby-shell .math-launch { padding-block: 12px; }
+  .lobby-shell .math-launch-copy > small, .lobby-shell .math-launch-copy > span { display: none; }
+  .lobby-shell .math-launch img { width: 84px; height: auto; }
+  .lobby-shell .party-launch { padding-block: 10px; }
+  .lobby-shell .party-launch small, .lobby-shell .party-launch p { display: none; }
+  .lobby-shell .section-heading p { display: none; }
+  .lobby-shell footer > span { display: none; }
+</style>
 </head>
 <body>
 <canvas id="sky" aria-hidden="true"></canvas>
@@ -1455,7 +1477,8 @@
         <option value="8">8세</option><option value="9">9세 이상</option>
       </select>
       <strong id="mathStage">수학 단계 불러오는 중</strong>
-      <p>나이에 맞는 범위에서 시작하고, 여러 문제를 정확히 풀면 다음 단계로 성장해요. 수학놀이터와 진도를 함께 써요.</p>
+      <p>나이에 맞는 범위에서 시작하고, 모든 유형을 연달아 맞히면 그날 바로 다음 단계로 올라가요. 수학놀이터와 진도를 함께 써요.</p>
+      <p><a id="mathPlacementAgain" href="math/?placement=1">수학 실력 다시 확인하기 (16문제 이내) →</a></p>
     </section>
     <section class="study-settings" aria-labelledby="readingSettingTitle">
       <label id="readingSettingTitle" for="readingLevelSelect">영어 읽기 단계</label>

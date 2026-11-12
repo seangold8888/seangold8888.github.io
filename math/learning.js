@@ -21,7 +21,18 @@
   function summary(state, level) {
     return C.levelById(level).types.map(type => Object.assign({type, label:LABELS[type] || type}, evidence((state.skills || {})[level + ':' + type])));
   }
-  function ready(state, level) { return summary(state, level).every(s => s.mastered); }
+  // 빠른 승급: 너무 쉬운 단계에 며칠씩 묶이지 않게, 모든 유형을 처음부터 연달아 맞히면 하루 안에도 올라간다.
+  // 유형마다 최근 need 문제가 전부 첫 시도 정답이고 서로 다른 문제여야 한다. 하나라도 틀리면 그 유형은 다시 센다.
+  // need: 유형이 8개 이상인 단계(5단계는 17개)는 유형당 2문제, 그 밖에는 단계 전체로 8문제 이상이 되게 유형당 3~8문제.
+  function fastNeed(level) { const n = C.levelById(level).types.length; return n >= 8 ? 2 : Math.max(3, Math.ceil(8 / n)); }
+  function fastReady(state, level) {
+    const types = C.levelById(level).types, need = fastNeed(level);
+    return types.every(type => {
+      const last = ((state.skills || {})[level + ':' + type] || []).slice(-need);
+      return last.length >= need && last.every(e => e.ok) && new Set(last.map(e => e.key)).size >= Math.min(need, 3);
+    });
+  }
+  function ready(state, level) { return summary(state, level).every(s => s.mastered) || fastReady(state, level); }
   function variant(p, rng, seen) {
     rng = rng || Math.random; let next;
     for (let i=0;i<80;i++) { next = C.makeProblem(p.level,rng,p.type); if (next.key !== p.key && !(seen || []).includes(next.key)) return next; }
@@ -89,6 +100,6 @@
       default: return '그림을 볼까요? 10개씩 묶음과 낱개를 나누어 생각해 봐요.';
     }
   }
-  const api = {LABELS,skillKey,evidence,record,summary,ready,variant,buildSession,hint};
+  const api = {LABELS,skillKey,evidence,record,summary,ready,fastReady,fastNeed,variant,buildSession,hint};
   if(typeof module !== 'undefined' && module.exports) module.exports=api; else root.MathLearning=api;
 })(typeof window !== 'undefined' ? window : globalThis);
