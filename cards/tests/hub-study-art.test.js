@@ -19,7 +19,7 @@ const hashes = {
 test("today's study precedes the games; removing the banner preserves all five family assets offline", () => {
   assert.ok(html.indexOf('<section id="study"') < html.indexOf('id="adventureWorlds"'));
   assert.doesNotMatch(html, /<article class="feature-stage"/);
-  assert.match(html, /id="studyTitle">오늘의 공부/);
+  assert.match(html, /id="studyTitle">Today's Study/);
   for (const [id, hash] of Object.entries(hashes)) {
     const relative = "assets/study/" + id + ".jpg";
     const bytes = fs.readFileSync(path.join(root, relative));

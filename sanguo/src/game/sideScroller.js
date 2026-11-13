@@ -14,6 +14,7 @@ import { BATTLE_CRY_PACKS, FEMALE_BATTLE_CRY_SEGMENTS, battleCryProfile } from '
 import { elevenVoiceFiles } from './elevenVoicePacks.js';
 import { heroRenderScale } from './heroRenderScale.js';
 import { FAMILY_HERO_IDS, FAMILY_RANGED, FAMILY_COMBAT_PROFILES, FAMILY_CALLOUTS, isFamilyHero } from '../data/familyHeroes.js';
+import { QUIZ_SCROLL_WAVES, QUIZ_MAX_STEPS, quizTierInfo, addQuizAnswer, quizRageBonus, quizDamage, shiftBattleTimers, quizTierBanner } from './quizWeapon.js';
 import { familyProjectile, drawFamilyProjectile, drawFamilySpecial, startFamilyTechnique, familyTechniquePulses, familyTechniqueTargets, familyPulseDamage, steerFamilyProjectile, drawFamilyTechniqueImpact, drawFamilyBind } from './familyCombat.js';
 
 const CANVAS_UI_FONT = '"Pretendard Variable", Pretendard, "Noto Sans KR", "Malgun Gothic", sans-serif';
@@ -1637,13 +1638,35 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   const lightAttackMs = weaponStyle === 'staff' ? 235 : weaponStyle === 'dual' || weaponStyle === 'sword' ? 265 : weaponStyle === 'fan' ? 315 : weaponStyle === 'spear' ? 320 : weaponStyle === 'halberd' ? 350 : weaponStyle === 'maul' ? 405 : weaponStyle === 'rake' ? 395 : weaponStyle === 'crescent' ? 340 : weaponStyle === 'monkstaff' ? 375 : 360;
   const player = { x: 330, lane: 0, y: 0, vy: 0, facing: 1, hp: maxHp, maxHp, rage: growth.startingRage, combo: 0, comboUntil: 0, comboStep: 0, attackStep: 1, ko: 0, action: 'idle', actionUntil: 0, hitDone: false, invulnerableUntil: 0, mounted: false, grab: null, grabHits: 0, weaponBoost: 0, actionStarted: 0, actionDuration: 0, afterimageAt: 0, footstepAt: 0, dashReady: 0, whirlwindReady: 0, counterReady: 0, counterUntil: 0 };
   let enemies = [], effects = [], impacts = [], afterimages = [], arrows = [], enemyArrows = [], shockwaves = [], dust = [], floatingTexts = [], cameraX = 0, cameraZoom = 1, cameraKick = 0, shake = 0, colorFlash = 0, hitstopUntil = 0, slowUntil = 0, bossIntroUntil = 0, ambientAt = 0, wave = 0, waveDelay = 0, combatLocked = true, waveGate = 1320, ended = false, lastTime = performance.now(), raf = 0;
-  let paused = false;
-  const setPaused = (value) => {
-    if (ended || paused === value) return;
-    paused = value; hudRoot.classList.toggle('paused', paused); input.clear();
-    if (paused) audio.pause();
-    else { lastTime = performance.now(); audio.resume(); showBanner(hudRoot, '전투 재개', '준비되면 공격을 이어가세요', 900); }
+  // 멈춤 사유가 둘이다: 탭이 숨겨짐(tabPaused, "일시정지" 문구) · 문제 패널(quizPaused, 문구 없이 조용히).
+  // 둘 중 하나라도 있으면 멈추고, 둘 다 풀려야 재개한다. 재개할 때는 멈춰 있던 시간만큼
+  // 절대 시각 타이머를 전부 밀어 준다(안 밀면 강화가 즉시 풀리고 적이 한꺼번에 덤빈다).
+  let paused = false, tabPaused = false, quizPaused = false, pauseStartedAt = 0, pauseFrameAvg = 16.7;
+  const shiftTimers = (delta) => {
+    if (!(delta > 0)) return 0;
+    let n = shiftBattleTimers({ player, enemies, arrows, enemyArrows, shockwaves }, delta);
+    if (hitstopUntil > 0) { hitstopUntil += delta; n += 1; }
+    if (slowUntil > 0) { slowUntil += delta; n += 1; }
+    if (bossIntroUntil > 0) { bossIntroUntil += delta; n += 1; }
+    if (ambientAt > 0) { ambientAt += delta; n += 1; }
+    if (rescaleAfter > 0) { rescaleAfter += delta; n += 1; }
+    return n;
   };
+  const applyPause = (fromTab) => {
+    if (ended) return;
+    hudRoot.classList.toggle('paused', tabPaused && !quizPaused); hudRoot.classList.toggle('quiz-paused', quizPaused);
+    const next = tabPaused || quizPaused;
+    if (paused === next) return;
+    paused = next; input.clear();
+    const t = performance.now();
+    // 멈춘 동안의 긴 프레임 간격이 자동 품질 조절에 섞이지 않게 평균을 그대로 보관했다가 되돌린다.
+    if (paused) { pauseStartedAt = t; pauseFrameAvg = frameAvg; audio.pause(); }
+    else {
+      shiftTimers(t - pauseStartedAt); frameAvg = pauseFrameAvg; lastTime = t; audio.resume();
+      if (fromTab) showBanner(hudRoot, '전투 재개', '준비되면 공격을 이어가세요', 900);
+    }
+  };
+  const setPaused = (value) => { if (ended) return; tabPaused = !!value; applyPause(true); };
   const onViewportChange = () => {
     scheduleResize();
     if (!document.hidden) setPaused(false);
@@ -1678,6 +1701,79 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     { type: 'crate', x: 6040, lane: -52, hp: 3, drop: supportsMount ? 'bell' : 'food' },
     { type: 'crate', x: 6980, lane: 34, hp: 4, drop: 'food' },
   ];
+  // ? 두루마리 → 수학 문제 → 무기 단계(0~4, 반 칸 단위 0~8). 문제 모듈이 없거나 자동화 브라우저면 두루마리 자체를 만들지 않는다.
+  const quizAvailable = () => typeof globalThis.GameQuiz !== 'undefined' && !!globalThis.GameQuiz?.ask && !globalThis.navigator?.webdriver;
+  let quizSteps = 0, quizFirstTries = 0, quizSolved = 0, quizOpen = false, quizKid = null;
+  const quizScrollWaves = new Set();
+  const quizInfo = () => quizTierInfo(quizSteps);
+  const refreshQuizHud = () => { const info = quizInfo(); playerHud.setWeaponTier?.(quizSteps, QUIZ_MAX_STEPS, info.color, info.tier ? info.glow : '두루마리'); };
+  if (quizAvailable()) refreshQuizHud();
+  // 파를 쓸어낸 직후, 주인공 앞쪽에 두루마리가 하늘에서 떨어진다. 적이 살아 있으면 만들지 않는다.
+  function maybeDropQuizScroll() {
+    if (ended || combatLocked || !QUIZ_SCROLL_WAVES.includes(wave) || quizScrollWaves.has(wave) || !quizAvailable()) return;
+    if (enemies.some((enemy) => !enemy.deadAt)) return;
+    quizScrollWaves.add(wave);
+    const x = Math.max(260, Math.min(worldWidth - 260, player.x + 420));
+    props.push({ type: 'scroll', x, lane: Math.max(-40, Math.min(40, player.lane * .5)), wave, fall: 1 });
+  }
+  function expireQuizScrolls() {
+    for (const prop of props) if (prop.type === 'scroll' && !prop.collected) {
+      prop.collected = true;
+      for (let i = 0; i < 10; i++) dust.push({ x: prop.x, y: ground() + prop.lane - 50, vx: (Math.random() - .5) * 160, vy: -40 - Math.random() * 90, life: .4, max: .4, color: '#f3e2b4', element: 'mist', size: 4 + Math.random() * 5 });
+    }
+  }
+  function applyQuizAnswer(firstTry, now) {
+    const result = addQuizAnswer(quizSteps, firstTry);
+    quizSteps = result.steps; quizSolved += 1; if (firstTry) quizFirstTries += 1;
+    gainRage(quizRageBonus(firstTry));
+    refreshQuizHud();
+    const info = quizInfo();
+    if (result.promoted) {
+      const banner = quizTierBanner(weaponName, quizSteps);
+      showBanner(hudRoot, banner.title, banner.sub, 2400);
+      colorFlash = Math.max(colorFlash, info.tier >= 4 ? .30 : .22); shake = Math.max(shake, 6 + info.tier * 2); cameraKick = Math.max(cameraKick, .06);
+      const count = Math.round((30 + info.tier * 10) * Math.max(.6, q()));
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2, speed = 120 + Math.random() * 300;
+        dust.push({ x: player.x, y: ground() + player.lane - 110 - Math.random() * 60, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - 80, life: .45 + Math.random() * .4, max: .85, color: i % 3 ? info.color : '#ffffff', glow: true, element: info.tier >= 4 ? 'ember' : 'shard', rotation: Math.random() * 6.28, spin: (Math.random() - .5) * 9, size: 3 + Math.random() * 6 });
+      }
+      floatText(info.glow + ' ' + info.tier + '단계', player.x, player.lane, info.color, 1.3);
+    } else if (result.maxed) {
+      showBanner(hudRoot, weaponName + ' 최고 단계', '무쌍 게이지 +' + quizRageBonus(firstTry), 1800);
+    } else {
+      showBanner(hudRoot, weaponName + ' 반 단계 충전', '한 문제 더 맞히면 다음 단계 · 무쌍 +' + quizRageBonus(firstTry), 2000);
+      floatText('반 단계 +', player.x, player.lane, info.color, 1.1);
+    }
+    audio.pickup();
+    player.invulnerableUntil = Math.max(player.invulnerableUntil, now + 1500);
+  }
+  async function openQuizScroll() {
+    const GQ = globalThis.GameQuiz;
+    if (quizOpen || !GQ) return;
+    quizOpen = true; quizPaused = true; applyPause(false);
+    const theme = { bg: 'rgba(24,14,10,.96)', accent: '#ffd86b', button: '#3a2416', buttonText: '#fff3d6' };
+    let result = null;
+    try {
+      let kid = isFamilyHero(heroId) ? heroId : (quizKid || GQ.currentKid?.());
+      if (!kid) kid = await GQ.pickKid({ title: '누가 풀어요?', kicker: '? 두루마리', theme });
+      if (ended) return;
+      quizKid = kid;
+      const info = quizInfo();
+      result = await GQ.ask({
+        kid, title: '맞히면 무기 강화!', theme,
+        hint: weaponName + ' · 지금 ' + (info.tier ? info.glow + ' ' + info.tier + '단계' : '기본') + (quizSteps % 2 ? ' + 반 칸' : ''),
+        onCorrect: (r) => (r.firstTry ? '한 번에 정답! 무기 한 단계 강화' : '정답! 무기 반 단계 강화'),
+      });
+    } catch (error) {
+      console.warn('[sanguo] 두루마리 문제를 열지 못했습니다', error);
+    }
+    if (ended) return;
+    quizOpen = false; quizPaused = false; applyPause(false);
+    // 다음 파가 문제 닫자마자 덮치지 않게 잠깐 숨을 돌린다.
+    waveDelay = Math.min(waveDelay, .4);
+    if (result && result.correct) applyQuizAnswer(!!result.firstTry, performance.now());
+    else player.invulnerableUntil = Math.max(player.invulnerableUntil, performance.now() + 1500);
+  }
   const horse = { x: 0, lane: 0, active: false, mounted: false, facing: 1 };
   const ground = () => height * 0.84;
   function mountLayout(depthScale = 1) {
@@ -1840,17 +1936,25 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       cloud: ['#6e3d0d', '#ffc95e', '#fff9dc'],
       earth: ['#3c2414', '#b97034', '#ffe0a0'],
     };
-    const palette = palettes[theme] || palettes.solar;
+    // 두루마리 무기 단계: 기본 베기·강공·돌진 궤적은 단계 색(은빛→푸른빛→금빛→불꽃)으로 바뀌고 커진다.
+    // 필살기·무쌍은 장수 고유 색을 지키고 단계 색 궤적을 한 겹 더 얹는다.
+    const quizWeapon = quizInfo(), quizRecolor = quizWeapon.palette && !burst;
+    const palette = quizRecolor ? quizWeapon.palette : palettes[theme] || palettes.solar;
     const element = theme === 'cloud' ? 'mist' : ['flame', 'inferno', 'solar'].includes(theme) ? 'ember' : theme === 'water' ? 'droplet' : theme === 'jade' || theme === 'storm' ? 'leaf' : 'shard';
     const count = musou ? 4 : type === 'special' ? 4 : type === 'whirlwind' ? 3 : kind === 'spin' || kind === 'wide' ? 3 : heavy || kind === 'thrust' ? 2 : 2;
     const max = musou ? .66 : type === 'special' ? .60 : type === 'whirlwind' ? .56 : kind === 'spin' ? .54 : kind === 'wide' ? .46 : heavy ? .42 : .34;
     // 쌍고검은 칼이 짧다 — 호를 작게 그려야 "단검 두 자루"로 읽힌다.
     const baseScale = weaponStyle === 'dual' && type === 'attack' ? .78 : weaponStyle === 'fan' && type === 'attack' ? 1.12 : 1;
-    const scale = baseScale * growth.effectScale;
+    const scale = baseScale * growth.effectScale * quizWeapon.effect;
     // 말 위 필살기·무쌍은 기수가 앞으로 내달리므로 궤적도 함께 따라간다.
     const ride = player.mounted && !!MOUNTED_SURGE[type];
     for (let layer = 0; layer < count; layer++) {
       effects.push({ x: player.x + player.facing * (kind === 'thrust' ? 155 : burst ? 120 : 92), y: ground() + player.lane - player.y - (player.mounted ? 190 : kind === 'overhead' ? 148 : 132), facing: player.facing, heavy, musou: burst, kind, theme, palette, scale, seed: Math.random() * 20, layer, life: max + layer * .045, max: max + layer * .045, ride });
+    }
+    // 단계 색 덧궤적: 필살기·무쌍(고유 색 유지)과 4단계(불꽃, 한 겹 더 크게).
+    if (quizWeapon.palette && (burst || quizWeapon.tier >= 4)) {
+      const extraLife = max + count * .045;
+      effects.push({ x: player.x + player.facing * (kind === 'thrust' ? 155 : burst ? 120 : 92), y: ground() + player.lane - player.y - (player.mounted ? 190 : kind === 'overhead' ? 148 : 132), facing: player.facing, heavy, musou: burst, kind, theme: quizWeapon.tier >= 4 ? 'flame' : theme, palette: quizWeapon.palette, scale: scale * 1.1, seed: Math.random() * 20, layer: count, life: extraLife, max: extraLife, ride });
     }
     if (heroId === 'honghaier' && ['special', 'musou'].includes(type)) {
       const fireLayers = musou ? 3 : 2;
@@ -1915,7 +2019,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   }
 
   function fireArrow(now, charged = false, damageScale = 1) {
-    const pushArrow = (arrow) => arrows.push({ ...arrow, damage: (arrow.damage ?? 43) * damageScale, charged, pierce: (arrow.pierce || 0) + (charged ? 1 : 0) });
+    const pushArrow = (arrow) => arrows.push({ ...arrow, damage: (arrow.damage ?? 43) * damageScale, charged, pierce: (arrow.pierce || 0) + (charged ? 1 : 0) + quizInfo().pierce });
     const candidates = enemies.filter((enemy) => !enemy.deadAt && !enemy.grabbed && Math.sign(enemy.x - player.x) === player.facing && Math.abs(enemy.x - player.x) < 1150);
     const target = candidates.sort((a, b) => Math.abs(a.x - player.x) + Math.abs(a.lane - player.lane) * 2.2 - (Math.abs(b.x - player.x) + Math.abs(b.lane - player.lane) * 2.2))[0];
     // 화면에 그리는 활 효과와 똑같은 손 앵커에서 화살을 생성한다.
@@ -2069,7 +2173,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     if (!state || player.action !== state.action || player.actionStarted !== state.started) return;
     for (const pulse of familyTechniquePulses(state, now)) {
       const targets = familyTechniqueTargets(pulse, player, enemies);
-      const baseDamage = familyPulseDamage(pulse, pulse.budget * heroTuning.power + (now < player.weaponBoost ? 18 : 0));
+      const baseDamage = familyPulseDamage(pulse, quizDamage(pulse.budget * heroTuning.power, now < player.weaponBoost ? 18 : 0, quizSteps));
       const color = familyRanged.color;
       if (['swarm', 'hat-trick'].includes(pulse.mode)) {
         const target = targets.length ? targets[pulse.index % targets.length] : null;
@@ -2114,7 +2218,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   // 기마 기술 한 대. 적장은 덜 밀리고 넘어지지 않는다.
   function landMountedHit(enemy, action, base, stunMs, now, knockdown = false) {
     const critical = growth.critChance > 0 && Math.random() < growth.critChance;
-    const damage = Math.round((base * heroTuning.power + (now < player.weaponBoost ? 18 : 0)) * (critical ? 1.65 : 1));
+    const damage = Math.round(quizDamage(base * heroTuning.power, now < player.weaponBoost ? 18 : 0, quizSteps) * (critical ? 1.65 : 1));
     const pan = Math.max(-.8, Math.min(.8, (enemy.x - player.x) / 600));
     enemy.hp = Math.max(0, enemy.hp - damage);
     const shove = mountedKnockback(action, player, enemy), resist = enemy.boss ? .5 : enemy.role === 'heavy' ? .78 : 1;
@@ -2187,7 +2291,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       // Swept collision: even a fast dash must hit enemies between frame positions.
       const targets = collectDashHits(player, enemies, dashTechnique, now);
       for (const enemy of targets) {
-        const damage = Math.round((dashTechnique.damage + (now < player.weaponBoost ? 18 : 0)) * heroTuning.power);
+        const damage = Math.round(quizDamage(dashTechnique.damage, now < player.weaponBoost ? 18 : 0, quizSteps) * heroTuning.power);
         enemy.hp = Math.max(0, enemy.hp - damage);
         enemy.hitUntil = now + 350;
         enemy.x += player.facing * dashTechnique.knock;
@@ -2242,10 +2346,10 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       : weaponStyle === 'crescent' ? (player.attackStep === 3 ? 48 : player.attackStep === 2 ? 35 : 30)
       : weaponStyle === 'monkstaff' ? (player.attackStep === 3 ? 60 : player.attackStep === 2 ? 48 : 38)
       : (player.attackStep === 3 ? 46 : player.attackStep === 2 ? 34 : 28);
-    const range = (action === 'attack' ? stepRange + mountedBonus : action === 'dash' ? 385 + mountedBonus : action === 'mountedThrust' ? 410 : areaAttack ? (action === 'whirlwind' ? 310 : 430 + mountedBonus) : ['heavy', 'throw'].includes(action) ? (weaponStyle === 'spear' ? 320 : 270) + mountedBonus : 205 + mountedBonus) * heroTuning.reach;
+    const range = (action === 'attack' ? stepRange + mountedBonus : action === 'dash' ? 385 + mountedBonus : action === 'mountedThrust' ? 410 : areaAttack ? (action === 'whirlwind' ? 310 : 430 + mountedBonus) : ['heavy', 'throw'].includes(action) ? (weaponStyle === 'spear' ? 320 : 270) + mountedBonus : 205 + mountedBonus) * heroTuning.reach * quizInfo().reach;
     const critical = growth.critChance > 0 && Math.random() < growth.critChance;
     const finisherBoost = action === 'attack' && player.attackStep === 3 ? growth.finisher : 1;
-    const damage = Math.round(((action === 'attack' ? stepDamage : action === 'musou' ? 110 : action === 'special' ? 82 : action === 'whirlwind' ? 66 : action === 'dash' ? 58 : action === 'mountedThrust' ? 64 : action === 'throw' ? 68 : action === 'heavy' ? 54 : player.mounted ? 44 : 30) * heroTuning.power + (now < player.weaponBoost ? 18 : 0)) * finisherBoost * (critical ? 1.65 : 1));
+    const damage = Math.round(quizDamage((action === 'attack' ? stepDamage : action === 'musou' ? 110 : action === 'special' ? 82 : action === 'whirlwind' ? 66 : action === 'dash' ? 58 : action === 'mountedThrust' ? 64 : action === 'throw' ? 68 : action === 'heavy' ? 54 : player.mounted ? 44 : 30) * heroTuning.power, now < player.weaponBoost ? 18 : 0, quizSteps) * finisherBoost * (critical ? 1.65 : 1));
     let hits = 0;
     if (player.grab && ['grab', 'throw'].includes(action)) {
       const enemy = player.grab; enemy.hp -= damage; if (enemy.hp > 0) audio.enemyVoice(false, Math.max(-.8, Math.min(.8, (enemy.x - player.x) / 600)), enemy); player.grabHits += 1; hits += 1; addImpact(enemy.x, enemy.lane, action === 'throw', enemy.hp <= 0);
@@ -2287,11 +2391,11 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     if (hits) { const powerful = action === 'attack' ? player.attackStep === 3 : action !== 'grab'; audio.hit(powerful, action); shake = ['musou', 'special', 'whirlwind'].includes(action) ? 18 : ['heavy', 'throw', 'dash', 'mountedThrust'].includes(action) || powerful ? 12 : 6; hitstopUntil = now + (powerful ? 64 : 42); if (powerful) slowUntil = Math.max(slowUntil, now + (['musou', 'special'].includes(action) ? 310 : 190)); gainRage(hits * (action === 'whirlwind' ? 3 : 7)); }
   }
   function finish(win) {
-    if (ended) return; ended = true; cancelAnimationFrame(raf); if (resizeFrame) cancelAnimationFrame(resizeFrame); input.destroy(); removeEventListener('pointerdown', unlockAudio, { capture: true }); removeEventListener('resize', onViewportChange); removeEventListener('orientationchange', onViewportChange); document.removeEventListener('visibilitychange', onVisibility); document.removeEventListener('fullscreenchange', onViewportChange); removeEventListener('blur', onBlur); removeEventListener('focus', onFocus); globalThis.visualViewport?.removeEventListener('resize', onViewportChange); globalThis.visualViewport?.removeEventListener('scroll', onViewportChange); for (const type of ['gesturestart', 'gesturechange', 'gestureend', 'touchstart', 'touchmove']) document.removeEventListener(type, preventBrowserGesture); document.documentElement.classList.remove('battle-viewport'); bossHud.remove(); audio.stop(); if (win) audio.win(); assets.releaseStageBackground?.(); paintedBackground = null; if (paintedGroundLayer) { paintedGroundLayer.width = paintedGroundLayer.height = 1; paintedGroundLayer = null; }
+    if (ended) return; ended = true; if (quizOpen || globalThis.GameQuiz?.isOpen?.()) { try { globalThis.GameQuiz.close(); } catch {} } quizOpen = false; cancelAnimationFrame(raf); if (resizeFrame) cancelAnimationFrame(resizeFrame); input.destroy(); removeEventListener('pointerdown', unlockAudio, { capture: true }); removeEventListener('resize', onViewportChange); removeEventListener('orientationchange', onViewportChange); document.removeEventListener('visibilitychange', onVisibility); document.removeEventListener('fullscreenchange', onViewportChange); removeEventListener('blur', onBlur); removeEventListener('focus', onFocus); globalThis.visualViewport?.removeEventListener('resize', onViewportChange); globalThis.visualViewport?.removeEventListener('scroll', onViewportChange); for (const type of ['gesturestart', 'gesturechange', 'gestureend', 'touchstart', 'touchmove']) document.removeEventListener(type, preventBrowserGesture); document.documentElement.classList.remove('battle-viewport'); bossHud.remove(); audio.stop(); if (win) audio.win(); assets.releaseStageBackground?.(); paintedBackground = null; if (paintedGroundLayer) { paintedGroundLayer.width = paintedGroundLayer.height = 1; paintedGroundLayer = null; }
     if (win) {
       try { localStorage.setItem('sanguo_clear_' + stageKey, '1'); } catch {}
     }
-    const rewards = awardBattleProgress(heroId, { win, ko: player.ko, stageKey, difficultyId: diff.id });
+    const rewards = awardBattleProgress(heroId, { win, ko: player.ko, stageKey, difficultyId: diff.id, quizFirstTries });
     setTimeout(() => { document.getElementById('ui').innerHTML = ''; showResult(document.getElementById('ui'), { win, heroName, enemyName: bossLabel, weaponName, rewards, story: stageInfo?.work === 'xiyou' || stageInfo?.work === 'korea' ? stageInfo : null, onRetry: () => startSideBattle(heroId, stageKey, { onExit }), onMenu: () => onExit?.() }); }, 450);
   }
 
@@ -2416,7 +2520,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       for (const enemy of enemies) {
         if (enemy.deadAt || enemy.grabbed || arrow.hitTargets?.has(enemy) || Math.abs(enemy.x - arrow.x) > 58 || Math.abs(enemy.lane - arrow.lane) > 48 || arrow.height < 40 || arrow.height > Math.min(300, height * .47) * .95) continue;
         const arrowCritical = growth.critChance > 0 && Math.random() < growth.critChance * .75;
-        const arrowDamage = Math.round(((arrow.damage ?? 43) * heroTuning.arrow * (arrow.charged ? 1.6 : 1) + (!arrow.familyTechnique && now < player.weaponBoost ? 16 : 0)) * (arrowCritical ? 1.65 : 1));
+        const arrowDamage = Math.round(quizDamage((arrow.damage ?? 43) * heroTuning.arrow * (arrow.charged ? 1.6 : 1), !arrow.familyTechnique && now < player.weaponBoost ? 16 : 0, arrow.familyTechnique ? 0 : quizSteps) * (arrowCritical ? 1.65 : 1));
         enemy.hp = Math.max(0, enemy.hp - arrowDamage); if (enemy.hp > 0) audio.enemyVoice(false, Math.max(-.8, Math.min(.8, (enemy.x - player.x) / 600)), enemy);
         floatText(enemy.boss ? `${arrowCritical ? '✦ ' : ''}◆ ${arrowDamage}` : arrowCritical ? `✦ ${arrowDamage}` : arrowDamage, enemy.x, enemy.lane, enemy.boss ? bossProfile.glow : arrowCritical ? '#fff0a6' : arrow.color, enemy.boss ? 1.16 : arrowCritical ? 1.12 : 1);
         enemy.hitUntil = now + 380;
@@ -2473,6 +2577,11 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
 
     for (const prop of props) {
       if (prop.collected || prop.type === 'crate') continue;
+      if (prop.type === 'scroll') {
+        if (prop.fall > 0) prop.fall = Math.max(0, prop.fall - dt * 2.4);
+        // 떨어지는 중·문제 중·전투 중에는 줍지 않는다(적이 몰려 있는 한가운데서 문제가 뜨지 않게).
+        if (prop.fall > .25 || quizOpen || combatLocked || paused) continue;
+      }
       if (Math.abs(prop.x - player.x) > 62 || Math.abs(prop.lane - player.lane) > 52) continue;
       prop.collected = true;
       // 먹은 순간 반짝임이 튀어야 "주웠다"가 확실히 읽힌다.
@@ -2484,6 +2593,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       }
       if (prop.type === 'food') { player.hp = Math.min(player.maxHp, player.hp + 56); showBanner(hudRoot, '고기 획득', '체력 회복'); }
       else if (prop.type === 'weapon') { player.weaponBoost = now + 14000; showBanner(hudRoot, '명검 획득', '14초 동안 공격력 상승'); }
+      else if (prop.type === 'scroll') openQuizScroll();
       else if (prop.type === 'bell') {
         if (player.mounted) {
           // 이미 타고 있을 때 두 번째 탈것을 겹쳐 만들지 않고 현재 탈것을 회복시킨다.
@@ -2525,7 +2635,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
         enemy.action = 'attack'; enemy.actionStarted = now; enemy.actionDuration = 640; enemy.actionUntil = now + 640;
         const waveDir = Math.sign(player.x - enemy.x) || 1;
         setTimeout(() => {
-          if (ended || enemy.deadAt) return;
+          if (ended || paused || enemy.deadAt) return;
           const t0 = performance.now();
           shockwaves.push({ x: enemy.x + waveDir * 70, lane: enemy.lane, dir: waveDir, speed: 640, life: 1.5, max: 1.5, color: bossProfile.glow, hit: false });
           audio.hit(true); shake = Math.max(shake, 13); colorFlash = Math.max(colorFlash, .10);
@@ -2547,7 +2657,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
         setTimeout(() => {
           const strikeNow = performance.now();
           const hitRange = enemy.role === 'archer' ? 520 : enemy.boss ? bossProfile.hitRange : 185;
-          if (ended || enemy.deadAt || enemy.grabbed || strikeNow < (enemy.familyBindUntil || 0) || Math.abs(player.x - enemy.x) > hitRange || Math.abs(player.lane - enemy.lane) > 62) return;
+          if (ended || paused || enemy.deadAt || enemy.grabbed || strikeNow < (enemy.familyBindUntil || 0) || Math.abs(player.x - enemy.x) > hitRange || Math.abs(player.lane - enemy.lane) > 62) return;
           if (enemy.role === 'archer' || (enemy.boss && bossProfile.kind === 'celestial')) {
             const drawH = Math.min(300, height * .47), distance = Math.max(180, Math.abs(player.x - enemy.x)), travel = distance / (enemy.boss ? 1120 : 980);
             enemyArrows.push({ x: enemy.x + enemy.facing * 56, lane: enemy.lane, height: drawH * (enemy.boss ? .68 : .62), vx: enemy.facing * (enemy.boss ? 1120 : 980), laneV: (player.lane - enemy.lane) / travel, vz: ((drawH * .56) - drawH * (enemy.boss ? .68 : .62) + 260 * travel * travel) / travel, life: 1.45, max: 1.45, hit: false, trailAt: strikeNow, phase: Math.random() * Math.PI * 2, color: enemy.boss ? bossProfile.glow : '#ff6e63', damage: enemy.boss ? 12 : 8 });
@@ -2582,7 +2692,13 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       constrainEnemy(enemy, bounds);
     }
     if (boss) bossHud.setHp(boss.hp / boss.maxHp);
-    if (!living && !ended) { combatLocked = false; waveDelay += dt; if (wave < TOTAL_WAVES && waveDelay > 1.0) spawnWave(); else if (wave >= TOTAL_WAVES && waveDelay > 1.1) finish(true); }
+    if (!living && !ended) {
+      combatLocked = false; waveDelay += dt; maybeDropQuizScroll();
+      // 앞에 두루마리가 놓여 있으면 다음 파를 최대 6초까지 기다려 준다(지나치거나 먹으면 바로 진행).
+      const scrollAhead = !quizOpen && props.some((prop) => prop.type === 'scroll' && !prop.collected && prop.wave === wave && prop.x > player.x - 140);
+      if (wave < TOTAL_WAVES && !quizOpen && waveDelay > (scrollAhead ? 6.0 : 1.0)) { expireQuizScrolls(); spawnWave(); }
+      else if (wave >= TOTAL_WAVES && waveDelay > 1.1) finish(true);
+    }
     const cameraLead = player.facing * (player.mounted ? 88 : 42);
     cameraX += (Math.max(0, Math.min(worldWidth - width, player.x + cameraLead - width * 0.34)) - cameraX) * (1 - Math.exp(-dt * 6));
     if (now > ambientAt) {
@@ -2758,7 +2874,80 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     food: { color: '#ff6a4d', label: '전투식량', detail: '체력 +56', src: [0, 300, 512, 560], width: 88, height: 96 },
     weapon: { color: '#8fd8ff', label: '명검', detail: '공격력 상승', src: [512, 70, 512, 850], width: 78, height: 112 },
     bell: { color: '#ffd24a', label: '소환령', detail: '탈것 호출', src: [1024, 150, 512, 700], width: 102, height: 112 },
+    // 아틀라스에 칸이 없어 벡터로 그린다(drawQuizScroll).
+    scroll: { color: '#ffd86b', label: '? 두루마리', detail: '문제 풀고 무기 강화' },
   };
+
+  // ? 두루마리. shadowBlur·그라데이션 없이 단색 도형만 쓴다(아이패드).
+  function drawQuizScroll(prop, style, lift, pulse, now) {
+    const drop = (prop.fall || 0), dropY = drop * drop * 220;
+    ctx.save();
+    ctx.translate(0, -lift - 36 - dropY);
+    ctx.rotate(Math.sin(now * .0024 + prop.x) * .07 + drop * 1.4);
+    const w = 84, h = 62;
+    // 종이
+    ctx.fillStyle = '#f6e6b8'; ctx.strokeStyle = '#6b3f1c'; ctx.lineWidth = 3;
+    ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(-w / 2, -h / 2, w, h, 5); else ctx.rect(-w / 2, -h / 2, w, h); ctx.fill(); ctx.stroke();
+    ctx.globalAlpha = .55; ctx.strokeStyle = '#c9a56a'; ctx.lineWidth = 1.4;
+    for (const yy of [-h * .32, h * .32]) { ctx.beginPath(); ctx.moveTo(-w * .38, yy); ctx.lineTo(w * .38, yy); ctx.stroke(); }
+    ctx.globalAlpha = 1;
+    // 양쪽 두루마리 축
+    for (const side of [-1, 1]) {
+      const cx = side * (w / 2 + 3);
+      ctx.fillStyle = '#8a4b22'; ctx.strokeStyle = '#3e1f0d'; ctx.lineWidth = 2;
+      ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(cx - 6, -h / 2 - 7, 12, h + 14, 5); else ctx.rect(cx - 6, -h / 2 - 7, 12, h + 14); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#e2b14e';
+      ctx.beginPath(); ctx.arc(cx, -h / 2 - 9, 4.2, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(cx, h / 2 + 9, 4.2, 0, Math.PI * 2); ctx.fill();
+    }
+    // 큰 물음표
+    const beat = 1 + pulse * .08;
+    ctx.scale(beat, beat);
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = `900 50px ${CANVAS_IMPACT_FONT}`;
+    ctx.lineWidth = 6; ctx.strokeStyle = '#fff7dc'; ctx.strokeText('?', 0, 2);
+    ctx.fillStyle = '#c3231a'; ctx.fillText('?', 0, 2);
+    ctx.restore();
+    if (drop > .25) return;
+    // 이름표
+    ctx.save();
+    ctx.translate(0, -lift + 26);
+    ctx.globalAlpha = .82 + pulse * .18;
+    ctx.fillStyle = 'rgba(10, 6, 6, .88)'; ctx.strokeStyle = style.color; ctx.lineWidth = 1.5;
+    ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(-58, -13, 116, 30, 8); else ctx.rect(-58, -13, 116, 30); ctx.fill(); ctx.stroke();
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = `900 12px ${CANVAS_IMPACT_FONT}`; ctx.fillStyle = '#fff7df'; ctx.fillText(style.label, 0, -4);
+    ctx.font = `700 9px ${CANVAS_UI_FONT}`; ctx.fillStyle = style.color; ctx.fillText(style.detail, 0, 10);
+    ctx.restore();
+  }
+
+  // 무기 단계 빛: 발밑 고리 + 단계 수만큼 떠오르는 불티(4단계는 불꽃 혀). 단색·저비용.
+  function drawWeaponAura(x, baseY, now) {
+    const info = quizInfo();
+    if (!info.tier) return;
+    const pulse = .5 + Math.sin(now * .007) * .5, mountedScale = player.mounted ? 1.45 : 1;
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.globalAlpha = .28 + info.tier * .06 + pulse * .14; ctx.strokeStyle = info.color; ctx.lineWidth = 2 + info.tier * .7;
+    ctx.beginPath(); ctx.ellipse(x, baseY + 2, (46 + info.tier * 6) * mountedScale, (12 + info.tier * 1.5) * mountedScale, 0, 0, Math.PI * 2); ctx.stroke();
+    const motes = Math.round((2 + info.tier * 2) * Math.max(.5, q()));
+    ctx.fillStyle = info.color;
+    for (let i = 0; i < motes; i++) {
+      const phase = (now * .00055 + i / motes) % 1, angle = i * 2.399 + now * .0012;
+      const px = x + Math.cos(angle) * (30 + (i % 3) * 12) * mountedScale, py = baseY - phase * (150 + info.tier * 18) * mountedScale;
+      ctx.globalAlpha = (1 - phase) * (.45 + info.tier * .1);
+      ctx.beginPath(); ctx.arc(px, py, 2 + info.tier * .55, 0, Math.PI * 2); ctx.fill();
+    }
+    if (info.tier >= 4) {
+      ctx.fillStyle = '#ffb347';
+      for (let i = 0; i < 5; i++) {
+        const fx = x + (i - 2) * 16 * mountedScale, flick = 18 + Math.sin(now * .02 + i * 1.7) * 8;
+        ctx.globalAlpha = .34 + pulse * .2;
+        ctx.beginPath(); ctx.moveTo(fx - 7, baseY + 2); ctx.quadraticCurveTo(fx - 2, baseY - flick * .6, fx, baseY - flick * mountedScale); ctx.quadraticCurveTo(fx + 2, baseY - flick * .6, fx + 7, baseY + 2); ctx.closePath(); ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
 
   function drawProp(prop, floorY, now = 0) {
     if (prop.collected) return;
@@ -2796,6 +2985,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       }
       ctx.restore();
 
+      if (prop.type === 'scroll') { drawQuizScroll(prop, style, lift, pulse, now); ctx.restore(); return; }
       // 생성형 프리미엄 아이템 아틀라스. 기존의 단순 도형은 로딩 실패 시에만
       // 아래 레거시 드로어로 남기고, 정상 상태에서는 재질이 살아 있는 픽업을 쓴다.
       if (assets.itemPickups && style.src) {
@@ -3109,6 +3299,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       if (actor.kind === 'player') {
         const baseY = floorY + player.lane;
         drawShadow(player.x, baseY + 4, player.mounted ? (isCloudMount ? .98 : isFireWheelMount ? 1.18 : isBoarMount ? 1.45 : 1.5) : 1.15 * heroVisualScale, player.y ? 0.22 : (player.mounted ? (isCloudMount ? .24 : isFireWheelMount ? .28 : isBoarMount ? .40 : .48) : .48));
+        drawWeaponAura(player.x - cameraX, baseY + 4, now);
         const attacking = ['attack', 'heavy', 'musou', 'special', 'throw', 'grab', 'dash', 'whirlwind', 'counter', 'ranged', 'mountedThrust', 'mountedSweep', 'mountedStomp', 'mountedCharge'].includes(player.action);
         const actionProgress = attacking ? Math.max(0, Math.min(1, (now - player.actionStarted) / Math.max(1, player.actionDuration))) : 0;
         let heroFrame = 0;
@@ -3766,5 +3957,16 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
     render(now);
     raf = requestAnimationFrame(loop);
   }
+  // 검증용(주소에 ?qa=1 일 때만): 숨은 창에서도 update/render 를 직접 돌려 두루마리·무기 단계를 확인한다. 평소에는 아무것도 노출하지 않는다.
+  try {
+    if (new URLSearchParams(globalThis.location?.search || '').get('qa') === '1') globalThis.__sgQuiz = {
+      player, update, render, beginAttack, resolveAttack, shiftTimers, spawnWave, finish, openQuizScroll, applyQuizAnswer,
+      get enemies() { return enemies; }, get props() { return props; }, get wave() { return wave; }, get locked() { return combatLocked; }, get ended() { return ended; },
+      get paused() { return paused; }, get quizOpen() { return quizOpen; }, get quizSteps() { return quizSteps; }, set quizSteps(v) { quizSteps = v; refreshQuizHud(); },
+      get quizFirstTries() { return quizFirstTries; }, get quizKid() { return quizKid; }, get quality() { return quality; }, get renderScale() { return renderScale; }, get frameAvg() { return frameAvg; },
+      get effects() { return effects; }, get heroTuning() { return heroTuning; }, get rage() { return player.rage; }, get cameraX() { return cameraX; },
+      stopLoop() { cancelAnimationFrame(raf); },
+    };
+  } catch {}
   showBanner(hudRoot, stageInfo ? stageInfo.title.split(' · ')[0] : '호로관', `${heroName} · LV.${growth.level} · ${weaponName} +${growth.weaponLevel - 1}`); raf = requestAnimationFrame(loop);
 }

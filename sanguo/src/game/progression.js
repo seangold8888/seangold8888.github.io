@@ -116,7 +116,10 @@ export function weaponGrade(level) {
 
 export const weaponEnhanceText = (progress) => '+' + Math.max(0, progress.weaponLevel - 1) + ' · ' + weaponGrade(progress.weaponLevel);
 
-export function awardBattleProgress(heroId, { win = false, ko = 0, stageKey = '', difficultyId = 'normal' } = {}) {
+/* quizFirstTries: 그 전투에서 ? 두루마리 문제를 한 번에 맞힌 수. 1개당 무기 숙련 +5, 최대 4개(+20). */
+export const QUIZ_MASTERY_PER_SOLVE = 5;
+export const QUIZ_MASTERY_MAX_SOLVES = 4;
+export function awardBattleProgress(heroId, { win = false, ko = 0, stageKey = '', difficultyId = 'normal', quizFirstTries = 0 } = {}) {
   const before = getHeroProgress(heroId), state = load(), raw = normalizeRaw(state[heroId]);
   raw.clears = { ...raw.clears };
   const stageIndex = STAGE_ORDER.indexOf(stageKey), stageRank = Math.max(0, stageIndex);
@@ -133,7 +136,8 @@ export function awardBattleProgress(heroId, { win = false, ko = 0, stageKey = ''
   const baseXp = win ? 92 + stageRank * 8 + creditedKo * 1.65 : 14 + stageRank * 1.5 + creditedKo * .55;
   const baseMastery = win ? 50 + stageRank * 5 + creditedKo * .92 : 6 + stageRank * .7 + creditedKo * .24;
   const xp = Math.max(1, Math.round(baseXp * difficulty * lossScale + firstXp));
-  const mastery = Math.max(1, Math.round(baseMastery * difficulty * lossScale + firstMastery));
+  const quizMastery = Math.max(0, Math.min(QUIZ_MASTERY_MAX_SOLVES, Math.floor(Number(quizFirstTries) || 0))) * QUIZ_MASTERY_PER_SOLVE;
+  const mastery = Math.max(1, Math.round(baseMastery * difficulty * lossScale + firstMastery)) + quizMastery;
   raw.xp += xp;
   raw.mastery += mastery;
   raw.battles += 1;
@@ -145,5 +149,5 @@ export function awardBattleProgress(heroId, { win = false, ko = 0, stageKey = ''
   const after = getHeroProgress(heroId);
   const oldPerks = unlockedPerks(before);
   const newlyUnlocked = unlockedPerks(after).filter((perk) => !oldPerks.some((old) => old.name === perk.name));
-  return { xp, mastery, firstClear, newlyUnlocked, before, after, heroLevelUps: after.level - before.level, weaponLevelUps: after.weaponLevel - before.weaponLevel };
+  return { xp, mastery, quizMastery, firstClear, newlyUnlocked, before, after, heroLevelUps: after.level - before.level, weaponLevelUps: after.weaponLevel - before.weaponLevel };
 }

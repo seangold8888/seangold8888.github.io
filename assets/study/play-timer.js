@@ -111,12 +111,12 @@
     var box = document.createElement("div");
     box.className = "box";
     var title = document.createElement("h2");
-    title.textContent = neverStarted ? "🎟️ 게임 티켓이 필요해요" : "⏰ 게임 시간이 끝났어요!";
+    title.textContent = neverStarted ? "🎟️ Ticket needed" : "⏰ Time's up!";
     var text = document.createElement("p");
-    text.textContent = "PLAYGROUND에서 문제 15개를 풀면 " + MINUTES_PER_TICKET + "분 더 놀 수 있어요.";
+    text.textContent = "Solve 15 problems in PLAYGROUND for " + MINUTES_PER_TICKET + " more minutes of play.";
     var link = document.createElement("a");
     link.href = hubUrl;
-    link.textContent = "PLAYGROUND로 가기";
+    link.textContent = "Go to PLAYGROUND";
     var note = document.createElement("small");
     box.append(title, text, link, note);
     overlay.appendChild(box);
@@ -133,7 +133,7 @@
     var leaveAt = Date.now() + REDIRECT_MS;
     var countdown = setInterval(function () {
       var left = Math.max(0, Math.ceil((leaveAt - Date.now()) / 1000));
-      note.textContent = left + "초 뒤에 PLAYGROUND로 돌아가요";
+      note.textContent = "Returning to PLAYGROUND in " + left + "s";
       if (left <= 0) { clearInterval(countdown); location.href = hubUrl; }
     }, 250);
   }
@@ -153,7 +153,7 @@
     }
     var warn = left <= WARN_MS;
     // 마지막 1분은 주황색으로 바꾸고 문구를 계속 붙여 둔다.
-    chip.textContent = "⏱ " + format(left) + (warn ? " · 곧 끝나요!" : "");
+    chip.textContent = "⏱ " + format(left) + (warn ? " · Almost done!" : "");
     chip.classList.toggle("is-warn", warn);
   }
   function start() {

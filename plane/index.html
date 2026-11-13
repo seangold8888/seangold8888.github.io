@@ -7,16 +7,17 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>스카이 샷 · PLAYGROUND</title>
 <link rel="preload" href="../sanguo/fonts/pretendard/PretendardVariable.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=3">
-<script src="../assets/study/play-timer.js?v=1"></script>
+<link rel="stylesheet" href="style.css?v=5">
+<script src="../assets/study/play-timer.js?v=2"></script>
 <script src="../assets/touch-guard.js?v=1"></script>
 <script src="../math/curriculum.js?v=20"></script>
 <script src="../math/learning.js?v=29"></script>
 <script src="../math/store.js?v=32"></script>
 <script src="../assets/study/math-bridge.js?v=2"></script>
+<script src="../assets/study/game-quiz.js?v=1"></script>
 </head>
 <body>
-<canvas id="sky" aria-label="스카이 샷. 손가락으로 비행기를 좌우로 움직여요. 별을 먹고 문제를 맞히면 무기가 세져요."></canvas>
+<canvas id="sky" aria-label="스카이 샷. 손가락으로 비행기를 앞뒤좌우로 움직여요. 별을 먹고 문제를 맞히면 무기가 세져요."></canvas>
 
 <header class="hud">
   <a class="back" href="../game/" aria-label="PLAYGROUND로 돌아가기">←</a>
@@ -37,11 +38,10 @@
   <p class="best" id="bestStart"></p>
 </section>
 
-<section class="panel" id="quiz" hidden aria-live="polite">
-  <p class="quiz-kicker" id="quizKicker">맞히면 무기가 세져요</p>
-  <p class="formula" id="formula"></p>
-  <div class="answers" id="answers"></div>
-  <p class="quiz-say" id="quizSay"></p>
+<section class="panel" id="fork" hidden aria-live="polite">
+  <p class="quiz-kicker" id="forkKicker">새 무기를 골라요!</p>
+  <p class="fork-title" id="forkTitle">어떤 무기가 좋아요?</p>
+  <div class="forks" id="forks"></div>
 </section>
 
 <section class="panel" id="over" hidden>
@@ -51,6 +51,6 @@
   <a class="home" href="../game/">PLAYGROUND로</a>
 </section>
 
-<script type="module" src="src/main.js?v=3"></script>
+<script type="module" src="src/main.js?v=5"></script>
 </body>
 </html>

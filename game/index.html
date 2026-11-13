@@ -6,23 +6,23 @@
 <base href="../">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style id="no-zoom-style">*{touch-action:manipulation}canvas{touch-action:none}</style>
-<meta name="theme-color" content="#101433">
+<meta name="theme-color" content="#cfe9ff">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="PLAYGROUND">
 <meta name="format-detection" content="telephone=no">
 <!-- 새 게임을 추가해도 아이패드가 예전 목록을 계속 보여주는 일이 없게 -->
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
-<meta name="description" content="이야기를 듣고, 문제를 풀고, 카드를 모으며 떠나는 어린이 모험 로비">
+<meta name="description" content="Listen, learn, and collect cards on a fun adventure.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://seangold8888.github.io/game/">
-<meta property="og:title" content="PLAYGROUND — 우리 가족 게임 기지">
-<meta property="og:description" content="듣고, 배우고, 함께 떠나는 우리 가족 모험">
+<meta property="og:title" content="PLAYGROUND — Our Family Game Base">
+<meta property="og:description" content="Listen, learn, and explore together.">
 <meta property="og:image" content="https://seangold8888.github.io/og-adventure-v3.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="PLAYGROUND — 우리 가족 게임 기지">
-<meta name="twitter:description" content="듣고, 배우고, 함께 떠나는 우리 가족 모험">
+<meta name="twitter:title" content="PLAYGROUND — Our Family Game Base">
+<meta name="twitter:description" content="Listen, learn, and explore together.">
 <meta name="twitter:image" content="https://seangold8888.github.io/og-adventure-v3.png">
 <meta http-equiv="Pragma" content="no-cache">
 <link rel="apple-touch-icon" href="icon.png">
@@ -1209,55 +1209,184 @@
   .lobby-shell .section-heading p { display: none; }
   .lobby-shell footer > span { display: none; }
 </style>
+<style id="lobby-daylight">
+  /* 2026-11-13 낮 테마: 위 밤하늘 블록들은 테스트가 문자열로 확인하므로 그대로 두고, 색만 여기서 한 번에 덮는다.
+     하늘색→크림 배경, 흰 카드, 진한 남색 글자, 포인트 = 햇살 노랑(버튼) + 하늘 파랑(초점·링크). */
+  :root {
+    --sky-top: #cfe9ff; --sky-mid: #e8f5ff; --cream: #fff7ea;
+    --card: #ffffff; --card-line: #d5e3f3; --soft: #f2f7fd;
+    --ink: #1f2a44; --text: #1f2a44; --muted: #4a5878; --line: #d5e3f3;
+    --electric: #1f6fd6; --gold: #ffc83d; --lime: #4cc764;
+    --accent-text: #b4480c; --ok-text: #2a7a35; --bad-text: #c0352b;
+    --lift: 0 1px 0 rgba(31,42,68,.04), 0 6px 16px rgba(40,80,140,.10);
+  }
+  html { background: var(--sky-top); }
+  body { background: linear-gradient(180deg, var(--sky-top) 0, var(--sky-mid) 520px, var(--cream) 100%); color: var(--text); }
+  /* 별 캔버스 대신 해와 구름(그림 파일 없이 그라데이션만, 움직이지 않음) */
+  #sky { display: none; }
+  body::before {
+    display: block; position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 1; mask-image: none; -webkit-mask-image: none;
+    background:
+      radial-gradient(circle at 92% 3%, rgba(255,207,77,.55) 0 46px, rgba(255,207,77,.18) 47px 110px, rgba(255,207,77,0) 150px),
+      radial-gradient(ellipse 120px 34px at 14% 10%, rgba(255,255,255,.9) 60%, rgba(255,255,255,0) 64%),
+      radial-gradient(ellipse 70px 30px at 19% 7.5%, rgba(255,255,255,.9) 60%, rgba(255,255,255,0) 64%),
+      radial-gradient(ellipse 150px 38px at 64% 16%, rgba(255,255,255,.75) 60%, rgba(255,255,255,0) 64%),
+      radial-gradient(ellipse 80px 32px at 68% 13.5%, rgba(255,255,255,.75) 60%, rgba(255,255,255,0) 64%),
+      radial-gradient(ellipse 130px 34px at 30% 62%, rgba(255,255,255,.55) 60%, rgba(255,255,255,0) 64%),
+      radial-gradient(ellipse 120px 32px at 86% 78%, rgba(255,255,255,.55) 60%, rgba(255,255,255,0) 64%);
+  }
+
+  /* 상단: 워드마크·티켓·설정 */
+  .brand-orb { border: 1px solid var(--card-line); background: var(--card); box-shadow: var(--lift); }
+  .brand-copy h1 { color: #1d3f8f; text-shadow: 0 2px 0 rgba(255,255,255,.9); }
+  .hud-chip, .parent-entry { border-color: var(--card-line); background: var(--card); box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .hud-chip small, .hud-chip.ticket small { color: var(--muted); }
+  .hud-chip strong { color: var(--text); }
+  .hud-chip.ticket strong { color: var(--accent-text); }
+  .hud-chip.crown strong { color: var(--ok-text); }
+  .hud-chip.ticket { background: var(--card); border: 1px solid var(--card-line); box-shadow: var(--lift); }
+  .lobby-settings > summary { color: #34425f; background: var(--card); border-color: var(--card-line); box-shadow: var(--lift); }
+  .lobby-settings[open] > summary { color: var(--electric); border-color: var(--electric); }
+  .settings-panel { background: var(--card); border-color: var(--card-line); box-shadow: 0 14px 34px rgba(40,80,140,.18); color: var(--text); }
+  .settings-panel .hud-chip { background: none; border: 0; box-shadow: none; }
+  .settings-panel .hud-chip small, .settings-panel .daily, .settings-panel .reading-label { color: var(--muted); }
+  .settings-panel .book-open { border-color: var(--card-line); background: var(--soft); color: var(--text); }
+  .settings-panel .hub-quiet[aria-pressed="true"] { background: var(--gold); color: #2a1b00; border-color: #e3a91f; }
+  .settings-panel .hub-music[aria-pressed="true"] { opacity: .55; }
+
+  /* 오늘의 공부 */
+  #study { background: var(--card); color: var(--text); border: 1px solid var(--card-line); box-shadow: var(--lift); }
+  #study.done { background: linear-gradient(150deg, #eefaf0, #ffffff 60%); color: var(--text); border-color: #a9dcb2; }
+  .study-welcome { border-color: #e4ecf6; }
+  #study .study-welcome h2 { color: var(--text); }
+  #study .study-welcome p, #study .daily, #study.done .daily { color: var(--muted); }
+  #study .eyebrow, #study.done .eyebrow { color: var(--ok-text); }
+  .quest-ring { background: conic-gradient(var(--lime) calc(var(--quest-progress) * 1%), #e4ecf6 0); }
+  .quest-ring span { background: var(--card); color: var(--text); }
+  #study .formula { color: #6d3fc9; }
+  #study .items, #study .question { color: var(--text); }
+  #study .choices button { border: 1px solid #edbd3a; background: linear-gradient(180deg, #fff4bf, var(--gold)); color: var(--text); box-shadow: 0 3px 0 #dba22a; }
+  #study .cheer { color: var(--ok-text); }
+  #study .cheer.oops, .reading-status.retry, .reading-heard.retry { color: var(--bad-text); }
+  #study .items .story-page-art { background: var(--soft); }
+  #study .reading-sentence { color: var(--text); }
+  .reading-word { border-bottom-color: #aebbd6; }
+  .reading-word.heard { color: var(--ok-text); border-color: #5bbf6a; }
+  .reading-word.retry { color: var(--bad-text); border-color: #e86a5f; }
+  .reading-praise, .reading-star-burst { color: var(--accent-text); }
+  .reading-praise-detail, .reading-heard { color: #4f3f86; }
+  .reading-meaning, .reading-label, .reading-privacy, #study .reading-label { color: var(--muted); }
+  .reading-log { color: #34425f; background: var(--soft); }
+  #study .reading-actions .reading-alternative, #study .reading-resume { background: var(--soft); color: #2c4266; border: 1px solid var(--card-line); box-shadow: none; }
+  .reading-help, .learning-more { border-color: #e4ecf6; }
+  .reading-help summary, .learning-more > summary { color: var(--muted); }
+  #study .book-listening-help { border-color: #f0cd5c; background: #fff6cf; color: var(--text); }
+  #study .book-listening-help.is-recommended { background: #ffe88f; }
+
+  /* 수학놀이터 */
+  .math-launch { border: 1px solid #bfe5d3; background: linear-gradient(115deg, #e6f8ef, #e3f3ff); color: #1d3a32; box-shadow: var(--lift); }
+  .math-launch:hover { border-color: #7fcfab; }
+  .math-launch-copy small, .math-launch-copy > span { color: #3e5c53; }
+  .math-launch-cta { color: #0d6e48; }
+
+  /* 게임 카드: 그림은 원래 밝기 그대로, 이름은 아래 흰 띠에 진한 글자 */
+  .section-heading h2 { color: var(--text); }
+  .section-heading p { color: var(--muted); }
+  .lobby-shell .games .card { min-height: 170px; }
+  .card, .card.hero, .card.battle, .shop { border: 1px solid var(--card-line); background: #eaf4ff; color: var(--text); box-shadow: var(--lift); }
+  .card.hero { background: linear-gradient(155deg, #ffe1e6, #dbe8ff); }
+  .card.castle { background: #e9e4ff; }
+  .card.princess { background: linear-gradient(150deg, #ffe0f0, #e8dcff); }
+  .card::after, body.locked .card::after { background: none; }
+  .lobby-shell .card .meta { width: calc(100% + 24px); margin: 0 -12px -12px; padding: 9px 12px 10px; background: var(--card); border-top: 1px solid #edf2f9; }
+  .card .name { color: var(--text); text-shadow: none; overflow-wrap: break-word; }
+  .card .go { color: var(--accent-text); }
+  .padlock { border: 1px solid var(--card-line); background: rgba(255,255,255,.94); box-shadow: 0 2px 6px rgba(40,80,140,.15); }
+  body.locked .card::before { filter: saturate(.85) brightness(.97); }
+  @media (hover: hover) {
+    .card:hover, .shop:hover { transform: translateY(-4px); border-color: #9cc3ee; box-shadow: 0 1px 0 rgba(31,42,68,.04), 0 10px 22px rgba(40,80,140,.16); }
+  }
+  .card:active, .shop:active { box-shadow: 0 2px 6px rgba(40,80,140,.12); }
+  @media (max-width: 599px) { .lobby-shell .games .card { min-height: 150px; } }
+  /* 좁은 폭: 워드마크 칸은 글자 폭 아래로 줄지 않고, 티켓 글이 길면(영어 문구) 칩 안에서 줄을 바꾼다 */
+  @media (max-width: 600px) {
+    .topbar { grid-template-columns: auto max-content minmax(0, 1fr); }
+    .player-hud { min-width: 0; justify-content: flex-end; }
+    .hud-chip.ticket { min-width: 0; flex: 0 1 auto; }
+    .hud-chip.ticket strong { white-space: normal; overflow-wrap: anywhere; line-height: 1.15; }
+  }
+
+  /* 언제나 열린 이야기 */
+  .open-deck { border-top-color: var(--card-line); }
+  .open-deck .section-heading p { color: var(--ok-text); }
+  .shop.story { background: #eaf4ff; }
+  .shop::after { background: linear-gradient(90deg, rgba(255,255,255,.96) 0, rgba(255,255,255,.88) 42%, rgba(255,255,255,0) 82%); }
+  .shop .name { color: var(--text); }
+  .shop .open-sign { color: #10331a; background: #bff0a6; box-shadow: 0 1px 3px rgba(40,80,140,.15); }
+
+  /* 생일파티·하단 */
+  .party-launch { background: linear-gradient(120deg, #fff2e6, #fde6ee); border: 1px solid #f3d3cb; color: #4f354b; box-shadow: var(--lift); }
+  .party-launch h2 { color: #4f354b; }
+  .party-launch small { color: #8f3456; }
+  .party-launch strong { color: #a8325b; }
+  footer, footer .tip, .lobby-help summary { color: var(--muted); }
+
+  /* 알림·부모 리포트 */
+  .lock-notice { border-color: #efc55a; background: var(--card); color: var(--text); box-shadow: 0 14px 34px rgba(40,80,140,.22); }
+  .lock-notice span { color: var(--muted); }
+  .lock-notice button { border-color: var(--card-line); background: var(--soft); color: var(--text); }
+  .book-modal { background: rgba(31,52,92,.38); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .book-sheet { background: #fffdf8; border-color: var(--card-line); box-shadow: 0 18px 44px rgba(40,80,140,.25); }
+</style>
 </head>
 <body>
 <canvas id="sky" aria-hidden="true"></canvas>
 
 <main class="wrap lobby-shell">
   <header class="topbar">
-    <button class="moon brand-orb" id="moon" type="button" aria-label="PLAYGROUND 비밀 버튼">
+    <button class="moon brand-orb" id="moon" type="button" aria-label="PLAYGROUND Secret Button">
       <img src="icon-192.png" alt="">
     </button>
     <div class="brand-copy">
-      <span class="brand-kicker">우리 가족의 모험 기지</span>
+      <span class="brand-kicker">Our Family Adventure Base</span>
       <h1>PLAYGROUND</h1>
-      <p class="sub" id="subline">공부 먼저, 모험은 다음! 15문제마다 게임 티켓을 받아요.</p>
+      <p class="sub" id="subline">Study first, play later! Get a ticket every 15 problems.</p>
     </div>
-    <div class="player-hud" aria-label="오늘의 모험 상태">
-      <span class="hud-chip ticket"><small>게임 티켓</small><strong id="hubTicketStat">준비 중</strong></span>
+    <div class="player-hud" aria-label="Today's Adventure Status">
+      <span class="hud-chip ticket"><small>Game Ticket</small><strong id="hubTicketStat">Ready</strong></span>
       <details class="lobby-settings" id="lobbySettings">
-        <summary aria-label="설정과 학습 기록 열기" title="설정·학습 기록"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6l.6 2.5 2.2 1.3 2.5-.7 3 5.2-1.9 1.8v2.6l1.9 1.8-3 5.2-2.5-.7-2.2 1.3L15 25H9l-.6-2.5-2.2-1.3-2.5.7-3-5.2 1.9-1.8v-2.6L.7 10.5l3-5.2 2.5.7 2.2-1.3Z" transform="translate(1 0) scale(.85)"/><circle cx="11.2" cy="11.9" r="3"/></svg><span class="sr-only">설정·학습 기록</span></summary>
+        <summary aria-label="Open settings and progress" title="Settings &amp; Progress"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6l.6 2.5 2.2 1.3 2.5-.7 3 5.2-1.9 1.8v2.6l1.9 1.8-3 5.2-2.5-.7-2.2 1.3L15 25H9l-.6-2.5-2.2-1.3-2.5.7-3-5.2 1.9-1.8v-2.6L.7 10.5l3-5.2 2.5.7 2.2-1.3Z" transform="translate(1 0) scale(.85)"/><circle cx="11.2" cy="11.9" r="3"/></svg><span class="sr-only">Settings &amp; Progress</span></summary>
         <div class="settings-panel">
-          <h2>설정·학습 기록</h2>
+          <h2>Settings &amp; Progress</h2>
           <div>
-            <span class="hud-chip quest"><small>오늘 누적 정답</small><strong id="hubDailyStat">0 / 100</strong></span>
-            <span class="hud-chip crown"><small>숙달 왕관</small><strong id="hubCrownStat">0개</strong></span>
-            <span class="hud-chip offline"><small>기기 저장</small><strong id="hubOfflineStat">확인 중</strong></span>
+            <span class="hud-chip quest"><small>Today's Correct Answers</small><strong id="hubDailyStat">0 / 100</strong></span>
+            <span class="hud-chip crown"><small>Mastery Crowns</small><strong id="hubCrownStat">0</strong></span>
+            <span class="hud-chip offline"><small>Device Storage</small><strong id="hubOfflineStat">Checking</strong></span>
           </div>
           <div class="settings-actions">
-            <button class="book-open hub-quiet" id="quietMode" type="button" aria-pressed="false" aria-label="조용 모드: 기차·비행기에서는 소리 내어 읽기 대신 산수" title="조용 모드 (기차·비행기)">🤫 조용 모드</button>
-            <button class="book-open hub-music" id="hubMusic" type="button" aria-pressed="false" aria-label="배경음악 끄기">🎵 배경음악</button>
-            <button class="book-open parent-entry" id="bookOpen" type="button" aria-label="부모님용 학습 리포트 열기">학습 리포트 보기 →</button>
+            <button class="book-open hub-quiet" id="quietMode" type="button" aria-pressed="false" aria-label="Quiet Mode: math instead of reading aloud on trains and planes" title="Quiet Mode (Travel)">🤫 Quiet Mode</button>
+            <button class="book-open hub-music" id="hubMusic" type="button" aria-pressed="false" aria-label="Turn off music">🎵 Music</button>
+            <button class="book-open parent-entry" id="bookOpen" type="button" aria-label="Open parent progress report">View Progress Report →</button>
           </div>
           <p class="daily" id="daily"></p>
-          <p class="reading-label" id="studyModeNote">영어 그림책 읽기 중심 · 다섯 번째는 재이의 수학놀이터</p>
+          <p class="reading-label" id="studyModeNote">English Storybooks · 5th is Jaei's Math Playground</p>
         </div>
       </details>
     </div>
   </header>
 
-  <section class="hero-grid" aria-label="오늘의 공부">
+  <section class="hero-grid" aria-label="Today's Study">
   <section id="study" aria-live="polite" aria-labelledby="studyTitle">
     <div class="study-welcome">
       <div class="study-welcome-copy">
-        <h2 id="studyTitle">오늘의 공부</h2>
-        <p id="studyPitch">15문제면, 모험이 열려요.</p>
+        <h2 id="studyTitle">Today's Study</h2>
+        <p id="studyPitch">15 problems unlock an adventure!</p>
       </div>
-      <div class="quest-ring" id="questRing" role="status" aria-label="이번 티켓 진행"><span id="questRingLabel">0/15</span></div>
+      <div class="quest-ring" id="questRing" role="status" aria-label="Current ticket progress"><span id="questRingLabel">0/15</span></div>
     </div>
     <div class="quest-head">
       <div>
-        <div class="eyebrow" id="studyEyebrow">공부 먼저 · 15문제 도전</div>
+        <div class="eyebrow" id="studyEyebrow">Study First · 15 Problems</div>
       </div>
     </div>
     <div class="progress" id="stars" aria-hidden="true"></div>
@@ -1267,151 +1396,151 @@
     <div class="choices" id="choices"></div>
     <div class="cheer" id="cheer"></div>
     <div id="studyCelebration"></div>
-    <details class="learning-more"><summary>공부로 자란 공주 보기</summary><div id="princessGrowthHub" aria-label="공주 성장 기록"></div></details>
+    <details class="learning-more"><summary>View Princess Growth</summary><div id="princessGrowthHub" aria-label="Princess growth record"></div></details>
   </section>
   <a class="math-launch" id="mathPlaygroundLaunch" href="math/?from=hub">
     <span class="math-launch-copy">
-      <small>티켓 없이 언제든 · 오늘의 공부에 합산</small>
-      <strong>재이의 수학놀이터</strong>
-      <span>한 문제, 한 칸! 친구와 놀이터를 건너요.</span>
-      <b class="math-launch-cta" id="mathLaunchAction">문제 수 골라 시작 →</b>
+      <small>No ticket needed · Counts toward today's study</small>
+      <strong>Jaei's Math Playground</strong>
+      <span>One problem, one step! Cross the playground with friends.</span>
+      <b class="math-launch-cta" id="mathLaunchAction">Choose problems and start →</b>
     </span>
-    <img src="math/assets/playground-scene.webp" alt="친구들과 함께하는 수학놀이터" width="132" height="100" loading="lazy">
+    <img src="math/assets/playground-scene.webp" alt="Math playground with friends" width="132" height="100" loading="lazy">
   </a>
   </section>
 
   <section class="world-deck" id="adventureWorlds">
     <div class="section-heading">
-      <div><h2>다음 모험 고르기</h2></div>
-      <p id="worldAccessHint">티켓 한 장으로 좋아하는 게임 5분!</p>
+      <div><h2>Choose Next Adventure</h2></div>
+      <p id="worldAccessHint">One ticket for 5 minutes of play!</p>
     </div>
-    <nav class="games" aria-label="게임 목록">
+    <nav class="games" aria-label="Game list">
     <a class="card hero" href="multiverse/" style="--cover:url('multiverse/art/cover.webp')">
       <span class="padlock">🔒</span>
       <span class="badge">🦸</span>
       <span class="meta">
-        <span class="name">히어로즈</span>
-        <span class="tags"><span class="genre">🦸 90초 히어로 미션</span></span>
-        <span class="desc">재이·태오가 영웅으로 출동 · 구출·보물·보스 미션 · 캡슐로 망토·마스크·무기 꾸미기</span>
-        <span class="go">모험 떠나기 ▶</span>
+        <span class="name">Heroes</span>
+        <span class="tags"><span class="genre">🦸 90s Hero Mission</span></span>
+        <span class="desc">Jaei and Teo as heroes! Rescue, treasure and boss missions.</span>
+        <span class="go">Save the Day ▶</span>
       </span>
     </a>
     <a class="card battle" href="cards/">
       <span class="padlock">🔒</span>
       <span class="badge">🃏</span>
       <span class="meta">
-        <span class="name">카드 덱</span>
-        <span class="tags"><span class="genre">🃏 카드 배틀</span></span>
-        <span class="desc">이야기를 들으면 영웅 카드 해금 · 별사탕으로 펼치는 1:1 대결</span>
-        <span class="go">카드 대결하기 ▶</span>
+        <span class="name">Card Deck</span>
+        <span class="tags"><span class="genre">🃏 Card Battle</span></span>
+        <span class="desc">Unlock hero cards! 1:1 battles.</span>
+        <span class="go">Battle Now ▶</span>
       </span>
     </a>
     <a class="card usa" href="usa/">
       <span class="padlock">🔒</span>
       <span class="badge">✈️</span>
       <span class="meta">
-        <span class="name">로드 트립</span>
-        <span class="tags"><span class="genre">🗺️ 여행 지도 미니게임</span></span>
-        <span class="desc">라스베이거스 분수쇼부터 에레혼 장보기까지 · 여섯 곳 도장을 모아 여행 앨범 완성!</span>
-        <span class="go">여행 떠나기 ▶</span>
+        <span class="name">Road Trip</span>
+        <span class="tags"><span class="genre">🗺️ Travel Map</span></span>
+        <span class="desc">Collect stamps from 6 travel spots!</span>
+        <span class="go">Start Trip ▶</span>
       </span>
     </a>
     <a class="card plane" href="plane/">
       <span class="padlock">🔒</span>
       <span class="badge">✈️</span>
       <span class="meta">
-        <span class="name">스카이 샷</span>
-        <span class="tags"><span class="genre">✈️ 비행 슈팅</span></span>
-        <span class="desc">별을 먹고 문제를 맞히면 무기가 점점 세져요</span>
-        <span class="go">하늘로 출발 ▶</span>
+        <span class="name">Sky Shot</span>
+        <span class="tags"><span class="genre">✈️ Flying Shooter</span></span>
+        <span class="desc">Solve problems to power up weapons.</span>
+        <span class="go">Take Off ▶</span>
       </span>
     </a>
     <a class="card onecard" href="onecard/">
       <span class="padlock">🔒</span>
       <span class="badge">♠️</span>
       <span class="meta">
-        <span class="name">원카드</span>
-        <span class="tags"><span class="genre">🃏 카드 게임</span></span>
-        <span class="desc">아빠·엄마랑 원카드! 7로 모양 바꾸고 원카드 외치기</span>
-        <span class="go">원카드 하기 ▶</span>
+        <span class="name">One Card</span>
+        <span class="tags"><span class="genre">🃏 Card Game</span></span>
+        <span class="desc">Play One Card with the family!</span>
+        <span class="go">Play Now ▶</span>
       </span>
     </a>
     <a class="card sea" href="odyssey/" style="--cover:url('cards/art/odysseus.webp')">
       <span class="padlock">🔒</span>
       <span class="badge">⛵</span>
       <span class="meta">
-        <span class="name">히어로 고</span>
-        <span class="tags"><span class="genre">⚔️ 모험 액션</span></span>
-        <span class="desc">키클롭스 동굴부터 이어지는, 지혜로 떠나는 액션 모험</span>
-        <span class="go">모험 떠나기 ▶</span>
+        <span class="name">Hero Go</span>
+        <span class="tags"><span class="genre">⚔️ Adventure Action</span></span>
+        <span class="desc">An action-packed adventure of wisdom.</span>
+        <span class="go">Set Sail ▶</span>
       </span>
     </a>
     <a class="card slime" href="slime/">
       <span class="padlock">🔒</span><span class="badge">🫧</span>
-      <span class="meta"><span class="name">젤리 랩</span>
-        <span class="tags"><span class="genre">🫧 말랑한 3D 놀이</span></span>
-        <span class="desc">색을 섞어 나만의 슬라임을 만들고 도감을 채워요. 간식 먹으면 둘로 뿅!</span>
-        <span class="go">말랑이 만나기 ▶</span>
+      <span class="meta"><span class="name">Jelly Lab</span>
+        <span class="tags"><span class="genre">🫧 3D Slime Play</span></span>
+        <span class="desc">Mix colors to make your own slime.</span>
+        <span class="go">Meet Slimes ▶</span>
       </span>
     </a>
     <a class="card kart3d" href="kart3d/">
       <span class="padlock">🔒</span>
       <span class="badge">🏁</span>
       <span class="meta">
-        <span class="name">산리오 카트</span>
-        <span class="tags"><span class="genre">🏁 3D 레이싱</span></span>
-        <span class="desc">7개 3D 코스 · 눈꽃 컵 · 자동 출발과 코너 길잡이 · 그랑프리 · 코인 차고</span>
-        <span class="go">모험 떠나기 ▶</span>
+        <span class="name">Sanrio Kart</span>
+        <span class="tags"><span class="genre">🏁 3D Racing</span></span>
+        <span class="desc">Race through 7 fun 3D tracks!</span>
+        <span class="go">Start Race ▶</span>
       </span>
     </a>
     <a class="card war" href="sanguo/" style="--cover:url('sanguo/art/side-scroller/hulao-arcade-bg-v3.png')">
       <span class="padlock">🔒</span>
       <span class="badge">🐉</span>
       <span class="meta">
-        <span class="name">레전드 워</span>
-        <span class="tags"><span class="genre">⚔️ 전장 액션</span></span>
-        <span class="desc">삼국지·서유기·명장, 세 고전을 넘나드는 횡스크롤 전장</span>
-        <span class="go">모험 떠나기 ▶</span>
+        <span class="name">Legend War</span>
+        <span class="tags"><span class="genre">⚔️ Battle Action</span></span>
+        <span class="desc">Epic side-scrolling battles across three classics.</span>
+        <span class="go">Start Battle ▶</span>
       </span>
     </a>
     <a class="card castle" href="hogwarts/">
       <span class="padlock">🔒</span>
       <span class="badge">🏰</span>
       <span class="meta">
-        <span class="name">호그와트</span>
-        <span class="tags"><span class="genre">✨ 마법 어드벤처</span></span>
-        <span class="desc">7년의 마법 학교 어드벤처</span>
-        <span class="go">모험 떠나기 ▶</span>
+        <span class="name">Hogwarts</span>
+        <span class="tags"><span class="genre">✨ Magic Adventure</span></span>
+        <span class="desc">A 7-year magic school adventure.</span>
+        <span class="go">Start Magic ▶</span>
       </span>
     </a>
     <a class="card stage" href="kedehun/">
       <span class="padlock">🔒</span>
       <span class="badge">🎤</span>
       <span class="meta">
-        <span class="name">케데헌</span>
-        <span class="tags"><span class="genre">⚔️ 무대 액션</span></span>
-        <span class="desc">루미·미라·조이가 악귀와 맞서는 무대 액션</span>
-        <span class="go">모험 떠나기 ▶</span>
+        <span class="name">K-Pop Hunters</span>
+        <span class="tags"><span class="genre">⚔️ Stage Action</span></span>
+        <span class="desc">Fight demons on stage!</span>
+        <span class="go">Start Action ▶</span>
       </span>
     </a>
     <a class="card gem" href="bori/">
       <span class="padlock">🔒</span>
       <span class="badge">💎</span>
       <span class="meta">
-        <span class="name">헬로키티</span>
-        <span class="tags"><span class="genre">🔍 추리 · 미니게임</span></span>
-        <span class="desc">사라진 보석을 찾는 아기자기 추리 놀이</span>
-        <span class="go">모험 떠나기 ▶</span>
+        <span class="name">Hello Kitty</span>
+        <span class="tags"><span class="genre">🔍 Mystery Game</span></span>
+        <span class="desc">Find the missing jewels!</span>
+        <span class="go">Start Mystery ▶</span>
       </span>
     </a>
     <a class="card princess" href="princess/?heads=natural&amp;v=picnic-1" data-play-key="princess" style="--cover:url('princess/cover-natural-v50.png');--cover-size:cover;--cover-pos:center 25%">
       <span class="padlock">🔒</span>
       <span class="badge">👗</span>
       <span class="meta">
-        <span class="name">드레스 업</span>
-        <span class="tags"><span class="genre">👑 꾸미기 · 성장 모험</span></span>
-        <span class="desc">공주 12명 · 공부로 성장하고 숲속 소풍에서 토끼 친구를 만나요</span>
-        <span class="go">공주와 놀러 가기 ▶</span>
+        <span class="name">Dress Up</span>
+        <span class="tags"><span class="genre">👑 Growth Adventure</span></span>
+        <span class="desc">12 princesses to dress up and grow.</span>
+        <span class="go">Meet Princesses ▶</span>
       </span>
     </a>
   </nav>
@@ -1419,38 +1548,38 @@
 
   <section class="open-deck" id="alwaysOpen">
     <div class="section-heading">
-      <div><h2>이야기는 언제든</h2></div>
-      <p>티켓 없이 바로 열려요.</p>
+      <div><h2>Stories Anytime</h2></div>
+      <p>Open anytime, no ticket needed.</p>
     </div>
     <div class="open-grid">
-  <a class="shop story" href="story/" aria-label="이야기 극장 — 언제나 열려 있어요" style="--cover:url('cards/art/cinderella.webp')">
-    <span class="open-sign">티켓 없이</span>
+  <a class="shop story" href="story/" aria-label="Story Theater — Always open" style="--cover:url('cards/art/cinderella.webp')">
+    <span class="open-sign">No ticket</span>
     <span class="badge">🎧</span>
     <span class="meta">
-      <span class="name">이야기 극장</span>
-        <span class="tags"><span class="genre">🎧 오디오북</span></span>
-      <span class="desc">세계의 옛이야기를 귀로 떠나는 여행 · 오디오북 · 공부 없이도 입장 OK</span>
-      <span class="go">극장 들어가기 ▶</span>
+      <span class="name">Story Theater</span>
+        <span class="tags"><span class="genre">🎧 Audiobook</span></span>
+      <span class="desc">Travel through old tales with your ears. No study needed.</span>
+      <span class="go">Enter Theater ▶</span>
     </span>
   </a>
-  <a class="shop story" href="story/english/" aria-label="영어 그림책 — 언제나 열려 있어요" style="--cover:url('cards/art/threepigs.webp')">
-    <span class="open-sign">티켓 없이</span>
+  <a class="shop story" href="story/english/" aria-label="English Books — Always open" style="--cover:url('cards/art/threepigs.webp')">
+    <span class="open-sign">No ticket</span>
     <span class="badge">📚</span>
     <span class="meta">
-      <span class="name">영어 그림책</span>
+      <span class="name">English Books</span>
         <span class="tags"><span class="genre">📚 English</span></span>
-      <span class="desc">그림 보며 영어 이야기를 듣고 직접 읽어요 · 7권 · 공부 없이도 입장 OK</span>
-      <span class="go">그림책 펴기 ▶</span>
+      <span class="desc">Listen and read along. No study needed.</span>
+      <span class="go">Open Book ▶</span>
     </span>
   </a>
-  <a class="shop story webtoon" href="webtoon/" aria-label="오늘도 우리 집 — 가족 웹툰, 언제나 열려 있어요" style="--cover:url('webtoon/cover.webp')">
-    <span class="open-sign">새 웹툰</span>
+  <a class="shop story webtoon" href="webtoon/" aria-label="Our Home — Family Webtoon, always open" style="--cover:url('webtoon/cover.webp')">
+    <span class="open-sign">New</span>
     <span class="badge">🏠</span>
     <span class="meta">
-      <span class="name">오늘도 우리 집</span>
-        <span class="tags"><span class="genre">💛 가족 웹툰</span></span>
-      <span class="desc">재이네 여섯 식구의 웃기고 따뜻한 하루 · 41화 · 태오어 사전 · 공부 없이도 입장 OK</span>
-      <span class="go">웹툰 보기 ▶</span>
+      <span class="name">Our Home</span>
+        <span class="tags"><span class="genre">💛 Family Webtoon</span></span>
+      <span class="desc">Funny, warm days with the six of us. No study needed.</span>
+      <span class="go">Read Webtoon ▶</span>
     </span>
   </a>
 
@@ -1458,56 +1587,56 @@
   </section>
 
   <a class="party-launch" id="partyAdventure" href="math/party/">
-    <div><small>재이에게 도착한 초대 · 티켓 없이 바로 놀기</small><h2>우리 가족 생일파티를 열자!</h2><p>반짝 불빛, 쿠키 선물, 둥실 풍선.<br>재이가 준비한 파티에서 가족과 신나게 놀자.</p><strong>내 파티 만들러 가기 →</strong></div>
-    <img src="math/assets/jaei-family-v4.webp" width="1024" height="683" alt="아빠, 태오, 재이, 엄마가 기다리는 생일파티" loading="lazy">
+    <div><small>Invitation for you · Play now, no ticket needed</small><h2>Let's Throw a Family Birthday Party!</h2><p>Lights, cookies, and balloons!<br>Let's party together with the family.</p><strong>Create my party →</strong></div>
+    <img src="math/assets/jaei-family-v4.webp" width="1024" height="683" alt="Dad, Teo, Jaei and Mom waiting at the birthday party" loading="lazy">
   </a>
 
   <footer>
-    <details class="lobby-help"><summary>여행·오프라인 안내</summary><span class="tip">여행 전 이야기 극장에서 듣고 싶은 이야기를 저장해 주세요. 저장 상태와 학습 기록은 위의 설정에서 확인할 수 있어요.</span></details>
-    <span>PLAYGROUND · 우리 가족의 작은 세계</span>
+    <details class="lobby-help"><summary>Travel &amp; Offline Info</summary><span class="tip">Before you travel, save the stories you want to hear in Story Theater. Check storage and progress in the settings above.</span></details>
+    <span>PLAYGROUND · Our Little World</span>
   </footer>
 </main>
 
 <div class="lock-notice" id="lockNotice" hidden role="status" aria-live="polite">
   <span class="lock-notice-icon" aria-hidden="true">🎫</span>
-  <div><strong id="lockNoticeTitle">티켓이 필요해요</strong><br><span id="lockNoticeText">오늘의 퀘스트를 풀면 바로 출발할 수 있어요.</span></div>
-  <button id="lockNoticeClose" type="button" aria-label="안내 닫기">✕</button>
+  <div><strong id="lockNoticeTitle">Ticket Needed</strong><br><span id="lockNoticeText">Solve today's quests to start!</span></div>
+  <button id="lockNoticeClose" type="button" aria-label="Close">✕</button>
 </div>
 
 <div class="book-modal" id="bookModal" hidden>
   <div class="book-sheet" role="dialog" aria-modal="true" aria-labelledby="bookModalTitle">
     <div class="book-head">
-      <b id="bookModalTitle">📖 학습 리포트</b>
-      <button id="bookClose" type="button" aria-label="닫기">✕</button>
+      <b id="bookModalTitle">📖 Progress Report</b>
+      <button id="bookClose" type="button" aria-label="Close">✕</button>
     </div>
     <section class="study-settings" aria-labelledby="studySettingTitle">
-      <label id="studySettingTitle" for="studyAge">수학 문제 나이</label>
+      <label id="studySettingTitle" for="studyAge">Math Age</label>
       <select id="studyAge">
-        <option value="5">5세</option><option value="6">6세</option><option value="7">7세</option>
-        <option value="8">8세</option><option value="9">9세 이상</option>
+        <option value="5">Age 5</option><option value="6">Age 6</option><option value="7">Age 7</option>
+        <option value="8">Age 8</option><option value="9">Age 9+</option>
       </select>
-      <strong id="mathStage">수학 단계 불러오는 중</strong>
-      <p>나이에 맞는 범위에서 시작하고, 모든 유형을 연달아 맞히면 그날 바로 다음 단계로 올라가요. 수학놀이터와 진도를 함께 써요.</p>
-      <p><a id="mathPlacementAgain" href="math/?placement=1">수학 실력 다시 확인하기 (16문제 이내) →</a></p>
+      <strong id="mathStage">Loading math level</strong>
+      <p>Starts in the range for your age. Get every type right in a row and you move up to the next level that same day. Progress is shared with the Math Playground.</p>
+      <p><a id="mathPlacementAgain" href="math/?placement=1">Re-check math skills (up to 16 problems) →</a></p>
     </section>
     <section class="study-settings" aria-labelledby="readingSettingTitle">
-      <label id="readingSettingTitle" for="readingLevelSelect">영어 읽기 단계</label>
+      <label id="readingSettingTitle" for="readingLevelSelect">English Reading Level</label>
       <select id="readingLevelSelect"></select>
-      <label for="bookReadingMode">읽기 난이도</label>
+      <label for="bookReadingMode">Reading Difficulty</label>
       <select id="bookReadingMode">
-        <option value="easy">짧은 문장</option><option value="sentence">한 문장씩</option><option value="page">한 쪽 전체</option>
+        <option value="easy">Short sentences</option><option value="sentence">One sentence</option><option value="page">Full page</option>
       </select>
-      <strong id="readingStage">영어 단계 불러오는 중</strong>
-      <p>그 단계 문장을 한 번에 30번 맞히면 다음 단계로 올라가요. 너무 어렵거나 쉬우면 여기서 바꿔 주세요.</p>
+      <strong id="readingStage">Loading English level</strong>
+      <p>Get 30 sentences of that level right on the first try to move up. If it feels too hard or too easy, change it here.</p>
     </section>
-    <h3 class="book-sub">실력 지도</h3>
-    <p class="book-hint">문제 유형별 실력이에요. 약한 유형이 더 자주 나오고, 👑 숙달한 유형도 며칠 지나면 잊기 전에 다시 나와요.</p>
+    <h3 class="book-sub">Skills Map</h3>
+    <p class="book-hint">Skill by problem type. Weak types appear more often, and 👑 mastered types return after a few days so they are not forgotten.</p>
     <ul id="skillList"></ul>
-    <h3 class="book-sub">오답노트</h3>
-    <p class="book-hint">아이가 틀렸던 문제예요. 복습 문제를 한 번에 맞히면 틀린 횟수가 줄고, 0이 되면 노트에서 지워져요.</p>
+    <h3 class="book-sub">Review Notes</h3>
+    <p class="book-hint">Problems the child got wrong. Get a review problem right on the first try and the miss count goes down; at 0 it is removed from the notes.</p>
     <ol id="bookList"></ol>
-    <h3 class="book-sub">게임 기록</h3>
-    <p class="book-hint">자주 하는 게임 순서예요. 오래 안 하는 게임은 업데이트해 볼까요? 😄</p>
+    <h3 class="book-sub">Game History</h3>
+    <p class="book-hint">Games you play most come first. Haven't played one in a while? 😄</p>
     <ul id="gameList"></ul>
   </div>
 </div>
@@ -1522,7 +1651,7 @@
 <script src="assets/study/english-reading.js?v=24"></script>
 <script src="story/english/books.js?v=7"></script>
 <script src="assets/bgm/bgm-player.js?v=66"></script>
-<script src="assets/study/play-timer.js?v=1" data-mode="hub"></script>
+<script src="assets/study/play-timer.js?v=2" data-mode="hub"></script>
 <script>
 (function () {
   'use strict';
@@ -1532,9 +1661,9 @@
   var bgm = window.HubBgm.create({ basePath: '../assets/bgm/', storageKey: 'hub_bgm_muted', volume: 0.66 });
   function paint() {
     var muted = bgm.isMuted();
-    button.textContent = muted ? '🔈 음악 켜기' : '🎵 배경음악';
+    button.textContent = muted ? '🔈 Music On' : '🎵 Music';
     button.setAttribute('aria-pressed', muted ? 'true' : 'false');
-    button.setAttribute('aria-label', muted ? '배경음악 켜기' : '배경음악 끄기');
+    button.setAttribute('aria-label', muted ? 'Turn on music' : 'Turn off music');
   }
   button.addEventListener('click', function () {
     bgm.setMuted(!bgm.isMuted());
@@ -1550,7 +1679,7 @@
 (function () {
   'use strict';
   var canvas = document.getElementById('sky');
-  if (canvas && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  if (canvas && getComputedStyle(canvas).display !== 'none' && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
     var ctx = canvas.getContext('2d');
     var fixedStars = [];
     var resizeSky = function () {
@@ -1762,7 +1891,7 @@
       var line = parts[part];
       return { formula: '', items: '', question: '그림책을 소리 내어 읽어요', answer: line.text, unit: '',
         reading: { text: line.text, meaning: line.meaning }, story: Object.assign({}, pg, { part: part, partCount: parts.length }),
-        book: '📖 ' + pg.book.titleKo + ' ' + (pg.pageIndex + 1) + '쪽 · ' + line.text };
+        book: '📖 ' + pg.book.titleKo + ' page ' + (pg.pageIndex + 1) + ' · ' + line.text };
     }
     if (type === 'reading' && window.EnglishReading) {
       var sentence = window.EnglishReading.sentences[idx % BANK_SIZES.reading];
@@ -1786,7 +1915,7 @@
       }
       return { formula: '「' + pr[0] + '」 ↔ ❓', items: '', question: '반대말은 무엇일까요?',
                answer: pr[1], unit: '', choices: [pr[1]].concat(wrongs),
-               book: '「' + pr[0] + '」의 반대말' };
+               book: 'Opposite of 「' + pr[0] + '」' };
     }
     if (type === 'clock') {
       var ci = idx % 24;
@@ -1798,7 +1927,7 @@
       }
       return { formula: '', items: emoji, question: '시계가 가리키는 시각은 언제일까요?',
                answer: clockLabel(ci), unit: '', choices: [clockLabel(ci)].concat(wrongs),
-               book: emoji + ' 시계 읽기' };
+               book: emoji + ' Telling Time' };
     }
     // english — 영어 낱말을 읽고 알맞은 그림 고르기
     var ei = ENGLISH[idx % ENGLISH.length];
@@ -2145,13 +2274,13 @@
   }
   function drawDaily() {
     var crowns = masteredCount();
-    dailyEl.textContent = '오늘 푼 문제 ' + Math.min(state.solved, DAILY) + ' / ' + DAILY +
-      (state.wrong.length ? ' · 오답노트 ' + state.wrong.length + '개' : '') +
-      (crowns ? ' · 왕관 👑 ' + crowns + '개' : '') +
-      (mathState ? ' · 수학 ' + mathState.level + '단계' : '') +
-      (typeof quietToday === 'function' && quietToday() ? ' · 🤫 조용 모드' :
-        typeof BOOK_PAGES !== 'undefined' && BOOK_PAGES.length ? ' · 그림책 「' + BOOK_PAGES[bookCursor.i].book.titleKo + '」 ' + (BOOK_PAGES[bookCursor.i].pageIndex + 1) + '쪽'
-        : window.EnglishReading ? ' · 영어 ' + readingLevel.level + '단계' : '');
+    dailyEl.textContent = 'Problems solved today: ' + Math.min(state.solved, DAILY) + ' / ' + DAILY +
+      (state.wrong.length ? ' · Review notes: ' + state.wrong.length : '') +
+      (crowns ? ' · Crowns 👑 ' + crowns : '') +
+      (mathState ? ' · Math Level ' + mathState.level : '') +
+      (typeof quietToday === 'function' && quietToday() ? ' · 🤫 Quiet Mode' :
+        typeof BOOK_PAGES !== 'undefined' && BOOK_PAGES.length ? ' · Book 「' + BOOK_PAGES[bookCursor.i].book.titleKo + '」 page ' + (BOOK_PAGES[bookCursor.i].pageIndex + 1)
+        : window.EnglishReading ? ' · English Level ' + readingLevel.level : '');
     updateLobbyHud(crowns);
   }
   function updateLobbyHud(crowns) {
@@ -2159,24 +2288,24 @@
     var dailySolved = Math.min(state.solved, DAILY);
     var progress = isFree() || hasTicket() ? 100 : Math.min(100, Math.round(setCorrect / SET * 100));
     if (hubDailyStat) hubDailyStat.textContent = dailySolved + ' / ' + DAILY;
-    if (hubCrownStat) hubCrownStat.textContent = crowns + '개';
+    if (hubCrownStat) hubCrownStat.textContent = String(crowns);
     if (hubTicketStat) {
-      hubTicketStat.textContent = state.parentMode ? '부모님 모드' : isFree()
-        ? '자유 모험'
-        : (playTimeLeft() ? '게임 ' + window.HubPlayTimer.format(window.HubPlayTimer.remainingMs()) + ' 남음'
-        : (hasTicket() ? '1장 · 5분' : Math.max(1, SET - setCorrect) + '문제 남음'));
+      hubTicketStat.textContent = state.parentMode ? 'Parent Mode' : isFree()
+        ? 'Free Play'
+        : (playTimeLeft() ? window.HubPlayTimer.format(window.HubPlayTimer.remainingMs()) + ' left'
+        : (hasTicket() ? '1 ticket · 5 min' : Math.max(1, SET - setCorrect) + ' to go'));
     }
     var worldAccessHint = document.getElementById('worldAccessHint');
     var studyPitch = document.getElementById('studyPitch');
-    if (studyPitch) studyPitch.textContent = state.parentMode ? '진도는 그대로, 자유롭게 둘러봐요.' : isFree()
-      ? '오늘의 공부, 해냈어요.' : hasTicket() ? '공부 성공! 이제 모험 시간.'
-      : playTimeLeft() ? '남은 시간 동안 모험해요.' : '15문제면, 모험이 열려요.';
-    if (worldAccessHint) worldAccessHint.textContent = state.parentMode ? '부모님 모드 · 달을 5번 누르면 꺼져요.' : isFree()
-      ? '오늘은 모두 열렸어요. 마음껏 골라요!'
-      : (hasTicket() ? '티켓 1장 준비 완료! 원하는 게임을 골라요.' : playTimeLeft()
-        ? '남은 게임 시간 동안 원하는 모험을 골라요.' : '문제 ' + Math.max(1, SET - setCorrect) + '개 더 풀면 출발! 이야기는 바로 즐겨요.');
+    if (studyPitch) studyPitch.textContent = state.parentMode ? 'Explore freely, progress saved.' : isFree()
+      ? 'Study done for today!' : hasTicket() ? 'Study success! Time to play.'
+      : playTimeLeft() ? 'Play while your game time lasts!' : '15 problems unlock an adventure!';
+    if (worldAccessHint) worldAccessHint.textContent = state.parentMode ? 'Parent Mode · Tap the moon 5 times to exit.' : isFree()
+      ? 'Everything is open today. Pick any!'
+      : (hasTicket() ? 'Ticket ready! Pick a game.' : playTimeLeft()
+        ? 'Pick any adventure while your game time lasts.' : Math.max(1, SET - setCorrect) + ' more ' + (Math.max(1, SET - setCorrect) === 1 ? 'problem' : 'problems') + ' to go! Stories are always open.');
     if (questRingLabel) {
-      questRingLabel.textContent = state.parentMode ? '부모님' : isFree() ? '완료' : (hasTicket() ? '티켓' : setCorrect + '/' + SET);
+      questRingLabel.textContent = state.parentMode ? 'Parent' : isFree() ? 'Done' : (hasTicket() ? 'Ticket' : setCorrect + '/' + SET);
     }
     studyEl.style.setProperty('--quest-progress', String(progress));
   }
@@ -2208,7 +2337,7 @@
     if (!window.HubMath || !mathState) return;
     var info = window.HubMath.status(mathState, studyAge);
     studyAgeEl.value = String(info.age);
-    mathStageEl.textContent = info.level + '단계 · ' + info.levelName + ' · 익힌 유형 ' + info.mastered + '/' + info.total;
+    mathStageEl.textContent = 'Level ' + info.level + ' · ' + info.levelName + ' · ' + info.mastered + '/' + info.total + ' mastered';
   }
   function renderSkills() {
     skillListEl.innerHTML = '';
@@ -2245,7 +2374,7 @@
     if (!state.wrong.length && !mathWrong.length) {
       var empty = document.createElement('li');
       empty.className = 'empty';
-      empty.textContent = '오답노트가 비어 있어요! 참 잘했어요 🎉';
+      empty.textContent = 'Review notes are empty! Great job 🎉';
       bookListEl.appendChild(empty);
       return;
     }
@@ -2260,11 +2389,11 @@
       tname.textContent = (SKILL_INFO[e.type] || SKILL_INFO.story).name;
       var meta = document.createElement('span');
       meta.className = 'meta2';
-      meta.textContent = '정답 ' + line.a + ' · 틀린 횟수 ' + e.miss + '번';
+      meta.textContent = 'Correct ' + line.a + ' · Mistakes ' + e.miss;
       if (e.type === 'reading' && window.EnglishReading) {
         var practiceWords = window.EnglishReading.normalize(line.a).split(' ').filter(function (word) { return state.readingWords[word] > 0; });
-        meta.textContent = '문장 다시 읽기 · 복습 ' + e.miss + '회 남음' +
-          (practiceWords.length ? ' · 연습할 단어: ' + practiceWords.join(', ') : '');
+        meta.textContent = 'Reread sentence · ' + e.miss + (e.miss === 1 ? ' review' : ' reviews') + ' left' +
+          (practiceWords.length ? ' · Practice words: ' + practiceWords.join(', ') : '');
       }
       li.appendChild(f); li.appendChild(tname); li.appendChild(meta);
       bookListEl.appendChild(li);
@@ -2275,10 +2404,10 @@
       f.textContent = entry.text;
       var tname = document.createElement('span');
       tname.className = 'tname';
-      tname.textContent = '🛝 재이의 수학놀이터 · ' + entry.level + '단계';
+      tname.textContent = '🛝 Jaei\'s Math Playground · Level ' + entry.level;
       var meta = document.createElement('span');
       meta.className = 'meta2';
-      meta.textContent = '정답 ' + entry.problem.answer + ' · 다음 복습 ' + entry.due;
+      meta.textContent = 'Correct ' + entry.problem.answer + ' · Next review ' + entry.due;
       li.appendChild(f); li.appendChild(tname); li.appendChild(meta);
       bookListEl.appendChild(li);
     });
@@ -2778,9 +2907,9 @@
     function paintQuiet() {
       var on = quietToday();
       var note = document.getElementById('studyModeNote');
-      if (note) note.textContent = on ? '🤫 조용 모드 · 오늘은 소리 없이 산수 문제만' : '영어 그림책 읽기 중심 · 다섯 번째는 재이의 수학놀이터';
+      if (note) note.textContent = on ? '🤫 Quiet Mode · Math only' : "English Storybooks · 5th is Jaei's Math Playground";
       quietBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
-      quietBtn.title = on ? '조용 모드 켜짐 · 오늘은 산수 문제만 (다시 누르면 꺼져요)' : '조용 모드 (기차·비행기)';
+      quietBtn.title = on ? 'Quiet Mode on · Math only today (tap again to turn off)' : 'Quiet Mode (Travel)';
     }
     quietBtn.addEventListener('click', function () {
       var on = !quietToday();
@@ -2790,14 +2919,14 @@
       drawDaily();
       // 읽기 문제가 떠 있으면 바로 산수로 바꾸고, 조용 모드를 끄면 다음 문제부터 다시 읽는다.
       if (on && current && current.reading && !current.answered && !isFree() && !hasTicket()) renderProblem();
-      cheerEl.textContent = on ? '🤫 조용 모드! 오늘은 소리 내지 않고 산수 문제만 풀어요.' : '조용 모드를 껐어요. 다시 영어 그림책도 읽어요.';
+      cheerEl.textContent = on ? '🤫 Quiet Mode! No reading aloud today, just math problems.' : 'Quiet Mode is off. English storybooks are back.';
     });
     paintQuiet();
   })();
   function applyState() {
     var mathLaunchAction = document.getElementById('mathLaunchAction');
     if (mathLaunchAction) mathLaunchAction.textContent = mathState && mathState.pending && mathState.pending.level === mathState.level
-      ? '하던 놀이 이어하기 →' : '문제 수 골라 시작 →';
+      ? 'Continue playing →' : 'Choose problems and start →';
     stopReading();
     syncHubMusic();
     drawDaily();
@@ -2809,35 +2938,35 @@
       if(typeof celebrationView!=='undefined' && celebrationView){celebrationView.destroy();celebrationView=null;}
       document.body.classList.remove('locked');
       studyEl.classList.add('done');
-      eyebrowEl.textContent = '부모님 모드 켜짐';
+      eyebrowEl.textContent = 'Parent Mode On';
       starsEl.textContent = '🌙';
       itemsEl.textContent = '';
-      questionEl.textContent = '달을 다시 5번 누르면 원래 진도로 돌아가요.';
+      questionEl.textContent = 'Tap the moon 5 more times to return to your own progress.';
       choicesEl.innerHTML = '';
-      subEl.textContent = '문제 진도와 티켓은 그대로 보관 중이에요.';
+      subEl.textContent = 'Your progress and tickets are saved.';
     } else if (isFree()) {
       document.body.classList.remove('locked');
       studyEl.classList.add('done');
-      eyebrowEl.textContent = '오늘 공부 완료';
+      eyebrowEl.textContent = 'Study done';
       starsEl.textContent = '🏆';
       itemsEl.textContent = '🎉';
-      questionEl.textContent = DAILY + '문제를 다 풀었어요! 오늘은 모든 게임을 자유롭게 즐겨요!';
+      questionEl.textContent = DAILY + ' problems done! Play any game freely today!';
       choicesEl.innerHTML = '';
-      subEl.textContent = '오늘은 어떤 모험을 떠날까?';
+      subEl.textContent = "What's today's adventure?";
     } else if (hasTicket()) {
       document.body.classList.remove('locked');
       studyEl.classList.add('done');
-      eyebrowEl.textContent = '게임 티켓';
+      eyebrowEl.textContent = 'Game Ticket';
       starsEl.textContent = '🎫';
       itemsEl.textContent = '';
-      questionEl.textContent = SET + '문제 성공! 게임을 하고 돌아오면 새로운 ' + SET + '문제를 시작해요.';
+      questionEl.textContent = SET + ' problems done! Play a game, then come back for a new ' + SET + '.';
       choicesEl.innerHTML = '';
-      subEl.textContent = '오늘은 어떤 모험을 떠날까?';
+      subEl.textContent = "What's today's adventure?";
     } else {
       document.body.classList.add('locked');
       studyEl.classList.remove('done');
-      eyebrowEl.textContent = '공부 먼저 · ' + SET + '문제 도전';
-      subEl.textContent = '공부 먼저! ' + SET + '문제마다 게임 티켓 · 오늘 누적 ' + DAILY + '문제면 자유 모험!';
+      eyebrowEl.textContent = 'Study First · ' + SET + ' Problems';
+      subEl.textContent = 'Study first! A game ticket every ' + SET + ' problems · ' + DAILY + ' today for free play!';
       drawSetStars();
       renderProblem();
     }
@@ -2876,7 +3005,7 @@
       if (n > 0) {
         var chip = document.createElement('span');
         chip.className = 'plays';
-        chip.textContent = (n === max && max >= 3 ? '⭐ 최애 · ' : '🔥 ') + n + '번 놀았어요';
+        chip.textContent = (n === max && max >= 3 ? '⭐ Favorite · ' : '🔥 ') + 'Played ' + n + (n === 1 ? ' time' : ' times');
         tags.appendChild(chip);
       }
     });
@@ -2909,9 +3038,9 @@
       m.className = 'meta2';
       if (r.n) {
         var days = dayNum() - r.d;
-        m.textContent = r.n + '번 놀았어요 · 마지막은 ' + (days <= 0 ? '오늘' : days + '일 전');
+        m.textContent = 'Played ' + r.n + (r.n === 1 ? ' time' : ' times') + ' · Last: ' + (days <= 0 ? 'Today' : days === 1 ? 'Yesterday' : days + ' days ago');
       } else {
-        m.textContent = '아직 안 해봤어요';
+        m.textContent = 'Not played yet';
       }
       li.appendChild(b); li.appendChild(m);
       gameListEl.appendChild(li);
@@ -2943,9 +3072,9 @@
     var title = document.getElementById('lockNoticeTitle');
     var text = document.getElementById('lockNoticeText');
     var remaining = Math.max(1, SET - setCorrect);
-    if (title) title.textContent = (name ? name.textContent : '이 모험') + ' 출발 준비!';
+    if (title) title.textContent = 'Ready for ' + (name ? name.textContent : 'this game') + '!';
     if (text) {
-      text.textContent = '오늘의 퀘스트 ' + remaining + '문제만 더 풀면 게임 티켓을 받아요.';
+      text.textContent = 'Solve ' + remaining + ' more ' + (remaining === 1 ? 'problem' : 'problems') + ' today to get a game ticket.';
     }
     lockNotice.hidden = false;
     clearTimeout(lockNoticeTimer);
@@ -2978,7 +3107,7 @@
     if (!state.parentMode && !state.parentModeKnown && state.solved >= 40) {
       // The old parent override wrote 40; keep that migration threshold independent of DAILY.
       // Legacy completion cannot be distinguished from a real finished day.
-      if (!window.confirm('예전 부모님 모드로 완료된 기록인가요? 이전 진도는 복원할 수 없어요. 오늘 문제 수와 티켓만 0으로 되돌릴까요? 실력·오답노트·카드는 유지됩니다.')) return;
+      if (!window.confirm("Was this record completed with the old Parent Mode? Earlier progress can't be restored. Reset only today's problem count and tickets to 0? Skills, review notes and cards are kept.")) return;
       state.solved = 0;
       state.credit = 0;
     } else {
@@ -3041,9 +3170,9 @@
     function showOfflineState(label) {
       if (offlineLabel) offlineLabel.textContent = label;
     }
-    window.addEventListener("offline", function () { showOfflineState("오프라인"); });
+    window.addEventListener("offline", function () { showOfflineState("Offline"); });
     window.addEventListener("online", function () {
-      showOfflineState(navigator.serviceWorker.controller ? "저장됨" : "연결됨");
+      showOfflineState(navigator.serviceWorker.controller ? "Saved" : "Connected");
     });
     /* 배포 직후 첫 방문은 옛 화면이 캐시에서 먼저 뜬다. 새 서비스 워커가 자리를
        잡으면(controllerchange) 페이지가 아직 새것이고(8초 안) 공부를 시작하기 전일 때
@@ -3061,15 +3190,15 @@
       ).then(function () {
         return navigator.serviceWorker.ready;
       }).then(function () {
-        showOfflineState(navigator.onLine ? "저장됨" : "오프라인");
+        showOfflineState(navigator.onLine ? "Saved" : "Offline");
       }).catch(function (error) {
-        showOfflineState("연결 필요");
+        showOfflineState("Need connection");
         console.warn("오프라인 준비를 시작하지 못했어요.", error);
       });
     });
   } else {
     var unsupportedLabel = document.getElementById("hubOfflineStat");
-    if (unsupportedLabel) unsupportedLabel.textContent = "연결 필요";
+    if (unsupportedLabel) unsupportedLabel.textContent = "Need connection";
   }
 </script>
 <script>
@@ -3084,10 +3213,10 @@
       var today = new Date();
       today.setHours(0, 0, 0, 0);
       var days = Math.round((today - then) / 86400000);
-      if (days <= 0) return "오늘";
-      if (days === 1) return "어제";
-      if (days < 7) return days + "일 전";
-      return Number(m[2]) + "월 " + Number(m[3]) + "일";
+      if (days <= 0) return "Today";
+      if (days === 1) return "Yesterday";
+      if (days < 7) return days + " days ago";
+      return Number(m[2]) + "/" + Number(m[3]);
     }
     fetch("game/updates.json", { cache: "no-store" })
       .then(function (res) { return res.ok ? res.json() : null; })

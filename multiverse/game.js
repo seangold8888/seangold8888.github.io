@@ -154,6 +154,7 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
   var zone = $("stickZone"), base = $("stickBase"), knob = $("stickKnob");
   zone.addEventListener("pointerdown", function (e) {
     Sfx.unlock();
+    if (game && game.quizOpen) return;   // 문제 푸는 중에는 막대기를 잡지 않는다
     stick.id = e.pointerId; stick.sx = e.clientX; stick.sy = e.clientY; stick.x = 0; stick.y = 0;
     var r = zone.getBoundingClientRect();
     base.style.left = (e.clientX - r.left) + "px"; base.style.top = (e.clientY - r.top) + "px";
@@ -196,7 +197,7 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
   function holdButton(el, onPress) {
     el.addEventListener("pointerdown", function (e) {
       Sfx.unlock(); e.preventDefault();
-      if (el.disabled) return;
+      if (el.disabled || (game && game.quizOpen)) return;
       el.classList.add("is-down"); onPress();
     });
     ["pointerup", "pointercancel", "pointerleave"].forEach(function (t) { el.addEventListener(t, function () { el.classList.remove("is-down"); }); });
@@ -249,13 +250,16 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
   }
 
   function startMission(worldIndex, missionIndex) {
+    cancelQuiz();
     var world = D.WORLDS[worldIndex], mission = D.MISSIONS[missionIndex];
     var buddyKid = other(state.hero);
     game = { worldIndex: worldIndex, missionIndex: missionIndex, world: world, mission: mission,
       time: D.MISSION_SECONDS, running: false, paused: false, over: false, endT: 0, stars: 0,
       heroes: [], enemies: [], boss: null, cages: [], sparks: [], shots: [], hazards: [], parts: [],
       freed: 0, collected: 0, goal: mission.id === "treasure" ? 50 : 3, spawnT: 1.2, sparkT: 0.5,
-      hitstop: 0, shake: 0, banner: null, clock: 0, won: false, ventT: 2.5, callout: null, prize: null };
+      hitstop: 0, shake: 0, banner: null, clock: 0, won: false, ventT: 2.5, callout: null, prize: null,
+      // ? 별(수학 문제): 미션당 2개. 배지는 한 번에 맞힌 수(최대 3), 3개면 이 판 필살기가 강화판.
+      quizStars: [], quizMade: 0, quizOpen: false, quizBadges: 0, quizBossHalf: null, quizBonus: 0 };
     var player = makeHero(state.hero, true, 360, 660);
     var buddy = makeHero(buddyKid, false, 240, 600);
     player.maxHp = player.hp; buddy.maxHp = buddy.hp;
@@ -320,6 +324,72 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     return 30;
   }
 
+  // ---------- ? 별 수학 문제 (공통 모듈 GameQuiz) ----------
+  // 별을 먹으면 game.paused 로 모든 것(90초 타이머·적·보스)이 멈추고 문제 패널이 뜬다.
+  // 한 번에 맞힘: 필살기 +50, 배지 +1(최대 3). 고쳐 맞힘: 필살기 +20(배지 그대로). 틀려도 벌 없음.
+  // GameQuiz 가 없거나 자동 검사(navigator.webdriver)면 별을 만들지 않는다. __MV.quiz(true/false) 로 바꿀 수 있다.
+  var QUIZ_LIFE = 20;
+  var quizForce = null;
+  function quizReady() {
+    var has = !!(window.GameQuiz && typeof window.GameQuiz.ask === "function");
+    if (quizForce !== null) return quizForce && has;
+    return has && !navigator.webdriver;
+  }
+  function spawnQuizStar(x, y) {
+    if (!game || game.over || !quizReady() || game.quizMade >= 2) return null;
+    game.quizMade++;
+    var q = { kind: "quiz", x: clamp(x, 100, W - 100), y: clamp(y, GROUND_TOP + 15, GROUND_BOTTOM - 10), z: 40, vz: 420, t: 0 };
+    game.quizStars.push(q);
+    burst(q.x, q.y - 60, "#ffe45c", 12, 260);
+    Sfx.coin();
+    if (game.quizMade === 1) game.callout = { text: "❓별을 먹고 문제를 맞히면 필살기 충전!", t: 0 };
+    return q;
+  }
+  function quizInputReset() { resetStick(); keys = {}; input.attack = false; input.special = false; }
+  function openQuiz(q) {
+    if (!game || game.over || !game.running || game.quizOpen || game.resultShown || !quizReady()) return;
+    var g = game, p = g.player, kid = state.hero;
+    g.quizOpen = true; g.paused = true;
+    quizInputReset();
+    Sfx.coin();
+    burst(q.x, q.y - 60, "#ffe45c", 16, 300);
+    var Q = window.GameQuiz, req;
+    try {
+      if (Q.setKid) Q.setKid(kid);
+      req = Q.ask({
+        kid: kid, title: "맞히면 필살기 충전!",
+        theme: { bg: "rgba(27,22,64,.96)", accent: "#ffd84a", button: "#fff6d6", buttonText: "#2a1a5c", top: 70 },
+        onCorrect: function (r) {
+          if (!r.firstTry) return "필살기 +20%! 잘 고쳤어요.";
+          var n = Math.min(3, g.quizBadges + 1);
+          return "필살기 +50%! 배지 " + "⭐".repeat(n) + (n >= 3 ? " 강화 필살기!" : "");
+        }
+      });
+    } catch (e) { resumeFromQuiz(g); return; }
+    Promise.resolve(req).then(function (r) {
+      if (game !== g || !g.quizOpen) return;              // 그사이 미션을 나갔다
+      if (r && r.firstTry) { g.quizBadges = Math.min(3, g.quizBadges + 1); addMeter(p, 50); }
+      else addMeter(p, 20);
+      floatText(p.x, p.y - HERO_H - 30, r && r.firstTry ? "필살기 +50%!" : "필살기 +20%!", "#ffd84a", 36);
+      burst(p.x, p.y - HERO_H * 0.6, "#ffd84a", 20, 320);
+      Sfx.free();
+      resumeFromQuiz(g);
+    }, function () { if (game === g) resumeFromQuiz(g); });
+  }
+  function resumeFromQuiz(g) {
+    g.quizOpen = false;
+    if (game !== g) return;
+    g.paused = false; last = performance.now();
+    quizInputReset();
+    g.player.invul = Math.max(g.player.invul, 1.5);      // 다시 움직이자마자 맞지 않게
+    updateSpecialBtn();
+  }
+  // 미션이 끝나거나 나갈 때: 패널을 닫고(약속은 버려진다) 상태를 되돌린다.
+  function cancelQuiz() {
+    if (game && game.quizOpen) { game.quizOpen = false; if (!game.over) game.paused = false; }
+    try { if (window.GameQuiz && window.GameQuiz.isOpen && window.GameQuiz.isOpen()) window.GameQuiz.close(); } catch (e) {}
+  }
+
   // ---------- 효과 ----------
   function burst(x, y, color, n, speed) {
     for (var i = 0; i < n && game.parts.length < 320; i++) {
@@ -347,6 +417,7 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     }
     if (t.kind === "boss" && t.st === "dizzy") dmg = Math.round(dmg * 1.5);
     t.hp -= dmg;
+    if (t.kind === "boss" && t.hp > 0 && t.hp <= t.maxHp / 2 && !game.quizBossHalf && quizReady()) game.quizBossHalf = "pending";
     t.flash = 0.1;
     var hy = t.y - (t.kind === "cage" ? 80 : t.kind === "boss" ? t.def.size * 0.5 : t.def ? t.def.size * 0.5 : 100) - (t.z || 0);
     floatText(t.x + rand(-20, 20), hy, String(dmg), opt.big ? "#ffd84a" : "#ffffff", opt.big ? 40 : 30);
@@ -381,9 +452,10 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     burst(c.x, c.y - 90, "#ff9fd6", 30, 420);
     floatText(c.x, c.y - 180, "고마워! 💖", "#ffd1ec", 34);
     if (game.freed >= 3) winMission();
+    else spawnQuizStar(c.x + (c.x < W / 2 ? 140 : -140), c.y + 18);
   }
   function dropSpark(x, y, pop) {
-    game.sparks.push({ x: clamp(x, 60, W - 60), y: clamp(y, GROUND_TOP + 10, GROUND_BOTTOM), z: pop ? 40 : 520, vz: pop ? pop : 0, t: 0 });
+    game.sparks.push({ kind: "spark", x: clamp(x, 60, W - 60), y: clamp(y, GROUND_TOP + 10, GROUND_BOTTOM), z: pop ? 40 : 520, vz: pop ? pop : 0, t: 0 });
   }
   function hurtHero(h, dmg, from) {
     if (h.invul > 0 || h.st === "down" || h.st === "rest" || game.over) return;
@@ -462,24 +534,32 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
   function doSpecial(h) {
     if (h.meter < 100 || h.st === "down" || h.st === "rest" || h.st === "special") return;
     h.meter = 0; h.st = "special"; h.t = 0; h.hitDone = false;
+    // 문제 배지 3개: 이 판 필살기는 강화판(피해 x1.5, 더 큰 금빛 고리).
+    h.powered = !!(h.isPlayer && game.quizBadges >= 3);
     if (h.isPlayer) updateSpecialBtn();
     Sfx.special(); shake(14);
     if (h.isPlayer) skillVoices.play(h.kid, 'special', 3);
     var fx = wearing(h.kid, "fx");
-    game.flash = { color: fx ? fx.color : "#ffffff", t: 0.35 };
+    game.flash = { color: h.powered ? "#ffe45c" : fx ? fx.color : "#ffffff", t: h.powered ? 0.5 : 0.35 };
     var cry = familySkillLine(h.kid, 'special');
     floatText(h.x, h.y - HERO_H - 40, cry ? cry.phrase : D.HEROES[h.kid].name + " 필살기!", fx ? fx.color : "#fff", 40);
+    if (h.powered) { floatText(h.x, h.y - HERO_H - 86, "⭐⭐⭐ 강화 필살기!", "#ffe45c", 44); shake(20); }
     var chants = D.HEROES[h.kid].chants;
     if (chants) floatText(h.x, h.y - HERO_H - 4, chants[Math.floor(Math.random() * chants.length)], "#fff3c4", 30);
   }
   function specialBlast(h) {
     var fx = wearing(h.kid, "fx");
-    var power = D.HEROES[h.kid].power * (h.isPlayer ? 5 : 3);
-    game.hazards.push({ kind: "ring", owner: "hero", x: h.x, y: h.y, r: 20, maxR: 900, t: 0, dur: 0.6, color: fx ? fx.color : "#fff", hit: [], dmg: 0 });
+    var power = specialPower(h);
+    game.hazards.push({ kind: "ring", owner: "hero", x: h.x, y: h.y, r: 20, maxR: h.powered ? 1300 : 900, t: 0, dur: 0.6, color: h.powered ? "#ffd84a" : fx ? fx.color : "#fff", hit: [], dmg: 0, wide: h.powered });
+    if (h.powered) game.hazards.push({ kind: "ring", owner: "hero", x: h.x, y: h.y, r: 10, maxR: 700, t: 0, dur: 0.75, color: "#ff7ec8", hit: [], dmg: 0, wide: true });
     targetsFor().forEach(function (t) {
-      hurtTarget(t, Math.round(t.kind === "boss" ? power * 0.8 : power), h, { big: true, kb: 520, breakGuard: true, color: fx ? fx.color : null });
+      hurtTarget(t, Math.round(t.kind === "boss" ? power * 0.8 : power), h, { big: true, kb: h.powered ? 760 : 520, breakGuard: true, color: h.powered ? "#ffd84a" : fx ? fx.color : null });
     });
     for (var i = 0; i < 40; i++) burst(rand(80, W - 80), rand(GROUND_TOP - 200, GROUND_BOTTOM - 40), fx ? fx.color : "#fff", 1, 200);
+  }
+
+  function specialPower(h) {
+    return D.HEROES[h.kid].power * (h.isPlayer ? 5 : 3) * (h.powered ? 1.5 : 1);
   }
 
   function updateHero(h, dt) {
@@ -533,6 +613,18 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
         if (h.isPlayer && game.collected % 5 === 0) skillVoices.play(h.kid, 'pickup', 1);
         burst(s.x, s.y - 30, "#fff3b0", 6, 220);
         if (game.collected >= game.goal && game.mission.id === "treasure") winMission();
+        else if (game.mission.id === "treasure" && game.quizMade < 2 && game.collected >= Math.ceil(game.goal * (game.quizMade ? 0.65 : 0.3))) {
+          var side = h.x < W / 2 ? 1 : -1;
+          spawnQuizStar(h.x + side * 250, h.y + rand(-30, 30));
+        }
+      }
+    }
+    // ? 별: 주인공만 먹는다(끌려오지 않으니 피하고 싶으면 안 먹어도 된다).
+    if (h.isPlayer && !game.over) {
+      for (var qi = game.quizStars.length - 1; qi >= 0; qi--) {
+        var q = game.quizStars[qi];
+        if (q.z > 30) continue;
+        if (Math.hypot(q.x - h.x, (q.y - h.y) * 1.5) < 70) { game.quizStars.splice(qi, 1); openQuiz(q); break; }
       }
     }
   }
@@ -631,7 +723,13 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
         shake(16); Sfx.big(); Sfx.warn();
       }
     }
-    if (b.st === "roar") {
+    // 체력 절반: 보스가 잠깐 물러나고, 그 틈에 주인공 쪽에 ? 별이 하나 뜬다.
+    if (b.st === "idle" && game.quizBossHalf === "pending") startRetreat(b);
+    if (b.st === "retreat") {
+      b.x += clamp(b.rx - b.x, -1, 1) * Math.min(Math.abs(b.rx - b.x) * 3, def.speed * 1.4) * dt;
+      b.facing = game.player.x < b.x ? -1 : 1;
+      if (b.t > 1.8) { b.st = "idle"; b.t = 0; }
+    } else if (b.st === "roar") {
       if (b.t > 1.3) { b.st = "idle"; b.t = 0; }
     } else if (b.st === "idle") {
       var keep = target.x + (b.x < target.x ? -260 : 260);
@@ -668,6 +766,17 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     }
     b.y = clamp(b.y, GROUND_TOP + 10, GROUND_BOTTOM - 10);
     b.x = clamp(b.x, 90, W - 90);
+  }
+  function startRetreat(b) {
+    var p = game.player;
+    game.quizBossHalf = "done";
+    b.st = "retreat"; b.t = 0;
+    var away = p.x <= b.x ? -1 : 1;                     // 보스에게서 멀어지는 쪽
+    b.rx = away < 0 ? W - 150 : 150;                   // 보스는 주인공 반대쪽 끝으로 물러난다
+    floatText(b.x, b.y - b.def.size - 10, "으윽… 잠깐 후퇴!", "#ffe1a0", 32);
+    var sx = p.x + away * 210;                          // 별은 주인공 등 뒤(보스 반대쪽) 조금 떨어진 곳
+    if (sx < 110 || sx > W - 110) sx = p.x - away * 210;
+    spawnQuizStar(sx, p.y + rand(-25, 25));
   }
   function bossPhase(b) {
     var ps = b.def.phases, k = b.hp / b.maxHp;
@@ -769,6 +878,8 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     return game.time >= 25 ? 3 : game.time >= 10 ? 2 : 1;
   }
   function endMission() {
+    cancelQuiz();
+    game.quizStars = [];
     game.over = true; game.endT = 0;
     game.stars = starsFor();
     game.banner = { text: game.stars > 0 ? "미션 성공!" : "시간 끝!", t: 0 };
@@ -817,8 +928,10 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
       return;
     }
     if (game.hitstop > 0) { game.hitstop -= dt; input.attack = false; input.special = false; return; }
-    game.heroes.forEach(function (h) { updateHero(h, dt); });
+    game.heroes.forEach(function (h) { if (!game.paused) updateHero(h, dt); });
     input.attack = false; input.special = false;
+    if (game.paused) return;   // ? 별을 먹어 문제가 떴다: 이 프레임의 나머지도 멈춘다
+    if (game.boss && game.quizMade === 0 && game.clock > 0.3) spawnQuizStar(640, (GROUND_TOP + GROUND_BOTTOM) / 2 + 20);
     game.enemies.forEach(function (e) { updateEnemy(e, dt); });
     game.enemies = game.enemies.filter(function (e) { return e.st !== "dead" || e.dead > 0; });
     if (game.boss) updateBoss(game.boss, dt);
@@ -829,6 +942,11 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
       s.t += dt;
       if (s.z > 0 || s.vz) { s.vz -= 1100 * dt; s.z += s.vz * dt; if (s.z <= 0) { s.z = 0; s.vz = s.vz < -200 ? -s.vz * 0.35 : 0; } }
     });
+    game.quizStars.forEach(function (q) {
+      q.t += dt;
+      if (q.z > 0 || q.vz) { q.vz -= 1100 * dt; q.z += q.vz * dt; if (q.z <= 0) { q.z = 0; q.vz = q.vz < -200 ? -q.vz * 0.35 : 0; } }
+    });
+    game.quizStars = game.quizStars.filter(function (q) { return q.t < QUIZ_LIFE; });
     updateMission(dt);
   }
   function updateShots(dt) {
@@ -1157,6 +1275,7 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     if (game.boss) list.push(game.boss);
     game.cages.forEach(function (c) { list.push(c); });
     game.sparks.forEach(function (s) { list.push(s); });
+    game.quizStars.forEach(function (q) { list.push(q); });
     game.shots.forEach(function (s) { list.push(s); });
     game.hazards.forEach(function (z) { if (z.kind === "vent" && z.t >= z.warn && z.t < z.dur) list.push(z); });
     list.sort(function (a, b) { return a.y - b.y; });
@@ -1164,7 +1283,7 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     game.hazards.forEach(function (z) {
       if (z.kind !== "ring") return;
       var a = 1 - z.t / (z.dur + 0.15);
-      g.strokeStyle = z.color; g.globalAlpha = Math.max(0, a); g.lineWidth = z.owner === "boss" ? 14 : 18;
+      g.strokeStyle = z.color; g.globalAlpha = Math.max(0, a); g.lineWidth = z.owner === "boss" ? 14 : z.wide ? 30 : 18;
       g.beginPath(); g.ellipse(z.x, z.y, z.r, z.r * 0.32, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1;
     });
     if (game.boss && game.boss.st === "tele" && game.boss.move === "tail") {
@@ -1246,6 +1365,8 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
       if (lavaWorld()) { g.globalAlpha = glow; gem(g, 0, 0, 24, Math.sin(t * 3 + o.x)); }
       else { g.rotate(t * 2); g.globalAlpha = glow; star(g, 0, 0, 24, "#ffe45c"); }
       g.restore(); g.globalAlpha = 1;
+    } else if (o.kind === "quiz") {
+      drawQuizStar(g, o, t);
     } else if (o.kind === "vent") {
       // 솟는 용암 기둥: 올라갔다가 내려온다.
       var vk = clamp((o.t - o.warn) / (o.dur - o.warn), 0, 1), vh = 280 * Math.sin(vk * Math.PI) + 20;
@@ -1278,6 +1399,24 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
         for (var q = 0; q < 6; q++) { var an = q * Math.PI / 3; g.beginPath(); g.moveTo(o.x, o.y - o.z); g.lineTo(o.x + Math.cos(an) * 26, o.y - o.z + Math.sin(an) * 26); g.stroke(); }
       }
     }
+  }
+  // ? 별: 큰 금색 별 + 가운데 큰 "?". shadowBlur 없이 테두리와 고리로만 눈에 띄게.
+  function drawQuizStar(g, o, t) {
+    var left = QUIZ_LIFE - o.t;
+    if (left < 4 && Math.floor(t * 8) % 2) return;          // 사라지기 4초 전부터 깜빡
+    var pulse = 1 + 0.08 * Math.sin(t * 6), r = 46 * pulse, cy = o.y - 64 - o.z + Math.sin(t * 3) * 6;
+    g.fillStyle = "rgba(255,220,90,0.3)"; g.beginPath(); g.ellipse(o.x, o.y, 44, 12, 0, 0, Math.PI * 2); g.fill();
+    var ring = (t * 1.2) % 1;
+    g.globalAlpha = 1 - ring; g.strokeStyle = "#fff4a8"; g.lineWidth = 5;
+    g.beginPath(); g.arc(o.x, cy, r * (1 + ring * 0.8), 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1;
+    g.beginPath();
+    for (var i = 0; i < 10; i++) { var a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.55 : r; g.lineTo(o.x + Math.cos(a) * rr, cy + Math.sin(a) * rr); }
+    g.closePath(); g.fillStyle = "#ffcf2e"; g.fill();
+    g.lineWidth = 6; g.strokeStyle = "#7a3b00"; g.stroke();
+    g.font = "900 50px system-ui"; g.textAlign = "center"; g.textBaseline = "middle";
+    g.lineWidth = 7; g.strokeStyle = "#3a1a5c"; g.strokeText("?", o.x, cy + 3);
+    g.fillStyle = "#ffffff"; g.fillText("?", o.x, cy + 3);
+    g.textBaseline = "alphabetic";
   }
   function drawSwing(g, h, s) {
     var p = h.prof; if (!p || p.ranged) return;
@@ -1315,7 +1454,20 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     g.lineWidth = 5; g.strokeStyle = "rgba(0,0,0,0.55)";
     g.strokeText(D.HEROES[p.kid].name, 24, 40); g.fillText(D.HEROES[p.kid].name, 24, 40);
     bar(g, 90, 24, 240, 20, p.hp / p.maxHp, "#5ee07a");
-    bar(g, 90, 50, 240, 10, p.meter / 100, p.meter >= 100 ? "#ff7ec8" : "#c69bff");
+    bar(g, 90, 50, 240, 10, p.meter / 100, p.meter >= 100 ? (game.quizBadges >= 3 ? "#ffd84a" : "#ff7ec8") : "#c69bff");
+    // 문제 배지: 필살기 줄 옆 별 세 칸. 채운 별은 금색, 빈 칸은 흐린 별. 3개면 "강화" 글씨.
+    if (quizReady()) {
+      for (var qb = 0; qb < 3; qb++) {
+        var on = qb < game.quizBadges, bx = 350 + qb * 30;
+        if (on) { star(g, bx, 54, 14, "#7a3b00"); star(g, bx, 54, 11, "#ffd84a"); }
+        else { g.globalAlpha = 0.45; star(g, bx, 54, 11, "#ffffff"); g.globalAlpha = 1; }
+      }
+      if (game.quizBadges >= 3) {
+        g.font = "900 18px system-ui"; g.textAlign = "left"; g.lineWidth = 5; g.strokeStyle = "rgba(0,0,0,0.6)";
+        g.strokeText("강화!", 440, 61); g.fillStyle = "#ffd84a"; g.fillText("강화!", 440, 61);
+      }
+      g.font = "800 17px system-ui"; g.textAlign = "left"; g.fillStyle = "#fff"; g.strokeStyle = "rgba(0,0,0,0.55)";
+    }
     g.font = "800 17px system-ui"; g.strokeText(D.HEROES[b.kid].name, 24, 88); g.fillText(D.HEROES[b.kid].name, 24, 88);
     bar(g, 90, 76, 160, 12, b.hp / b.maxHp, "#8fe6ff");
     // 시간
@@ -1374,6 +1526,7 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     // 화면이 바뀌면(멈춤·결과·지도) 끌던 막대기와 눌린 키를 놓는다.
     resetStick(); keys = {};
     if (!keepGame && id && id !== "pause" && id !== "result" && id !== "intro") {
+      cancelQuiz();
       game = null; $("controls").hidden = true;
     }
     if (id === "home") paintHome();
@@ -1468,6 +1621,9 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
   function showResult() {
     var rec = Save.recordMission(state, game.world.id, game.mission.id, game.stars);
     state = rec.state;
+    // 문제 보너스: 배지 3개를 채운 판을 성공하면 캡슐 별 +1(저장 필드는 그대로, 별 수만 더한다).
+    game.quizBonus = game.stars > 0 && game.quizBadges >= 3 ? 1 : 0;
+    if (game.quizBonus) state.stars += game.quizBonus;
     // 보스 선물: 이길 때마다 아직 없는 선물 조각 하나.
     game.prize = null;
     if (game.boss && game.won) {
@@ -1486,6 +1642,10 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     }
     $("resultTitle").textContent = game.stars > 0 ? "미션 성공! 🎉" : "아깝다! 다시 해 볼까?";
     $("resultText").textContent = game.stars > 0 ? "별 " + rec.earned + "개를 받았어요! (모은 별 ⭐ " + state.stars + ")" : resultHint();
+    if (game.quizBonus) {
+      var qline = document.createElement("strong"); qline.className = "quiz-bonus"; qline.textContent = "문제 보너스 ⭐+" + game.quizBonus;
+      $("resultText").append(document.createElement("br"), qline);
+    }
     var lastWorld = game.worldIndex === D.WORLDS.length - 1;
     if (game.won && game.boss && lastWorld) $("resultTitle").textContent = "멀티버스를 다 구했어요! 🏆";
     $("resultPrize").hidden = !game.prize; $("resultWear").hidden = !game.prize;
@@ -1522,7 +1682,7 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
   });
 
   function pauseGame() {
-    if (!game || !game.running || game.over) return;
+    if (!game || !game.running || game.over || game.quizOpen) return;   // 문제 중엔 이미 멈춰 있다
     game.paused = true; showScreen("pause", true);
   }
   $("resumeBtn").addEventListener("click", function () { if (game) { game.paused = false; showScreen(null, true); last = performance.now(); } });
@@ -1636,6 +1796,9 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     get state() { return state; }, get game() { return game; }, data: D,
     start: startMission, setState: function (s) { state = Save.normalise(s, D); persist(); showScreen("home"); },
     vent: function (x, y, warn) { if (game) spawnVent(x, y, warn); },
+    // ? 별 끄고 켜기(자동 검사는 기본으로 꺼짐): __MV.quiz(false) / __MV.quiz(true) / __MV.quiz() -> 지금 켜졌는지
+    quiz: function (on) { if (on !== undefined) { quizForce = on === null ? null : !!on; if (!quizReady()) cancelQuiz(); } return quizReady(); },
+    quizStar: function (x, y) { if (game) { game.quizMade = Math.min(game.quizMade, 1); spawnQuizStar(x, y); } },
     step: function (sec) { for (var i = 0; i < sec * 60; i++) { if (game && game.running && !game.paused) update(1 / 60); } }
   };
 })();

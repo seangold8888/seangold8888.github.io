@@ -34,11 +34,11 @@ const server=http.createServer((req,res)=>{
         if(s.active)localStorage.setItem('hub_play_pass',JSON.stringify({day,until:Date.now()+120000}));
       },scene);
       const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
-      await page.goto(base+'/game/');await page.waitForFunction(()=>document.querySelector('#question').textContent&&document.querySelector('#hubTicketStat').textContent!=='준비 중');
+      await page.goto(base+'/game/');await page.waitForFunction(()=>document.querySelector('#question').textContent&&document.querySelector('#hubTicketStat').textContent!=='Ready');
       assert.equal(await page.locator('a.card').count(),10);assert.equal(await page.locator('a.shop').count(),2);
       assert.equal(await page.locator('.games a[href="kart/"]').count(),0);
       assert.equal(await page.locator('.games a[href="kart3d/"]').count(),1);
-      assert.equal(await page.locator('a.card.battle .name').innerText(),'카드 덱');
+      assert.equal(await page.locator('a.card.battle .name').innerText(),'Card Deck');
       for(const [cls,file] of [['castle','cover-hogwarts-game-v1.webp'],['stage','cover-kedehun-team-v1.webp'],['gem','cover-ribbon-room-v1.webp'],['kart3d','cover-sanrio-kart-team-v1.webp'],['battle','cover-jaei-taeo-card-battle-v1.webp']]){
         const background=await page.locator('a.card.'+cls).evaluate(el=>getComputedStyle(el,'::before').backgroundImage);
         assert(background.includes(file),cls+': representative cover not rendered');
@@ -73,7 +73,7 @@ const server=http.createServer((req,res)=>{
         await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>document.activeElement.id),'bookOpen');assert.equal(await page.evaluate(()=>document.querySelector('main').inert),false);
         await page.keyboard.press('Escape');assert.equal(await page.locator('#lobbySettings').getAttribute('open'),null);
         await page.locator('#lobbySettings > summary').click();await page.locator('#quietMode').click();assert.equal(await page.locator('.reading-sentence').count(),0);
-        await page.locator('#hubMusic').click();assert.equal(await page.locator('#hubMusic').getAttribute('aria-pressed'),'true');assert.match(await page.locator('#hubMusic').innerText(),/음악/);
+        await page.locator('#hubMusic').click();assert.equal(await page.locator('#hubMusic').getAttribute('aria-pressed'),'true');assert.match(await page.locator('#hubMusic').innerText(),/Music/);
         await page.locator('.brand-copy h1').click();assert.equal(await page.locator('#lobbySettings').getAttribute('open'),null);
       }
       if(!canPlay){

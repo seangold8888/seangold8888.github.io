@@ -1,24 +1,101 @@
 // 스카이 샷 — 화면과 무관한 규칙(무기 단계, 적 체력, 대형). Node 테스트가 그대로 읽는다.
 
-// 문제를 맞힐 때마다 한 단계씩 세지고 눈에 보이게 화려해진다.
-// shots: 한 번에 나가는 탄(각도·좌우 간격), every: 발사 간격(초), bullet: 탄 그림, guns: 날개에 달리는 기관총 수, helpers: 양옆 호위기 수, aura: 무지개 고리.
-export const WEAPONS = [
+// 문제를 맞힐 때마다 한 단계씩 세진다. 3단계와 6단계에서는 갈림길: 아이가 셋 중 하나를 고른다.
+//  3단계 큰 무기: 레이저(뚫고 나가는 빛 줄기) / 미사일(따라가서 펑) / 번개(가까운 적끼리 이어 찌릿)
+//  6단계 곁무기: 빙글 구슬(몸 주위를 돌며 부수고 빗방울도 막음) / 쾅 폭탄(앞에서 크게 터짐) / 부메랑(양옆으로 돌아 나갔다 돌아옴)
+// 바탕 탄(shots: 각도·좌우 간격, every: 발사 간격 초, dmg, bullet 그림)은 갈래와 상관없이 단계마다 조금씩 세지고,
+// guns(날개 기관총)·helpers(호위기, homing 따라가는 별)·aura(무지개 고리)는 눈에 보이는 장비다.
+const TWIN = [[0, -8], [0, 8]];
+const SHELL = [
+  null,
   { name: "콩알탄", bullet: "pellet", guns: 0, every: 0.30, dmg: 1, shots: [[0, 0]] },
-  { name: "쌍둥이탄", bullet: "pellet", guns: 2, every: 0.28, dmg: 1, shots: [[0, -8], [0, 8]] },
-  { name: "세 줄기탄", bullet: "pellet", guns: 2, every: 0.26, dmg: 1, shots: [[0, 0], [-0.10, -10], [0.10, 10]] },
-  { name: "별사탕 속사", bullet: "candy", guns: 2, every: 0.17, dmg: 1, shots: [[0, 0], [-0.10, -10], [0.10, 10]] },
-  { name: "부채탄", bullet: "candy", guns: 4, every: 0.18, dmg: 1, shots: [[0, -6], [0, 6], [-0.18, -12], [0.18, 12], [-0.34, -16], [0.34, 16]] },
-  { name: "혜성 관통탄", bullet: "comet", guns: 4, every: 0.16, dmg: 2, pierce: true, shots: [[0, -7], [0, 7], [-0.16, -12], [0.16, 12]] },
-  { name: "따라가는 별", bullet: "comet", guns: 4, helpers: 2, every: 0.15, dmg: 2, pierce: true, homing: 2, shots: [[0, -7], [0, 7], [-0.16, -12], [0.16, 12]] },
-  { name: "무지개 대포", bullet: "rainbow", guns: 4, helpers: 2, aura: true, every: 0.13, dmg: 3, pierce: true, homing: 2, beam: true, shots: [[0, -9], [0, 9], [-0.14, -14], [0.14, 14], [-0.30, -18], [0.30, 18]] },
+  { name: "쌍둥이탄", bullet: "pellet", guns: 2, every: 0.28, dmg: 1, shots: TWIN },
+  { bullet: "pellet", guns: 2, every: 0.28, dmg: 1, shots: TWIN },
+  { bullet: "candy", guns: 4, every: 0.22, dmg: 1, shots: TWIN },
+  { bullet: "candy", guns: 4, every: 0.20, dmg: 1, shots: TWIN },
+  { bullet: "candy", guns: 4, every: 0.18, dmg: 1, shots: TWIN },
+  { bullet: "comet", guns: 4, helpers: 2, homing: 2, every: 0.18, dmg: 2, pierce: true, shots: TWIN },
+  { bullet: "rainbow", guns: 4, helpers: 2, homing: 2, aura: true, every: 0.16, dmg: 3, pierce: true, beam: true, shots: TWIN },
 ];
-export const MAX_WEAPON = WEAPONS.length;
-export const weapon = level => WEAPONS[Math.min(MAX_WEAPON, Math.max(1, level | 0)) - 1];
+export const FORK_MAIN = 3, FORK_SIDE = 6;
+// 큰 무기: 3~8단계 여섯 칸.
+//  laser: beams [각도, 좌우 간격], w 굵기, dps 줄기 하나가 1초에 주는 피해(닿은 적 모두), color
+//  missile: n 한 번에 쏘는 수, dmg, every, splash 터지는 반지름
+//  bolt: dmg, chain 이어지는 적 수, every
+export const MAINS = {
+  laser: { name: "레이저", say: "쭉 뚫는 빛", tiers: [
+    { name: "레이저 빔", beams: [[0, 0]], w: 8, dps: 6, color: "pink" },
+    { name: "굵은 레이저", beams: [[0, 0]], w: 14, dps: 10, color: "pink" },
+    { name: "쌍둥이 레이저", beams: [[0, -14], [0, 14]], w: 10, dps: 9, color: "cyan" },
+    { name: "세 줄 레이저", beams: [[-0.10, -16], [0, 0], [0.10, 16]], w: 10, dps: 10, color: "cyan" },
+    { name: "왕 레이저", beams: [[-0.10, -16], [0, 0], [0.10, 16]], w: 14, dps: 14, color: "gold" },
+    { name: "무지개 레이저", beams: [[-0.12, -18], [0, 0], [0.12, 18]], w: 18, dps: 24, color: "rainbow" },
+  ] },
+  missile: { name: "미사일", say: "따라가서 펑!", tiers: [
+    { name: "꼬마 미사일", n: 2, dmg: 2, every: 0.9, splash: 34 },
+    { name: "펑펑 미사일", n: 2, dmg: 3, every: 0.8, splash: 40 },
+    { name: "미사일 넷", n: 4, dmg: 3, every: 0.8, splash: 40 },
+    { name: "미사일 떼", n: 4, dmg: 4, every: 0.7, splash: 46 },
+    { name: "왕 미사일", n: 4, dmg: 6, every: 0.7, splash: 54 },
+    { name: "미사일 폭풍", n: 6, dmg: 6, every: 0.6, splash: 60 },
+  ] },
+  bolt: { name: "번개", say: "옆 적까지 찌릿", tiers: [
+    { name: "찌릿 번개", dmg: 2, chain: 2, every: 0.5 },
+    { name: "번쩍 번개", dmg: 3, chain: 2, every: 0.45 },
+    { name: "세 갈래 번개", dmg: 3, chain: 3, every: 0.36 },
+    { name: "천둥 번개", dmg: 4, chain: 3, every: 0.30 },
+    { name: "왕 번개", dmg: 6, chain: 4, every: 0.38 },
+    { name: "번개 폭풍", dmg: 8, chain: 5, every: 0.38 },
+  ] },
+};
+// 곁무기: 6~8단계 세 칸.
+//  orb: n 구슬 수, dmg, cd 같은 적을 다시 때리기까지 초 / bomb: dmg, every, r 터지는 반지름 / boom: n, dmg, every
+export const SIDES = {
+  orb: { name: "빙글 구슬", say: "몸을 지켜요", tiers: [{ n: 2, dmg: 2, cd: 0.25 }, { n: 3, dmg: 3, cd: 0.25 }, { n: 4, dmg: 4, cd: 0.25 }] },
+  bomb: { name: "쾅 폭탄", say: "한꺼번에 쾅!", tiers: [{ dmg: 6, every: 1.6, r: 70 }, { dmg: 12, every: 1.4, r: 80 }, { dmg: 18, every: 1.2, r: 90 }] },
+  boom: { name: "부메랑", say: "갔다가 돌아와요", tiers: [{ n: 1, dmg: 2, every: 1.2 }, { n: 2, dmg: 2.5, every: 1.1 }, { n: 2, dmg: 4, every: 1.1 }] },
+};
+export const MAIN_IDS = Object.keys(MAINS), SIDE_IDS = Object.keys(SIDES);
+export const MAX_WEAPON = SHELL.length - 1;
+const clampLevel = level => Math.min(MAX_WEAPON, Math.max(1, level | 0));
+// 지금 단계·고른 갈래의 무기 한 벌. 아직 안 고른 갈래는 첫 번째(레이저·빙글 구슬)로 본다.
+export function weapon(level, path = {}) {
+  const lv = clampLevel(level), shell = SHELL[lv];
+  const w = Object.assign({ level: lv }, shell);
+  if (lv >= FORK_MAIN) {
+    const id = MAINS[path.main] ? path.main : MAIN_IDS[0], tier = MAINS[id].tiers[lv - FORK_MAIN];
+    w.main = id; w.name = tier.name; w[id] = tier;
+  }
+  if (lv >= FORK_SIDE) {
+    const id = SIDES[path.side] ? path.side : SIDE_IDS[0];
+    w.side = id; w.sideName = SIDES[id].name; w[id] = SIDES[id].tiers[lv - FORK_SIDE];
+  }
+  return w;
+}
+// HUD·배너에 쓰는 이름: "6단계 세 줄 레이저 + 빙글 구슬"
+export const weaponLabel = (level, path) => { const w = weapon(level, path); return w.level + "단계 " + w.name + (w.sideName ? " + " + w.sideName : ""); };
+// 이 단계로 올라갈 때 무엇을 골라야 하는가(없으면 null).
+export const forkAt = level => (level === FORK_MAIN ? "main" : level === FORK_SIDE ? "side" : null);
 
-// 1초에 주는 피해. 탄이 전부 맞는다고 본 값이라 실제로는 이보다 조금 낮다.
-export function dps(level) {
-  const w = weapon(level);
-  return w.dmg * w.shots.length / w.every + (w.homing ? w.homing * 2 / w.every * 0.5 : 0);
+// 1초에 주는 피해(어림). 탄이 전부 맞는다고 보되, 맞히기 어려운 것·여럿을 한꺼번에 때리는 것은 대충 곱을 붙였다.
+export function dps(level, path) {
+  const w = weapon(level, path);
+  let v = w.dmg * w.shots.length / w.every + (w.homing ? w.homing * w.dmg / w.every * 0.5 : 0);
+  if (w.laser) v += w.laser.beams.length * w.laser.dps;
+  if (w.missile) v += w.missile.n * w.missile.dmg / w.missile.every * 1.25;           // 터질 때 옆 적도 다친다
+  if (w.bolt) v += w.bolt.dmg * (1 + (w.bolt.chain - 1) * 0.6) / w.bolt.every;     // 이어지는 적은 다 있지 않을 때가 많다
+  if (w.orb) v += w.orb.n * w.orb.dmg / w.orb.cd * 0.35;                             // 몸 가까이 온 적에게만 닿는다
+  if (w.bomb) v += w.bomb.dmg / w.bomb.every * 1.5;                                  // 한 번에 둘쯤 맞는다
+  if (w.boom) v += w.boom.n * w.boom.dmg * 3 / w.boom.every;                         // 한 바퀴에 세 번쯤 맞는다
+  return v;
+}
+// 갈 수 있는 모든 갈래 조합(테스트·확인용).
+export const allPaths = () => MAIN_IDS.flatMap(main => SIDE_IDS.map(side => ({ main, side })));
+
+// 비행기가 오르내릴 수 있는 세로 범위(놀이판 높이 fh 기준). 너무 위로 가면 적과 바로 부딪혀 불리하니 화면 아래쪽 55%만.
+export function playerYRange(fh) {
+  const max = Math.round(fh - 56), min = Math.min(max - 60, Math.max(140, Math.round(fh * 0.45)));
+  return { min, max, home: Math.min(max, Math.max(min, Math.round(fh - 92))) };
 }
 
 // 파도가 갈수록 단단해진다. 무기를 안 올리면 4~5번째 파도부터 화면이 막히기 시작하는 정도.

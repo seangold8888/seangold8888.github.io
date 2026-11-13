@@ -1,6 +1,6 @@
 // 스카이 샷 — 세로로 나는 비행기 슈팅. 별을 먹고 수학 문제를 맞히면 무기가 한 단계씩 세진다.
 // 그림은 art/ 의 그림책풍 그림 파일을 쓴다(못 읽으면 캔버스 도형으로 대신 그린다). shadowBlur 는 쓰지 않는다 — 아이패드에서 가장 느리다.
-import { weapon, MAX_WEAPON, enemyHp, bossHp, enemySpeed, formation, isBossWave, BOSS_STAY, SHIELD_LEVELS, bossOf, tuning, TRAILS, unlockedTrails } from "./logic.js?v=3";
+import { weapon, weaponLabel, forkAt, MAINS, SIDES, MAIN_IDS, SIDE_IDS, playerYRange, MAX_WEAPON, enemyHp, bossHp, enemySpeed, formation, isBossWave, BOSS_STAY, SHIELD_LEVELS, bossOf, tuning, TRAILS, unlockedTrails } from "./logic.js?v=4";
 
 const $ = id => document.getElementById(id);
 const canvas = $("sky"), ctx = canvas.getContext("2d", { alpha: false });
@@ -8,9 +8,11 @@ const FW = 360;                       // 놀이판 논리 너비. 높이는 화�
 let FH = 640, scale = 1, offX = 0, vw = 0, vh = 0, dpr = 1, bg = null;
 const BEST_KEY = "plane_best_v1", SOUND_KEY = "plane_sound_v1", PILOT_KEY = "plane_pilot_v1", STAR_KEY = "plane_stars_v1", TRAIL_KEY = "plane_trail_v1";
 // 조종사: 아이 넷. 고른 아이의 비행기로 난다.
-const PILOTS = [{ name: "윤찬", art: "p0" }, { name: "재이", art: "p1" }, { name: "윤건", art: "p2" }, { name: "태오", art: "p3" }];
+// kid: 공통 수학 모듈(GameQuiz)의 아이 id. 고른 조종사는 GameQuiz 의 "지금 하는 아이"(gq_kid_v1)와 같이 쓴다.
+const PILOTS = [{ name: "윤찬", art: "p0", kid: "yunchan" }, { name: "재이", art: "p1", kid: "jaei" }, { name: "윤건", art: "p2", kid: "yungeon" }, { name: "태오", art: "p3", kid: "taeo" }];
 let pilot = 1;
 try { const saved = parseInt(localStorage.getItem(PILOT_KEY), 10); if (saved >= 0 && saved < PILOTS.length) pilot = saved; } catch (_) {}
+try { const k = window.GameQuiz && window.GameQuiz.currentKid(); const i = PILOTS.findIndex(p => p.kid === k); if (i >= 0) pilot = i; } catch (_) {}
 // 모은 별(맞힌 문제 수)과 고른 꼬리 모양. 판이 끝나도 남는다.
 let stars = 0, trail = 0, tune = tuning(pilot), runStars = 0, starsAtStart = 0;
 try { stars = Math.max(0, parseInt(localStorage.getItem(STAR_KEY) || "0", 10) || 0); const t = parseInt(localStorage.getItem(TRAIL_KEY), 10); if (t >= 0 && t < unlockedTrails(stars)) trail = t; } catch (_) {}
@@ -49,6 +51,52 @@ const aura = prerender(208, (x, r) => {
   x.lineWidth = 9; x.lineCap = "round"; x.globalAlpha = 0.85;
   for (let i = 0; i < 12; i++) { x.strokeStyle = colors[i % 6]; x.beginPath(); x.arc(r, r, r - 8, i * Math.PI / 6 + 0.08, (i + 1) * Math.PI / 6 - 0.08); x.stroke(); }
 });
+// 새 무기 그림도 한 번만 그려 둔다. 레이저 줄기는 가로 그라데이션 띠를 세로로 늘여 붙인다.
+function canvasOf(w, h, draw) { const c = document.createElement("canvas"); c.width = w; c.height = h; draw(c.getContext("2d"), w, h); return c; }
+function beamTex(rgb) {
+  return canvasOf(32, 4, (x, w, h) => {
+    const g = x.createLinearGradient(0, 0, w, 0);
+    g.addColorStop(0, "rgba(" + rgb + ",0)"); g.addColorStop(0.28, "rgba(" + rgb + ",.55)"); g.addColorStop(0.42, "rgba(" + rgb + ",1)");
+    g.addColorStop(0.5, "#ffffff"); g.addColorStop(0.58, "rgba(" + rgb + ",1)"); g.addColorStop(0.72, "rgba(" + rgb + ",.55)"); g.addColorStop(1, "rgba(" + rgb + ",0)");
+    x.fillStyle = g; x.fillRect(0, 0, w, h);
+  });
+}
+const BEAM = {
+  pink: beamTex("255,96,170"), cyan: beamTex("70,215,255"), gold: beamTex("255,200,60"),
+  rainbow: canvasOf(32, 4, (x, w, h) => {
+    const g = x.createLinearGradient(0, 0, w, 0), cs = ["255,122,156", "255,178,74", "255,228,92", "255,255,255", "125,255,176", "111,211,255", "185,162,255"];
+    cs.forEach((c, i) => g.addColorStop(i / (cs.length - 1), "rgba(" + c + "," + (i === 0 || i === cs.length - 1 ? 0.15 : 0.95) + ")"));
+    x.fillStyle = g; x.fillRect(0, 0, w, h);
+  }),
+};
+const CREAM = "#fff6dc";
+const missileTex = canvasOf(24, 56, (x) => {          // 위를 보는 미사일(그릴 때 날아가는 쪽으로 돌린다)
+  x.lineJoin = "round"; x.lineWidth = 3; x.strokeStyle = CREAM;
+  x.fillStyle = "#4a6bd8"; x.beginPath(); x.moveTo(3, 46); x.lineTo(12, 36); x.lineTo(21, 46); x.lineTo(21, 52); x.lineTo(3, 52); x.closePath(); x.stroke(); x.fill();     // 꼬리 날개
+  x.fillStyle = "#f4f6ff"; x.beginPath(); x.moveTo(12, 3); x.quadraticCurveTo(19, 12, 18, 22); x.lineTo(18, 46); x.lineTo(6, 46); x.lineTo(6, 22); x.quadraticCurveTo(5, 12, 12, 3); x.closePath(); x.stroke(); x.fill();
+  x.fillStyle = "#ff5a6e"; x.beginPath(); x.moveTo(12, 4); x.quadraticCurveTo(17.5, 11, 17.6, 17); x.lineTo(6.4, 17); x.quadraticCurveTo(6.5, 11, 12, 4); x.fill();      // 빨간 코
+  x.fillStyle = "#ffb24a"; x.fillRect(6, 28, 12, 4);
+});
+const bombTex = canvasOf(48, 52, (x) => {
+  x.lineWidth = 4; x.strokeStyle = CREAM; x.fillStyle = "#2b2f5e";
+  x.beginPath(); x.arc(24, 30, 18, 0, 7); x.stroke(); x.fill();
+  x.fillStyle = "rgba(255,255,255,.35)"; x.beginPath(); x.arc(17, 23, 6, 0, 7); x.fill();
+  x.fillStyle = "#6b6f9e"; x.fillRect(19, 8, 10, 6);
+  x.strokeStyle = "#c9a26b"; x.lineWidth = 3; x.beginPath(); x.moveTo(24, 8); x.quadraticCurveTo(28, 2, 34, 4); x.stroke();
+  x.fillStyle = "#ffe45c"; x.beginPath(); x.arc(35, 4, 4, 0, 7); x.fill();
+});
+const boomTex = canvasOf(48, 48, (x) => {             // 바나나 모양 부메랑
+  x.lineJoin = "round"; x.lineCap = "round";
+  const path = () => { x.beginPath(); x.moveTo(6, 40); x.quadraticCurveTo(10, 8, 42, 8); x.quadraticCurveTo(20, 16, 16, 42); x.closePath(); };
+  path(); x.lineWidth = 6; x.strokeStyle = CREAM; x.stroke();
+  path(); x.fillStyle = "#ff9b3d"; x.fill();
+  x.strokeStyle = "#ffe08a"; x.lineWidth = 3; x.beginPath(); x.moveTo(13, 34); x.quadraticCurveTo(16, 16, 34, 12); x.stroke();
+});
+const orbTex = prerender(40, (x, r) => {
+  const g = x.createRadialGradient(r, r, 2, r, r, r);
+  g.addColorStop(0, "#ffffff"); g.addColorStop(0.35, "rgba(150,240,255,1)"); g.addColorStop(0.62, "rgba(90,170,255,.55)"); g.addColorStop(1, "rgba(90,170,255,0)");
+  x.fillStyle = g; x.beginPath(); x.arc(r, r, r, 0, 7); x.fill();
+});
 // 하늘 그림을 위아래로 뒤집어 이어 붙여 끊김 없이 흐르게 한다. 놀이판 화소 크기로 한 번만 만들어 둔다.
 function sky() {
   const im = ART.sky; if (!im) return null;
@@ -84,48 +132,39 @@ const sfx = {
   no: () => beep(220, 0.18, "sine", 0.10, 160),
   hit: () => beep(160, 0.28, "sawtooth", 0.12, 60),
   boss: () => beep(110, 0.5, "square", 0.08, 55),
+  zap: () => beep(1500, 0.05, "square", 0.025, 700),
+  boom: () => beep(95, 0.32, "sawtooth", 0.10, 40),
   warn: () => { beep(700, 0.12, "square", 0.07); setTimeout(() => beep(700, 0.12, "square", 0.07), 220); },
 };
 
-/* ---------- 수학: 모험상자와 같은 단계·기록을 쓴다 ---------- */
-const HubMath = window.HubMath;
-let profile = null, lastKey = null;
-try { profile = HubMath ? HubMath.load(localStorage) : null; } catch (_) { profile = null; }
-function nextProblem() {
-  if (profile) {
-    try {
-      const p = HubMath.next(profile.state, profile.age, Math.random, lastKey);
-      lastKey = p.key;
-      return { text: p.text, answer: Number(p.answer), choices: HubMath.choices(p, Math.random), raw: p };
-    } catch (_) {}
-  }
-  // 수학 모듈을 못 읽었을 때의 예비 문제
-  const a = 1 + Math.floor(Math.random() * 8), b = 1 + Math.floor(Math.random() * (9 - a)), ans = a + b;
-  const set = new Set([ans]); while (set.size < 3) set.add(Math.max(0, ans + Math.floor(Math.random() * 7) - 3));
-  return { text: a + " + " + b + " = □", answer: ans, choices: [...set].sort((x, y) => x - y), raw: null };
-}
-function recordAnswer(problem, firstTry) {
-  if (!profile || !problem.raw) return null;
-  try { return HubMath.record(localStorage, profile.state, problem.raw, firstTry, profile.age); } catch (_) { return null; }
-}
+/* ---------- 수학: 공통 모듈 GameQuiz(아이별 단계·기록) ----------
+   조종사 = 아이. 문제는 그 아이 나이에 맞는 단계에서 나오고, 기록도 아이별로 따로 쌓인다.
+   문제 화면(위쪽 패널·잠금·새 터치만 인정)도 GameQuiz 것을 쓴다. 갈림길 고르기 화면만 이 게임 것. */
+const GameQuiz = window.GameQuiz;
 
 /* ---------- 상태 ---------- */
 let mode = "start";                  // start | play | quiz | over
-let player, bullets, enemies, drops, rain, sparks, clouds, pops, rings, warns;
+let player, bullets, enemies, drops, rain, sparks, clouds, pops, rings, warns, smoke, zaps, bombs, booms;
 let level, hearts, dist, wave, queue, waveGap, fireT, solved, firstTries, shield, shake, banner, bannerT, halfStep, flash = 0, trailT = 0, clock = 0, bannerBig = false;
+let path = {}, missileT = 0, boltT = 0, bombT = 0, boomT = 0, boomSide = 1, orbAng = 0, yr = null;
 const rnd = (a, b) => a + Math.random() * (b - a);
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+// 지금 무기(단계·갈래가 바뀔 때만 새로 만든다)
+let wCache = null, wKey = "";
+function W() { const k = level + "/" + (path.main || "") + "/" + (path.side || ""); if (k !== wKey) { wKey = k; wCache = weapon(level, path); } return wCache; }
 
 function reset() {
-  player = { x: FW / 2, y: FH - 92, tx: FW / 2, inv: 0, tilt: 0 };
-  bullets = []; enemies = []; drops = []; rain = []; sparks = []; pops = []; rings = []; warns = []; flash = 0;
+  player = { x: FW / 2, y: yr.home, tx: FW / 2, ty: yr.home, inv: 0, tilt: 0 };
+  bullets = []; enemies = []; drops = []; rain = []; sparks = []; pops = []; rings = []; warns = []; smoke = []; zaps = []; bombs = []; booms = []; flash = 0;
   tune = tuning(pilot); runStars = 0; starsAtStart = stars;
   level = 1; hearts = tune.hearts; dist = 0; wave = 0; queue = []; waveGap = 1.2; fireT = 0;
+  path = {}; missileT = 0; boltT = 0; bombT = 1; boomT = 0.5;
   solved = 0; firstTries = 0; shield = 0; shake = 0; banner = ""; bannerT = 0; halfStep = 0;
   hud();
 }
 function hud() {
   $("hearts").textContent = "♥".repeat(Math.max(0, hearts)) + "♡".repeat(Math.max(0, tune.hearts - hearts));
-  $("weaponName").textContent = level + "단계 " + weapon(level).name;
+  $("weaponName").textContent = weaponLabel(level, path);
   $("pips").innerHTML = Array.from({ length: MAX_WEAPON }, (_, i) => '<i class="' + (i < level ? "on" : "") + '"></i>').join("");
   $("dist").textContent = Math.floor(dist) + "m";
 }
@@ -138,7 +177,9 @@ function resize() {
   canvas.width = Math.round(vw * dpr); canvas.height = Math.round(vh * dpr);
   const fieldPx = Math.min(vw, vh * 0.66);          // 가로 화면에서는 가운데 세로 띠만 놀이판
   scale = fieldPx / FW; offX = (vw - fieldPx) / 2; FH = vh / scale;
-  if (player) player.y = FH - 92;
+  // 세로로 움직일 수 있는 구간. 화면 크기가 바뀌면 구간 안에서의 상대 위치를 그대로 옮긴다.
+  const oldYr = yr; yr = playerYRange(FH);
+  if (player && oldYr) { const f = clamp((player.ty - oldYr.min) / Math.max(1, oldYr.max - oldYr.min), 0, 1); player.ty = player.y = yr.min + f * (yr.max - yr.min); }
   skyTile = null;
   // 하늘 배경은 한 번만 그려 두고 매 프레임 붙인다.
   bg = document.createElement("canvas"); bg.width = canvas.width; bg.height = canvas.height;
@@ -150,17 +191,58 @@ function resize() {
   clouds = Array.from({ length: 9 }, () => ({ x: rnd(0, FW), y: rnd(0, FH), r: rnd(22, 46), v: rnd(18, 46) }));
 }
 
-/* ---------- 입력: 손가락이 가는 만큼 비행기가 좌우로 따라간다 ---------- */
+/* ---------- 입력: 손가락이 가는 만큼 비행기가 앞뒤좌우로 따라간다(잡은 자리와의 차이를 그대로 둔다) ---------- */
 let grab = null;
-const toField = clientX => (clientX - offX) / scale;
-canvas.addEventListener("pointerdown", e => { audio(); if (mode !== "play") return; grab = { id: e.pointerId, dx: player.tx - toField(e.clientX) }; });
-canvas.addEventListener("pointermove", e => { if (mode !== "play" || !grab || grab.id !== e.pointerId) return; player.tx = Math.min(FW - 20, Math.max(20, toField(e.clientX) + grab.dx)); });
+const toField = clientX => (clientX - offX) / scale, toFieldY = clientY => clientY / scale;
+canvas.addEventListener("pointerdown", e => { audio(); if (mode !== "play") return; grab = { id: e.pointerId, dx: player.tx - toField(e.clientX), dy: player.ty - toFieldY(e.clientY) }; });
+canvas.addEventListener("pointermove", e => {
+  if (mode !== "play" || !grab || grab.id !== e.pointerId) return;
+  player.tx = clamp(toField(e.clientX) + grab.dx, 20, FW - 20);
+  player.ty = clamp(toFieldY(e.clientY) + grab.dy, yr.min, yr.max);
+});
 const release = e => { if (grab && (!e || grab.id === e.pointerId)) grab = null; };
 canvas.addEventListener("pointerup", release); canvas.addEventListener("pointercancel", release);
-addEventListener("blur", () => release());
+addEventListener("blur", () => { release(); for (const k in keys) keys[k] = false; });
 const keys = {};
-addEventListener("keydown", e => { keys[e.key] = true; });
+addEventListener("keydown", e => {
+  keys[e.key] = true;
+  // 고르는 화면: 화면이 뜬 뒤 새로 누른 키만 인정한다(누르고 있던 키의 반복 입력은 무시).
+  if (e.repeat || !guard || performance.now() < guard.armAt) return;
+  freshKeyAt = performance.now();
+  const n = parseInt(e.key, 10);
+  if (n >= 1 && n <= guard.buttons.length) { e.preventDefault(); guard.onPick(guard.buttons[n - 1], n - 1); }
+});
 addEventListener("keyup", e => { keys[e.key] = false; });
+
+/* ---------- 실수 터치 막기: 문제·무기 고르는 버튼 ----------
+   별을 먹을 때 비행기를 끌던 손가락이 화면에 붙어 있으면, 그 손가락을 뗄 때 답이 눌려 버렸다.
+   (1) 화면이 뜨고 LOCK_MS 동안은 버튼이 흐리고 잠겨 있다.
+   (2) 잠금이 풀린 뒤 그 버튼 위에서 새로 누르고(pointerdown) 같은 버튼 위에서 뗀(pointerup) 것만 고른 것으로 친다.
+       click 하나만 믿지 않는다. 키보드는 화면이 뜬 뒤 새로 누른 Enter/스페이스/숫자키만. */
+const LOCK_MS = 700;
+let guard = null, freshKeyAt = 0;
+function armChoices(panel, buttons, onPick) {
+  if (guard && guard.panel !== panel) guard.panel.classList.remove("locked");
+  const g = guard = { armAt: performance.now() + LOCK_MS, buttons, onPick, panel, down: null };
+  panel.classList.add("locked");
+  setTimeout(() => { if (guard === g) panel.classList.remove("locked"); }, LOCK_MS);
+  buttons.forEach((b, i) => {
+    b.addEventListener("pointerdown", e => { g.down = guard === g && performance.now() >= g.armAt ? { b, id: e.pointerId } : null; });
+    b.addEventListener("pointerup", e => {
+      const d = g.down; g.down = null;
+      if (guard !== g || !d || d.b !== b || d.id !== e.pointerId || performance.now() < g.armAt) return;
+      const at = document.elementFromPoint(e.clientX, e.clientY);
+      if (at && !b.contains(at)) return;                 // 누른 채 버튼 밖으로 나가서 뗐다
+      onPick(b, i);
+    });
+    b.addEventListener("pointercancel", () => { g.down = null; });
+    b.addEventListener("click", e => {
+      // 손가락·마우스는 위 pointerup 이 처리한다. 여기서는 키보드로 누른 click(detail 0)만, 그것도 새로 누른 키일 때만.
+      if (e.detail === 0 && guard === g && freshKeyAt >= g.armAt && performance.now() - freshKeyAt < 1500) onPick(b, i);
+    });
+  });
+}
+function disarm() { if (guard) guard.panel.classList.remove("locked"); guard = null; }
 
 /* ---------- 파도 ---------- */
 function startWave() {
@@ -184,50 +266,104 @@ function burst(x, y, color, n = 8) {
 }
 
 /* ---------- 문제 ---------- */
+// 문제 화면은 GameQuiz.ask 가 띄운다(위쪽 패널, 0.7초 잠금, 새로 누른 터치만, 숫자키 1~3, 틀리면 그 보기만 꺼짐).
 let quiz = null;
 function openQuiz() {
   mode = "quiz"; grab = null;
-  quiz = { problem: nextProblem(), firstTry: true };
-  $("quizKicker").textContent = level >= MAX_WEAPON ? "맞히면 보호막이 생겨요" : "맞히면 무기가 세져요 → " + weapon(level + 1).name;
-  $("formula").textContent = quiz.problem.text;
-  $("quizSay").textContent = "";
-  const box = $("answers"); box.innerHTML = "";
-  quiz.problem.choices.forEach(value => {
-    const b = document.createElement("button"); b.type = "button"; b.textContent = value;
-    b.addEventListener("click", () => pick(b, value));
-    box.appendChild(b);
+  const nextFork = forkAt(level + 1);
+  const title = level >= MAX_WEAPON ? "맞히면 보호막이 생겨요"
+    : nextFork === "main" ? "맞히면 새 무기를 골라요! " + MAIN_IDS.map(id => MAINS[id].name).join(" · ")
+    : nextFork === "side" ? "맞히면 곁무기를 골라요! " + SIDE_IDS.map(id => SIDES[id].name).join(" · ")
+    : "맞히면 무기가 세져요 → " + weapon(level + 1, path).name;
+  if (!GameQuiz) { quiz = { firstTry: true }; const r = solve(true, null); resume(r.msg, r.leveled, r.fork); return; }   // 수학 모듈을 못 읽었으면 문제 없이 강화
+  quiz = { firstTry: true };
+  let outcome = null;
+  GameQuiz.ask({
+    kid: PILOTS[pilot].kid, title,
+    theme: { top: 62, bg: "rgba(12,18,58,.96)", accent: "#ffd95a" },
+    onWrong: () => sfx.no(),
+    onCorrect: r => { outcome = solve(r.firstTry, r.growth); return outcome.msg; },
+    onDone: () => { if (mode !== "quiz" || !outcome) return; resume(outcome.msg, outcome.leveled, outcome.fork); },
   });
-  $("quiz").hidden = false;
 }
-function pick(button, value) {
-  if (!quiz || button.disabled) return;
-  if (value !== quiz.problem.answer) {
-    quiz.firstTry = false; button.disabled = true; button.classList.add("no");
-    $("quizSay").textContent = "괜찮아요. 천천히 다시 골라 봐요.";
-    sfx.no(); return;
+// 갈림길: 그림 + 짧은 이름 + 큰 버튼 셋. 고르면 onDone.
+function drawIcon(x, id, s) {
+  x.lineJoin = "round"; x.lineCap = "round";
+  if (id === "laser") { x.drawImage(BEAM.pink, s / 2 - 16, 4, 32, s - 18); x.fillStyle = "#fff"; x.beginPath(); x.arc(s / 2, s - 14, 8, 0, 7); x.fill(); }
+  else if (id === "missile") {
+    for (const [cx, a] of [[s * 0.32, -0.25], [s * 0.68, 0.25]]) {
+      x.fillStyle = "rgba(233,238,252,.7)"; for (let i = 0; i < 4; i++) { x.beginPath(); x.arc(cx - Math.sin(a) * (16 + i * 9), s * 0.55 + Math.cos(a) * (16 + i * 9), 4 + i * 2, 0, 7); x.fill(); }
+      x.save(); x.translate(cx, s * 0.42); x.rotate(a); x.drawImage(missileTex, -10, -23, 20, 46); x.restore();
+    }
+  } else if (id === "bolt") {
+    const pts = [[s * 0.5, s - 8], [s * 0.38, s * 0.7], [s * 0.6, s * 0.55], [s * 0.3, s * 0.32], [s * 0.55, s * 0.24], [s * 0.78, s * 0.12]];
+    x.strokeStyle = "rgba(120,220,255,.6)"; x.lineWidth = 9; x.beginPath(); pts.forEach((p, i) => (i ? x.lineTo(p[0], p[1]) : x.moveTo(p[0], p[1]))); x.stroke();
+    x.strokeStyle = "#fff"; x.lineWidth = 3; x.stroke();
+    x.fillStyle = "#b9a2ff"; for (const p of [pts[3], pts[5]]) { x.beginPath(); x.arc(p[0], p[1], 7, 0, 7); x.fill(); }
+  } else if (id === "orb") {
+    x.strokeStyle = "rgba(150,240,255,.5)"; x.lineWidth = 2; x.setLineDash([4, 5]); x.beginPath(); x.arc(s / 2, s / 2, s * 0.32, 0, 7); x.stroke(); x.setLineDash([]);
+    x.fillStyle = "#fff"; x.beginPath(); x.arc(s / 2, s / 2, 7, 0, 7); x.fill();
+    for (let i = 0; i < 3; i++) { const a = i * 2.094 - 0.5; x.drawImage(orbTex, s / 2 + Math.cos(a) * s * 0.32 - 13, s / 2 + Math.sin(a) * s * 0.32 - 13, 26, 26); }
+  } else if (id === "bomb") {
+    x.fillStyle = "#ffe45c"; for (let i = 0; i < 8; i++) { const a = i * 0.785; x.beginPath(); x.moveTo(s / 2, s / 2); x.lineTo(s / 2 + Math.cos(a - 0.18) * s * 0.48, s / 2 + Math.sin(a - 0.18) * s * 0.48); x.lineTo(s / 2 + Math.cos(a + 0.18) * s * 0.48, s / 2 + Math.sin(a + 0.18) * s * 0.48); x.fill(); }
+    x.drawImage(bombTex, s / 2 - 24, s / 2 - 28, 48, 52);
+  } else {
+    x.strokeStyle = "rgba(255,255,255,.6)"; x.lineWidth = 3; x.setLineDash([5, 5]); x.beginPath(); x.ellipse(s / 2, s / 2, s * 0.28, s * 0.4, 0, 0, 7); x.stroke(); x.setLineDash([]);
+    x.save(); x.translate(s * 0.72, s * 0.4); x.rotate(0.6); x.drawImage(boomTex, -20, -20, 40, 40); x.restore();
   }
-  button.classList.add("ok");
-  [...$("answers").children].forEach(b => { b.disabled = true; });
-  const growth = recordAnswer(quiz.problem, quiz.firstTry);
+}
+function openFork(kind, onDone) {
+  mode = "quiz"; grab = null;
+  const table = kind === "main" ? MAINS : SIDES, ids = Object.keys(table);
+  $("forkKicker").textContent = kind === "main" ? "새 무기를 골라요!" : "곁무기를 하나 더 달아요!";
+  $("forkTitle").textContent = kind === "main" ? "어떤 무기가 좋아요?" : "무엇을 더 달까요?";
+  const box = $("forks"); box.innerHTML = "";
+  const buttons = ids.map(id => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "fork";
+    const c = document.createElement("canvas"); c.width = c.height = 84; drawIcon(c.getContext("2d"), id, 84);
+    const name = document.createElement("b"); name.textContent = table[id].name;
+    const tip = document.createElement("span"); tip.textContent = table[id].say;
+    b.append(c, name, tip); box.appendChild(b); return b;
+  });
+  $("fork").hidden = false;
+  armChoices($("fork"), buttons, (b, i) => {
+    path = Object.assign({}, path, { [kind]: ids[i] }); disarm();
+    buttons.forEach(x => { x.disabled = true; }); b.classList.add("ok"); sfx.up();
+    setTimeout(() => { $("fork").hidden = true; onDone(); }, 380);
+  });
+}
+// 문제·갈림길이 끝나고 다시 날기 시작한다.
+function resume(msg, leveled, fork) {
+  if (fork && mode === "quiz") { openFork(fork.kind, () => resume(fork.levelMsg(), true)); return; }
+  player.inv = Math.max(player.inv, 1.2); say(msg, leveled);
+  if (leveled) { rings.push({ x: player.x, y: player.y, t: 0 }); flash = 0.3; burst(player.x, player.y, "#ffe45c", 22); }
+  hud(); if (mode === "quiz") mode = "play"; last = performance.now();
+}
+// 정답을 맞힌 순간(GameQuiz 가 기록을 마친 뒤) 보상을 정한다. 반환한 msg 는 패널에 잠깐 뜨고, 닫힌 뒤 resume 이 이어 간다.
+function solve(firstTry, growth) {
+  quiz = quiz || { firstTry };
+  quiz.firstTry = firstTry;
   solved++; if (quiz.firstTry) firstTries++;
   stars++; runStars++; try { localStorage.setItem(STAR_KEY, String(stars)); } catch (_) {}
   let msg;
   // 한 번에 맞히면 바로 한 단계. 고쳐서 맞히면 반 단계(두 번 모이면 한 단계) + 보호막.
   if (!quiz.firstTry) halfStep++;
   let leveled = false;
+  const gains = [], pre = growth && growth.promoted ? "수학 " + growth.level + "단계로 올라갔어요! · " : "";
   if (level < MAX_WEAPON && (quiz.firstTry || halfStep >= 2)) {
     if (!quiz.firstTry) halfStep = 0; level++; leveled = true; sfx.up();
-    const before = weapon(level - 1), now = weapon(level), gains = [];
+    const before = weapon(level - 1, path), now = weapon(level, path);
     if ((now.guns || 0) > (before.guns || 0)) gains.push("기관총 +" + (now.guns - (before.guns || 0)));
     if ((now.helpers || 0) > (before.helpers || 0)) gains.push("호위기 +" + now.helpers);
     if (SHIELD_LEVELS.includes(level)) { shield = Math.min(2, shield + 1); gains.push("보호막 +1"); }
-    msg = level + "단계 " + now.name + "!" + (gains.length ? " " + gains.join(" · ") : "");
   }
   else { shield = Math.min(2, shield + 1); msg = quiz.firstTry ? "보호막 +1" : "정답! 보호막 +1 · 한 번 더 맞히면 무기 강화"; sfx.star(); }
-  if (growth && growth.promoted) msg = "수학 " + growth.level + "단계로 올라갔어요! · " + msg;
-  $("quizSay").textContent = msg;
+  // 갈림길 단계면 고른 뒤에 이름이 정해지므로 배너 문구는 그때 만든다.
+  const fork = leveled ? forkAt(level) : null;
+  const levelMsg = () => pre + weaponLabel(level, path) + "!" + (gains.length ? " " + gains.join(" · ") : "");
+  msg = leveled ? (fork ? pre + (fork === "main" ? "새 무기를 고를 수 있어요!" : "곁무기를 고를 수 있어요!") : levelMsg()) : pre + msg;
   quiz = null;
-  setTimeout(() => { $("quiz").hidden = true; player.inv = Math.max(player.inv, 1.2); say(msg, leveled); if (leveled) { rings.push({ x: player.x, y: player.y, t: 0 }); flash = 0.3; burst(player.x, player.y, "#ffe45c", 22); } hud(); if (mode === "quiz") mode = "play"; last = performance.now(); }, 650);
+  return { msg, leveled, fork: fork ? { kind: fork, levelMsg } : null };
 }
 
 /* ---------- 진행 ---------- */
@@ -238,20 +374,113 @@ function hurt() {
   if (hearts <= 0) gameOver();
 }
 function gameOver() {
-  mode = "over"; grab = null;
+  mode = "over"; grab = null; disarm(); if (GameQuiz) GameQuiz.close(); $("fork").hidden = true;
   let best = 0; try { best = parseInt(localStorage.getItem(BEST_KEY) || "0", 10) || 0; } catch (_) {}
   const d = Math.floor(dist), record = d > best;
   if (record) { try { localStorage.setItem(BEST_KEY, String(d)); } catch (_) {} }
   $("overText").innerHTML = "<b>" + d + "m</b> 날았어요" + (record ? " · 새 기록!" : " · 최고 " + best + "m") +
-    "<br>문제 " + solved + "개 풀고, 그중 " + firstTries + "개를 한 번에 맞혔어요.<br>마지막 무기: <b>" + weapon(level).name + "</b>" +
+    "<br>문제 " + solved + "개 풀고, 그중 " + firstTries + "개를 한 번에 맞혔어요.<br>마지막 무기: <b>" + W().name + (W().sideName ? " + " + W().sideName : "") + "</b>" +
     "<br>⭐ 별 <b>+" + runStars + "</b> · 모은 별 " + stars + "개" +
     (unlockedTrails(stars) > unlockedTrails(starsAtStart) ? "<br><b>새 꼬리 ‘" + TRAILS[unlockedTrails(stars) - 1].name + "’가 열렸어요!</b>" : "");
   paintTrails();
   $("overTitle").textContent = PILOTS[pilot].name + " 조종사, 잘 날았어요!";
   $("over").hidden = false;
 }
+// 레이저 줄기의 시작점·방향(각 줄기마다). 그리기와 맞히기가 같은 값을 쓴다.
+function beamGeo(b) { const a = b[0]; return { ox: player.x + b[1], oy: player.y - 26, sx: Math.sin(a), sy: -Math.cos(a), a }; }
+const targetable = e => e.kind !== "meteor" && e.y > -10 && !e.dead;
+function explode(x, y, r, dmg, direct) {
+  for (const m of enemies) if (targetable(m) && (m.x - x) ** 2 + (m.y - y) ** 2 < (r + m.r) ** 2) damage(m, m === direct ? dmg : dmg * 0.6);
+  if (pops.length < 14) pops.push({ x, y, t: 0, w: r * 2.2 });
+}
+// 큰 무기·곁무기(바탕 탄 말고 나머지). 매 프레임 부른다.
+function arms(dt, w) {
+  if (w.laser) {
+    const L = w.laser;
+    for (const b of L.beams) {
+      const g = beamGeo(b), reach = L.w / 2;
+      for (const e of enemies) {
+        if (!targetable(e)) continue;
+        const rx = e.x - g.ox, ry = e.y - g.oy, along = rx * g.sx + ry * g.sy;
+        if (along < -e.r || Math.abs(rx * g.sy - ry * g.sx) > e.r + reach) continue;
+        damage(e, L.dps * dt);
+        if (Math.random() < dt * 8 && sparks.length < 80) sparks.push({ x: e.x + rnd(-6, 6), y: e.y + e.r * 0.6, vx: rnd(-90, 90), vy: rnd(20, 120), life: 0.3, color: "#ffffff" });
+      }
+    }
+  }
+  if (w.missile) {
+    const M = w.missile; missileT -= dt;
+    if (missileT <= 0) {
+      missileT = M.every;
+      for (let i = 0; i < M.n && bullets.length < 140; i++) {
+        const k = i % 2 ? 1 : -1, row = i >> 1;
+        bullets.push({ kind: "missile", x: player.x + k * (14 + row * 8), y: player.y + 2, vx: k * (110 + row * 50), vy: -120 - row * 30, dmg: M.dmg, splash: M.splash, life: 3, smokeT: 0 });
+      }
+    }
+  }
+  if (w.bolt) {
+    const B = w.bolt; boltT -= dt;
+    if (boltT <= 0) {
+      const hit = []; let from = { x: player.x, y: player.y - 24 }, range = 300;
+      while (hit.length < B.chain) {
+        let best = null, bd = range * range;
+        for (const e of enemies) { if (!targetable(e) || hit.includes(e) || e.y > player.y + 10) continue; const d = (e.x - from.x) ** 2 + (e.y - from.y) ** 2; if (d < bd) { bd = d; best = e; } }
+        if (!best) break;
+        hit.push(best); from = best; range = 130;
+      }
+      if (hit.length) {
+        boltT = B.every;
+        const pts = [[player.x, player.y - 24]];
+        let px = player.x, py = player.y - 24;
+        for (const e of hit) {
+          const dx = e.x - px, dy = e.y - py, len = Math.hypot(dx, dy) || 1, nx = -dy / len, ny = dx / len;
+          for (let s = 1; s <= 3; s++) { const j = rnd(-11, 11); pts.push([px + dx * s / 4 + nx * j, py + dy * s / 4 + ny * j]); }
+          pts.push([e.x, e.y]); px = e.x; py = e.y;
+          damage(e, B.dmg); burst(e.x, e.y, "#bdf3ff", 3);
+        }
+        if (zaps.length < 8) zaps.push({ pts, t: 0.16, big: B.chain >= 4 });
+        sfx.zap();
+      } else boltT = 0.1;           // 칠 적이 없으면 곧 다시 살핀다
+    }
+  }
+  if (w.orb) {
+    const O = w.orb; orbAng += dt * 3.4;
+    for (let i = 0; i < O.n; i++) {
+      const a = orbAng + i * Math.PI * 2 / O.n, ox = player.x + Math.cos(a) * 46, oy = player.y + Math.sin(a) * 46;
+      for (const e of enemies) if (targetable(e) && !(e.cdOrb > 0) && (e.x - ox) ** 2 + (e.y - oy) ** 2 < (e.r + 10) ** 2) { damage(e, O.dmg); e.cdOrb = O.cd; burst(ox, oy, "#9ff0ff", 2); }
+      for (const r of rain) if (!r.dead && (r.x - ox) ** 2 + (r.y - oy) ** 2 < 15 * 15) { r.dead = true; burst(r.x, r.y, "#d8f6ff", 3); }       // 빗방울·눈송이를 막아 준다
+    }
+  }
+  if (w.bomb) {
+    const K = w.bomb; bombT -= dt;
+    if (bombT <= 0 && bombs.length < 4) { bombT = K.every; bombs.push({ x: player.x, y: player.y - 24, vy: -320, top: Math.max(70, player.y - 250), dmg: K.dmg, r: K.r, t: 0 }); }
+  }
+  if (w.boom) {
+    const R = w.boom; boomT -= dt;
+    if (boomT <= 0 && booms.length < 4) {
+      boomT = R.every;
+      const sides = R.n >= 2 ? [-1, 1] : [boomSide = -boomSide];
+      for (const k of sides) booms.push({ k, t: 0, T: 1.15, dmg: R.dmg, x: player.x, y: player.y });
+    }
+  }
+  for (const m of bombs) {
+    m.t += dt; m.y += m.vy * dt;
+    let go = m.y <= m.top;
+    if (!go) for (const e of enemies) if (targetable(e) && (e.x - m.x) ** 2 + (e.y - m.y) ** 2 < (e.r + 12) ** 2) { go = true; break; }
+    if (go) { m.dead = true; explode(m.x, m.y, m.r, m.dmg, null); rings.push({ x: m.x, y: m.y, t: 0, max: m.r * 1.3, color: "#ffb24a" }); burst(m.x, m.y, "#ffcf5a", 12); sfx.boom(); }
+  }
+  for (const m of booms) {
+    m.t += dt; const th = m.t / m.T * Math.PI * 2;
+    m.x = player.x + m.k * 58 * Math.sin(th); m.y = player.y - 26 - 120 * (1 - Math.cos(th));
+    if (m.t >= m.T) { m.dead = true; continue; }
+    for (const e of enemies) if (targetable(e) && !(e.cdBoom > 0) && (e.x - m.x) ** 2 + (e.y - m.y) ** 2 < (e.r + 13) ** 2) { damage(e, m.dmg); e.cdBoom = 0.2; }
+  }
+  bombs = bombs.filter(m => !m.dead); booms = booms.filter(m => !m.dead);
+  for (const z of zaps) z.t -= dt; zaps = zaps.filter(z => z.t > 0);
+  for (const s of smoke) s.t += dt; smoke = smoke.filter(s => s.t < 0.5);
+}
 function fire() {
-  const w = weapon(level);
+  const w = W();
   for (const [angle, dx] of w.shots) {
     if (bullets.length >= 140) break;
     bullets.push({ x: player.x + dx, y: player.y - 22, vx: Math.sin(angle) * 520, vy: -Math.cos(angle) * 520, dmg: w.dmg, pierce: !!w.pierce, beam: !!w.beam, art: w.bullet, hitT: 0 });
@@ -271,12 +500,16 @@ function damage(e, amount) {
 function update(dt) {
   dist += dt * (9 + wave * 0.6);
   // 비행기
-  const kx = (keys.ArrowRight || keys.d ? 1 : 0) - (keys.ArrowLeft || keys.a ? 1 : 0);
-  if (kx) player.tx = Math.min(FW - 20, Math.max(20, player.tx + kx * 300 * dt));
+  const kx = (keys.ArrowRight || keys.d || keys.D ? 1 : 0) - (keys.ArrowLeft || keys.a || keys.A ? 1 : 0);
+  const ky = (keys.ArrowDown || keys.s || keys.S ? 1 : 0) - (keys.ArrowUp || keys.w || keys.W ? 1 : 0);
+  if (kx) player.tx = clamp(player.tx + kx * 300 * dt, 20, FW - 20);
+  if (ky) player.ty = clamp(player.ty + ky * 260 * dt, yr.min, yr.max);
+  player.ty = clamp(player.ty, yr.min, yr.max);
   const dx = player.tx - player.x; player.x += dx * Math.min(1, dt * 18); player.tilt += (Math.max(-1, Math.min(1, dx / 30)) - player.tilt) * Math.min(1, dt * 10);
+  player.y += (player.ty - player.y) * Math.min(1, dt * 18);
   if (player.inv > 0) player.inv -= dt;
   // 발사
-  fireT -= dt; if (fireT <= 0) { fire(); fireT = weapon(level).every; }
+  fireT -= dt; if (fireT <= 0) { fire(); fireT = W().every; }
   // 파도
   if (!queue.length && !enemies.length && !warns.length) { waveGap -= dt; if (waveGap <= 0) { startWave(); waveGap = 1.1; } }
   for (const f of queue) f.delay -= dt;
@@ -284,7 +517,17 @@ function update(dt) {
   queue = queue.filter(f => { if (f.delay <= 0) { spawn(f); return false; } return true; });
   // 탄
   for (const b of bullets) {
-    if (b.home) {
+    if (b.kind === "missile") {
+      // 처음엔 옆으로 퍼졌다가 가장 가까운 적에게 꺾어 든다. 연기 꼬리를 남긴다.
+      b.life -= dt; if (b.life <= 0) b.dead = true;
+      let target = null, bestD = 1e9;
+      for (const e of enemies) { if (!targetable(e)) continue; const d = (e.x - b.x) ** 2 + (e.y - b.y) ** 2; if (d < bestD) { bestD = d; target = e; } }
+      const sp = 440, turn = Math.min(1, dt * 4.5);
+      if (target) { const a = Math.atan2(target.y - b.y, target.x - b.x); b.vx += (Math.cos(a) * sp - b.vx) * turn; b.vy += (Math.sin(a) * sp - b.vy) * turn; }
+      else { b.vx *= 1 - turn; b.vy += (-sp - b.vy) * turn; }
+      b.smokeT -= dt; if (b.smokeT <= 0 && smoke.length < 90) { b.smokeT = 0.04; smoke.push({ x: b.x - b.vx * 0.03, y: b.y - b.vy * 0.03, t: 0 }); }
+    }
+    else if (b.home) {
       b.life -= dt;
       let target = null, bestD = 1e9;
       for (const e of enemies) { const d = (e.x - b.x) ** 2 + (e.y - b.y) ** 2; if (e.y > 0 && e.kind !== "meteor" && d < bestD) { bestD = d; target = e; } }
@@ -296,7 +539,7 @@ function update(dt) {
   }
   // 적
   for (const e of enemies) {
-    e.t += dt; e.flash = (e.flash || 0) - dt;
+    e.t += dt; e.flash = (e.flash || 0) - dt; if (e.cdOrb > 0) e.cdOrb -= dt; if (e.cdBoom > 0) e.cdBoom -= dt;
     if (e.kind === "boss") {
       if (e.t > BOSS_STAY) { e.y -= 90 * dt; if (e.y < -90) { e.dead = true; rain = []; say("대장이 도망갔어요"); } }
       else if (e.y < 138) e.y += e.vy * dt; else e.x = FW / 2 + Math.sin(e.t * (e.who === "typhoon" ? 1.5 : 0.9)) * (FW / 2 - 70);
@@ -318,15 +561,17 @@ function update(dt) {
     }
     if (e.kind !== "meteor") for (const b of bullets) {
       if (b.dead || b.hitT > 0) continue;
-      const rr = e.r + (b.beam ? 7 : 4);
+      const rr = e.r + (b.beam ? 7 : b.kind === "missile" ? 6 : 4);
       if ((b.x - e.x) ** 2 + (b.y - e.y) ** 2 > rr * rr) continue;
+      if (b.kind === "missile") { b.dead = true; explode(b.x, b.y, b.splash, b.dmg, e); burst(b.x, b.y, "#ffb24a", 5); if (e.dead) break; continue; }
       damage(e, b.dmg);
       if (b.pierce) b.hitT = 0.12; else b.dead = true;
       if (e.dead) break;
     }
     if (!e.dead && e.kind !== "gift" && (player.x - e.x) ** 2 + (player.y - e.y) ** 2 < (e.r + 12) ** 2) { hurt(); if (e.kind !== "boss") { e.dead = true; burst(e.x, e.y, "#ffffff"); if (pops.length < 14) pops.push({ x: e.x, y: e.y, t: 0, w: 70 }); } }
   }
-  for (const r of rain) { r.x += r.vx * dt; r.y += r.vy * dt; if (r.art === "flake") r.x = r.bx + Math.sin(r.y * 0.035 + r.sway) * 26; if (r.y > FH + 20) r.dead = true; else if ((player.x - r.x) ** 2 + (player.y - r.y) ** 2 < 15 * 15) { r.dead = true; hurt(); } }
+  arms(dt, W());
+  for (const r of rain) { if (r.dead) continue; r.x += r.vx * dt; r.y += r.vy * dt; if (r.art === "flake") r.x = r.bx + Math.sin(r.y * 0.035 + r.sway) * 26; if (r.y > FH + 20) r.dead = true; else if ((player.x - r.x) ** 2 + (player.y - r.y) ** 2 < 15 * 15) { r.dead = true; hurt(); } }
   // 별: 가까이 오면 빨려 온다
   for (const d of drops) {
     d.t += dt; d.y += d.vy * dt;
@@ -341,7 +586,7 @@ function update(dt) {
   for (const w of warns) { w.t -= dt; if (w.t <= 0) { w.dead = true; enemies.push({ kind: "meteor", x: w.x, y: -40, r: 15, hp: 1e9, max: 1e9, vy: 430, t: 0 }); } }
   warns = warns.filter(w => !w.dead);
   for (const p of pops) p.t += dt; pops = pops.filter(p => p.t < 0.3);
-  for (const r of rings) r.t += dt; rings = rings.filter(r => r.t < 0.6);
+  for (const r of rings) r.t += dt; rings = rings.filter(r => r.t < 0.6); if (rings.length > 8) rings.splice(0, rings.length - 8);
   if (flash > 0) flash -= dt;
   // 무기가 셀수록 꼬리에 반짝이가 많이 날린다
   trailT -= dt;
@@ -374,7 +619,7 @@ function star(x, y, r, color) {
 }
 function drawPlane() {
   if (player.inv > 0 && Math.floor(player.inv * 12) % 2) return;
-  const w = weapon(level);
+  const w = W();
   ctx.save(); ctx.translate(player.x, player.y);
   if (w.aura) { ctx.save(); ctx.rotate(clock * 1.8); ctx.drawImage(aura, -52, -50, 104, 104); ctx.restore(); }
   if (w.helpers) for (const k of [-1, 1]) sprite("helper", k * 48, 12 + Math.sin(clock * 4 + k) * 3, 30);       // 양옆 호위기
@@ -413,12 +658,40 @@ function render() {
     else puff(e.x, e.y, e.r, hit ? "#ffffff" : e.kind === "zig" ? "#b9a2ff" : "#8f9bd6", e.kind === "zig" ? "smile" : "grump");
   }
   for (const r of rain) { if (r.art === "flake" ? sprite("flake", r.x, r.y, 22) : sprite("drop", r.x, r.y, 15)) continue; ctx.fillStyle = "#9fe2ff"; ctx.beginPath(); ctx.ellipse(r.x, r.y, 5, 8, 0, 0, 7); ctx.fill(); }
+  // 미사일 연기 꼬리
+  if (smoke.length) { ctx.fillStyle = "#eef2ff"; for (const s of smoke) { const k = s.t / 0.5; ctx.globalAlpha = (1 - k) * 0.55; ctx.beginPath(); ctx.arc(s.x, s.y, 3 + k * 9, 0, 7); ctx.fill(); } ctx.globalAlpha = 1; }
+  // 레이저 줄기(미리 그려 둔 띠를 늘여 붙인다)
+  const wNow = mode !== "start" ? W() : null;
+  if (wNow && wNow.laser) {
+    const L = wNow.laser, tex = BEAM[L.color] || BEAM.pink, flick = 0.82 + Math.sin(clock * 40) * 0.12;
+    for (const b of L.beams) {
+      const g = beamGeo(b), len = (g.oy + 20) / Math.max(0.3, -g.sy), half = L.w * (1.1 + Math.sin(clock * 25 + b[1]) * 0.08);
+      ctx.save(); ctx.translate(g.ox, g.oy); ctx.rotate(g.a); ctx.globalAlpha = flick;
+      ctx.drawImage(tex, -half, -len, half * 2, len);
+      ctx.globalAlpha = 1; ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(0, 0, L.w * 0.55 + Math.sin(clock * 30) * 1.2, 0, 7); ctx.fill();
+      ctx.restore();
+    }
+  }
   for (const b of bullets) {
-    if (b.home) { if (!sprite("star", b.x, b.y, 18)) star(b.x, b.y, 7, "#fff3a8"); }
+    if (b.kind === "missile") {
+      ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(Math.atan2(b.vy, b.vx) + Math.PI / 2);
+      ctx.fillStyle = Math.floor(clock * 30) % 2 ? "#ffe45c" : "#ff9b3d"; ctx.beginPath(); ctx.arc(0, 15, 4, 0, 7); ctx.fill();
+      ctx.drawImage(missileTex, -7, -16, 14, 32); ctx.restore();
+    }
+    else if (b.home) { if (!sprite("star", b.x, b.y, 18)) star(b.x, b.y, 7, "#fff3a8"); }
     else if (b.art && sprite(b.art, b.x, b.y, b.art === "rainbow" ? 19 : b.art === "candy" ? 15 : b.art === "comet" ? 12 : 11)) {}
     else if (b.beam) { ctx.fillStyle = ["#ff7a9c", "#ffd95a", "#7dffb0", "#6fd3ff"][Math.floor((b.y + b.x) / 24) & 3]; ctx.fillRect(b.x - 4, b.y - 12, 8, 24); }
     else { ctx.fillStyle = b.pierce ? "#3fd8ff" : "#ff9d2e"; ctx.fillRect(b.x - 4, b.y - 9, 8, 18); ctx.fillStyle = b.pierce ? "#eaffff" : "#fff6b0"; ctx.fillRect(b.x - 2, b.y - 7, 4, 14); }
   }
+  for (const m of bombs) { ctx.save(); ctx.translate(m.x, m.y); ctx.rotate(m.t * 5); ctx.drawImage(bombTex, -13, -14, 26, 28); ctx.restore(); }
+  for (const m of booms) { ctx.save(); ctx.translate(m.x, m.y); ctx.rotate(m.t * 16 * m.k); ctx.drawImage(boomTex, -15, -15, 30, 30); ctx.restore(); }
+  // 번개: 굵은 파란 띠 + 가는 흰 줄
+  for (const z of zaps) {
+    ctx.globalAlpha = Math.min(1, z.t / 0.1); ctx.lineJoin = "round"; ctx.lineCap = "round";
+    ctx.beginPath(); z.pts.forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])));
+    ctx.strokeStyle = "rgba(120,220,255,.6)"; ctx.lineWidth = z.big ? 9 : 7; ctx.stroke();
+    ctx.strokeStyle = "#ffffff"; ctx.lineWidth = z.big ? 3 : 2.2; ctx.stroke();
+  } ctx.globalAlpha = 1;
   for (const s of sparks) {
     ctx.globalAlpha = Math.min(1, s.life * 3); ctx.fillStyle = s.color;
     if (s.shape === "heart") { ctx.beginPath(); ctx.moveTo(s.x, s.y + 5); ctx.bezierCurveTo(s.x - 9, s.y - 2, s.x - 4, s.y - 8, s.x, s.y - 3); ctx.bezierCurveTo(s.x + 4, s.y - 8, s.x + 9, s.y - 2, s.x, s.y + 5); ctx.fill(); }
@@ -436,9 +709,10 @@ function render() {
     ctx.fillStyle = "#ffffff"; ctx.font = "900 22px 'Pretendard Variable', system-ui, sans-serif"; ctx.textAlign = "center"; ctx.fillText("!", w.x, 92);
   }
   if (mode !== "start") drawPlane();
-  for (const r of rings) { const k = r.t / 0.6; ctx.globalAlpha = 1 - k; ctx.strokeStyle = "#ffe45c"; ctx.lineWidth = 7 * (1 - k) + 1; ctx.beginPath(); ctx.arc(r.x, r.y, 20 + k * 330, 0, 7); ctx.stroke(); } ctx.globalAlpha = 1;
+  if (wNow && wNow.orb) for (let i = 0; i < wNow.orb.n; i++) { const a = orbAng + i * Math.PI * 2 / wNow.orb.n; ctx.drawImage(orbTex, player.x + Math.cos(a) * 46 - 13, player.y + Math.sin(a) * 46 - 13, 26, 26); }
+  for (const r of rings) { const k = r.t / 0.6; ctx.globalAlpha = 1 - k; ctx.strokeStyle = r.color || "#ffe45c"; ctx.lineWidth = 7 * (1 - k) + 1; ctx.beginPath(); ctx.arc(r.x, r.y, 20 + k * (r.max || 330), 0, 7); ctx.stroke(); } ctx.globalAlpha = 1;
   if (flash > 0) { ctx.fillStyle = "rgba(255,255,255," + Math.min(0.5, flash * 1.8).toFixed(2) + ")"; ctx.fillRect(0, 0, FW, FH); }
-  if (bannerT > 0) { ctx.globalAlpha = Math.min(1, bannerT * 2); ctx.font = (bannerBig ? "900 22px" : "800 19px") + " 'Pretendard Variable', system-ui, sans-serif"; ctx.textAlign = "center"; ctx.lineWidth = 5; ctx.lineJoin = "round"; ctx.strokeStyle = "rgba(16,26,80,.85)"; ctx.strokeText(banner, FW / 2, FH * 0.3); ctx.fillStyle = bannerBig ? "#ffe45c" : "#ffffff"; ctx.fillText(banner, FW / 2, FH * 0.3); ctx.globalAlpha = 1; }
+  if (bannerT > 0 && mode !== "quiz") { ctx.globalAlpha = Math.min(1, bannerT * 2); ctx.font = (bannerBig ? "900 22px" : "800 19px") + " 'Pretendard Variable', system-ui, sans-serif"; ctx.textAlign = "center"; ctx.lineWidth = 5; ctx.lineJoin = "round"; ctx.strokeStyle = "rgba(16,26,80,.85)"; ctx.strokeText(banner, FW / 2, FH * 0.3); ctx.fillStyle = bannerBig ? "#ffe45c" : "#ffffff"; ctx.fillText(banner, FW / 2, FH * 0.3); ctx.globalAlpha = 1; }
   ctx.restore();
 }
 
@@ -452,7 +726,7 @@ function frame(now) {
 }
 
 /* ---------- 시작 ---------- */
-function begin() { $("start").hidden = true; $("over").hidden = true; $("quiz").hidden = true; reset(); mode = "play"; last = performance.now(); audio(); }
+function begin() { disarm(); if (GameQuiz) { GameQuiz.close(); GameQuiz.setKid(PILOTS[pilot].kid); } quiz = null; $("start").hidden = true; $("over").hidden = true; $("fork").hidden = true; reset(); mode = "play"; last = performance.now(); audio(); }
 $("startBtn").addEventListener("click", begin);
 $("againBtn").addEventListener("click", begin);
 const soundBtn = $("sound");
@@ -460,10 +734,17 @@ function paintSound() { soundBtn.setAttribute("aria-pressed", String(soundOn)); 
 soundBtn.addEventListener("click", () => { soundOn = !soundOn; try { localStorage.setItem(SOUND_KEY, soundOn ? "1" : "0"); } catch (_) {} paintSound(); });
 paintSound();
 const pilotBox = $("pilots");
+// 조종사를 고르면 공통 수학 모듈의 "지금 하는 아이"도 같이 바뀐다(문제 수준·기록이 그 아이 것으로).
+function pickPilot(i) {
+  if (!(i >= 0 && i < PILOTS.length)) return;
+  pilot = i; try { localStorage.setItem(PILOT_KEY, String(i)); } catch (_) {}
+  if (GameQuiz) GameQuiz.setKid(PILOTS[i].kid);
+  [...pilotBox.children].forEach((c, k) => c.setAttribute("aria-pressed", String(k === i)));
+}
 PILOTS.forEach((p, i) => {
   const b = document.createElement("button"); b.type = "button"; b.className = "pilot"; b.setAttribute("aria-pressed", String(i === pilot));
   b.innerHTML = '<img src="art/' + p.art + '.webp?v=2" alt="" draggable="false"><span>' + p.name + "</span>";
-  b.addEventListener("click", () => { pilot = i; try { localStorage.setItem(PILOT_KEY, String(i)); } catch (_) {} [...pilotBox.children].forEach((c, k) => c.setAttribute("aria-pressed", String(k === i))); sfx.star(); });
+  b.addEventListener("click", () => { pickPilot(i); sfx.star(); });
   pilotBox.appendChild(b);
 });
 // 꼬리 꾸미기: 모은 별만큼 열린다.
@@ -484,5 +765,5 @@ try { const best = parseInt(localStorage.getItem(BEST_KEY) || "0", 10) || 0; if 
 addEventListener("resize", resize);
 resize(); reset();
 // 미리보기·테스트가 프레임 없이도 한 걸음씩 돌려 볼 수 있게 내놓는다(주소에 ?qa=1 일 때만).
-if (new URLSearchParams(location.search).get("qa") === "1") window.__plane = { begin, step: dt => { if (mode === "play") update(dt); render(); }, tick: dt => { if (mode === "play") update(dt); }, get s() { return { mode, level, hearts, wave, dist, solved, enemies: enemies.length, bullets: bullets.length, drops: drops.length, shield, pilot, stars, trail }; }, set: o => { if (o.level) level = o.level; if (o.shield != null) shield = o.shield; if (o.wave) wave = o.wave; if (o.stars != null) { stars = o.stars; paintTrails(); } if (o.trail != null) trail = o.trail; hud(); }, spawn, player: () => player, answer: () => (quiz ? quiz.problem.answer : null), world: () => ({ enemies, drops, rain }), drop: () => drops.push({ x: player.x, y: player.y - 60, vy: 70, t: 0 }), hurt };
+if (new URLSearchParams(location.search).get("qa") === "1") window.__plane = { begin, step: dt => { if (mode === "play") update(dt); render(); }, tick: dt => { if (mode === "play") update(dt); }, get s() { return { mode, level, hearts, wave, dist, solved, enemies: enemies.length, bullets: bullets.length, drops: drops.length, shield, pilot, stars, trail }; }, set: o => { if (o.level) level = o.level; if (o.main || o.side) path = Object.assign({}, path, o.main ? { main: o.main } : {}, o.side ? { side: o.side } : {}); if (o.shield != null) shield = o.shield; if (o.wave) wave = o.wave; if (o.stars != null) { stars = o.stars; paintTrails(); } if (o.trail != null) trail = o.trail; hud(); }, spawn, player: () => player, answer: () => { const q = GameQuiz && GameQuiz.peek(); return q && q.kind === "ask" ? q.answer : null; }, quiz: () => (GameQuiz ? GameQuiz.peek() : null), setPilot: i => pickPilot(i), world: () => ({ enemies, drops, rain }), drop: () => drops.push({ x: player.x, y: player.y - 60, vy: 70, t: 0 }), hurt, path: () => path, yr: () => yr, openQuiz, openFork: kind => openFork(kind, () => resume(weaponLabel(level, path) + "!", true)), guard: () => { if (guard) return { panel: guard.panel.id, armIn: Math.round(guard.armAt - performance.now()) }; const q = GameQuiz && GameQuiz.peek(); return q ? { panel: "quiz", armIn: q.armIn } : null; }, extra: () => ({ smoke: smoke.length, zaps: zaps.length, bombs: bombs.length, booms: booms.length }) };
 requestAnimationFrame(frame);

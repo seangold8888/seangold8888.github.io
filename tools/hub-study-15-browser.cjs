@@ -57,8 +57,8 @@ const server = http.createServer((req, res) => {
         const progress=await page.evaluate(()=>__studyProbe());
         assert.equal(progress.credit,solved+1===15?1:0, name+': exact 15-answer gate');
       }
-      await page.waitForFunction(()=>document.querySelector('#studyEyebrow').textContent==='게임 티켓');
-      assert.match(await page.locator('#question').innerText(),/15문제 성공/);
+      await page.waitForFunction(()=>document.querySelector('#studyEyebrow').textContent==='Game Ticket');
+      assert.match(await page.locator('#question').innerText(),/15 problems done/);
       await page.route('**/cards/',r=>r.fulfill({contentType:'text/html',body:'Game entry fixture'}));
       await page.locator('a.card[href="cards/"]').click();await page.waitForURL('**/cards/');
       const trip=await page.evaluate(()=>({solved:localStorage.getItem('hub2_solved'),credit:localStorage.getItem('hub2_credit'),pass:JSON.parse(localStorage.getItem('hub_play_pass'))}));

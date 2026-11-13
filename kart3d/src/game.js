@@ -5,7 +5,8 @@ import { buildTrackMesh } from './trackmesh.js?v=snow-1';
 import { loadProps } from './props.js';
 import { createAudio } from './music.js';
 import { CHARACTERS, VILLAINS, driverById, buildKartModel, Kart, driveAI } from './karts.js?v=snow-1';
-import { buildCourseFx } from './coursefx.js?v=snow-1';
+import { buildCourseFx, COURSE_FX } from './coursefx.js?v=snow-1';
+import { QUIZ_KIDS, QUIZ_MODES, FLAME, pickQuizSpots, quizReward, makeQuizBoxMesh } from './quizbox.js?v=quiz-1';
 import { coursePhoto } from './menu-art.js?v=snow-1';
 import { isEasyRace, EASY_PLAYER_SPEED, EASY_AI_SPEED, EASY_ITEM_DELAY, assistInput, hitSnapshot, softenHit } from './difficulty.js?v=easy-1';
 import {
@@ -84,7 +85,19 @@ export function startGame() {
     boxes: [], projectiles: [], projMeshes: [], extraMeshes: [],
     raceTime: 0, countdown: 0, lapStart: 0, bestLap: null, myBest: null,
     results: [], finishDelay: 0, finishSide: 0, time: 0,
-    rival: null, rivalBeat: false, rivalUnlockedNow: false
+    rival: null, rivalBeat: false, rivalUnlockedNow: false,
+    paused: false                      // ? 상자 문제가 떠 있는 동안 경주 전체가 멈춘다
+  };
+
+  // ---------- ? 상자(수학 문제) ----------
+  // 한 바퀴에 하나, 직선 구간 초입 후보 중 바퀴마다 다른 곳. 플레이어만 먹는다.
+  // spots 후보 t, offset 판마다 섞는 시작 칸, lap 지금 상자를 놓은 바퀴, go 재개까지 남은 초,
+  // tier 불꽃 단계(0~3, 메뉴로 나갈 때까지 이어진다), flame 남은 불꽃 초, token 판이 바뀌면 늘려 기다리던 문제를 버린다.
+  // 자동 검증(navigator.webdriver)에서는 기본으로 끈다 — 기존 브라우저 테스트가 손 안 대고 완주하는 것을 본다.
+  const quiz = {
+    enabled: !(typeof navigator !== 'undefined' && navigator.webdriver),
+    on: false, spots: [], offset: 0, mesh: null, lap: -99, alive: false, x: 0, z: 0,
+    go: 0, reward: null, tier: 0, flame: 0, flameTier: 0, token: 0, opened: 0
   };
 
   const keys = Object.create(null);
@@ -131,6 +144,7 @@ export function startGame() {
     state.fx = null;
     clearTrail();
     clearPodium();
+    resetQuiz();
     state.models = []; state.boxes = []; state.projectiles = []; state.projMeshes = [];
     state.extraMeshes = []; state.karts = [];
   }
@@ -273,6 +287,8 @@ export function startGame() {
       }
     }
 
+    setupQuizBox(def, mode);
+
     // 달리는 동안 할 거리: 부스트 발판·코인·장애물·무지개 링
     state.fx = buildCourseFx(state.track);
     scene.add(state.fx.group);
@@ -336,6 +352,8 @@ export function startGame() {
 
   // ---------- 갱신 ----------
   function update(dt) {
+    // 문제가 떠 있으면 시간·AI·물리·입력 모두 멈춘다(렌더는 frame 이 계속 돌려 멈춘 장면이 보인다).
+    if (state.paused) { tickQuizPause(dt); return; }
     state.time += dt;
     if (state.scene !== 'race') return;
 
@@ -414,6 +432,7 @@ export function startGame() {
     watchSfx();
 
     if (mode.items) updateItems(dt, input);
+    if (quiz.on) updateQuizBox(dt);
     pushApart();
     if (easy) softenHit(state.player, beforeHit);
     rankKarts();
@@ -512,6 +531,115 @@ export function startGame() {
         state.projectiles.splice(i, 1);
       }
     }
+  }
+
+  // ---------- ? 상자: 놓기·먹기·멈춤·재개 ----------
+  const QUIZ_THEME = { top: 10, bg: 'rgba(58,32,92,.96)', accent: '#ffd34d', sub: '#f1e4ff', button: '#fff6ee', buttonText: '#4a3550' };
+  function setupQuizBox(def, mode) {
+    quiz.on = false; quiz.mesh = null; quiz.alive = false; quiz.lap = -99; quiz.spots = [];
+    // 공통 문제 모듈이 없으면(로드 실패·테스트) ? 상자를 만들지 않는다 → 게임은 그대로 진행
+    if (!quiz.enabled || !window.GameQuiz || !QUIZ_MODES.includes(mode.id)) return;
+    const cfg = COURSE_FX[def.id] || {};
+    quiz.spots = pickQuizSpots(state.track.points, { ramps: def.ramps || [], padChain: cfg.padChain || [], ice: cfg.ice || [] });
+    if (!quiz.spots.length) return;
+    quiz.offset = Math.floor(Math.random() * quiz.spots.length);
+    quiz.mesh = makeQuizBoxMesh(THREE);
+    quiz.mesh.visible = false;
+    scene.add(quiz.mesh);
+    state.extraMeshes.push(quiz.mesh);          // clearRace 가 dispose 한다(그림 텍스처는 공유라 남는다)
+    quiz.on = true;
+  }
+  function placeQuizBox(lap) {
+    const T = state.track, n = T.points.length;
+    const t = quiz.spots[(quiz.offset + lap) % quiz.spots.length];
+    const p = T.points[Math.floor(t * n) % n];
+    const tan = new THREE.Vector3(p.tx, 0, p.tz).normalize();
+    // 한가운데서 조금만 비켜 둔다(길잡이를 따라가도 먹고, 핸들을 꺾으면 피할 수 있다)
+    const lateral = (lap % 2 ? 1 : -1) * T.roadHalf * 0.15;
+    quiz.x = p.x + tan.z * lateral; quiz.z = p.z - tan.x * lateral;
+    quiz.baseY = p.y + 10;
+    quiz.mesh.position.set(quiz.x, quiz.baseY, quiz.z);
+    quiz.mesh.visible = true;
+    quiz.alive = true; quiz.lap = lap;
+  }
+  function updateQuizBox(dt) {
+    quiz.flame = Math.max(0, quiz.flame - dt);
+    const p = state.player;
+    if (!quiz.mesh) return;
+    const lap = Math.max(0, p.lap);
+    if (p.finished || lap >= state.track.laps) { quiz.mesh.visible = false; quiz.alive = false; return; }
+    if (lap !== quiz.lap) placeQuizBox(lap);     // 새 바퀴: 다른 후보 자리로 옮긴다(지나쳐도 벌 없음)
+    if (!quiz.alive) return;
+    quiz.mesh.rotation.y += dt * 1.5;
+    quiz.mesh.position.y = quiz.baseY + Math.sin(state.time * 3) * 1.6;
+    if (state.autopilot) return;                 // 자동 주행은 문제 없이 지나간다
+    if (Math.hypot(p.x - quiz.x, p.z - quiz.z) < 16) {
+      quiz.alive = false; quiz.mesh.visible = false;
+      openQuiz();
+    }
+  }
+  function clearInputs() {
+    for (const k in keys) keys[k] = false;
+    touch.steer = 0; touch.drift = false; touch.item = false;
+    document.querySelectorAll('#touch .tbtn.down').forEach(b => b.classList.remove('down'));
+    jumpEdge = false; driftArmed = false;      // 누르고 있던 스페이스로 재개 직후 드리프트가 걸리지 않게
+  }
+  async function openQuiz() {
+    const GQ = window.GameQuiz;
+    if (!GQ) return;
+    const tok = quiz.token;
+    state.paused = true; quiz.go = 0; quiz.reward = null; quiz.opened++;
+    clearInputs();
+    audio.sfx('pickup');
+    try {
+      const id = state.player.spec.id;
+      let kid;
+      if (QUIZ_KIDS.includes(id)) { GQ.setKid(id); kid = id; }   // 아이 드라이버면 그 아이 문제
+      else kid = GQ.currentKid();
+      if (!kid) {                                                   // 처음 한 번만 묻는다(고르면 저장된다)
+        kid = await GQ.pickKid({ title: '누가 문제를 풀어요?', theme: QUIZ_THEME });
+        if (tok !== quiz.token) return;
+      }
+      const r = await GQ.ask({
+        kid, title: '맞히면 터보 부스트!', theme: QUIZ_THEME,
+        onCorrect: res => res.firstTry ? '정답! 터보 부스트 출발 🔥' : '정답! 미니 부스트 출발!'
+      });
+      if (tok !== quiz.token) return;
+      const rw = quizReward(quiz.tier, r.firstTry);
+      quiz.tier = rw.tier; quiz.reward = rw;
+      if (rw.coins) {
+        state.coinPicks += rw.coins;
+        state.player.coins = Math.min(99, (state.player.coins || 0) + rw.coins);
+      }
+    } catch (_) {
+      if (tok !== quiz.token) return;            // 문제 화면이 실패해도 경주는 이어 간다(보상 없이)
+    }
+    quiz.go = 0.8;                                // 짧은 유예 뒤 출발
+    toast(quiz.reward && quiz.reward.coins ? '🪙 +3 · 준비… 출발!' : '준비… 출발!');
+  }
+  function tickQuizPause(dt) {
+    if (quiz.go <= 0) return;
+    quiz.go -= dt;
+    if (quiz.go > 0) return;
+    quiz.go = 0;
+    state.paused = false;
+    clearInputs();
+    const p = state.player, rw = quiz.reward;
+    p.shield = Math.max(p.shield || 0, 1.5);      // 재개 직후 1.5초 충돌 유예(방패 한 번 막기와 같은 필드)
+    if (rw && p && !p.finished) {
+      p.boost = Math.max(p.boost, rw.secs);
+      quiz.flame = rw.secs; quiz.flameTier = rw.tier;
+      toast(rw.secs >= 3 ? (rw.tier === 3 ? '무지개 터보! 🌈' : '터보 부스트! 🔥') : '미니 부스트! 💨');
+    }
+    quiz.reward = null;
+  }
+  // 판이 끝나거나(다시 하기·다음 경주·Esc·메뉴) 버려질 때: 문제 화면을 닫고 멈춤을 푼다.
+  function resetQuiz() {
+    quiz.token++;
+    if (window.GameQuiz && window.GameQuiz.isOpen()) window.GameQuiz.close();
+    state.paused = false;
+    quiz.go = 0; quiz.reward = null; quiz.flame = 0;
+    quiz.on = false; quiz.mesh = null; quiz.alive = false; quiz.lap = -99;   // 메시는 extraMeshes 로 dispose
   }
 
   // 라이벌은 아이템을 바로 쓰지 않는다. 바나나는 바로 뒤에 붙었을 때,
@@ -771,6 +899,16 @@ export function startGame() {
       item.textContent = t ? t.icon : '';
       item.className = 'item' + (t ? ' has' : '');
     }
+    // 터보 불꽃 단계(? 상자 문제를 연달아 한 번에 맞힐수록 빨강 → 파랑 → 무지개)
+    const qp = el('p-quiz');
+    if (qp) {
+      qp.style.display = quiz.on ? '' : 'none';
+      if (quiz.on && qp.dataset.tier !== String(quiz.tier)) {
+        qp.dataset.tier = String(quiz.tier);
+        el('quiz-tier').textContent = quiz.tier ? FLAME[quiz.tier].name : '? 상자를 먹어요';
+        qp.querySelectorAll('.dots i').forEach((d, i) => d.classList.toggle('on', i < quiz.tier));
+      }
+    }
     const bar = el('driftbar');
     if (p.drift > 0) {
       bar.style.display = 'block';
@@ -829,6 +967,8 @@ export function startGame() {
   // ---------- 메뉴 ----------
   const menu = el('menu');
   function showMenu() {
+    resetQuiz();
+    quiz.tier = 0;                     // 불꽃 단계는 메뉴로 나가면 처음부터(다시 하기·그랑프리 다음 경주에서는 이어진다)
     state.scene = 'menu';
     showHud(false);
     el('result').style.display = 'none';
@@ -1033,6 +1173,8 @@ export function startGame() {
     // Settings and footer controls keep their native keyboard interaction.
     if (state.scene === 'menu' && e.target.closest?.('.lobby-settings, #garage-open, .lobby-home, #sound, #menu-back')) return;
     if (state.scene === 'menu' && (e.code === 'Enter' || e.code === 'Space') && e.target.closest?.('#menu-list .card')) return;
+    // 문제를 푸는 동안엔 운전 키를 받지 않는다(Esc 로 경주를 그만두는 것만 된다). 숫자키는 문제 모듈이 먼저 받는다.
+    if (state.scene === 'race' && state.paused && e.code !== 'Escape') { if (e.code === 'Space') e.preventDefault(); return; }
     if (e.code === 'Space' && !keys.Space && !e.repeat) jumpEdge = true;
     keys[e.code] = true;
     if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Space', 'Enter'].includes(e.code)) e.preventDefault();
@@ -1237,10 +1379,12 @@ export function startGame() {
   let trailLive = [], trailClock = 0;
   function updateTrail(dt) {
     const p = state.player, model = state.models[0];
-    const tr = model && model.userData.trail;
+    // 문제 보상 터보 중에는 같은 꼬리를 불꽃 단계 색(주황·빨강·파랑·무지개)으로 바꿔 뿜는다
+    const qf = quiz.flame > 0 && p.boost > 0 ? FLAME[quiz.flameTier] : null;
+    const tr = qf ? { shape: 'star', color: qf.color } : model && model.userData.trail;
     trailClock -= dt;
     if (tr && p.boost > 0 && trailClock <= 0 && trailLive.length < 40) {
-      trailClock = 0.045;
+      trailClock = qf ? 0.03 : 0.045;
       const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: trailTexture(tr.shape), transparent: true, depthWrite: false }));
       if (tr.color === 'rainbow') sp.material.color.setHSL((state.time * 1.4) % 1, 0.9, 0.62);
       else sp.material.color.set(tr.color);
@@ -1587,6 +1731,10 @@ export function startGame() {
     pick(char, track, mode) { state.charIndex = char; state.trackIndex = track; state.modeIndex = mode; },
     rivalRecord, modeVisible, renderMenu, nextStep, settleRival, driveAI,
     startCup, nextCupRace, showPodium, openGarage, closeGarage, onFx, updateVillains, CUPS,
-    get fx() { return state.fx; }
+    get fx() { return state.fx; },
+    // ? 상자 검증용: quiz 상태 보기, 켜고 끄기(자동 검증 브라우저에선 기본 꺼짐), 바로 열기
+    get quiz() { return quiz; },
+    quizBoxes(on) { quiz.enabled = !!on; },
+    openQuiz
   };
 }

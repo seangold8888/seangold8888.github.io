@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style id="no-zoom-style">*{touch-action:manipulation}canvas{touch-action:none}</style>
-<script src="../assets/study/play-timer.js?v=1"></script>
+<script src="../assets/study/play-timer.js?v=2"></script>
 <script src="../assets/touch-guard.js?v=1"></script>
 <script id="no-zoom-guard">/* 게임 중 화면이 갑자기 확대되는 것 방지: 핀치·더블탭 줌 차단 */
 (function(){var s=function(e){e.preventDefault()};
@@ -256,6 +256,15 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   /* ---------- 코인·말풍선 ---------- */
   #p-coin { top: 14px; left: 118px; }
   #p-coin .v { font-size: clamp(18px, 2.8vw, 26px); }
+  /* ? 상자 터보 불꽃 단계: 빨강 → 파랑 → 무지개 */
+  #p-quiz { top: 86px; left: 118px; padding: 6px 12px; font-size: 12px; }
+  #p-quiz .dots { display: flex; gap: 5px; margin: 3px 0 2px; }
+  #p-quiz .dots i { width: 15px; height: 15px; border-radius: 50%; background: rgba(74,53,80,0.16); }
+  #p-quiz .dots i.on:nth-child(1) { background: #ff3b30; }
+  #p-quiz .dots i.on:nth-child(2) { background: #2f8cff; }
+  #p-quiz .dots i.on:nth-child(3) { background: conic-gradient(#ff7aa8, #ffd34d, #7fe0c4, #7fb8ff, #c79bff, #ff7aa8); }
+  #quiz-tier { display: block; font-size: 12px; color: #8c7a95; }
+  @media (max-height: 420px) { #p-quiz { top: 74px; } }
   #toast {
     position: absolute; left: 50%; top: 27%; transform: translate(-50%, -50%) scale(.6); opacity: 0;
     font-size: clamp(22px, 4.4vw, 40px); font-weight: 900; color: #fff;
@@ -378,6 +387,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   <div class="panel" id="p-place"><span class="k">등수</span><span class="v" id="place">1등</span></div>
   <div class="panel" id="p-rival" style="display:none"><span class="k" id="rival-name">🔥 라이벌</span><span class="v" id="rival-gap">-</span><span id="rival-warn"></span></div>
   <div class="item" id="item"></div>
+  <div class="panel" id="p-quiz" style="display:none"><span class="k">터보 불꽃</span><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span id="quiz-tier">? 상자를 먹어요</span></div>
   <div id="driftbar"><i></i></div>
   <div id="countdown">3</div>
   <canvas id="mini" width="132" height="132"></canvas>
@@ -436,8 +446,14 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 <noscript>이 게임은 자바스크립트가 필요해요.</noscript>
 
 <script src="../assets/bgm/bgm-player.js?v=67"></script>
+<!-- ? 상자 수학 문제: 공통 문제 모듈(모듈 진입점보다 먼저) -->
+<script src="../math/curriculum.js?v=20"></script>
+<script src="../math/learning.js?v=29"></script>
+<script src="../math/store.js?v=32"></script>
+<script src="../assets/study/math-bridge.js?v=2"></script>
+<script src="../assets/study/game-quiz.js?v=1"></script>
 <script type="module">
-  import { startGame } from './src/game.js?v=snow-1';
+  import { startGame } from './src/game.js?v=quiz-1';
   startGame();
 </script>
 </body>

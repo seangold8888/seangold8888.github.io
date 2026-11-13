@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v253";
+const CACHE_VERSION = "v254";
 const CACHE_PREFIX = "adventure-box-";
 // 큰 그림과 소리(삼국지 배경 200MB+, 저장한 이야기 오디오)는 배포 번호와 따로 둔다.
 // 배포마다 이 캐시를 버리면 기기가 236MB를 다시 받고, "여행 전에 이야기 저장"도 지워졌다.
@@ -127,7 +127,7 @@ const CORE_SHELL = [
   "./multiverse/style.css?v=3",
   "./multiverse/data.js?v=6",
   "./multiverse/save.js?v=3",
-  "./multiverse/game.js?v=volcano-1",
+  "./multiverse/game.js?v=quiz-1",
   "./assets/audio/family-skill-voices.js?v=3",
   "./multiverse/art/cover.webp",
   "./multiverse/art/jaei-idle.webp",
@@ -748,7 +748,8 @@ const CORE_SHELL = [
   "./cards/cards.json",
   "./assets/bgm/bgm-player.js?v=66",
   "./assets/bgm/bgm-player.js?v=67",
-  "./assets/study/play-timer.js?v=1",
+  "./assets/study/play-timer.js?v=2",
+  "./assets/study/game-quiz.js?v=1",
   "./assets/touch-guard.js?v=1",
   "./cards/js/engine.js?v=70",
   "./cards/js/audio.js?v=71",
@@ -957,10 +958,10 @@ const OPTIONAL_SHELL = [
   "./usa/art/taeo-surf.webp",
   "./plane/",
   "./plane/index.html",
-  "./plane/style.css?v=3",
+  "./plane/style.css?v=5",
   "./plane/cover.webp",
-  "./plane/src/main.js?v=3",
-  "./plane/src/logic.js?v=3",
+  "./plane/src/main.js?v=5",
+  "./plane/src/logic.js?v=4",
   "./plane/art/p0.webp?v=2",
   "./plane/art/p1.webp?v=2",
   "./plane/art/p2.webp?v=2",
@@ -1049,7 +1050,8 @@ const OPTIONAL_SHELL = [
   "./slime/vendor/THREE-LICENSE.txt",
   "./assets/effects/quality.js?v=visual-1",
   "./assets/covers/cover_slime.svg",
-  "./kart3d/src/game.js?v=snow-1",
+  "./kart3d/src/game.js?v=quiz-1",
+  "./kart3d/src/quizbox.js?v=quiz-1",
   "./kart3d/src/difficulty.js?v=easy-1",
   "./kart3d/menu.css?v=snow-1",
   "./kart3d/src/menu-art.js?v=snow-1",
@@ -1213,6 +1215,7 @@ const OPTIONAL_SHELL = [
   "./sanguo/src/data/works.js",
   "./sanguo/src/data/familyHeroes.js",
   "./sanguo/src/game/familyCombat.js",
+  "./sanguo/src/game/quizWeapon.js",
   "./sanguo/src/game/elevenVoicePacks.js",
   "./sanguo/art/side-scroller/taeo-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/jaei-painted-sheet-v1.png",

@@ -22,7 +22,7 @@ const server=http.createServer((req,res)=>{
       localStorage.setItem('hub2_parent_mode','0');localStorage.setItem('hub_play_pass',JSON.stringify({day,until:Date.now()+600000}));
     });
     const menu=await context.newPage();await menu.goto(base+'/game/?v=hub-release-201');
-    await menu.waitForFunction(()=>document.querySelector('#hubTicketStat').textContent!=='준비 중');
+    await menu.waitForFunction(()=>document.querySelector('#hubTicketStat').textContent!=='Ready');
     assert.equal(await menu.locator('.feature-stage,#nextAdventure').count(),0);
     const links=await menu.locator('a.card').evaluateAll(es=>es.map(e=>({name:e.querySelector('.name').textContent,url:e.href})));
     assert.equal(links.length,10);

@@ -3,11 +3,49 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import * as L from "../src/logic.js";
 
-test("무기는 단계가 오를수록 반드시 더 세다", () => {
+test("무기는 단계가 오를수록 반드시 더 세다 — 어느 갈래를 골라도", () => {
   assert.equal(L.MAX_WEAPON, 8);
   for (let level = 2; level <= L.MAX_WEAPON; level++) assert.ok(L.dps(level) > L.dps(level - 1), "level " + level);
+  assert.equal(L.allPaths().length, 9);
+  for (const path of L.allPaths()) for (let level = 2; level <= L.MAX_WEAPON; level++) assert.ok(L.dps(level, path) > L.dps(level - 1, path), JSON.stringify(path) + " level " + level);
   assert.equal(L.weapon(0).name, L.weapon(1).name);
   assert.equal(L.weapon(99).name, L.weapon(L.MAX_WEAPON).name);
+});
+
+test("갈래끼리 세기가 비슷하다(한 무기만 압도적이지 않다)", () => {
+  for (let level = L.FORK_MAIN; level <= L.MAX_WEAPON; level++) {
+    const all = L.allPaths().map(p => L.dps(level, p)), ratio = Math.max(...all) / Math.min(...all);
+    assert.ok(ratio <= 1.25, "level " + level + " ratio " + ratio.toFixed(2));
+  }
+});
+
+test("갈림길은 3단계(큰 무기)와 6단계(곁무기)에 있고, 갈래마다 생김새가 다르다", () => {
+  assert.equal(L.forkAt(3), "main"); assert.equal(L.forkAt(6), "side");
+  for (const lv of [1, 2, 4, 5, 7, 8]) assert.equal(L.forkAt(lv), null);
+  for (const id of L.MAIN_IDS) {
+    assert.equal(L.MAINS[id].tiers.length, L.MAX_WEAPON - L.FORK_MAIN + 1);
+    assert.ok(L.weapon(3, { main: id })[id], id);
+    assert.equal(L.weapon(2, { main: id })[id], undefined, "갈림길 전에는 큰 무기가 없다");
+  }
+  for (const id of L.SIDE_IDS) {
+    assert.equal(L.SIDES[id].tiers.length, L.MAX_WEAPON - L.FORK_SIDE + 1);
+    assert.ok(L.weapon(6, { main: "bolt", side: id })[id]);
+    assert.equal(L.weapon(5, { main: "bolt", side: id })[id], undefined);
+  }
+  const names = new Set(); for (const id of L.MAIN_IDS) for (const t of L.MAINS[id].tiers) names.add(t.name);
+  assert.equal(names.size, 18, "큰 무기 이름이 모두 다르다");
+  const every = [...names, ...L.SIDE_IDS.map(id => L.SIDES[id].name), ...L.MAIN_IDS.map(id => L.MAINS[id].name)];
+  for (const n of every) assert.ok(!n.includes("별빛"), n);
+  assert.equal(L.weaponLabel(6, { main: "missile", side: "boom" }), "6단계 미사일 떼 + 부메랑");
+});
+
+test("비행기는 화면 아래쪽 구간에서만 오르내린다", () => {
+  for (const fh of [545, 640, 800, 1024, 1400]) {
+    const r = L.playerYRange(fh);
+    assert.ok(r.min >= fh * 0.45 - 1 && r.min >= 140, "위 끝 " + fh);
+    assert.ok(r.max <= fh - 50 && r.max > r.min + 50, "아래 끝 " + fh);
+    assert.ok(r.home >= r.min && r.home <= r.max);
+  }
 });
 
 test("적은 파도마다 단단해지고, 여섯 번째마다 대장이 나온다", () => {
@@ -39,6 +77,7 @@ test("무기는 단계마다 눈에 보이는 장비가 늘고, 속도는 한계
     assert.ok((b.guns || 0) >= (a.guns || 0) && (b.helpers || 0) >= (a.helpers || 0), "level " + level);
     assert.ok(typeof b.bullet === "string");
   }
+  for (const path of L.allPaths()) for (let level = 2; level <= L.MAX_WEAPON; level++) { const a = L.weapon(level - 1, path), b = L.weapon(level, path); assert.ok((b.guns || 0) >= (a.guns || 0) && (b.helpers || 0) >= (a.helpers || 0)); }
   assert.equal(L.weapon(1).guns, 0); assert.equal(L.weapon(2).guns, 2); assert.equal(L.weapon(8).aura, true);
   for (let wave = 2; wave <= 80; wave++) assert.ok(L.enemySpeed(wave) >= L.enemySpeed(wave - 1));
   assert.ok(L.enemySpeed(200) <= 140);
