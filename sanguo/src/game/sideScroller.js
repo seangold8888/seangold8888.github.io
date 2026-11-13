@@ -14,7 +14,7 @@ import { BATTLE_CRY_PACKS, FEMALE_BATTLE_CRY_SEGMENTS, battleCryProfile } from '
 import { elevenVoiceFiles } from './elevenVoicePacks.js';
 import { heroRenderScale } from './heroRenderScale.js';
 import { FAMILY_HERO_IDS, FAMILY_RANGED, FAMILY_COMBAT_PROFILES, FAMILY_CALLOUTS, isFamilyHero } from '../data/familyHeroes.js';
-import { QUIZ_SCROLL_WAVES, QUIZ_MAX_STEPS, quizTierInfo, addQuizAnswer, quizRageBonus, quizDamage, shiftBattleTimers, quizTierBanner } from './quizWeapon.js';
+import { QUIZ_SCROLL_WAVES, QUIZ_MAX_STEPS, quizTierInfo, addQuizAnswer, quizReward, quizDamage, shiftBattleTimers, quizRewardBanner, quizPreviewHint, quizPowerPercent } from './quizWeapon.js';
 import { familyProjectile, drawFamilyProjectile, drawFamilySpecial, startFamilyTechnique, familyTechniquePulses, familyTechniqueTargets, familyPulseDamage, steerFamilyProjectile, drawFamilyTechniqueImpact, drawFamilyBind } from './familyCombat.js';
 
 const CANVAS_UI_FONT = '"Pretendard Variable", Pretendard, "Noto Sans KR", "Malgun Gothic", sans-serif';
@@ -1706,7 +1706,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   let quizSteps = 0, quizFirstTries = 0, quizSolved = 0, quizOpen = false, quizKid = null;
   const quizScrollWaves = new Set();
   const quizInfo = () => quizTierInfo(quizSteps);
-  const refreshQuizHud = () => { const info = quizInfo(); playerHud.setWeaponTier?.(quizSteps, QUIZ_MAX_STEPS, info.color, info.tier ? info.glow : '두루마리'); };
+  const refreshQuizHud = () => { const info = quizInfo(); playerHud.setWeaponTier?.(quizSteps, QUIZ_MAX_STEPS, info.color, info.steps ? info.glow + ' +' + quizPowerPercent(quizSteps) + '%' : '두루마리'); };
   if (quizAvailable()) refreshQuizHud();
   // 파를 쓸어낸 직후, 주인공 앞쪽에 두루마리가 하늘에서 떨어진다. 적이 살아 있으면 만들지 않는다.
   function maybeDropQuizScroll() {
@@ -1722,30 +1722,59 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       for (let i = 0; i < 10; i++) dust.push({ x: prop.x, y: ground() + prop.lane - 50, vx: (Math.random() - .5) * 160, vy: -40 - Math.random() * 90, life: .4, max: .4, color: '#f3e2b4', element: 'mist', size: 4 + Math.random() * 5 });
     }
   }
+  // 기합 파동: 장수 주위로 단계 색 회전 궤적(기존 'spin' 베기 이펙트 재사용)과 파편 고리가 퍼지고, 반경 안 적을 넘어뜨린다.
+  function quizPulse(reward, info, now) {
+    const palette = info.palette || ['#5c3905', '#ffbf17', '#fff6c6'];
+    const y = ground() + player.lane - player.y - (player.mounted ? 190 : 132);
+    const layers = reward.pulseScale >= 1 ? 2 : 1;
+    for (const facing of [1, -1]) for (let layer = 0; layer < layers; layer++) {
+      const life = .62 + layer * .07;
+      effects.push({ x: player.x + facing * 40, y, facing, heavy: true, musou: false, kind: 'spin', theme: info.tier >= 4 ? 'flame' : 'solar', palette, scale: reward.pulseScale * (1 + layer * .12), seed: Math.random() * 20, layer, life, max: life });
+    }
+    const ring = Math.round((reward.pulseScale >= 1 ? 48 : 28) * Math.max(.5, q()));
+    for (let i = 0; i < ring; i++) {
+      const angle = (i / ring) * Math.PI * 2, speed = (reward.pulseRadius * 1.5) * (.85 + Math.random() * .3);
+      dust.push({ x: player.x, y: ground() + player.lane - 26, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed * .28 - 30, life: .5 + Math.random() * .2, max: .7, color: i % 3 ? info.color : '#ffffff', glow: true, element: info.tier >= 4 ? 'ember' : 'shard', rotation: angle, spin: (Math.random() - .5) * 6, size: 3 + Math.random() * 5 });
+    }
+    colorFlash = Math.max(colorFlash, reward.pulseScale >= 1 ? .28 : .16); shake = Math.max(shake, reward.pulseScale >= 1 ? 12 : 7); cameraKick = Math.max(cameraKick, reward.pulseScale >= 1 ? .09 : .05);
+    let knocked = 0;
+    for (const enemy of enemies) {
+      if (enemy.deadAt || enemy.grabbed) continue;
+      const dx = enemy.x - player.x;
+      if (Math.abs(dx) > reward.pulseRadius || Math.abs(enemy.lane - player.lane) > 120) continue;
+      const dir = Math.sign(dx) || player.facing, resist = enemy.boss ? .35 : enemy.role === 'heavy' ? .7 : 1;
+      enemy.x += dir * 150 * resist; enemy.facing = -dir;
+      enemy.hitUntil = Math.max(enemy.hitUntil || 0, now + reward.knockMs * (enemy.boss ? .45 : 1));
+      if (!enemy.boss) { enemy.knockdownStarted = now; enemy.knockdownUntil = now + reward.knockMs; }
+      enemy.attackAt = Math.max(enemy.attackAt || 0, now + reward.knockMs + 300);
+      constrainEnemy(enemy, combatBounds(worldWidth, waveGate, combatLocked));
+      addImpact(enemy.x, enemy.lane, true, false); knocked += 1;
+    }
+    return knocked;
+  }
   function applyQuizAnswer(firstTry, now) {
-    const result = addQuizAnswer(quizSteps, firstTry);
+    const result = addQuizAnswer(quizSteps, firstTry), reward = quizReward(firstTry);
     quizSteps = result.steps; quizSolved += 1; if (firstTry) quizFirstTries += 1;
-    gainRage(quizRageBonus(firstTry));
+    gainRage(reward.rage);
+    const heal = Math.round(player.maxHp * reward.heal);
+    player.hp = Math.min(player.maxHp, player.hp + heal);
     refreshQuizHud();
     const info = quizInfo();
+    const banner = quizRewardBanner(weaponName, result, firstTry);
+    showBanner(hudRoot, banner.title, banner.sub, 2800);
+    quizPulse(reward, info, now);
     if (result.promoted) {
-      const banner = quizTierBanner(weaponName, quizSteps);
-      showBanner(hudRoot, banner.title, banner.sub, 2400);
-      colorFlash = Math.max(colorFlash, info.tier >= 4 ? .30 : .22); shake = Math.max(shake, 6 + info.tier * 2); cameraKick = Math.max(cameraKick, .06);
       const count = Math.round((30 + info.tier * 10) * Math.max(.6, q()));
       for (let i = 0; i < count; i++) {
         const angle = Math.random() * Math.PI * 2, speed = 120 + Math.random() * 300;
         dust.push({ x: player.x, y: ground() + player.lane - 110 - Math.random() * 60, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - 80, life: .45 + Math.random() * .4, max: .85, color: i % 3 ? info.color : '#ffffff', glow: true, element: info.tier >= 4 ? 'ember' : 'shard', rotation: Math.random() * 6.28, spin: (Math.random() - .5) * 9, size: 3 + Math.random() * 6 });
       }
-      floatText(info.glow + ' ' + info.tier + '단계', player.x, player.lane, info.color, 1.3);
-    } else if (result.maxed) {
-      showBanner(hudRoot, weaponName + ' 최고 단계', '무쌍 게이지 +' + quizRageBonus(firstTry), 1800);
-    } else {
-      showBanner(hudRoot, weaponName + ' 반 단계 충전', '한 문제 더 맞히면 다음 단계 · 무쌍 +' + quizRageBonus(firstTry), 2000);
-      floatText('반 단계 +', player.x, player.lane, info.color, 1.1);
     }
-    audio.pickup();
+    floatText((info.half ? info.tier + '.5' : info.tier) + '단계 · 공격 +' + quizPowerPercent(quizSteps) + '%', player.x, player.lane, info.color, firstTry ? 1.3 : 1.1);
+    floatText('+' + heal + ' 체력', player.x, player.lane - 30, '#8dff9a', 1.05);
+    audio.pickup(); audio.shout?.(true);
     player.invulnerableUntil = Math.max(player.invulnerableUntil, now + 1500);
+    return { result, reward, heal };
   }
   async function openQuizScroll() {
     const GQ = globalThis.GameQuiz;
@@ -1758,11 +1787,14 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       if (!kid) kid = await GQ.pickKid({ title: '누가 풀어요?', kicker: '? 두루마리', theme });
       if (ended) return;
       quizKid = kid;
-      const info = quizInfo();
       result = await GQ.ask({
-        kid, title: '맞히면 무기 강화!', theme,
-        hint: weaponName + ' · 지금 ' + (info.tier ? info.glow + ' ' + info.tier + '단계' : '기본') + (quizSteps % 2 ? ' + 반 칸' : ''),
-        onCorrect: (r) => (r.firstTry ? '한 번에 정답! 무기 한 단계 강화' : '정답! 무기 반 단계 강화'),
+        kid, theme,
+        title: quizSteps >= QUIZ_MAX_STEPS ? '맞히면 무쌍 +50 · 체력 회복!' : '맞히면 ' + weaponName + ' 강화! (지금 공격 +' + quizPowerPercent(quizSteps) + '%)',
+        hint: quizPreviewHint(weaponName, quizSteps),
+        onCorrect: (r) => {
+          const next = addQuizAnswer(quizSteps, r.firstTry).steps, reward = quizReward(r.firstTry);
+          return (r.firstTry ? '한 번에 정답! ' : '정답! ') + '공격 +' + quizPowerPercent(next) + '% · 무쌍 +' + reward.rage + ' · 체력 +' + Math.round(reward.heal * 100) + '%';
+        },
       });
     } catch (error) {
       console.warn('[sanguo] 두루마리 문제를 열지 못했습니다', error);
@@ -2924,19 +2956,20 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
   // 무기 단계 빛: 발밑 고리 + 단계 수만큼 떠오르는 불티(4단계는 불꽃 혀). 단색·저비용.
   function drawWeaponAura(x, baseY, now) {
     const info = quizInfo();
-    if (!info.tier) return;
+    if (!info.steps) return;
+    const lv = info.steps / 2;
     const pulse = .5 + Math.sin(now * .007) * .5, mountedScale = player.mounted ? 1.45 : 1;
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
-    ctx.globalAlpha = .28 + info.tier * .06 + pulse * .14; ctx.strokeStyle = info.color; ctx.lineWidth = 2 + info.tier * .7;
-    ctx.beginPath(); ctx.ellipse(x, baseY + 2, (46 + info.tier * 6) * mountedScale, (12 + info.tier * 1.5) * mountedScale, 0, 0, Math.PI * 2); ctx.stroke();
-    const motes = Math.round((2 + info.tier * 2) * Math.max(.5, q()));
+    ctx.globalAlpha = .28 + lv * .06 + pulse * .14; ctx.strokeStyle = info.color; ctx.lineWidth = 2 + lv * .7;
+    ctx.beginPath(); ctx.ellipse(x, baseY + 2, (46 + lv * 6) * mountedScale, (12 + lv * 1.5) * mountedScale, 0, 0, Math.PI * 2); ctx.stroke();
+    const motes = Math.round((2 + lv * 2) * Math.max(.5, q()));
     ctx.fillStyle = info.color;
     for (let i = 0; i < motes; i++) {
       const phase = (now * .00055 + i / motes) % 1, angle = i * 2.399 + now * .0012;
-      const px = x + Math.cos(angle) * (30 + (i % 3) * 12) * mountedScale, py = baseY - phase * (150 + info.tier * 18) * mountedScale;
-      ctx.globalAlpha = (1 - phase) * (.45 + info.tier * .1);
-      ctx.beginPath(); ctx.arc(px, py, 2 + info.tier * .55, 0, Math.PI * 2); ctx.fill();
+      const px = x + Math.cos(angle) * (30 + (i % 3) * 12) * mountedScale, py = baseY - phase * (150 + lv * 18) * mountedScale;
+      ctx.globalAlpha = (1 - phase) * (.45 + lv * .1);
+      ctx.beginPath(); ctx.arc(px, py, 2 + lv * .55, 0, Math.PI * 2); ctx.fill();
     }
     if (info.tier >= 4) {
       ctx.fillStyle = '#ffb347';

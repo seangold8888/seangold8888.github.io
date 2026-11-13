@@ -28,7 +28,7 @@ test("grading is final at submit; multi-field answers are whole-question graded"
  assert.equal(W.edit(e,0,e.questions[0].answers),false);assert.equal(W.start(d,null,null,"2026-09-12",2),e);assert.equal(d.exams.length,1);
 });
 test("generated exams stay inside selected school or current playground scope",()=>{
- for(let level=1;level<=12;level++){const qs=W.generate({source:"level",level},10,level);assert.ok(qs.length>0);qs.forEach(q=>{assert.ok(["level-"+level,"level-"+Math.max(1,level-1)].includes(q.group));assert.ok(Q.grade(q,q.answers));assert.equal(q.visual,null);});}
+ for(let level=1;level<=19;level++){const qs=W.generate({source:"level",level},10,level);assert.ok(qs.length>0);qs.forEach(q=>{assert.ok(["level-"+level,"level-"+Math.max(1,level-1)].includes(q.group));assert.ok(Q.grade(q,q.answers));assert.equal(q.visual,null);});}
  const qs=W.generate({source:"school",types:[10]},20,2);assert.equal(qs.length,1,"do not repeat the only 100-definition question");
  const d=W.fresh();assert.equal(W.start(d,null,null,"2026-09-11",3),null);
 });

@@ -6,6 +6,8 @@
   // 단계별 비중 (학교 2학기 핵심인 6~9단계에 시간을 더 준다)
   const WEIGHTS = { 1: 3, 2: 5, 3: 7, 4: 8, 5: 12, 6: 7, 7: 9, 8: 9, 9: 11, 10: 11, 11: 6, 12: 5 };
   const DEFAULT_END = "2027-01-29"; // 1학년 2학기 마무리(종업식 전 금요일) 기준, 부모 설정에서 변경
+  // 날짜 계획은 1~12단계만 나눈다. 13단계 이상(2학년 2학기~)은 계획 밖 "심화"라 비중이 없고, 계획보다 앞선 것으로 표시된다.
+  const PLAN_TOP = 12;
 
   function parse(s) { return new Date(s + "T00:00:00"); }
   function fmt(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
@@ -19,10 +21,10 @@
   // plan = [{ i, date, level }]
   function buildPlan(opts) {
     const start = parse(opts.start), end = parse(opts.end || DEFAULT_END), dpw = opts.daysPerWeek || 6;
-    const fromLevel = Math.max(1, opts.fromLevel || 1);
+    const fromLevel = Math.min(PLAN_TOP, Math.max(1, opts.fromLevel || 1));
     const dates = [];
     for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) if (isStudyDay(d, dpw)) dates.push(fmt(d));
-    const levels = []; for (let l = fromLevel; l <= 12; l++) levels.push(l);
+    const levels = []; for (let l = fromLevel; l <= PLAN_TOP; l++) levels.push(l);
     const total = levels.reduce(function (s, l) { return s + WEIGHTS[l]; }, 0);
     const n = dates.length;
     // 각 단계에 최소 1일, 나머지는 비중대로
@@ -70,7 +72,7 @@
     return out;
   }
 
-  const api = { WEIGHTS: WEIGHTS, DEFAULT_END: DEFAULT_END, buildPlan: buildPlan, status: status, milestones: milestones, isStudyDay: isStudyDay };
+  const api = { WEIGHTS: WEIGHTS, PLAN_TOP: PLAN_TOP, DEFAULT_END: DEFAULT_END, buildPlan: buildPlan, status: status, milestones: milestones, isStudyDay: isStudyDay };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.MathSchedule = api;
 })(typeof window !== "undefined" ? window : globalThis);

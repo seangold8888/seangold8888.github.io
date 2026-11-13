@@ -8,7 +8,7 @@ const L5 = C.LEVELS.find(l => l.id === 5);
 test("level 5 is the 100까지의 수 unit with the seventeen school question types", () => {
   assert.equal(L5.name, "100까지의 수"); assert.equal(L5.unit, "1학년 2학기"); assert.equal(L5.max, 100);
   assert.deepEqual(L5.types, ["tensCount", "tensOnes", "readKor", "readSino", "nextNum", "prevNum", "tenMore", "seq", "bigger", "smaller", "hundred", "boxes", "leftover", "biggest2", "smallest2", "evenPick", "oddPick"]);
-  assert.equal(C.LEVELS.length, 12);
+  assert.equal(C.LEVELS.length, 19);   // 13~19 = 2학년 2학기~4학년 1학기 (1~12단계는 그대로)
   assert.equal(C.levelById(6).name, "십몇과 세 수의 계산");
   assert.equal(C.levelById(12).name, "받아내림이 있는 두 자리 뺄셈");
 });
@@ -30,8 +30,9 @@ test("every generator answers correctly and the answer stays inside 1..100", () 
       const nums = (p.text.match(/\d+/g) || []).map(Number);
       if (type === "tensCount") assert.equal(p.answer, nums[1] * 10);
       if (type === "tensOnes") assert.equal(p.answer, nums[1] * 10 + nums[2]);
-      if (type === "readKor") assert.equal(p.text.split("을")[0], C.korNative(p.answer));
-      if (type === "readSino") assert.equal(p.text.split("을")[0], C.korSino(p.answer));
+      // 읽은 말의 끝 글자 받침에 맞춰 을/를 (팔십구를, 쉰하나를, 아흔둘을)
+      if (type === "readKor") assert.equal(p.text, C.korNative(p.answer) + (C.hasFinal(C.korNative(p.answer)) ? "을" : "를") + " 수로 쓰면 □");
+      if (type === "readSino") assert.equal(p.text, C.korSino(p.answer) + (C.hasFinal(C.korSino(p.answer)) ? "을" : "를") + " 수로 쓰면 □");
       if (type === "nextNum") assert.equal(p.answer, nums[0] + 1);
       if (type === "prevNum") assert.equal(p.answer, nums[0] - 1);
       if (type === "tenMore") assert.equal(Math.abs(p.answer - nums[0]), 10);

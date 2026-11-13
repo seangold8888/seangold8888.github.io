@@ -9,6 +9,11 @@
 <link rel="preload" as="image" href="art/characters/joy-v2.webp?v=28">
 <style id="no-zoom-style">*{touch-action:manipulation}canvas{touch-action:none}</style>
 <script src="../assets/study/play-timer.js?v=2"></script>
+<script src="../math/curriculum.js?v=21"></script>
+<script src="../math/learning.js?v=30"></script>
+<script src="../math/store.js?v=34"></script>
+<script src="../assets/study/math-bridge.js?v=3"></script>
+<script src="../assets/study/game-quiz.js?v=2"></script>
 <script id="no-zoom-guard">/* 게임 중 화면이 갑자기 확대되는 것 방지: 핀치·더블탭 줌 차단 */
 (function(){var s=function(e){e.preventDefault()};
 document.addEventListener('gesturestart',s,{passive:false});
@@ -55,6 +60,14 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   color: #ffe1d2 !important;
   background: linear-gradient(135deg, #ff5a3d40, #ff3cac33) !important;
 }
+/* ? 아이템 수학 문제 → 하모니 단계(0~3, 반 칸) */
+.harmony-row { display: flex; align-items: center; gap: 6px; margin-top: 5px; }
+.harmony-notes { display: flex; gap: 3px; }
+.harmony-note { position: relative; width: 17px; height: 17px; border-radius: 6px; display: grid; place-items: center; font-size: 12px; font-weight: 900; line-height: 1; color: #ffffff4d; background: #ffffff10; border: 1px solid #ffffff26; overflow: hidden; }
+.harmony-note.half { color: #2a1640; background: linear-gradient(90deg, #ffd166 50%, #ffffff10 50%); border-color: #ffd166aa; }
+.harmony-note.full { color: #2a1640; background: linear-gradient(135deg, #ffd166, #fff3a8); border-color: #fff3a8; box-shadow: 0 0 10px #ffd166aa; }
+.harmony-row.golden .harmony-note.full { animation: .7s ease-in-out infinite alternate ready-pulse; }
+@media (orientation: portrait) and (max-width: 800px) { .harmony-row { margin-top: 3px; } .harmony-note { width: 13px; height: 13px; font-size: 9px; border-radius: 4px; } }
 .health-fill.hype { background: linear-gradient(90deg, #ff3cac, #ffd166) !important; }
 .health-fill.hype.low { background: linear-gradient(90deg, #ff174d, #ff6f91) !important; }
 @keyframes dx-record-pulse {
@@ -229,6 +242,10 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
               <span class="bar-fill energy-fill" id="energyFill"></span>
             </div>
             <span class="energy-number" id="energyNumber">0%</span>
+          </div>
+          <div class="harmony-row" id="harmonyRow" role="img" aria-label="골든 하모니 0단계" hidden>
+            <span class="energy-label">하모니</span>
+            <span class="harmony-notes" id="harmonyNotes"><span class="harmony-note">♪</span><span class="harmony-note">♪</span><span class="harmony-note">♪</span></span>
           </div>
           <div class="guardian-switches" id="switchGroup" role="group" aria-label="가디언 즉시 교체"></div>
         </div>
@@ -620,6 +637,15 @@ const STAGES = [
   },
 ];
 
+/* 2026-11-13 ? 아이템(수학 문제) 자리: 무대마다 [체크포인트 직전, 중반, 보스 게이트 직전].
+   GameQuiz 가 있을 때만 생긴다(없으면 게임은 이전과 똑같다). 높이는 땅 위라 뛰어넘어 피할 수 있다. */
+const QUIZ_BOXES = Object.freeze([
+  [[1540, 520], [2520, 520], [3040, 520]],
+  [[1650, 520], [2610, 520], [3420, 520]],
+  [[1760, 520], [2700, 520], [3680, 520]],
+  [[1700, 520], [3060, 520], [3800, 520]],
+]);
+
 const WORLD_H = 720;
 const GROUND_Y = 610;
 const STEP = 1 / 60;
@@ -962,6 +988,12 @@ class Game {
     this.newRecord = false;
     this.storyKey = null;
     this.storyNext = null;
+    // ? 아이템 수학 문제(UI 가 quizAvailable/onQuiz 를 달아 줄 때만 쓰임). 하모니 단계는 한 판 동안 유지.
+    this.quizBoxes = [];
+    this.quizTaken = new Set();
+    this.quizLevel = 0;
+    this.quizToken = 0;
+    this.quizKidAsked = false;
     const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) throw Error('Canvas 2D is unavailable');
     this.canvas = canvas;
@@ -1012,6 +1044,9 @@ class Game {
     this.stageEntryMaxCombo = 0;
     this.checkpointReached = false;
     this.newRecord = false;
+    this.quizLevel = 0;
+    this.quizTaken = new Set();
+    this.quizKidAsked = false;
     this.loadStage(0, false, 0);
     this.playStory('intro', () => {
       this.phase = 'playing';
@@ -1068,6 +1103,8 @@ class Game {
     this.enemies = [];
     this.projectiles = [];
     this.shards = [];
+    this.quizBoxes = [];
+    this.quizLevel = 0;
     this.particles = [];
     this.floaters = [];
     this.player = this.makePlayer();
@@ -1188,6 +1225,10 @@ class Game {
       x, y, phase: i * 0.77,
       collected: !!(fromCheckpoint && stage.checkpoint && x < stage.checkpoint - 60),
     }));
+    this.quizBoxes = this.quizOn() ? (QUIZ_BOXES[index] || []).map(([x, y], i) => ({
+      x, y, i, phase: i * 1.3,
+      taken: !!(this.quizTaken?.has(index + ':' + i) || (fromCheckpoint && stage.checkpoint && x < stage.checkpoint - 60)),
+    })) : [];
     this.gateOpen = false;
     this.bossSpawned = false;
     this.bossDefeated = false;
@@ -1308,6 +1349,7 @@ class Game {
     this.updateProjectiles(dt);
     this.resolveAttack();
     this.collectShards();
+    this.collectQuizBoxes();
     this.directStage(dt);
     this.updateFx(dt);
     this.updateAtmosphere(dt);
@@ -1690,7 +1732,8 @@ class Game {
       p.swingSoundPlayed = true;
       this.audio.play('slash');
     }
-    const reach = g.range * (p.attackStep === 2 ? 1.34 : 1);
+    let reach = g.range * (p.attackStep === 2 ? 1.34 : 1);
+    if ((this.quizLevel || 0) > 0) reach *= 1 + 0.1 * this.quizLevel;   // 하모니 단계: 공격 범위 단계당 +10%
     const cx = p.x + p.facing * reach * 0.55;
     for (const e of this.enemies) {
       if (e.dead || e.lastHit === p.attackSerial) continue;
@@ -1746,6 +1789,8 @@ class Game {
   strike(e, damage, knockback, heavy) {
     const g = guardianOf(this.guardianId);
     if (this.harmony && this.harmony.golden > 0) damage *= 1.6;
+    const quizTier = this.harmonyTier();
+    if ((this.quizLevel || 0) > 0) damage *= this.quizDamageFactor();
     if (heavy && e.kind !== 'boss' && e.telegraph > 0 && !e.attackFired) {
       e.telegraph = 0; e.attackFired = true; e.recovery = .7;
       this.floaters.push({ x: e.x, y: e.y - e.height - 25, life: .7, text: '공격 끊기!', color: '#70efb2', size: 18 });
@@ -1765,7 +1810,9 @@ class Game {
     this.trauma = Math.min(1, this.trauma + (e.kind === 'boss' ? 0.27 : heavy ? 0.2 : 0.11));
     this.audio.play('hit');
     this.burst(e.x, e.y - e.height / 2, g.color, killed ? 25 : heavy ? 17 : 10, heavy ? 'ribbon' : 'spark');
+    if (quizTier >= 3) this.burst(e.x, e.y - e.height / 2, '#ffd166', killed ? 25 : heavy ? 17 : 10, 'star');   // 골든 스테이지: 타격 불꽃 2배
     if (heavy || killed) this.ring(e.x, e.y - e.height / 2, g.accent, killed ? 130 : 90);
+    if (quizTier >= 2 && (heavy || killed)) this.ring(e.x, e.y - e.height / 2, '#ffd166', killed ? 170 : 120);
     this.floaters.push({
       x: e.x, y: e.y - e.height, life: 0.62,
       text: Math.round(damage).toString(), color: heavy ? '#ffd166' : '#fff8ef', size: heavy ? 25 : 18,
@@ -1954,6 +2001,142 @@ class Game {
     }
   }
 
+  /* ---- ? 아이템 → 수학 문제 → 하모니 단계 (2026-11-13) ----
+     하모니 단계 quizLevel 0~3 (한 번에 맞히면 +1, 고쳐 맞히면 +0.5, 틀려도 안 내려감, 한 판 동안 유지).
+     피해는 단계당 +20%(반 단계는 +10%, 1.5단계=+30%) — quizLevel 을 그대로 쓴다.
+     그림 단계(harmonyTier=정수 부분): 1=금빛 궤적, 2=금빛 조명·후광, 3=골든 스테이지·타격 불꽃 2배. 궤적 굵기·공격 범위는 quizLevel 따라 커진다.
+     정답 즉시: 한 번에 맞히면 「하모니 파동」(화면 안 일반 적 큰 피해·넉백, 보스는 최대체력 5%), 체력 1칸(12) 회복.
+     문제 화면은 UI 가 단 onQuiz(done) 훅이 GameQuiz 로 띄운다. 이 클래스는 DOM·GameQuiz 를 직접 만지지 않는다. */
+  quizOn() {
+    try { return typeof this.quizAvailable === 'function' && !!this.quizAvailable(); } catch { return false; }
+  }
+
+  harmonyTier() { return Math.max(0, Math.min(3, Math.floor(this.quizLevel || 0))); }
+
+  quizLevelValue() { return Math.max(0, Math.min(3, Number(this.quizLevel) || 0)); }
+
+  // 하모니 단계 피해 배율(골든 제외): 1 + 0.2 × 단계.
+  quizBonus() { return 1 + 0.2 * this.quizLevelValue(); }
+
+  // 단계 보너스를 기존 골든(×1.6) 위에 곱하는 계수. 둘이 겹쳐도 총배율은 ×2.2 를 넘지 않는다.
+  quizDamageFactor() {
+    const lv = this.quizBonus();
+    if (this.harmony && this.harmony.golden > 0) return Math.min(2.2, 1.6 * lv) / 1.6;
+    return lv;
+  }
+
+  // strike() 가 실제로 곱하는 총배율(골든 포함)
+  totalDamageMult() {
+    const golden = this.harmony && this.harmony.golden > 0 ? 1.6 : 1;
+    return golden * (this.quizLevelValue() > 0 ? this.quizDamageFactor() : 1);
+  }
+
+  // 하모니 파동: 금빛 음파 링이 퍼지며 적을 밀어낸다. big=한 번에 맞힘(화면 안 전부), 아니면 가까운 적만 약하게.
+  harmonyWave(big) {
+    const p = this.player;
+    const mult = this.totalDamageMult();
+    const cx = this.camera + this.viewWidth / 2;
+    let hits = 0;
+    for (const e of [...this.enemies]) {
+      if (e.dead || (e.spawn ?? 0) > 0.3) continue;
+      const inRange = big ? Math.abs(e.x - cx) < this.viewWidth / 2 + 80 : Math.abs(e.x - p.x) < 340;
+      if (!inRange) continue;
+      const dir = e.x >= p.x ? 1 : -1;
+      let dmg;
+      if (e.kind === 'boss') dmg = (e.maxHealth * (big ? 0.05 : 0.02)) / mult;   // 보스는 최대체력 5% 이하
+      else dmg = (big ? 75 : 12) / mult;                                        // 75 = 그림자·도깨비불·거인은 쓰러지고 사자는 거의 다
+      this.strike(e, dmg, dir * (big ? 760 : 520), true);
+      hits += 1;
+    }
+    if (!this.reduced) {
+      const colors = big ? ['#ffd166', '#ff3cac', '#fff8ef', '#ffd166'] : ['#ffd166', '#fff8ef'];
+      colors.forEach((color, i) => {
+        const life = 0.55 + i * 0.16;
+        this.particles.push({ x: p.x, y: p.y - 60, vx: 0, vy: 0, life, maxLife: life, size: (big ? 260 : 150) + i * (big ? 220 : 120), color, kind: 'ring', rotation: 0 });
+      });
+    }
+    this.burst(p.x, p.y - 60, '#ffd166', big ? 40 : 18, 'ribbon');
+    this.trauma = Math.min(1, this.trauma + (big ? 0.5 : 0.25));
+    return hits;
+  }
+
+  collectQuizBoxes() {
+    if (!this.quizBoxes || !this.quizBoxes.length || this.bossSpawned || this.phase !== 'playing') return;
+    const p = this.player;
+    if (p.dead) return;
+    for (const box of this.quizBoxes) {
+      if (box.taken) continue;
+      if (Math.abs(p.x - box.x) < 46 && Math.abs(p.y - 48 - box.y) < 70) {
+        box.taken = true;
+        this.quizTaken?.add(this.stageIndex + ':' + box.i);
+        this.openQuiz(box);
+        return;
+      }
+    }
+  }
+
+  openQuiz(box) {
+    if (this.phase !== 'playing') return;
+    this.phase = 'quiz';
+    this.input.clear();
+    this.accumulator = 0;
+    this.music.duck(true);
+    this.audio.play('shard');
+    this.burst(box.x, box.y, '#ffd166', 18, 'star');
+    const token = this.quizToken = (this.quizToken || 0) + 1;
+    this.publish();
+    const done = (result) => this.finishQuiz(token, result);
+    if (typeof this.onQuiz !== 'function') { done({ firstTry: true, correct: true }); return; }
+    try { this.onQuiz(done); } catch { done(null); }
+  }
+
+  finishQuiz(token, result) {
+    if (token !== this.quizToken || this.phase !== 'quiz') return;
+    this.phase = 'playing';
+    this.input.clear();
+    this.accumulator = 0;
+    this.lastFrame = performance.now();
+    this.music.duck(false);
+    this.player.invulnerable = Math.max(this.player.invulnerable, 1.5);   // 다시 움직이자마자 맞지 않게
+    if (result && result.correct !== false) this.applyQuizReward(!!result.firstTry);
+    this.publish();
+  }
+
+  applyQuizReward(firstTry) {
+    const p = this.player, H = this.harmony;
+    // 1) 즉시 효과: 하모니 파동(지금 배율 기준으로 계산해 정해진 피해가 정확히 들어가게 먼저 친다)
+    const hits = this.harmonyWave(firstTry);
+    // 2) 단계·골든·게이지
+    const before = this.quizLevelValue();
+    this.quizLevel = Math.min(3, before + (firstTry ? 1 : 0.5));
+    const lv = this.quizLevelValue();
+    const secs = firstTry ? 8 : 4;
+    if (H) H.golden = Math.max(H.golden, secs);
+    p.energy = Math.min(MAX_ENERGY, p.energy + (firstTry ? 25 : 10));
+    let healed = 0;
+    if (firstTry) {
+      if (this.hardMode) { const h0 = this.hype; this.hype = Math.min(HYPE.max, this.hype + 12); healed = this.hype - h0; }
+      else { const h0 = p.health; p.health = Math.min(p.maxHealth, p.health + 12); healed = p.health - h0; }
+    }
+    this.score += firstTry ? 100 : 40;
+    this.flash = 0.7;
+    this.zoomPulse = 0.45;
+    this.confetti(p.x, p.y - 120, firstTry ? 56 : 24);
+    this.burst(p.x, p.y - 60, '#ffd166', 24, 'star');
+    this.ring(p.x, p.y - 60, '#ffd166', 190);
+    this.audio.play('clear');
+    if (firstTry) this.audio.play('ultimate');
+    this.floaters.push({ x: p.x, y: p.y - 170, life: 1.3, text: firstTry ? '하모니 파동! 혼문 +25' : '작은 파동! 혼문 +10', color: '#ffd166', size: 26 });
+    if (healed > 0) this.floaters.push({ x: p.x, y: p.y - 205, life: 1.3, text: '♥ +' + Math.round(healed), color: '#ff8bb0', size: 22 });
+    // 3) 배너: 얻은 것을 전부 적는다
+    const lvText = lv % 1 ? lv.toFixed(1) : String(lv);
+    const parts = ['피해 +' + Math.round(0.2 * lv * 100) + '%'];
+    parts.push(firstTry ? '하모니 파동' + (hits ? ' ×' + hits : '') : '작은 파동');
+    if (firstTry) parts.push(this.hardMode ? (healed > 0 ? '함성 +' + Math.round(healed) : '함성 가득') : (healed > 0 ? '체력 +1' : '체력 가득'));
+    parts.push('골든 ' + secs + '초');
+    this.announce('GOLDEN HARMONY Lv.' + lvText + (lv > before ? '!' : ' (최고)'), parts.join(' · '), 2.8);
+  }
+
   directStage(dt) {
     const stage = STAGES[this.stageIndex];
     const pathCleared = !this.enemies.some((e) => e.kind !== 'boss' && !e.dead);
@@ -2138,6 +2321,9 @@ class Game {
       hype: Math.round(this.hype),
       hardRecord: this.hardRecord,
       hardStats: this.hardStats,
+      quizOn: !!(this.quizBoxes && this.quizBoxes.length),
+      quizLevel: this.quizLevel || 0,
+      golden: this.harmony ? this.harmony.golden : 0,
     });
     this.lastPublish = performance.now();
   }
@@ -2312,6 +2498,7 @@ Object.assign(Game.prototype, {
     ctx.translate(-cam, 0);
     this.drawStage(stage);
     this.drawShards();
+    this.drawQuizBoxes();
     this.drawProjectiles();
     this.drawEnemies(frameAlpha);
     this.drawHarmony(frameAlpha);
@@ -2466,6 +2653,42 @@ Object.assign(Game.prototype, {
     }
   },
 
+  /* ? 아이템: 금색 음표 배지 + 큰 물음표. 그림자 흐림 대신 겹친 반투명 원으로 빛을 낸다. */
+  drawQuizBoxes() {
+    if (!this.quizBoxes || !this.quizBoxes.length) return;
+    const ctx = this.context;
+    for (const box of this.quizBoxes) {
+      if (box.taken) continue;
+      const bob = this.reduced ? 0 : Math.sin(this.ambient * 2.6 + box.phase) * 9;
+      const pulse = this.reduced ? 0 : Math.sin(this.ambient * 5 + box.phase) * 0.5 + 0.5;
+      ctx.save();
+      ctx.translate(box.x, box.y + bob);
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.fillStyle = '#ffd166';
+      ctx.globalAlpha = 0.16 + pulse * 0.12;
+      ctx.beginPath(); ctx.arc(0, 0, 62, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 0.22;
+      ctx.beginPath(); ctx.arc(0, 0, 46, 0, Math.PI * 2); ctx.fill();
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 1;
+      // 음표 꼬리(오른쪽 위로 깃발)
+      ctx.strokeStyle = '#fff3a8'; ctx.lineWidth = 6; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(26, 8); ctx.lineTo(26, -52); ctx.quadraticCurveTo(44, -44, 46, -24); ctx.stroke();
+      // 동그란 금색 배지
+      const grad = ctx.createLinearGradient(0, -36, 0, 36);
+      grad.addColorStop(0, '#fff3a8'); grad.addColorStop(0.55, '#ffd166'); grad.addColorStop(1, '#f59e0b');
+      ctx.fillStyle = grad;
+      ctx.beginPath(); ctx.arc(0, 0, 36, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#ff3cac'; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.arc(0, 0, 36, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = '#3a1060';
+      ctx.font = '900 50px "Arial Black", sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('?', 0, 3);
+      ctx.restore();
+    }
+  },
+
   drawPlayer(frameAlpha) {
     const ctx = this.context;
     const p = this.player;
@@ -2492,7 +2715,19 @@ Object.assign(Game.prototype, {
       ctx.stroke();
     }
     if (drawGeneratedPlayer(ctx, p, g, this.ambient, this.reduced)) {
-      globalThis.KedehunAttackMotion?.trail(ctx, p, g, COMBO_STEPS, this.reduced);
+      const quizLv = this.quizLevelValue(), quizTier = this.harmonyTier();
+      if (quizLv > 0) {
+        // 하모니 단계: 궤적이 금빛, 굵기는 단계당 +45%(궤적 중심 기준 확대), 반지름은 실제 공격 범위(+10%/단계)와 맞춘다.
+        const thick = 1 + 0.45 * quizLv;
+        const radiusScale = (1 + 0.1 * quizLv) / thick;
+        ctx.save();
+        ctx.translate(18, -65); ctx.scale(thick, thick); ctx.translate(-18, 65);
+        const gold = { ...g, color: '#ffd166', accent: quizTier >= 2 ? '#ffffff' : '#fff3a8', range: g.range * radiusScale };
+        globalThis.KedehunAttackMotion?.trail(ctx, p, gold, COMBO_STEPS, this.reduced);
+        if (quizTier >= 2) globalThis.KedehunAttackMotion?.trail(ctx, p, { ...gold, color: g.color, accent: '#ffd166', range: gold.range * 0.8 }, COMBO_STEPS, this.reduced);
+        if (quizTier >= 3) globalThis.KedehunAttackMotion?.trail(ctx, p, { ...gold, color: '#ff3cac', accent: '#fff3a8', range: gold.range * 1.2 }, COMBO_STEPS, this.reduced);
+        ctx.restore();
+      } else globalThis.KedehunAttackMotion?.trail(ctx, p, g, COMBO_STEPS, this.reduced);
       ctx.restore();
       return;
     }
@@ -2600,14 +2835,25 @@ Object.assign(Game.prototype, {
     const H = this.harmony;
     if (!H) return;
     const ctx = this.context;
+    const quizTier = this.harmonyTier();
+    // 골든 후광: 보스가 없어도 그린다(문제 정답 골든·하모니 2단계 이상).
+    if (H.golden > 0 || quizTier >= 2) {
+      const p = this.player;
+      const px = lerp(p.px, p.x, frameAlpha), py = lerp(p.py, p.y, frameAlpha) - 60;
+      const big = quizTier >= 3 ? 1.3 : 1;
+      const wave = this.reduced ? 0 : Math.sin(this.ambient * 10) * 0.15;
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = (H.golden > 0 ? 0.35 : 0.22) + wave;
+      ctx.fillStyle = '#ffd166'; ctx.beginPath(); ctx.ellipse(px, py, 70 * big, 90 * big, 0, 0, Math.PI * 2); ctx.fill();
+      if (quizTier >= 2) {
+        // 머리 위 금빛 고리
+        ctx.globalAlpha = 0.75; ctx.strokeStyle = '#fff3a8'; ctx.lineWidth = quizTier >= 3 ? 6 : 4;
+        ctx.beginPath(); ctx.ellipse(px, py - 92 * big + (this.reduced ? 0 : Math.sin(this.ambient * 3) * 3), 30 * big, 9 * big, 0, 0, Math.PI * 2); ctx.stroke();
+      }
+      ctx.restore();
+    }
     const boss = this.enemies.find((e) => e.kind === 'boss' && !e.dead);
     if (!boss) return;
     const x = lerp(boss.px, boss.x, frameAlpha), y = lerp(boss.py, boss.y, frameAlpha) - 92;
-    if (H.golden > 0) {
-      const p = this.player;
-      ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.35 + Math.sin(this.ambient * 10) * 0.15;
-      ctx.fillStyle = '#ffd166'; ctx.beginPath(); ctx.ellipse(lerp(p.px, p.x, frameAlpha), lerp(p.py, p.y, frameAlpha) - 60, 70, 90, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
-    }
     if (!H.ring) return;
     const k = clamp(H.ring.t / H.ring.dur, 0, 1.2);
     const target = 104, r = target + (1 - Math.min(1, k)) * 170;
@@ -3072,6 +3318,7 @@ Object.assign(Game.prototype, {
     ctx.fillStyle = vignette;
     ctx.fillRect(0, 0, this.viewWidth, WORLD_H);
     if (this.hardMode && this.phase !== 'select') this.drawHypeFx();
+    if (this.phase !== 'select' && this.harmonyTier() >= 2) this.drawGoldenStage();
     if (this.phase === 'playing' && !this.player.dead && this.player.health <= 30) {
       const pulse = 0.1 + Math.sin(this.ambient * 5) * 0.05;
       const danger = ctx.createRadialGradient(
@@ -3127,6 +3374,49 @@ Object.assign(Game.prototype, {
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, w, WORLD_H);
     }
+  },
+
+  /* 하모니 2단계: 금빛 무대 조명 3줄. 3단계 「골든 스테이지」: 금·분홍 조명 5줄 + 바닥 금빛 + 떠오르는 반짝이. */
+  drawGoldenStage() {
+    const ctx = this.context, w = this.viewWidth, t = this.ambient;
+    const tier = this.harmonyTier();
+    const golden = this.harmony && this.harmony.golden > 0;
+    const anchors = tier >= 3 ? [0.1, 0.3, 0.5, 0.7, 0.9] : [0.18, 0.5, 0.82];
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    anchors.forEach((anchor, i) => {
+      const bx = w * anchor, sway = this.reduced ? 0 : Math.sin(t * 0.7 + i * 1.7) * 0.4;
+      const grad = ctx.createLinearGradient(bx, 0, bx + sway * 520, GROUND_Y);
+      const head = tier >= 3 && i % 2 ? '#ff3cac' : '#ffd166';
+      grad.addColorStop(0, head + (golden ? '80' : '5c'));
+      grad.addColorStop(1, '#ffffff00');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.moveTo(bx - 24, 0);
+      ctx.lineTo(bx + 24, 0);
+      ctx.lineTo(bx + sway * 520 + (tier >= 3 ? 150 : 125), GROUND_Y);
+      ctx.lineTo(bx + sway * 520 - (tier >= 3 ? 150 : 125), GROUND_Y);
+      ctx.closePath();
+      ctx.fill();
+    });
+    if (tier >= 3) {
+      const floor = ctx.createLinearGradient(0, GROUND_Y - 150, 0, WORLD_H);
+      floor.addColorStop(0, 'rgba(255,209,102,0)');
+      floor.addColorStop(1, 'rgba(255,209,102,' + (golden ? 0.34 : 0.24) + ')');
+      ctx.fillStyle = floor;
+      ctx.fillRect(0, GROUND_Y - 150, w, WORLD_H - GROUND_Y + 150);
+      const n = this.reduced ? 10 : 34;
+      for (let i = 0; i < n; i += 1) {
+        const k = ((t * (0.18 + (i % 5) * 0.04) + i * 0.137) % 1);
+        const x = ((i * 211.7) % w);
+        const y = GROUND_Y - k * 520;
+        ctx.globalAlpha = Math.sin(k * Math.PI) * 0.9;
+        ctx.fillStyle = i % 3 ? '#ffd166' : '#fff8ef';
+        const s = i % 4 ? 3 : 5;
+        ctx.fillRect(x - s / 2, y - s / 2, s, s);
+      }
+    }
+    ctx.restore();
   },
 });
 /* Original vector portraits for the three hunters (canvas-drawn, no external assets). */
@@ -3993,6 +4283,56 @@ function fileToPortraitDataUrl(file, size = 320) {
     });
   }
 
+  // 하모니 단계 HUD: ♪ 세 칸(반 칸 = 고쳐 맞힌 문제). 문제 기능이 없는 판에서는 숨긴다.
+  const harmonyRow = $('harmonyRow');
+  const harmonyNotes = harmonyRow ? Array.from(harmonyRow.querySelectorAll('.harmony-note')) : [];
+  let harmonyShown = '';
+  function renderHarmony(next) {
+    if (!harmonyRow) return;
+    const lv = Math.max(0, Math.min(3, Number(next.quizLevel) || 0));
+    const key = (next.quizOn ? 1 : 0) + ':' + lv + ':' + (next.golden > 0 ? 1 : 0);
+    if (key === harmonyShown) return;
+    harmonyShown = key;
+    harmonyRow.hidden = !next.quizOn;
+    harmonyRow.classList.toggle('golden', next.golden > 0);
+    harmonyNotes.forEach((note, i) => {
+      note.classList.toggle('full', lv >= i + 1);
+      note.classList.toggle('half', lv > i && lv < i + 1);
+    });
+    harmonyRow.setAttribute('aria-label', '골든 하모니 ' + lv + '단계');
+  }
+
+  // ? 아이템 → GameQuiz 문제. GameQuiz 가 없으면 ? 아이템 자체가 생기지 않는다.
+  const quizApi = () => (window.GameQuiz && typeof window.GameQuiz.ask === 'function' ? window.GameQuiz : null);
+  const quizTheme = () => ({
+    bg: 'rgba(24,12,52,.96)', accent: '#ffd166', button: '#fff6d6', buttonText: '#2a1640',
+    top: window.matchMedia('(orientation: portrait) and (max-width: 800px)').matches ? 184 : 96,
+  });
+  async function runQuiz(done) {
+    const Q = quizApi();
+    if (!Q) { done(null); return; }
+    try {
+      let kid = Q.currentKid ? Q.currentKid() : null;
+      if (!kid && game && !game.quizKidAsked && Q.pickKid) {
+        game.quizKidAsked = true;
+        kid = await Q.pickKid({ title: '누가 문제를 풀어요?', theme: quizTheme() });
+      }
+      const lv = game ? game.quizLevel || 0 : 0;
+      const r = await Q.ask({
+        kid: kid || undefined,
+        title: '맞히면 하모니 파동! 적이 한꺼번에 날아가요',
+        hint: lv >= 3
+          ? '한 번에: 파동 + 체력 +1 + 골든 8초 (피해 +60% 최고 단계)'
+          : '한 번에: 파동 + 체력 +1 + 피해 +' + Math.round(Math.min(3, lv + 1) * 20) + '% · 고쳐 맞히면: 작은 파동 + 피해 +' + Math.round(Math.min(3, lv + 0.5) * 20) + '%',
+        theme: quizTheme(),
+        onCorrect: (res) => (res.firstTry ? '한 번에 정답! 하모니 파동 · 체력 +1 · ♪ 한 칸' : '잘 고쳤어요! 작은 파동 · 골든 4초 · ♪ 반 칸'),
+      });
+      done(r);
+    } catch (err) {
+      done(null);
+    }
+  }
+
   function update(next) {
     state = next;
     const g = guardianOf(next.guardianId);
@@ -4025,6 +4365,7 @@ function fileToPortraitDataUrl(file, size = 320) {
       refs.energyFill.classList.toggle('ready', next.energy >= MAX_ENERGY);
       refs.energyBar.setAttribute('aria-valuenow', String(next.energy));
       refs.energyNumber.textContent = next.energy + '%';
+      renderHarmony(next);
       switchBtns.forEach((btn, id) => {
         const on = next.guardianId === id;
         btn.setAttribute('aria-pressed', String(on));
@@ -4073,7 +4414,7 @@ function fileToPortraitDataUrl(file, size = 320) {
     refs.menuPause.hidden = next.phase !== 'paused';
     refs.menuClear.hidden = next.phase !== 'stageClear';
     refs.menuVictory.hidden = next.phase !== 'victory';
-    refs.hudWrap.classList.toggle('inert-layer', next.phase === 'paused' || next.phase === 'stageClear' || next.phase === 'victory' || next.phase === 'story');
+    refs.hudWrap.classList.toggle('inert-layer', next.phase === 'paused' || next.phase === 'stageClear' || next.phase === 'victory' || next.phase === 'story' || next.phase === 'quiz');
     if (next.phase === 'story' && next.storyKey && !cutscene.active) cutscene.play(next.storyKey);
     if (next.phase !== 'story' && cutscene.active) cutscene.finish();
     if (next.phase === 'select') {
@@ -4125,6 +4466,8 @@ function fileToPortraitDataUrl(file, size = 320) {
 
   game = new Game(canvas, update);
   window.__game = game;
+  game.quizAvailable = () => !!quizApi();
+  game.onQuiz = (done) => { void runQuiz(done); };
   syncSelectCards();
   refreshPortraits();
   Promise.all(GUARDIANS.map(async (g) => {

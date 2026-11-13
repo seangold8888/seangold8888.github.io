@@ -78,21 +78,39 @@ export function pickQuizSpots(points, avoid = {}, opt = {}) {
   return [];
 }
 
-/* 보상: 한 번에 맞히면 3초 터보 + 불꽃 한 단계 위(빨강→파랑→무지개), 무지개면 +1초, 코인 +3.
-   고쳐 맞히면 1초 미니 부스트, 불꽃 한 단계 아래. tier 0 은 아직 불꽃 단계 없음. */
+/* 보상(대원칙: 문제를 풀면 보상이 확실해야 한다)
+   한 번에 맞힘: 3초 터보(무지개면 4초) + 코인 +3 + 불꽃 한 단계 위(빨강→파랑→무지개)
+                + 즉시 효과(색 고리가 퍼지며 앞쪽 장애물·바나나 치우기). 무지개 터보 중엔 부딪혀도 무사.
+   고쳐 맞힘:   1.5초 부스트 + 코인 +1 + 방패 2초. 불꽃 단계는 그대로(벌처럼 느껴지지 않게).
+   tier 0 은 아직 불꽃 단계 없음. */
 export const FLAME = [
-  { name: '주황', color: '#ffae3d' },
-  { name: '빨강', color: '#ff3b30' },
-  { name: '파랑', color: '#2f8cff' },
-  { name: '무지개', color: 'rainbow' }
+  // trail: 꼬리 한 알의 수명(초)·크기·뿜는 간격(초)·두 줄로 뿜기. ring: 카트 뒤 빛 고리 반지름(0 이면 없음)
+  { name: '주황', color: '#ffae3d', trail: { life: 0.35, size: 4, every: 0.05, twin: false }, ring: 0 },
+  { name: '빨강', color: '#ff3b30', trail: { life: 0.5, size: 6, every: 0.035, twin: false }, ring: 7 },
+  { name: '파랑', color: '#2f8cff', trail: { life: 0.75, size: 8, every: 0.028, twin: true }, ring: 9 },
+  { name: '무지개', color: 'rainbow', trail: { life: 1.0, size: 10, every: 0.022, twin: true }, ring: 11.5 }
 ];
 export function quizReward(tier, firstTry) {
   const t0 = Math.max(0, Math.min(3, tier | 0));
   if (firstTry) {
     const t = Math.min(3, t0 + 1);
-    return { tier: t, secs: 3 + (t === 3 ? 1 : 0), coins: 3 };
+    return { tier: t, secs: 3 + (t === 3 ? 1 : 0), coins: 3, shield: 0, clear: true, invincible: t === 3 };
   }
-  return { tier: Math.max(0, t0 - 1), secs: 1, coins: 0 };
+  return { tier: t0, secs: 1.5, coins: 1, shield: 2, clear: false, invincible: false };
+}
+// 터보 최고속도 배율. 기본 부스트는 ×1.36(karts.js). 한 번에 맞혔고 3등 이하면 ×1.5 —
+// 1·2등은 그대로라 터보로 늘 1등이 되지는 않고, 뒤처진 아이가 따라붙는다.
+export const BASE_BOOST = 1.36;
+export function turboMult(place, firstTry) {
+  return firstTry && place >= 3 ? 1.5 : BASE_BOOST;
+}
+// 정답 순간 화면 가운데 배너 문구
+export function rewardText(rw, mult) {
+  if (rw.coins >= 3) {
+    return (rw.tier === 3 ? '무지개 터보! ' : '터보 부스트! ') + rw.secs + '초 · 코인 +' + rw.coins + ' · ' + FLAME[rw.tier].name + ' 불꽃' +
+      (mult > BASE_BOOST ? ' · 더 빠르게!' : '') + (rw.invincible ? ' · 무적' : '');
+  }
+  return '부스트 ' + rw.secs + '초 · 코인 +' + rw.coins + ' · 방패 ' + rw.shield + '초';
 }
 
 // "?" 그림은 한 장만 만들어 모든 판이 같이 쓴다(재질만 dispose 되므로 판마다 만들면 쌓인다).
@@ -123,3 +141,16 @@ export function makeQuizBoxMesh(THREE) {
   g.userData.cube = cube;
   return g;
 }
+
+// 정답 순간 카트 둘레로 퍼지는 색 고리, 터보 동안 카트 뒤의 빛 고리. 판마다 하나씩 만들어 돌려 쓴다.
+export function makeQuizRingMeshes(THREE) {
+  const burst = new THREE.Mesh(new THREE.RingGeometry(0.82, 1, 48),
+    new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false }));
+  burst.rotation.x = -Math.PI / 2;
+  burst.visible = false;
+  const halo = new THREE.Mesh(new THREE.TorusGeometry(1, 0.16, 8, 32),
+    new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85, depthWrite: false }));
+  halo.visible = false;
+  return { burst, halo };
+}
+

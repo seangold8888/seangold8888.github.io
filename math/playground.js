@@ -11,17 +11,21 @@
   ];
   const C=root.Curriculum || (typeof require!=="undefined" ? require("./curriculum.js") : null);
   const FOCUS={
-    bars:["split","missing","make10","carry","carry2"],
-    slide:["split","sub","from10","teenSub","borrow","borrow2"],
-    swing:["join","add","teenAdd","carry","carry2"],
-    seesaw:["split","split10","bigger","smaller","biggest2","smallest2"],
-    blocks:["join","split10","tensCount","tensOnes","readKor","readSino","hundred","boxes","leftover","twoOne","tensTens","twoTwo","carry","carry2"]
+    // 뒤쪽 유형은 13단계 이상(곱셈·나눗셈·세 자리·분수·큰 수). 13~19단계 어디서나 놀이기구마다 그 단계 유형이 하나 이상 걸린다.
+    bars:["split","missing","make10","carry","carry2","mulFact","mulMissing","add3","divFact","mul21","divRem","fracOf"],
+    slide:["split","sub","from10","teenSub","borrow","borrow2","mulTimes","mulMissing","sub3","divShare","mulTens","divQuot","fracCount"],
+    swing:["join","add","teenAdd","carry","carry2","mulGroups","add3","story3","divGroups","mul21Story","divQuot","fracOf"],
+    seesaw:["split","split10","bigger","smaller","biggest2","smallest2","mulFact","mulMissing","sub3","divFact","mulTens","placeDigit","bigDigit"],
+    blocks:["join","split10","tensCount","tensOnes","readKor","readSino","hundred","boxes","leftover","twoOne","tensTens","twoTwo","carry","carry2","mulGroups","add3","sub3","divGroups","mulTens","mul21","placeDigit","bigDigit","fracOf"]
   };
   const TITLES={
     split:"빈자리 찾기",missing:"빈칸 채우기",make10:"10 만들기",carry:"10을 만들어 더하기",carry2:"받아올려 더하기",
     sub:"빼기",from10:"10에서 빼기",teenSub:"십몇에서 빼기",borrow:"10을 나누어 빼기",borrow2:"받아내려 빼기",
     join:"수 모으기",add:"더하기",teenAdd:"10에 더하기",split10:"10 가르기",
-    bigger:"수의 크기 비교",tensCount:"묶음과 수 읽기",twoOne:"십과 일로 계산",tensTens:"두 자리 수 계산"
+    bigger:"수의 크기 비교",tensCount:"묶음과 수 읽기",twoOne:"십과 일로 계산",tensTens:"두 자리 수 계산",
+    mulFact:"곱셈구구",mulGroups:"묶어 세기",mulTimes:"몇의 몇 배",mulMissing:"빈칸 곱셈",add3:"세 자리 더하기",sub3:"세 자리 빼기",story3:"세 자리 문장제",
+    divFact:"나눗셈",divShare:"똑같이 나누기",divGroups:"몇씩 묶어 나누기",mulTens:"몇십 곱하기",mul21:"두 자리 곱하기",mul21Story:"곱셈 문장제",
+    divQuot:"나눗셈의 몫",divRem:"나눗셈의 나머지",placeDigit:"자릿값",fracOf:"분수만큼 구하기",fracCount:"분수 알기",bigDigit:"큰 수"
   };
   function focus(id,level) {
     const spot=byId(id),current=C.levelById(level);

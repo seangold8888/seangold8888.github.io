@@ -86,7 +86,7 @@ test("state survives a round trip and rejects garbage", () => {
   const mem = new Map(), storage = { getItem: k => mem.get(k) ?? null, setItem: (k, v) => mem.set(k, v) };
   const st = S.load(storage); st.level = 99; st.name = "재이"; st.perSession = 7; S.save(storage, st);
   const back = S.load(storage);
-  assert.equal(back.level, 12); assert.equal(back.perSession, 12); assert.equal(back.name, "재이");
+  assert.equal(back.level, C.MAX_LEVEL); assert.equal(C.MAX_LEVEL, 19); assert.equal(back.perSession, 12); assert.equal(back.name, "재이");
   const stored = JSON.parse(mem.get(S.KEY));
   assert.equal(stored.name,"재이"); assert.deepEqual(stored.skills,{}); assert.equal(stored.pending,null);
   mem.set(S.KEY, "{not json"); assert.equal(S.load(storage).level, 1);
@@ -151,7 +151,7 @@ test("friends: 22 characters across three families, every icon drawn by us, a gu
     assert.ok(fs.existsSync(path.join(__dirname, "../assets/3d/badges/" + c.id + ".png")), "3d badge for " + c.id);
     assert.ok(c.say.length >= 2 && c.say.every(s => !/틀렸|바보|느려/.test(s)));
   }
-  for (let l = 1; l <= 12; l++) assert.ok(F.guideFor(l).name);
+  for (let l = 1; l <= C.LEVELS.length; l++) assert.ok(F.guideFor(l).name);
   assert.equal(F.stickerFor("2026-09-07").id, F.stickerFor("2026-09-07").id);
   const month = new Set(); for (let d = 1; d <= 30; d++) month.add(F.stickerFor("2026-09-" + String(d).padStart(2, "0")).id);
   assert.ok(month.size >= 12, "a month of stickers is varied");

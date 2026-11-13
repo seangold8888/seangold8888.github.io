@@ -4,6 +4,10 @@
   "use strict";
   const KEY = "math10_state";
   const Learn = root.MathLearning || (typeof require !== "undefined" ? require("./learning.js") : null);
+  // 최고 단계는 커리큘럼에서 읽는다. 커리큘럼을 안 싣는 페이지(이야기 등)에서는 19로 둬서 저장 때 13 이상이 잘리지 않게 한다.
+  const Curr = root.Curriculum || (typeof require !== "undefined" ? (function () { try { return require("./curriculum.js"); } catch (_) { return null; } })() : null);
+  const MAX_LEVEL = Curr && Curr.LEVELS && Curr.LEVELS.length ? Curr.LEVELS[Curr.LEVELS.length - 1].id : 19;
+  const PLAN_TOP = 12; // 날짜 계획(schedule.js)은 1~12단계. 13 이상은 계획 밖 "심화"
   const REVIEW_GAPS = [1, 3, 7, 14]; // stage 0..3 → 다음 출제까지 일수, 4 = 졸업
   const PROMOTE_ACC = 0.9, PROMOTE_STREAK = 2, DEMOTE_ACC = 0.6;
 
@@ -23,7 +27,7 @@
     const d = defaults();
     if (!s || typeof s !== "object") return d;
     const out = Object.assign(d, s);
-    out.level = Math.min(12, Math.max(1, parseInt(out.level, 10) || 1));
+    out.level = Math.min(MAX_LEVEL, Math.max(1, parseInt(out.level, 10) || 1));
     out.perSession = [8, 12, 16].indexOf(out.perSession) >= 0 ? out.perSession : 12;
     out.visualPolicy = ["auto", "always", "wrong"].indexOf(out.visualPolicy) >= 0 ? out.visualPolicy : "auto";
     out.history = Array.isArray(out.history) ? out.history.slice(-200) : [];
@@ -36,7 +40,7 @@
     out.planEnd = dateOk(out.planEnd, d.planEnd);
     if (out.planEnd <= out.planStart) out.planEnd = addDays(out.planStart, 120);
     out.planDays = [5, 6, 7].indexOf(out.planDays) >= 0 ? out.planDays : 6;
-    out.planFrom = Math.min(12, Math.max(1, parseInt(out.planFrom, 10) || 1));
+    out.planFrom = Math.min(PLAN_TOP, Math.max(1, parseInt(out.planFrom, 10) || 1));
     out.album = Array.isArray(out.album) ? out.album.filter(function (a) { return a && a.id && a.date; }).slice(-400) : [];
     out.hearts = out.hearts && typeof out.hearts === "object" ? out.hearts : {};
     out.chests = out.chests && typeof out.chests === "object" ? out.chests : {};
@@ -50,7 +54,7 @@
     out.owned = out.owned && typeof out.owned === "object" ? out.owned : {};
     out.skills = out.skills && typeof out.skills === "object" && !Array.isArray(out.skills) ? out.skills : {};
     Object.keys(out.skills).forEach(function(k) { out.skills[k] = Array.isArray(out.skills[k]) ? out.skills[k].filter(function(e) { return e && typeof e.date === "string" && typeof e.key === "string" && typeof e.ok === "boolean"; }).slice(-12) : []; });
-    out.pending = out.pending && Array.isArray(out.pending.problems) && out.pending.problems.length <= 40 && out.pending.problems.every(function(p) { return p && Number.isInteger(p.answer) && typeof p.text === "string" && typeof p.key === "string" && p.level >= 1 && p.level <= 12; }) && Number.isInteger(out.pending.index) && out.pending.index >= 0 && out.pending.index < out.pending.problems.length && Array.isArray(out.pending.results) && out.pending.results.length === out.pending.index ? out.pending : null;
+    out.pending = out.pending && Array.isArray(out.pending.problems) && out.pending.problems.length <= 40 && out.pending.problems.every(function(p) { return p && Number.isInteger(p.answer) && typeof p.text === "string" && typeof p.key === "string" && p.level >= 1 && p.level <= MAX_LEVEL; }) && Number.isInteger(out.pending.index) && out.pending.index >= 0 && out.pending.index < out.pending.problems.length && Array.isArray(out.pending.results) && out.pending.results.length === out.pending.index ? out.pending : null;
     out.garden = Math.max(0, Math.min(99999, parseInt(out.garden, 10) || 0));
     out.growthRewards = out.growthRewards && typeof out.growthRewards === "object" ? out.growthRewards : {};
     out.playgroundSpot = ["bars","slide","swing","seesaw","blocks","steps"].indexOf(out.playgroundSpot) >= 0 ? out.playgroundSpot : "bars";
@@ -94,7 +98,7 @@
     }
     return state;
   }
-  function stripProblem(p) { return { level: p.level, type: p.type, text: p.text, answer: p.answer, visual: p.visual, key: p.key }; }
+  function stripProblem(p) { const out = { level: p.level, type: p.type, text: p.text, answer: p.answer, visual: p.visual, key: p.key }; if (Array.isArray(p.distractors)) out.distractors = p.distractors.slice(0, 6); return out; }
 
   // 안정도: 첫 시도 정답 반응시간의 변동계수(표준편차/평균). 0.35 미만이면 '안정'
   function stability(times) {
@@ -125,7 +129,7 @@
     state.cardStudyDays[t] = (state.cardStudyDays[t] || 0) + results.length;
     let change = 0;
     // Calendar plans never loosen mastery or cap a child who is ready.
-    if (fresh.length && Learn.ready(state, state.level) && state.level < 12) {
+    if (fresh.length && Learn.ready(state, state.level) && state.level < MAX_LEVEL) {
       state.level++; state.streak = 0; change = 1;
     }
     state.garden = (state.garden || 0) + results.length;
@@ -190,7 +194,7 @@
     state.coins -= amount;
     return true;
   }
-  const api = { addCoins: addCoins, spendCoins: spendCoins, streakInfo: streakInfo, weekInfo: weekInfo, KEY: KEY, REVIEW_GAPS: REVIEW_GAPS, today: today, addDays: addDays, defaults: defaults, clean: clean, load: load, save: save, dueReviews: dueReviews, recordAnswer: recordAnswer, finishSession: finishSession, stability: stability, median: median, levelSummary: levelSummary };
+  const api = { MAX_LEVEL: MAX_LEVEL, PLAN_TOP: PLAN_TOP, addCoins: addCoins, spendCoins: spendCoins, streakInfo: streakInfo, weekInfo: weekInfo, KEY: KEY, REVIEW_GAPS: REVIEW_GAPS, today: today, addDays: addDays, defaults: defaults, clean: clean, load: load, save: save, dueReviews: dueReviews, recordAnswer: recordAnswer, finishSession: finishSession, stability: stability, median: median, levelSummary: levelSummary };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.MathStore = api;
 })(typeof window !== "undefined" ? window : globalThis);

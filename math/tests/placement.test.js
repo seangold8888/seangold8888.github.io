@@ -18,7 +18,7 @@ function simulate(trueLevel, grade, month, seed, p = 0.95) {
 
 test("start level follows grade and semester", () => {
   assert.equal(P.startLevel(1, 4), 2); assert.equal(P.startLevel(1, 9), 5); assert.equal(P.startLevel(1, 1), 5);
-  assert.equal(P.startLevel(2, 9), 7); assert.equal(P.startLevel(3, 9), 10); assert.equal(P.startLevel(6, 9), 12); assert.equal(P.startLevel("x", 9), 5);
+  assert.equal(P.startLevel(2, 9), 7); assert.equal(P.startLevel(3, 9), 13); assert.equal(P.startLevel(4, 9), 15); assert.equal(P.startLevel(6, 9), 17); assert.equal(P.TOP, 19); assert.equal(P.startLevel("x", 9), 5);
 });
 
 test("the staircase finds the child's level within 16 questions for a range of abilities", () => {
@@ -40,9 +40,9 @@ test("a child who misses everything lands on level 1, one who aces everything re
   assert.ok(high.medianMs === 2500);
 });
 
-test("no question repeats within a run and every question stays within 1..12", () => {
+test("no question repeats within a run and every question stays within 1..TOP", () => {
   const rng = rngFrom(9), pl = P.create({ grade: 1, month: 9, rng }), keys = new Set();
-  while (!pl.finished) { const q = pl.next(); assert.ok(!keys.has(q.key)); keys.add(q.key); assert.ok(q.level >= 1 && q.level <= 12); pl.answer(q.answer, 1000); }
+  while (!pl.finished) { const q = pl.next(); assert.ok(!keys.has(q.key)); keys.add(q.key); assert.ok(q.level >= 1 && q.level <= P.TOP); pl.answer(q.answer, 1000); }
   assert.equal(pl.next(), null);
 });
 

@@ -1,31 +1,43 @@
 /**
- * ? 두루마리 — 수학 문제를 맞히면 그 전투 동안 무기가 한 단계씩 세진다.
+ * ? 두루마리 — 수학 문제를 맞히면 그 전투 동안 무기가 세진다.
  *
  * 단계는 반 칸(step) 단위로 센다. 한 번에 맞히면 2칸(+1 단계), 고쳐 맞히면 1칸(반 단계).
- * 0~8칸 = 무기 0~4단계. 틀려도 내려가지 않는다.
+ * 0~8칸 = 무기 0~4단계. 틀려도 내려가지 않는다. 반 칸은 다음 단계 효과의 절반(1.5단계 = 공격력 +30%).
  *
- * 공격력은 기존 피해식 `(기본 × 장수 배율 + 명검 가산)` 에 단계 배율을 곱한다.
- * 4단계(×1.50)에서 보스 처치 시간은 0단계의 약 67%. 명검(14초 +18)과 겹칠 때는
- * 기본 피해의 1.65배(처치 시간 약 61%)에서 자르되, 명검만 먹었을 때보다 약해지지는 않는다.
+ * 공격력: 단계당 +20%(4단계 ×1.80 → 보스 처치 시간 약 56%).
+ * 명검(14초 +18)과 겹칠 때: (기본+명검)에 단계 배율을 곱하되 기본 피해의 2.0배에서 자른다.
+ * 기본이 작아 명검만으로 이미 2배에 가까우면, 명검 값에서 상한(최소 명검 값의 1.25배)까지를
+ * 칸 수에 비례해 나눠 주어 겹쳐도 단계마다 피해가 달라진다.
  */
 export const QUIZ_MAX_STEPS = 8;
 export const QUIZ_MAX_TIER = 4;
-export const QUIZ_DAMAGE_CAP = 1.65;
+export const QUIZ_DAMAGE_CAP = 2.0;
+export const QUIZ_BOOST_MIN_GAIN = 1.25;
 // 이 파를 다 쓸어낸 직후에 두루마리가 떨어진다(7파 = 적장, 그 직전 6파 포함). 전장당 4개.
 export const QUIZ_SCROLL_WAVES = Object.freeze([2, 4, 5, 6]);
 
-// palette = 베기 궤적 [어두운 테, 본색, 심지]. 0단계는 장수 고유 색을 그대로 쓴다.
+// 정수 단계 표. palette = 베기 궤적 [어두운 테, 본색, 심지]. 0단계는 장수 고유 색을 그대로 쓴다.
 export const QUIZ_WEAPON_TIERS = Object.freeze([
   Object.freeze({ tier: 0, power: 1.00, reach: 1.00, effect: 1.00, pierce: 0, glow: '기본', color: '#c9b892', palette: null }),
-  Object.freeze({ tier: 1, power: 1.10, reach: 1.00, effect: 1.06, pierce: 0, glow: '은빛', color: '#e4ecf7', palette: Object.freeze(['#39424f', '#c6d2e2', '#ffffff']) }),
-  Object.freeze({ tier: 2, power: 1.22, reach: 1.00, effect: 1.12, pierce: 0, glow: '푸른빛', color: '#5aa8ff', palette: Object.freeze(['#0a2a66', '#3d8cff', '#e3f1ff']) }),
-  Object.freeze({ tier: 3, power: 1.36, reach: 1.06, effect: 1.20, pierce: 0, glow: '금빛', color: '#ffc928', palette: Object.freeze(['#5c3905', '#ffbf17', '#fff6c6']) }),
-  Object.freeze({ tier: 4, power: 1.50, reach: 1.10, effect: 1.34, pierce: 1, glow: '불꽃', color: '#ff6a2a', palette: Object.freeze(['#6a1004', '#ff4a12', '#fff1a0']) }),
+  Object.freeze({ tier: 1, power: 1.20, reach: 1.00, effect: 1.08, pierce: 0, glow: '은빛', color: '#e4ecf7', palette: Object.freeze(['#39424f', '#c6d2e2', '#ffffff']) }),
+  Object.freeze({ tier: 2, power: 1.40, reach: 1.05, effect: 1.16, pierce: 0, glow: '푸른빛', color: '#5aa8ff', palette: Object.freeze(['#0a2a66', '#3d8cff', '#e3f1ff']) }),
+  Object.freeze({ tier: 3, power: 1.60, reach: 1.10, effect: 1.25, pierce: 0, glow: '금빛', color: '#ffc928', palette: Object.freeze(['#5c3905', '#ffbf17', '#fff6c6']) }),
+  Object.freeze({ tier: 4, power: 1.80, reach: 1.15, effect: 1.38, pierce: 1, glow: '불꽃', color: '#ff6a2a', palette: Object.freeze(['#6a1004', '#ff4a12', '#fff1a0']) }),
 ]);
 
 export const clampSteps = (steps) => Math.max(0, Math.min(QUIZ_MAX_STEPS, Math.floor(Number(steps) || 0)));
 export const quizTier = (steps) => Math.floor(clampSteps(steps) / 2);
-export const quizTierInfo = (steps) => QUIZ_WEAPON_TIERS[quizTier(steps)];
+
+// 칸별 실제 수치(반 칸은 앞뒤 단계의 가운데). 색·관통은 정수 단계를 따른다.
+const STEP_INFO = Object.freeze(Array.from({ length: QUIZ_MAX_STEPS + 1 }, (_, steps) => {
+  const base = QUIZ_WEAPON_TIERS[Math.floor(steps / 2)], next = QUIZ_WEAPON_TIERS[Math.min(QUIZ_MAX_TIER, Math.floor(steps / 2) + 1)];
+  const mix = (key) => (steps % 2 ? (base[key] + next[key]) / 2 : base[key]);
+  // 0.5단계는 아직 색이 없으니 1단계 색을 미리 빌려 '반 칸'도 눈에 보이게 한다.
+  const look = base.tier === 0 && steps % 2 ? { glow: next.glow, color: next.color, palette: next.palette } : {};
+  return Object.freeze({ ...base, ...look, steps, half: steps % 2 === 1, power: mix('power'), reach: mix('reach'), effect: mix('effect') });
+}));
+export const quizTierInfo = (steps) => STEP_INFO[clampSteps(steps)];
+export const quizPowerPercent = (steps) => Math.round((quizTierInfo(steps).power - 1) * 100);
 
 /** 정답 한 번 반영. 반환 { steps, before, after, promoted, half, maxed } */
 export function addQuizAnswer(steps, firstTry) {
@@ -34,8 +46,13 @@ export function addQuizAnswer(steps, firstTry) {
   return { steps: next, before, after, promoted: after > before, half: next % 2 === 1, maxed: prev >= QUIZ_MAX_STEPS };
 }
 
-/** 무쌍 덤(gainRage 에 넘길 값). */
-export const quizRageBonus = (firstTry) => (firstTry ? 50 : 25);
+/** 정답 즉시 보상: 무쌍(gainRage 값)·체력 회복 비율·기합 파동 크기. */
+export const QUIZ_REWARD = Object.freeze({
+  first: Object.freeze({ rage: 50, heal: .15, pulseRadius: 460, pulseScale: 1.15, knockMs: 900 }),
+  retry: Object.freeze({ rage: 25, heal: .08, pulseRadius: 280, pulseScale: .85, knockMs: 600 }),
+});
+export const quizReward = (firstTry) => (firstTry ? QUIZ_REWARD.first : QUIZ_REWARD.retry);
+export const quizRageBonus = (firstTry) => quizReward(firstTry).rage;
 
 /**
  * base  = 기본 피해 × 장수 배율(명검 가산 전)
@@ -44,8 +61,11 @@ export const quizRageBonus = (firstTry) => (firstTry ? 50 : 25);
 export function quizDamage(base, boost, steps) {
   const plain = base + boost;
   const info = quizTierInfo(steps);
-  if (info.tier <= 0 || !(base > 0)) return plain;
-  return Math.min(plain * info.power, Math.max(plain, base * QUIZ_DAMAGE_CAP));
+  if (info.steps <= 0 || !(base > 0)) return plain;
+  if (!(boost > 0)) return base * info.power;
+  const cap = Math.max(base * QUIZ_DAMAGE_CAP, plain * QUIZ_BOOST_MIN_GAIN);
+  const share = plain + (cap - plain) * (info.steps / QUIZ_MAX_STEPS);
+  return Math.min(plain * info.power, share);
 }
 
 /* ---------- 멈춘 시간만큼 절대 시각 타이머 밀기 ----------
@@ -86,10 +106,21 @@ export function shiftBattleTimers(state, delta) {
   return n;
 }
 
-/** 단계가 오를 때 배너 문구. */
-export function quizTierBanner(weaponName, steps) {
-  const info = quizTierInfo(steps), name = weaponName || '무기';
-  const pct = Math.round((info.power - 1) * 100);
-  if (info.tier >= QUIZ_MAX_TIER) return { title: name + ' 각성!', sub: info.glow + ' · 공격력 +' + pct + '% · 사거리·베기 확대' };
-  return { title: name + ' ' + info.tier + '단계!', sub: info.glow + ' · 공격력 +' + pct + '%' + (info.reach > 1 ? ' · 사거리 증가' : '') };
+/** 정답 뒤 배너: 얻은 것을 전부 적는다. */
+export function quizRewardBanner(weaponName, result, firstTry) {
+  const info = quizTierInfo(result.steps), name = weaponName || '무기', reward = quizReward(firstTry);
+  const level = info.tier + (info.half ? '.5' : '');
+  const title = result.maxed ? name + ' 최고 단계!' : info.tier >= QUIZ_MAX_TIER && !info.half && result.promoted ? name + ' 각성!' : result.promoted ? name + ' ' + info.tier + '단계!' : name + ' ' + level + '단계 (반 칸)';
+  const parts = ['공격력 +' + quizPowerPercent(result.steps) + '%'];
+  if (info.reach > 1) parts.push('사거리 +' + Math.round((info.reach - 1) * 100) + '%');
+  parts.push('무쌍 +' + reward.rage, '체력 +' + Math.round(reward.heal * 100) + '%');
+  return { title, sub: info.glow + ' · ' + parts.join(' · ') };
+}
+
+/** 문제 패널에 미리 보여 줄 보상 안내. */
+export function quizPreviewHint(weaponName, steps) {
+  const now = clampSteps(steps), first = clampSteps(now + 2), retry = clampSteps(now + 1);
+  const name = weaponName || '무기';
+  if (now >= QUIZ_MAX_STEPS) return name + ' 최고 단계 · 맞히면 무쌍 +50 · 체력 +15%';
+  return '한 번에: ' + name + ' 공격력 +' + quizPowerPercent(first) + '% · 무쌍 +50 · 체력 +15%  /  고쳐서: +' + quizPowerPercent(retry) + '% · 무쌍 +25 · 체력 +8%';
 }

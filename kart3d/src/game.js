@@ -6,7 +6,7 @@ import { loadProps } from './props.js';
 import { createAudio } from './music.js';
 import { CHARACTERS, VILLAINS, driverById, buildKartModel, Kart, driveAI } from './karts.js?v=snow-1';
 import { buildCourseFx, COURSE_FX } from './coursefx.js?v=snow-1';
-import { QUIZ_KIDS, QUIZ_MODES, FLAME, pickQuizSpots, quizReward, makeQuizBoxMesh } from './quizbox.js?v=quiz-1';
+import { QUIZ_KIDS, QUIZ_MODES, FLAME, BASE_BOOST, pickQuizSpots, quizReward, turboMult, rewardText, makeQuizBoxMesh, makeQuizRingMeshes } from './quizbox.js?v=quiz-2';
 import { coursePhoto } from './menu-art.js?v=snow-1';
 import { isEasyRace, EASY_PLAYER_SPEED, EASY_AI_SPEED, EASY_ITEM_DELAY, assistInput, hitSnapshot, softenHit } from './difficulty.js?v=easy-1';
 import {
@@ -97,7 +97,8 @@ export function startGame() {
   const quiz = {
     enabled: !(typeof navigator !== 'undefined' && navigator.webdriver),
     on: false, spots: [], offset: 0, mesh: null, lap: -99, alive: false, x: 0, z: 0,
-    go: 0, reward: null, tier: 0, flame: 0, flameTier: 0, token: 0, opened: 0
+    go: 0, reward: null, tier: 0, flame: 0, flameTier: 0, token: 0, opened: 0,
+    mult: 1.36, pendingMult: 1.36, invincible: false, burst: null, halo: null, burstT: 0, burstR: 0, burstRainbow: false, cleared: []
   };
 
   const keys = Object.create(null);
@@ -381,6 +382,8 @@ export function startGame() {
     }
 
     if (easy) state.player.baseTop *= EASY_PLAYER_SPEED;
+    // ? 상자 터보: 한 번에 맞혔을 때 3등 이하였으면 터보 동안 ×1.36 → ×1.5 (baseTop 은 매 프레임 위에서 다시 계산된다)
+    if (mode.ai > 0 && quizTurbo() && quiz.mult > BASE_BOOST) state.player.baseTop *= quiz.mult / BASE_BOOST;
 
     for (const k of state.karts) {
       if (k.finished) { k.speed *= 1 - dt * 1.5; continue; }
@@ -537,6 +540,7 @@ export function startGame() {
   const QUIZ_THEME = { top: 10, bg: 'rgba(58,32,92,.96)', accent: '#ffd34d', sub: '#f1e4ff', button: '#fff6ee', buttonText: '#4a3550' };
   function setupQuizBox(def, mode) {
     quiz.on = false; quiz.mesh = null; quiz.alive = false; quiz.lap = -99; quiz.spots = [];
+    quiz.burst = null; quiz.halo = null;
     // 공통 문제 모듈이 없으면(로드 실패·테스트) ? 상자를 만들지 않는다 → 게임은 그대로 진행
     if (!quiz.enabled || !window.GameQuiz || !QUIZ_MODES.includes(mode.id)) return;
     const cfg = COURSE_FX[def.id] || {};
@@ -545,8 +549,10 @@ export function startGame() {
     quiz.offset = Math.floor(Math.random() * quiz.spots.length);
     quiz.mesh = makeQuizBoxMesh(THREE);
     quiz.mesh.visible = false;
-    scene.add(quiz.mesh);
-    state.extraMeshes.push(quiz.mesh);          // clearRace 가 dispose 한다(그림 텍스처는 공유라 남는다)
+    const rings = makeQuizRingMeshes(THREE);
+    quiz.burst = rings.burst; quiz.halo = rings.halo;
+    // 셋 다 extraMeshes 에 넣어 clearRace 가 dispose 한다(? 그림 텍스처는 공유라 남는다)
+    for (const m of [quiz.mesh, quiz.burst, quiz.halo]) { scene.add(m); state.extraMeshes.push(m); }
     quiz.on = true;
   }
   function placeQuizBox(lap) {
@@ -562,9 +568,15 @@ export function startGame() {
     quiz.mesh.visible = true;
     quiz.alive = true; quiz.lap = lap;
   }
+  // 문제로 받은 터보가 아직 도는 중인가
+  function quizTurbo() { return quiz.flame > 0 && !!state.player && state.player.boost > 0; }
+  function quizInvincible() { return quiz.invincible && quizTurbo(); }
   function updateQuizBox(dt) {
     quiz.flame = Math.max(0, quiz.flame - dt);
     const p = state.player;
+    // 무지개 터보 중엔 무적: 방패를 계속 채워 두면 바나나·장애물·번개가 모두 막힌다(방패 구가 보여 무적인 줄 안다)
+    if (quizInvincible()) p.shield = Math.max(p.shield, 0.25);
+    animQuizFx(dt);
     if (!quiz.mesh) return;
     const lap = Math.max(0, p.lap);
     if (p.finished || lap >= state.track.laps) { quiz.mesh.visible = false; quiz.alive = false; return; }
@@ -578,11 +590,107 @@ export function startGame() {
       openQuiz();
     }
   }
+  // 퍼지는 색 고리·카트 뒤 빛 고리·치운 장애물 되돌리기(멈춘 동안에도 돈다 → 정답 순간이 눈에 보인다)
+  function animQuizFx(dt) {
+    const p = state.player;
+    if (!p) return;
+    if (quiz.burst) {
+      const b = quiz.burst;
+      if (quiz.burstT > 0) {
+        quiz.burstT = Math.max(0, quiz.burstT - dt);
+        const k = 1 - quiz.burstT / 0.9;              // 0 → 1
+        const r = 8 + k * quiz.burstR;
+        b.visible = true;
+        b.scale.set(r, r, r);
+        b.position.set(p.x, p.y + 2, p.z);
+        b.material.opacity = 0.9 * (1 - k);
+        if (quiz.burstRainbow) b.material.color.setHSL((state.time * 1.5 + k) % 1, 0.9, 0.6);
+      } else b.visible = false;
+    }
+    if (quiz.halo) {
+      const h = quiz.halo, f = FLAME[quiz.flameTier];
+      const on = quizTurbo() && f.ring > 0;
+      h.visible = on;
+      if (on) {
+        const pulse = 1 + Math.sin(state.time * 14) * 0.08;
+        h.scale.setScalar(f.ring * pulse);
+        h.position.set(p.x - Math.sin(p.angle) * 15, p.y + 7, p.z - Math.cos(p.angle) * 15);
+        h.rotation.set(0, p.angle, 0);
+        if (f.color === 'rainbow') h.material.color.setHSL((state.time * 1.4) % 1, 0.9, 0.62);
+        else h.material.color.set(f.color);
+      }
+    }
+    for (let i = quiz.cleared.length - 1; i >= 0; i--) {
+      const c = quiz.cleared[i];
+      c.t -= dt;
+      if (c.t <= 0) { c.o.holder.visible = true; quiz.cleared.splice(i, 1); }
+    }
+  }
+  // 정답 순간: 카트 둘레로 색 고리가 퍼진다. 한 번에 맞히면 큰 고리가 앞쪽 가까운 바나나·풍선·장애물을 치운다.
+  function quizBlast(rw) {
+    const p = state.player;
+    const f = FLAME[rw.tier];
+    quiz.burstT = 0.9; quiz.burstR = rw.clear ? 150 : 50;
+    quiz.burstRainbow = rw.clear && f.color === 'rainbow';
+    if (quiz.burst && !quiz.burstRainbow) quiz.burst.material.color.set(rw.clear ? (f.color === 'rainbow' ? '#ffffff' : f.color) : '#ffffff');
+    if (!rw.clear) return 0;
+    const fx = Math.sin(p.angle), fz = Math.cos(p.angle);
+    const ahead = (x, z) => {
+      const dx = x - p.x, dz = z - p.z;
+      return Math.hypot(dx, dz) < 280 && dx * fx + dz * fz > -30;
+    };
+    let n = 0;
+    for (let i = state.projectiles.length - 1; i >= 0; i--) {
+      const pr = state.projectiles[i];
+      if (pr.owner === p || !ahead(pr.x, pr.z)) continue;
+      spawnHearts(pr);
+      removeAndDispose(pr.mesh);
+      const mi = state.projMeshes.indexOf(pr.mesh);
+      if (mi >= 0) state.projMeshes.splice(mi, 1);
+      state.projectiles.splice(i, 1);
+      n++;
+    }
+    if (state.fx && state.fx.obstacles) {
+      p.fxCool = p.fxCool || {};
+      state.fx.obstacles.forEach((o, i) => {
+        if (!(o.roller || o.stand) || !o.holder.visible || !ahead(o.x, o.z)) return;
+        o.holder.visible = false;                    // 4초 동안 사라지고, 내 카트는 그 자리를 그냥 지나간다
+        p.fxCool['ob' + i] = 4;
+        quiz.cleared.push({ o, t: 4 });
+        spawnHearts({ x: o.x, y: o.y, z: o.z });
+        n++;
+      });
+    }
+    quiz.lastCleared = n;
+    return n;
+  }
+  let bannerTimer = 0;
+  function rewardBanner(text) {
+    const b = el('qbanner');
+    if (!b) return;
+    // " · " 마디마다 줄이 끊기지 않게 묶는다("코인 / +3" 처럼 갈라지지 않게)
+    b.textContent = '';
+    text.split(' · ').forEach((part, i) => {
+      if (i) b.append(' · ');
+      const s = document.createElement('span'); s.style.whiteSpace = 'nowrap'; s.textContent = part; b.append(s);
+    });
+    b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
+    clearTimeout(bannerTimer);
+    bannerTimer = setTimeout(() => b.classList.remove('show'), 1500);
+  }
   function clearInputs() {
     for (const k in keys) keys[k] = false;
     touch.steer = 0; touch.drift = false; touch.item = false;
     document.querySelectorAll('#touch .tbtn.down').forEach(b => b.classList.remove('down'));
     jumpEdge = false; driftArmed = false;      // 누르고 있던 스페이스로 재개 직후 드리프트가 걸리지 않게
+  }
+  // 문제 패널에 무엇을 받는지 미리 적는다
+  function quizHint() {
+    const big = quizReward(quiz.tier, true), small = quizReward(quiz.tier, false);
+    const faster = turboMult(state.player.place, true) > BASE_BOOST;
+    return '한 번에 맞히면 터보 ' + big.secs + '초 · 코인 +' + big.coins + ' · ' + FLAME[big.tier].name + ' 불꽃' +
+      (faster ? ' · 더 빠른 터보' : '') + (big.invincible ? ' · 무적' : '') +
+      ' / 다시 골라 맞혀도 부스트 ' + small.secs + '초 · 코인 +' + small.coins + ' · 방패';
   }
   async function openQuiz() {
     const GQ = window.GameQuiz;
@@ -600,24 +708,29 @@ export function startGame() {
         kid = await GQ.pickKid({ title: '누가 문제를 풀어요?', theme: QUIZ_THEME });
         if (tok !== quiz.token) return;
       }
+      const place = state.player.place;
       const r = await GQ.ask({
-        kid, title: '맞히면 터보 부스트!', theme: QUIZ_THEME,
-        onCorrect: res => res.firstTry ? '정답! 터보 부스트 출발 🔥' : '정답! 미니 부스트 출발!'
+        kid, title: '맞히면 터보 부스트!', hint: quizHint(), theme: QUIZ_THEME,
+        onCorrect: res => '정답! ' + rewardText(quizReward(quiz.tier, res.firstTry), turboMult(place, res.firstTry))
       });
       if (tok !== quiz.token) return;
       const rw = quizReward(quiz.tier, r.firstTry);
       quiz.tier = rw.tier; quiz.reward = rw;
-      if (rw.coins) {
-        state.coinPicks += rw.coins;
-        state.player.coins = Math.min(99, (state.player.coins || 0) + rw.coins);
-      }
+      quiz.pendingMult = turboMult(place, r.firstTry);
+      state.coinPicks += rw.coins;
+      state.player.coins = Math.min(99, (state.player.coins || 0) + rw.coins);
+      quizBlast(rw);
+      audio.sfx(r.firstTry ? 'ring' : 'coin');
+      rewardBanner(rewardText(rw, quiz.pendingMult));
     } catch (_) {
       if (tok !== quiz.token) return;            // 문제 화면이 실패해도 경주는 이어 간다(보상 없이)
     }
     quiz.go = 0.8;                                // 짧은 유예 뒤 출발
-    toast(quiz.reward && quiz.reward.coins ? '🪙 +3 · 준비… 출발!' : '준비… 출발!');
   }
   function tickQuizPause(dt) {
+    animQuizFx(dt);
+    updateHearts(dt);
+    if (state.scene === 'race') updateHud();     // 정답 순간 코인·불꽃 단계가 바로 바뀌어 보이게
     if (quiz.go <= 0) return;
     quiz.go -= dt;
     if (quiz.go > 0) return;
@@ -625,11 +738,14 @@ export function startGame() {
     state.paused = false;
     clearInputs();
     const p = state.player, rw = quiz.reward;
-    p.shield = Math.max(p.shield || 0, 1.5);      // 재개 직후 1.5초 충돌 유예(방패 한 번 막기와 같은 필드)
-    if (rw && p && !p.finished) {
+    // 재개 직후 충돌 유예 1.5초(고쳐 맞히면 방패 2초)
+    p.shield = Math.max(p.shield || 0, rw && rw.shield ? rw.shield : 1.5);
+    if (rw && !p.finished) {
       p.boost = Math.max(p.boost, rw.secs);
       quiz.flame = rw.secs; quiz.flameTier = rw.tier;
-      toast(rw.secs >= 3 ? (rw.tier === 3 ? '무지개 터보! 🌈' : '터보 부스트! 🔥') : '미니 부스트! 💨');
+      quiz.mult = quiz.pendingMult || BASE_BOOST;
+      quiz.invincible = !!rw.invincible;
+      toast('출발! 🔥');
     }
     quiz.reward = null;
   }
@@ -638,8 +754,11 @@ export function startGame() {
     quiz.token++;
     if (window.GameQuiz && window.GameQuiz.isOpen()) window.GameQuiz.close();
     state.paused = false;
-    quiz.go = 0; quiz.reward = null; quiz.flame = 0;
+    quiz.go = 0; quiz.reward = null; quiz.flame = 0; quiz.mult = BASE_BOOST; quiz.invincible = false; quiz.burstT = 0;
+    quiz.cleared.forEach(c => { c.o.holder.visible = true; }); quiz.cleared = [];
     quiz.on = false; quiz.mesh = null; quiz.alive = false; quiz.lap = -99;   // 메시는 extraMeshes 로 dispose
+    quiz.burst = null; quiz.halo = null;
+    const b = el('qbanner'); if (b) b.classList.remove('show');
   }
 
   // 라이벌은 아이템을 바로 쓰지 않는다. 바나나는 바로 뒤에 붙었을 때,
@@ -1301,7 +1420,7 @@ export function startGame() {
             did = true;
           }
         } else if (v.prank === 'slam') {
-          if (Math.hypot(v.x - p.x, v.z - p.z) < 36 && !p.airborne) {
+          if (Math.hypot(v.x - p.x, v.z - p.z) < 36 && !p.airborne && !quizInvincible()) {
             const d = Math.hypot(p.x - v.x, p.z - v.z) || 1;
             p.x += (p.x - v.x) / d * 16; p.z += (p.z - v.z) / d * 16;
             p.speed *= 0.72; spawnHearts(p); audio.sfx('bump');
@@ -1380,23 +1499,29 @@ export function startGame() {
   function updateTrail(dt) {
     const p = state.player, model = state.models[0];
     // 문제 보상 터보 중에는 같은 꼬리를 불꽃 단계 색(주황·빨강·파랑·무지개)으로 바꿔 뿜는다
-    const qf = quiz.flame > 0 && p.boost > 0 ? FLAME[quiz.flameTier] : null;
+    // 단계가 오를수록 꼬리가 길고(수명) 굵고(크기) 촘촘하며, 파랑부터는 두 줄로 뿜는다
+    const qf = quizTurbo() ? FLAME[quiz.flameTier] : null;
     const tr = qf ? { shape: 'star', color: qf.color } : model && model.userData.trail;
+    const st = qf ? qf.trail : { life: 0.6, size: 5, every: 0.045, twin: false };
     trailClock -= dt;
-    if (tr && p.boost > 0 && trailClock <= 0 && trailLive.length < 40) {
-      trailClock = qf ? 0.03 : 0.045;
-      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: trailTexture(tr.shape), transparent: true, depthWrite: false }));
-      if (tr.color === 'rainbow') sp.material.color.setHSL((state.time * 1.4) % 1, 0.9, 0.62);
-      else sp.material.color.set(tr.color);
-      sp.position.set(p.x - Math.sin(p.angle) * 12 + (Math.random() - 0.5) * 6, p.y + 5 + Math.random() * 4, p.z - Math.cos(p.angle) * 12);
-      scene.add(sp);
-      trailLive.push({ sp, life: 0.6 });
+    if (tr && p.boost > 0 && trailClock <= 0 && trailLive.length < (qf ? 70 : 40)) {
+      trailClock = st.every;
+      const sx = Math.cos(p.angle), sz = -Math.sin(p.angle);       // 카트 옆 방향
+      for (const lane of st.twin ? [-4, 4] : [0]) {
+        const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: trailTexture(tr.shape), transparent: true, depthWrite: false }));
+        if (tr.color === 'rainbow') sp.material.color.setHSL((state.time * 1.4 + lane * 0.02 + 1) % 1, 0.9, 0.62);
+        else sp.material.color.set(tr.color);
+        const j = (Math.random() - 0.5) * (st.twin ? 2 : 6);
+        sp.position.set(p.x - Math.sin(p.angle) * 12 + sx * (lane + j), p.y + 5 + Math.random() * 4, p.z - Math.cos(p.angle) * 12 + sz * (lane + j));
+        scene.add(sp);
+        trailLive.push({ sp, life: st.life, max: st.life, size: st.size });
+      }
     }
     for (let i = trailLive.length - 1; i >= 0; i--) {
       const t = trailLive[i];
       t.life -= dt;
-      t.sp.material.opacity = Math.max(0, t.life / 0.6);
-      const sc = 5 + (0.6 - t.life) * 8; t.sp.scale.set(sc, sc, 1);
+      t.sp.material.opacity = Math.max(0, t.life / t.max);
+      const sc = t.size + (t.max - t.life) * 8; t.sp.scale.set(sc, sc, 1);
       if (t.life <= 0) { scene.remove(t.sp); t.sp.material.dispose(); trailLive.splice(i, 1); }
     }
   }

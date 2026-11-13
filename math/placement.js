@@ -4,8 +4,9 @@
 (function (root) {
   "use strict";
   const C = root.Curriculum || (typeof require !== "undefined" ? require("./curriculum.js") : null);
-  const MAX_Q = 16, MIN_Q = 8, TOP = 12;
-  const START_BY_GRADE = { 1: 2, 2: 7, 3: 10, 4: 11, 5: 12, 6: 12 };
+  // TOP = 커리큘럼 최고 단계(19). 3학년은 곱셈구구(13), 4학년은 세 자리 계산(15), 5·6학년은 (두 자리)×(한 자리)(17)에서 시작
+  const MAX_Q = 16, MIN_Q = 8, TOP = C && C.LEVELS ? C.LEVELS[C.LEVELS.length - 1].id : 19;
+  const START_BY_GRADE = { 1: 2, 2: 7, 3: 13, 4: 15, 5: 17, 6: 17 };
   // 9월 이후 1학년은 2학기 → 4단계(10 만들기)부터, 3~8월 1학년은 2단계부터
   function startLevel(grade, month) {
     const g = Math.min(6, Math.max(1, parseInt(grade, 10) || 1));
@@ -59,7 +60,7 @@
     }
     return { next: next, answer: answer, result: result, state: state, get finished() { return state.finished; }, get level() { return state.level; }, get asked() { return state.asked; }, MAX_Q: MAX_Q };
   }
-  const api = { create: create, startLevel: startLevel, MAX_Q: MAX_Q, MIN_Q: MIN_Q };
+  const api = { create: create, startLevel: startLevel, MAX_Q: MAX_Q, MIN_Q: MIN_Q, TOP: TOP };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.MathPlacement = api;
 })(typeof window !== "undefined" ? window : globalThis);

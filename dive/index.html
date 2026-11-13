@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#0d3b66">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Deep Dive · PLAYGROUND</title>
+<link rel="preload" href="../sanguo/fonts/pretendard/PretendardVariable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css?v=1">
+<script src="../assets/study/play-timer.js?v=2"></script>
+<script src="../assets/touch-guard.js?v=1"></script>
+<script src="../math/curriculum.js?v=21"></script>
+<script src="../math/learning.js?v=30"></script>
+<script src="../math/store.js?v=34"></script>
+<script src="../assets/study/math-bridge.js?v=3"></script>
+<script src="../assets/study/game-quiz.js?v=2"></script>
+</head>
+<body>
+<canvas id="sea" aria-label="딥 다이브. 화면을 누르고 끌면 잠수정이 그쪽으로 가요. 물방울은 저절로 나가요."></canvas>
+
+<header class="hud" id="hud" hidden>
+  <a class="back" href="../game/" aria-label="PLAYGROUND로 돌아가기">←</a>
+  <div class="chip" id="hearts" aria-label="남은 하트">♥♥♥</div>
+  <div class="chip grow xpchip" aria-label="? 진주까지"><span class="xpbar"><i id="xpfill"></i></span><b id="qcount"></b></div>
+  <div class="chip" id="clock">5:00</div>
+  <button class="chip icon" id="pauseBtn" type="button" aria-label="잠깐 멈춤">⏸</button>
+  <button class="chip icon" id="sound" type="button" aria-pressed="true" aria-label="소리">♪</button>
+</header>
+
+<section class="panel" id="start">
+  <h1>Deep Dive</h1>
+  <p class="lead">먹물에 물든 바다 친구들을 씻어 주고, <b>? 진주</b> 문제를 맞혀 잠수정을 키워요!</p>
+  <p class="pick">누가 잠수할까요?</p>
+  <div class="pilots" id="pilots"></div>
+  <p class="pick">어디로 갈까요?</p>
+  <div class="zones" id="zones"></div>
+  <div class="row">
+    <button class="ghost" id="dexBtn" type="button">바다 친구 도감</button>
+    <span class="chest" id="chest">가족 진주함 0</span>
+  </div>
+  <p class="small" id="giftLine"></p>
+  <button class="go" id="startBtn" type="button">출발!</button>
+  <p class="small" id="bestLine"></p>
+</section>
+
+<section class="panel" id="dex" hidden>
+  <h2>바다 친구 도감</h2>
+  <div class="dexgrid" id="dexGrid"></div>
+  <p class="small" id="dexNote"></p>
+  <button class="go" id="dexClose" type="button">닫기</button>
+</section>
+
+<section class="panel" id="cards" hidden aria-live="polite">
+  <p class="kicker" id="cardKicker">장비를 골라요!</p>
+  <p class="cards-title" id="cardTitle">어떤 장비가 좋아요?</p>
+  <div class="cardrow" id="cardRow"></div>
+</section>
+
+<section class="panel" id="pause" hidden>
+  <h2>잠깐 쉬어요</h2>
+  <button class="go" id="resumeBtn" type="button">계속 잠수하기</button>
+  <button class="ghost wide" id="quitBtn" type="button">그만하고 처음 화면으로</button>
+</section>
+
+<section class="panel" id="over" hidden>
+  <h2 id="overTitle">잘 다녀왔어요!</h2>
+  <div id="overText"></div>
+  <button class="go" id="againBtn" type="button">다시 잠수하기</button>
+  <button class="ghost wide" id="menuBtn" type="button">처음 화면으로</button>
+  <a class="home" href="../game/">← PLAYGROUND</a>
+</section>
+
+<script type="module" src="src/main.js?v=1"></script>
+</body>
+</html>

@@ -5,16 +5,20 @@
   var L = root.MathLearning || (typeof require !== "undefined" ? require("../../math/learning.js") : null);
   var S = root.MathStore || (typeof require !== "undefined" ? require("../../math/store.js") : null);
   var AGE_KEY = "hub2_study_age";
+  var TOP = C && C.LEVELS && C.LEVELS.length ? C.LEVELS[C.LEVELS.length - 1].id : 19;   // 커리큘럼 최고 단계
   var AGE_BANDS = Object.freeze({
     5: Object.freeze({ start: 1, cap: 2, label: "5세 · 9까지 수 익히기" }),
     6: Object.freeze({ start: 1, cap: 4, label: "6세 · 10 만들기까지" }),
     7: Object.freeze({ start: 3, cap: 10, label: "7세 · 1학년 과정" }),
-    8: Object.freeze({ start: 5, cap: 12, label: "8세 · 2학년 과정" }),
-    9: Object.freeze({ start: 5, cap: 12, label: "9세 이상 · 복습과 도전" })
+    // 8·9세 상한 = 커리큘럼 끝(19): 12단계를 마치면 13단계(곱셈구구)로 이어진다
+    8: Object.freeze({ start: 5, cap: TOP, label: "8세 · 2학년 과정" }),
+    9: Object.freeze({ start: 5, cap: TOP, label: "9세 · 복습과 도전" }),
+    10: Object.freeze({ start: 13, cap: TOP, label: "10세 이상 · 3학년 과정" })
   });
 
   function age(value) {
     var n = parseInt(value, 10);
+    if (n >= 10) return 10;
     return AGE_BANDS[n] ? n : 7;
   }
 
@@ -57,17 +61,36 @@
     return C.makeProblem(activeLevel, rng, pool[Math.floor(rng() * pool.length) % pool.length].type);
   }
 
+  function shuffleInPlace(list, rng) {
+    for (var i = list.length - 1; i > 0; i--) {
+      var j = Math.floor(rng() * (i + 1)), tmp = list[i];
+      list[i] = list[j]; list[j] = tmp;
+    }
+    return list;
+  }
+  // 오답 후보가 그럴듯한지: 0 이상 정수, 정답과 다르고, 자릿수가 한 자리 넘게 차이 나지 않는다
+  function plausible(value, answer) {
+    return Number.isInteger(value) && value >= 0 && value !== answer && Math.abs(String(value).length - String(answer).length) <= 1;
+  }
+
+  // 3지선다. 문제에 distractors(유형별 전형적 오답 후보)가 있으면 먼저 쓰고, 모자라면 ±오프셋으로 채운다.
+  // distractors 가 없는 1~12단계 문제(정답 100 이하)는 예전과 똑같이 동작한다(같은 난수 소비, 0..100 범위).
   function choices(problem, rng) {
     rng = rng || Math.random;
     var answer = Number(problem.answer), out = [answer];
-    var offsets = answer >= 20 ? [-10, 10, -1, 1, -2, 2] : [-1, 1, -2, 2, -3, 3];
-    for (var i = offsets.length - 1; i > 0; i--) {
-      var j = Math.floor(rng() * (i + 1)), tmp = offsets[i];
-      offsets[i] = offsets[j]; offsets[j] = tmp;
+    if (Array.isArray(problem.distractors) && problem.distractors.length) {
+      var extra = shuffleInPlace(problem.distractors.map(Number), rng);
+      for (var d = 0; d < extra.length && out.length < 3; d++) {
+        if (plausible(extra[d], answer) && out.indexOf(extra[d]) < 0) out.push(extra[d]);
+      }
     }
+    var big = answer > 100;
+    var offsets = big ? [-10, 10, -100, 100, -1, 1] : answer >= 20 ? [-10, 10, -1, 1, -2, 2] : [-1, 1, -2, 2, -3, 3];
+    var hi = big ? Math.pow(10, String(answer).length) - 1 : 100;
+    if (out.length < 3) shuffleInPlace(offsets, rng);
     for (var k = 0; k < offsets.length && out.length < 3; k++) {
       var value = answer + offsets[k];
-      if (value >= 0 && value <= 100 && out.indexOf(value) < 0) out.push(value);
+      if (value >= 0 && value <= hi && out.indexOf(value) < 0) out.push(value);
     }
     while (out.length < 3) {
       var fallback = Math.max(0, answer + out.length);

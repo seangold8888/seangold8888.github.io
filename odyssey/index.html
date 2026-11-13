@@ -6,6 +6,11 @@
 <style id="no-zoom-style">*{touch-action:manipulation}canvas{touch-action:none}</style>
 <script src="../assets/study/play-timer.js?v=2"></script>
 <script src="../assets/touch-guard.js?v=1"></script>
+<script src="../math/curriculum.js?v=21"></script>
+<script src="../math/learning.js?v=30"></script>
+<script src="../math/store.js?v=34"></script>
+<script src="../assets/study/math-bridge.js?v=3"></script>
+<script src="../assets/study/game-quiz.js?v=2"></script>
 <script id="no-zoom-guard">/* 게임 중 화면이 갑자기 확대되는 것 방지: 핀치·더블탭 줌 차단 */
 (function(){var s=function(e){e.preventDefault()};
 document.addEventListener('gesturestart',s,{passive:false});
@@ -1564,6 +1569,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   let resumeAudioAfterFocus = false;
   E.viewportBlocked = false;
   E.focusBlocked = false;
+  // 아테나의 부엉이 수학 문제(GameQuiz 패널)가 떠 있는 동안 true — 모든 장의 시간이 멈춘다.
+  E.quizBlocked = false;
 
   function syncViewportBlock() {
     // 저장해 둔 MediaQueryList는 일부 환경(개발자도구 기기 에뮬레이션 등)에서
@@ -1680,6 +1687,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 
   E.setScene = function (nextScene) {
     if (E.scene && E.scene.exit) E.scene.exit();
+    if (ODY.Quiz && ODY.Quiz.cancel) ODY.Quiz.cancel();
     E.input.clearAll();
     if (window.ODY.Feel && ODY.Feel.onSceneChange) ODY.Feel.onSceneChange();
     E.scene = nextScene;
@@ -1704,7 +1712,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       const actions = MAP[e.code];
       if (!actions) return;
       e.preventDefault();
-      if (E.viewportBlocked) return;
+      if (E.viewportBlocked || E.quizBlocked) return;
       ODY.Snd.unlock();
       actions.forEach(action => {
         if (!held[action]) pressAction(action);
@@ -1779,7 +1787,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 
     canvas.addEventListener('pointerdown', e => {
       e.preventDefault();
-      if (E.viewportBlocked) return;
+      if (E.viewportBlocked || E.quizBlocked) return;
       ODY.Snd.unlock();
       try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
       const p = toLogical(e);
@@ -1819,7 +1827,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     requestAnimationFrame(frame);
     const rawDt = Math.min(0.04, (nowMs - lastTime) / 1000 || 0);
     lastTime = nowMs;
-    const dtReal = (E.viewportBlocked || E.focusBlocked || document.hidden) ? 0 : rawDt;
+    const dtReal = (E.viewportBlocked || E.focusBlocked || E.quizBlocked || document.hidden) ? 0 : rawDt;
     E.time += dtReal;
     E.frame++;
     // resize·matchMedia 이벤트를 모두 놓치는 환경까지 대비한 최후 안전망.
@@ -1911,6 +1919,290 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   }
 
   ODY.E = E;
+
+  // ---------- 아테나의 부엉이 — 장 안의 수학 문제(공통 모듈 GameQuiz) ----------
+  // 부엉이(?)를 만나면 E.quizBlocked 로 모든 장이 멈추고 GameQuiz 패널이 뜬다.
+  // 한 번에 맞히면 지혜 +1단계, 고쳐 맞히면 반 단계(최대 3). 틀려도 내려가지 않고 저장하지 않는다.
+  // 보상은 장비로만 준다(별·진행도·ody_progress 에는 손대지 않는다).
+  // GameQuiz 가 없거나 자동 검사(navigator.webdriver)면 부엉이를 만들지 않는다 — ODY.Quiz.force(true/false) 로 바꿀 수 있다.
+  const Q = {};
+  const QUIZ_MAX = 3;
+  let quizForce = null, quizBusy = false, quizToken = 0;
+  Q.MAX = QUIZ_MAX;
+  Q.available = function () { return !!(window.GameQuiz && typeof window.GameQuiz.ask === 'function'); };
+  Q.ready = function () {
+    if (!Q.available()) return false;
+    if (quizForce !== null) return quizForce;
+    return !navigator.webdriver;
+  };
+  Q.force = function (v) { quizForce = v == null ? null : !!v; };
+  Q.isOpen = function () { return quizBusy; };
+  function quizBlock(on) {
+    E.quizBlocked = on;
+    E.input.clearAll();
+    const F = ODY.Feel;
+    if (F) { F.hitstop = 0; F.timescale = 1; }
+  }
+  function currentQuizKid() {
+    try { return window.GameQuiz.currentKid ? window.GameQuiz.currentKid() : null; } catch (_) { return null; }
+  }
+  Q.needKid = function () { return Q.ready() && !currentQuizKid(); };
+  // 모험 시작 때 한 번: 누가 문제를 푸는지 모르면 묻는다(이미 골랐으면 그 아이).
+  Q.ensureKid = async function () {
+    if (!Q.ready()) return null;
+    const known = currentQuizKid();
+    if (known || quizBusy) return known;
+    const token = ++quizToken;
+    quizBusy = true; quizBlock(true);
+    let kid = null;
+    try { kid = await window.GameQuiz.pickKid({ title: '누가 문제를 풀어요?' }); } catch (_) { kid = null; }
+    if (token === quizToken) { quizBusy = false; quizBlock(false); }
+    return kid;
+  };
+  // 문제 한 개. 결과 { firstTry, ... } 또는 null(취소).
+  Q.ask = async function (opts) {
+    opts = opts || {};
+    if (!Q.ready() || quizBusy) return null;
+    const G = window.GameQuiz, token = ++quizToken;
+    quizBusy = true; quizBlock(true);
+    if (opts.release) { try { opts.release(); } catch (_) {} }
+    let result = null;
+    try {
+      let kid = currentQuizKid();
+      if (!kid && G.pickKid) kid = await G.pickKid({ title: '누가 문제를 풀어요?' });
+      if (token !== quizToken) return null;
+      result = await G.ask({
+        kid: kid || undefined,
+        title: opts.title || '아테나의 부엉이 문제!',
+        hint: opts.hint || '',
+        theme: { bg: 'rgba(36,26,70,.96)', accent: '#ffe27a', button: '#fff7dc', buttonText: '#342442', top: 64 },
+        onCorrect: opts.onCorrect
+      });
+    } catch (_) { result = null; }
+    if (token !== quizToken) return null;
+    quizBusy = false; quizBlock(false);
+    if (opts.release) { try { opts.release(); } catch (_) {} }
+    return result;
+  };
+  // 장을 바꾸거나 나갈 때: 열린 패널을 닫고(약속은 버린다) 멈춤을 푼다.
+  Q.cancel = function () {
+    if (!quizBusy) return;
+    quizToken++; quizBusy = false; quizBlock(false);
+    try { if (window.GameQuiz && window.GameQuiz.isOpen && window.GameQuiz.isOpen()) window.GameQuiz.close(); } catch (_) {}
+  };
+  Q.words = function (tier) {
+    const whole = Math.floor(tier + 1e-6), half = tier - whole >= 0.49;
+    if (!whole) return half ? '반 단계' : '0단계';
+    return whole + '단계' + (half ? ' 반' : '');
+  };
+  // 금빛: 단계가 오를수록 진해진다.
+  Q.gold = function (tier, alpha) {
+    const k = Math.min(1, Math.max(0, tier / QUIZ_MAX));
+    const r = 255, g = Math.round(236 - k * 46), b = Math.round(150 - k * 110);
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + (alpha == null ? 1 : alpha) + ')';
+  };
+  // 아테나의 방패: 주인공 둘레 금빛 고리(남은 횟수만큼 겹친다).
+  Q.drawAegis = function (ctx, x, y, count, time, r) {
+    if (!(count > 0)) return;
+    const base = r || 64;
+    ctx.save();
+    ctx.translate(x, y);
+    const pulse = 1 + Math.sin((time || 0) * 6) * 0.04;
+    ctx.fillStyle = 'rgba(255,236,140,0.13)';
+    ctx.beginPath(); ctx.arc(0, 0, base * pulse, 0, Math.PI * 2); ctx.fill();
+    for (let i = 0; i < Math.min(3, count); i++) {
+      ctx.strokeStyle = i === 0 ? 'rgba(255,214,90,0.92)' : 'rgba(255,236,150,' + (0.7 - i * 0.16) + ')';
+      ctx.lineWidth = i === 0 ? 5 : 3;
+      ctx.beginPath(); ctx.arc(0, 0, (base + i * 9) * pulse, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.restore();
+  };
+  // 한 번에 맞혔을 때 금빛 파동 연출(장의 wave() 가 부른다).
+  Q.waveFx = function (x, y) {
+    const F = ODY.Feel;
+    if (!F) return;
+    // 바깥으로 퍼지는 금빛 고리 두 겹
+    F.spawn({ x, y, color: '#ffd95a', size: 14, endSize: 230, life: 0.75, shape: 'ring', alpha: 0.95 });
+    F.spawn({ x, y, color: '#fff6c0', size: 8, endSize: 150, life: 0.55, shape: 'ring', alpha: 0.9 });
+    F.sparkle(x, y, '#ffe27a', 26);
+    F.flash('#fff2a8', 0.26);
+  };
+  // 금빛 파동이 지울 장애물: 앞쪽 range 안 전부, 없으면 가장 가까운 앞 장애물 하나.
+  Q.ahead = function (list, sxOf, from, range, skip) {
+    const cand = list.filter(it => !skip(it)).map(it => ({ it, sx: sxOf(it) })).filter(c => c.sx >= from);
+    const near = cand.filter(c => c.sx <= from + range);
+    if (near.length) return near;
+    cand.sort((a, b) => a.sx - b.sx);
+    return cand.slice(0, 1);
+  };
+  // 약초·부름 부채꼴 위 금빛 테(0단계면 그리지 않는다).
+  Q.drawGoldCone = function (ctx, x, y, angle, range, spread, tier, power) {
+    if (!(tier > 0) || !(power > 0.01)) return;
+    const sp = Math.min(Math.PI * 0.95, spread);
+    ctx.save();
+    ctx.translate(x, y); ctx.rotate(angle || 0);
+    ctx.globalAlpha = Math.min(1, power);
+    ctx.fillStyle = Q.gold(tier, 0.08 + tier * 0.04);
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, range, -sp * 0.5, sp * 0.5); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = Q.gold(tier, 0.92); ctx.lineWidth = 3 + tier * 1.5; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.arc(0, 0, range, -sp * 0.5, sp * 0.5); ctx.stroke();
+    ctx.restore();
+  };
+  // 주인공 발밑 금빛 고리: 지혜 단계가 오를수록 커지고 진해진다.
+  Q.drawTierGlow = function (ctx, x, y, tier, time) {
+    if (!(tier > 0)) return;
+    const pulse = 1 + Math.sin((time || 0) * 4) * 0.05;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.strokeStyle = Q.gold(tier, 0.55 + tier * 0.12); ctx.lineWidth = 2 + tier;
+    ctx.fillStyle = Q.gold(tier, 0.10 + tier * 0.04);
+    ctx.beginPath(); ctx.ellipse(0, 0, (26 + tier * 7) * pulse, (10 + tier * 2.5) * pulse, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.restore();
+  };
+  function drawFeather(ctx, x, y, fill, time) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(-0.5);
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = fill > 0 ? '#7a4a12' : 'rgba(255,248,223,0.55)';
+    ctx.beginPath(); ctx.ellipse(0, 0, 6.5, 13, 0, 0, Math.PI * 2);
+    if (fill > 0) {
+      ctx.save(); ctx.clip();
+      ctx.fillStyle = '#ffd95a';
+      ctx.fillRect(-8, fill >= 1 ? -14 : 0, 16, fill >= 1 ? 28 : 14);
+      ctx.restore();
+    }
+    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, -11); ctx.lineTo(0, 14); ctx.stroke();
+    ctx.restore();
+  }
+  // 장마다 하나: 부엉이 목록·지혜 단계·HUD·배너.
+  Q.kit = function (o) {
+    o = o || {};
+    const k = { on: Q.ready(), tier: 0, items: [], pending: null, banner: null, asked: 0, label: o.label || '아테나의 선물' };
+    k.add = function (x, y, extra) {
+      if (!k.on) return null;
+      const it = Object.assign({ x, y, got: false, phase: k.items.length * 1.7 }, extra || {});
+      k.items.push(it);
+      return it;
+    };
+    k.take = function (it) {
+      if (!k.on || !it || it.got) return;
+      it.got = true;
+      k.pending = it;
+      const F = ODY.Feel, S = ODY.Snd;
+      if (F && it.sx != null) { F.sparkle(it.sx, it.sy, '#ffe27a', 16); F.ring(it.sx, it.sy, '#fff1a8', 22, 0.36); }
+      if (S && S.pickup) S.pickup(3);
+    };
+    // 장의 update 맨 앞에서 부른다. 문제가 열려 있으면 true(그 프레임은 건너뛴다).
+    k.update = function () {
+      if (!k.on) return false;
+      if (quizBusy) return true;
+      if (k.pending && (!o.canAsk || o.canAsk())) { const it = k.pending; k.pending = null; open(it); return quizBusy; }
+      return false;
+    };
+    // 정답 순간 보상(게임은 아직 멈춰 있다): 단계 + "아테나의 숨결"(고쳐 맞힘 1번, 한 번에 맞힘 2번)
+    // + 한 번에 맞히면 금빛 파동. 숨결은 목숨이 깎였으면 회복(heal), 가득이면 그 장의 방어 1회(defend).
+    function grant(firstTry, prev) {
+      const next = Math.min(QUIZ_MAX, prev + (firstTry ? 1 : 0.5));
+      k.tier = next;
+      try { if (o.onGift) o.onGift(next, prev, firstTry); } catch (e) { setTimeout(() => { throw e; }); }
+      const counts = Object.create(null), order = [];
+      const add = s => { if (!s) return; if (!(s in counts)) { counts[s] = 0; order.push(s); } counts[s]++; };
+      for (let i = 0; i < (firstTry ? 2 : 1); i++) {
+        let s = null;
+        try { s = (o.heal && o.heal()) || (o.defend && o.defend()) || null; } catch (e) { setTimeout(() => { throw e; }); }
+        add(s);
+      }
+      if (firstTry && o.wave) { try { add(o.wave()); } catch (e) { setTimeout(() => { throw e; }); } }
+      return order.map(s => counts[s] < 2 ? s : /\+\d+/.test(s) ? s.replace(/\+(\d+)/, (m, n) => '+' + n * counts[s]) : s + ' ×' + counts[s]);
+    }
+    function open() {
+      const prev = k.tier;
+      let gains = [];
+      k.asked++;
+      Q.ask({
+        title: o.promise || ('맞히면 ' + k.label + '이 세져요!'),
+        hint: '한 번에 맞히면 선물 두 배 + 금빛 파동!',
+        release: o.release,
+        onCorrect: r => {
+          gains = grant(!!r.firstTry, prev);
+          const head = r.firstTry ? '한 번에 정답! ' : '잘 고쳤어요! ';
+          return head + [k.label + ' ' + Q.words(k.tier)].concat(gains).join(' · ');
+        }
+      }).then(r => {
+        if (!r) return;
+        k.lastGains = gains;
+        k.banner = { title: (r.firstTry ? '아테나의 선물! ' : '아테나의 숨결! ') + k.label + ' ' + Q.words(k.tier), sub: gains.join(' · '), t0: E.time, max: k.tier >= QUIZ_MAX };
+        const F = ODY.Feel, S = ODY.Snd;
+        if (F) { F.flash('#fff2a8', 0.2); F.sparkle(E.W * 0.5, 150, '#ffe27a', 18); }
+        if (S && S.athena) S.athena();
+        if (ODY.UI && ODY.UI.announce) ODY.UI.announce('아테나의 선물! ' + k.label + ' ' + Q.words(k.tier) + '.');
+        try { if (o.onResume) o.onResume(); } catch (_) {}
+      });
+    }
+    k.drawItem = function (ctx, it, sx, sy, time) {
+      if (!k.on || !it || it.got) return;
+      it.sx = sx; it.sy = sy;
+      const t = time || 0, bob = Math.sin(t * 3 + it.phase) * 6;
+      ctx.save();
+      ctx.translate(sx, sy + bob);
+      const glow = ctx.createRadialGradient(0, 0, 8, 0, 0, 58);
+      glow.addColorStop(0, 'rgba(255,240,160,0.55)');
+      glow.addColorStop(1, 'rgba(255,240,160,0)');
+      ctx.fillStyle = glow;
+      ctx.beginPath(); ctx.arc(0, 0, 58, 0, Math.PI * 2); ctx.fill();
+      if (ODY.UI && ODY.UI.drawOwl) ODY.UI.drawOwl(ctx, -6, 6, 0.58, t, true);
+      // 부엉이가 든 큰 물음표 방패
+      ctx.translate(25, -29);
+      ctx.rotate(Math.sin(t * 2.4 + it.phase) * 0.12);
+      ctx.fillStyle = '#ffd95a'; ctx.strokeStyle = '#342442'; ctx.lineWidth = 3.5;
+      ctx.beginPath(); ctx.arc(0, 0, 21, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#342442'; ctx.font = '900 30px "Malgun Gothic", sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('?', 0, 10);
+      ctx.restore();
+    };
+    k.drawHud = function (ctx, x, y) {
+      if (!k.on) return;
+      ctx.save();
+      ctx.fillStyle = 'rgba(28,18,49,0.62)';
+      if (ODY.UI && ODY.UI.rr) { ODY.UI.rr(ctx, x, y, 132, 38, 19); ctx.fill(); }
+      if (ODY.UI && ODY.UI.drawOwl) ODY.UI.drawOwl(ctx, x + 22, y + 20, 0.36, E.time, true);
+      for (let i = 0; i < QUIZ_MAX; i++) drawFeather(ctx, x + 56 + i * 26, y + 19, F01(k.tier - i), E.time);
+      ctx.restore();
+    };
+    function F01(v) { return v >= 1 ? 1 : v >= 0.5 ? 0.5 : 0; }
+    k.drawBanner = function (ctx) {
+      const b = k.banner;
+      if (!b) return;
+      const age = E.time - b.t0;
+      if (age > 3.2) { k.banner = null; return; }
+      const F = ODY.Feel;
+      const enter = F ? F.ease.outBack(F.clamp01(age / 0.4)) : 1;
+      const leave = F ? F.clamp01((3.2 - age) / 0.45) : 1;
+      ctx.save();
+      ctx.globalAlpha = leave;
+      ctx.translate(E.W * 0.5, 192);
+      ctx.scale(enter, enter);
+      if (ODY.UI && ODY.UI.panel) ODY.UI.panel(ctx, -320, -56, 640, 112, 24, '#fff8e8');
+      ctx.strokeStyle = '#f4bd4f'; ctx.lineWidth = 5;
+      if (ODY.UI && ODY.UI.rr) { ODY.UI.rr(ctx, -312, -48, 624, 96, 20); ctx.stroke(); }
+      if (ODY.UI && ODY.UI.drawOwl) ODY.UI.drawOwl(ctx, -262, 2, 0.55, E.time, true);
+      ctx.textAlign = 'center';
+      const fit = (text, size, weight, maxW) => {
+        let s = size;
+        ctx.font = weight + ' ' + s + 'px "Malgun Gothic", sans-serif';
+        while (s > 14 && ctx.measureText(text).width > maxW) { s -= 1; ctx.font = weight + ' ' + s + 'px "Malgun Gothic", sans-serif'; }
+      };
+      const title = (b.title || '아테나의 선물!') + (b.max ? ' (최고!)' : '');
+      ctx.fillStyle = '#a45850'; fit(title, 24, 900, 500);
+      ctx.fillText(title, 40, b.sub ? -8 : 10);
+      if (b.sub) { ctx.fillStyle = '#342442'; fit(b.sub, 27, 900, 500); ctx.fillText(b.sub, 40, 30); }
+      ctx.restore();
+    };
+    return k;
+  };
+  ODY.Quiz = Q;
 })();
 
 </script>
@@ -4216,6 +4508,37 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     let camY = 0;
     let pauseInputLock = 0;
     let musicBand = -1;
+    // 아테나의 부엉이(?): 맞히면 아테나의 방패 — 단계마다 피격 1번을 막아 준다(최대 3).
+    let quizShield = 0;
+    const QK = ODY.Quiz ? ODY.Quiz.kit({
+      label: '아테나의 방패',
+      promise: HARD ? '맞히면 아테나의 방패가 생기고 거인이 멀어져요!' : '맞히면 아테나의 방패가 생겨요! (바위 한 번 막기)',
+      heal() {
+        if (HARD) {
+          const before = lead;
+          lead = Math.max(lead, Math.min(LEAD.softRest, lead + 20));
+          return lead > before + 4 ? '거인과 거리 +' + Math.round(lead - before) : null;
+        }
+        if (hearts < 5) { hearts++; return '하트 +1'; }
+        return null;
+      },
+      defend() { quizShield = Math.min(4, quizShield + 1); return '아테나의 방패 +1'; },
+      wave() {
+        ODY.Quiz.waveFx(player.x, player.y - 55);
+        if (HARD) lead = Math.max(lead, Math.min(LEAD.softRest, lead + 15));
+        const gone = ODY.Quiz.ahead(level.hazards, h => h.x - dist, player.x - 20, 900, h => h.hit || h.dead);
+        for (const c of gone) { c.it.hit = true; c.it.quizGone = true; if (c.sx < W + 60) F.sparkle(c.sx, level.ground - 30, '#ffe27a', 10); }
+        return (HARD ? '금빛 파동: 거인이 물러나고 ' : '금빛 파동: ') + '앞 장애물 ' + gone.length + '개 사라짐';
+      },
+      canAsk: () => state === 'run',
+      release: () => releaseControls(),
+      onGift(tier, prev, firstTry) {
+        const gained = Math.max(Math.floor(tier) - Math.floor(prev), prev >= ODY.Quiz.MAX && firstTry ? 1 : 0);
+        quizShield = Math.min(4, quizShield + gained);
+      },
+      onResume() { player.invin = Math.max(player.invin, 1.5); }
+    }) : null;
+    if (QK) for (const x of [2000, 5900, 10150]) QK.add(x, level.ground - 150);
     const failures = Object.create(null);
     const warnedGroups = Object.create(null);
 
@@ -4354,6 +4677,16 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     function hit(hazard) {
       if (player.invin > 0 || state !== 'run' || hazard.hit) return;
       hazard.hit = true;
+      if (quizShield > 0) {
+        quizShield--;
+        player.invin = Math.max(player.invin, 0.8);
+        F.doHitstop(0.045);
+        F.flash('#fff3a0', 0.13);
+        F.sparkle(player.x + 10, player.y - 55, '#ffe875', 15);
+        F.pop(player.x, player.y - 118, '아테나의 방패!', '#fff3a8', 22);
+        S.shield();
+        return;
+      }
       if (HARD) lead = F.clamp(lead - LEAD.hit, 0, LEAD.max);
       else hearts--;
       hitSlow = 0.7;
@@ -4617,6 +4950,15 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       }
     }
 
+    function updateQuizOwls() {
+      if (!QK) return;
+      for (const it of QK.items) {
+        if (it.got) continue;
+        const dx = it.x - dist - player.x, dy = it.y - (player.y - 53);
+        if (dx * dx + dy * dy < 46 * 46) QK.take(it);
+      }
+    }
+
     function updateCheckpoints() {
       const next = checkpointIndex + 1;
       if (next < level.checkpoints.length && dist >= level.checkpoints[next]) {
@@ -4639,6 +4981,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       updateHazards(dt);
       if (HARD && state !== 'run') return;
       updateStars(dt);
+      updateQuizOwls();
       updateCheckpoints();
       updateMusic(false);
 
@@ -4697,6 +5040,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     }
 
     function update(dt, dtReal) {
+      if (QK && QK.update()) return;
       uiTime += dtReal;
       if (HARD) for (const button of [jumpButton,slideButton]) {
         if (button.down && !E.input.held(button.action)) { button.pointerId=null; button.down=false; }
@@ -4812,6 +5156,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       ctx.font = '900 21px "Malgun Gothic", sans-serif';
       ctx.textAlign = 'left';
       ctx.fillText('× ' + starsGot, 75, 99);
+      if (QK) QK.drawHud(ctx, 28, 121);
       UI.drawProgress(ctx, W * 0.5 - 160, 27, 320, dist / level.total);
       pauseButton.draw(ctx);
       mute.draw(ctx);
@@ -4923,15 +5268,20 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       }
       for (const hazard of level.hazards) {
         const sx = hazard.x - dist;
-        if (sx > -100 && sx < W + 120) Art.drawHazard(ctx, hazard, sx, level.ground, simTime);
+        if (sx > -100 && sx < W + 120 && !(hazard.quizGone && hazard.hit)) Art.drawHazard(ctx, hazard, sx, level.ground, simTime);
       }
       for (const star of level.stars) {
         if (star.got) continue;
         const sx = star.x - dist;
         if (sx > -80 && sx < W + 90) Art.drawWisdomStar(ctx, star, sx, simTime, star.magnet);
       }
+      if (QK) for (const it of QK.items) {
+        const sx = it.x - dist;
+        if (!it.got && sx > -80 && sx < W + 90) QK.drawItem(ctx, it, sx, it.y, simTime);
+      }
       Art.drawSilentJumpHint(ctx, view, player);
       Art.drawHero(ctx, player, simTime);
+      if (quizShield > 0) ODY.Quiz.drawAegis(ctx, player.x, player.y - 50, quizShield, simTime, 60);
       F.drawParticles(ctx, 0);
       Art.drawForeground(ctx, view);
       ctx.restore();
@@ -4949,6 +5299,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       drawHUD(ctx);
       drawIntro(ctx);
       drawHint(ctx);
+      if (QK) QK.drawBanner(ctx);
       drawClear(ctx);
       if (state === 'rescue') drawRescue(ctx);
       if (state === 'paused') drawPause(ctx);
@@ -4966,7 +5317,10 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         get playerY() { return player.y; },
         hazards: level.hazards,
         drops: level.drops,
-        total: level.total
+        total: level.total,
+        get quizTier() { return QK ? QK.tier : 0; },
+        get quizShield() { return quizShield; },
+        quiz: QK
       },
       enter() {
         S.unlock();
@@ -5547,12 +5901,21 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     }
   };
 
-  A.drawShip = function (ctx, ship, time, boost, shield) {
+  A.drawShip = function (ctx, ship, time, boost, shield, tier, shieldCount) {
     const F = ODY.Feel;
     ctx.save();
     ctx.translate(ship.x, ship.y);
     ctx.rotate(ship.tilt || 0);
     ctx.scale(ship.sq.sx, ship.sq.sy);
+    // 아테나의 지혜 단계: 돛 뒤 금빛이 단계마다 커지고 진해진다(0단계면 그리지 않는다).
+    if (tier > 0 && ODY.Quiz) {
+      const gr = 46 + tier * 20;
+      const g = ctx.createRadialGradient(4, -52, 6, 4, -52, gr);
+      g.addColorStop(0, ODY.Quiz.gold(tier, 0.30 + tier * 0.1));
+      g.addColorStop(1, ODY.Quiz.gold(tier, 0));
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(4, -52, gr, 0, TAU); ctx.fill();
+    }
     // 선미 물살은 입력과 별개로 계속 살아 있어 자동 항해 속도가 느껴진다.
     ctx.strokeStyle = boost > 0 ? 'rgba(177,255,222,0.88)' : 'rgba(255,255,255,0.68)';
     ctx.lineWidth = boost > 0 ? 7 : 5; ctx.lineCap = 'round';
@@ -5571,9 +5934,21 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     ctx.beginPath(); ctx.arc(-24, -20, 9, Math.PI * 1.02, Math.PI * 1.9); ctx.stroke();
     if (shield) {
       const pulse = 1 + Math.sin(time * 8) * 0.035;
-      ctx.strokeStyle = 'rgba(255,232,116,0.88)'; ctx.lineWidth = 5;
-      ctx.fillStyle = 'rgba(255,244,157,0.12)';
-      ctx.beginPath(); ctx.ellipse(0, -23, 94 * pulse, 71 * pulse, 0, 0, TAU); ctx.fill(); ctx.stroke();
+      if (tier > 0 && ODY.Quiz) {
+        // 황금 돛 강화: 타원이 커지고 진한 금빛, 남은 횟수만큼 고리가 겹친다.
+        const grow = 1 + tier * 0.1;
+        ctx.strokeStyle = ODY.Quiz.gold(tier, 0.95); ctx.lineWidth = 5 + tier;
+        ctx.fillStyle = ODY.Quiz.gold(tier, 0.12 + tier * 0.03);
+        ctx.beginPath(); ctx.ellipse(0, -23, 94 * pulse * grow, 71 * pulse * grow, 0, 0, TAU); ctx.fill(); ctx.stroke();
+        for (let i = 1; i < Math.min(4, shieldCount || 1); i++) {
+          ctx.strokeStyle = ODY.Quiz.gold(tier, 0.7 - i * 0.14); ctx.lineWidth = 3;
+          ctx.beginPath(); ctx.ellipse(0, -23, (94 + i * 10) * pulse * grow, (71 + i * 9) * pulse * grow, 0, 0, TAU); ctx.stroke();
+        }
+      } else {
+        ctx.strokeStyle = 'rgba(255,232,116,0.88)'; ctx.lineWidth = 5;
+        ctx.fillStyle = 'rgba(255,244,157,0.12)';
+        ctx.beginPath(); ctx.ellipse(0, -23, 94 * pulse, 71 * pulse, 0, 0, TAU); ctx.fill(); ctx.stroke();
+      }
     }
     ctx.restore();
   };
@@ -5648,6 +6023,30 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     let comboTime = 0;
     let boostTime = 0;
     let shieldHits = 0;
+    // 아테나의 부엉이(?): 맞히면 황금 돛 — 단계마다 막는 횟수 +1(최대 1+3), 돛 빛이 커지고 진해진다.
+    const quizTier = () => (QK ? QK.tier : 0);
+    const QK = ODY.Quiz ? ODY.Quiz.kit({
+      label: '황금 돛',
+      promise: '맞히면 황금 돛이 커지고 단단해져요!',
+      heal() { if (hearts < 5) { hearts++; return '하트 +1'; } return null; },
+      defend() { shieldHits = Math.min(5, shieldHits + 1); return '황금 돛 +1'; },
+      wave() {
+        ODY.Quiz.waveFx(ship.x, ship.y);
+        boostTime = Math.max(boostTime, 3);
+        const gone = ODY.Quiz.ahead(level.obstacles, ob => ob.x - dist, ship.x - 20, 900, ob => ob.hit);
+        for (const c of gone) { c.it.hit = true; c.it.quizGone = true; if (c.sx < W + 60) F.sparkle(c.sx, c.it.gapY || c.it.y || 275, '#ffe27a', 12); }
+        return '금빛 파동: 앞 먹구름 ' + gone.length + '개 사라짐';
+      },
+      canAsk: () => state === 'run',
+      release: () => releaseSteering(),
+      onGift(tier, prev, firstTry) {
+        const gained = Math.max(Math.floor(tier) - Math.floor(prev), prev >= ODY.Quiz.MAX && firstTry ? 1 : 0);
+        shieldHits = Math.max(shieldHits, Math.min(2 + Math.floor(tier), shieldHits + gained));
+        boostTime = Math.max(boostTime, 1.4 + tier * 0.5);
+      },
+      onResume() { ship.invin = Math.max(ship.invin, 1.5); }
+    }) : null;
+    if (QK) { QK.add(2600, 165); QK.add(6300, 180); QK.add(9050, 170); }
     let rescues = 0;
     let checkpointIndex = 0;
     let hintText = '';
@@ -5789,8 +6188,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     }
 
     function triggerShield() {
-      shieldHits = 1;
-      boostTime = Math.max(boostTime, 2.2);
+      shieldHits = Math.max(shieldHits, 1);
+      boostTime = Math.max(boostTime, 2.2 + quizTier() * 0.6);
       F.sparkle(ship.x + 12, ship.y - 18, '#ffe67c', 18);
       F.ring(ship.x, ship.y, '#ffe67c', 24, 0.42);
       F.pop(ship.x + 8, shipPopY(), '황금 돛!', '#fff1a0', 22);
@@ -5801,7 +6200,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       if (ship.invin > 0 || state !== 'run' || obstacle.hit) return;
       obstacle.hit = true;
       if (shieldHits > 0) {
-        shieldHits = 0;
+        shieldHits--;
         ship.invin = 0.72;
         F.doHitstop(0.045);
         F.flash('#fff3a0', 0.13);
@@ -5937,6 +6336,15 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       }
     }
 
+    function updateQuizOwls() {
+      if (!QK) return;
+      for (const it of QK.items) {
+        if (it.got) continue;
+        const dx = it.x - dist - ship.x, dy = it.y - ship.y;
+        if (dx * dx + dy * dy < 48 * 48) QK.take(it);
+      }
+    }
+
     function collidesCloud(bounds, sx, y, obstacle) {
       const cx = F.clamp(sx, bounds.left, bounds.right);
       const cy = F.clamp(y, bounds.top, bounds.bottom);
@@ -6013,6 +6421,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       dist += currentSpeed * dt;
       ship.update(dt, true);
       updateCurrents(dt);
+      updateQuizOwls();
       updateObstacles(previousDist, dt);
       updateCheckpoint();
       updateMusic(false);
@@ -6053,6 +6462,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     }
 
     function update(dt, dtReal) {
+      if (QK && QK.update()) return;
       uiTime += dtReal;
       pauseInputLock = Math.max(0, pauseInputLock - dtReal);
       mute.update(dtReal); pauseButton.update(dtReal);
@@ -6123,6 +6533,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       ctx.beginPath(); ctx.arc(55, 91, 13, -0.7, 1.4); ctx.stroke();
       ctx.fillStyle = '#fff7df'; ctx.font = '900 21px "Malgun Gothic", sans-serif';
       ctx.textAlign = 'left'; ctx.fillText('× ' + currentsGot, 79, 99);
+      if (QK) QK.drawHud(ctx, 28, 121);
       UI.drawProgress(ctx, W * 0.5 - 160, 27, 320, dist / level.total);
       pauseButton.draw(ctx); mute.draw(ctx);
       if (E.isTouch && state !== 'paused' && state !== 'rescue') { upButton.draw(ctx); downButton.draw(ctx); }
@@ -6196,7 +6607,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       F.drawParticles(ctx, -1);
       for (const obstacle of level.obstacles) {
         const sx = obstacle.x - dist;
-        if (sx < -240 || sx > W + 260) continue;
+        if (sx < -240 || sx > W + 260 || (obstacle.quizGone && obstacle.hit)) continue;
         Art.drawObstacle(ctx, obstacle, sx, obstacleY(obstacle), gapBonus, simTime);
       }
       for (const current of level.currents) {
@@ -6204,12 +6615,16 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         const sx = current.x - dist;
         if (sx > -90 && sx < W + 100) Art.drawCurrent(ctx, current, sx, simTime);
       }
+      if (QK) for (const it of QK.items) {
+        const sx = it.x - dist;
+        if (!it.got && sx > -90 && sx < W + 100) QK.drawItem(ctx, it, sx, it.y, simTime);
+      }
       Art.drawSilentGuide(ctx, view, ship);
-      Art.drawShip(ctx, ship, simTime, boostTime, shieldHits > 0);
+      Art.drawShip(ctx, ship, simTime, boostTime, shieldHits > 0, quizTier(), shieldHits);
       F.drawParticles(ctx, 0);
       Art.drawForeground(ctx, view);
       ctx.restore();
-      drawHUD(ctx); drawIntro(ctx); drawHint(ctx); drawClear(ctx);
+      drawHUD(ctx); drawIntro(ctx); drawHint(ctx); if (QK) QK.drawBanner(ctx); drawClear(ctx);
       if (state === 'rescue') drawRescue(ctx);
       if (state === 'paused') drawPause(ctx);
     }
@@ -6219,7 +6634,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         get state() { return state; }, get dist() { return dist; }, get hearts() { return hearts; },
         get rescues() { return rescues; }, get speed() { return currentSpeed; }, get assist() { return assist; },
         get gapBonus() { return gapBonus; }, get shipY() { return ship.y; }, get currentsGot() { return currentsGot; },
-        obstacles: level.obstacles, currents: level.currents, total: level.total
+        obstacles: level.obstacles, currents: level.currents, total: level.total,
+        get quizTier() { return quizTier(); }, get shieldHits() { return shieldHits; }, get boostTime() { return boostTime; }, quiz: QK
       },
       enter() {
         S.unlock();
@@ -7620,6 +8036,24 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       });
     }) : [];
     const herbs = level.herbs.map(data => Object.assign({}, data, { got: false, pulse: 0 }));
+    // 아테나의 부엉이(?): 맞히면 몰리 약초 부채꼴이 단계마다 길고 넓어지고 금빛이 된다.
+    let quizFreeze = 0;
+    let quizShield = 0;   // 아테나의 숨결: 다음 피격 한 번을 막는다
+    const QK = ODY.Quiz ? ODY.Quiz.kit({
+      label: '몰리 약초',
+      promise: '맞히면 몰리 약초가 훨씬 멀리·넓게 퍼져요!',
+      heal() { if (hearts < 5) { hearts++; return '하트 +1'; } return null; },
+      defend() { quizShield = Math.min(4, quizShield + 1); return '아테나의 방패 +1'; },
+      wave() {
+        ODY.Quiz.waveFx(hero.x - cameraX, hero.y - cameraY);
+        quizFreeze = Math.max(quizFreeze, 2.5);
+        return '금빛 파동: 키르케 마법 2초 멈춤';
+      },
+      canAsk: () => state === 'run',
+      release: () => { releaseControls(); clearInputBuffers(); },
+      onResume() { hero.invin = Math.max(hero.invin, 1.5); }
+    }) : null;
+    if (QK) { QK.add(560, 470); QK.add(1560, 760); QK.add(2620, 1000); }
     const hazards = level.hazards.map(data => Object.assign({}, data, {
       path: data.path ? data.path.map(p => Object.assign({}, p)) : null,
       x: data.x || (data.from && data.from.x) || 0,
@@ -7774,9 +8208,12 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     }
 
     function castProfile() {
-      return assist
+      const profile = assist
         ? { range: 180, spread: Math.PI * 0.7, near: 48, buffer: 0.22, repeat: false }
         : { range: 146, spread: Math.PI * 0.46, near: 48, buffer: 0.22, repeat: false };
+      const tier = QK ? QK.tier : 0;
+      if (tier > 0) { profile.range *= 1 + 0.3 * tier; profile.spread += 0.12 * tier; }
+      return profile;
     }
 
     function updatePig(pig, dt) {
@@ -8005,6 +8442,14 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 
     function hurtHero(fromX, fromY) {
       if (state !== 'run' || hero.invin > 0) return;
+      if (quizShield > 0) {
+        quizShield--;
+        hero.invin = Math.max(hero.invin, 0.8);
+        F.flash('#fff3a0', 0.13);
+        F.pop(hero.x - cameraX, hero.y - cameraY - 70, '아테나의 방패!', '#fff3a8', 22);
+        if (S.shield) S.shield();
+        return;
+      }
       let dx = hero.x - fromX, dy = hero.y - fromY;
       const len = Math.hypot(dx, dy) || 1;
       if (!hero.hurt(dx / len, dy / len)) return;
@@ -8187,13 +8632,16 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       for (const decoy of decoys) if (!decoy.gone) updatePig(decoy, dt);
       openGateIfReady();
       updateHerbs(dt);
+      if (QK) for (const it of QK.items) {
+        if (!it.got && Math.hypot(hero.x - it.x, hero.y - it.y) <= hero.radius + 32) QK.take(it);
+      }
       updateTargeting();
 
       if (canMove && E.input.buffered('action', castProfile().buffer) && castCooldown <= 0) {
         E.input.consume('action');
         tryCast();
       }
-      if (state === 'run') updateHazards(dt);
+      if (state === 'run') { if (quizFreeze > 0) quizFreeze = Math.max(0, quizFreeze - dt); else updateHazards(dt); }
       else hazards.forEach(h => { h.bodies.length = 0; h.activeNow = false; });
 
       if (state === 'intro' && stateTime > 2.05) {
@@ -8207,6 +8655,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     }
 
     function update(dt, dtReal) {
+      if (QK && QK.update()) return;
       uiTime += dtReal;
       pauseInputLock = Math.max(0, pauseInputLock - dtReal);
       mute.update(dtReal); pauseButton.update(dtReal);
@@ -8372,6 +8821,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
             vx: hero.v.x, vy: hero.v.y, moving: hero.moveAmount > 0.08,
             blink: hero.blink, invin: hero.invin
           };
+          if (QK && QK.tier > 0) ODY.Quiz.drawTierGlow(ctx, p.x, p.y + 20, QK.tier, simTime);
+          if (quizShield > 0) ODY.Quiz.drawAegis(ctx, p.x, p.y - 8, quizShield, simTime, 46);
           if (hero.invin <= 0 || Math.floor(uiTime * 14) % 2 === 0) {
             Art.drawHero(ctx, proxy, p.x, p.y, simTime, F.clamp01(castTime / 0.24));
           }
@@ -8464,6 +8915,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       drawLeaf(ctx, 54, 91, 0.46, -0.15, '#87d5a0');
       ctx.fillStyle = '#fff8df'; ctx.font = '900 20px "Malgun Gothic", sans-serif'; ctx.textAlign = 'left';
       ctx.fillText('찾은 잎 ' + molyLeaves, 76, 98);
+      if (QK) QK.drawHud(ctx, 28, 121);
       UI.drawProgress(ctx, W * 0.5 - 154, 27, 308, cured / pigs.length);
       ctx.fillStyle = '#fff8df'; ctx.font = '900 16px "Malgun Gothic", sans-serif'; ctx.textAlign = 'center';
       ctx.fillText('친구 ' + cured + ' / ' + pigs.length, W * 0.5, 68);
@@ -8539,6 +8991,11 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       F.drawParticles(ctx, -1);
       for (const item of level.decor) drawDecor(ctx, item);
       drawHerbs(ctx);
+      if (QK) for (const it of QK.items) {
+        if (it.got) continue;
+        const p = worldToScreen(it.x, it.y);
+        if (p.x > -80 && p.x < W + 80 && p.y > -80 && p.y < H + 80) QK.drawItem(ctx, it, p.x, p.y, simTime);
+      }
       drawWalls(ctx);
       drawHazards(ctx);
       drawSilentGuide(ctx);
@@ -8547,12 +9004,13 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         const profile = castProfile();
         Art.drawHerbCone(ctx, { spread: profile.spread },
           hp.x, hp.y, castAngle, profile.range, simTime, F.clamp01(castTime / 0.24));
+        if (QK) ODY.Quiz.drawGoldCone(ctx, hp.x, hp.y, castAngle, profile.range, profile.spread, QK.tier, F.clamp01(castTime / 0.24));
       }
       drawActors(ctx);
       F.drawParticles(ctx, 0);
       Art.drawForeground(ctx, view, level, simTime);
       ctx.restore();
-      drawHUD(ctx); drawIntro(ctx); drawHint(ctx); drawClear(ctx);
+      drawHUD(ctx); drawIntro(ctx); drawHint(ctx); if (QK) QK.drawBanner(ctx); drawClear(ctx);
       if (state === 'rescue') drawRescue(ctx);
       if (state === 'paused') drawPause(ctx);
     }
@@ -8595,6 +9053,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         get hazardTime() { return hazardTime; }, get failures() { return failures; },
         get landedCasts() { return landedCasts; }, get missedCasts() { return missedCasts; },
         get castProfile() { return castProfile(); },
+        get quizTier() { return QK ? QK.tier : 0; }, get quizShield() { return quizShield; }, hurtHero, quiz: QK,
         pigs, herbs, hazards, level
       },
       enter() {
@@ -9310,6 +9769,28 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     let cameraX = F.clamp(level.start.x - W * 0.34, 0, level.worldW - W);
     let cameraY = F.clamp(level.start.y - H * 0.5, 0, level.worldH - H);
 
+    // 아테나의 부엉이(?): 맞히면 등불 — 단계마다 파동이 넓어지고 길이 더 오래 밝혀지며 금빛이 된다.
+    let quizShield = 0;   // 아테나의 숨결: 다음 피격 한 번을 막는다
+    const QK = ODY.Quiz ? ODY.Quiz.kit({
+      label: '아테나의 등불',
+      promise: '맞히면 등불이 더 넓게·오래 길을 밝혀요!',
+      heal() { if (hearts < 5) { hearts++; return '하트 +1'; } return null; },
+      defend() { quizShield = Math.min(4, quizShield + 1); return '아테나의 방패 +1'; },
+      wave() {
+        ODY.Quiz.waveFx(hero.x - cameraX, hero.y - cameraY);
+        for (const sh of shadows) sh.stun = Math.max(sh.stun || 0, 2.5);
+        return '금빛 파동: 그림자 2초 멈춤';
+      },
+      canAsk: () => state === 'run',
+      release: () => { releaseControls(); clearInputBuffers(); },
+      onResume() { hero.invin = Math.max(hero.invin, 1.5); }
+    }) : null;
+    if (QK) for (const id of ['olive-song', 'oar-promise', 'athena-wisdom']) {
+      const trail = level.trails.find(t => t.id === id);
+      if (!trail || trail.points.length < 2) continue;
+      const i = Math.floor((trail.points.length - 1) / 2), a = trail.points[i], b = trail.points[i + 1];
+      QK.add((a.x + b.x) * 0.5, (a.y + b.y) * 0.5);
+    }
     const memoryStars = level.memories.map(data => Object.assign({}, data, {
       collected: false,
       revealed: false,
@@ -9563,6 +10044,18 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     }
 
     function pulseProfile() {
+      const profile = basePulseProfile();
+      const tier = QK ? QK.tier : 0;
+      if (tier > 0) {
+        profile.radius *= 1 + 0.25 * tier;
+        profile.reveal += 1.5 * tier;
+        profile.stun += 0.6 * tier;
+        profile.cooldown = Math.max(0.3, profile.cooldown - 0.1 * tier);
+      }
+      return profile;
+    }
+
+    function basePulseProfile() {
       return assist ? {
         radius: level.lantern.assistRadius,
         reveal: level.lantern.assistRevealSeconds,
@@ -9593,7 +10086,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         age: 0,
         life: 0.72,
         radius: profile.radius,
-        automatic: !!automatic
+        automatic: !!automatic,
+        tier: QK ? QK.tier : 0
       });
 
       const sx = hero.x - cameraX;
@@ -9702,6 +10196,14 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 
     function hurtHero(fromX, fromY) {
       if ((state !== 'run' && state !== 'recover') || hero.invin > 0) return false;
+      if (quizShield > 0) {
+        quizShield--;
+        hero.invin = Math.max(hero.invin, 0.8);
+        F.flash('#fff3a0', 0.13);
+        F.pop(hero.x - cameraX, hero.y - cameraY - 70, '아테나의 방패!', '#fff3a8', 22);
+        if (S.shield) S.shield();
+        return false;
+      }
       let dx = hero.x - fromX;
       let dy = hero.y - fromY;
       const length = Math.hypot(dx, dy) || 1;
@@ -9875,6 +10377,9 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       }
 
       tryCollectMemory();
+      if (QK) for (const it of QK.items) {
+        if (!it.got && Math.hypot(hero.x - it.x, hero.y - it.y) <= hero.radius + 32) QK.take(it);
+      }
       for (const shadow of shadows) updateShadow(shadow, dt);
       updateDarkness(dt);
       checkReturn();
@@ -9891,6 +10396,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     }
 
     function update(dt, dtReal) {
+      if (QK && QK.update()) return;
       dt = Number.isFinite(dt) ? dt : 0;
       dtReal = Number.isFinite(dtReal) ? dtReal : dt;
       uiTime += dtReal;
@@ -10021,6 +10527,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       for (const actor of actors) {
         if (actor.kind === 'hero') {
           const point = worldToScreen(hero.x, hero.y);
+          if (QK && QK.tier > 0) ODY.Quiz.drawTierGlow(ctx, point.x, point.y + 20, QK.tier, simTime);
+          if (quizShield > 0) ODY.Quiz.drawAegis(ctx, point.x, point.y - 8, quizShield, simTime, 46);
           if (hero.invin <= 0 || Math.floor(uiTime * 14) % 2 === 0) {
             Art.drawHero(ctx, {
               sq: hero.sq,
@@ -10046,7 +10554,18 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     }
 
     function drawPulseWaves(ctx) {
-      for (const pulse of pulseWaves) Art.drawLanternPulse(ctx, pulse, cameraX, cameraY);
+      for (const pulse of pulseWaves) {
+        Art.drawLanternPulse(ctx, pulse, cameraX, cameraY);
+        if (pulse.tier > 0 && ODY.Quiz) {
+          // 금빛 파동: 지혜 단계가 높을수록 굵고 진하다.
+          const k = F.clamp01(pulse.age / Math.max(0.01, pulse.life));
+          const r = pulse.radius * (1 - Math.pow(1 - k, 3));
+          ctx.save(); ctx.globalAlpha = (1 - k) * 0.85;
+          ctx.strokeStyle = ODY.Quiz.gold(pulse.tier, 1); ctx.lineWidth = (4 + pulse.tier * 2) * (1 - k) + 1.5;
+          ctx.beginPath(); ctx.arc(pulse.x - cameraX, pulse.y - cameraY, r * 1.02, 0, Math.PI * 2); ctx.stroke();
+          ctx.restore();
+        }
+      }
     }
 
     function targetPoint() {
@@ -10126,6 +10645,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       Art.drawLanternIcon(ctx, 54, 91, 0.43, uiTime);
       ctx.fillStyle = '#fff8df'; ctx.font = '900 19px "Malgun Gothic", sans-serif'; ctx.textAlign = 'left';
       ctx.fillText(pulseCooldown <= 0 ? '등불 준비!' : '등불 반짝…', 78, 98);
+      if (QK) QK.drawHud(ctx, 28, 121);
       UI.drawProgress(ctx, W * 0.5 - 154, 27, 308, memories / memoryStars.length);
       ctx.fillStyle = '#fff8df'; ctx.font = '900 16px "Malgun Gothic", sans-serif'; ctx.textAlign = 'center';
       ctx.fillText('기억별 ' + memories + ' / ' + memoryStars.length, W * 0.5, 68);
@@ -10205,6 +10725,11 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       drawTrails(ctx);
       drawWalls(ctx);
       drawMemoryStars(ctx);
+      if (QK) for (const it of QK.items) {
+        if (it.got) continue;
+        const p = worldToScreen(it.x, it.y);
+        if (p.x > -80 && p.x < W + 80 && p.y > -80 && p.y < H + 80) QK.drawItem(ctx, it, p.x, p.y, simTime);
+      }
       drawSilentGuide(ctx);
       drawActors(ctx);
       drawPulseWaves(ctx);
@@ -10215,6 +10740,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       drawHUD(ctx);
       drawIntro(ctx);
       drawHint(ctx);
+      if (QK) QK.drawBanner(ctx);
       drawClear(ctx);
       if (state === 'rescue') drawRescue(ctx);
       if (state === 'paused') drawPause(ctx);
@@ -10293,7 +10819,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         shadows,
         trailStates,
         pulseWaves,
-        level
+        level,
+        get quizTier() { return QK ? QK.tier : 0; }, get quizShield() { return quizShield; }, hurtHero, get pulseProfile() { return pulseProfile(); }, quiz: QK
       },
       enter() {
         if (typeof S.unlock === 'function') S.unlock();
@@ -10694,7 +11221,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
   };
 
-  A.drawShip = function (ctx, ship, time, shield, shieldPower) {
+  A.drawShip = function (ctx, ship, time, shield, shieldPower, tier) {
     ctx.save();
     ctx.translate(ship.x, ship.y);
     ctx.rotate(ship.tilt || 0);
@@ -10728,6 +11255,18 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       ctx.beginPath(); ctx.ellipse(8, -16, 91 * shieldScale, 68 * shieldScale, 0, 0, TAU); ctx.stroke();
       ctx.strokeStyle = 'rgba(255,255,224,0.72)'; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.ellipse(8, -16, 78 * shieldScale, 57 * shieldScale, 0, 0, TAU); ctx.stroke();
+      if (tier > 0 && ODY.Quiz) {
+        // 아테나의 지혜 단계: 방패 바깥 금빛 테가 단계마다 하나씩 늘고 진해진다.
+        for (let i = 0; i < Math.ceil(tier); i++) {
+          ctx.strokeStyle = ODY.Quiz.gold(tier, 0.9 - i * 0.2); ctx.lineWidth = i === 0 ? 3 + tier * 1.5 : 3;
+          ctx.beginPath(); ctx.ellipse(8, -16, (99 + i * 10) * shieldScale, (75 + i * 8) * shieldScale, 0, 0, TAU); ctx.stroke();
+        }
+      }
+    }
+    if (tier > 0 && ODY.Quiz && !shield) {
+      // 방패를 안 펴도 돛대 위 작은 금빛 방패 표시가 지혜 단계를 보여 준다.
+      ctx.fillStyle = ODY.Quiz.gold(tier, 0.95); ctx.strokeStyle = INK; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.arc(14, -78, 8 + tier * 2, 0, TAU); ctx.fill(); ctx.stroke();
     }
     ctx.restore();
   };
@@ -10894,6 +11433,25 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     let shieldCooldown = 0;
     let shieldCount = 0;
     let hasShielded = false;
+    // 아테나의 부엉이(?): 맞히면 지혜의 방패 — 단계마다 더 오래·더 크게 뜨고 빨리 다시 펴지며 금빛이 된다.
+    const quizTier = () => (QK ? QK.tier : 0);
+    let quizGuard = 0;   // 아테나의 숨결: 다음 노래 한 번을 저절로 막는다
+    const QK = ODY.Quiz ? ODY.Quiz.kit({
+      label: '지혜의 방패',
+      promise: '맞히면 지혜의 방패가 더 크고 오래 떠요!',
+      heal() { if (hearts < 5) { hearts++; return '하트 +1'; } return null; },
+      defend() { quizGuard = Math.min(3, quizGuard + 1); shieldCooldown = 0; return '자동 방패 +1'; },
+      wave() {
+        ODY.Quiz.waveFx(ship.x, ship.y);
+        const gone = ODY.Quiz.ahead(level.waves, w => w.x - distance, ship.x - 60, 900, w => w.resolved || w.deep || w.safe);
+        for (const c of gone) { c.it.resolved = true; c.it.quizGone = true; if (c.sx < W + 60) F.sparkle(c.sx, c.it.y, '#ffe27a', 12); }
+        return '금빛 파동: 앞 노래 ' + gone.length + '개 사라짐';
+      },
+      canAsk: () => state === 'run',
+      release: () => releaseControls(),
+      onResume() { ship.invin = Math.max(ship.invin, 1.5); }
+    }) : null;
+    if (QK) { QK.add(2550, 170); QK.add(4150, 175); QK.add(8650, 175); }
     let checkpointIndex = 0;
     let consecutiveFailures = 0;
     let hintText = '';
@@ -11081,10 +11639,10 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       if (state !== 'run' && state !== 'intro' && state !== 'return') return;
       if (shieldCooldown > 0.12) return;
       E.input.consume('action');
-      const bonus = (1 - assistTarget) * 0.58;
+      const bonus = (1 - assistTarget) * 0.58 + quizTier() * 0.2;
       shieldWindow = 0.47 + bonus; // 보이는 시간 + 25fps 한 프레임의 여유.
       shieldVisible = 0.4 + bonus;
-      shieldCooldown = 0.61;
+      shieldCooldown = 0.61 - quizTier() * 0.08;
       shieldCount++;
       hasShielded = true;
       F.squash(ship.sq, 1.12, 0.89);
@@ -11133,6 +11691,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         return;
       }
       if (ship.invin > 0 || state !== 'run') return;
+      if (quizGuard > 0 && !wave.deep) { quizGuard--; blockWave(wave, sx); return; }
       hearts--;
       hits++;
       registerFailure();
@@ -11313,6 +11872,11 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       updateShip(dt, true);
       updateShield(dt);
       collectStars(dt);
+      if (QK) for (const it of QK.items) {
+        if (it.got) continue;
+        const dx = it.x - distance - ship.x, dy = it.y - ship.y;
+        if (dx * dx + dy * dy < 46 * 46) QK.take(it);
+      }
       updateWaves(previousDistance, dt);
       updateCheckpoint();
       updateMusic(false);
@@ -11326,6 +11890,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     }
 
     function update(dt, dtReal) {
+      if (QK && QK.update()) return;
       uiTime += dtReal;
       pauseInputLock = Math.max(0, pauseInputLock - dtReal);
       mute.update(dtReal); pauseButton.update(dtReal);
@@ -11431,6 +11996,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       ctx.beginPath(); ctx.arc(55, 91, 13, -1.7, 1.7); ctx.stroke();
       ctx.fillStyle = '#fff7df'; ctx.font = '900 20px "Malgun Gothic", sans-serif';
       ctx.textAlign = 'left'; ctx.fillText('막기 ' + blocked, 77, 99);
+      if (QK) QK.drawHud(ctx, 28, 121);
       UI.drawProgress(ctx, W * 0.5 - 160, 27, 320, distance / level.total);
       pauseButton.draw(ctx); mute.draw(ctx);
       if (E.isTouch && state !== 'paused' && state !== 'rescue' && state !== 'clear') {
@@ -11514,16 +12080,21 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       }
       for (const wave of level.waves) {
         const sx = wave.x - distance;
-        if (sx > -180 && sx < W + 190) {
+        if (sx > -180 && sx < W + 190 && !(wave.quizGone && wave.resolved)) {
           if (wave.deep) drawDeepWave(ctx, wave, sx); else Art.drawWave(ctx, wave, sx, simTime);
         }
       }
+      if (QK) for (const it of QK.items) {
+        const sx = it.x - distance;
+        if (!it.got && sx > -80 && sx < W + 90) QK.drawItem(ctx, it, sx, it.y, simTime);
+      }
       Art.drawSilentGuide(ctx, v, ship, shieldWindow > 0);
-      Art.drawShip(ctx, ship, simTime, shieldWindow > 0, shieldVisible > 0 ? shieldVisible / 0.4 : 0.18);
+      Art.drawShip(ctx, ship, simTime, shieldWindow > 0, shieldVisible > 0 ? shieldVisible / 0.4 : 0.18, quizTier());
+      if (quizGuard > 0) ODY.Quiz.drawAegis(ctx, ship.x + 6, ship.y - 16, quizGuard, simTime, 104);
       F.drawParticles(ctx, 0);
       Art.drawForeground(ctx, v);
       ctx.restore();
-      drawHUD(ctx); drawIntro(ctx); drawHint(ctx); drawClear(ctx);
+      drawHUD(ctx); drawIntro(ctx); drawHint(ctx); if (QK) QK.drawBanner(ctx); drawClear(ctx);
       if (state === 'rescue') drawRescue(ctx);
       if (state === 'paused') drawPause(ctx);
     }
@@ -11543,7 +12114,9 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         get deepHits() { return deepHits; },
         get ship() { return ship; },
         get waves() { return level.waves; },
-        level: level
+        level: level,
+        get quizTier() { return quizTier(); }, get shieldVisible() { return shieldVisible; }, get shieldCooldown() { return shieldCooldown; },
+        activateShield, quiz: QK, get quizGuard() { return quizGuard; }
       },
       enter() {
         if (typeof S.unlock === 'function') S.unlock();
@@ -12099,6 +12672,28 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     let failureStreak = 0;
     let stars = 0;
     let starGlow = 0;
+    // 아테나의 부엉이(?): 맞히면 아테나의 방패 — 단계마다 팔·소용돌이에 한 번 덜 다친다(최대 3).
+    let quizShield = 0;
+    const QK = ODY.Quiz ? ODY.Quiz.kit({
+      label: '아테나의 방패',
+      promise: '맞히면 아테나의 방패가 생겨요! (팔·소용돌이 한 번 막기)',
+      heal() { if (hearts < 5) { hearts++; return '하트 +1'; } return null; },
+      defend() { quizShield = Math.min(4, quizShield + 1); return '아테나의 방패 +1'; },
+      wave() {
+        ODY.Quiz.waveFx(ship.x, ship.y);
+        const gone = ODY.Quiz.ahead(level.hazards, h => h.x - distance, ship.x - 30, 900, h => h.hit);
+        for (const c of gone) { c.it.hit = true; c.it.quizGone = true; if (c.sx < W + 60) F.sparkle(c.sx, c.it.type === 'arm' ? 180 : c.it.y, '#ffe27a', 12); }
+        return '금빛 파동: 앞 팔·소용돌이 ' + gone.length + '개 사라짐';
+      },
+      canAsk: () => state === 'run',
+      release: () => releaseSteering(),
+      onGift(tier, prev, firstTry) {
+        const gained = Math.max(Math.floor(tier) - Math.floor(prev), prev >= ODY.Quiz.MAX && firstTry ? 1 : 0);
+        quizShield = Math.min(4, quizShield + gained);
+      },
+      onResume() { ship.invin = Math.max(ship.invin, 1.5); }
+    }) : null;
+    if (QK) { QK.add(1800, 360); QK.add(6200, 276); QK.add(9100, 190); }
     let hintText = '';
     let hintTime = 0;
     let clearBurst = false;
@@ -12240,6 +12835,16 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     function hit(hazard, pushDirection) {
       if (state !== 'run' || ship.invin > 0 || hazard.hit) return;
       hazard.hit = true;
+      if (quizShield > 0) {
+        quizShield--;
+        ship.invin = Math.max(ship.invin, 0.8);
+        F.doHitstop(0.045);
+        F.flash('#fff3a0', 0.13);
+        F.sparkle(ship.x + 14, ship.y, '#ffe875', 15);
+        F.pop(ship.x + 6, shipPopY(), '아테나의 방패!', '#fff3a8', 22);
+        if (S.shield) S.shield();
+        return;
+      }
       hearts--;
       hitSlow = 0.68;
       ship.hurt(pushDirection * 145);
@@ -12447,6 +13052,11 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       ship.update(dt, true);
       applyWhirlpoolPull(dt);
       updateStars(dt);
+      if (QK) for (const it of QK.items) {
+        if (it.got) continue;
+        const dx = it.x - distance - ship.x, dy = it.y - ship.y;
+        if (dx * dx + dy * dy < 48 * 48) QK.take(it);
+      }
       updateHazards(previousDistance);
       updateCheckpoint(); updateMusic(false);
       if (distance >= level.total) triggerClear();
@@ -12486,6 +13096,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     }
 
     function update(dt, dtReal) {
+      if (QK && QK.update()) return;
       dtReal = F.clamp(Number.isFinite(dtReal) ? dtReal : dt, 0, 0.08);
       dt = F.clamp(Number.isFinite(dt) ? dt : 0, 0, 0.05);
       uiTime += dtReal;
@@ -12549,6 +13160,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       ctx.fillStyle = '#ffe277'; ctx.font = '900 23px "Malgun Gothic", sans-serif'; ctx.textAlign = 'left';
       ctx.fillText('★', 45, 99);
       ctx.fillStyle = '#fff7df'; ctx.font = '900 21px "Malgun Gothic", sans-serif'; ctx.fillText('× ' + stars, 78, 99);
+      if (QK) QK.drawHud(ctx, 28, 121);
       UI.drawProgress(ctx, W * 0.5 - 160, 27, 320, distance / level.total);
       pauseButton.draw(ctx); mute.draw(ctx);
       if (E.isTouch && state !== 'paused' && state !== 'rescue' && state !== 'clear') { upButton.draw(ctx); downButton.draw(ctx); }
@@ -12622,19 +13234,24 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       F.drawParticles(ctx, -1);
       for (const hazard of level.hazards) {
         const sx = hazard.x - distance;
-        if (sx > -230 && sx < W + 250) Art.drawHazard(ctx, hazard, sx, simTime, assist);
+        if (sx > -230 && sx < W + 250 && !(hazard.quizGone && hazard.hit)) Art.drawHazard(ctx, hazard, sx, simTime, assist);
       }
       for (const star of level.stars) {
         if (star.got) continue;
         const sx = star.x - distance;
         if (sx > -90 && sx < W + 100) Art.drawStar(ctx, star, sx, simTime);
       }
+      if (QK) for (const it of QK.items) {
+        const sx = it.x - distance;
+        if (!it.got && sx > -90 && sx < W + 100) QK.drawItem(ctx, it, sx, it.y, simTime);
+      }
       Art.drawSilentGuide(ctx, view, ship);
       Art.drawShip(ctx, ship, simTime, starGlow > 0);
+      if (quizShield > 0) ODY.Quiz.drawAegis(ctx, ship.x, ship.y - 14, quizShield, simTime, 80);
       F.drawParticles(ctx, 0);
       Art.drawForeground(ctx, view);
       ctx.restore();
-      drawHUD(ctx); drawIntro(ctx); drawHint(ctx); drawClear(ctx);
+      drawHUD(ctx); drawIntro(ctx); drawHint(ctx); if (QK) QK.drawBanner(ctx); drawClear(ctx);
       if (state === 'rescue') drawRescue(ctx);
       if (state === 'paused') drawPause(ctx);
     }
@@ -12650,7 +13267,11 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       get hazards() { return level.hazards; },
       get stars() { return stars; },
       get level() { return level; },
-      get speed() { return speed; }
+      get speed() { return speed; },
+      get quizTier() { return QK ? QK.tier : 0; },
+      get quizShield() { return quizShield; },
+      hit,
+      quiz: QK
     };
 
     return {
@@ -13547,6 +14168,24 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     const trail = [{ x: level.start.x, y: level.start.y }];
     let train = [];
     const crumbs = level.crumbs.map(data => Object.assign({}, data, { got: false, pulse: 0 }));
+    // 아테나의 부엉이(?): 맞히면 부르는 소리 부채꼴이 단계마다 길고 넓어지고 금빛이 된다.
+    let quizFreeze = 0;
+    let quizShield = 0;   // 아테나의 숨결: 다음 피격 한 번을 막는다
+    const QK = ODY.Quiz ? ODY.Quiz.kit({
+      label: '부르는 소리',
+      promise: '맞히면 부르는 소리가 훨씬 멀리·넓게 퍼져요!',
+      heal() { if (hearts < 5) { hearts++; return '하트 +1'; } return null; },
+      defend() { quizShield = Math.min(4, quizShield + 1); return '아테나의 방패 +1'; },
+      wave() {
+        ODY.Quiz.waveFx(hero.x - cameraX, hero.y - cameraY);
+        quizFreeze = Math.max(quizFreeze, 2.5);
+        return '금빛 파동: 소들이 2초 멈춤';
+      },
+      canAsk: () => state === 'run',
+      release: () => { releaseControls(); clearInputBuffers(); },
+      onResume() { hero.invin = Math.max(hero.invin, 1.5); }
+    }) : null;
+    if (QK) { QK.add(560, 420); QK.add(1250, 880); QK.add(2640, 960); }
     const hazards = level.hazards.map(data => Object.assign({}, data, {
       path: data.path ? data.path.map(p => Object.assign({}, p)) : null,
       x: data.x || (data.from && data.from.x) || 0,
@@ -13701,9 +14340,12 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     }
 
     function callProfile() {
-      return assist
+      const profile = assist
         ? { range: 180, spread: Math.PI * 0.7, near: 48, buffer: 0.22, repeat: false }
         : { range: 146, spread: Math.PI * 0.46, near: 48, buffer: 0.22, repeat: false };
+      const tier = QK ? QK.tier : 0;
+      if (tier > 0) { profile.range *= 1 + 0.3 * tier; profile.spread += 0.12 * tier; }
+      return profile;
     }
 
     function updatePig(mate, dt) {
@@ -14021,6 +14663,14 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 
     function hurtHero(fromX, fromY) {
       if (state !== 'run' || hero.invin > 0) return;
+      if (quizShield > 0) {
+        quizShield--;
+        hero.invin = Math.max(hero.invin, 0.8);
+        F.flash('#fff3a0', 0.13);
+        F.pop(hero.x - cameraX, hero.y - cameraY - 70, '아테나의 방패!', '#fff3a8', 22);
+        if (S.shield) S.shield();
+        return;
+      }
       let dx = hero.x - fromX, dy = hero.y - fromY;
       const len = Math.hypot(dx, dy) || 1;
       if (!hero.hurt(dx / len, dy / len)) return;
@@ -14206,13 +14856,16 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       updateCamps(dt);
       openGateIfReady();
       updateCrumbs(dt);
+      if (QK) for (const it of QK.items) {
+        if (!it.got && Math.hypot(hero.x - it.x, hero.y - it.y) <= hero.radius + 32) QK.take(it);
+      }
       updateTargeting();
 
       if (canMove && E.input.buffered('action', callProfile().buffer) && callCooldown <= 0) {
         E.input.consume('action');
         tryCall();
       }
-      if (state === 'run') updateHazards(dt);
+      if (state === 'run') { if (quizFreeze > 0) quizFreeze = Math.max(0, quizFreeze - dt); else updateHazards(dt); }
       else hazards.forEach(h => { h.bodies.length = 0; h.activeNow = false; });
 
       if (state === 'intro' && stateTime > 2.05) {
@@ -14225,6 +14878,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     }
 
     function update(dt, dtReal) {
+      if (QK && QK.update()) return;
       uiTime += dtReal;
       pauseInputLock = Math.max(0, pauseInputLock - dtReal);
       mute.update(dtReal); pauseButton.update(dtReal);
@@ -14389,6 +15043,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
             vx: hero.v.x, vy: hero.v.y, moving: hero.moveAmount > 0.08,
             blink: hero.blink, invin: hero.invin
           };
+          if (QK && QK.tier > 0) ODY.Quiz.drawTierGlow(ctx, p.x, p.y + 20, QK.tier, simTime);
+          if (quizShield > 0) ODY.Quiz.drawAegis(ctx, p.x, p.y - 8, quizShield, simTime, 46);
           if (hero.invin <= 0 || Math.floor(uiTime * 14) % 2 === 0) {
             Art.drawHero(ctx, proxy, p.x, p.y, simTime, F.clamp01(callTime / 0.24));
           }
@@ -14456,6 +15112,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       ctx.fillText('🍞', 40, 99);
       ctx.fillStyle = '#fff8df'; ctx.font = '900 20px "Malgun Gothic", sans-serif';
       ctx.fillText('데려가는 중 ' + train.length + '/' + trainLimit(), 70, 98);
+      if (QK) QK.drawHud(ctx, 28, 121);
       UI.drawProgress(ctx, W * 0.5 - 154, 27, 308, home / mates.length);
       ctx.fillStyle = '#fff8df'; ctx.font = '900 16px "Malgun Gothic", sans-serif'; ctx.textAlign = 'center';
       ctx.fillText('모닥불 ' + home + ' / ' + mates.length, W * 0.5, 68);
@@ -14532,6 +15189,11 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       for (const item of level.decor) drawDecor(ctx, item);
       drawCamps(ctx);
       drawCrumbs(ctx);
+      if (QK) for (const it of QK.items) {
+        if (it.got) continue;
+        const p = worldToScreen(it.x, it.y);
+        if (p.x > -80 && p.x < W + 80 && p.y > -80 && p.y < H + 80) QK.drawItem(ctx, it, p.x, p.y, simTime);
+      }
       drawWalls(ctx);
       drawHazards(ctx);
       drawSilentGuide(ctx);
@@ -14540,12 +15202,13 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         const profile = callProfile();
         Art.drawHerbCone(ctx, { spread: profile.spread },
           hp.x, hp.y, callAngle, profile.range, simTime, F.clamp01(callTime / 0.24));
+        if (QK) ODY.Quiz.drawGoldCone(ctx, hp.x, hp.y, callAngle, profile.range, profile.spread, QK.tier, F.clamp01(callTime / 0.24));
       }
       drawActors(ctx);
       F.drawParticles(ctx, 0);
       Art.drawForeground(ctx, view, level, simTime);
       ctx.restore();
-      drawHUD(ctx); drawIntro(ctx); drawHint(ctx); drawClear(ctx);
+      drawHUD(ctx); drawIntro(ctx); drawHint(ctx); if (QK) QK.drawBanner(ctx); drawClear(ctx);
       if (state === 'rescue') drawRescue(ctx);
       if (state === 'paused') drawPause(ctx);
     }
@@ -14590,6 +15253,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         get train() { return train.length; }, get trainLimit() { return trainLimit(); },
         get camps() { return camps; },
         get callProfile() { return callProfile(); },
+        get quizTier() { return QK ? QK.tier : 0; }, get quizShield() { return quizShield; }, hurtHero, quiz: QK,
         mates, crumbs, hazards, level
       },
       enter() {
@@ -15368,6 +16032,27 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     let finishSent = false;
     let clearBurst = false;
     const suitor = { rise: 0, clock: 2.2, phase: 'down', bonk: 0 };
+    // 아테나의 부엉이(?): 3·5번째 화살 전에 부엉이가 날아온다. 누르면 문제, 기다리면 그냥 지나간다.
+    // 맞히면 금빛 띠(허용 오차)가 단계마다 6씩 넓어지고 테두리가 금빛이 된다. 0단계면 기존과 똑같다.
+    const QK = ODY.Quiz ? ODY.Quiz.kit({
+      label: '금빛 띠',
+      promise: '맞히면 금빛 띠가 넓어져서 맞히기 쉬워요!',
+      defend() { shotBonus = Math.min(36, shotBonus + 18); return '다음 한 발 금빛 띠 넓게'; },
+      wave() {
+        ODY.Quiz.waveFx(TABLE_X + 20, TABLE_TOP - 40);
+        let rr = round;
+        while (rr < ROUNDS.length - 1 && !ROUNDS[rr].suitor) rr++;
+        suitorRestRound = rr;
+        return rr === round ? '금빛 파동: 이번 화살엔 구혼자 방패 없음' : '금빛 파동: 다음 구혼자 방패 한 번 쉬기';
+      },
+      canAsk: () => state === 'owl',
+      release: () => { E.input.consume('action'); E.input.consume('jump'); E.input.consume('ok'); },
+      onResume() { startRound(); }
+    }) : null;
+    let shotBonus = 0;          // 아테나의 숨결: 다음 한 발만 띠가 넓어진다
+    let suitorRestRound = -1;   // 금빛 파동: 이 라운드에는 구혼자가 일어나지 않는다
+    const owlRounds = QK && QK.on ? { 2: QK.add(560, 205), 4: QK.add(560, 205) } : {};
+    let owlItem = null;
 
     const mute = UI.makeMuteBtn();
     const resumeButton = new UI.Button({ x: W * 0.5, y: 360, w: 244, h: 66, label: '계속 쏘기', size: 27, color: '#8dd6bd', onTap: resumeFromPause });
@@ -15386,9 +16071,11 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     const shootButton = { x: W - 86, y: H - 82, r: 62, sq: F.makeSquash() };
 
     function cfg() { return ROUNDS[Math.min(round, ROUNDS.length - 1)]; }
-    function tolerance() { return cfg().tol + Math.min(24, streakMiss * 8); }
+    function quizTol() { return QK ? QK.tier * 10 + shotBonus : 0; }
+    function suitorRound() { return cfg().suitor && suitorRestRound !== round; }
+    function tolerance() { return cfg().tol + Math.min(24, streakMiss * 8) + quizTol(); }
     function aligned() { return Math.abs(aimY - ringY) <= tolerance(); }
-    function blocked() { return cfg().suitor && suitor.rise > 0.45; }
+    function blocked() { return suitorRound() && suitor.rise > 0.45; }
     function axeX(i) { return AXE_X0 + i * AXE_GAP; }
 
     function hint(text, seconds) { hintText = text; hintTime = seconds || 4.4; UI.announce(text); }
@@ -15400,9 +16087,21 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       hint(cfg().text, 4.2);
     }
 
+    function startOwl(item) {
+      state = 'owl'; stateTime = 0; owlItem = item;
+      arrow = null; litCount = 0; pull = 0;
+      hint('아테나의 부엉이! 누르면 문제가 나와요. 기다리면 그냥 지나가요.', 4.6);
+    }
+
+    function takeOwl() {
+      if (state !== 'owl' || !owlItem || stateTime < 0.5) return;
+      QK.take(owlItem);
+    }
+
     function shoot() {
       if (state !== 'aim' || stateTime < 0.35) return;
       const ok = aligned() && !blocked();
+      shotBonus = 0;
       const why = blocked() ? 'suitor' : (aimY < ringY ? 'high' : 'low');
       arrow = { x: ARCHER_X + 40, y: aimY, ok, why, vx: 1350, fall: 0, vy: 0, stuck: false };
       litCount = 0;
@@ -15433,7 +16132,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 
     function updateSuitor(dt) {
       suitor.bonk = Math.max(0, suitor.bonk - dt);
-      if (!cfg().suitor) { suitor.rise = Math.max(0, suitor.rise - dt * 4); return; }
+      if (!suitorRound()) { suitor.rise = Math.max(0, suitor.rise - dt * 4); return; }
       suitor.clock -= dt;
       if (suitor.phase === 'down' && suitor.clock <= 0) { suitor.phase = 'warn'; suitor.clock = 0.75; }
       else if (suitor.phase === 'warn' && suitor.clock <= 0) { suitor.phase = 'up'; suitor.clock = 1.7; }
@@ -15456,7 +16155,11 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       if (arrow.stuck) {
         if (stateTime > (arrow.ok ? 1.25 : 1.1)) {
           if (arrow.ok && passed >= ROUNDS.length) triggerClear();
-          else { if (arrow.ok) round++; startRound(); }
+          else {
+            if (arrow.ok) round++;
+            const owl = arrow.ok ? owlRounds[round] : null;
+            if (owl && !owl.got && !owl.skipped) startOwl(owl); else startRound();
+          }
         }
         return;
       }
@@ -15516,6 +16219,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     }
 
     function update(dt, dtReal) {
+      if (QK && QK.update()) return;
       uiTime += dtReal;
       mute.update(dtReal); pauseButton.update(dtReal); F.updSquash(shootButton.sq, dtReal);
       if (UI.handleMuteKey) UI.handleMuteKey(mute);
@@ -15547,6 +16251,12 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         if (pressed) shoot();
         return;
       }
+      if (state === 'owl') {
+        updateAim(dt); updateSuitor(dt);
+        if (pressed) takeOwl();
+        if (state === 'owl' && owlItem && !owlItem.got && stateTime > 5.2) { owlItem.skipped = true; startRound(); }
+        return;
+      }
       if (state === 'flight') {
         updateSuitor(dt);
         swayPhase += dt * 0.95; ringY = RING_BASE + Math.sin(swayPhase) * cfg().sway;
@@ -15570,6 +16280,12 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       const x0 = ARCHER_X + 40, x1 = TARGET_X - 20;
       ctx.fillStyle = good ? 'rgba(255,230,120,0.42)' : 'rgba(255,220,110,0.2)';
       UI.rr(ctx, x0, ringY - tol, x1 - x0, tol * 2, tol); ctx.fill();
+      const qt = QK ? QK.tier : 0;
+      if (qt > 0) {
+        // 아테나의 선물: 넓어진 띠 테두리가 단계마다 굵고 진한 금빛.
+        ctx.strokeStyle = ODY.Quiz.gold(qt, 0.85); ctx.lineWidth = 2 + qt * 1.5;
+        UI.rr(ctx, x0, ringY - tol, x1 - x0, tol * 2, tol); ctx.stroke();
+      }
       if (state === 'aim' || state === 'intro') {
         // 화살 끝 동그라미
         const tipX = ARCHER_X + 22 - pull * 16 + 96;
@@ -15628,6 +16344,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         ctx.restore();
       }
       UI.drawProgress(ctx, W * 0.5 - 150, 27, 300, passed / ROUNDS.length);
+      if (QK) QK.drawHud(ctx, 26, 72);
       pauseButton.draw(ctx); mute.draw(ctx);
       drawShootButton(ctx);
     }
@@ -15697,9 +16414,14 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         ctx.restore();
       }
       drawKids(ctx);
+      if (state === 'owl' && owlItem && !owlItem.got) {
+        // 오른쪽에서 날아 들어와 금빛 띠 위에 머문다. 5초쯤 뒤 그냥 날아간다.
+        const inK = F.ease.outBack(F.clamp01(stateTime / 0.7)), outK = F.clamp01((stateTime - 4.6) / 0.6);
+        QK.drawItem(ctx, owlItem, W + 90 + (owlItem.x - W - 90) * inK - outK * 700, owlItem.y - outK * 160, uiTime);
+      }
       F.drawParticles(ctx, 0);
       ctx.restore();
-      drawHUD(ctx); drawIntro(ctx); drawHint(ctx); drawClear(ctx);
+      drawHUD(ctx); drawIntro(ctx); drawHint(ctx); if (QK) QK.drawBanner(ctx); drawClear(ctx);
       if (state === 'paused') drawPause(ctx);
     }
 
@@ -15715,7 +16437,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         get blocked() { return blocked(); },
         get tolerance() { return tolerance(); },
         get suitor() { return suitor.phase; },
-        shoot
+        shoot,
+        get quizTier() { return QK ? QK.tier : 0; }, quiz: QK, takeOwl
       },
       enter() {
         if (typeof S.unlock === 'function') S.unlock();
@@ -15736,6 +16459,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         if (state === 'paused') { resumeButton.pointer(type, x, y); return; }
         // 아이 손은 어디를 눌러도 쏠 수 있다(쏘기 버튼은 눈에 보이는 안내).
         F.squash(shootButton.sq, 0.9, 0.87);
+        if (state === 'owl') { takeOwl(); return; }
         if (state === 'intro' && stateTime > 0.6) { startRound(); return; }
         shoot();
       },
@@ -15864,13 +16588,20 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     if (canvas) canvas.setAttribute('aria-label', text);
   }
 
+  let titleScene = null;
   function showTitle() {
     setCanvasLabel('오디세우스가 이타카로 돌아가는 여러 액션 모험');
     announce('히어로 고. 모험 시작 버튼이 있어요.');
-    ODY.E.setScene(ODY.UI.TitleScene(startAdventure, () => showAdventureSelect(null)));
+    titleScene = ODY.UI.TitleScene(startAdventure, () => showAdventureSelect(null));
+    ODY.E.setScene(titleScene);
   }
 
-  function startAdventure() {
+  function startAdventure(kidAsked) {
+    // 아테나의 부엉이 문제를 누가 푸는지 모르면 모험 전에 한 번만 묻는다(GameQuiz 가 없으면 건너뛴다).
+    if (kidAsked !== true && ODY.Quiz && ODY.Quiz.needKid()) {
+      if (!ODY.Quiz.isOpen()) ODY.Quiz.ensureKid().then(() => { if (ODY.E.scene === titleScene) startAdventure(true); });
+      return;
+    }
     const route = getStartRoute(loadProgress());
     if (route.screen === 'story') startCyclopsStory();
     else showJourneyMap(route.stage);

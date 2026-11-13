@@ -76,7 +76,7 @@ test("runtime wiring gives choice and legacy quick entries without a timer gate,
   const html=fs.readFileSync(path.join(root,"math/index.html"),"utf8"),hub=fs.readFileSync(path.join(root,"game/index.html"),"utf8");
   a.match(app,/hubRun:hubRun/);a.match(app,/HubCredits\.record\(storage, hubRun \+ ":" \+ index\)/);
   a.match(app,/if \(hubQuick\)/);a.match(app,/start\("quick"\)/);
-  a.doesNotMatch(html,/play-timer\.js/);a.match(html,/math-credits\.js\?v=2/);a.match(html,/app\.js\?v=36/);
+  a.doesNotMatch(html,/play-timer\.js/);a.match(html,/math-credits\.js\?v=2/);a.match(html,/app\.js\?v=37/);
   a.match(hub,/HubMathCredits\.flush\(localStorage\)/);
   const limits=hub.match(/var SET = (\d+), DAILY = (\d+);/);
   a.equal(Number(limits[1]),credits.SET);a.equal(Number(limits[2]),credits.DAILY);

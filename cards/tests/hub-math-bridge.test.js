@@ -25,6 +25,11 @@ test("age selection clamps the shared playground level without erasing progress"
   assert.equal(B.setAge(storage, profile.state, 8), 8);
   assert.equal(profile.state.level, 5);
   assert.equal(storage.getItem(B.AGE_KEY), "8");
+  // 10세 이상: 13단계(곱셈구구)부터. 8·9세 상한도 19라 13 이상 기록이 깎이지 않는다
+  assert.equal(B.setAge(storage, profile.state, 10), 10);
+  assert.equal(profile.state.level, 13);
+  assert.equal(B.setAge(storage, profile.state, 9), 9);
+  assert.equal(profile.state.level, 13);
 });
 
 test("dashboard questions come from the real curriculum with plausible unique choices", () => {
@@ -36,7 +41,13 @@ test("dashboard questions come from the real curriculum with plausible unique ch
   assert.equal(dashboard.seed.type, "playground");
   assert.ok(dashboard.choices.includes(problem.answer));
   assert.equal(new Set(dashboard.choices).size, 3);
+  // 정답이 100 이하인 문제(1~12단계)는 보기도 0..100 안
+  assert.ok(problem.answer <= 100);
   assert.ok(dashboard.choices.every(value => value >= 0 && value <= 100));
+  // 정답이 100 넘는 문제(15·17단계)도 보기 3개가 서로 다르고 [정답, +1, +2] 로 퇴화하지 않는다
+  const big = C.makeProblem(15, rng(15), "add3"), bigChoices = B.choices(big, rng(16));
+  assert.ok(big.answer > 100 && bigChoices.includes(big.answer) && new Set(bigChoices).size === 3);
+  assert.ok(Math.max(...bigChoices) - Math.min(...bigChoices) > 2, bigChoices.join(","));
   state.level = 12;
   const younger = B.next(state, 5, rng(14), "", "2026-09-09");
   assert.equal(younger.level, 2);
@@ -80,7 +91,7 @@ test("hub loads math modules in order and exposes age, shared stage and math rev
   assert.match(html, /window\.HubMath\.next\(mathState/);
   assert.match(html, /window\.HubMath\.record\(localStorage, mathState/);
   assert.match(bridge, /재이의 수학놀이터 문제예요/);
-  for (const asset of ["./math/curriculum.js?v=20", "./math/learning.js?v=29", "./math/store.js?v=32", "./assets/study/math-bridge.js?v=2"]) {
+  for (const asset of ["./math/curriculum.js?v=21", "./math/learning.js?v=30", "./math/store.js?v=34", "./assets/study/math-bridge.js?v=3"]) {
     assert.ok(sw.CORE_SHELL.includes(asset), asset);
   }
 });

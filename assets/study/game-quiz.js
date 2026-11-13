@@ -1,11 +1,11 @@
 /* GameQuiz — 여러 게임이 같이 쓰는 "게임 안 수학 문제" (아이별 난이도·아이별 기록)
  *
  * 불러오는 순서(일반 <script>, ES 모듈 게임에서도 이 태그들을 HTML 에 먼저 둔다):
- *   <script src="../math/curriculum.js?v=20"></script>
- *   <script src="../math/learning.js?v=29"></script>
- *   <script src="../math/store.js?v=32"></script>
- *   <script src="../assets/study/math-bridge.js?v=2"></script>
- *   <script src="../assets/study/game-quiz.js?v=1"></script>
+ *   <script src="../math/curriculum.js?v=21"></script>
+ *   <script src="../math/learning.js?v=30"></script>
+ *   <script src="../math/store.js?v=34"></script>
+ *   <script src="../assets/study/math-bridge.js?v=3"></script>
+ *   <script src="../assets/study/game-quiz.js?v=2"></script>
  *
  * 쓰는 법:
  *   // 1) 누가 하는지 모르면 먼저 묻는다(이미 골랐으면 그 아이).
@@ -31,7 +31,7 @@
 
   /* ---------- 아이 ---------- */
   var KIDS = Object.freeze([
-    Object.freeze({ id: "yunchan", name: "윤찬", age: 10, start: 12 }),   // start: 새 기록의 시작 단계(커리큘럼 최고 12 = 2학년 1학기 끝 단계)
+    Object.freeze({ id: "yunchan", name: "윤찬", age: 10, start: 13 }),   // start: 새 기록의 시작 단계(13 = 2학년 2학기 곱셈구구). 옛 기록은 boost 로 한 번만 올린다
     Object.freeze({ id: "jaei", name: "재이", age: 8 }),
     Object.freeze({ id: "yungeon", name: "윤건", age: 7 }),
     Object.freeze({ id: "taeo", name: "태오", age: 5 })
@@ -46,7 +46,7 @@
   // 허브 AGE_BANDS 와 같은 표(허브 모듈을 못 읽었을 때만 쓴다).
   var BANDS_FALLBACK = {
     5: { start: 1, cap: 2 }, 6: { start: 1, cap: 4 }, 7: { start: 3, cap: 10 },
-    8: { start: 5, cap: 12 }, 9: { start: 5, cap: 12 }
+    8: { start: 5, cap: 19 }, 9: { start: 5, cap: 19 }, 10: { start: 13, cap: 19 }
   };
 
   function mods() {
@@ -68,9 +68,9 @@
     for (var i = 0; i < KIDS.length; i++) if (KIDS[i].id === id) return KIDS[i];
     return null;
   }
-  // 나이 → 단계 범위. 허브 AGE_BANDS 를 그대로 쓰되 9세 이상은 9 칸(허브의 age() 는 10 을 7 로 바꿔 버린다).
+  // 나이 → 단계 범위. 허브 AGE_BANDS 를 그대로 쓰되 10세 이상은 10 칸.
   function bandForAge(age) {
-    var n = Math.min(9, Math.max(5, parseInt(age, 10) || 7)), m = mods();
+    var n = Math.min(10, Math.max(5, parseInt(age, 10) || 7)), m = mods();
     var b = m.H && m.H.AGE_BANDS && m.H.AGE_BANDS[n] ? m.H.AGE_BANDS[n] : BANDS_FALLBACK[n];
     return { age: n, start: b.start, cap: b.cap };
   }
@@ -113,17 +113,21 @@
 
   /* ---------- 예비 문제(수학 모듈을 못 읽었을 때) ---------- */
   function rint(rng, a, b) { return a + Math.floor(rng() * (b - a + 1)); }
-  function choicesFor(answer, rng) {
+  function choicesFor(answer, rng, distractors) {
     var m = mods();
-    if (m.H && m.H.choices) { try { return m.H.choices({ answer: answer }, rng); } catch (_) {} }
+    if (m.H && m.H.choices) { try { return m.H.choices({ answer: answer, distractors: distractors }, rng); } catch (_) {} }
     var out = [answer], tries = 0;
     while (out.length < 3 && tries++ < 50) { var v = answer + rint(rng, -3, 3); if (v >= 0 && out.indexOf(v) < 0) out.push(v); }
     while (out.length < 3) out.push(answer + out.length);
     return out.sort(function (a, b) { return a - b; });
   }
   function fallbackProblem(age, rng) {
-    var a, b, text, answer;
-    if (age <= 5) { a = rint(rng, 1, 4); b = rint(rng, 1, 5 - a); text = a + " + " + b + " = □"; answer = a + b; }
+    var a, b, text, answer, wrong;
+    if (age >= 10) {
+      // 10세 이상: 곱셈구구(2~9단). 오답은 옆 단 값(한 묶음 많거나 적게)
+      a = rint(rng, 2, 9); b = rint(rng, 2, 9); text = a + " × " + b + " = □"; answer = a * b;
+      wrong = [a * (b - 1), a * (b + 1), (a + 1) * b];
+    } else if (age <= 5) { a = rint(rng, 1, 4); b = rint(rng, 1, 5 - a); text = a + " + " + b + " = □"; answer = a + b; }
     else if (age <= 7) {
       if (rng() < 0.5) { a = rint(rng, 1, 8); b = rint(rng, 1, 9 - a); text = a + " + " + b + " = □"; answer = a + b; }
       else { a = rint(rng, 3, 10); b = rint(rng, 1, a - 1); text = a + " − " + b + " = □"; answer = a - b; }
@@ -131,7 +135,7 @@
       if (rng() < 0.5) { a = rint(rng, 12, 68); b = rint(rng, 3, 9); text = a + " + " + b + " = □"; answer = a + b; }
       else { a = rint(rng, 21, 89); b = rint(rng, 3, 9); text = a + " − " + b + " = □"; answer = a - b; }
     }
-    return { text: text, answer: answer, choices: choicesFor(answer, rng), level: 0, type: "fallback", key: "fb:" + text, raw: null };
+    return { text: text, answer: answer, choices: choicesFor(answer, rng, wrong), level: 0, type: "fallback", key: "fb:" + text, raw: null };
   }
 
   /* ---------- 아이별 문제 공급 ----------

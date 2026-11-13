@@ -94,7 +94,7 @@
       const detail=document.createElement("small"); detail.textContent=skill.count ? "최근 독립 해결 "+skill.correct+"/"+skill.count+" · 성공한 날 "+skill.days+"일 · "+(skill.mastered?"다른 날에도 해냈어요":"더 살펴보는 중") : "아직 만나지 않은 개념";
       cell.append(title,detail);skillList.appendChild(cell);
     });
-    $("familyPlay").textContent=state.level <= 4 ? "오늘 함께할 놀이: 블록을 10개 놓고 일부를 가려 주세요. 보이는 수와 가려진 수를 어떻게 알았는지 들어 주세요." : state.level === 5 ? "오늘 함께할 놀이: 빨대를 10개씩 묶고 낱개를 더해 수를 만들어 보세요. 십과 일을 나눠 설명하는지 살펴보세요." : "오늘 함께할 놀이: 간식 가게를 열어 더하거나 남기는 상황을 만들어 보세요. 답을 구한 방법을 재이의 말로 들어 주세요.";
+    $("familyPlay").textContent=state.level >= 13 ? "오늘 함께할 놀이: 과자를 접시에 똑같이 나눠 담거나, 몇 개씩 몇 묶음인지 세어 보세요. 곱셈과 나눗셈을 어떻게 생각했는지 재이의 말로 들어 주세요." : state.level <= 4 ? "오늘 함께할 놀이: 블록을 10개 놓고 일부를 가려 주세요. 보이는 수와 가려진 수를 어떻게 알았는지 들어 주세요." : state.level === 5 ? "오늘 함께할 놀이: 빨대를 10개씩 묶고 낱개를 더해 수를 만들어 보세요. 십과 일을 나눠 설명하는지 살펴보세요." : "오늘 함께할 놀이: 간식 가게를 열어 더하거나 남기는 상황을 만들어 보세요. 답을 구한 방법을 재이의 말로 들어 주세요.";
 
     const rows = $("levelRows"); rows.textContent = "";
     S.levelSummary(state).forEach(function (r) {

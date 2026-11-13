@@ -2,7 +2,10 @@
 (function(root) {
   'use strict';
   const C = root.Curriculum || (typeof require !== 'undefined' ? require('./curriculum.js') : null);
-  const LABELS = {split:'수 가르기',join:'수 모으기',add:'덧셈',sub:'뺄셈',missing:'빈칸 찾기',split10:'10 가르기',make10:'10 만들기',from10:'10에서 빼기',tensCount:'10개씩 묶음',tensOnes:'십과 일',readKor:'한글 수 읽기',readSino:'숫자 읽기',nextNum:'다음 수',prevNum:'앞의 수',tenMore:'10만큼 뛰기',seq:'수의 순서',bigger:'큰 수',smaller:'작은 수',hundred:'100 이해하기',boxes:'묶음 세기',leftover:'남는 낱개',biggest2:'가장 큰 수 만들기',smallest2:'가장 작은 수 만들기',evenPick:'짝수',oddPick:'홀수',teenAdd:'10과 몇',teenSub:'십몇에서 빼기',three:'세 수 계산',twoOne:'두 자리와 한 자리',tensTens:'몇십끼리 계산',twoTwo:'두 자리끼리 계산',carry:'10을 만들어 더하기',borrow:'10을 나누어 빼기',carry2:'두 자리 받아올림',borrow2:'두 자리 받아내림'};
+  const LABELS = {split:'수 가르기',join:'수 모으기',add:'덧셈',sub:'뺄셈',missing:'빈칸 찾기',split10:'10 가르기',make10:'10 만들기',from10:'10에서 빼기',tensCount:'10개씩 묶음',tensOnes:'십과 일',readKor:'한글 수 읽기',readSino:'숫자 읽기',nextNum:'다음 수',prevNum:'앞의 수',tenMore:'10만큼 뛰기',seq:'수의 순서',bigger:'큰 수',smaller:'작은 수',hundred:'100 이해하기',boxes:'묶음 세기',leftover:'남는 낱개',biggest2:'가장 큰 수 만들기',smallest2:'가장 작은 수 만들기',evenPick:'짝수',oddPick:'홀수',teenAdd:'10과 몇',teenSub:'십몇에서 빼기',three:'세 수 계산',twoOne:'두 자리와 한 자리',tensTens:'몇십끼리 계산',twoTwo:'두 자리끼리 계산',carry:'10을 만들어 더하기',borrow:'10을 나누어 빼기',carry2:'두 자리 받아올림',borrow2:'두 자리 받아내림',
+    mulFact:'곱셈구구',mulGroups:'묶어 세기 곱셈',mulTimes:'몇의 몇 배',mulMissing:'빈칸 곱셈',add3:'세 자리 덧셈',sub3:'세 자리 뺄셈',story3:'세 자리 문장제',
+    divFact:'나눗셈',divShare:'똑같이 나누기',divGroups:'몇씩 묶어 나누기',mulTens:'몇십 곱하기',mul21:'두 자리 × 한 자리',mul21Story:'곱셈 문장제',
+    divQuot:'나눗셈의 몫',divRem:'나눗셈의 나머지',placeDigit:'네 자리 수 자릿값',fracOf:'몇의 분수만큼',fracCount:'분수 알기',bigDigit:'큰 수의 자릿값'};
   const skillKey = p => p.level + ':' + p.type;
   function evidence(events) {
     const last = (events || []).slice(-6), good = last.filter(e => e.ok);
@@ -97,6 +100,18 @@
       case 'sub': case 'from10': case 'teenSub': return '처음 있던 것에서 덜어 낼 만큼 가려 봐요. 무엇이 남았나요?';
       case 'split': case 'missing': return '전체에서 이미 있는 것을 찾아요. 더 필요한 만큼 하나씩 세어 봐요.';
       case 'nextNum': case 'prevNum': case 'seq': return '수직선에서 한 칸씩 움직이며 수의 순서를 생각해 봐요.';
+      case 'mulFact': case 'mulGroups': case 'mulTimes': return '같은 수를 여러 번 더해 봐요. 구구단을 차례로 외워 봐도 좋아요.';
+      case 'mulMissing': return '그 단 구구단을 차례로 외우다가 곱이 나오는 곳에서 멈춰 봐요.';
+      case 'add3': return '일, 십, 백의 자리 순서로 더해요. 10이 넘으면 윗자리에 1을 올려요.';
+      case 'sub3': return '일의 자리부터 빼요. 모자라면 윗자리에서 10을 빌려 와요.';
+      case 'story3': return '"모두"는 더하기, "남은 것"은 빼기예요. 식부터 세워 봐요.';
+      case 'divFact': case 'divShare': case 'divGroups': return '곱셈구구를 거꾸로 생각해요. 몇을 곱하면 이 수가 될까요?';
+      case 'mulTens': return '0을 떼고 곱한 다음, 0을 다시 붙여 봐요.';
+      case 'mul21': case 'mul21Story': return '십의 자리와 일의 자리를 따로 곱한 다음 더해 봐요.';
+      case 'divQuot': case 'divRem': return '나누는 수의 단에서 넘지 않는 가장 큰 곱을 찾아요. 남는 것이 나머지예요.';
+      case 'placeDigit': case 'bigDigit': return '오른쪽 끝이 일의 자리예요. 일, 십, 백, 천, 만 순서로 왼쪽으로 세어 봐요.';
+      case 'fracOf': return '전체를 분모만큼 똑같이 나누고, 분자만큼 모아 세어 봐요.';
+      case 'fracCount': return '분모는 똑같이 나눈 조각 수, 분자는 그중 몇 조각인지예요.';
       default: return '그림을 볼까요? 10개씩 묶음과 낱개를 나누어 생각해 봐요.';
     }
   }

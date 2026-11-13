@@ -53,14 +53,36 @@ test('spots avoid item-box rows, ramps and ice', () => {
   }
 });
 
-test('first-try answers climb red → blue → rainbow; rainbow is one second longer; retries drop a step', () => {
-  let r = Q.quizReward(0, true); assert.deepEqual(r, { tier: 1, secs: 3, coins: 3 });
-  r = Q.quizReward(r.tier, true); assert.deepEqual(r, { tier: 2, secs: 3, coins: 3 });
-  r = Q.quizReward(r.tier, true); assert.deepEqual(r, { tier: 3, secs: 4, coins: 3 });
-  r = Q.quizReward(r.tier, true); assert.equal(r.tier, 3);
-  r = Q.quizReward(r.tier, false); assert.deepEqual(r, { tier: 2, secs: 1, coins: 0 });
-  assert.equal(Q.quizReward(0, false).tier, 0);
+test('first try: 3s turbo, +3 coins, flame up (red > blue > rainbow, rainbow 4s + invincible), clears the road', () => {
+  let r = Q.quizReward(0, true); assert.deepEqual(r, { tier: 1, secs: 3, coins: 3, shield: 0, clear: true, invincible: false });
+  r = Q.quizReward(r.tier, true); assert.deepEqual(r, { tier: 2, secs: 3, coins: 3, shield: 0, clear: true, invincible: false });
+  r = Q.quizReward(r.tier, true); assert.deepEqual(r, { tier: 3, secs: 4, coins: 3, shield: 0, clear: true, invincible: true });
+  assert.equal(Q.quizReward(3, true).tier, 3);
   assert.equal(Q.FLAME[1].name, '빨강'); assert.equal(Q.FLAME[2].name, '파랑'); assert.equal(Q.FLAME[3].color, 'rainbow');
+});
+
+test('retry still pays: 1.5s boost, +1 coin, 2s shield, and the flame stage is kept (no penalty)', () => {
+  for (const t of [0, 1, 2, 3]) assert.deepEqual(Q.quizReward(t, false), { tier: t, secs: 1.5, coins: 1, shield: 2, clear: false, invincible: false });
+});
+
+test('faster turbo (x1.5) only for a first try from 3rd place or lower; 1st/2nd keep the normal x1.36', () => {
+  assert.equal(Q.turboMult(1, true), 1.36); assert.equal(Q.turboMult(2, true), 1.36);
+  assert.equal(Q.turboMult(3, true), 1.5); assert.equal(Q.turboMult(6, true), 1.5);
+  assert.equal(Q.turboMult(5, false), 1.36);
+});
+
+test('flame stages look clearly different: longer, thicker trail and a bigger glow ring each step', () => {
+  for (let i = 1; i < 4; i++) {
+    assert.ok(Q.FLAME[i].trail.life > Q.FLAME[i - 1].trail.life);
+    assert.ok(Q.FLAME[i].trail.size > Q.FLAME[i - 1].trail.size);
+    assert.ok(Q.FLAME[i].ring > Q.FLAME[i - 1].ring);
+  }
+});
+
+test('banner text names the reward', () => {
+  assert.equal(Q.rewardText(Q.quizReward(1, true), 1.36), '터보 부스트! 3초 · 코인 +3 · 파랑 불꽃');
+  assert.equal(Q.rewardText(Q.quizReward(2, true), 1.5), '무지개 터보! 4초 · 코인 +3 · 무지개 불꽃 · 더 빠르게! · 무적');
+  assert.equal(Q.rewardText(Q.quizReward(1, false), 1.36), '부스트 1.5초 · 코인 +1 · 방패 2초');
 });
 
 test('quiz only in grand prix, item battle and speed match; kid ids match the family drivers', () => {

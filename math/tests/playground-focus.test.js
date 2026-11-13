@@ -15,7 +15,7 @@ test('equipment changes actual level-four problems, with current-level variety r
  assert.deepEqual(P.focus('steps',5).types,['nextNum','prevNum','tenMore','seq','evenPick','oddPick']);
 });
 test('all equipment, levels and session sizes stay in scope, have unique valid questions and fill sessions',()=>{
- for(let level=1;level<=12;level++) for(const spot of P.SPOTS) for(const count of [3,8,12,16]) for(let seed=1;seed<=8;seed++) {
+ for(let level=1;level<=C.LEVELS.length;level++) for(const spot of P.SPOTS) for(const count of [3,8,12,16]) for(let seed=1;seed<=8;seed++) {
   const focus=P.focus(spot.id,level),before=JSON.stringify(focus);
   assert.ok(focus.level>=1 && focus.level<=level);
   const set=L.buildSession({level,count,focus,rng:random(seed),state:S.defaults()});
@@ -28,7 +28,7 @@ test('all equipment, levels and session sizes stay in scope, have unique valid q
  }
 });
 test('every current concept is reachable; focused practice cannot imply mastery of other concepts',()=>{
- for(let level=1;level<=12;level++) {
+ for(let level=1;level<=C.LEVELS.length;level++) {
   const reachable=new Set();
   for(const spot of P.SPOTS) for(let seed=1;seed<=30;seed++) {
    L.buildSession({level,count:16,focus:P.focus(spot.id,level),rng:random(seed)}).filter(p=>p.level===level).forEach(p=>reachable.add(p.type));
@@ -42,7 +42,7 @@ test('every current concept is reachable; focused practice cannot imply mastery 
 });
 
 test('all 1-to-15 remaining study lengths fill exactly without duplicates or future concepts',()=>{
- for(let level=1;level<=12;level++) for(const spot of P.SPOTS) for(let count=1;count<=15;count++) {
+ for(let level=1;level<=C.LEVELS.length;level++) for(const spot of P.SPOTS) for(let count=1;count<=15;count++) {
   const focus=P.focus(spot.id,level),state=S.defaults(),before=JSON.stringify(state);
   const set=L.buildSession({level,count,focus,rng:random(100+count),state});
   const context=JSON.stringify({level,id:spot.id,count});

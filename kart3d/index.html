@@ -257,13 +257,21 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   #p-coin { top: 14px; left: 118px; }
   #p-coin .v { font-size: clamp(18px, 2.8vw, 26px); }
   /* ? 상자 터보 불꽃 단계: 빨강 → 파랑 → 무지개 */
-  #p-quiz { top: 86px; left: 118px; padding: 6px 12px; font-size: 12px; }
+  #p-quiz { top: 86px; left: 118px; padding: 6px 12px; font-size: 14px; }
   #p-quiz .dots { display: flex; gap: 5px; margin: 3px 0 2px; }
-  #p-quiz .dots i { width: 15px; height: 15px; border-radius: 50%; background: rgba(74,53,80,0.16); }
+  #p-quiz .dots i { width: 18px; height: 18px; border-radius: 50%; background: rgba(74,53,80,0.16); }
   #p-quiz .dots i.on:nth-child(1) { background: #ff3b30; }
   #p-quiz .dots i.on:nth-child(2) { background: #2f8cff; }
   #p-quiz .dots i.on:nth-child(3) { background: conic-gradient(#ff7aa8, #ffd34d, #7fe0c4, #7fb8ff, #c79bff, #ff7aa8); }
-  #quiz-tier { display: block; font-size: 12px; color: #8c7a95; }
+  #quiz-tier { display: block; font-size: 15px; color: #6b4f86; }
+  #p-quiz .k { font-size: 13px; }
+  /* 정답 순간 화면 가운데 큰 보상 배너(1.5초) */
+  #qbanner { position: absolute; left: 50%; top: 46%; transform: translate(-50%, -50%) scale(.6); opacity: 0;
+    max-width: min(94vw, 760px); padding: 14px 26px; border-radius: 26px; text-align: center; word-break: keep-all;
+    background: rgba(58,32,92,.92); border: 4px solid #ffd34d; color: #fff;
+    font-size: clamp(22px, 4.2vw, 40px); font-weight: 900; line-height: 1.25;
+    transition: transform .2s cubic-bezier(.2,1.6,.4,1), opacity .2s; }
+  #qbanner.show { transform: translate(-50%, -50%) scale(1); opacity: 1; }
   @media (max-height: 420px) { #p-quiz { top: 74px; } }
   #toast {
     position: absolute; left: 50%; top: 27%; transform: translate(-50%, -50%) scale(.6); opacity: 0;
@@ -382,6 +390,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   <div class="panel" id="p-lap"><span class="k">바퀴</span><span class="v" id="lap">1 / 2</span></div>
   <div class="panel" id="p-coin"><span class="k">코인</span><span class="v" id="coin">🪙 0</span></div>
   <div id="toast"></div>
+  <div id="qbanner" role="status" aria-live="polite"></div>
   <div id="vsay"></div>
   <div class="panel" id="p-time"><span class="v" id="timer">0:00.00</span><span id="best"></span></div>
   <div class="panel" id="p-place"><span class="k">등수</span><span class="v" id="place">1등</span></div>
@@ -447,13 +456,13 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 
 <script src="../assets/bgm/bgm-player.js?v=67"></script>
 <!-- ? 상자 수학 문제: 공통 문제 모듈(모듈 진입점보다 먼저) -->
-<script src="../math/curriculum.js?v=20"></script>
-<script src="../math/learning.js?v=29"></script>
-<script src="../math/store.js?v=32"></script>
-<script src="../assets/study/math-bridge.js?v=2"></script>
-<script src="../assets/study/game-quiz.js?v=1"></script>
+<script src="../math/curriculum.js?v=21"></script>
+<script src="../math/learning.js?v=30"></script>
+<script src="../math/store.js?v=34"></script>
+<script src="../assets/study/math-bridge.js?v=3"></script>
+<script src="../assets/study/game-quiz.js?v=2"></script>
 <script type="module">
-  import { startGame } from './src/game.js?v=quiz-1';
+  import { startGame } from './src/game.js?v=quiz-2';
   startGame();
 </script>
 </body>

@@ -15,21 +15,34 @@ test('answers climb 0..4 tiers in half steps and never go down', async () => {
   assert.equal(addQuizAnswer(steps, true).maxed, true);
 });
 
-test('tier damage stays bounded: tier 4 alone >= 60% kill time, stacked with the sword drop never above 1.65x', async () => {
-  const { quizDamage, QUIZ_WEAPON_TIERS, QUIZ_DAMAGE_CAP } = await quiz();
-  const powers = QUIZ_WEAPON_TIERS.map((t) => t.power);
-  for (let i = 1; i < powers.length; i++) assert.ok(powers[i] > powers[i - 1]);
-  assert.ok(1 / powers[4] >= .6, 'tier 4 boss time ratio');
-  for (const base of [22, 30, 40, 58, 82, 110]) {
+test('tier damage: +20% per tier (half steps in between), >= 50% boss time, and every step still counts with the sword drop', async () => {
+  const { quizDamage, quizTierInfo, quizPowerPercent, QUIZ_DAMAGE_CAP, QUIZ_BOOST_MIN_GAIN } = await quiz();
+  assert.deepEqual([0, 1, 2, 3, 4, 5, 6, 7, 8].map(quizPowerPercent), [0, 10, 20, 30, 40, 50, 60, 70, 80]);
+  assert.deepEqual([0, 2, 4, 6, 8].map((s) => quizTierInfo(s).reach), [1, 1, 1.05, 1.10, 1.15]);
+  assert.equal(quizTierInfo(1).palette, quizTierInfo(2).palette, 'half step already shows the next colour');
+  for (const base of [15, 22, 28, 40, 54, 82, 110]) {
     assert.equal(quizDamage(base, 0, 0), base);
     assert.equal(quizDamage(base, 18, 0), base + 18, 'tier 0 keeps the old formula');
-    for (let steps = 0; steps <= 8; steps++) {
-      const boosted = quizDamage(base, 18, steps);
-      assert.ok(boosted >= base + 18, 'never weaker than the sword drop alone');
-      assert.ok(boosted <= Math.max(base + 18, base * QUIZ_DAMAGE_CAP) + 1e-9, 'stack cap');
-      assert.ok(base / quizDamage(base, 0, steps) >= .6, 'kill time >= 60% without the drop');
+    let prevPlain = base, prevBoost = base + 18;
+    for (let steps = 1; steps <= 8; steps++) {
+      const plain = quizDamage(base, 0, steps), boosted = quizDamage(base, 18, steps);
+      assert.ok(plain > prevPlain && boosted > prevBoost, 'each half step adds damage ' + base + '@' + steps);
+      assert.ok(base / plain >= .5, 'kill time >= 50%');
+      assert.ok(boosted <= Math.max(base * QUIZ_DAMAGE_CAP, (base + 18) * QUIZ_BOOST_MIN_GAIN) + 1e-9, 'stack cap');
+      prevPlain = plain; prevBoost = boosted;
     }
   }
+});
+
+test('reward text tells everything gained', async () => {
+  const { quizRewardBanner, quizPreviewHint, addQuizAnswer, quizReward } = await quiz();
+  const b = quizRewardBanner('청룡언월도', addQuizAnswer(2, true), true);
+  assert.equal(b.title, '청룡언월도 2단계!');
+  assert.match(b.sub, /공격력 \+40% · 사거리 \+5% · 무쌍 \+50 · 체력 \+15%/);
+  const h = quizRewardBanner('청룡언월도', addQuizAnswer(2, false), false);
+  assert.match(h.title, /1\.5단계/); assert.match(h.sub, /공격력 \+30%.*무쌍 \+25 · 체력 \+8%/);
+  assert.match(quizPreviewHint('청룡언월도', 0), /한 번에: 청룡언월도 공격력 \+20%.*고쳐서: \+10%/);
+  assert.deepEqual([quizReward(true).heal, quizReward(false).heal], [.15, .08]);
 });
 
 test('shiftBattleTimers moves every absolute timer by the pause and leaves unset ones alone', async () => {

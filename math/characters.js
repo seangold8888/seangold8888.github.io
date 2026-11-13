@@ -27,7 +27,8 @@
     { id: "moana", name: "모아나", from: "디즈니 프린세스", color: "#2b6cb0", bg: "#e8f0fa", icon: "wave", say: ["파도를 넘었어!", "모아나가 응원해요!"] }
   ];
   // 단계별 길잡이 친구 (지도 정거장)
-  const LEVEL_GUIDE = { 1: "cinnamoroll", 2: "mymelody", 3: "heartsping", 4: "laraping", 5: "kitty", 6: "pompompurin", 7: "cinderella", 8: "rapunzel", 9: "elsa", 10: "baroping", 11: "ariel", 12: "moana" };
+  const LEVEL_GUIDE = { 1: "cinnamoroll", 2: "mymelody", 3: "heartsping", 4: "laraping", 5: "kitty", 6: "pompompurin", 7: "cinderella", 8: "rapunzel", 9: "elsa", 10: "baroping", 11: "ariel", 12: "moana",
+    13: "kuromi", 14: "keroppi", 15: "pochacco", 16: "belle", 17: "azaping", 18: "snowwhite", 19: "kikiping" };
 
   function byId(id) { return CHARACTERS.find(function (c) { return c.id === id; }) || CHARACTERS[0]; }
   function guideFor(level) { return byId(LEVEL_GUIDE[level] || "cinnamoroll"); }
@@ -88,7 +89,14 @@
     elsa: "엘사가 눈꽃을 뿌리며 말했어요. \"10을 만들어 더하기, 받아올림의 마법을 배웠구나. 바로핑이 번개처럼 기다려!\"",
     baroping: "바로핑이 번쩍 나타나 말했어요. \"받아내림까지 바로바로! 1학년 수학은 완전히 네 거야. 아리엘의 바다로 가자!\"",
     ariel: "아리엘이 파도 위에서 노래했어요. \"두 자리 받아올림도 해냈구나. 모아나가 마지막 섬에서 기다려!\"",
-    moana: "모아나가 바다 너머를 가리키며 말했어요. \"2학년 수학까지 다 왔어. 너는 이제 어디든 갈 수 있는 항해사야!\""
+    moana: "모아나가 바다 너머를 가리키며 말했어요. \"2학년 수학까지 다 왔어. 너는 이제 어디든 갈 수 있는 항해사야!\"",
+    kuromi: "쿠로미가 팔짱을 끼고 말했어요. \"2단부터 5단까지 척척이네? 흥, 인정! 케로피가 6단 연못에서 기다려.\"",
+    keroppi: "케로피가 연잎 위에서 폴짝 뛰었어요. \"9단까지 다 외웠구나, 개굴! 포차코가 세 자리 수 운동장으로 부르고 있어.\"",
+    pochacco: "포차코가 공을 차며 말했어요. \"세 자리 수 더하기 빼기도 거뜬! 벨이 똑같이 나누는 법을 알려 줄 거야.\"",
+    belle: "벨이 책을 덮으며 말했어요. \"나눗셈은 곱셈을 거꾸로 생각하는 거였지. 아자핑이 더 큰 곱셈을 들고 기다려!\"",
+    azaping: "아자핑이 주먹을 불끈 쥐었어요. \"두 자리 곱하기 한 자리, 아자아자 해냈어! 백설공주에게 나머지 이야기를 들으러 가자.\"",
+    snowwhite: "백설공주가 사과 바구니를 나누며 말했어요. \"몫과 나머지, 자릿값까지 알았구나. 키키핑이 분수와 큰 수를 준비했대.\"",
+    kikiping: "키키핑이 깜짝 놀라 말했어요. \"분수도 큰 수도 다 알다니! 3학년 수학 산을 넘었어. 정말 멋진 탐험가야!\""
   };
   function storyFor(level) { const g = guideFor(level); return STORIES[g.id] || ""; }
 

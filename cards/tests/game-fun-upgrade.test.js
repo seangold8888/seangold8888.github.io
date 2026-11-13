@@ -18,6 +18,10 @@ function forest(){
   const hardScript=scripts.find(s=>s.includes('const Hard=WQ.Hard='));
   assert.ok(hardScript,'magic school hard-mode module must be present');
   vm.runInContext(hardScript,context);
+  // Magic-school spell-power module (WQ.Power); without GameQuiz it runs in the quiz-off path.
+  const powerScript=scripts.find(s=>s.includes('/* src/spell-power.js'));
+  assert.ok(powerScript,'spell-power module must be present');
+  vm.runInContext(powerScript,context);
   assert.equal(WQ.Hard.pending,false,'legacy forest tests exercise normal mode');
   const code=scripts.find(s=>s.includes('function BroomRescue(onClear)')).replace(
     'return{enter,exit,update,draw,pointer};',

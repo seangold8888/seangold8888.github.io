@@ -126,7 +126,7 @@
   /* ---------- 홈 ---------- */
   function renderTrack(st) {
     const track=$("track");track.textContent="";track.setAttribute("role","list");track.setAttribute("aria-label","배움의 구름사다리, 현재 "+state.level+"단계");
-    for(let l=1;l<=12;l++) {
+    for(let l=1;l<=C.LEVELS.length;l++) {
       const node=document.createElement("div"),summary=Learn.summary(state,l);
       const mastered=summary.length>0 && summary.every(function(item) {return item.mastered;});
       node.className="level-rung"+(mastered?" mastered":"")+(l===state.level?" here":"");node.setAttribute("role","listitem");
@@ -136,6 +136,10 @@
       if(l===state.level) {node.setAttribute("aria-current","step");const puppy=document.createElement("img");puppy.src="assets/jaei-progress-friends.webp";puppy.alt="";node.appendChild(puppy);}
       track.appendChild(node);
     }
+    // 단계가 19칸이라 좁은 화면에선 가로로 넘친다: 지금 단계가 보이게 가운데로 옮긴다
+    // (홈 화면이 아직 숨겨져 있을 수 있어 그린 다음 프레임에 한 번 더 맞춘다)
+    const center=function(){const here=track.querySelector(".here");if(here&&track.clientWidth) track.scrollLeft=Math.max(0,here.offsetLeft-track.clientWidth/2+here.offsetWidth/2);};
+    center();if(window.requestAnimationFrame) requestAnimationFrame(center);
   }
   function renderAlbum() {
     const box = $("album"); box.textContent = "";
@@ -373,7 +377,7 @@
       if (!part) return;
       if (part === "□") { const box = document.createElement("span"); box.className = "box"; box.id = "answerBox"; el.appendChild(box); }
       else if (/^\d+$/.test(part)) el.appendChild(document.createTextNode(part));
-      else { const w = document.createElement("span"); w.className = /^[\s+−=]+$/.test(part) ? "" : "word"; w.textContent = part; el.appendChild(w); }
+      else { const w = document.createElement("span"); w.className = /^[\s+−=×÷\/]+$/.test(part) ? "" : "word"; w.textContent = part; el.appendChild(w); }
     });
     if (session) {
       $("count").textContent = (index + 1) + " / " + session.length + (p.review ? " · 다시 만난 문제" : p.focused===false ? " · 골고루 복습" : p.level<state.level ? " · 배운 내용 복습" : "");
@@ -395,7 +399,7 @@
     if ($("keypad").hidden) return;
     if (k === "back") typed = typed.slice(0, -1);
     else if (k === "go") { submit(); return; }
-    else if (typed.length < 2 || (typed.length < 3 && current.answer >= 100)) typed = (typed === "0" ? "" : typed) + k;
+    else if (typed.length < Math.max(2, String(current.answer).length)) typed = (typed === "0" ? "" : typed) + k;
     paint(); scheduleFriendPrompt();
   }
   function praiseLine() {
