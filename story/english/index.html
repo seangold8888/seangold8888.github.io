@@ -177,7 +177,13 @@
     return node;
   }
   function stopAudio() {
-    if (audio) { try { audio.pause(); } catch (error) {} audio = null; }
+    // audio = { ctx, node }. 컨텍스트를 close 해서 오디오 장치를 완전히 놓아야 바로 뒤의 음성 인식이 산다.
+    if (audio) {
+      var old = audio; audio = null;
+      if (old.node) { try { old.node.onended = null; old.node.stop(0); } catch (error) {} }
+      if (old.ctx && old.ctx.close) { try { old.ctx.close(); } catch (error) {} }
+      if (old.element) { try { old.element.pause(); old.element.removeAttribute('src'); old.element.load(); } catch (error) {} }
+    }
     pageEl.querySelectorAll('.playing').forEach(function (text) { text.classList.remove('playing'); });
   }
   function stopPractice() {
@@ -290,12 +296,40 @@
       stopPractice(); practice.hidden = true;
       stopAudio();
       if (showMeaning) meaning.hidden = false;
-      audio = new Audio(file);
       playingText.classList.add("playing");
-      audio.addEventListener("ended", function () { playingText.classList.remove("playing"); });
-      audio.addEventListener("error", function () { playingText.classList.remove("playing"); button.textContent = "🔊 소리를 못 찾았어요 · 다시 누르기"; });
-      var playing = audio.play();
-      if (playing && playing.catch) playing.catch(function () { playingText.classList.remove("playing"); button.textContent = '🔊 다시 눌러 듣기'; });
+      // <audio> 로 틀면 iPad Safari 가 그 뒤 음성 인식을 조용히 멈춘다(WebKit 321436).
+      // 영어 읽기와 같은 방식으로 Web Audio 로만 틀고, 끝나면 컨텍스트를 닫는다.
+      var AC = window.AudioContext || window.webkitAudioContext;
+      var missing = function () { if (audio !== mine) return; stopAudio(); button.textContent = "🔊 소리를 못 찾았어요 · 다시 누르기"; };
+      var mine;
+      if (!AC || !window.fetch) {
+        var element = new Audio(file);
+        mine = audio = { element: element };
+        element.addEventListener("ended", function () { if (audio === mine) stopAudio(); });
+        element.addEventListener("error", missing);
+        var playing = element.play();
+        if (playing && playing.catch) playing.catch(function () { if (audio === mine) stopAudio(); button.textContent = '🔊 다시 눌러 듣기'; });
+        return;
+      }
+      var ctx;
+      try { ctx = new AC(); } catch (error) { playingText.classList.remove("playing"); button.textContent = '🔊 다시 눌러 듣기'; return; }
+      mine = audio = { ctx: ctx, node: null };
+      if (ctx.state === "suspended" && ctx.resume) { var ready = ctx.resume(); if (ready && ready.catch) ready.catch(function () {}); }
+      fetch(file).then(function (response) {
+        if (!response || !response.ok) throw new Error("narration");
+        return response.arrayBuffer();
+      }).then(function (data) {
+        return new Promise(function (resolve, reject) {
+          var decoded = ctx.decodeAudioData(data, resolve, reject);
+          if (decoded && decoded.then) decoded.then(resolve, reject);
+        });
+      }).then(function (sound) {
+        if (audio !== mine) return;
+        var node = ctx.createBufferSource();
+        node.buffer = sound; node.connect(ctx.destination);
+        node.onended = function () { if (audio === mine) stopAudio(); };
+        mine.node = node; node.start(0);
+      }).catch(missing);
     }
     show.addEventListener("click", function () {
       meaning.hidden = !meaning.hidden;

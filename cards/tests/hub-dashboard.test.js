@@ -14,11 +14,11 @@ test("배너 없이 게임 목록 안내를 갱신하며 티켓과 공부 기록
   const end = html.indexOf("\n  }", start) + 4;
   const source = html.slice(start, end);
   for (const scenario of [
-    { solved: 0, correct: 0, ticket: false, free: false, href: "#study", hint: "15개 더" },
-    { solved: 14, correct: 14, ticket: false, free: false, href: "#study", hint: "1개 더" },
-    { solved: 15, correct: 0, ticket: true, free: false, href: "#adventureWorlds", hint: "1장 준비" },
-    { solved: 15, correct: 0, ticket: false, free: false, active: true, href: "#adventureWorlds", hint: "남은 게임 시간" },
-    { solved: 100, correct: 0, ticket: false, free: true, href: "#adventureWorlds", hint: "모두 열렸어요" },
+    { solved: 0, correct: 0, ticket: false, free: false, href: "#study", hint: "15 more problems" },
+    { solved: 14, correct: 14, ticket: false, free: false, href: "#study", hint: "1 more problem" },
+    { solved: 15, correct: 0, ticket: true, free: false, href: "#adventureWorlds", hint: "Ticket ready" },
+    { solved: 15, correct: 0, ticket: false, free: false, active: true, href: "#adventureWorlds", hint: "game time lasts" },
+    { solved: 100, correct: 0, ticket: false, free: true, href: "#adventureWorlds", hint: "Everything is open" },
   ]) {
     const nodes = {};
     for (const id of ["worldAccessHint"]) nodes[id] = {
@@ -66,7 +66,7 @@ test("모험 로비는 필수 상태·학습·부모 리포트 DOM 계약을 한
     assert.equal(count(new RegExp('id="' + id + '"', "g")), 1, id + " must be unique");
   });
   assert.match(html, /<main class="wrap lobby-shell">/);
-  assert.match(html, /<nav class="games" aria-label="게임 목록">/);
+  assert.match(html, /<nav class="games" aria-label="Game list">/);
   assert.match(html, /role="dialog" aria-modal="true"/);
 });
 
@@ -88,11 +88,11 @@ test("검수된 게임 대표 원화가 월드 타일에 실제 이미지로 연
   assert.equal(count(/class="art-(?:left|right|main)"/g), 0);
 });
 
-test("별빛 로비 공유 카드는 로컬 이미지와 절대 URL 메타데이터를 함께 제공한다", () => {
+test("로비 공유 카드는 로컬 이미지와 절대 URL 메타데이터를 함께 제공한다", () => {
   const preview = "og-adventure-v3.png";
   assert.equal(fs.existsSync(path.join(root, preview)), true);
-  assert.match(html, /<meta name="description" content="이야기를 듣고, 문제를 풀고, 카드를 모으며 떠나는 어린이 별빛 모험 로비">/);
-  assert.match(html, /<meta property="og:title" content="모험 상자 — 별빛 모험 기지">/);
+  assert.match(html, /<meta name="description" content="Listen, learn, and collect cards on a fun adventure.">/);
+  assert.match(html, /<meta property="og:title" content="PLAYGROUND — Our Family Game Base">/);
   assert.match(html, /<meta property="og:image" content="https:\/\/seangold8888\.github\.io\/og-adventure-v3\.png">/);
   assert.match(html, /<meta name="twitter:card" content="summary_large_image">/);
   assert.match(html, /<meta name="twitter:image" content="https:\/\/seangold8888\.github\.io\/og-adventure-v3\.png">/);
@@ -103,7 +103,7 @@ test("별빛 로비 공유 카드는 로컬 이미지와 절대 URL 메타데이
 test("기존 게임 링크·티켓 게임과 상시 개방 구분을 보존한다", () => {
   const ticketRoutes = [
     "multiverse/", "cards/", "odyssey/", "kart3d/",
-    "sanguo/", "hogwarts/", "kedehun/", "bori/", "princess/", "slime/", "usa/", "onecard/"
+    "sanguo/", "hogwarts/", "kedehun/", "bori/", "princess/", "slime/", "usa/", "onecard/", "plane/"
   ];
   ticketRoutes.forEach((route) => {
     const query=route==='princess/'?'\\?heads=natural&amp;v=picnic-1':'';
@@ -120,10 +120,10 @@ test("기존 게임 링크·티켓 게임과 상시 개방 구분을 보존한�
   assert.match(html, /querySelectorAll\('\.card, \.shop'\)/);
 });
 
-test('카드 배틀 이름은 재이태오로 표시하고 기존 게임 경로를 유지한다',()=>{
+test('카드 배틀 이름은 카드 덱으로 표시하고 기존 게임 경로를 유지한다',()=>{
   const card=html.match(/<a class="card battle"[^>]*>[\s\S]*?<\/a>/)[0];
   assert.match(card,/href="cards\/"/);
-  assert.match(card,/<span class="name">재이태오 카드 배틀<\/span>/);
+  assert.match(card,/<span class="name">Card Deck<\/span>/);
   assert.doesNotMatch(card,/J&amp;T 어드벤처/);
   assert.doesNotMatch(card,/cinderella.webp|style="--cover:/);
   assert.match(html,/\.card\.battle\s*\{[^}]*cover-jaei-taeo-card-battle-v1\.webp/);
@@ -132,7 +132,7 @@ test('카드 배틀 이름은 재이태오로 표시하고 기존 게임 경로�
 test('카트는 3D 하나로 정리하고 간단판 원본과 기록은 호환용으로 보존한다',()=>{
   assert.equal(count(/class="card kart3d"/g),1);
   assert.doesNotMatch(html, /class="card kart"|산리오 카트 간단판/);
-  assert.match(html, /<span class="name">산리오 카트<\/span>/);
+  assert.match(html, /<span class="name">Sanrio Kart<\/span>/);
   assert(fs.existsSync(path.join(root,'kart/index.html')));
   const kart3d=fs.readFileSync(path.join(root,'kart3d/index.html'),'utf8');
   assert.match(kart3d,/href="\.\.\/kart\/"/);
@@ -156,7 +156,7 @@ test("퀘스트 HUD는 새로고침 진행 복원·친절한 잠금 안내·오�
   assert.match(html, /function showLockNotice\(card\)/);
   assert.match(html, /event\.preventDefault\(\);\s*showLockNotice\(card\)/);
   assert.match(html, /navigator\.serviceWorker\.ready/);
-  assert.match(html, /showOfflineState\(navigator\.onLine \? "저장됨" : "오프라인"\)/);
+  assert.match(html, /showOfflineState\(navigator\.onLine \? "Saved" : "Offline"\)/);
 });
 
 test("새 시각 시스템은 iPad·모바일·키보드·모션 감소 계약을 갖는다", () => {
@@ -183,7 +183,7 @@ test('오늘의 공부가 파티와 게임 소개보다 먼저 나오고 15문�
   assert.ok(html.indexOf('id="study"') < html.indexOf('id="mathPlaygroundLaunch"'));
   assert.ok(html.indexOf('id="mathPlaygroundLaunch"') < html.indexOf('id="adventureWorlds"'));
   assert.match(html, /id="mathPlaygroundLaunch" href="math\/\?from=hub"/);
-  assert.match(html, /티켓 없이 언제든 · 오늘의 공부에 합산/);
+  assert.match(html, /No ticket needed · Counts toward today's study/);
   assert.ok(html.indexOf('id="study"') < html.indexOf('id="adventureWorlds"'));
   assert.ok(html.indexOf('id="study"') < html.indexOf('id="partyAdventure"'));
   assert.match(html, /id="questRingLabel">0\/15/);
@@ -195,7 +195,7 @@ test('오늘의 공부가 파티와 게임 소개보다 먼저 나오고 15문�
 test('핵심만 보이는 메인에서도 기록·설정·개인정보 안내를 삭제하지 않는다', () => {
   assert.match(html, /<style id="dashboard-clarity">/);
   assert.match(html, /<details class="lobby-settings" id="lobbySettings">/);
-  assert.match(html, /설정과 학습 기록 열기/);
+  assert.match(html, /Open settings and progress/);
   for (const id of ['hubDailyStat', 'hubCrownStat', 'hubOfflineStat', 'quietMode', 'hubMusic', 'bookOpen']) {
     const settings = html.slice(html.indexOf('<details class="lobby-settings"'), html.indexOf('</details>', html.indexOf('<details class="lobby-settings"')));
     assert(settings.includes('id="' + id + '"'));

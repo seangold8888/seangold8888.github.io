@@ -47,3 +47,23 @@
   /* 화면이 낮으면 CHAIN 콤보와 K.O. 카운터가 겹치던 것 분리 */
   #hud .cr { top: 32%; }
 }
+
+/* ? 두루마리 무기 단계(●●○○). 문제 모듈이 있을 때만 hidden 이 풀린다. 데스크톱·모바일 공통 */
+.battle-ui .quiz-weapon-row { display: flex; align-items: center; gap: 7px; margin-top: 5px; color: var(--bone-faint, #c9b892); font-size: 10px; letter-spacing: .14em; }
+.battle-ui .quiz-weapon-row[hidden] { display: none; }
+.battle-ui .quiz-weapon-row span { flex: none; }
+.battle-ui .quiz-weapon-row .qw-pips { display: flex; gap: 4px; flex: none; }
+.battle-ui .quiz-weapon-row .qw-pips i { position: relative; width: 11px; height: 11px; border: 1.5px solid var(--qw-color, #ffd86b); border-radius: 50%; box-sizing: border-box; background: rgba(0, 0, 0, .45); overflow: hidden; }
+.battle-ui .quiz-weapon-row .qw-pips i.full { background: var(--qw-color, #ffd86b); }
+.battle-ui .quiz-weapon-row .qw-pips i.half::after { content: ""; position: absolute; inset: 0 50% 0 0; background: var(--qw-color, #ffd86b); }
+.battle-ui .quiz-weapon-row .qw-label { font-style: normal; color: var(--qw-color, #ffd86b); letter-spacing: .06em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.battle-ui .quiz-weapon-row.bump .qw-pips { animation: qw-bump .45s ease-out; }
+@keyframes qw-bump { 0% { transform: scale(1.35); } 100% { transform: scale(1); } }
+/* 문제 패널이 떠 있는 동안 전투 버튼은 눌리지 않게(문구 없는 조용한 정지) */
+#hud.quiz-paused .touch-controls, #hud.quiz-paused .touch-controls button { pointer-events: none; }
+
+@media (pointer: coarse), (max-width: 900px) {
+  .battle-ui .quiz-weapon-row { gap: 5px; margin-top: 3px; font-size: 8px; letter-spacing: .08em; }
+  .battle-ui .quiz-weapon-row .qw-pips { gap: 3px; }
+  .battle-ui .quiz-weapon-row .qw-pips i { width: 9px; height: 9px; }
+}

@@ -44,7 +44,7 @@ export function createQueue(env, opt = {}) {
   const M = opt.minutes || 60;          // 간판에 처음 적힌 시간
   const BADGE = opt.badgeNeed || (easy ? 4 : 5); // 참을성 배지: 하루 동안 이만큼 달래면
   const before = opt.cheeredBefore || 0;
-  const GATE = opt.gate || { name: "별빛 코스터", icon: "🎢", c: "#ff6fb0" };
+  const GATE = opt.gate || { name: "번쩍 코스터", icon: "🎢", c: "#ff6fb0" };
   const MAXP = opt.passes == null ? 2 : opt.passes;
   const JOKES = ["어? 라이트닝 패스 줄도 있네?!", "여기도 라이트닝 줄이 있어?!", "라이트닝 줄에도 또 줄이?!"];
   let state = "wait", st = 0, t = 0, done = false;

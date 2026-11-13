@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v252";
+const CACHE_VERSION = "v256";
 const CACHE_PREFIX = "adventure-box-";
 // 큰 그림과 소리(삼국지 배경 200MB+, 저장한 이야기 오디오)는 배포 번호와 따로 둔다.
 // 배포마다 이 캐시를 버리면 기기가 236MB를 다시 받고, "여행 전에 이야기 저장"도 지워졌다.
@@ -127,7 +127,7 @@ const CORE_SHELL = [
   "./multiverse/style.css?v=3",
   "./multiverse/data.js?v=6",
   "./multiverse/save.js?v=3",
-  "./multiverse/game.js?v=volcano-1",
+  "./multiverse/game.js?v=quiz-1",
   "./assets/audio/family-skill-voices.js?v=3",
   "./multiverse/art/cover.webp",
   "./multiverse/art/jaei-idle.webp",
@@ -730,8 +730,8 @@ const CORE_SHELL = [
   "./webtoon/",
   "./webtoon/style.css?v=5",
   "./webtoon/art.js?v=26",
-  "./webtoon/words.js?v=49",
-  "./webtoon/episodes.js?v=53",
+  "./webtoon/words.js?v=50",
+  "./webtoon/episodes.js?v=54",
   "./webtoon/app.js?v=9",
   "./webtoon/cover.webp",
   "./webtoon/faces/jaei.webp",
@@ -748,7 +748,8 @@ const CORE_SHELL = [
   "./cards/cards.json",
   "./assets/bgm/bgm-player.js?v=66",
   "./assets/bgm/bgm-player.js?v=67",
-  "./assets/study/play-timer.js?v=1",
+  "./assets/study/play-timer.js?v=2",
+  "./assets/study/game-quiz.js?v=1",
   "./assets/touch-guard.js?v=1",
   "./cards/js/engine.js?v=70",
   "./cards/js/audio.js?v=71",
@@ -955,6 +956,39 @@ const OPTIONAL_SHELL = [
   "./usa/art/taeo-cheer.webp",
   "./usa/art/taeo-beach.webp",
   "./usa/art/taeo-surf.webp",
+  "./plane/",
+  "./plane/index.html",
+  "./plane/style.css?v=5",
+  "./plane/cover.webp",
+  "./plane/src/main.js?v=5",
+  "./plane/src/logic.js?v=4",
+  "./plane/art/p0.webp?v=2",
+  "./plane/art/p1.webp?v=2",
+  "./plane/art/p2.webp?v=2",
+  "./plane/art/p3.webp?v=2",
+  "./plane/art/cloud.webp?v=1",
+  "./plane/art/zig.webp?v=1",
+  "./plane/art/bolt.webp?v=1",
+  "./plane/art/gift.webp?v=1",
+  "./plane/art/boss.webp?v=1",
+  "./plane/art/star.webp?v=1",
+  "./plane/art/drop.webp?v=1",
+  "./plane/art/sky.webp?v=1",
+  "./plane/art/gun.webp?v=1",
+  "./plane/art/helper.webp?v=1",
+  "./plane/art/pellet.webp?v=1",
+  "./plane/art/candy.webp?v=1",
+  "./plane/art/comet.webp?v=1",
+  "./plane/art/rainbow.webp?v=1",
+  "./plane/art/pop.webp?v=1",
+  "./plane/art/meteor.webp?v=1",
+  "./plane/art/tornado.webp?v=1",
+  "./plane/art/hail.webp?v=1",
+  "./plane/art/baby.webp?v=1",
+  "./plane/art/flake.webp?v=1",
+  "./plane/art/snowking.webp?v=1",
+  "./plane/art/typhoon.webp?v=1",
+  "./plane/art/heart.webp?v=1",
   "./onecard/",
   "./onecard/index.html",
   "./onecard/style.css?v=2",
@@ -1016,7 +1050,8 @@ const OPTIONAL_SHELL = [
   "./slime/vendor/THREE-LICENSE.txt",
   "./assets/effects/quality.js?v=visual-1",
   "./assets/covers/cover_slime.svg",
-  "./kart3d/src/game.js?v=snow-1",
+  "./kart3d/src/game.js?v=quiz-1",
+  "./kart3d/src/quizbox.js?v=quiz-1",
   "./kart3d/src/difficulty.js?v=easy-1",
   "./kart3d/menu.css?v=snow-1",
   "./kart3d/src/menu-art.js?v=snow-1",
@@ -1180,6 +1215,7 @@ const OPTIONAL_SHELL = [
   "./sanguo/src/data/works.js",
   "./sanguo/src/data/familyHeroes.js",
   "./sanguo/src/game/familyCombat.js",
+  "./sanguo/src/game/quizWeapon.js",
   "./sanguo/src/game/elevenVoicePacks.js",
   "./sanguo/art/side-scroller/taeo-painted-sheet-v1.png",
   "./sanguo/art/side-scroller/jaei-painted-sheet-v1.png",
@@ -1214,7 +1250,6 @@ const OPTIONAL_SHELL = [
   "./sanguo/src/ui/workSelect.js",
   "./sanguo/assets/index-DnM9zJtq.js",
   "./sanguo/assets/index-BFRqmzM-.css",
-  "./sanguo/mobile-hud.css",
   "./sanguo/data/gamedata.json",
   "./sanguo/fonts/pretendard/PretendardVariable.woff2",
   "./sanguo/fonts/gowun/GowunBatang-Regular.woff2",
@@ -1620,7 +1655,7 @@ const BACKGROUND_RETRY_MS = 5 * 60 * 1000;
 const AUDIO_FETCH_TIMEOUT_MS = 45000;
 const NAVIGATION_ROUTES = [
   "game", "cards", "story", "multiverse", "avengers", "bori", "hogwarts", "kart", "kart3d",
-  "kedehun", "odyssey", "princess", "sanguo", "slime", "math", "webtoon",
+  "kedehun", "odyssey", "princess", "sanguo", "slime", "math", "webtoon", "plane",
 ];
 
 const CARD_ART_FILES = [
@@ -2000,7 +2035,9 @@ async function cacheAllAudio(target, requestId, requestedItems) {
 function backgroundCacheName(path) {
   const shellLike = path.endsWith("/")
     || /\.(?:html?|js|css|json)(?:[?#]|$)/i.test(path);
-  return shellLike ? STATIC_CACHE : RUNTIME_CACHE;
+  if (shellLike) return STATIC_CACHE;
+  // MP3 요청은 handleAudioRequest가 STATIC·AUDIO 캐시만 찾으므로 미리 받을 때도 AUDIO 캐시에 넣는다.
+  return /\.mp3(?:[?#]|$)/i.test(path) ? AUDIO_CACHE : RUNTIME_CACHE;
 }
 
 async function warmBackgroundAsset(path) {

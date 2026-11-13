@@ -363,7 +363,7 @@
   }
 
   function useItem(k) {
-    if (k.isPlayer) { challenge.items++; celebrate(challenge.items === 2 ? '★ 아이템 배지 획득!' : k.item === 'boost' ? '별빛 부스터!' : '리본 발사!'); }
+    if (k.isPlayer) { challenge.items++; celebrate(challenge.items === 2 ? '★ 아이템 배지 획득!' : k.item === 'boost' ? '네온 부스터!' : '리본 발사!'); }
     if (k.item === 'boost') {
       k.boost = Math.max(k.boost, 1.15);
     } else if (k.item === 'ribbon') {

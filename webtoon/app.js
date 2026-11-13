@@ -308,7 +308,7 @@
     } else {
       renderHome();
       $("topTitle").textContent = "오늘도 우리 집";
-      $("backLink").textContent = "◀ 모험 상자";
+      $("backLink").textContent = "◀ PLAYGROUND";
       $("backLink").setAttribute("href", "../game/");
       document.title = "오늘도 우리 집";
     }

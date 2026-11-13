@@ -1,6 +1,6 @@
-// 모험 상자 게임 시간. 문제 15개로 받은 티켓 한 장 = 게임 5분.
+// PLAYGROUND 게임 시간. 문제 15개로 받은 티켓 한 장 = 게임 5분.
 // 대시보드(data-mode="hub")는 시간을 내주기만 하고, 게임 화면(기본)은 남은 시간을 보여 주다가
-// 끝나면 모험 상자로 돌려보낸다. 하루 100문제를 채우거나 부모님 모드면 그날은 시간 제한이 없다.
+// 끝나면 PLAYGROUND로 돌려보낸다. 하루 100문제를 채우거나 부모님 모드면 그날은 시간 제한이 없다.
 // 끝나는 시각을 기기에 적어 두므로 새로고침하거나 다른 게임으로 옮겨도 시간이 다시 차지 않는다.
 (function () {
   "use strict";
@@ -111,12 +111,12 @@
     var box = document.createElement("div");
     box.className = "box";
     var title = document.createElement("h2");
-    title.textContent = neverStarted ? "🎟️ 게임 티켓이 필요해요" : "⏰ 게임 시간이 끝났어요!";
+    title.textContent = neverStarted ? "🎟️ Ticket needed" : "⏰ Time's up!";
     var text = document.createElement("p");
-    text.textContent = "모험 상자에서 문제 15개를 풀면 " + MINUTES_PER_TICKET + "분 더 놀 수 있어요.";
+    text.textContent = "Solve 15 problems in PLAYGROUND for " + MINUTES_PER_TICKET + " more minutes of play.";
     var link = document.createElement("a");
     link.href = hubUrl;
-    link.textContent = "모험 상자로 가기";
+    link.textContent = "Go to PLAYGROUND";
     var note = document.createElement("small");
     box.append(title, text, link, note);
     overlay.appendChild(box);
@@ -133,7 +133,7 @@
     var leaveAt = Date.now() + REDIRECT_MS;
     var countdown = setInterval(function () {
       var left = Math.max(0, Math.ceil((leaveAt - Date.now()) / 1000));
-      note.textContent = left + "초 뒤에 모험 상자로 돌아가요";
+      note.textContent = "Returning to PLAYGROUND in " + left + "s";
       if (left <= 0) { clearInterval(countdown); location.href = hubUrl; }
     }, 250);
   }
@@ -153,7 +153,7 @@
     }
     var warn = left <= WARN_MS;
     // 마지막 1분은 주황색으로 바꾸고 문구를 계속 붙여 둔다.
-    chip.textContent = "⏱ " + format(left) + (warn ? " · 곧 끝나요!" : "");
+    chip.textContent = "⏱ " + format(left) + (warn ? " · Almost done!" : "");
     chip.classList.toggle("is-warn", warn);
   }
   function start() {

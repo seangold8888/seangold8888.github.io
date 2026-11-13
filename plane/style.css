@@ -1,0 +1,57 @@
+@font-face { font-family: "Pretendard Variable"; src: url("../sanguo/fonts/pretendard/PretendardVariable.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; margin: 0; overflow: hidden; background: #101a47; color: #fff; font-family: "Pretendard Variable", system-ui, sans-serif; overscroll-behavior: none; -webkit-user-select: none; user-select: none; }
+#sky { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+
+.hud { position: fixed; z-index: 3; left: 0; right: 0; top: 0; display: flex; gap: 8px; align-items: center; padding: calc(8px + env(safe-area-inset-top)) calc(10px + env(safe-area-inset-right)) 8px calc(10px + env(safe-area-inset-left)); pointer-events: none; }
+.hud > * { pointer-events: auto; }
+.chip, .back { min-height: 44px; display: inline-flex; align-items: center; gap: 8px; padding: 0 14px; border: 1px solid rgba(255,255,255,.22); border-radius: 999px; background: rgba(10,16,52,.62); color: #fff; font: inherit; font-weight: 800; font-size: 16px; text-decoration: none; }
+.back { width: 44px; justify-content: center; padding: 0; font-size: 20px; }
+.chip.grow { flex: 1 1 auto; min-width: 0; justify-content: center; }
+.chip.grow b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#hearts { color: #ff7a9c; letter-spacing: 2px; }
+#sound[aria-pressed="false"] { opacity: .5; }
+.pips { display: inline-flex; gap: 3px; }
+.pips i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.25); }
+.pips i.on { background: #ffd95a; }
+
+.panel { position: fixed; z-index: 4; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(92vw, 520px); padding: 24px 22px; border: 1px solid rgba(255,255,255,.24); border-radius: 26px; background: rgba(12,18,58,.92); text-align: center; }
+.panel[hidden] { display: none; }
+.panel h1 { margin: 0 0 8px; font-size: clamp(28px, 6vw, 40px); letter-spacing: -.03em; }
+.panel p { margin: 6px 0; font-size: 17px; line-height: 1.55; color: #dfe5ff; }
+.panel b { color: #ffd95a; }
+.go { margin-top: 14px; width: 100%; min-height: 60px; border: 0; border-radius: 18px; background: linear-gradient(180deg, #ffe58a, #ffc93c); color: #2a1c00; font: inherit; font-weight: 900; font-size: 22px; }
+.go:active { transform: translateY(2px); }
+.home { display: inline-block; margin-top: 14px; color: #b9c6ff; font-weight: 700; }
+.best { font-size: 14px !important; color: #9fb0ee !important; }
+
+/* 갈림길은 화면 위쪽에 띄운다: 비행기를 끄는 손가락은 아래쪽에 있다. (수학 문제 패널은 공통 모듈 assets/study/game-quiz.js 가 그린다) */
+#fork { top: calc(62px + env(safe-area-inset-top)); transform: translateX(-50%); max-height: calc(100vh - 80px); background: rgba(12,18,58,.96); }
+/* 막 떴을 때 잠깐 잠긴 버튼: 흐리게 보이다가 풀린다 */
+.forks button { transition: opacity .2s, filter .2s; }
+.panel.locked .forks button { opacity: .35; filter: grayscale(.5); }
+.fork-title { margin: 2px 0 12px !important; font-size: clamp(20px, 5vw, 26px) !important; font-weight: 900; color: #fff !important; }
+.forks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.fork { display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 150px; padding: 10px 4px 12px; border: 3px solid rgba(255,255,255,.18); border-radius: 20px; background: rgba(255,255,255,.10); color: #fff; font: inherit; }
+.fork canvas { width: 72px; height: 72px; pointer-events: none; }
+.fork b { font-size: clamp(18px, 4.6vw, 22px); font-weight: 900; color: #ffd95a; word-break: keep-all; pointer-events: none; }
+.fork span { font-size: 13px; font-weight: 700; color: #cfd8ff; line-height: 1.3; word-break: keep-all; pointer-events: none; }
+.fork:active { transform: translateY(2px); }
+.fork.ok { border-color: #7dffb0; background: rgba(125,255,176,.25); }
+.quiz-kicker { font-size: 14px !important; font-weight: 800; color: #ffd95a !important; }
+
+.pick { font-size: 15px !important; font-weight: 800; color: #ffd95a !important; margin-top: 12px !important; }
+.pilots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 6px; }
+.pilot { padding: 8px 2px 6px; border: 3px solid transparent; border-radius: 18px; background: rgba(255,255,255,.10); color: #fff; font: inherit; font-weight: 800; font-size: 16px; }
+.pilot img { display: block; width: 100%; max-width: 78px; height: auto; margin: 0 auto 2px; pointer-events: none; }
+.pilot[aria-pressed="true"] { border-color: #ffd95a; background: rgba(255,217,90,.22); }
+.pilot:active { transform: translateY(2px); }
+@media (max-width: 520px) { .pips { display: none; } .chip { padding: 0 11px; font-size: 15px; } }
+
+.pick span { margin-left: 6px; color: #fff; }
+.trails { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-top: 6px; }
+.trail { min-height: 54px; padding: 4px 0; border: 2px solid transparent; border-radius: 14px; background: rgba(255,255,255,.10); color: #fff; font: inherit; font-weight: 800; font-size: 12px; line-height: 1.2; }
+.trail i { display: block; font-style: normal; font-size: 20px; }
+.trail[aria-pressed="true"] { border-color: #ffd95a; background: rgba(255,217,90,.22); }
+.trail:disabled { opacity: .45; }
+.panel { max-height: calc(100vh - 24px); overflow-y: auto; }

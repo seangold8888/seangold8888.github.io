@@ -14,7 +14,7 @@ export function showResult(root, { win, heroName, enemyName, weaponName = '전�
           <div class="growth-title"><span>누적 성장</span><b>LV.${progress.level}</b></div>
           <div class="growth-line"><span>장수 경험치 <em>+${rewards.xp}</em></span><strong>${progress.xpNeed ? `${progress.xpCurrent} / ${progress.xpNeed}` : '최고 레벨'}</strong></div>
           <div class="growth-meter hero"><i style="transform:scaleX(${progress.xpRatio})"></i></div>
-          <div class="growth-line"><span>${weaponName} <em>숙련 +${rewards.mastery}</em></span><strong>+${progress.weaponLevel - 1}</strong></div>
+          <div class="growth-line"><span>${weaponName} <em>숙련 +${rewards.mastery}${rewards.quizMastery ? ` (문제 +${rewards.quizMastery})` : ''}</em></span><strong>+${progress.weaponLevel - 1}</strong></div>
           <div class="growth-meter weapon"><i style="transform:scaleX(${progress.masteryRatio})"></i></div>
           ${(rewards.heroLevelUps || rewards.weaponLevelUps) ? `<div class="growth-levelup">${rewards.heroLevelUps ? `장수 레벨 +${rewards.heroLevelUps}` : ''}${rewards.heroLevelUps && rewards.weaponLevelUps ? ' · ' : ''}${rewards.weaponLevelUps ? `무기 강화 +${rewards.weaponLevelUps}` : ''}</div>` : ''}
           ${rewards.firstClear ? `<div class="growth-first-clear">첫 승리 보너스 획득</div>` : ''}

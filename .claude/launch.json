@@ -4,7 +4,7 @@
     {
       "name": "game-hub",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "8777", "--directory", "C:\\Users\\김시현\\game-hub\\site"],
+      "runtimeArgs": ["-m", "http.server", "8777", "--directory", "C:\\Users\\김시현\\seangold8888.github.io"],
       "port": 8777
     }
   ]

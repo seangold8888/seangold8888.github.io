@@ -87,7 +87,7 @@
     },
     {
       id: 'night',
-      name: '별빛 밤길',
+      name: '네온 밤길',
       tip: '좁고 굽이 많아요 · 어려움',
       roadHalf: 114, shortcutHalf: 64,
       // 헤어핀 하나 + 시케인 하나. 가장 기술적인 코스.

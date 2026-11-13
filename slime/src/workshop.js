@@ -68,7 +68,7 @@ export function cook(drops,mix){
  if(secret)look={...look,...secret.look};
  let base=5;
  if(!look.rainbow){const c=toRgb(look.color);let best=Infinity;CLASSIC.forEach((h,i)=>{const k=toRgb(h),dist=k.reduce((s,v,j)=>s+(v-c[j])**2,0);if(dist<best){best=dist;base=i;}});}
- const prefix=m.glitter?'반짝':m.stars?'별빛':m.foam?'보글':m.beads?'콩콩':'말랑';
+ const prefix=m.glitter?'반짝':m.stars?'네온':m.foam?'보글':m.beads?'콩콩':'말랑';
  return{...look,key:recipeKey(d,m),drops:d,mix:m,secret:secret?.id||null,base,suggest:secret?secret.name+' 슬라임':prefix+' '+hueName(rgb,d)};
 }
 export const cleanName=(v,fallback)=>String(v??'').replace(/\s+/g,' ').trim().slice(0,8)||fallback;

@@ -417,7 +417,7 @@
 
   function ultimateAttackFor(side) {
     return {
-      name: "별빛 이야기",
+      name: "슈퍼 스토리",
       cost: ULTIMATE_COST,
       dmg: ULTIMATE_DAMAGE,
       fx: "",

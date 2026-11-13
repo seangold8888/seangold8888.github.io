@@ -27,7 +27,7 @@ export function createPlayerHud(hudRoot, name, progress = null) {
   const progressText = progress ? `<div class="progress-readout" id="progress-readout"><b>LV.${progress.level}</b><span>${progress.weapon}</span></div>` : '';
   el.innerHTML = `
     <div class="corner tl objective"><div class="objective-head"><div class="eyebrow">전투 목표</div><span class="stage-count" id="stage-count">1 / 7</span></div><div id="objective-text">적장을 격파하라</div><div class="stage-meter"><i id="stage-meter-fill"></i></div></div>
-    <div class="corner bl player-panel"><div class="hud-name">${name}</div>${progressText}<div class="bar hp"><i></i></div><div class="rage-row"><span>무쌍</span><div class="bar rage"><i></i></div></div><div class="mount-readout" id="mount-readout">하마 상태</div></div>
+    <div class="corner bl player-panel"><div class="hud-name">${name}</div>${progressText}<div class="bar hp"><i></i></div><div class="rage-row"><span>무쌍</span><div class="bar rage"><i></i></div></div><div class="quiz-weapon-row" hidden aria-label="무기 단계"><span>무기</span><b class="qw-pips"><i></i><i></i><i></i><i></i></b><em class="qw-label"></em></div><div class="mount-readout" id="mount-readout">하마 상태</div></div>
     <div class="corner cr combo-wrap"><div class="combo-n" id="combo-n">0</div><div class="combo-t">CHAIN</div></div>
     <div class="corner br ko-wrap"><strong id="ko-n">0</strong><span>K.O.</span></div>
     <div class="corner bc controls"><span>WASD 이동 · W 두 번 점프</span><span>J 공격 · 꾹 강공</span><span>K 활 · 꾹 차지</span><span>L 필살기</span><span>I 돌진기</span><span>F 승마</span></div>
@@ -46,6 +46,7 @@ export function createPlayerHud(hudRoot, name, progress = null) {
   hudRoot.appendChild(el);
   const hp = el.querySelector('.bar.hp > i'), rage = el.querySelector('.bar.rage > i');
   const combo = el.querySelector('#combo-n'), ko = el.querySelector('#ko-n'), objective = el.querySelector('#objective-text'), stageCount = el.querySelector('#stage-count'), stageFill = el.querySelector('#stage-meter-fill'), mountReadout = el.querySelector('#mount-readout');
+  const quizRow = el.querySelector('.quiz-weapon-row');
   const vignette = el.querySelector('.damage-vignette'), skillButton = el.querySelector('[data-touch-action=skill]');
   const dashButton = el.querySelector('[data-touch-action=dash]');
   const attackButton = el.querySelector('[data-touch-action=attack]'), mountButton = el.querySelector('[data-touch-action=mount]');
@@ -119,6 +120,15 @@ export function createPlayerHud(hudRoot, name, progress = null) {
       const next = !!mounted && !!labels;
       if (next === mountedMode && (!next || (labels.attack === mountedLabels?.attack && labels.dash === mountedLabels?.dash && labels.icon === mountedLabels?.icon))) return;
       mountedMode = next; mountedLabels = next ? labels : null; applyMode();
+    },
+    // ? 두루마리 무기 단계. steps = 반 칸 단위(0~8), 칸 4개를 꽉 참/반/빈 칸으로 그린다. 처음 부르면 줄이 나타난다.
+    setWeaponTier(steps, maxSteps = 8, color = '#ffd86b', label = '') {
+      if (!quizRow) return;
+      quizRow.hidden = false; quizRow.style.setProperty('--qw-color', color);
+      quizRow.querySelectorAll('.qw-pips > i').forEach((pip, i) => { const fill = Math.max(0, Math.min(2, steps - i * 2)); pip.className = fill >= 2 ? 'full' : fill === 1 ? 'half' : ''; });
+      quizRow.setAttribute('aria-label', '무기 ' + Math.floor(steps / 2) + '단계' + (steps % 2 ? ' 반' : '') + ' / ' + Math.floor(maxSteps / 2));
+      setText(quizRow.querySelector('.qw-label'), label);
+      quizRow.classList.remove('bump'); void quizRow.offsetWidth; quizRow.classList.add('bump');
     },
     setMount(mounted, label, supported = true) { mountReadout.textContent = !supported ? '도보 전투' : mounted ? `탑승 · ${label || '군마'}` : `하마 · ${label || '군마'} 대기`; mountReadout.classList.toggle('mounted', !!mounted); },
     hurt() { vignette.classList.remove('on'); void vignette.offsetWidth; vignette.classList.add('on'); },

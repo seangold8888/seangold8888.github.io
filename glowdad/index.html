@@ -96,28 +96,16 @@ nav button[aria-current="page"]{background:var(--act);color:var(--act-ink);borde
 .code{display:flex;gap:8px;flex-wrap:wrap}
 .code input{flex:1 1 180px;min-width:0;border:2px solid var(--line);background:var(--bg);border-radius:10px;padding:10px;font:500 15px ui-monospace,Consolas,monospace}
 /* shop: one product per screen */
-.prog{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.dots{display:flex;gap:5px;flex-wrap:wrap}
-.dots i{width:14px;height:14px;border-radius:50%;background:var(--line);display:block}
-.dots i.got{background:var(--good)}.dots i.out{background:var(--warn)}.dots i.cur{outline:3px solid var(--ink);outline-offset:1px}
 .big{--c:var(--mom);--cs:var(--mom-soft);background:var(--paper);border:3px solid var(--c);border-radius:22px;overflow:hidden;display:flex;flex-direction:column}
-.big .shelf{padding:18px 10px 14px}
-.big .who-l{font:800 15px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--c)}
-.big .in{padding:16px 18px 18px;display:flex;flex-direction:column;gap:12px}
 .big .kind{font-size:34px}
 .big .plain{font-size:20px}
 .big .koname{font:900 26px/1.3 var(--f-ko);word-break:keep-all}
-.findsign{border:2px dashed var(--ink);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
-.findsign .ko{font-size:30px;font-weight:900;line-height:1.2}
 .big .alike{font-size:16px;padding:10px 12px}
 .big.got{border-color:var(--good)}
-.stamp{font:800 18px var(--f-display);color:var(--good)}
 .acts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .acts .gotit{grid-column:1/-1;border:0;background:var(--good);color:var(--paper);font-size:22px;font-weight:700;padding:16px;border-radius:14px}
 .acts .staffb{border:0;background:var(--act);color:var(--act-ink);font-weight:700;padding:14px;border-radius:14px;font-size:17px}
 .acts .soldb{border:2px solid var(--warn);background:transparent;color:var(--warn);font-weight:700;padding:12px;border-radius:14px}
-.nav2{display:flex;justify-content:space-between;gap:10px}
-.nav2 button{flex:1}
 .list{display:flex;flex-direction:column;background:var(--paper);border:2px solid var(--line);border-radius:18px;overflow:hidden}
 .row{--c:var(--mom);display:grid;grid-template-columns:8px 44px 1fr auto;gap:10px;align-items:center;padding:8px 12px 8px 0;border-top:1px solid var(--line);background:transparent;border-left:0;border-right:0;border-bottom:0;text-align:left;width:100%}
 .row:first-child{border-top:0}
@@ -183,7 +171,7 @@ details summary{cursor:pointer;font-weight:700}
 .foot details span{display:block;margin-top:6px}
 
 /* numbers: Atkinson's slashed zero reads like a crossed-out price */
-.price,.totals,.dist,td,.stats b{font-family:var(--f-num)}
+.price,.totals,.dist,td,.stats b,.big.hunt>.note{font-family:var(--f-num)}
 .planb{font-size:14px;line-height:1.35}
 .shadein{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;flex-wrap:wrap}
 .shadein input{width:90px;border:2px solid var(--c);border-radius:8px;padding:6px 8px;background:var(--bg);font:700 16px var(--f-num)}
@@ -207,7 +195,6 @@ body.hunting nav button b{font-size:16px}
 .brief,.win{background:var(--paper);border:3px solid var(--gold);border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:12px}
 .win{align-items:flex-start}
 .eyebrow{font:800 13px var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
-.rules{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
 .primary.go{font-size:20px;padding:16px}
 .big.hunt .hhead{display:flex;justify-content:space-between;gap:8px;background:var(--c);color:var(--paper);padding:8px 14px;font:800 14px var(--f-body);letter-spacing:.06em;text-transform:uppercase}
 .big.hunt{gap:0}
@@ -270,7 +257,6 @@ body.hunting nav button b{font-size:16px}
       <button class="m" data-who="mom" aria-pressed="true"><b>For Mom</b><span id="momHint">Grown-up skin care</span></button>
       <button class="t" data-who="teen" aria-pressed="false"><b>For daughter</b><span id="teenHint">Teen favourites</span></button>
     </div>
-    <p class="note" id="pickNote"></p>
     <div class="grid" id="grid"></div>
     <div class="bar">
       <span id="count" style="font-weight:700">0 items</span>
@@ -569,7 +555,6 @@ const DATA={
 "brand": "Round Lab",
 "name": "1025 Dokdo Toner",
 "ko": "라운드랩 1025 독도 토너",
-"size": "200ml",
 "plain": "Watery face toner, used right after washing",
 "shelfKo": "스킨/토너",
 "shelfEn": "Toner",
@@ -580,8 +565,6 @@ const DATA={
 "why": "Another best-selling gentle toner"
 },
 "shade": null,
-"look": "usually no box; clear bottle, clear liquid, blue-white label, white cap",
-"why": "Olive Young Awards 2025 Toner #1",
 "pkg": {
 "s": "bottle",
 "body": "#e6f0f8",
@@ -598,7 +581,6 @@ const DATA={
 "UK": 17.0
 },
 "krSale": 13500,
-"krSrc": "Glowpick list price; Kurly 15,000, sale 13,500",
 "store": {
 "US": "Ulta",
 "JP": "Qoo10 JP seller (reference price)",
@@ -618,7 +600,6 @@ const DATA={
 "brand": "Torriden",
 "name": "DIVE-IN Low Molecular Hyaluronic Acid Serum",
 "ko": "토리든 다이브인 저분자 히알루론산 세럼",
-"size": "50ml",
 "plain": "Light moisture drops for dry skin",
 "shelfKo": "에센스/세럼/앰플",
 "shelfEn": "Serum",
@@ -629,8 +610,6 @@ const DATA={
 "why": "Light calming drops, similar use"
 },
 "shade": null,
-"look": "box: white, blue DIVE-IN text; bottle: clear with blue print, white dropper",
-"why": "Olive Young Awards 2025 Essence/Serum #1",
 "pkg": {
 "s": "dropper",
 "body": "#eef4fa",
@@ -647,7 +626,6 @@ const DATA={
 "UK": 19.0
 },
 "krSale": null,
-"krSrc": "Glowpick; OY sells 50ml+50ml refill set 36,000 (sale 27,000)",
 "store": {
 "US": "Sephora",
 "JP": "Matsukiyo Cocokara / @cosme",
@@ -665,7 +643,6 @@ const DATA={
 "brand": "Aestura",
 "name": "Atobarrier 365 Cream",
 "ko": "에스트라 아토베리어365 크림",
-"size": "80ml",
 "plain": "Thick moisturizer for dry, sensitive skin",
 "shelfKo": "크림",
 "shelfEn": "Cream",
@@ -676,8 +653,6 @@ const DATA={
 "why": "Rich cream for dry skin, cheaper"
 },
 "shade": null,
-"look": "box: white with blue/teal text; tube: white, blue lettering, white cap",
-"why": "Olive Young Awards 2025 Cream #1",
 "pkg": {
 "s": "tube",
 "body": "#ffffff",
@@ -693,7 +668,6 @@ const DATA={
 "UK": 26.0
 },
 "krSale": 22400,
-"krSrc": "Glowpick list price; 11st single about 22,400",
 "store": {
 "US": "Sephora / Amazon US",
 "JP": "Matsukiyo Cocokara / @cosme",
@@ -713,7 +687,6 @@ const DATA={
 "brand": "Round Lab",
 "name": "Birch Juice Moisturizing Sun Cream SPF50+",
 "ko": "라운드랩 자작나무 수분 선크림",
-"size": "50ml",
 "plain": "Moisturizing face sunscreen, use every morning",
 "shelfKo": "선케어",
 "shelfEn": "Sun care",
@@ -724,8 +697,6 @@ const DATA={
 "why": "Hugely popular light sunscreen"
 },
 "shade": null,
-"look": "usually no box; white tube with light blue birch print, white cap",
-"why": "OY Awards 2025 Sun Care #1 + Global Best Performer",
 "pkg": {
 "s": "tube",
 "body": "#f7fbff",
@@ -742,7 +713,6 @@ const DATA={
 "UK": 20.99
 },
 "krSale": 16020,
-"krSrc": "Glowpick list price; 11st seller 16,020-18,500",
 "store": {
 "US": "Ulta (US version: UVLOCK SPF45)",
 "JP": "Qoo10 JP third-party seller",
@@ -767,7 +737,6 @@ const DATA={
 "brand": "ma:nyo",
 "name": "Pure Cleansing Oil",
 "ko": "마녀공장 퓨어 클렌징 오일",
-"size": "200ml",
 "plain": "Oil that removes makeup, rinse with water",
 "shelfKo": "클렌징",
 "shelfEn": "Cleansing",
@@ -778,8 +747,6 @@ const DATA={
 "why": "Makeup-removing balm, same job"
 },
 "shade": null,
-"look": "no box; clear bottle showing golden oil, dark pump, dark print",
-"why": "Olive Young Awards 2025 Cleansing #1",
 "pkg": {
 "s": "pump",
 "body": "#e8c46a",
@@ -796,7 +763,6 @@ const DATA={
 "UK": 18.0
 },
 "krSale": 17900,
-"krSrc": "Kurly 29,000, sale 17,900",
 "store": {
 "US": "Amazon US",
 "JP": "Tsuruha Online / BicCamera.com",
@@ -816,7 +782,6 @@ const DATA={
 "brand": "medicube",
 "name": "PDRN Pink Peptide Ampoule (Serum)",
 "ko": "메디큐브 PDRN 핑크 펩타이드 앰플",
-"size": "30ml",
 "plain": "Pink skin-glow serum in a dropper",
 "shelfKo": "에센스/세럼/앰플",
 "shelfEn": "Serum",
@@ -827,8 +792,6 @@ const DATA={
 "why": "Glow serum, lower price"
 },
 "shade": null,
-"look": "box: pink; bottle: pink with pink dropper",
-"why": "OY Awards 2025 Trend: Slow Aging",
 "pkg": {
 "s": "dropper",
 "body": "#f4a6bf",
@@ -845,7 +808,6 @@ const DATA={
 "UK": 24.0
 },
 "krSale": null,
-"krSrc": "Glowpick; OY mostly sells 30ml+refill sets (11st 29,400-35,250)",
 "store": {
 "US": "Ulta",
 "JP": "@cosme list price",
@@ -865,7 +827,6 @@ const DATA={
 "brand": "VT Cosmetics",
 "name": "Reedle Shot 100 Essence",
 "ko": "VT 리들샷 100",
-"size": "50ml",
 "plain": "Tingly essence that helps skin absorb products",
 "shelfKo": "에센스/세럼/앰플",
 "shelfEn": "Serum",
@@ -876,8 +837,6 @@ const DATA={
 "why": "Same product, milder strength"
 },
 "shade": null,
-"look": "box and bottle: pastel pink with big number 100",
-"why": "OY Awards 2025 Global Best Performer",
 "pkg": {
 "s": "pump",
 "body": "#f7cfd8",
@@ -893,7 +852,6 @@ const DATA={
 "UK": 25.0
 },
 "krSale": null,
-"krSrc": "Glowpick list price",
 "store": {
 "US": "Ulta",
 "JP": "Tsuruha Online / @cosme",
@@ -911,7 +869,6 @@ const DATA={
 "brand": "d'Alba",
 "name": "White Truffle First Spray Serum",
 "ko": "달바 화이트 트러플 퍼스트 스프레이 세럼",
-"size": "100ml",
 "plain": "Face mist serum, spray on any time",
 "shelfKo": "스킨/토너·미스트",
 "shelfEn": "Toner/Mist) (uncertain",
@@ -921,8 +878,6 @@ const DATA={
 "why": "Moisture boost in a dropper instead of a spray"
 },
 "shade": null,
-"look": "box: white with gold; bottle: white/frosted, gold spray collar",
-"why": "OY Awards 2025 Trend: Slow Aging",
 "pkg": {
 "s": "spray",
 "body": "#f4f2ee",
@@ -938,7 +893,6 @@ const DATA={
 "UK": 26.0
 },
 "krSale": 25900,
-"krSrc": "Glowpick/KREAM 29,900; Kurly about 25,900",
 "store": {
 "US": "d'Alba US official",
 "JP": "Matsukiyo Cocokara / @cosme",
@@ -956,7 +910,6 @@ const DATA={
 "brand": "JUNG SAEM MOOL",
 "name": "Essential Skin Nuder Cushion SPF50+",
 "ko": "정샘물 에센셜 스킨 누더 쿠션",
-"size": "14g x2 (with refill)",
 "plain": "Foundation compact with a sponge puff",
 "shelfKo": "베이스메이크업",
 "shelfEn": "Base makeup",
@@ -966,8 +919,6 @@ const DATA={
 "why": "Another top cushion compact (same shade number problem)"
 },
 "shade": "21",
-"look": "box and compact: white/light grey, grey text",
-"why": "Olive Young Awards 2025 Cushion #1",
 "pkg": {
 "s": "cushion",
 "body": "#e3e3e3",
@@ -983,7 +934,6 @@ const DATA={
 "UK": 13.91
 },
 "krSale": null,
-"krSrc": "Glowpick list price (14g x2)",
 "store": {
 "US": "Olive Young US (single)",
 "JP": "MAQUIA/@cosme list price",
@@ -1007,7 +957,6 @@ const DATA={
 "brand": "AHC",
 "name": "Pro Shot Collagen Jufination Lift4 Eye Cream for Face",
 "ko": "AHC 프로샷 콜라 쥬비네이션 리프트4 캡슐 인퓨즈드 아이크림 포 페이스",
-"size": "30ml",
 "plain": "Firming eye cream, also used on face",
 "shelfKo": "아이케어/크림",
 "shelfEn": "Eye care/Cream",
@@ -1018,8 +967,6 @@ const DATA={
 "why": "Same brand's other eye cream for face"
 },
 "shade": null,
-"look": "box: white/silver; tube: white with silver metal tip",
-"why": "No.1 in total Olive Young sales 2025 (per Elle Korea)",
 "pkg": {
 "s": "tube",
 "body": "#ffffff",
@@ -1035,7 +982,6 @@ const DATA={
 "UK": null
 },
 "krSale": 20850,
-"krSrc": "Glowpick/Elle 31,000; 11st 20,850",
 "store": {
 "US": "Target (3rd-party seller SleekShop)",
 "JP": "",
@@ -1056,7 +1002,6 @@ const DATA={
 "brand": "rom&nd",
 "name": "The Juicy Lasting Tint",
 "ko": "롬앤 더 쥬시 래스팅 틴트",
-"size": "3.5g (old 5.5g discontinued)",
 "plain": "Glossy long-lasting lip colour",
 "shelfKo": "립메이크업",
 "shelfEn": "Lip makeup",
@@ -1066,8 +1011,6 @@ const DATA={
 "why": "Other best-selling shiny tint"
 },
 "shade": "03",
-"look": "no box; clear tube showing the lip colour, clear cap",
-"why": "Olive Young Awards 2025 Lip Makeup #1",
 "pkg": {
 "s": "tint",
 "body": "#a8476a",
@@ -1083,7 +1026,6 @@ const DATA={
 "UK": 14.5
 },
 "krSale": 9900,
-"krSrc": "Glowpick 13,000; W Concept sale 9,900",
 "store": {
 "US": "Ulta",
 "JP": "Matsukiyo Cocokara",
@@ -1103,7 +1045,6 @@ const DATA={
 "brand": "Peripera",
 "name": "Ink Mood Glowy Tint",
 "ko": "페리페라 잉크 무드 글로이 틴트",
-"size": "4g",
 "plain": "Shiny sheer lip colour",
 "shelfKo": "립메이크업",
 "shelfEn": "Lip makeup",
@@ -1113,8 +1054,6 @@ const DATA={
 "why": "Other best-selling shiny tint"
 },
 "shade": "03",
-"look": "no box; tube showing the lip colour",
-"why": "Olive Young Awards 2025 Lip Makeup #3",
 "pkg": {
 "s": "tint",
 "body": "#d8576e",
@@ -1130,7 +1069,6 @@ const DATA={
 "UK": 12.99
 },
 "krSale": 8370,
-"krSrc": "Glowpick 13,000; 11st 8,370",
 "store": {
 "US": "Amazon US",
 "JP": "@cosme list price",
@@ -1148,7 +1086,6 @@ const DATA={
 "brand": "CLIO",
 "name": "Kill Cover Founwear Cushion",
 "ko": "클리오 킬 커버 파운웨어 쿠션",
-"size": "15g x2 (with refill)",
 "plain": "Full-coverage foundation compact",
 "shelfKo": "베이스메이크업",
 "shelfEn": "Base makeup",
@@ -1158,8 +1095,6 @@ const DATA={
 "why": "Other top cushion compact"
 },
 "shade": "21",
-"look": "box: black/white; compact: black",
-"why": "Olive Young Awards 2025 Cushion #2",
 "pkg": {
 "s": "cushion",
 "body": "#1d1d1d",
@@ -1175,7 +1110,6 @@ const DATA={
 "UK": 37.0
 },
 "krSale": 23930,
-"krSrc": "Glowpick 36,000; Coupang 23,930",
 "store": {
 "US": "Olive Young US",
 "JP": "@cosme (The New Founwear)",
@@ -1203,7 +1137,6 @@ const DATA={
 "brand": "WAKEMAKE",
 "name": "Soft Blurring Eye Palette",
 "ko": "웨이크메이크 소프트 블러링 아이팔레트",
-"size": "14g (uncertain)",
 "plain": "Eyeshadow set, soft pink and brown shades",
 "shelfKo": "아이메이크업",
 "shelfEn": "Eye makeup",
@@ -1214,8 +1147,6 @@ const DATA={
 "why": "Popular eyeshadow set"
 },
 "shade": "08",
-"look": "flat palette, pastel cover in shade tone",
-"why": "Olive Young Awards 2025 Eye Shadow #1",
 "pkg": {
 "s": "palette",
 "body": "#e9a08f",
@@ -1238,7 +1169,6 @@ const DATA={
 "UK": null
 },
 "krSale": null,
-"krSrc": "Glowpick snippet (uncertain); OY own brand, often big sale",
 "store": {
 "US": "Olive Young Global",
 "JP": "MAQUIA list price",
@@ -1258,7 +1188,6 @@ const DATA={
 "brand": "fwee",
 "name": "Lip & Cheek Blurry Pudding Pot",
 "ko": "퓌 립앤치크 블러리 푸딩팟",
-"size": "5g",
 "plain": "Soft colour pot for lips and cheeks",
 "shelfKo": "립메이크업/치크",
 "shelfEn": "Lip/Cheek) (uncertain",
@@ -1269,8 +1198,6 @@ const DATA={
 "why": "Soft cheek colour"
 },
 "shade": "ND03",
-"look": "small clear pot, colour visible, pastel lid",
-"why": "Olive Young Awards 2025 Contouring #1",
 "pkg": {
 "s": "jar",
 "body": "#e9b3a6",
@@ -1287,7 +1214,6 @@ const DATA={
 "UK": 16.0
 },
 "krSale": null,
-"krSrc": "Glowpick list price",
 "store": {
 "US": "Ulta",
 "JP": "cosme.com (uncertain)",
@@ -1307,7 +1233,6 @@ const DATA={
 "brand": "Torriden",
 "name": "DIVE-IN Low Molecular Hyaluronic Acid Mask",
 "ko": "토리든 다이브인 저분자 히알루론산 마스크",
-"size": "1 sheet 27ml (10-packs sold)",
 "plain": "One-use moisture face sheet mask",
 "shelfKo": "마스크팩",
 "shelfEn": "Sheet masks",
@@ -1317,8 +1242,6 @@ const DATA={
 "why": "Other award-winning face mask"
 },
 "shade": null,
-"look": "pouch: white/light blue, blue DIVE-IN text",
-"why": "OY Awards 2025 Face Mask #1; top foreign buy 2023-24 (Harper's Bazaar Korea)",
 "pkg": {
 "s": "pack",
 "body": "#eaf3fb",
@@ -1335,7 +1258,6 @@ const DATA={
 "UK": 30.0
 },
 "krSale": null,
-"krSrc": "Glowpick per sheet; 10-pack price not found",
 "store": {
 "US": "Torriden US / Amazon US (10 sheets)",
 "JP": "MAQUIA (1 sheet)",
@@ -1363,7 +1285,6 @@ const DATA={
 "brand": "BIODANCE",
 "name": "Bio-Collagen Real Deep Mask",
 "ko": "바이오던스 바이오 콜라겐 리얼 딥 마스크",
-"size": "34g x1; box of 4",
 "plain": "Overnight gel face mask, turns clear",
 "shelfKo": "마스크팩",
 "shelfEn": "Sheet masks",
@@ -1373,8 +1294,6 @@ const DATA={
 "why": "Other award-winning face mask"
 },
 "shade": null,
-"look": "pouch/box: dark navy with white text",
-"why": "Olive Young Awards 2025 Face Mask #2",
 "pkg": {
 "s": "sheet",
 "body": "#1f2a4a",
@@ -1390,7 +1309,6 @@ const DATA={
 "UK": 14.9
 },
 "krSale": null,
-"krSrc": "Glowpick per sheet; 4-pack 11st 12,900-15,300",
 "store": {
 "US": "Sephora / Amazon US (4 sheets)",
 "JP": "@cosme / e-Fujiyakuhin (4 sheets)",
@@ -1418,7 +1336,6 @@ const DATA={
 "brand": "MEDIHEAL",
 "name": "Madecassoside Blemish Pad",
 "ko": "메디힐 마데카소사이드 흔적 패드",
-"size": "100 pads",
 "plain": "Soaked cotton pads, wipe face for spots",
 "shelfKo": "스킨/토너",
 "shelfEn": "패드) (Toner pads",
@@ -1429,8 +1346,6 @@ const DATA={
 "why": "Soaked pads for spots, similar use"
 },
 "shade": null,
-"look": "white jar, pink/red accents",
-"why": "OY Awards 2025 Toner Pads #1 + Global Best Performer",
 "pkg": {
 "s": "jar",
 "body": "#ffffff",
@@ -1446,7 +1361,6 @@ const DATA={
 "UK": 22.0
 },
 "krSale": null,
-"krSrc": "Glowpick; Kurly 200-pad set 28,900",
 "store": {
 "US": "Ulta / Mediheal official",
 "JP": "MAQUIA list price",
@@ -1464,7 +1378,6 @@ const DATA={
 "brand": "UNOVE",
 "name": "Deep Damage Treatment EX",
 "ko": "어노브 딥 데미지 트리트먼트 이엑스",
-"size": "207ml (also 320ml)",
 "plain": "Hair conditioner for damaged hair, rinse off",
 "shelfKo": "헤어케어",
 "shelfEn": "Hair care",
@@ -1475,8 +1388,6 @@ const DATA={
 "why": "Same line, thicker, also rinse off"
 },
 "shade": null,
-"look": "white tube, dark text",
-"why": "OY Awards 2025 Hair Care #1 + Global Best Performer",
 "pkg": {
 "s": "tube",
 "body": "#ffffff",
@@ -1492,7 +1403,6 @@ const DATA={
 "UK": 22.0
 },
 "krSale": null,
-"krSrc": "Glowpick 207ml (uncertain match); 320ml OY double set 29,800",
 "store": {
 "US": "Amazon US",
 "JP": "MAQUIA list price",
@@ -1512,7 +1422,6 @@ const DATA={
 "brand": "Torriden",
 "name": "Solid In Ceramide Lip Essence",
 "ko": "토리든 솔리드인 세라마이드 립 에센스",
-"size": "11ml",
 "plain": "Lip balm for dry lips",
 "shelfKo": "립케어",
 "shelfEn": "Lip care",
@@ -1523,8 +1432,6 @@ const DATA={
 "why": "Famous lip balm for dry lips"
 },
 "shade": null,
-"look": "small white tube",
-"why": "Olive Young Awards 2025 Lip Care #1",
 "pkg": {
 "s": "tube",
 "body": "#ffffff",
@@ -1540,7 +1447,6 @@ const DATA={
 "UK": 8.0
 },
 "krSale": 5450,
-"krSrc": "Glowpick 7,000; 11st 5,450",
 "store": {
 "US": "Torriden US official",
 "JP": "MAQUIA / Create SD",
@@ -2003,7 +1909,8 @@ function renderPick(){
   $("#grid").innerHTML=P.filter(p=>p.who===who).map(card).join("");
   $("#count").textContent=list.size+(list.size===1?" item":" items")+" on the list";
 }
-const code=()=>"list-"+P.filter(p=>list.has(p.id)).map(p=>p.id+(p.shade&&shades[p.id]?"s"+shades[p.id].replace(/[^a-z0-9]/gi,"").toUpperCase():"")).join("-");
+const codeOf=(l,sh)=>"list-"+P.filter(p=>l.has(p.id)).map(p=>p.id+(p.shade&&sh[p.id]?"s"+sh[p.id].replace(/[^a-z0-9]/gi,"").toUpperCase():"")).join("-");
+const code=()=>codeOf(list,shades);
 function parse(s){
   const m=String(s||"").trim().replace(/^.*#/,"").match(/^list((?:-[mt]\d+(?:s[a-z0-9]+)?)+)$/i);
   if(!m) return null;
@@ -2084,7 +1991,7 @@ function winHTML(it,score,max){
   return `<div class="win"><span class="eyebrow">Mission complete</span>${chest(true,"bigchest")}
     <h2>${rank(score,max)}</h2>
     <div class="totals"><span>Score</span><b>${score} / ${max}</b><span>Treasures</span><b>${it.filter(p=>got.has(p.id)).length} found · ${nAlt} Plan B · ${nSkip} skipped</b>
-    <span>Loot saved</span><b class="bigsave">${money(loot(it))}</b>${mins?`<span>Time</span><b>${mins} min</b>`:""}</div>
+    <span>Money saved</span><b class="bigsave">${money(loot(it))}</b>${mins?`<span>Time</span><b>${mins} min</b>`:""}</div>
     <div class="boss"><span class="eyebrow">Final boss: the till</span><p>Hand over your <b>real passport before you pay</b>. Under ₩1,000,000 on one receipt, the tax comes off right there.</p>
     <button class="primary" data-go="tax" data-amt="${krGot}">How much tax do I get back? →</button></div>
     <button class="ghost" id="replay">Play this list again</button></div>`;
@@ -2240,13 +2147,12 @@ function go(v){
   if(v==="stores"){ if(!here) setArea(load("area")||D.areas[0].id); if(!map&&!mapOK&&!go.tried){go.tried=true;tryLeaflet();} }
   try{ if(!location.hash.startsWith("#list-")||v!=="shop") history.replaceState(null,"","#"+v); }catch(e){}
 }
-function save(){store("list",[...list]);store("shades",shades);store("got",[...got]);store("out",[...out]);store("alt",[...alt]);store("skip",[...skip]);store("help",[...help]);store("t0",t0);store("cur",cur)}
+function save(){store("list",[...list]);store("shades",shades);store("got",[...got]);store("out",[...out]);store("alt",[...alt]);store("skip",[...skip]);store("help",[...help]);store("t0",t0);store("cur",cur);store("code",code())}
 function renderAll(){ if(view==="pick")renderPick(); if(view==="shop")renderShop(); if(view==="tax")renderTax(); if(view==="stores")renderStores(); renderFoot(); }
 function renderFoot(){
   $("#foot").innerHTML=`<span><b>Prices checked ${esc(D.asOf)}.</b> <span class="unv">*</span> = one source only. Shelf price wins. Free page, not linked to any store or brand.</span>
    <details><summary>Sources and notes</summary><span>${D.priceSrc}</span>
    <span>Exchange rates used: ${Object.entries(D.fx).map(([k,f])=>`${f.sym}1 = ₩${f.krwPer.toLocaleString("en-US")}`).join(" · ")} (${D.fxSrc}).</span>
-   <span><span class="unv">*</span> = number from a single source, not double-checked. Shelf prices and sales change every month; the shelf price wins.</span>
    <span>Plan B items are our suggestions, not a ranking. Shelf sign names are the usual section names; the sign in your store may read a little differently.</span>
    <span>Package pictures are simple drawings of shape and colour, from memory, not brand artwork. Music is an original tune made in your browser.</span></details>`;
 }
@@ -2264,7 +2170,6 @@ document.addEventListener("click",e=>{
   else if(d.next){nextOpen();save();renderShop();window.scrollTo({top:0,behavior:"smooth"});}
   else if(d.staff){help.add(d.staff);save();renderShop();staff(d.staff);}
   else if(d.staffalt) staff(d.staffalt,true);
-  else if(d.step){cur+=+d.step;save();renderShop();}
   else if(d.jump){cur=+d.jump;if(t0===null)t0=Date.now();save();renderShop();window.scrollTo({top:0,behavior:"smooth"});}
   else if(d.go){ if(d.amt){$("#taxAmt").value=(+d.amt).toLocaleString("en-US");} go(d.go); window.scrollTo({top:0}); }
   else if(d.amt){$("#taxAmt").value=(+d.amt).toLocaleString("en-US");renderTax();}
@@ -2293,7 +2198,7 @@ document.addEventListener("click",e=>{
   else if(t.id==="load"){
     const s=parse($("#codeIn").value);
     if(!s||!s.size){$("#loadMsg").textContent="That code didn't work. It looks like list-m1-m3-t2.";return;}
-    list=s;shades=s.shades;resetHunt();save();$("#loadMsg").textContent="";renderShop();window.scrollTo({top:0});
+    openList(s);$("#loadMsg").textContent="";renderShop();window.scrollTo({top:0});
   }
   else if(t.id==="locBtn") locate();
 });
@@ -2311,14 +2216,16 @@ $("#area").innerHTML=D.areas.map(a=>`<option value="${a.id}">${esc(a.label)}</op
 $("#momHint").textContent=D.hints.mom; $("#teenHint").textContent=D.hints.teen;
 initTax();
 who=load("who")||"mom";
+function loadProgress(){got=new Set(load("got")||[]);out=new Set(load("out")||[]);alt=new Set(load("alt")||[]);skip=new Set(load("skip")||[]);help=new Set(load("help")||[]);t0=load("t0");cur=+load("cur")||0;}
+// a list from a link or code starts a fresh hunt, unless it is the list already being hunted (page reload, link tapped again)
+function openList(s){const same=load("code")===codeOf(s,s.shades);list=s;shades=s.shades;if(same)loadProgress();else resetHunt();save();}
 const fromHash=parse(location.hash);
-if(fromHash&&fromHash.size){list=fromHash;shades=fromHash.shades;}
-else{const l=load("list");list=new Set(Array.isArray(l)&&l.length?l.filter(id=>P.some(p=>p.id===id)):D.example);shades=load("shades")||{};
-  got=new Set(load("got")||[]);out=new Set(load("out")||[]);alt=new Set(load("alt")||[]);skip=new Set(load("skip")||[]);help=new Set(load("help")||[]);t0=load("t0");cur=+load("cur")||0;}
+if(fromHash&&fromHash.size) openList(fromHash);
+else{const l=load("list");list=new Set(Array.isArray(l)&&l.length?l.filter(id=>P.some(p=>p.id===id)):D.example);shades=load("shades")||{};loadProgress();}
 renderFoot();
 const h=location.hash.slice(1);
 go(fromHash&&fromHash.size?"shop":(["pick","shop","tax","stores"].includes(h)?h:"pick"));
-window.addEventListener("hashchange",()=>{const s=parse(location.hash);if(s&&s.size){list=s;shades=s.shades;resetHunt();save();go("shop");}else{const h=location.hash.slice(1);if(["pick","shop","tax","stores"].includes(h)&&h!==view)go(h);}});
+window.addEventListener("hashchange",()=>{const s=parse(location.hash);if(s&&s.size){openList(s);go("shop");}else{const h=location.hash.slice(1);if(["pick","shop","tax","stores"].includes(h)&&h!==view)go(h);}});
 
 </script>
 

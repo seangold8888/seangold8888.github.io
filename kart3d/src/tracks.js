@@ -81,7 +81,7 @@ export const TRACKS = [
     // 좁고 굽이가 잦다. 드리프트를 익힌 다음에 오는 코스.
     id: 'night',
     tip: '좁고 굽이 많아요 · 어려움',
-    name: '별빛 밤길',
+    name: '네온 밤길',
     sky: 0x1a2350, fog: 0x2a3468, ground: 0x33406e, road: 0x7d87c0, rail: 0xffd34d,
     laps: 2,
     roadHalf: 29,

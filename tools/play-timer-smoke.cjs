@@ -48,7 +48,7 @@ const GAMES = ["cards", "hogwarts", "bori", "avengers", "kart", "kart3d", "princ
       const page = await context.newPage();
       await page.goto(base + "/" + game + "/", { waitUntil: "domcontentloaded" });
       await page.waitForSelector(".hub-play-over", { timeout: 15000 });
-      assert.match(await page.locator(".hub-play-over h2").innerText(), /티켓이 필요/);
+      assert.match(await page.locator(".hub-play-over h2").innerText(), /Ticket needed/);
       assert.equal(new URL(await page.locator(".hub-play-over a").getAttribute("href")).pathname, "/game/");
       await context.close();
     }
@@ -64,7 +64,7 @@ const GAMES = ["cards", "hogwarts", "bori", "avengers", "kart", "kart3d", "princ
       assert.equal(await page.locator(".hub-play-over").count(), 0);
       assert.equal(await page.locator(".hub-play-chip.is-warn").count(), 0);
       await page.waitForSelector(".hub-play-chip.is-warn", { timeout: 20000 });
-      assert.match(await page.locator(".hub-play-chip").innerText(), /곧 끝나요/);
+      assert.match(await page.locator(".hub-play-chip").innerText(), /Almost done/);
       await context.close();
       console.log("PASS 남은 시간 표시 · 1분 전 경고");
     }
@@ -75,7 +75,7 @@ const GAMES = ["cards", "hogwarts", "bori", "avengers", "kart", "kart3d", "princ
       const page = await context.newPage();
       await page.goto(base + "/odyssey/", { waitUntil: "domcontentloaded" });
       await page.waitForSelector(".hub-play-over", { timeout: 15000 });
-      assert.match(await page.locator(".hub-play-over h2").innerText(), /시간이 끝났어요/);
+      assert.match(await page.locator(".hub-play-over h2").innerText(), /Time's up/);
       await page.waitForURL("**/game/", { timeout: 20000 });
       await context.close();
       console.log("PASS 시간 끝 → 막힘 → 10초 뒤 모험 상자로 이동");
@@ -126,7 +126,7 @@ const GAMES = ["cards", "hogwarts", "bori", "avengers", "kart", "kart3d", "princ
       // 모험 상자로 돌아가 다른 게임을 고르면 남은 시간으로 들어가고 티켓을 더 쓰지 않는다.
       await page.goto(base + "/game/", { waitUntil: "domcontentloaded" });
       await page.waitForFunction(() => window.HubPlayTimer);
-      assert.match(await page.locator("#hubTicketStat").innerText(), /게임 [45]:\d\d 남음/);
+      assert.match(await page.locator("#hubTicketStat").innerText(), /[45]:\d\d left/);
       await page.locator('a.card[href="kart3d/"]').click();
       await page.waitForURL("**/kart3d/");
       const again = await page.evaluate(() => JSON.parse(localStorage.getItem("hub_play_pass")));
