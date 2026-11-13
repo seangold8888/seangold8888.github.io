@@ -636,6 +636,22 @@
       const gems = ["#ff4d4d", "#ffd34d", "#4c7fd0", "#6cc27a", "#ff9f1c", "#b99ad9"].map((c, i) => i < 4 ? `<circle cx="${-11 + i * 7.3}" cy="-24" r="2.8" fill="${c}" stroke="${INK}" stroke-width=".8"/>` : "").join("");
       return `<g transform="translate(${x} ${y}) rotate(${o.rot || 0}) scale(${o.s || 1})"><path d="M-14 16 L-14 -6 L-16 -22 Q-16 -26 -12 -26 Q-9 -26 -9 -22 L-8 -12 L-7 -28 Q-7 -32 -3 -32 Q1 -32 1 -28 L1 -12 L3 -28 Q3 -32 7 -32 Q11 -32 11 -28 L10 -10 L13 -20 Q14 -24 18 -22 Q20 -20 19 -16 L14 6 L14 16Z" fill="#f2c14e" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><path d="M-12 -4 Q0 -8 12 -4" stroke="#c9962a" stroke-width="1.6" fill="none"/><rect x="-16" y="14" width="32" height="10" rx="3" fill="#e0ad3a" stroke="${INK}" stroke-width="2"/>${gems}<circle cx="-1" cy="4" r="4.5" fill="#6cc27a" stroke="${INK}" stroke-width="1"/><circle cx="-12" cy="-6" r="2.6" fill="#ff9f1c" stroke="${INK}" stroke-width=".8"/></g>`;
     },
+    // 놀이터 철봉: 기둥 두 개와 손잡이 달린 가로대. y = 가로대 높이, w = 너비.
+    bar(x, y, o) {
+      const w = o.w || 200, gy = o.gy || y + 230;
+      return `<g><rect x="${x - w / 2 - 8}" y="${y - 6}" width="12" height="${gy - y + 6}" rx="4" fill="#e0443e" stroke="${INK}" stroke-width="2.2"/><rect x="${x + w / 2 - 4}" y="${y - 6}" width="12" height="${gy - y + 6}" rx="4" fill="#e0443e" stroke="${INK}" stroke-width="2.2"/><rect x="${x - w / 2}" y="${y - 5}" width="${w}" height="10" rx="5" fill="#ffd34d" stroke="${INK}" stroke-width="2.2"/><rect x="${x - 26}" y="${y + 3}" width="12" height="16" rx="4" fill="#4c9fe0" stroke="${INK}" stroke-width="1.8"/><rect x="${x + 14}" y="${y + 3}" width="12" height="16" rx="4" fill="#4c9fe0" stroke="${INK}" stroke-width="1.8"/></g>`;
+    },
+    // VR 고글(얼굴 위에 씌운다).
+    vr(x, y, o) {
+      return `<g transform="translate(${x} ${y}) scale(${o.s || 1})"><path d="M-46 -6 Q-58 0 -46 6 M46 -6 Q58 0 46 6" stroke="${INK}" stroke-width="5" fill="none"/><rect x="-44" y="-20" width="88" height="40" rx="14" fill="#2e2a28" stroke="${INK}" stroke-width="2.4"/><rect x="-36" y="-12" width="72" height="16" rx="6" fill="#4c9fe0" opacity=".85"/><circle cx="30" cy="12" r="3" fill="#6cc27a"/></g>`;
+    },
+    // 위에서 본 간식 그릇: 검은콩·옥수수·구운 밤·오트밀.
+    snackbowls(x, y, o) {
+      const bowl = (dx, fill, dots) => `<g transform="translate(${dx} 0)"><ellipse rx="34" ry="13" fill="#fff" stroke="${INK}" stroke-width="2.2"/><ellipse cy="-2" rx="27" ry="8" fill="${fill}"/>${dots}</g>`;
+      const pts = (c, r) => [[-14, -3], [-4, -6], [8, -4], [16, -1], [-8, 0], [4, 0]].map(([a, b]) => `<circle cx="${a}" cy="${b}" r="${r}" fill="${c}" stroke="${INK}" stroke-width=".8"/>`).join("");
+      const g = bowl(-114, "#3a302c", pts("#1f1a18", 3)) + bowl(-38, "#ffd34d", pts("#ffe27a", 2.6)) + bowl(38, "#8b5a2b", pts("#a5703a", 4)) + bowl(114, "#efe2c4", "");
+      return `<g transform="translate(${x} ${y}) scale(${o.s || 1})">${g}</g>`;
+    },
     // 어깨 너머 구도: 앞사람의 뒷머리와 어깨를 컷 앞쪽에 크게 그린다(얼굴은 그리지 않는다). who = 누구의 뒷모습인지.
     shoulder(x, y, o) {
       const who = {
