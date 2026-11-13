@@ -8,6 +8,7 @@
   const TAEO_SAYINGS = window.TaeoSayings || [];
   const JAEI_WORDS = window.JaeiWords || [];
   const JAEI_SAYINGS = window.JaeiSayings || [];
+  const JAEI_BABY_LIKES = window.JaeiBabyLikes || [];
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
@@ -90,6 +91,7 @@
     $("taeoSayings").innerHTML = TAEO_SAYINGS.map((w) => `<li class="word saying"><span class="word-say">“${esc(w.say)}”</span><span class="word-what">${esc(w.when)}</span></li>`).join("");
     $("jaeiSayings").innerHTML = JAEI_SAYINGS.map((w) => `<li class="word saying jaei"><span class="word-say">“${esc(w.say)}”</span><span class="word-what">${esc(w.when)}</span></li>`).join("");
     $("jaeiWords").innerHTML = JAEI_WORDS.map((w) => wordCard(w, "jaei")).join("");
+    $("jaeiBabyLikes").innerHTML = JAEI_BABY_LIKES.map((w) => `<li class="word saying jaei"><span class="word-say">${esc(w.say)}</span><span class="word-what">${esc(w.when)}</span></li>`).join("");
     // 에피소드 목록: 기본은 최신화부터. 버튼으로 1화부터 보기로 바꿀 수 있고, 고른 순서는 이 기기에 기억한다.
     const newestFirst = state.sort !== "old";
     const list = newestFirst ? EPISODES.slice().reverse() : EPISODES;

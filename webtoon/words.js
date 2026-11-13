@@ -134,7 +134,19 @@
     { say: "재이는 · 누나는", real: "나는", what: "만 3~4살 때. ‘나는’ 대신 “재이는 ~”, “누나는 ~” 하고 자기를 3인칭으로 불렀어요" },
   ];
 
+  // 재이가 아기 때(만 3~4살) 좋아한 것. say = 무엇, when = 어떻게.
+  const JAEI_BABY_LIKES = [
+    { say: "뽀로로 통통이", when: "“구리구리구리 통통통!” 주문을 따라 하며" },
+    { say: "핑크퐁 · 아기상어", when: "노래만 나오면 춤추기" },
+    { say: "아기상어 튼튼쌤", when: "튼튼쌤이 노래 부르는 걸 보면서 같이 춤추기" },
+    { say: "겨울왕국 노래", when: "영어로 따라 부르기" },
+    { say: "매달려서 뺑글뺑글", when: "엄마 아빠 팔에 매달려 빙글빙글 돌기" },
+    { say: "침대 점프점프", when: "침대에서 점프하면서 다리를 하나씩 번쩍 올리기" },
+    { say: "검은콩 · 옥수수 · 구운 밤 · 오트밀", when: "제일 좋아한 간식 (태오가 들으면 깜짝 놀랄 건강 메뉴)" },
+  ];
+
   root.TaeoWords = TAEO_WORDS;
+  root.JaeiBabyLikes = JAEI_BABY_LIKES;
   root.TaeoSayings = TAEO_SAYINGS;
   root.JaeiWords = JAEI_WORDS;
   root.JaeiSayings = JAEI_SAYINGS;

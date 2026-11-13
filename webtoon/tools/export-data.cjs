@@ -9,5 +9,6 @@ d.WORDS = globalThis.TaeoWords;
 d.SAYINGS = globalThis.TaeoSayings;
 d.JWORDS = globalThis.JaeiWords;
 d.JSAYINGS = globalThis.JaeiSayings;
+d.JBABY = globalThis.JaeiBabyLikes || [];
 fs.writeFileSync(process.argv[2] || "data.json", JSON.stringify(d));
 console.log("saved", process.argv[2] || "data.json");

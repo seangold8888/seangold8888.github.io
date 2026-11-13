@@ -165,10 +165,11 @@ ws = wb.create_sheet("우리 집 말 모음")
 rows = [[i, "태오 입버릇", w["say"], "", w["when"], ""] for i, w in enumerate(d["SAYINGS"], 1)]
 rows += [[len(rows) + i, "재이 입버릇", w["say"], "", w["when"], ""] for i, w in enumerate(d["JSAYINGS"], 1)]
 rows += [[len(rows) + i, "재이 아기 말", w["say"], w["real"], w["what"], ""] for i, w in enumerate(d["JWORDS"], 1)]
+rows += [[len(rows) + i, "재이 아기 때 좋아한 것", w["say"], "", w["when"], ""] for i, w in enumerate(d.get("JBABY", []), 1)]
 rows += [[len(rows) + i, "", "", "", "", ""] for i in range(1, 16)]
 r0 = sheet(ws, ["번호", "누구", "한 말", "원래 말", "언제·사연", "메모"], [6, 14, 26, 14, 50, 30], rows,
       "우리 집 말 모음 — 태오 입버릇, 재이가 아기 때 한 말 (빈 줄에 더 적어 주세요)")
-dv3 = DataValidation(type="list", formula1='"태오 입버릇,재이 입버릇,재이 아기 말,태오어,기타"', allow_blank=True)
+dv3 = DataValidation(type="list", formula1='"태오 입버릇,재이 입버릇,재이 아기 말,재이 아기 때 좋아한 것,태오어,기타"', allow_blank=True)
 ws.add_data_validation(dv3)
 dv3.add(f"B{r0 + 1}:B{r0 + 60}")
 
