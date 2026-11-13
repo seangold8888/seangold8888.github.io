@@ -124,7 +124,7 @@
 C("taeo", 300, "angry", "kick", { o: "pajama", m: "stomp" })
 ```
 
-새 화를 넣으면 `sw.js`의 `episodes.js?v=` 숫자와 `index.html`의 같은 숫자를 함께 올리고, 허브 입구 설명의 화 수를 고친다.
+새 화를 넣으면 `sw.js`의 `episodes.js?v=` 숫자와 `index.html`의 같은 숫자를 함께 올린다(허브 입구 설명에는 이제 화 수가 없다).
 
 ## 컴퓨터의 Claude Code로 이어 만들기 (두 대본 합치기)
 
@@ -147,4 +147,4 @@ node webtoon/tools/preview.cjs 21 preview   # 21화를 캡처해서 preview/ 에
 
 새 화 하나를 만들 때마다: `episodes.js`에 대본 추가 → `preview.cjs`로 겹침 확인 → `words.js`에 새 말 추가 →
 `index.html`과 `sw.js`의 `?v=` 숫자와 `CACHE_VERSION`을 올리고(테스트 `cards/tests/pwa.test.js`, `hub-english-feedback.test.js`의 같은 번호도) →
-`game/index.html`의 웹툰 입구 설명 화 수를 고치고 → 엑셀 기획표를 다시 만든다.
+엑셀 기획표를 다시 만든다.
