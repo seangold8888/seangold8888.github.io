@@ -503,8 +503,8 @@
     const tokens = card.unlockAll && card.unlockAll.length ? card.unlockAll : [card.unlock];
     const token = tokens.find(id => !isUnlockDone(id)) || tokens[0] || "";
     if (token.startsWith("game:math/")) return {href:"../math/",label:"🔢 수학 공부하러 가기"};
-    if (token.startsWith("game:sanguo/")) return {href:"../sanguo/",label:"⚔️ 삼국지·서유기 게임으로"};
-    if (token.startsWith("game:odyssey/")) return {href:"../odyssey/",label:"⛵ 오디세이 게임으로"};
+    if (token.startsWith("game:sanguo/")) return {href:"../sanguo/",label:"⚔️ 레전드 워 게임으로"};
+    if (token.startsWith("game:odyssey/")) return {href:"../odyssey/",label:"⛵ 히어로 고 게임으로"};
     return {href:"../story/",label:"🎧 이야기 극장으로"};
   }
 
@@ -786,7 +786,7 @@
     prepareEnemyIntent(true);
     busy = false;
     showScreen("battle");
-    dom.battleMessage.textContent = selectedCard.name + "의 별빛 무대가 열렸어요!";
+    dom.battleMessage.textContent = selectedCard.name + "의 결전 무대가 열렸어요!";
     setEffect("READY!");
     renderBattle();
     // 보스전은 등장 장면을 먼저 보여 준다. 끝나거나 톡 누르면 내 턴이 시작된다.
@@ -2266,7 +2266,7 @@
     });
     if (!intent) {
       dom.enemyIntentIcon.textContent = "🔮";
-      dom.enemyIntentName.textContent = "별빛을 살펴보는 중…";
+      dom.enemyIntentName.textContent = "카드를 살펴보는 중…";
       dom.enemyIntentDetail.textContent = "곧 다음 행동을 알려 줄게요";
       dom.enemyIntentBadge.textContent = "예고";
       return;
@@ -2337,7 +2337,7 @@
     }
     if (flags.ultimateUsed) {
       dom.storyGateBar.classList.add("is-used");
-      dom.storyGateStatus.textContent = "별빛 이야기를 멋지게 사용했어요!";
+      dom.storyGateStatus.textContent = "슈퍼 스토리를 멋지게 사용했어요!";
       dom.storyGateButton.textContent = "사용 완료";
       dom.storyGateButton.disabled = true;
       return;
@@ -2460,7 +2460,7 @@
       if (window.CardAudio.quizWrong) window.CardAudio.quizWrong();
     }
     dom.battleMessage.textContent = correct
-      ? "이야기 기억 성공! 필살기 「별빛 이야기」가 깨어났어요."
+      ? "이야기 기억 성공! 필살기 「슈퍼 스토리」가 깨어났어요."
       : "틀려도 체력과 별사탕은 그대로예요.";
     renderBattle();
     clearTimeout(quizTimer);
@@ -2755,7 +2755,7 @@
       const title = document.createElement("strong");
       const detail = document.createElement("small");
       const cost = document.createElement("span");
-      title.textContent = "🌟 별빛 이야기";
+      title.textContent = "🌟 슈퍼 스토리";
       cost.className = "action-cost";
       cost.textContent = "⭐ " + window.CardEngine.ULTIMATE_COST;
       if (flags.ultimateUsed) {
@@ -2812,7 +2812,7 @@
     const guardBlock = find("guard_block");
     const ultimate = find("ultimate_used");
 
-    if (gameOver) return { effect: "K.O.!", message: gameOver.winner === "player" ? "상대 카드가 별빛으로 돌아갔어요!" : "우리 영웅이 잠시 쉬러 갔어요.", sound: "hit" };
+    if (gameOver) return { effect: "K.O.!", message: gameOver.winner === "player" ? "상대 카드가 빛이 되어 돌아갔어요!" : "우리 영웅이 잠시 쉬러 갔어요.", sound: "hit" };
     if (revive) return { effect: "부활!", message: "유리 구두가 한 번 더 빛났어요!", sound: "magic" };
     if (miss) return { effect: "빗나감!", message: "동전이 기술의 운명을 바꿨어요.", sound: "coin" };
     if (evade) return { effect: "회피!", message: "재빠르게 공격을 피했어요!", sound: "coin" };
@@ -2843,7 +2843,7 @@
     }
     if (damage && ultimate) return {
       effect: damage.amount > 0 ? "🌟 -" + damage.amount : "막음!",
-      message: "필살기 「별빛 이야기」! 기억의 별빛이 폭발해요!",
+      message: "필살기 「슈퍼 스토리」! 기억의 빛이 폭발해요!",
       sound: damage.amount > 0 ? "strongHit" : "guard",
       hit: damage.amount > 0 ? damage.target : null
     };
@@ -2858,7 +2858,7 @@
     if (guard) return { effect: "🛡️", message: "방어 자세! 다음 공격 피해를 최대 20 막아요.", sound: "guard" };
     if (rest) return { effect: "+⭐", message: actor === "player" ? "별사탕을 아껴 더 큰 기술을 준비해요." : "상대가 별사탕을 모으고 있어요.", sound: "star" };
     if (attack) return { effect: "공격!", message: attack.attack + "!", sound: "magic" };
-    return { effect: "✦", message: "별빛이 다음 턴을 비춰요.", sound: "star" };
+    return { effect: "✦", message: "빛이 다음 턴을 비춰요.", sound: "star" };
   }
 
   function playSound(name, actor) {
@@ -3005,7 +3005,7 @@
     if (!pending || pending.started || pending.session !== battleSession || !game) return;
     pending.started = true;
     dom.coinButton.disabled = true;
-    dom.coinInstruction.textContent = "동전이 별빛 속에서 돌고 있어요.";
+    dom.coinInstruction.textContent = "동전이 빛 속에서 돌고 있어요.";
     const nextGame = window.CardEngine.performAction(game, pending.action);
     const coinEvents = (nextGame.events || []).filter(function (event) {
       return event.type === "coin";
@@ -3218,7 +3218,7 @@
     const session = battleSession;
     busy = true;
     const victory = game.winner === "player";
-    dom.resultKicker.textContent = victory ? "별빛 승리" : "멋진 도전";
+    dom.resultKicker.textContent = victory ? "완벽 승리" : "멋진 도전";
     dom.resultTitle.textContent = victory ? selectedCard.name + " 승리!" : "다음에는 이길 수 있어요!";
     dom.resultText.textContent = victory
       ? "이야기 속 용기와 지혜가 멋진 기술이 되었어요."

@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v252";
+const CACHE_VERSION = "v253";
 const CACHE_PREFIX = "adventure-box-";
 // 큰 그림과 소리(삼국지 배경 200MB+, 저장한 이야기 오디오)는 배포 번호와 따로 둔다.
 // 배포마다 이 캐시를 버리면 기기가 236MB를 다시 받고, "여행 전에 이야기 저장"도 지워졌다.
@@ -955,6 +955,39 @@ const OPTIONAL_SHELL = [
   "./usa/art/taeo-cheer.webp",
   "./usa/art/taeo-beach.webp",
   "./usa/art/taeo-surf.webp",
+  "./plane/",
+  "./plane/index.html",
+  "./plane/style.css?v=3",
+  "./plane/cover.webp",
+  "./plane/src/main.js?v=3",
+  "./plane/src/logic.js?v=3",
+  "./plane/art/p0.webp?v=2",
+  "./plane/art/p1.webp?v=2",
+  "./plane/art/p2.webp?v=2",
+  "./plane/art/p3.webp?v=2",
+  "./plane/art/cloud.webp?v=1",
+  "./plane/art/zig.webp?v=1",
+  "./plane/art/bolt.webp?v=1",
+  "./plane/art/gift.webp?v=1",
+  "./plane/art/boss.webp?v=1",
+  "./plane/art/star.webp?v=1",
+  "./plane/art/drop.webp?v=1",
+  "./plane/art/sky.webp?v=1",
+  "./plane/art/gun.webp?v=1",
+  "./plane/art/helper.webp?v=1",
+  "./plane/art/pellet.webp?v=1",
+  "./plane/art/candy.webp?v=1",
+  "./plane/art/comet.webp?v=1",
+  "./plane/art/rainbow.webp?v=1",
+  "./plane/art/pop.webp?v=1",
+  "./plane/art/meteor.webp?v=1",
+  "./plane/art/tornado.webp?v=1",
+  "./plane/art/hail.webp?v=1",
+  "./plane/art/baby.webp?v=1",
+  "./plane/art/flake.webp?v=1",
+  "./plane/art/snowking.webp?v=1",
+  "./plane/art/typhoon.webp?v=1",
+  "./plane/art/heart.webp?v=1",
   "./onecard/",
   "./onecard/index.html",
   "./onecard/style.css?v=2",
@@ -1619,7 +1652,7 @@ const BACKGROUND_RETRY_MS = 5 * 60 * 1000;
 const AUDIO_FETCH_TIMEOUT_MS = 45000;
 const NAVIGATION_ROUTES = [
   "game", "cards", "story", "multiverse", "avengers", "bori", "hogwarts", "kart", "kart3d",
-  "kedehun", "odyssey", "princess", "sanguo", "slime", "math", "webtoon",
+  "kedehun", "odyssey", "princess", "sanguo", "slime", "math", "webtoon", "plane",
 ];
 
 const CARD_ART_FILES = [

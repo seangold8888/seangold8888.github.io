@@ -349,7 +349,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     <div class="dialog-card">
       <p class="dialog-kicker">STAGE ON HOLD</p>
       <h2 class="dialog-title" id="pause-title">잠깐 쉬어가기</h2>
-      <p class="dialog-copy" id="pause-copy">무대와 콤보가 그대로 멈춰 있어요. 준비되면 다시 별빛을 이어가세요.</p>
+      <p class="dialog-copy" id="pause-copy">무대와 콤보가 그대로 멈춰 있어요. 준비되면 다시 빛을 이어가세요.</p>
       <div class="dialog-actions" style="margin-top: 24px">
         <button type="button" class="primary-button" id="resumeBtn">계속하기</button>
         <button type="button" class="secondary-button" id="retryBtn">이 스테이지 다시 시작</button>
@@ -2103,7 +2103,7 @@ class Game {
   objective() {
     if (this.bossSpawned && !this.bossDefeated) return '보스의 전조를 보고 공격을 피하세요';
     const remaining = this.enemies.filter((e) => e.kind !== 'boss' && !e.dead).length;
-    if (remaining) return '그림자 ' + remaining + '체 정화 · 별빛 파편을 모으세요';
+    if (remaining) return '그림자 ' + remaining + '체 정화 · 빛 파편을 모으세요';
     return this.bossSpawned ? '무대 정화 완료' : '결계가 열렸어요 · 오른쪽 보스 무대로';
   }
 

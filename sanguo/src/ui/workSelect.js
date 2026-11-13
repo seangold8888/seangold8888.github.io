@@ -49,7 +49,7 @@ export function showWorkSelect(root,{onConfirm,onBack}) {
     root.innerHTML=`
       <div class="screen command-menu"><main class="cm-shell">
         <header class="cm-header">
-          <div><div class="cm-eyebrow">별빛 연대기 · 출진 준비</div><h1>${WORKS[work]?.name || '삼국지'}</h1><p>전장을 고르고, 함께할 장수를 선택하세요.</p><a class="cm-voice-link" href="./voices.html">장수 함성 듣기 →</a></div>
+          <div><div class="cm-eyebrow">레전드 워 · 출진 준비</div><h1>${WORKS[work]?.name || '삼국지'}</h1><p>전장을 고르고, 함께할 장수를 선택하세요.</p><a class="cm-voice-link" href="./voices.html">장수 함성 듣기 →</a></div>
           <nav class="cm-worlds" aria-label="고전 선택">${Object.values(WORKS).map(w=>`<button type="button" data-work="${w.id}" aria-pressed="${w.id===work}" ${w.ready?'':'disabled'}>${w.name}${w.ready?'':' · 준비 중'}</button>`).join('')}</nav>
         </header>
 

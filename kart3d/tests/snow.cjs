@@ -40,7 +40,7 @@ function check(ok, msg) { if (!ok) { console.error('FAIL', msg); process.exitCod
   await shot('menu-courses');
   await page.evaluate(() => { const G = __game; G.state.menuStep = 1; G.state.modeIndex = 0; G.nextStep(); });
   const cups = await page.$$eval('#menu-list .card', els => els.map(e => e.textContent));
-  check(cups.length === 3 && /눈꽃 컵/.test(cups[2]) && /눈꽃 마을 · 사탕 숲 · 별빛 밤길/.test(cups[2]), '그랑프리 컵 3개 · 눈꽃 컵 ' + cups[2]);
+  check(cups.length === 3 && /눈꽃 컵/.test(cups[2]) && /눈꽃 마을 · 사탕 숲 · 네온 밤길/.test(cups[2]), '그랑프리 컵 3개 · 눈꽃 컵 ' + cups[2]);
 
   // ---- 코스 구성 ----
   const fx = await page.evaluate(() => {

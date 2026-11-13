@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "모험 상자",
-  "short_name": "모험 상자",
-  "description": "이야기와 게임을 인터넷 없이도 즐기는 어린이 모험 상자",
+  "name": "PLAYGROUND",
+  "short_name": "PLAYGROUND",
+  "description": "이야기와 게임을 인터넷 없이도 즐기는 우리 가족 놀이터",
   "lang": "ko-KR",
   "start_url": "./game/",
   "scope": "./",

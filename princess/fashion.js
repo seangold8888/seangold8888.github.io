@@ -8,7 +8,7 @@
     {id:'ball',title:'왕궁 무도회',icon:'👑',colors:['#ffd93d','#6fc3ff','#c98bff','#ffffff','#ff8fc1'],line:'반짝이는 샹들리에 아래 무도회가 열려요.',likes:'무도회 드레스 · 유리 구두 · 왕관 · 부채 · 무도회장'},
     {id:'snow',title:'눈 오는 날',icon:'❄️',colors:['#ffffff','#6fc3ff','#c98bff','#ff5a6e'],line:'하얀 눈이 펑펑! 따뜻하게 입고 나가요.',likes:'겨울 코트 · 부츠 · 스카프 · 눈 내리는 날 · 토끼 친구'},
     {id:'flower',title:'꽃밭 생일파티',icon:'🌷',colors:['#ff8fc1','#ffd93d','#7ad97a','#ff9a4d'],line:'꽃밭에서 친구 생일파티를 열어요!',likes:'꽃 드레스 · 꽃관 · 꽃다발 · 풍선 · 꽃밭 · 나비 친구'},
-    {id:'starry',title:'별빛 밤 산책',icon:'🌙',colors:['#3b3f7a','#8a7dff','#c98bff','#ffd93d'],line:'별이 반짝이는 밤, 살금살금 산책해요.',likes:'별빛 마법사 · 달빛 관 · 요술봉 · 망토 · 밤하늘 · 아기 용'},
+    {id:'starry',title:'달빛 밤 산책',icon:'🌙',colors:['#3b3f7a','#8a7dff','#c98bff','#ffd93d'],line:'별이 반짝이는 밤, 살금살금 산책해요.',likes:'달빛 마법사 · 달빛 관 · 요술봉 · 망토 · 밤하늘 · 아기 용'},
     {id:'candy',title:'사탕 나라 파티',icon:'🍭',colors:['#ff8fc1','#c98bff','#6fc3ff','#ffffff'],line:'달콤달콤 사탕 나라에 초대받았어요!',likes:'발레 튜튜 · 큰 리본 · 막대사탕 · 요정 날개 · 사탕 나라 · 햄스터'},
     {id:'hanok',title:'한옥 마당 잔치',icon:'🏮',colors:['#ff8fc1','#ff5a6e','#7ad97a','#ffd93d'],line:'한옥 마당에서 신나는 잔치가 열려요.',likes:'한복 · 꽃신 · 배씨댕기 · 노리개 · 한옥 마당 · 두꺼비'},
     {id:'forest',title:'숲속 탐험',icon:'🌲',colors:['#7ad97a','#8b5a3c','#ff9a4d','#ffd93d'],line:'숲속 비밀 길을 따라 탐험을 떠나요!',likes:'모험가 옷 · 부츠 · 배낭 · 바구니 · 숲속 · 아기 사슴'}

@@ -16,9 +16,9 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="공주 옷장">
+<meta name="apple-mobile-web-app-title" content="드레스 업">
 <link rel="apple-touch-icon" href="../icon.png">
-<title>공주 옷장: 마음대로 꾸며요!</title>
+<title>드레스 업: 마음대로 꾸며요!</title>
 <link rel="stylesheet" href="outings.css?v=1">
 <link rel="stylesheet" href="journey.css?v=1">
 <link rel="stylesheet" href="fashion.css?v=1">
@@ -167,7 +167,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   }
   @media (max-width:540px){
     header h1{font-size:0}
-    header h1::after{content:"공주 옷장";font-size:16px}
+    header h1::after{content:"드레스 업";font-size:16px}
     header .btn-label{display:none}
     header .btn{width:44px;justify-content:center;padding-inline:0}
   }
@@ -287,7 +287,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     }
     header{grid-area:head;padding:4px 6px 4px max(10px,env(safe-area-inset-left,0px));gap:6px;min-width:0}
     header h1{font-size:0}
-    header h1::after{content:"👑 공주 옷장";font-size:16px}
+    header h1::after{content:"👑 드레스 업";font-size:16px}
     header .btn-label{display:none}
     header .btn{width:44px;justify-content:center;padding-inline:0}
     .outing-nav{grid-area:nav;padding:4px max(10px,env(safe-area-inset-right,0px)) 4px 0;gap:6px;flex-wrap:nowrap;margin-left:-8px}
@@ -344,7 +344,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     .fs-actions{grid-template-columns:repeat(4,minmax(0,1fr))}
   }
   @media (orientation:landscape) and (max-height:500px) and (max-width:780px){
-    header h1::after{content:"공주 옷장"}
+    header h1::after{content:"드레스 업"}
     .outing-nav>button,.pj-nav button{padding:0 7px}
   }
   @media (orientation:landscape) and (max-height:500px) and (max-width:700px){
@@ -361,12 +361,12 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 </head>
 <body>
 <header>
-  <h1>👑 <span>공주 옷장</span> · 마음대로 꾸며요</h1>
+  <h1>👑 <span>드레스 업</span> · 마음대로 꾸며요</h1>
   <button class="btn gold" id="btnRandom"><span class="ic">🎲</span><span class="btn-label">뽑기</span></button>
   <button class="btn rose" id="btnPhoto"><span class="ic">📸</span><span class="btn-label">사진</span></button>
   <button class="btn" id="btnAlbum"><span class="ic">📚</span><span class="btn-label">앨범</span></button>
   <button class="btn" id="btnSound" aria-label="소리 켜기 또는 끄기"><span class="ic" id="soundIc">🔊</span></button>
-  <a class="btn" href="../" id="btnHome" aria-label="모험 보드로 돌아가기"><span class="ic">🏠</span></a>
+  <a class="btn" href="../" id="btnHome" aria-label="PLAYGROUND로 돌아가기"><span class="ic">🏠</span></a>
 </header>
 <main>
   <div id="stageWrap">
@@ -791,7 +791,7 @@ const DRESSES=[
     <path d="M116 506 Q210 538 304 506" stroke="#fffaf2" stroke-width="17" fill="none" stroke-linecap="round" stroke-dasharray="1 17"/>
     <path d="M132 339 Q144 349 157 339 M263 339 Q276 349 288 339" stroke="#fffaf2" stroke-width="12" fill="none" stroke-linecap="round"/>
   `;}},
-  {id:'star',name:'별빛 마법사',svg:c=>{const e=dk(c,.31),s=dk(c,.16),h=lt(c,.42);return `
+  {id:'star',name:'달빛 마법사',svg:c=>{const e=dk(c,.31),s=dk(c,.16),h=lt(c,.42);return `
     <path d="M168 292 C132 358 101 458 78 548 L112 542 L134 561 L164 548 L190 566 L216 548 L244 565 L273 545 L305 559 L342 548 C319 458 288 358 252 292Z" fill="${s}" stroke="${e}" stroke-width="3" stroke-linejoin="round"/>
     <path d="M170 292 C151 362 128 459 112 543 Q210 570 308 543 C292 459 269 362 250 292Z" fill="${c}"/>
     <path d="M210 300 C184 360 162 447 154 552 Q210 567 266 552 C249 456 232 374 210 300Z" fill="${h}" opacity=".18"/>

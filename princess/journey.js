@@ -35,13 +35,13 @@
       const act=(label,action,detail)=>story.append(button(label,()=>apply(action,detail)));
       if(q.step===0){
         text('토끼에게 온 소풍 편지','“숲속 큰 나무 아래에서 만나! 간식은 우리 셋이 나눠 먹자.” 공주는 편지를 접어 가방에 넣었어요. 그런데 약속 장소에는 토끼가 보이지 않네요. 간식을 준비하고 함께 찾아볼까요?');
-        story.append(el('p','pj-note',t.total?'모험보드에서 배운 '+t.total+'문제가 공주의 성장에 담겼어요. 오늘은 나누기와 영어 인사를 써 봐요.':'공부 기록이 없어도 첫 소풍은 할 수 있어요. 다음에 모험보드에서 공부하면 성장별이 쌓여요.'));
+        story.append(el('p','pj-note',t.total?'PLAYGROUND에서 배운 '+t.total+'문제가 공주의 성장에 담겼어요. 오늘은 나누기와 영어 인사를 써 봐요.':'공부 기록이 없어도 첫 소풍은 할 수 있어요. 다음에 PLAYGROUND에서 공부하면 성장별이 쌓여요.'));
         act('이 옷을 입고 출발','start');story.append(button('옷을 더 골라 볼래요',()=>dialog.close()));
       }else if(q.step===1){
         text('사과 여섯 개를 나눠요','공주와 토끼, 다람쥐가 먹을 간식이에요. 접시를 눌러 세 친구에게 두 개씩 나눠 주세요.');
         const used=q.plates.reduce((a,b)=>a+b,0);story.append(el('p','pj-basket','바구니에 남은 사과 '+(6-used)+'개'));
         const plates=el('div','pj-plates');for(const [i,name] of ['공주','토끼','다람쥐'].entries()){const b=button('',()=>apply('apple',i));b.setAttribute('aria-label',name+' 접시, 사과 '+q.plates[i]+'개. 사과 하나 놓기');b.append(el('strong','',name),el('span','pj-apples'),el('span','',q.plates[i]+'개'));const apples=b.querySelector('.pj-apples');apples.setAttribute('aria-hidden','true');for(let n=0;n<q.plates[i];n++)apples.append(el('i','pj-apple'));if(!q.plates[i])apples.textContent='빈 접시';plates.append(b);}story.append(plates);
-        if(p.math>=3){act('지혜 도우미 · 두 개씩 나누기','share-help');story.append(el('small','pj-note','모험보드 수학 경험으로 열린 도움! 2 + 2 + 2 = 6이에요.'));}
+        if(p.math>=3){act('지혜 도우미 · 두 개씩 나누기','share-help');story.append(el('small','pj-note','PLAYGROUND 수학 경험으로 열린 도움! 2 + 2 + 2 = 6이에요.'));}
         act('나눠 담았어요','share');act('다시 담기','reset');
       }else if(q.step===2){
         text('토끼는 어느 길로 갔을까요?','바람에 나뭇잎이 바스락거려요. 반짝이는 돌 옆에는 아무 흔적이 없고, 다른 길에는 토끼의 작은 발자국이 이어져 있어요. 토끼가 간 길을 찾아 주세요.');
@@ -50,7 +50,7 @@
         text('토끼에게 “같이 가자!”','길을 잃은 토끼가 나무 뒤에 앉아 있어요. 공주가 가까이 다가가 말해요. “같이 가자!” 어떤 영어 인사가 맞을까요?');
         const options=['Come with me.','Good night.','Thank you.'];for(let i=options.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[options[i],options[j]]=[options[j],options[i]];}
         for(const line of options)act(line,'greet',line);
-        if(p.reading>=5)story.append(button('말하기 도우미 · 인사말 힌트',()=>{status.textContent='모험보드 영어 경험으로 열린 도움! “Come with me.”는 “나와 같이 가자.”라는 뜻이에요.';}));
+        if(p.reading>=5)story.append(button('말하기 도우미 · 인사말 힌트',()=>{status.textContent='PLAYGROUND 영어 경험으로 열린 도움! “Come with me.”는 “나와 같이 가자.”라는 뜻이에요.';}));
         story.append(el('small','pj-note','문장을 소리 내어 읽어도 좋아요. 이 장면은 뜻 고르기이며 마이크로 채점하지 않아요.'));
       }else if(q.step===4){
         text('함께라서 더 즐거운 소풍','“Come with me!” 공주의 말에 토끼가 고개를 들었어요. 둘은 발자국을 거슬러 큰 나무로 돌아왔어요. 기다리던 다람쥐와 사과를 두 개씩 나누어 먹었지요. “다음에도 함께 놀자!” 토끼가 꽃 한 송이를 건넸어요.');

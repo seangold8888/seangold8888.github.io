@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#16245c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>스카이 샷 · PLAYGROUND</title>
+<link rel="preload" href="../sanguo/fonts/pretendard/PretendardVariable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css?v=3">
+<script src="../assets/study/play-timer.js?v=1"></script>
+<script src="../assets/touch-guard.js?v=1"></script>
+<script src="../math/curriculum.js?v=20"></script>
+<script src="../math/learning.js?v=29"></script>
+<script src="../math/store.js?v=32"></script>
+<script src="../assets/study/math-bridge.js?v=2"></script>
+</head>
+<body>
+<canvas id="sky" aria-label="스카이 샷. 손가락으로 비행기를 좌우로 움직여요. 별을 먹고 문제를 맞히면 무기가 세져요."></canvas>
+
+<header class="hud">
+  <a class="back" href="../game/" aria-label="PLAYGROUND로 돌아가기">←</a>
+  <div class="chip" id="hearts" aria-label="남은 하트">♥♥♥</div>
+  <div class="chip grow"><b id="weaponName">1단계 콩알탄</b><span class="pips" id="pips" aria-hidden="true"></span></div>
+  <div class="chip" id="dist">0m</div>
+  <button class="chip" id="sound" type="button" aria-pressed="true">♪</button>
+</header>
+
+<section class="panel" id="start">
+  <h1>스카이 샷</h1>
+  <p><b>⭐ 별</b>을 먹고 문제를 맞히면 무기가 세져요!</p>
+  <p class="pick">누가 조종할까요?</p>
+  <div class="pilots" id="pilots"></div>
+  <p class="pick">꼬리 꾸미기 <span id="starCount">⭐ 0</span></p>
+  <div class="trails" id="trails"></div>
+  <button class="go" id="startBtn" type="button">출발!</button>
+  <p class="best" id="bestStart"></p>
+</section>
+
+<section class="panel" id="quiz" hidden aria-live="polite">
+  <p class="quiz-kicker" id="quizKicker">맞히면 무기가 세져요</p>
+  <p class="formula" id="formula"></p>
+  <div class="answers" id="answers"></div>
+  <p class="quiz-say" id="quizSay"></p>
+</section>
+
+<section class="panel" id="over" hidden>
+  <h1 id="overTitle">잘 날았어요!</h1>
+  <p id="overText"></p>
+  <button class="go" id="againBtn" type="button">다시 날기</button>
+  <a class="home" href="../game/">PLAYGROUND로</a>
+</section>
+
+<script type="module" src="src/main.js?v=3"></script>
+</body>
+</html>

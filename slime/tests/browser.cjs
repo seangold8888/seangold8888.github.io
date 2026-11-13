@@ -74,7 +74,7 @@ const server=http.createServer((q,r)=>{const u=decodeURIComponent(new URL(q.url,
     await p.locator('.hub-play-chip').waitFor({state:'visible'});
     assert.ok(await p.locator('.hub-play-chip').evaluate(e=>e.getBoundingClientRect().bottom<document.getElementById('palette').getBoundingClientRect().top));
     await p.screenshot({path:path.join(output,'phone-timer.png')});await p.close();
-    const hub=await context.newPage();await hub.goto(base+'/game/');const card=hub.locator('a.card.slime');await card.waitFor();assert.equal(await card.getAttribute('href'),'slime/');assert.equal(await card.locator('.name').textContent(),'말랑 슬라임');
+    const hub=await context.newPage();await hub.goto(base+'/game/');const card=hub.locator('a.card.slime');await card.waitFor();assert.equal(await card.getAttribute('href'),'slime/');assert.equal(await card.locator('.name').textContent(),'젤리 랩');
     await hub.evaluate(()=>{localStorage.removeItem('hub_play_pass');localStorage.setItem('hub2_parent_mode','0');});
     await hub.reload();assert.equal(await card.getAttribute('aria-disabled'),'true');await card.click({force:true});assert.equal(new URL(hub.url()).pathname,'/game/');assert.ok(await hub.locator('#lockNotice').isVisible());
     // This gesture is explicitly five rapid taps, not five slow actionability waits.

@@ -88,11 +88,11 @@ test("검수된 게임 대표 원화가 월드 타일에 실제 이미지로 연
   assert.equal(count(/class="art-(?:left|right|main)"/g), 0);
 });
 
-test("별빛 로비 공유 카드는 로컬 이미지와 절대 URL 메타데이터를 함께 제공한다", () => {
+test("로비 공유 카드는 로컬 이미지와 절대 URL 메타데이터를 함께 제공한다", () => {
   const preview = "og-adventure-v3.png";
   assert.equal(fs.existsSync(path.join(root, preview)), true);
-  assert.match(html, /<meta name="description" content="이야기를 듣고, 문제를 풀고, 카드를 모으며 떠나는 어린이 별빛 모험 로비">/);
-  assert.match(html, /<meta property="og:title" content="모험 상자 — 별빛 모험 기지">/);
+  assert.match(html, /<meta name="description" content="이야기를 듣고, 문제를 풀고, 카드를 모으며 떠나는 어린이 모험 로비">/);
+  assert.match(html, /<meta property="og:title" content="PLAYGROUND — 우리 가족 게임 기지">/);
   assert.match(html, /<meta property="og:image" content="https:\/\/seangold8888\.github\.io\/og-adventure-v3\.png">/);
   assert.match(html, /<meta name="twitter:card" content="summary_large_image">/);
   assert.match(html, /<meta name="twitter:image" content="https:\/\/seangold8888\.github\.io\/og-adventure-v3\.png">/);
@@ -103,7 +103,7 @@ test("별빛 로비 공유 카드는 로컬 이미지와 절대 URL 메타데이
 test("기존 게임 링크·티켓 게임과 상시 개방 구분을 보존한다", () => {
   const ticketRoutes = [
     "multiverse/", "cards/", "odyssey/", "kart3d/",
-    "sanguo/", "hogwarts/", "kedehun/", "bori/", "princess/", "slime/", "usa/", "onecard/"
+    "sanguo/", "hogwarts/", "kedehun/", "bori/", "princess/", "slime/", "usa/", "onecard/", "plane/"
   ];
   ticketRoutes.forEach((route) => {
     const query=route==='princess/'?'\\?heads=natural&amp;v=picnic-1':'';
@@ -120,10 +120,10 @@ test("기존 게임 링크·티켓 게임과 상시 개방 구분을 보존한�
   assert.match(html, /querySelectorAll\('\.card, \.shop'\)/);
 });
 
-test('카드 배틀 이름은 재이태오로 표시하고 기존 게임 경로를 유지한다',()=>{
+test('카드 배틀 이름은 카드 덱으로 표시하고 기존 게임 경로를 유지한다',()=>{
   const card=html.match(/<a class="card battle"[^>]*>[\s\S]*?<\/a>/)[0];
   assert.match(card,/href="cards\/"/);
-  assert.match(card,/<span class="name">재이태오 카드 배틀<\/span>/);
+  assert.match(card,/<span class="name">카드 덱<\/span>/);
   assert.doesNotMatch(card,/J&amp;T 어드벤처/);
   assert.doesNotMatch(card,/cinderella.webp|style="--cover:/);
   assert.match(html,/\.card\.battle\s*\{[^}]*cover-jaei-taeo-card-battle-v1\.webp/);

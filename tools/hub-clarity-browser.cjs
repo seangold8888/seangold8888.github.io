@@ -38,7 +38,7 @@ const server=http.createServer((req,res)=>{
       assert.equal(await page.locator('a.card').count(),10);assert.equal(await page.locator('a.shop').count(),2);
       assert.equal(await page.locator('.games a[href="kart/"]').count(),0);
       assert.equal(await page.locator('.games a[href="kart3d/"]').count(),1);
-      assert.equal(await page.locator('a.card.battle .name').innerText(),'재이태오 카드 배틀');
+      assert.equal(await page.locator('a.card.battle .name').innerText(),'카드 덱');
       for(const [cls,file] of [['castle','cover-hogwarts-game-v1.webp'],['stage','cover-kedehun-team-v1.webp'],['gem','cover-ribbon-room-v1.webp'],['kart3d','cover-sanrio-kart-team-v1.webp'],['battle','cover-jaei-taeo-card-battle-v1.webp']]){
         const background=await page.locator('a.card.'+cls).evaluate(el=>getComputedStyle(el,'::before').backgroundImage);
         assert(background.includes(file),cls+': representative cover not rendered');

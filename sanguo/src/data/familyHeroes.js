@@ -31,7 +31,7 @@ export const FAMILY_RANGED = {
 };
 export const FAMILY_CALLOUTS = {
   taeo: { special: { name: '메가냅터킥', cry: '메가냅터킥!' }, musou: { name: '태권 유성난무', cry: '싸우자!' } },
-  jaei: { special: { name: '무지개 방울폭풍', cry: '물통 바꿔줘!' }, musou: { name: '별빛 방울축제', cry: '김태오!' } },
+  jaei: { special: { name: '무지개 방울폭풍', cry: '물통 바꿔줘!' }, musou: { name: '무지개 방울축제', cry: '김태오!' } },
   yunchan: { special: { name: '장수풍뎅이 돌진', cry: '마마보이!' }, musou: { name: '반딧불 은하수', cry: '마마보이!' } },
   yungeon: { special: { name: '불꽃 슛', cry: '너무 쉽잖아!' }, musou: { name: '해트트릭 유성슛', cry: '너무 쉽잖아!' } },
 };

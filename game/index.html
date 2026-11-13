@@ -10,25 +10,25 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="모험 상자">
+<meta name="apple-mobile-web-app-title" content="PLAYGROUND">
 <meta name="format-detection" content="telephone=no">
 <!-- 새 게임을 추가해도 아이패드가 예전 목록을 계속 보여주는 일이 없게 -->
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
-<meta name="description" content="이야기를 듣고, 문제를 풀고, 카드를 모으며 떠나는 어린이 별빛 모험 로비">
+<meta name="description" content="이야기를 듣고, 문제를 풀고, 카드를 모으며 떠나는 어린이 모험 로비">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://seangold8888.github.io/game/">
-<meta property="og:title" content="모험 상자 — 별빛 모험 기지">
-<meta property="og:description" content="듣고, 배우고, 함께 떠나는 별빛 모험">
+<meta property="og:title" content="PLAYGROUND — 우리 가족 게임 기지">
+<meta property="og:description" content="듣고, 배우고, 함께 떠나는 우리 가족 모험">
 <meta property="og:image" content="https://seangold8888.github.io/og-adventure-v3.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="모험 상자 — 별빛 모험 기지">
-<meta name="twitter:description" content="듣고, 배우고, 함께 떠나는 별빛 모험">
+<meta name="twitter:title" content="PLAYGROUND — 우리 가족 게임 기지">
+<meta name="twitter:description" content="듣고, 배우고, 함께 떠나는 우리 가족 모험">
 <meta name="twitter:image" content="https://seangold8888.github.io/og-adventure-v3.png">
 <meta http-equiv="Pragma" content="no-cache">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" type="image/png" href="icon.png">
 <link rel="manifest" href="manifest.json">
-<title>모험 상자</title>
+<title>PLAYGROUND</title>
 <style>
   /* 밤하늘 오락실 — 의도된 단일 테마 */
   :root {
@@ -758,6 +758,7 @@
   .card.slime { --cover:url('assets/covers/cover_slime.svg'); --cover-pos:50% 30%; }
   .card.usa { --cover:url('usa/cover.webp'); --cover-pos:50% 35%; }
   .card.onecard { --cover:url('onecard/cover.webp?v=2'); --cover-pos:50% 40%; }
+  .card.plane { --cover:url('plane/cover.webp'); --cover-pos:50% 60%; }
   .card.stage { --cover: url('assets/covers/cover-kedehun-team-v1.webp'); --cover-pos: 50% 24%; }
   .card.gem { --cover: url('assets/covers/cover-ribbon-room-v1.webp'); --cover-pos: 55% 42%; }
   .card.princess { --cover-size: 78%; --cover-pos: 50% 22%; background: linear-gradient(150deg, #f7b8dc, #7e58c8); }
@@ -1082,7 +1083,6 @@
   .card .badge, .card .tags, .card .desc, .card .update { display: none; }
   .card .meta { width: 100%; display: grid; grid-template-columns: minmax(0,1fr) 28px; gap: 10px; align-items: end; }
   .card .name { font-size: 21px; line-height: 1.35; letter-spacing: -.035em; word-break: keep-all; text-wrap: balance; overflow-wrap: normal; }
-  .card .title-group { white-space: nowrap; }
   .card .go { align-self: end; margin: 0; padding: 0; font-size: 0; letter-spacing: 0; color: #ffe397; }
   .card .go::after { content: '↗'; font-size: 23px; }
   .padlock { width: 30px; height: 30px; top: 12px; right: 12px; border-radius: 9px; font-size: 14px; backdrop-filter: none; }
@@ -1125,7 +1125,7 @@
     .lobby-shell { padding-top: calc(16px + env(safe-area-inset-top,0px)); gap: 24px; }
     .topbar { gap: 8px; }
     .brand-orb { width: 36px; height: 36px; border-radius: 11px; }
-    .brand-copy h1 { font-size: 22px; white-space: nowrap; }
+    .brand-copy h1 { font-size: clamp(15px, 13.6vw - 28px, 22px); white-space: nowrap; }
     .player-hud { gap: 8px; }
     .hud-chip.ticket { padding: 4px 6px; border: 0; background: none; }
     .hud-chip.ticket small { font-size: 10px; }
@@ -1168,7 +1168,7 @@
     .party-launch h2 { font-size: 17px; }
   }
   @media (max-width: 350px) {
-    .brand-copy h1 { font-size: 19px; }
+    /* PLAYGROUND 는 10글자 대문자라 좁은 폭에서 티켓 칩("게임 9:59 남음")과 겹친다. 위 clamp 를 그대로 쓴다. */
     .hud-chip.ticket strong { font-size: 11px; }
     .card .name { font-size: 16px; }
   }
@@ -1215,12 +1215,12 @@
 
 <main class="wrap lobby-shell">
   <header class="topbar">
-    <button class="moon brand-orb" id="moon" type="button" aria-label="모험 상자 비밀 버튼">
+    <button class="moon brand-orb" id="moon" type="button" aria-label="PLAYGROUND 비밀 버튼">
       <img src="icon-192.png" alt="">
     </button>
     <div class="brand-copy">
       <span class="brand-kicker">우리 가족의 모험 기지</span>
-      <h1>모험 상자</h1>
+      <h1>PLAYGROUND</h1>
       <p class="sub" id="subline">공부 먼저, 모험은 다음! 15문제마다 게임 티켓을 받아요.</p>
     </div>
     <div class="player-hud" aria-label="오늘의 모험 상태">
@@ -1290,7 +1290,7 @@
       <span class="padlock">🔒</span>
       <span class="badge">🦸</span>
       <span class="meta">
-        <span class="name"><span class="title-group">재이·태오</span> 멀티버스</span>
+        <span class="name">히어로즈</span>
         <span class="tags"><span class="genre">🦸 90초 히어로 미션</span></span>
         <span class="desc">재이·태오가 영웅으로 출동 · 구출·보물·보스 미션 · 캡슐로 망토·마스크·무기 꾸미기</span>
         <span class="go">모험 떠나기 ▶</span>
@@ -1300,7 +1300,7 @@
       <span class="padlock">🔒</span>
       <span class="badge">🃏</span>
       <span class="meta">
-        <span class="name">재이태오 카드 배틀</span>
+        <span class="name">카드 덱</span>
         <span class="tags"><span class="genre">🃏 카드 배틀</span></span>
         <span class="desc">이야기를 들으면 영웅 카드 해금 · 별사탕으로 펼치는 1:1 대결</span>
         <span class="go">카드 대결하기 ▶</span>
@@ -1310,10 +1310,20 @@
       <span class="padlock">🔒</span>
       <span class="badge">✈️</span>
       <span class="meta">
-        <span class="name">재이·태오 미국 여행</span>
+        <span class="name">로드 트립</span>
         <span class="tags"><span class="genre">🗺️ 여행 지도 미니게임</span></span>
         <span class="desc">라스베이거스 분수쇼부터 에레혼 장보기까지 · 여섯 곳 도장을 모아 여행 앨범 완성!</span>
         <span class="go">여행 떠나기 ▶</span>
+      </span>
+    </a>
+    <a class="card plane" href="plane/">
+      <span class="padlock">🔒</span>
+      <span class="badge">✈️</span>
+      <span class="meta">
+        <span class="name">스카이 샷</span>
+        <span class="tags"><span class="genre">✈️ 비행 슈팅</span></span>
+        <span class="desc">별을 먹고 문제를 맞히면 무기가 점점 세져요</span>
+        <span class="go">하늘로 출발 ▶</span>
       </span>
     </a>
     <a class="card onecard" href="onecard/">
@@ -1330,7 +1340,7 @@
       <span class="padlock">🔒</span>
       <span class="badge">⛵</span>
       <span class="meta">
-        <span class="name">오딧세이</span>
+        <span class="name">히어로 고</span>
         <span class="tags"><span class="genre">⚔️ 모험 액션</span></span>
         <span class="desc">키클롭스 동굴부터 이어지는, 지혜로 떠나는 액션 모험</span>
         <span class="go">모험 떠나기 ▶</span>
@@ -1338,7 +1348,7 @@
     </a>
     <a class="card slime" href="slime/">
       <span class="padlock">🔒</span><span class="badge">🫧</span>
-      <span class="meta"><span class="name">말랑 슬라임</span>
+      <span class="meta"><span class="name">젤리 랩</span>
         <span class="tags"><span class="genre">🫧 말랑한 3D 놀이</span></span>
         <span class="desc">색을 섞어 나만의 슬라임을 만들고 도감을 채워요. 간식 먹으면 둘로 뿅!</span>
         <span class="go">말랑이 만나기 ▶</span>
@@ -1358,9 +1368,9 @@
       <span class="padlock">🔒</span>
       <span class="badge">🐉</span>
       <span class="meta">
-        <span class="name">삼국지 · 서유기 · 명장</span>
+        <span class="name">레전드 워</span>
         <span class="tags"><span class="genre">⚔️ 전장 액션</span></span>
-        <span class="desc">세 고전을 넘나드는 별빛 연대기 횡스크롤 전장</span>
+        <span class="desc">삼국지·서유기·명장, 세 고전을 넘나드는 횡스크롤 전장</span>
         <span class="go">모험 떠나기 ▶</span>
       </span>
     </a>
@@ -1388,7 +1398,7 @@
       <span class="padlock">🔒</span>
       <span class="badge">💎</span>
       <span class="meta">
-        <span class="name">헬로키티 리본방</span>
+        <span class="name">헬로키티</span>
         <span class="tags"><span class="genre">🔍 추리 · 미니게임</span></span>
         <span class="desc">사라진 보석을 찾는 아기자기 추리 놀이</span>
         <span class="go">모험 떠나기 ▶</span>
@@ -1398,7 +1408,7 @@
       <span class="padlock">🔒</span>
       <span class="badge">👗</span>
       <span class="meta">
-        <span class="name">공주 옷장</span>
+        <span class="name">드레스 업</span>
         <span class="tags"><span class="genre">👑 꾸미기 · 성장 모험</span></span>
         <span class="desc">공주 12명 · 공부로 성장하고 숲속 소풍에서 토끼 친구를 만나요</span>
         <span class="go">공주와 놀러 가기 ▶</span>
@@ -1454,7 +1464,7 @@
 
   <footer>
     <details class="lobby-help"><summary>여행·오프라인 안내</summary><span class="tip">여행 전 이야기 극장에서 듣고 싶은 이야기를 저장해 주세요. 저장 상태와 학습 기록은 위의 설정에서 확인할 수 있어요.</span></details>
-    <span>모험 상자 · 우리 가족의 작은 세계</span>
+    <span>PLAYGROUND · 우리 가족의 작은 세계</span>
   </footer>
 </main>
 
@@ -1516,7 +1526,7 @@
 <script>
 (function () {
   'use strict';
-  // 모험 상자 첫 화면 배경음악. 첫 조작 뒤에 시작하고, 버튼으로 끄면 다음에도 꺼진 채로 연다.
+  // PLAYGROUND 첫 화면 배경음악. 첫 조작 뒤에 시작하고, 버튼으로 끄면 다음에도 꺼진 채로 연다.
   var button = document.getElementById('hubMusic');
   if (!window.HubBgm || !button) return;
   var bgm = window.HubBgm.create({ basePath: '../assets/bgm/', storageKey: 'hub_bgm_muted', volume: 0.66 });

@@ -116,9 +116,9 @@ test("all story episode mp3 files match the service worker fallback list", () =>
   }
 });
 
-test("cache generation v252 preserves versioned card assets and canonical navigation aliases", () => {
-  assert.equal(sw.CACHE_VERSION, "v252");
-  assert.match(sw.STATIC_CACHE, /^adventure-box-v252-/);
+test("cache generation v253 preserves versioned card assets and canonical navigation aliases", () => {
+  assert.equal(sw.CACHE_VERSION, "v253");
+  assert.match(sw.STATIC_CACHE, /^adventure-box-v253-/);
   for (const asset of ["./cards/js/element-theater.js?v=1", "./cards/element-theater.css?v=1"]) {
     assert.equal(sw.CORE_SHELL.filter(entry => entry === asset).length, 1);
     assert.ok(fs.existsSync(path.join(siteRoot, asset.split("?")[0])));
@@ -348,7 +348,7 @@ test("audio messages accept only same-origin story mp3 URLs", () => {
 
 test("manifest icons have truthful 180, 192 and 512 pixel declarations", () => {
   const manifest = JSON.parse(fs.readFileSync(path.join(siteRoot, "manifest.json"), "utf8"));
-  assert.equal(manifest.name, "모험 상자");
+  assert.equal(manifest.name, "PLAYGROUND");
   assert.equal(manifest.display, "standalone");
   // 허브는 /game/ 에서 시작하지만 범위는 뿌리 전체(게임들이 뿌리 아래에 있다).
   assert.equal(manifest.start_url, "./game/");
@@ -414,7 +414,7 @@ test("Avengers migrates the legacy child scope before its bundle and tombstones 
 });
 
 test("big media and saved stories live in caches that survive a deploy", () => {
-  assert.match(sw.STATIC_CACHE, /^adventure-box-v252-static$/);
+  assert.match(sw.STATIC_CACHE, /^adventure-box-v253-static$/);
   assert.equal(sw.RUNTIME_CACHE, "adventure-box-media-" + sw.MEDIA_REVISION);
   assert.equal(sw.AUDIO_CACHE, "adventure-box-audio-" + sw.MEDIA_REVISION);
   assert.doesNotMatch(sw.RUNTIME_CACHE, /v\d+/, "the media cache name must not carry the deploy number");

@@ -1646,8 +1646,8 @@
     env.addEventListener("offline", offline);
     env.addEventListener("online", online);
     controls();
-    if (!Recognition && /SamsungBrowser/i.test(nav.userAgent || "")) { fallback.hidden = false; nodes.status.textContent = "삼성 인터넷에서는 음성 인식이 안 돼요. 갤럭시 탭은 Chrome으로 모험 상자를 열어 주세요."; }
-    else if (!Recognition || env.isSecureContext === false) { fallback.hidden = false; nodes.status.textContent = "이 환경에서는 음성 인식을 쓸 수 없어요. HTTPS 모험보드를 Safari 또는 Chrome에서 열어 주세요. 다른 공부는 계속할 수 있어요."; }
+    if (!Recognition && /SamsungBrowser/i.test(nav.userAgent || "")) { fallback.hidden = false; nodes.status.textContent = "삼성 인터넷에서는 음성 인식이 안 돼요. 갤럭시 탭은 Chrome으로 PLAYGROUND를 열어 주세요."; }
+    else if (!Recognition || env.isSecureContext === false) { fallback.hidden = false; nodes.status.textContent = "이 환경에서는 음성 인식을 쓸 수 없어요. HTTPS PLAYGROUND를 Safari 또는 Chrome에서 열어 주세요. 다른 공부는 계속할 수 있어요."; }
     else if (env.navigator.onLine === false) offline();
     return {
       stop: function () { stop("잠시 멈췄어요. 읽어 보기를 눌러 다시 시작해요."); },

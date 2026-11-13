@@ -12,7 +12,7 @@ async function loadUiFonts() {
   let timeout = 0;
   try {
     const requests = [
-      document.fonts.load('400 24px "Gowun Batang"', '삼국지·서유기·한국 명장 별빛 연대기'),
+      document.fonts.load('400 24px "Gowun Batang"', '삼국지·서유기·한국 명장 레전드 워'),
       document.fonts.load('700 24px "Gowun Batang"', '관우 장비 필살기'),
       document.fonts.load('400 16px "Pretendard Variable"', '전투 목표 아이템'),
       document.fonts.load('900 18px "Pretendard Variable"', '필살 무쌍 GO'),

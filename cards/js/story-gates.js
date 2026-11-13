@@ -742,7 +742,7 @@
     ],
     honghaier: [
       ["parents", "홍해아의 부모는 누구인가요?", [["bull-raksha", "우마왕과 나찰녀"], ["midas-queen", "미다스 왕과 왕비"], ["zeus-athena", "제우스와 아테나"]], "bull-raksha", "sanguo/src/data/works.js#WORK_STAGES.huoyundong.scene_intro"],
-      ["fire", "홍해아가 뿜는 특별한 불의 이름은 무엇인가요?", [["samadhi", "삼매진화"], ["campfire", "모닥불"], ["starlight", "별빛 불꽃"]], "samadhi", "sanguo/src/data/works.js#WORK_STAGES.huoyundong.scene_intro"],
+      ["fire", "홍해아가 뿜는 특별한 불의 이름은 무엇인가요?", [["samadhi", "삼매진화"], ["campfire", "모닥불"], ["starlight", "번쩍 불꽃"]], "samadhi", "sanguo/src/data/works.js#WORK_STAGES.huoyundong.scene_intro"],
       ["water", "삼매진화에 물을 뿌리면 어떻게 되나요?", [["notout", "꺼지지 않아요"], ["out", "바로 꺼져요"], ["ice", "얼음이 돼요"]], "notout", "sanguo/src/data/works.js#WORK_STAGES.huoyundong.scene_intro"],
       ["helper", "홍해아를 막을 때 손오공을 도운 분은 누구인가요?", [["guanyin", "관음보살"], ["witch", "과자집 마녀"], ["hermes", "헤르메스"]], "guanyin", "sanguo/src/data/works.js#WORK_STAGES.huoyundong.scene_intro"],
       ["courage", "혼자 이기기 어려울 때 필요한 용기는 무엇인가요?", [["ask", "도움을 청하는 용기"], ["hide", "계속 숨는 용기"], ["pretend", "모르는 척하는 용기"]], "ask", "sanguo/src/data/works.js#WORK_STAGES.huoyundong.lesson"]
@@ -951,7 +951,7 @@
     question("scylla-other", "scylla", "좁은 해협 아래에서 빙글빙글 돈 것은 무엇인가요?",
       [["whirlpool", "카립디스의 소용돌이"], ["wheel", "태양 마차 바퀴"], ["beans", "콩나무"]], "whirlpool", ["odyssey:scylla/whirlpoolChoice"]),
     question("scylla-warning", "scylla", "스킬라가 팔을 뻗기 전에 무엇이 알려 주나요?",
-      [["starlight", "별빛"], ["bell", "종소리"], ["pig", "돼지"]], "starlight", ["odyssey:scylla/scyllaPeek"]),
+      [["starlight", "번쩍 빛"], ["bell", "종소리"], ["pig", "돼지"]], "starlight", ["odyssey:scylla/scyllaPeek"]),
     question("scylla-safe", "scylla", "소용돌이를 지날 때 찾아야 하는 길은 어디인가요?",
       [["middle", "가운데의 잔잔한 길"], ["edge", "절벽 바로 옆"], ["under", "바닷속"]], "middle", ["odyssey:scylla/whirlpoolChoice"]),
 
