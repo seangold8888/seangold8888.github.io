@@ -34,9 +34,9 @@ html, body { height: 100%; margin: 0; overflow: hidden; background: #0d3b66; col
 .dash.ready { animation: dashpulse 1.1s ease-in-out infinite; }
 .dash:active span { transform: scale(.94); }
 @keyframes dashpulse { 50% { box-shadow: 0 0 0 7px rgba(255,226,122,.28); } }
-@media (max-width: 520px), (max-height: 520px) { .dash { width: 92px; height: 92px; } .dash span { font-size: 19px; } }
+@media (max-width: 520px), (max-height: 520px) { .dash { width: clamp(72px, 22vmin, 92px); height: clamp(72px, 22vmin, 92px); } .dash span { inset: 7px; font-size: 18px; } }
 
-.panel { position: fixed; z-index: 4; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(calc(100vw - 32px), 560px); max-height: calc(100vh - 24px); overflow-y: auto; padding: 20px 20px; border: 1px solid rgba(255,255,255,.24); border-radius: 26px; background: rgba(6,34,66,.93); text-align: center; }
+.panel { position: fixed; z-index: 4; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(calc(100vw - 32px), 560px); max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); overflow-y: auto; padding: 20px 20px; border: 1px solid rgba(255,255,255,.24); border-radius: 26px; background: rgba(6,34,66,.93); text-align: center; }
 .panel[hidden] { display: none; }
 .panel h1 { margin: 0 0 4px; font-size: clamp(30px, 7vw, 44px); letter-spacing: -.02em; color: #bff3ff; }
 .panel h2 { margin: 0 0 10px; font-size: clamp(22px, 5.4vw, 30px); }
@@ -69,7 +69,7 @@ html, body { height: 100%; margin: 0; overflow: hidden; background: #0d3b66; col
 .friend.locked { opacity: .5; }
 
 /* 장비 고르기는 위쪽에 띄운다: 잠수정을 끄는 손가락은 아래쪽에 있을 때가 많다. */
-#cards { top: calc(60px + env(safe-area-inset-top)); transform: translateX(-50%); max-height: calc(100vh - 72px); background: rgba(6,34,66,.96); }
+#cards { top: calc(60px + env(safe-area-inset-top)); transform: translateX(-50%); max-height: calc(100vh - 72px); max-height: calc(100dvh - 72px); background: rgba(6,34,66,.96); }
 .kicker { font-size: 14px !important; font-weight: 800; color: #ffe27a !important; }
 .cards-title { margin: 2px 0 12px !important; font-size: clamp(20px, 5vw, 26px) !important; font-weight: 900; color: #fff !important; }
 .cardrow { display: grid; grid-template-columns: repeat(var(--n, 3), 1fr); gap: 10px; }
@@ -110,4 +110,21 @@ html, body { height: 100%; margin: 0; overflow: hidden; background: #0d3b66; col
   .pick { margin-top: 6px !important; }
   .go { min-height: 50px; margin-top: 8px; }
   .lead { display: none; }
+}
+/* 폰 가로(키 낮음): 왼쪽=고르기, 오른쪽=큰 출발 버튼이 항상 보이게 2단 */
+@media (max-height: 500px) {
+  #start:not([hidden]) { width: min(calc(100vw - 32px), 760px); padding: 10px 16px; border-radius: 20px;
+    display: grid; grid-template-columns: minmax(0, 1fr) clamp(150px, 26vw, 220px); column-gap: 16px; align-content: center; }
+  #start > * { grid-column: 1; }
+  #start h1 { font-size: 26px; margin: 0; }
+  #start p { margin: 2px 0; font-size: 14px; line-height: 1.3; }
+  #start .pick { margin-top: 4px !important; }
+  #start .pilots { gap: 6px; margin-top: 2px; }
+  #start .pilot { padding: 3px 2px; border-radius: 14px; font-size: 14px; }
+  #start .pilot .face { max-width: 44px; margin-bottom: 0; }
+  #start .pilot .dot { width: 34px; height: 34px; margin: 4px auto; }
+  #start .zone { min-height: 44px; padding: 2px 6px; }
+  #start .row { margin-top: 6px; gap: 10px; }
+  #start .go { grid-column: 2; grid-row: 1 / span 7; align-self: center; margin: 0; min-height: 110px; height: 60%; font-size: 26px; }
+  #start #bestLine { grid-column: 2; grid-row: 8; align-self: start; }
 }

@@ -129,27 +129,48 @@ const sfx = {
   win: () => [523, 659, 784, 1047, 1319].forEach((f, i) => setTimeout(() => beep(f, 0.2, "triangle", 0.11), i * 110)),
 };
 
-/* ---------- 화면 크기: 맵은 논리 960x600 을 화면에 맞춰 넣는다 ---------- */
-const HUD_H = 58;
-let vw = 1, vh = 1, dpr = 1, mapS = 1, mapX = 0, mapY = 0, portrait = false;
+/* ---------- 화면 크기 ----------
+   맵(논리 960x600)에서 꼭 보여야 하는 상자(SAFE: 길·받침·성·위쪽 탑 꼭대기)만 화면에 꽉 맞추고, HUD 는 맵 위에 겹쳐 띄운다(위·아래 띠 없음).
+   맵 바깥은 같은 잔디로 이어 칠해 레터박스가 보이지 않게. 탑·괴물·부엉이 그림은 VS 배로 크게 그린다(보이는 크기만, 규칙 수치는 논리 좌표 그대로).
+   크기는 visualViewport(사파리 주소창·탭바를 뺀 실제 보이는 영역) 기준.
+   세로 화면(ROT)에서는 맵을 90도 돌려 긴 변(960)을 화면 세로에 둔다. 위치만 돌리고 그림(탑·괴물·성·나무·글자)은 항상 똑바로.
+   논리(world) 좌표 → 화면 논리 좌표 변환은 SX/SY(그리고 역변환 toMap) 한 쌍에만 모았다. 화면 논리 좌표 × mapS + (mapX, mapY) = CSS px.
+   ROT: 화면 x = 600 − 월드 y, 화면 y = 월드 x (괴물이 위 동굴에서 내려와 아래 성으로 간다). */
+const HUD_H = 58, SAFE_L = { x0: 8, y0: -40, x1: 958, y1: 596 }, SAFE_R = { x0: 8, y0: -20, x1: 572, y1: 955 };
+let vw = 1, vh = 1, dpr = 1, mapS = 1, mapX = 0, mapY = 0, portrait = false, VS = 1.25, ROT = false, PHONE = false, FX_MAX = 40, HUD_SAFE = 64;
+const SX = (x, y) => (ROT ? L.MAP_H - y : x), SY = (x, y) => (ROT ? x : y);
+const SCR_W = () => (ROT ? L.MAP_H : L.MAP_W), SCR_H = () => (ROT ? L.MAP_W : L.MAP_H);
+// 캔버스에 월드 좌표 그대로 선·원을 그릴 때의 변환(돌려도 모양이 같은 것만: 길·사거리 원·빛줄기·번개·탄)
+function setWorldTf(k, ox, oy) { if (ROT) ctx.setTransform(0, k, -k, 0, ox + L.MAP_H * k, oy); else ctx.setTransform(k, 0, 0, k, ox, oy); }
 function resize() {
-  vw = Math.max(1, innerWidth); vh = Math.max(1, innerHeight);
+  const vv = window.visualViewport;
+  vw = Math.max(1, Math.round(vv && vv.width ? vv.width : innerWidth)); vh = Math.max(1, Math.round(vv && vv.height ? vv.height : innerHeight));
   dpr = Math.min(devicePixelRatio || 1, 1.5);
   canvas.width = Math.round(vw * dpr); canvas.height = Math.round(vh * dpr);
-  portrait = vh > vw * 1.15;
-  const top = HUD_H + (portrait ? 4 : 0);
-  if (portrait) { mapS = Math.min(vw / L.MAP_W, (vh - top - 120) / L.MAP_H); mapX = (vw - L.MAP_W * mapS) / 2; mapY = top; }
-  else { const avail = vh - top - 4; mapS = Math.min(vw / L.MAP_W, avail / L.MAP_H); mapX = (vw - L.MAP_W * mapS) / 2; mapY = top + (avail - L.MAP_H * mapS) / 2; }
+  canvas.style.width = vw + "px"; canvas.style.height = vh + "px";
+  portrait = ROT = vh > vw * 1.1;
+  const S = ROT ? SAFE_R : SAFE_L, sw = S.x1 - S.x0, sh = S.y1 - S.y0;
+  mapS = Math.min(vw / sw, vh / sh); mapX = vw / 2 - (S.x0 + S.x1) / 2 * mapS; mapY = vh / 2 - (S.y0 + S.y1) / 2 * mapS;
+  // 그림 배율: 세로(회전) 1.35, 폰 가로처럼 낮은 화면 1.4, 그 밖 가로 1.25
+  VS = ROT ? 1.35 : vh < 500 ? 1.4 : 1.25;
+  PHONE = Math.min(vw, vh) < 500;
+  FX_MAX = PHONE ? 28 : 40;          // 폰은 효과 동시 상한을 조금 낮춘다
+  HUD_SAFE = PHONE ? 50 : 64;
   layoutCtrl();
-  bgKey = ""; towerCache.clear(); monCache.clear();
+  bgKey = ""; groundKey = ""; towerCache.clear(); monCache.clear();
+  if (focusPad >= 0 && world && (mode === "build" || mode === "info")) placeDock($(mode), focusPad);   // 창이 열린 채 돌려도 위치 다시
 }
 function layoutCtrl() {
   const c = $("ctrl"), tip = $("tip");
-  if (portrait) { c.style.top = Math.round(mapY + L.MAP_H * mapS + 10) + "px"; c.style.right = "auto"; c.style.left = "50%"; c.style.transform = "translateX(-50%)"; tip.style.top = Math.round(mapY + L.MAP_H * mapS + 66) + "px"; }
-  else { c.style.top = ""; c.style.right = ""; c.style.left = ""; c.style.transform = ""; tip.style.top = ""; }
-  tip.hidden = !portrait || mode === "start" || mode === "over";
+  // 세로: 빨리 감기·정지·소리는 오른쪽 아래 모서리. 가로: 오른쪽 위(HUD 줄)
+  if (portrait) { c.style.top = "auto"; c.style.bottom = "calc(12px + env(safe-area-inset-bottom))"; }
+  else { c.style.top = ""; c.style.bottom = ""; }
+  tip.hidden = true;
 }
-const toMap = (cx, cy) => ({ x: (cx - mapX) / mapS, y: (cy - mapY) / mapS });
+// 화면 CSS px → 월드 좌표(역변환)
+function toMap(cx, cy) { const sx = (cx - mapX) / mapS, sy = (cy - mapY) / mapS; return ROT ? { x: sy, y: L.MAP_H - sx } : { x: sx, y: sy }; }
+// 월드 좌표 → 화면 CSS px
+const toScreen = (x, y) => ({ x: mapX + SX(x, y) * mapS, y: mapY + SY(x, y) * mapS });
 
 /* ---------- 미리 그려 두기: 배경(바탕 + 길 + 장식 + 받침 + 성) ---------- */
 let bgCanvas = null, bgKey = "";
@@ -176,16 +197,19 @@ function padShape(x, cx, cy, r) {
 }
 const PAD_R = 30;
 function buildBg() {
-  const k = mapS * dpr, map = world ? world.map : L.mapOf(mapId), key = map.id + ":" + k.toFixed(3);
+  const k = mapS * dpr, map = world ? world.map : L.mapOf(mapId), key = map.id + ":" + k.toFixed(3) + (ROT ? "r" : "");
   if (bgCanvas && bgKey === key) return bgCanvas;
-  bgCanvas = canvasOf(L.MAP_W * k, L.MAP_H * k, (x) => {
+  const W0 = SCR_W(), H0 = SCR_H();
+  bgCanvas = canvasOf(W0 * k, H0 * k, (x) => {
     x.setTransform(k, 0, 0, k, 0, 0);
     // 바탕 타일(맵별 색조)
     const src = ART.ground || GRASS, tile = 320;
     const pat = x.createPattern(canvasOf(tile * k, tile * k * (src.height / src.width), (y, w, h) => y.drawImage(src, 0, 0, w, h)), "repeat");
-    x.save(); x.setTransform(1, 0, 0, 1, 0, 0); x.fillStyle = pat; x.fillRect(0, 0, L.MAP_W * k, L.MAP_H * k); x.restore();
-    if (!ART.ground) { x.fillStyle = map.ground; x.globalAlpha = 0.45; x.fillRect(0, 0, L.MAP_W, L.MAP_H); x.globalAlpha = 1; }
-    if (map.tint) { x.fillStyle = map.tint; x.fillRect(0, 0, L.MAP_W, L.MAP_H); }
+    x.save(); x.setTransform(1, 0, 0, 1, 0, 0); x.fillStyle = pat; x.fillRect(0, 0, W0 * k, H0 * k); x.restore();
+    if (!ART.ground) { x.fillStyle = map.ground; x.globalAlpha = 0.45; x.fillRect(0, 0, W0, H0); x.globalAlpha = 1; }
+    if (map.tint) { x.fillStyle = map.tint; x.fillRect(0, 0, W0, H0); }
+    // 길·다리·동굴은 월드 좌표 그대로(세로면 돌린 변환으로)
+    if (ROT) x.setTransform(0, k, -k, 0, L.MAP_H * k, 0);
     // 길: 가장자리 → 흙길 → 가운데 밝은 줄
     x.lineJoin = "round"; x.lineCap = "round";
     const stroke = (pts, wdt, col) => { x.strokeStyle = col; x.lineWidth = wdt; x.beginPath(); pts.forEach(([px, py], i) => (i ? x.lineTo(px, py) : x.moveTo(px, py))); x.stroke(); };
@@ -202,17 +226,20 @@ function buildBg() {
     // 괴물이 나오는 동굴
     const st = map.paths[0][1];
     x.fillStyle = "rgba(40,30,50,.55)"; x.beginPath(); x.ellipse(8, map.paths[0][0][1], 26, 36, 0, 0, TAU); x.fill();
-    // 장식
-    for (const [kind, dx, dy, dw] of map.decor) {
+    // 그림(장식·받침·성)은 똑바로: 위치만 변환
+    x.setTransform(k, 0, 0, k, 0, 0);
+    for (const [kind, wx, wy, dw] of map.decor) {
+      const dx = SX(wx, wy), dy = SY(wx, wy);
       if (ART[kind]) { const h = dw * aspect(kind); x.drawImage(ART[kind], dx - dw / 2, dy - h * 0.6, dw, h); } else decorShape(x, kind, dx, dy, dw);
     }
     // 받침
-    for (const [px, py] of map.pads) {
-      if (ART.pad) { const w = PAD_R * 2.3, h = w * aspect("pad"); x.drawImage(ART.pad, px - w / 2, py - h / 2, w, h); } else padShape(x, px, py, PAD_R);
+    for (const [wx, wy] of map.pads) {
+      const px = SX(wx, wy), py = SY(wx, wy);
+      if (ART.pad) { const w = PAD_R * 2.6, h = w * aspect("pad"); x.drawImage(ART.pad, px - w / 2, py - h / 2, w, h); } else padShape(x, px, py, PAD_R);
     }
     // 성
-    const c = map.castle;
-    if (ART.castle) { const w = 124, h = w * aspect("castle"); x.drawImage(ART.castle, c.x - w / 2, c.y + 36 - h, w, h); } else castleShape(x, c.x, c.y);
+    const c = map.castle, cx = SX(c.x, c.y), cy = SY(c.x, c.y);
+    if (ART.castle) { const w = 136, h = w * aspect("castle"); x.drawImage(ART.castle, cx - w / 2, cy + 36 - h, w, h); } else castleShape(x, cx, cy);
     void st;
   });
   bgKey = key;
@@ -279,17 +306,20 @@ function gemRow(x, lv, y) {
   }
 }
 // 탑 그림 캔버스. 돌려주는 값: { c, ox, oy, w, h } (논리 크기, 받침 가운데 기준 그리기 위치)
-function towerSprite(kind, lv, branch, k = mapS * dpr, withGems = true) {
-  const key = kind + lv + (branch || "") + ":" + k.toFixed(3) + (withGems ? "g" : "");
+function towerSprite(kind, lv, branch, k0 = mapS * dpr, withGems = true) {
+  const k = k0 * VS, key = kind + lv + (branch || "") + ":" + k.toFixed(3) + (withGems ? "g" : "");
   let s = towerCache.get(key);
   if (s) return s;
   const W = L.TOWER_W[lv - 1], cw = W * 1.6, ch = W * 2.6 + 30;
+  let gemY = 0;
   const c = canvasOf(cw * k, ch * k, (x) => {
     x.setTransform(k, 0, 0, k, cw / 2 * k, (ch - 8) * k);
     const top = towerShape(x, kind, lv, branch, W);
-    if (withGems) gemRow(x, lv, Math.max(-ch + 16, top - (L.TOWER_DECOR[lv - 1].crown ? 36 : L.TOWER_DECOR[lv - 1].flags ? 26 : 10)));
+    gemY = Math.max(-ch + 16, top - (L.TOWER_DECOR[lv - 1].crown ? 36 : L.TOWER_DECOR[lv - 1].flags ? 26 : 10));
+    if (withGems) gemRow(x, lv, gemY);
   });
-  s = { c, ox: -cw / 2, oy: -(ch - 8), w: cw, h: ch };
+  // 받침 가운데 기준, VS 배로 크게. gemY: 보석 칸 높이(VS 곱한 값) — 보석 칸은 drawTower 가 따로 그린다(HUD 에 가리면 탑 아래로)
+  s = { c, ox: -cw / 2 * VS, oy: -(ch - 8) * VS, w: cw * VS, h: ch * VS, gemY: gemY * VS };
   towerCache.set(key, s);
   return s;
 }
@@ -442,11 +472,11 @@ canvas.addEventListener("pointerdown", e => {
 function tapAt(x, y) {
   // 1) 부엉이(큰 탭 범위: 화면에서 최소 72px)
   if (world.owl) {
-    const o = E.owlPos(world.owl), R = Math.max(L.OWL_HIT_R, 40 / mapS);
+    const o = E.owlPos(world.owl), R = Math.max(L.OWL_HIT_R * VS * 0.9, 44 / mapS);
     if ((x - o.x) ** 2 + (y - o.y) ** 2 <= R * R) { E.tapOwl(world); sfx.tap(); openQuiz(); return "owl"; }
   }
   // 2) 받침·탑
-  const PR = Math.max(PAD_R + 8, 26 / mapS);
+  const PR = Math.max(PAD_R + 10, 40 / mapS);   // 화면에서 지름 80px 이상
   let best = -1, bd = PR * PR;
   for (const p of world.pads) { const d = (p.x - x) ** 2 + (p.y - 8 - y) ** 2; if (d < bd) { bd = d; best = p.i; } }
   if (best >= 0) { sfx.tap(); if (world.pads[best].tower) openInfo(best); else openBuild(best); return "pad"; }
@@ -471,7 +501,7 @@ function openBuild(padIdx) {
     b.disabled = !E.canBuild(world, padIdx, kind);
     const name = document.createElement("b"); name.textContent = T.name;
     const price = document.createElement("span"); price.innerHTML = cost ? '<i class="ic ic-gem"></i>' + cost : "공짜!";
-    b.append(iconFor({ kind, lv: 1 }, 64, 76), name, price);
+    b.append(iconFor({ kind, lv: 1 }, 96, 114), name, price);
     row.appendChild(b); return b;
   });
   if (!buttons.some(b => !b.disabled)) $("buildKicker").textContent = "수정이 모자라요 · 괴물을 돌려보내거나 ? 부엉이 문제를 맞히면 모여요";
@@ -514,7 +544,7 @@ function openInfo(padIdx) {
   });
 }
 // 고르는 받침이 화면 아래쪽이면 창을 위에 띄운다(받침이 가려지지 않게)
-function placeDock(panel, padIdx) { const p = world.pads[padIdx]; panel.classList.toggle("top", mapY + p.y * mapS > vh * 0.5); }
+function placeDock(panel, padIdx) { const p = world.pads[padIdx]; panel.classList.toggle("top", toScreen(p.x, p.y).y > vh * 0.5); }
 function closeDock() {
   disarm(); $("build").hidden = true; $("info").hidden = true; focusPad = -1;
   if (mode === "build" || mode === "info") { mode = "play"; last = performance.now(); }
@@ -622,7 +652,7 @@ function begin(opts = {}) {
   $("hud").hidden = false; $("ctrl").hidden = false; hudKey = ""; hud();
   runSaved = false; banner = ""; bannerT = 0; speed = 1; paintFast(); saidOwl = false; saidPad = false;
   audio(); last = performance.now(); mode = "play"; layoutCtrl();
-  $("tip").textContent = "빈 받침을 누르면 탑을 세워요 · 괴물을 누르면 반짝 가루 · ? 부엉이를 누르면 문제!";
+  $("tip").textContent = "";
   say(world.map.name + "을 지켜요! 빈 받침을 눌러 탑을 세워요", true);
 }
 function endRun(quit) {
@@ -675,7 +705,7 @@ function toMenu() {
 /* ---------- 효과 그림 fx_*.webp (4x2 = 8컷, 순검정 바탕) ----------
    불러올 때 한 번만 검정 → 투명으로 바꾼 시트를 만들어 두고(alpha = max(r,g,b), 색은 alpha 로 나눠 되돌림),
    그릴 때는 보통으로 한 번 + lighter 로 약하게 한 번(밝은 잔디 위에서도 색이 살아 있게). 시트가 없으면 아무것도 안 그린다(도형 효과는 그대로). */
-const FX = {}, FX_NAMES = ["fire", "ice", "bolt", "wind", "light", "mega"], FX_MAX = 40;
+const FX = {}, FX_NAMES = ["fire", "ice", "bolt", "wind", "light", "mega"];
 function keyBlack(im) {
   try {
     const c = document.createElement("canvas"); c.width = im.width; c.height = im.height;
@@ -697,17 +727,18 @@ FX_NAMES.forEach((n, i) => {
 });
 let fxList = [], shakeT = 0;
 // size: 논리 칸(map) 또는 화면 px(screen). dur 초 동안 8컷.
-function addFx(name, x, y, size, { dur = 0.4, rot = 0, screen = false, alpha = 1 } = {}) {
+function addFx(name, x, y, size, { dur = 0.4, rot = 0, screen = false, alpha = 1, oy = 0 } = {}) {
   if (!FX[name]) return null;
   if (fxList.length >= FX_MAX) { const i = fxList.findIndex(f => !f.screen); fxList.splice(i >= 0 ? i : 0, 1); }   // 큰 충격파는 남기고 오래된 것부터
-  const f = { name, x, y, size, t: 0, dur, rot, screen, alpha };
+  const f = { name, x, y, size, t: 0, dur, rot, screen, alpha, oy };   // 맵 효과는 x,y 가 월드 좌표, oy 는 화면 위쪽 어긋남
   fxList.push(f); return f;
 }
 function drawFxItem(f) {
   const S = FX[f.name]; if (!S) return;
   const fr = Math.min(7, Math.floor(f.t / f.dur * 8)), cell = S.cell, sx = (fr % 4) * cell, sy = Math.floor(fr / 4) * cell, h = f.size / 2;
-  if (f.rot) { ctx.save(); ctx.translate(f.x, f.y); ctx.rotate(f.rot); }
-  const dx = f.rot ? -h : f.x - h, dy = f.rot ? -h : f.y - h;
+  const px = f.screen ? f.x : SX(f.x, f.y), py = f.screen ? f.y : SY(f.x, f.y) + f.oy;
+  if (f.rot) { ctx.save(); ctx.translate(px, py); ctx.rotate(f.rot); }
+  const dx = f.rot ? -h : px - h, dy = f.rot ? -h : py - h;
   ctx.globalAlpha = f.alpha; ctx.drawImage(S.c, sx, sy, cell, cell, dx, dy, f.size, f.size);
   ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = f.alpha * 0.42; ctx.drawImage(S.c, sx, sy, cell, cell, dx, dy, f.size, f.size);
   ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1;
@@ -716,23 +747,23 @@ function drawFxItem(f) {
 // 맞는 순간: 단계가 오를수록 크게(1단계 ≈ 괴물 1.2배 → 5단계 ≈ 2.4배), 갈림길 탑은 한 번 더 크게 + 살짝 회전
 function hitEffect(e) {
   const lvK = 1.2 + (Math.max(1, e.lv) - 1) * 0.3, evo = e.lv >= 3 && e.br;
-  let size = 46 * lvK * (evo ? 1.18 : 1);
+  let size = 46 * VS * lvK * (evo ? 1.18 : 1);
   if (e.kind === "ice") size = Math.max(size, e.R * 1.7);                 // 둘레 공격: 범위에 맞춰
   if (e.kind === "fire" && e.R) size = Math.max(size, e.R * 2.4);         // 화산: 터지는 범위
-  addFx(e.kind, e.x, e.y - 12, size, { dur: e.kind === "ice" ? 0.55 : 0.45, rot: evo ? (e.br === "a" ? 0.5 : -0.5) + Math.random() * 0.4 : 0, alpha: e.kind === "ice" ? 0.85 : 1 });
+  addFx(e.kind, e.x, e.y, size, { oy: -12, dur: e.kind === "ice" ? 0.55 : 0.45, rot: evo ? (e.br === "a" ? 0.5 : -0.5) + Math.random() * 0.4 : 0, alpha: e.kind === "ice" ? 0.85 : 1 });
 }
 // 화면 가운데 큰 무지개 충격파(대마법·대장)
 function megaFx(k = 1.4, dur = 0.7) {
-  const S = Math.min(L.MAP_W * mapS, L.MAP_H * mapS) * dpr * k;
-  addFx("mega", (mapX + L.MAP_W * mapS / 2) * dpr, (mapY + L.MAP_H * mapS / 2) * dpr, S, { dur, screen: true });
+  const S = Math.min(SCR_W() * mapS, SCR_H() * mapS) * dpr * k;
+  addFx("mega", (mapX + SCR_W() * mapS / 2) * dpr, (mapY + SCR_H() * mapS / 2) * dpr, S, { dur, screen: true });
 }
-const lightAt = (x, y, size = 80) => addFx("light", x, y, size, { dur: 0.45 });
-function padFx(pad) { const p = world && world.pads[pad]; if (p) lightAt(p.x, p.y - 36, 96); }
+const lightAt = (x, y, size = 80, oy = 0) => addFx("light", x, y, size * VS, { dur: 0.45, oy });
+function padFx(pad) { const p = world && world.pads[pad]; if (p) lightAt(p.x, p.y, 96, -36 * VS); }
 function handleEvents() {
   const ev = world.events; if (!ev.length) return;
   for (const e of ev) {
     if (e.type === "hit") hitEffect(e);
-    else if (e.type === "home") { if (e.via !== "storm") sfx.home(); else lightAt(e.x, e.y - 14, 76); if (e.kind === "boss") { megaFx(1.1, 0.8); shakeT = 0.25; } }
+    else if (e.type === "home") { if (e.via !== "storm") sfx.home(); else lightAt(e.x, e.y, 76, -14); if (e.kind === "boss") { megaFx(1.1, 0.8); shakeT = 0.25; } }
     else if (e.type === "build" || e.type === "upgrade") padFx(e.pad);
     else if (e.type === "card") { if (e.pad >= 0) padFx(e.pad); }
     else if (e.type === "shot") sfx[e.kind] && sfx[e.kind]();
@@ -758,37 +789,53 @@ function update(dt) {
   hud();
 }
 
+// 맵 바깥(화면 가장자리)도 같은 잔디로 이어 칠한다(무늬는 맵 원점에 맞춰 이음매 없이). 패턴은 크기가 바뀔 때만 다시 만든다.
+let groundPat = null, groundKey = "";
+function fillGround(ox, oy, k) {
+  const map = world ? world.map : L.mapOf(mapId), key = map.id + ":" + k.toFixed(3) + (ART.ground ? "a" : "g");
+  if (!groundPat || groundKey !== key) {
+    const src = ART.ground || GRASS, tile = 320;
+    groundPat = ctx.createPattern(canvasOf(tile * k, tile * k * (src.height / src.width), (y, w, h) => y.drawImage(src, 0, 0, w, h)), "repeat"); groundKey = key;
+  }
+  ctx.save(); ctx.translate(ox, oy); ctx.fillStyle = groundPat; ctx.fillRect(-ox, -oy, canvas.width, canvas.height);
+  if (!ART.ground) { ctx.globalAlpha = 0.45; ctx.fillStyle = map.ground; ctx.fillRect(-ox, -oy, canvas.width, canvas.height); ctx.globalAlpha = 1; }
+  if (map.tint) { ctx.fillStyle = map.tint; ctx.fillRect(-ox, -oy, canvas.width, canvas.height); }
+  ctx.restore();
+}
 /* ---------- 그리기 ---------- */
 function render() {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.fillStyle = "#2c1f5c"; ctx.fillRect(0, 0, canvas.width, canvas.height);
   const sh = shakeT > 0 ? 4 * dpr : 0, k = mapS * dpr, ox = mapX * dpr + (sh ? (Math.random() - 0.5) * 2 * sh : 0), oy = mapY * dpr + (sh ? (Math.random() - 0.5) * 2 * sh : 0);
+  fillGround(ox, oy, k);
   ctx.drawImage(buildBg(), ox, oy);
   if (!world) { ctx.fillStyle = "rgba(30,18,70,.45)"; ctx.fillRect(0, 0, canvas.width, canvas.height); return; }
-  ctx.setTransform(k, 0, 0, k, ox, oy);
-  const w = world, fx = w.fx;
-  // 받침 강조(고르는 중)
-  if (focusPad >= 0) { const p = w.pads[focusPad]; ctx.globalAlpha = 0.6 + Math.sin(clock * 8) * 0.3; ctx.strokeStyle = "#ffe27a"; ctx.lineWidth = 5; ctx.beginPath(); ctx.ellipse(p.x, p.y, PAD_R + 8, (PAD_R + 8) * 0.62, 0, 0, TAU); ctx.stroke(); ctx.globalAlpha = 1;
-    const t = p.tower; if (t) { const s = L.towerStats(t.kind, t.lv, t.branch); ctx.globalAlpha = 0.14; ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(p.x, p.y, s.range, 0, TAU); ctx.fill(); ctx.globalAlpha = 1; } }
-  // 빈 받침이 처음엔 살짝 반짝(어디를 누를지)
-  if (!w.towers.length || (w.t < 30 && w.gems >= 70)) { ctx.globalAlpha = 0.25 + Math.sin(clock * 4) * 0.2; ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 3; for (const p of w.pads) if (!p.tower) { ctx.beginPath(); ctx.ellipse(p.x, p.y, PAD_R + 4, (PAD_R + 4) * 0.62, 0, 0, TAU); ctx.stroke(); } ctx.globalAlpha = 1; }
-  // 얼음·폭발 고리(바닥)
+  const w = world, fx = w.fx, setScr = () => ctx.setTransform(k, 0, 0, k, ox, oy);
+  // ── 1) 월드 변환으로 그리는 바닥 것(원은 돌려도 같다): 사거리 원, 얼음·폭발 고리 ──
+  setWorldTf(k, ox, oy);
+  if (focusPad >= 0) { const p = w.pads[focusPad], t = p.tower; if (t) { const s = L.towerStats(t.kind, t.lv, t.branch); ctx.globalAlpha = 0.14; ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(p.x, p.y, s.range, 0, TAU); ctx.fill(); ctx.globalAlpha = 1; } }
   for (const r of fx.rings) {
     const kk = r.t / r.T;
     if (r.k === "ice") { ctx.globalAlpha = (1 - kk) * 0.22; ctx.fillStyle = r.color; ctx.beginPath(); ctx.arc(r.x, r.y, r.R * (0.4 + kk * 0.6), 0, TAU); ctx.fill(); ctx.globalAlpha = 1 - kk; ctx.strokeStyle = r.color; ctx.lineWidth = 3 + r.lv; ctx.stroke(); }
     else { ctx.globalAlpha = (1 - kk) * 0.5; ctx.fillStyle = r.color; ctx.beginPath(); ctx.arc(r.x, r.y, r.R * (0.3 + kk * 0.7), 0, TAU); ctx.fill(); }
   }
   ctx.globalAlpha = 1;
-  // 탑과 괴물을 y 순으로(탑은 아래 가운데가 받침에 닿는다)
+  // ── 2) 화면 변환: 그림은 항상 똑바로, 위치만 SX/SY ──
+  setScr();
+  // 받침 강조(고르는 중)
+  if (focusPad >= 0) { const p = w.pads[focusPad], px = SX(p.x, p.y), py = SY(p.x, p.y); ctx.globalAlpha = 0.6 + Math.sin(clock * 8) * 0.3; ctx.strokeStyle = "#ffe27a"; ctx.lineWidth = 5; ctx.beginPath(); ctx.ellipse(px, py, PAD_R + 8, (PAD_R + 8) * 0.62, 0, 0, TAU); ctx.stroke(); ctx.globalAlpha = 1; }
+  // 빈 받침이 처음엔 살짝 반짝(어디를 누를지)
+  if (!w.towers.length || (w.t < 30 && w.gems >= 70)) { ctx.globalAlpha = 0.25 + Math.sin(clock * 4) * 0.2; ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 3; for (const p of w.pads) if (!p.tower) { ctx.beginPath(); ctx.ellipse(SX(p.x, p.y), SY(p.x, p.y), PAD_R + 4, (PAD_R + 4) * 0.62, 0, 0, TAU); ctx.stroke(); } ctx.globalAlpha = 1; }
+  // 탑과 괴물을 화면 y 순으로(탑은 아래 가운데가 받침에 닿는다)
   const items = [];
-  for (const t of w.towers) items.push(t);
-  for (const e of w.monsters) items.push(e);
-  items.sort((a, b) => a.y - b.y);
-  for (const it of items) { if (it.pad != null && it.kind in L.TOWERS) drawTower(it); else drawMonster(it); }
-  // 불꽃 구슬
+  for (const t of w.towers) items.push({ o: t, tw: true, sx: SX(t.x, t.y), sy: SY(t.x, t.y) });
+  for (const e of w.monsters) items.push({ o: e, tw: false, sx: SX(e.x, e.y), sy: SY(e.x, e.y) });
+  items.sort((a, b) => a.sy - b.sy);
+  for (const it of items) { if (it.tw) drawTower(it.o, it.sx, it.sy); else drawMonster(it.o, it.sx, it.sy, screenFace(it.o, it.sx)); }
+  // ── 3) 월드 변환: 탄·빛줄기·번개·바람(선과 둥근 빛이라 돌려도 같다) ──
+  setWorldTf(k, ox, oy);
   for (const s of w.shots) {
     const g = s.br === "b" ? GLOW.volcano : s.br === "a" ? GLOW.phoenix : GLOW.fire, sz = s.size * 3.2;
-    // 꼬리: 단계가 오를수록 입자 수·굵기 증가
+    // 꼬리: 단계가 오를수록 입자 수·굵기 증가(진행 방향 반대쪽)
     { const dx = s.tx - s.x, dy = s.ty - s.y, d = Math.hypot(dx, dy) || 1, ux = dx / d, uy = dy / d, n = 2 + s.lv, gap = 5 + s.lv;
       for (let i = 1; i <= n; i++) { const q = 1 - i / (n + 1), r = (2 + s.lv * 0.9) * q * (s.br ? 1.3 : 1), px = s.x - ux * gap * i + Math.sin(clock * 30 + i * 2) * 2, py = s.y - uy * gap * i + Math.cos(clock * 30 + i * 2) * 2;
         ctx.globalAlpha = q * 0.9; if (i % 2) ctx.drawImage(STAR_LIST[(i + s.lv) % 4], px - r * 2, py - r * 2, r * 4, r * 4); else { ctx.fillStyle = L.LV_COLORS[s.lv - 1]; ctx.beginPath(); ctx.arc(px, py, r, 0, TAU); ctx.fill(); } }
@@ -829,32 +876,34 @@ function render() {
     ctx.globalAlpha = 1 - kk; ctx.save(); ctx.translate(x, y); ctx.rotate(-clock * 10); ctx.drawImage(SWIRL[g.lv - 1], -sz / 2, -sz / 2, sz, sz); ctx.restore();
   }
   ctx.globalAlpha = 1;
-  // 방울에 실려 집으로 돌아가는 괴물
+  // ── 4) 화면 변환: 방울·케이크·커지는 탑·반짝 가루·효과 그림·마법사·부엉이·숫자 ──
+  setScr();
   for (const h of fx.homes) {
-    const t = h.t - h.delay; if (t < 0) { drawMon(h.kind, h.x, h.y, L.MONSTERS[h.kind].w, h.face > 0, true, 0.8); continue; }
-    const W = L.MONSTERS[h.kind].w, rise = t * t * 60 + t * 50, x = h.x + Math.sin(t * 5) * 8 + h.vx * t, y = h.y - rise, a = t < 1.4 ? 1 : Math.max(0, 1 - (t - 1.4) / 0.4);
-    if (y < -60) continue;
+    const hx = SX(h.x, h.y), hy = SY(h.x, h.y), hf = ROT ? 1 : h.face;
+    const t = h.t - h.delay; if (t < 0) { drawMon(h.kind, hx, hy, L.MONSTERS[h.kind].w * VS, hf > 0, true, 0.8); continue; }
+    const W = L.MONSTERS[h.kind].w * VS, rise = t * t * 60 + t * 50, x = hx + Math.sin(t * 5) * 8 + h.vx * t, y = hy - rise, a = t < 1.4 ? 1 : Math.max(0, 1 - (t - 1.4) / 0.4);
+    if (y < -SCR_H()) continue;
     const bs = W * 1.35 * Math.min(1, 0.5 + t * 2.5);
     ctx.globalAlpha = a;
     // 방울을 먼저, 괴물을 위에(방울 그림이 진해도 괴물이 보이게), 반짝 테두리를 한 번 더
     if (ART.bubble) { const bh = bs * aspect("bubble"); ctx.drawImage(ART.bubble, x - bs / 2, y - bh / 2 - 4, bs, bh); } else ctx.drawImage(BUBBLE, x - bs / 2, y - bs / 2 - 4, bs, bs);
-    drawMon(h.kind, x, y, W * 0.7, h.face > 0, false, a);
+    drawMon(h.kind, x, y, W * 0.7, hf > 0, false, a);
     ctx.globalAlpha = a * 0.5; ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(x, y - 4, bs * 0.46, 0, TAU); ctx.stroke(); ctx.globalAlpha = a;
   }
   ctx.globalAlpha = 1;
   // 케이크를 들고 가는 괴물
-  for (const s of fx.steals) { const kk = s.t / 1.4; ctx.globalAlpha = 1 - kk; drawMon(s.kind, s.x + kk * 30, s.y - kk * 10, L.MONSTERS[s.kind].w * 0.8, true, false); cakeIconCtx(s.x + kk * 30, s.y - 34 - kk * 30, 28); }
+  for (const s of fx.steals) { const kk = s.t / 1.4, x = SX(s.x, s.y) + kk * 30, y = SY(s.x, s.y) - kk * 10; ctx.globalAlpha = 1 - kk; drawMon(s.kind, x, y, L.MONSTERS[s.kind].w * 0.8 * VS, true, false); cakeIconCtx(x, y - 34 * VS - kk * 20, 28 * VS); }
   ctx.globalAlpha = 1;
   // 탑이 커지는 순간
   for (const g of fx.grow) {
-    const kk = g.t / 1.2, R = 30 + kk * 90;
-    ctx.globalAlpha = (1 - kk); ctx.drawImage(LV_GLOW[g.lv - 1], g.x - R, g.y - 50 - R, R * 2, R * 2);
-    ctx.strokeStyle = L.LV_COLORS[g.lv - 1]; ctx.lineWidth = 8 * (1 - kk) + 2; ctx.beginPath(); ctx.arc(g.x, g.y - 40, R * 0.8, 0, TAU); ctx.stroke();
-    for (let i = 0; i < 8; i++) { const a = i * TAU / 8 + kk * 2, rr = 20 + kk * 80; ctx.drawImage(STAR_LIST[i % 4], g.x + Math.cos(a) * rr - 10, g.y - 40 + Math.sin(a) * rr - 10, 20, 20); }
+    const kk = g.t / 1.2, R = (30 + kk * 90) * VS, gx = SX(g.x, g.y), gy = SY(g.x, g.y) - 40 * VS;
+    ctx.globalAlpha = (1 - kk); ctx.drawImage(LV_GLOW[g.lv - 1], gx - R, gy - 10 - R, R * 2, R * 2);
+    ctx.strokeStyle = L.LV_COLORS[g.lv - 1]; ctx.lineWidth = 8 * (1 - kk) + 2; ctx.beginPath(); ctx.arc(gx, gy, R * 0.8, 0, TAU); ctx.stroke();
+    for (let i = 0; i < 8; i++) { const a = i * TAU / 8 + kk * 2, rr = (20 + kk * 80) * VS; ctx.drawImage(STAR_LIST[i % 4], gx + Math.cos(a) * rr - 10, gy + Math.sin(a) * rr - 10, 20, 20); }
   }
   ctx.globalAlpha = 1;
   // 반짝 가루
-  for (const s of fx.sparks) { const kk = s.t / 0.5; ctx.globalAlpha = 1 - kk; for (let i = 0; i < 6; i++) { const a = i * TAU / 6 + kk, r = 6 + kk * 34, sz = s.hit ? 22 : 14; ctx.drawImage(s.hit ? STAR.gold : STAR.blue, s.x + Math.cos(a) * r - sz / 2, s.y + Math.sin(a) * r - sz / 2, sz, sz); } }
+  for (const s of fx.sparks) { const kk = s.t / 0.5, px = SX(s.x, s.y), py = SY(s.x, s.y); ctx.globalAlpha = 1 - kk; for (let i = 0; i < 6; i++) { const a = i * TAU / 6 + kk, r = 6 + kk * 34, sz = s.hit ? 22 : 14; ctx.drawImage(s.hit ? STAR.gold : STAR.blue, px + Math.cos(a) * r - sz / 2, py + Math.sin(a) * r - sz / 2, sz, sz); } }
   ctx.globalAlpha = 1;
   for (const f of fxList) if (!f.screen) drawFxItem(f);
   drawWizard();
@@ -862,11 +911,11 @@ function render() {
   // 떠오르는 숫자(수정·케이크)
   ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx.lineJoin = "round";
   for (const n of fx.nums) {
-    const dur = n.small ? 0.8 : 1.6, kk = n.t / dur, y = n.y - (n.small ? 26 : 50) * Math.min(1, kk * 1.6), a = kk < 0.7 ? 1 : (1 - kk) / 0.3, s = n.small ? 16 : 30 * (kk < 0.15 ? 0.6 + kk * 2.7 : 1);
+    const dur = n.small ? 0.8 : 1.6, kk = n.t / dur, nx = SX(n.x, n.y), y = SY(n.x, n.y) - (n.small ? 26 : 50) * Math.min(1, kk * 1.6), a = kk < 0.7 ? 1 : (1 - kk) / 0.3, s = (n.small ? 16 : 30 * (kk < 0.15 ? 0.6 + kk * 2.7 : 1)) * (VS > 1.3 ? 1.15 : 1);
     ctx.globalAlpha = Math.max(0, a);
-    if (n.icon === "cake") cakeIconCtx(n.x - s * 0.5, y, s * 1.2); else gemIconCtx(n.x - s * 0.5, y, s * 1.1);
-    ctx.font = "900 " + Math.round(s) + "px " + FONT; ctx.lineWidth = n.small ? 3 : 6; ctx.strokeStyle = "rgba(40,20,80,.9)"; ctx.strokeText(n.text, n.x + s * 0.2, y + 1);
-    ctx.fillStyle = n.icon === "cake" ? "#ffb3cf" : "#e3c8ff"; ctx.fillText(n.text, n.x + s * 0.2, y + 1);
+    if (n.icon === "cake") cakeIconCtx(nx - s * 0.5, y, s * 1.2); else gemIconCtx(nx - s * 0.5, y, s * 1.1);
+    ctx.font = "900 " + Math.round(s) + "px " + FONT; ctx.lineWidth = n.small ? 3 : 6; ctx.strokeStyle = "rgba(40,20,80,.9)"; ctx.strokeText(n.text, nx + s * 0.2, y + 1);
+    ctx.fillStyle = n.icon === "cake" ? "#ffb3cf" : "#e3c8ff"; ctx.fillText(n.text, nx + s * 0.2, y + 1);
   }
   ctx.globalAlpha = 1;
   // 화면 전체(대마법·번쩍임·글자)
@@ -875,7 +924,7 @@ function render() {
   for (const f of fxList) if (f.screen) drawFxItem(f);
   if (flash > 0) { ctx.fillStyle = "rgba(" + flashCol + "," + Math.min(0.5, flash * 1.6).toFixed(2) + ")"; ctx.fillRect(0, 0, canvas.width, canvas.height); }
   if (bannerT > 0 && mode !== "over") {
-    const by = mode === "cards" || mode === "quiz" ? vh * 0.86 : mapY + (portrait ? L.MAP_H * mapS * 0.5 : L.MAP_H * mapS * 0.16);
+    const by = mode === "cards" || mode === "quiz" ? vh * 0.86 : (portrait ? vh * 0.3 : mapY + L.MAP_H * mapS * 0.16);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     const size = bannerBig ? Math.min(30, Math.max(16, Math.floor(vw * 0.9 / Math.max(1, banner.length) * 1.05))) : Math.min(21, Math.max(14, Math.floor(vw * 0.9 / Math.max(1, banner.length) * 1.05)));
     ctx.globalAlpha = Math.min(1, bannerT * 2); ctx.font = (bannerBig ? "900 " : "800 ") + size + "px " + FONT; ctx.textAlign = "center"; ctx.textBaseline = "middle";
@@ -885,42 +934,56 @@ function render() {
 }
 function cakeIconCtx(x, y, s) { cakeIcon(ctx, x, y, s); }
 function gemIconCtx(x, y, s) { gemIcon(ctx, x, y, s); }
-function drawTower(t) {
-  const lv = t.lv, sp = towerSprite(t.kind, lv, t.branch);
+// 괴물이 화면에서 가는 쪽(세로면 월드와 축이 달라서 화면 x 변화로 정한다)
+const faceMem = new Map();
+function screenFace(e, sx) {
+  if (!ROT) return e.face;
+  const m = faceMem.get(e.id);
+  if (!m) { if (faceMem.size > 300) faceMem.clear(); faceMem.set(e.id, { x: sx, f: -1 }); return -1; }
+  if (Math.abs(sx - m.x) > 0.4) { m.f = sx > m.x ? 1 : -1; m.x = sx; }
+  return m.f;
+}
+// HUD_SAFE(화면 CSS px)보다 위에 보석 칸이 오면 HUD 칩에 가리니 탑 아래쪽에 그린다(resize 에서 폰 52 / 그 밖 64)
+function drawTower(t, x, y) {
+  const lv = t.lv, sp = towerSprite(t.kind, lv, t.branch, mapS * dpr, false);
   // 단계 색 후광(3단계부터, 미리 그린 그림)
-  if (lv >= 3) { const R = 34 + lv * 8 + Math.sin(clock * 3 + t.id) * 4; ctx.globalAlpha = 0.55; ctx.drawImage(LV_GLOW[lv - 1], t.x - R, t.y - 30 - R, R * 2, R * 2); ctx.globalAlpha = 1; }
-  if (world && E.hasteOn(world)) { ctx.globalAlpha = 0.3 + Math.sin(clock * 10) * 0.15; ctx.drawImage(GLOW.gold, t.x - 40, t.y - 60, 80, 80); ctx.globalAlpha = 1; }
+  if (lv >= 3) { const R = (34 + lv * 8 + Math.sin(clock * 3 + t.id) * 4) * VS; ctx.globalAlpha = 0.55; ctx.drawImage(LV_GLOW[lv - 1], x - R, y - 30 * VS - R, R * 2, R * 2); ctx.globalAlpha = 1; }
+  if (world && E.hasteOn(world)) { ctx.globalAlpha = 0.3 + Math.sin(clock * 10) * 0.15; ctx.drawImage(GLOW.gold, x - 40 * VS, y - 60 * VS, 80 * VS, 80 * VS); ctx.globalAlpha = 1; }
   const g = t.grow > 0 ? 1 + Math.sin(t.grow * Math.PI) * 0.35 : 1;
-  if (g !== 1) { ctx.save(); ctx.translate(t.x, t.y); ctx.scale(g, g); ctx.drawImage(sp.c, sp.ox, sp.oy, sp.w, sp.h); ctx.restore(); }
-  else ctx.drawImage(sp.c, t.x + sp.ox, t.y + sp.oy, sp.w, sp.h);
-  if (t.flash > 0) { ctx.globalAlpha = Math.min(0.8, t.flash); ctx.drawImage(GLOW.white, t.x - 46, t.y - 90, 92, 92); ctx.globalAlpha = 1; }
+  if (g !== 1) { ctx.save(); ctx.translate(x, y); ctx.scale(g, g); ctx.drawImage(sp.c, sp.ox, sp.oy, sp.w, sp.h); ctx.restore(); }
+  else ctx.drawImage(sp.c, x + sp.ox, y + sp.oy, sp.w, sp.h);
+  // 보석 칸 ●●●○○: 탑 위. HUD 칩에 가리는 자리면 받침 아래로
+  let gy = y + sp.gemY;
+  if (mapY + gy * mapS < HUD_SAFE) gy = y + 26 * VS;
+  ctx.save(); ctx.translate(x, gy); ctx.scale(VS, VS); gemRow(ctx, lv, 0); ctx.restore();
+  if (t.flash > 0) { ctx.globalAlpha = Math.min(0.8, t.flash); ctx.drawImage(GLOW.white, x - 46 * VS, y - 90 * VS, 92 * VS, 92 * VS); ctx.globalAlpha = 1; }
 }
-function drawMonster(e) {
+function drawMonster(e, ex, ey, face) {
   const M = L.MONSTERS[e.kind], hidden = e.hidden && e.revealT <= 0, bob = M.fly ? Math.sin(e.t * 8) * 4 : Math.abs(Math.sin(e.t * 6)) * -3;
-  const y = M.fly ? e.y + bob - 18 : e.y + M.r * 0.7 + bob, foot = !M.fly;
-  if (!M.fly) { ctx.fillStyle = "rgba(30,20,40,.2)"; ctx.beginPath(); ctx.ellipse(e.x, e.y + M.r * 0.6, M.r, M.r * 0.35, 0, 0, TAU); ctx.fill(); }
+  const y = M.fly ? ey + bob - 18 : ey + M.r * 0.7 + bob, foot = !M.fly;
+  if (!M.fly) { ctx.fillStyle = "rgba(30,20,40,.2)"; ctx.beginPath(); ctx.ellipse(ex, ey + M.r * 0.6, M.r * VS, M.r * 0.35 * VS, 0, 0, TAU); ctx.fill(); }
   const alpha = hidden ? 0.16 : e.kind === "ghost" ? 0.85 : 1;
-  drawMon(e.kind, e.x, y, M.w, e.face > 0, false, alpha, foot);
-  if (e.fl > 0 && !hidden) drawMon(e.kind, e.x, y, M.w, e.face > 0, true, 0.55, foot);
-  const cy = foot ? y - M.w * aspectOf(e.kind) * 0.5 : y;
-  if (e.freezeT > 0) { ctx.globalAlpha = 0.5; ctx.fillStyle = "#cfefff"; ctx.fillRect(e.x - M.w * 0.45, cy - M.w * 0.45, M.w * 0.9, M.w * 0.9); ctx.globalAlpha = 1; }
-  else if (e.slowT > 0) { ctx.fillStyle = "#8fe0ff"; for (let i = 0; i < 3; i++) { const a = clock * 4 + i * 2.1; ctx.beginPath(); ctx.arc(e.x + Math.cos(a) * M.r, e.y + 4 + Math.sin(a) * M.r * 0.3, 3, 0, TAU); ctx.fill(); } }
+  const MW = M.w * VS;
+  drawMon(e.kind, ex, y, MW, face > 0, false, alpha, foot);
+  if (e.fl > 0 && !hidden) drawMon(e.kind, ex, y, MW, face > 0, true, 0.55, foot);
+  const cy = foot ? y - MW * aspectOf(e.kind) * 0.5 : y;
+  if (e.freezeT > 0) { ctx.globalAlpha = 0.5; ctx.fillStyle = "#cfefff"; ctx.fillRect(ex - MW * 0.45, cy - MW * 0.45, MW * 0.9, MW * 0.9); ctx.globalAlpha = 1; }
+  else if (e.slowT > 0) { ctx.fillStyle = "#8fe0ff"; for (let i = 0; i < 3; i++) { const a = clock * 4 + i * 2.1; ctx.beginPath(); ctx.arc(ex + Math.cos(a) * M.r * VS, ey + 4 + Math.sin(a) * M.r * 0.3, 3, 0, TAU); ctx.fill(); } }
   if (e.hp < e.max && !hidden) {
-    const bw = e.kind === "boss" ? 90 : Math.max(26, M.w * 0.6), by = cy - M.w * aspectOf(e.kind) * 0.5 - 10;
-    ctx.fillStyle = "rgba(30,20,60,.6)"; ctx.fillRect(e.x - bw / 2, by, bw, e.kind === "boss" ? 9 : 5);
-    ctx.fillStyle = e.kind === "boss" ? "#ff8fd0" : "#b0f0a0"; ctx.fillRect(e.x - bw / 2, by, bw * Math.max(0, e.hp / e.max), e.kind === "boss" ? 9 : 5);
+    const bw = e.kind === "boss" ? 90 * VS : Math.max(26, MW * 0.6), by = cy - MW * aspectOf(e.kind) * 0.5 - 10;
+    ctx.fillStyle = "rgba(30,20,60,.6)"; ctx.fillRect(ex - bw / 2, by, bw, e.kind === "boss" ? 9 : 5);
+    ctx.fillStyle = e.kind === "boss" ? "#ff8fd0" : "#b0f0a0"; ctx.fillRect(ex - bw / 2, by, bw * Math.max(0, e.hp / e.max), e.kind === "boss" ? 9 : 5);
   }
-}
-function drawWizard() {
+}function drawWizard() {
   const c = world.map.castle, art = L.PILOTS[world.kid].art, up = wandT > 0 ? Math.min(1, wandT) : 0;
-  const x = c.x, y = c.y - 62 - up * 14 + Math.sin(clock * 2) * 1.5;
+  const x = SX(c.x, c.y), y = SY(c.x, c.y) - 62 - up * 14 + Math.sin(clock * 2) * 1.5;
   if (up > 0) { const R = 50 + Math.sin(clock * 12) * 6; ctx.globalAlpha = up; ctx.drawImage(GLOW.purple, x - R, y - R, R * 2, R * 2); ctx.globalAlpha = 1; }
   // 지팡이(대마법 때 높이 든다)
   ctx.strokeStyle = "#7a5638"; ctx.lineWidth = 4; ctx.lineCap = "round";
   const wa = -0.5 - up * 0.9, wx = x + 12, wy = y;
   ctx.beginPath(); ctx.moveTo(wx, wy); ctx.lineTo(wx + Math.cos(wa) * 34, wy + Math.sin(wa) * 34); ctx.stroke();
   ctx.drawImage(up > 0 ? STAR.gold : STAR.pink, wx + Math.cos(wa) * 34 - 11, wy + Math.sin(wa) * 34 - 11, 22, 22);
-  if (ART[art]) { const w = 44, h = w * aspect(art); ctx.drawImage(ART[art], x - w / 2, y - h / 2, w, h); }
+  if (ART[art]) { const w = 44 * VS, h = w * aspect(art); ctx.drawImage(ART[art], x - w / 2, y - h / 2, w, h); }
   else {
     ctx.fillStyle = PILOT_COLOR[world.kid]; ctx.beginPath(); ctx.ellipse(x, y + 8, 14, 16, 0, 0, TAU); ctx.fill();
     ctx.fillStyle = "#ffe0c2"; ctx.beginPath(); ctx.arc(x, y - 6, 10, 0, TAU); ctx.fill();
@@ -930,12 +993,12 @@ function drawWizard() {
 }
 function drawOwl() {
   const o = world.owl; if (!o) return;
-  const p = E.owlPos(o), flap = Math.sin(clock * 9), s = 72;
+  const wp = E.owlPos(o), p = { x: SX(wp.x, wp.y), y: SY(wp.x, wp.y) }, flap = Math.sin(clock * 9), s = Math.max(66 * VS, 76 / mapS);   // 화면에서 최소 76px(누르는 대상)
   const fade = o.life - o.t < 1.5 ? (o.life - o.t) / 1.5 : 1;
   ctx.globalAlpha = fade;
   const R = s * (1.1 + Math.sin(clock * 5) * 0.1);
   ctx.drawImage(GLOW.owl, p.x - R, p.y - R, R * 2, R * 2);
-  if (ART.owl) { const h = s * aspect("owl"); ctx.save(); ctx.translate(p.x, p.y); if (o.dir < 0) ctx.scale(-1, 1); ctx.scale(1, 1 + flap * 0.06); ctx.drawImage(ART.owl, -s / 2, -h / 2, s, h); ctx.restore(); }
+  if (ART.owl) { const h = s * aspect("owl"); ctx.save(); ctx.translate(p.x, p.y); if (o.dir < 0 && !ROT) ctx.scale(-1, 1); ctx.scale(1, 1 + flap * 0.06); ctx.drawImage(ART.owl, -s / 2, -h / 2, s, h); ctx.restore(); }
   else {
     ctx.fillStyle = "#a07850"; ctx.beginPath(); ctx.ellipse(p.x, p.y, 20, 24, 0, 0, TAU); ctx.fill();
     ctx.beginPath(); ctx.moveTo(p.x - 16, p.y - 4); ctx.lineTo(p.x - 44, p.y - 10 - flap * 14); ctx.lineTo(p.x - 18, p.y + 12); ctx.closePath(); ctx.fill();
@@ -953,7 +1016,7 @@ function drawOwl() {
 }
 // 대마법: 성에서 퍼지는 큰 고리 + 화면 가득 별이 소용돌이 + 보랏빛
 function drawStorm(st) {
-  const kk = st.t / st.T, k = mapS * dpr, cx = mapX * dpr + st.x * k, cy = mapY * dpr + st.y * k;
+  const kk = st.t / st.T, k = mapS * dpr, cx = mapX * dpr + SX(st.x, st.y) * k, cy = mapY * dpr + SY(st.x, st.y) * k;
   const W = canvas.width, H = canvas.height, a = kk < 0.15 ? kk / 0.15 : 1 - (kk - 0.15) / 0.85;
   ctx.globalAlpha = Math.max(0, a) * (st.big ? 0.32 : 0.16); ctx.fillStyle = st.big ? "#7a4ad0" : "#a0d8ff"; ctx.fillRect(0, 0, W, H);
   const R = Math.hypot(W, H) * kk * 1.1;
@@ -1075,13 +1138,18 @@ soundBtn.addEventListener("click", () => { soundOn = !soundOn; try { localStorag
 paintSound();
 paintStart();
 addEventListener("resize", resize);
+addEventListener("orientationchange", () => setTimeout(resize, 150));
+if (window.visualViewport) visualViewport.addEventListener("resize", resize);
 resize();
 
 /* ---------- 검증 훅(?qa=1 일 때만) ---------- */
 if (QA) {
-  const tapMapPx = (x, y) => { const r = canvas.getBoundingClientRect(); return { clientX: r.left + mapX + x * mapS, clientY: r.top + mapY + y * mapS }; };
+  const tapMapPx = (x, y) => { const p = toScreen(x, y); return { clientX: p.x, clientY: p.y }; };
   window.__towers = {
     begin, toMenu, pause, unpause, tapAt: (x, y) => (world && mode === "play" ? tapAt(x, y) : null), tapMapPx,
+    // 화면 CSS px 를 누른 것처럼(역변환 확인용)
+    tapClient: (cx, cy) => { if (!world || mode !== "play") return null; const p = toMap(cx, cy); return tapAt(p.x, p.y); },
+    padScreen: i => (world ? toScreen(world.pads[i].x, world.pads[i].y) : null), focusPad: () => focusPad,
     tick: (dt = 1 / 60, n = 1) => { for (let i = 0; i < n && mode === "play"; i++) update(dt); },
     step: (dt = 1 / 60, n = 1) => { for (let i = 0; i < n; i++) { ui(dt); if (mode === "play") update(dt); render(); } },
     get s() { return world ? { mode, t: +world.t.toFixed(2), wave: world.wave, phase: world.phase, cake: world.cake, gems: world.gems, monsters: world.monsters.length, shots: world.shots.length, towers: world.towers.map(t => t.kind + t.lv + (t.branch || "") + "@" + t.pad), owl: !!world.owl, sent: world.sent, solved: world.solved, streak: world.streak, blasts: world.blasts, cards: world.cards, pending: world.pending, over: world.over, rescueUsed: world.rescueUsed, pilot, map: mapId, speed, haste: E.hasteOn(world) } : { mode, pilot, map: mapId }; },
@@ -1100,6 +1168,7 @@ if (QA) {
     guard: () => { if (guard) return { panel: guard.panel.id, armIn: Math.round(guard.armAt - performance.now()) }; const q = GameQuiz && GameQuiz.peek(); return q ? { panel: "quiz", armIn: q.armIn } : null; },
     pick: i => { if (!guard) return false; const b = guard.buttons[i]; if (!b || b.disabled) return false; guard.onPick(b, i); return true; },
     noQuiz: () => { GameQuiz = null; },
+    openCards: (firstTry = true) => { if (world && mode === "play") openCards({ firstTry }); return cardsShown; },
     freeze: (on = true) => { frozen = on; },
     blast: (firstTry = true) => (world ? rewardBlast(firstTry) : null),
     timing: () => ({ update: lastUpdateMs, render: lastRenderMs }),

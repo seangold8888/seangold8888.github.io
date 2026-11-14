@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style id="no-zoom-style">*{touch-action:manipulation}canvas{touch-action:none}</style>
-<script src="../assets/study/play-timer.js?v=3"></script>
+<script src="../assets/study/play-timer.js?v=4"></script>
 <script src="../assets/touch-guard.js?v=1"></script>
 <script id="no-zoom-guard">/* 게임 중 화면이 갑자기 확대되는 것 방지: 핀치·더블탭 줌 차단 */
 (function(){var s=function(e){e.preventDefault()};
@@ -70,7 +70,20 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   }
   #rotate .phone {
     width: 64px; height: 96px; border: 5px solid #ffd34d; border-radius: 13px;
-    transform: rotate(90deg);
+    transform: rotate(90deg); animation: rotphone 2.2s ease-in-out infinite;
+  }
+  @keyframes rotphone { 0%, 20% { transform: rotate(0deg); } 60%, 100% { transform: rotate(90deg); } }
+  #rotate .rot-home {
+    display: inline-flex; align-items: center; justify-content: center; min-height: 52px; min-width: 200px; padding: 0 24px;
+    border-radius: 999px; background: #fff3e0; color: #5b4270; text-decoration: none; font-size: 18px; font-weight: 900; margin-top: 8px;
+  }
+  @media (prefers-reduced-motion: reduce) { #rotate .phone { animation: none; } }
+  /* 폰 가로(세로가 짧은 화면): 음악 버튼을 왼쪽 아래 구석으로 옮겨 아래 도움말과 겹치지 않게 */
+  @media (max-height: 500px) {
+    #bgm { left: calc(10px + env(safe-area-inset-left)); transform: none; bottom: calc(56px + env(safe-area-inset-bottom)); align-items: flex-start; max-width: 260px; }
+    #bgm-name, #bgm-note { display: none; }
+    .bgmbtn:not([hidden]) { min-height: 44px; display: inline-flex; align-items: center; white-space: nowrap; }
+    #bgm .row { flex-wrap: nowrap; }
   }
   @media (orientation: portrait) and (pointer: coarse) { #rotate { display: flex; } }
   @media (orientation: portrait) and (max-width: 760px) { #rotate { display: flex; } }
@@ -80,7 +93,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 <canvas id="game" role="application" aria-label="산리오 친구들과 딸기 초원을 달리는 카트 경주"></canvas>
 <div id="rotate" role="status">
   <div class="phone"></div>
-  <div>화면을 옆으로 돌려 주세요.</div>
+  <div>폰을 옆으로 돌려 주세요</div>
+  <a class="rot-home" href="../game/">← 처음 화면으로</a>
 </div>
 <noscript>이 게임은 자바스크립트가 필요해요.</noscript>
 <button id="sound" type="button" aria-label="소리 끄기">🔊</button>

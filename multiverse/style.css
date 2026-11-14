@@ -148,3 +148,39 @@ h2 { margin: 0; font-size: clamp(22px, 4vw, 32px); }
 .result-prize .i-icon { font-size: 34px; }
 .result-prize .swatch { display: inline-block; width: 34px; height: 34px; border-radius: 10px; }
 @keyframes prize-pop { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* 폰 보정(batch A): 첫 화면 출동 버튼을 스크롤 없이 닿게 하는 아래 고정 막대.
+   왼쪽 아래 10px에는 플레이 타이머 칩(82x30)이 있어서 출동 버튼은 그 오른쪽에 둔다. */
+@media (max-width: 600px) {
+  #home .home-actions { position: sticky; bottom: 0; z-index: 3; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 6px -16px -24px; padding: 18px 16px 10px;
+    background: linear-gradient(180deg, rgba(18,14,44,0) 0, rgba(18,14,44,.94) 22px, #120e2c 100%); }
+  #home .home-actions .big-btn { min-width: 0; min-height: 48px; padding: 8px 6px; font-size: 18px; border-radius: 16px; box-shadow: 0 4px 0 rgba(0,0,0,.35); }
+  #home .home-actions .big-btn.primary { grid-column: 1 / -1; margin-left: 92px; min-height: 56px; font-size: 22px; box-shadow: 0 4px 0 var(--gold-dark); order: 2; }
+  #home .hero-pick { flex-wrap: nowrap; gap: 8px; margin: 6px auto; }
+  #home .hero-card { width: calc((100% - 24px) / 4); padding: 6px 3px 8px; border-radius: 18px; }
+  #home .hero-card img { height: clamp(96px, 30vw, 150px); }
+  #home .hero-card strong { margin-top: 4px; font-size: 18px; }
+  #home .hero-card small { font-size: 13px; }
+  #home .hero-card.is-on { transform: translateY(-3px) scale(1.02); box-shadow: 0 0 0 4px rgba(255,207,74,0.18); }
+  #home .buddy-chip { padding: 4px 12px 4px 4px; font-size: 16px; }
+  #home .buddy-note { font-size: 15px; margin: 4px 0; }
+}
+/* 폰 가로(키 낮음): 영웅 카드 한 줄 + 작은 제목, 한 줄짜리 아래 막대 */
+@media (max-height: 500px) {
+  #home { padding-top: max(10px, env(safe-area-inset-top)); }
+  #home h1 { margin: 8px 0 2px; font-size: 24px; }
+  #home h1 br { display: none; }
+  #home .lead { margin: 2px 0 6px; font-size: 16px; }
+  #home .hero-pick { flex-wrap: nowrap; gap: 8px; margin: 4px auto; }
+  #home .hero-card { width: calc((100% - 24px) / 4); max-width: 150px; padding: 5px 4px 6px; border-radius: 16px; }
+  #home .hero-card img { height: clamp(80px, 26vh, 110px); }
+  #home .hero-card strong { margin-top: 2px; font-size: 17px; }
+  #home .hero-card small { font-size: 13px; }
+  #home .hero-card.is-on { transform: translateY(-2px) scale(1.02); }
+  #home .buddy-note { font-size: 15px; margin: 4px 0; }
+  #home .home-actions { position: sticky; bottom: 0; z-index: 3; display: flex; flex-wrap: nowrap; gap: 8px; margin: 6px -16px -24px; padding: 14px 16px 8px 100px;
+    background: linear-gradient(180deg, rgba(18,14,44,0) 0, rgba(18,14,44,.94) 14px, #120e2c 100%); }
+  #home .home-actions .big-btn { flex: 1 1 0; min-width: 0; min-height: 48px; padding: 6px 8px; font-size: 17px; border-radius: 14px; box-shadow: 0 4px 0 rgba(0,0,0,.35); }
+  #home .home-actions .big-btn.primary { flex: 1.5 1 0; order: 3; margin-left: 0; font-size: 20px; box-shadow: 0 4px 0 var(--gold-dark); }
+  #home .home-actions .big-btn { grid-column: auto; }
+}

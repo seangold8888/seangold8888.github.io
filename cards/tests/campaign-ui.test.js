@@ -142,7 +142,7 @@ test("S2 module and styles are cached exactly once and load before the app",()=>
   const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
   const sw=require("../../sw.js");
   for(const name of ["campaign.css","js/campaign.js","js/boss-stage.js","js/campaign-ui.js"]){
-    const version=name==="js/campaign.js"?70:name==="js/boss-stage.js"?1:72;
+    const version=name==="js/campaign.js"?70:name==="js/boss-stage.js"?1:name==="campaign.css"?73:72;
     assert.equal(sw.CORE_SHELL.filter(item=>item==="./cards/"+name+"?v="+version).length,1);
     assert.ok(html.indexOf(name+"?v="+version)<html.indexOf("js/app.js?v=76"));
   }

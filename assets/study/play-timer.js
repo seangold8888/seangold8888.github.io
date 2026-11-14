@@ -80,10 +80,12 @@
 
   var style = document.createElement("style");
   style.textContent =
-    ".hub-play-chip{position:fixed;left:10px;bottom:10px;z-index:2147483600;padding:6px 11px;border-radius:999px;" +
+    ".hub-play-chip{position:fixed;left:max(10px,env(safe-area-inset-left));bottom:max(10px,env(safe-area-inset-bottom));z-index:2147483600;padding:6px 11px;border-radius:999px;" +
     "background:rgba(20,16,48,.78);color:#fff;font:700 15px/1.2 system-ui,-apple-system,sans-serif;pointer-events:none;" +
     "box-shadow:0 4px 14px rgba(0,0,0,.35);letter-spacing:.02em}" +
     ".hub-play-chip.is-warn{background:rgba(214,120,0,.92)}" +
+    "@media (max-width:500px),(max-height:500px){.hub-play-chip{padding:3px 8px;font-size:11px;line-height:1.2;opacity:.85}" +
+    ".hub-play-chip.is-warn{opacity:1}}" +
     ".hub-play-over{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;" +
     "background:rgba(10,8,30,.86);font-family:system-ui,-apple-system,sans-serif;padding:24px}" +
     ".hub-play-over .box{max-width:420px;width:100%;background:#fff8e8;color:#2a2140;border-radius:22px;padding:26px 22px;text-align:center;" +

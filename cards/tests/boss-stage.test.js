@@ -98,7 +98,7 @@ test("boss stage is wired into the expedition battle flow and loaded before the 
   assert.ok(html.indexOf("js/boss-stage.js?v=1") > html.indexOf("js/campaign.js?v="));
   assert.ok(html.indexOf("js/boss-stage.js?v=1") < html.indexOf("js/campaign-ui.js?v=72"));
   assert.ok(html.indexOf("js/campaign-ui.js?v=72") < html.indexOf("js/app.js?v=76"));
-  assert.match(html, /campaign\.css\?v=72/);
+  assert.match(html, /campaign\.css\?v=73/);
   // 등장 장면 동안 행동을 막고, 끝나면 같은 대결일 때만 턴을 돌려준다.
   assert.match(app, /if \(expedition && expedition\.boss\) \{[\s\S]*?busy = true;[\s\S]*?bossStage\.begin\([\s\S]*?session !== battleSession[\s\S]*?busy = false;/);
   assert.match(app, /if \(bossStage\) bossStage\.reset\(\);\s*battleSession \+= 1;/);

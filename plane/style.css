@@ -26,7 +26,7 @@ html, body { height: 100%; margin: 0; overflow: hidden; background: #101a47; col
 .best { font-size: 14px !important; color: #9fb0ee !important; }
 
 /* 갈림길은 화면 위쪽에 띄운다: 비행기를 끄는 손가락은 아래쪽에 있다. (수학 문제 패널은 공통 모듈 assets/study/game-quiz.js 가 그린다) */
-#fork { top: calc(62px + env(safe-area-inset-top)); transform: translateX(-50%); max-height: calc(100vh - 80px); background: rgba(12,18,58,.96); }
+#fork { top: calc(62px + env(safe-area-inset-top)); transform: translateX(-50%); max-height: calc(100vh - 80px); max-height: calc(100dvh - 80px); background: rgba(12,18,58,.96); }
 /* 막 떴을 때 잠깐 잠긴 버튼: 흐리게 보이다가 풀린다 */
 .forks button { transition: opacity .2s, filter .2s; }
 .panel.locked .forks button { opacity: .35; filter: grayscale(.5); }
@@ -54,4 +54,24 @@ html, body { height: 100%; margin: 0; overflow: hidden; background: #101a47; col
 .trail i { display: block; font-style: normal; font-size: 20px; }
 .trail[aria-pressed="true"] { border-color: #ffd95a; background: rgba(255,217,90,.22); }
 .trail:disabled { opacity: .45; }
-.panel { max-height: calc(100vh - 24px); overflow-y: auto; }
+.panel { max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); overflow-y: auto; }
+/* 폰 보정: 소리 버튼 44폭, 꼬리 버튼 6개가 360px에서도 44px 이상 */
+@media (max-width: 520px), (max-height: 500px) { #sound { min-width: 44px; justify-content: center; padding: 0; } }
+@media (max-width: 400px) { .trails { gap: 3px; } .trail { font-size: 12px; } }
+/* 폰 가로(키 낮음): 왼쪽=고르기, 오른쪽=큰 출발 버튼이 항상 보이게 2단 */
+@media (max-height: 500px) {
+  #start:not([hidden]) { width: min(94vw, 760px); padding: 12px 16px; border-radius: 20px;
+    display: grid; grid-template-columns: minmax(0, 1fr) clamp(150px, 26vw, 220px); column-gap: 16px; text-align: center; align-content: center; }
+  #start > * { grid-column: 1; }
+  #start h1 { font-size: 26px; margin: 0 0 2px; }
+  #start p { margin: 2px 0; font-size: 14px; line-height: 1.35; }
+  #start .pick { margin-top: 6px !important; font-size: 14px !important; }
+  #start .pilots { gap: 6px; margin-top: 2px; }
+  #start .pilot { padding: 4px 2px 3px; border-radius: 14px; font-size: 14px; }
+  #start .pilot img { max-width: 44px; margin-bottom: 0; }
+  #start .trails { margin-top: 2px; }
+  #start .trail { min-height: 46px; padding: 2px 0; }
+  #start .trail i { font-size: 18px; }
+  #start .go { grid-column: 2; grid-row: 1 / span 6; align-self: center; margin: 0; min-height: 110px; height: 60%; font-size: 26px; }
+  #start .best { grid-column: 2; grid-row: 7; align-self: start; }
+}

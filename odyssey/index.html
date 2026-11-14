@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style id="no-zoom-style">*{touch-action:manipulation}canvas{touch-action:none}</style>
-<script src="../assets/study/play-timer.js?v=3"></script>
+<script src="../assets/study/play-timer.js?v=4"></script>
 <script src="../assets/touch-guard.js?v=1"></script>
 <script src="../math/curriculum.js?v=21"></script>
 <script src="../math/learning.js?v=30"></script>
@@ -100,8 +100,14 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       color: #d9cdf1;
     }
     @keyframes breathe {
-      0%, 100% { transform: rotate(90deg) scale(1); }
-      50% { transform: rotate(90deg) scale(1.06); }
+      0%, 20% { transform: rotate(0deg) scale(1); }
+      60%, 100% { transform: rotate(90deg) scale(1); }
+    }
+    #rotate .rot-home {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-height: 52px; min-width: 200px; padding: 0 24px; margin-top: 6px;
+      border-radius: 999px; background: #fff8df; color: #433b70;
+      font-size: 18px; font-weight: 900; text-decoration: none;
     }
     /* 터치 기기는 크기와 상관없이(아이패드 포함) 세로일 때 회전 안내 */
     @media (orientation: portrait) and (pointer: coarse) {
@@ -126,8 +132,9 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   <p id="game-status" class="sr-only" aria-live="polite"></p>
   <div id="rotate" role="status" aria-live="polite">
     <div class="phone"></div>
-    <div>화면을 옆으로 돌려 주세요.</div>
+    <div>폰을 옆으로 돌려 주세요</div>
     <small>걱정 마세요. 모험은 잠시 멈춰요.</small>
+    <a class="rot-home" href="../game/">← 처음 화면으로</a>
   </div>
   <noscript>이 게임은 자바스크립트가 필요해요.</noscript>
   <script src="../assets/bgm/bgm-player.js?v=66"></script>
@@ -1565,6 +1572,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   let cssW = W;
   let cssH = H;
   let portraitQuery = null;
+  let safeProbe = null;
   let resumeAudioAfterViewport = false;
   let resumeAudioAfterHidden = false;
   let resumeAudioAfterFocus = false;
@@ -1604,10 +1612,23 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     canvas.height = Math.round(cssH * dpr);
     canvas.style.width = cssW + 'px';
     canvas.style.height = cssH + 'px';
-    scale = Math.min(cssW / W, cssH / H);
-    offX = (cssW - W * scale) * 0.5;
-    offY = (cssH - H * scale) * 0.5;
-    E.viewport = { cssW, cssH, dpr, scale, offX, offY };
+    // 노치·홈 바 안전 영역(env(safe-area-inset-*))만큼 안쪽에 게임 화면(HUD·터치 버튼 포함)을 둔다.
+    // 안전 영역이 0인 기기(아이패드 등)에서는 예전과 완전히 같은 값이 나온다.
+    if (!safeProbe) {
+      safeProbe = document.createElement('div');
+      safeProbe.setAttribute('aria-hidden', 'true');
+      safeProbe.style.cssText = 'position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;' +
+        'padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)';
+      document.body.appendChild(safeProbe);
+    }
+    const sp = window.getComputedStyle(safeProbe);
+    const insT = parseFloat(sp.paddingTop) || 0, insR = parseFloat(sp.paddingRight) || 0;
+    const insB = parseFloat(sp.paddingBottom) || 0, insL = parseFloat(sp.paddingLeft) || 0;
+    const availW = Math.max(1, cssW - insL - insR), availH = Math.max(1, cssH - insT - insB);
+    scale = Math.min(availW / W, availH / H);
+    offX = insL + (availW - W * scale) * 0.5;
+    offY = insT + (availH - H * scale) * 0.5;
+    E.viewport = { cssW, cssH, dpr, scale, offX, offY, insetTop: insT, insetRight: insR, insetBottom: insB, insetLeft: insL };
     // 일부 브라우저(특히 에뮬레이션·iPadOS 분할화면)는 matchMedia change를
     // 건너뛰기도 하므로 크기 변화 때마다 세로 차단 상태를 다시 평가한다.
     syncViewportBlock();

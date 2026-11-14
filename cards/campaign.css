@@ -293,3 +293,8 @@
   .boss-hp.is-hurt, .boss-hp .boss-hp-fill, .arena.is-boss-slam, .arena.is-boss-rage .enemy-combatant::before, .arena.is-boss-rage .enemy-combatant::after, .boss-banner, .boss-defeat, .boss-defeat-stamp { animation: none; }
   .boss-defeat-spark { display: none; }
 }
+
+/* phone fixes 2026-11-14 */
+@media (max-width: 500px), (max-height: 500px) {
+  .adventure-copy .eyebrow, .adventure-hint, .adventure-portraits figcaption, .card-browse > summary small, .expedition-world-copy small, .expedition-card-hint, .expedition-family-portrait figcaption, .expedition-battle-label, .expedition-opponent-chip, .expedition-card-copy, .expedition-card-badge, .expedition-target p, .expedition-candidates .expedition-card-copy, .expedition-candidates .expedition-card-badge, .expedition-candidates .expedition-card-hint, .boss-hp-head, .boss-shelf-name, .boss-shelf-crowns { font-size: 13px; }
+}

@@ -29,6 +29,7 @@ html {
 
 body {
   min-height: 100vh;
+  min-height: 100dvh;
   margin: 0;
   color: #fff;
   background:
@@ -753,6 +754,7 @@ main {
 
 .battle-screen {
   min-height: calc(100vh - var(--topbar-h));
+  min-height: calc(100dvh - var(--topbar-h));
   padding-top: 18px;
 }
 
@@ -5266,4 +5268,13 @@ dialog p:not(.kicker) {
   .collection-availability { flex-basis: 100%; }
   .collection-availability button { font-size: 13px; }
   #collectionGrid .collection-state-badge { font-size: 11px; padding: 6px 8px; }
+}
+
+/* phone fixes 2026-11-14: 폰(가로 500px 이하 또는 세로 500px 이하)에서 읽는 글자는 13px 이상.
+   일부러 남긴 장식 마이크로 라벨: .hp-gem span/i(체력 8px), .stat-label, .element-rune, .frame-crest,
+   .rarity, .type-chip, .total-value, .enemy-intent-badge, #collectionGrid .collection-tier small */
+@media (max-width: 500px), (max-height: 500px) {
+  .card-story, .passive-row strong, .passive-row small, .attack-copy strong, .attack-copy small, .attack-numbers b, .combat-label, .fragment-title small, .fragment-name, .fragment-preview, .fragment-empty, .action-button small, .selected-copy span, .collection-only-badge, .music-button small, .enemy-intent-copy small, .enemy-intent-copy strong, .enemy-intent-copy > span, .story-gate-copy small, .story-gate-copy strong, .story-gate-button, .story-quiz-result, .collection-title .eyebrow, .collection-guide p span, .combat-fact > span, .card-history small, .collection-toolbar .collection-status, .collection-toolbar .story-link, .in-battle .fragment-title, .in-battle .fragment-preview, .in-battle .action-button small, .in-battle .action-list.is-scrollable .action-button small, .in-battle .action-list.is-scrollable .action-button .action-cost, .collection-filter-status, #collectionGrid .collection-state-badge { font-size: 13px; }
+  .card-browse > summary { min-height: 44px; }
+  .music-button small { font-size: 13px; }
 }

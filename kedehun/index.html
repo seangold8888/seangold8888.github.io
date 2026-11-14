@@ -8,7 +8,7 @@
 <link rel="preload" as="image" href="art/characters/mira-v2.webp?v=28">
 <link rel="preload" as="image" href="art/characters/joy-v2.webp?v=28">
 <style id="no-zoom-style">*{touch-action:manipulation}canvas{touch-action:none}</style>
-<script src="../assets/study/play-timer.js?v=3"></script>
+<script src="../assets/study/play-timer.js?v=4"></script>
 <script src="../math/curriculum.js?v=21"></script>
 <script src="../math/learning.js?v=30"></script>
 <script src="../math/store.js?v=34"></script>
@@ -95,8 +95,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 .guardian-card:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
 .photo-tools { display: flex; gap: 6px; margin-top: 8px; grid-column: 1 / -1; }
 .photo-btn {
-  font: inherit; font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
-  padding: 4px 10px; border-radius: 999px; cursor: pointer;
+  font: inherit; font-size: 14px; font-weight: 700; letter-spacing: 0.04em;
+  min-width: 88px; min-height: 44px; padding: 4px 14px; border-radius: 999px; cursor: pointer;
   color: var(--text); background: #ffffff14; border: 1px solid #ffffff2e;
 }
 .photo-btn:hover { background: #ffffff24; }
@@ -217,6 +217,34 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 
 @media (prefers-reduced-motion: reduce) {
   .guardian-card.selected .character-portrait-art { filter: none; }
+}
+
+/* 폰 보정(batch A): 작은 글씨 키우기 + 가로 화면에서 가디언 4명·출격 버튼 닿게 */
+@media (max-width: 600px), (max-height: 500px) {
+  .eyebrow { font-size: 13px; letter-spacing: .1em; }
+  .guardian-role { font-size: 13px; letter-spacing: .08em; }
+  .guardian-skill { font-size: 13px; }
+}
+/* 폰 가로(키 낮음): 시작 화면을 압축하고 출격 버튼은 카드 아래에 항상 붙인다 */
+@media (max-height: 500px) {
+  .eyebrow, .photo-hint, .control-summary { display: none; }
+  .start-card { padding: 10px 18px 0; }
+  .game-title { font-size: 30px; line-height: 1; }
+  .game-title span { margin-top: 4px; font-size: 14px; }
+  .start-header { margin-bottom: 8px; }
+  .guardian-grid { gap: 8px; }
+  .guardian-card { padding: 8px; }
+  .guardian-card-content { grid-template-columns: 48px minmax(0, 1fr); gap: 8px; }
+  .guardian-portrait { width: 46px; height: 52px; font-size: 20px; }
+  .guardian-card .stat-list { display: none; }
+  .guardian-option > .photo-tools { margin-top: 4px; }
+  .demon-dossier { margin-top: 8px; }
+  .start-actions { position: sticky; bottom: 0; z-index: 2; margin-top: 8px; padding: 8px 0 10px; background: linear-gradient(180deg, #08061e00, #08061ef7 14px); }
+}
+/* 폰 세로: 카드 3장이 길어서 출격 버튼도 아래에 붙인다 */
+@media (max-width: 500px) {
+  .control-summary { display: none; }
+  .start-actions { position: sticky; bottom: 0; z-index: 2; margin-top: 10px; padding: 8px 0 4px; background: linear-gradient(180deg, #08061e00, #08061ef7 14px); }
 }
 </style>
 <link rel="stylesheet" href="combat-v2.css?v=1">

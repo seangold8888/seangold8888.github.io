@@ -9,3 +9,6 @@
 #actionHeading{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
 #resultDialog{max-height:calc(100dvh - 24px);overflow-y:auto;overscroll-behavior:contain}
 @media(max-width:500px){.tactics-badge{flex-basis:110px}.tactics-collection{padding:10px}.tactics-result{margin:10px 0}}
+
+/* phone fixes 2026-11-14 */
+@media(max-width:500px),(max-height:500px){.tactics-badge small,.tactics-result>small{font-size:13px}.tactics-collection>summary{min-height:44px;padding-block:10px;box-sizing:border-box}}

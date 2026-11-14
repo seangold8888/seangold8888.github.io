@@ -91,3 +91,39 @@ body:has(#menu[style*="flex"]) #sound { top:27px; right:32px; left:auto; width:4
   #menu-list.cups { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
 @media (prefers-reduced-motion:reduce) { #menu-hero { animation:none; }#menu-list .card { transition:none; } }
+
+/* ---- phone fixes (2026-11-14): 작은 화면 전용. 아이패드(>=700 wide, >500 high)는 그대로 ---- */
+@media (max-width:699px) {
+  #menu-hero { width:100%; max-width:100%; }
+}
+@media (max-width:699px), (max-height:500px) {
+  .lobby-home { min-height:44px; display:inline-flex; align-items:center; }
+  #garage-open { min-height:44px; }
+  #menu-back, .lobby-settings summary { min-height:44px; display:inline-flex; align-items:center; }
+  .lobby-brand small { font-size:13px; }
+  body:has(#menu[style*="flex"]) #sound { width:44px; height:44px; top:12px; right:12px; }
+  .lobby-home { margin-right:56px; }
+}
+/* 폰 가로(세로 500px 이하): 로비 전체가 스크롤되고, 출발 버튼은 아래에 붙어 항상 보인다 */
+@media (max-height:500px) and (min-width:700px) {
+  #menu { overflow-y:auto; overflow-x:hidden; padding:8px 16px 0; -webkit-overflow-scrolling:touch; }
+  .lobby-header { padding-bottom:6px; }
+  .lobby-main { flex:none; min-height:auto; gap:12px; }
+  .lobby-stage { padding:10px 14px; min-height:150px; }
+  .stage-photo { flex:none; height:140px; }
+  .stage-heading { font-size:14px; margin-top:6px; }
+  #hero-name { font-size:24px; }
+  .stage-sticker { font-size:13px; padding:3px 8px; }
+  .lobby-picker { min-height:0; }
+  #menu-list { overflow:visible; flex:none; gap:6px; padding:3px 3px 8px; }
+  #menu-list .card img { height:48px; }
+  #menu-list .card small, #menu-list.modes .card small { font-size:13px; }
+  #menu-list.cups .card img { height:56px; }
+  .lobby-steps li { font-size:13px; }
+  .picker-note { font-size:13px; }
+  .picker-actions { position:sticky; bottom:0; z-index:3; padding:8px 0; background:#f8f6ec; }
+  #menu-next { min-height:48px; padding:6px 12px; font-size:19px; }
+  .lobby-footer { padding:8px 0 14px; }
+  .lobby-footer .ghost { min-height:44px; }
+  #menu-hint { display:none; }
+}
