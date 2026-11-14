@@ -260,6 +260,7 @@ body.hunting nav button b{font-size:16px}
     <div class="grid" id="grid"></div>
     <div class="bar">
       <span id="count" style="font-weight:700">0 items</span>
+      <button class="ghost" id="example" hidden>Show an example</button>
       <button class="primary" id="send">Send the list to him</button>
     </div>
     <div class="box" id="sendbox" hidden>
@@ -547,6 +548,9 @@ const DATA={
 "t1",
 "t6"
 ],
+"exampleShades": {
+"t1": "03"
+},
 "products": [
 {
 "id": "m1",
@@ -913,7 +917,7 @@ const DATA={
 "plain": "Foundation compact with a sponge puff",
 "shelfKo": "베이스메이크업",
 "shelfEn": "Base makeup",
-"alike": "**롱웨어** (Long-wear) and **커버 레이어** (Cover layer) cost the same. Buy the plain one, in her shade.",
+"alike": "**롱웨어** (Long-wear) and **커버 레이어** (Cover layer) cost the same. Buy the plain one.",
 "sub": {
 "id": "t3",
 "why": "Another top cushion compact (same shade number problem)"
@@ -1005,7 +1009,7 @@ const DATA={
 "plain": "Glossy long-lasting lip colour",
 "shelfKo": "립메이크업",
 "shelfEn": "Lip makeup",
-"alike": "**블러 퍼지** (Blur Fudge) tint is matte. Juicy is the shiny one. Get her shade number.",
+"alike": "**블러 퍼지** (Blur Fudge) tint is matte. Juicy is the shiny one.",
 "sub": {
 "id": "t2",
 "why": "Other best-selling shiny tint"
@@ -1048,7 +1052,7 @@ const DATA={
 "plain": "Shiny sheer lip colour",
 "shelfKo": "립메이크업",
 "shelfEn": "Lip makeup",
-"alike": "**블러** (Blur) tints are matte. Buy **글로이** (Glowy). Get her shade number.",
+"alike": "**블러** (Blur) tints are matte. Buy **글로이** (Glowy).",
 "sub": {
 "id": "t1",
 "why": "Other best-selling shiny tint"
@@ -1089,7 +1093,7 @@ const DATA={
 "plain": "Full-coverage foundation compact",
 "shelfKo": "베이스메이크업",
 "shelfEn": "Base makeup",
-"alike": "Several versions sit together. Check the name on the box, and get her shade number.",
+"alike": "Several versions sit together. Check the name on the box.",
 "sub": {
 "id": "m9",
 "why": "Other top cushion compact"
@@ -1140,7 +1144,7 @@ const DATA={
 "plain": "Eyeshadow set, soft pink and brown shades",
 "shelfKo": "아이메이크업",
 "shelfEn": "Eye makeup",
-"alike": "The **믹스** (Mix) palette looks similar. Check the name and the shade number.",
+"alike": "The **믹스** (Mix) palette looks similar. Check the name on the cover.",
 "sub": {
 "en": "rom&nd Better Than Palette",
 "ko": "롬앤 베러 댄 팔레트",
@@ -1191,7 +1195,7 @@ const DATA={
 "plain": "Soft colour pot for lips and cheeks",
 "shelfKo": "립메이크업/치크",
 "shelfEn": "Lip/Cheek) (uncertain",
-"alike": "Special collab boxes hold the same product, so those are fine. Get her shade number.",
+"alike": "Special collab boxes hold the same product, so those are fine.",
 "sub": {
 "en": "rom&nd Better Than Cheek",
 "ko": "롬앤 베러 댄 치크",
@@ -1908,6 +1912,7 @@ function renderPick(){
   document.querySelectorAll(".who button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.who===who));
   $("#grid").innerHTML=P.filter(p=>p.who===who).map(card).join("");
   $("#count").textContent=list.size+(list.size===1?" item":" items")+" on the list";
+  $("#example").hidden=list.size>0;
 }
 const codeOf=(l,sh)=>"list-"+P.filter(p=>l.has(p.id)).map(p=>p.id+(p.shade&&sh[p.id]?"s"+sh[p.id].replace(/[^a-z0-9]/gi,"").toUpperCase():"")).join("-");
 const code=()=>codeOf(list,shades);
@@ -1934,7 +1939,7 @@ function renderShop(){
   const it=items(), el=$("#shopMain");
   document.body.classList.toggle("hunting",!!it.length);
   $("#codebox").open=!it.length;
-  if(!it.length){el.innerHTML='<p class="box empty">No treasure map yet. Paste her code below, or pick items in step 1.</p>';return;}
+  if(!it.length){el.innerHTML='<div class="box empty"><p>No treasure map yet. Paste her code below, or pick items in step 1.</p><button class="ghost" data-example="shop">Try an example hunt</button></div>';return;}
   cur=Math.min(Math.max(cur,0),it.length-1);
   const score=it.reduce((s,p)=>s+pts(p.id),0), max=it.length*125, nDone=it.filter(p=>isDone(p.id)).length;
   const hud=`<div class="hud">
@@ -1950,7 +1955,7 @@ function renderShop(){
       <button class="ghost" id="startQuiet">Start without music</button></div>`;
     return;
   }
-  if(nDone===it.length){ el.innerHTML=hud+winHTML(it,score,max)+listHTML(it); return; }
+  if(nDone===it.length){ el.innerHTML=hud+winHTML(it,score,max)+`<details class="box"><summary>Whole list (${it.length})</summary>${listHTML(it)}</details>`; return; }
   const p=it[cur], g=got.has(p.id), a=alt.has(p.id), o=out.has(p.id)&&!isDone(p.id), sb=subOf(p), c=cmp(p), sh=shades[p.id];
   el.innerHTML=hud+`
    <article class="big hunt ${p.who} ${isDone(p.id)?"got":""}">
@@ -1975,15 +1980,15 @@ function renderShop(){
          <button class="soldb" data-out="${p.id}">Sold out</button></div>`}
      ${c?`<span class="note">About ${won(c.kr)}</span>`:""}
    </article>
-   <details class="box"><summary>Whole list (${it.length})</summary>${listHTML(it,true)}</details>`;
+   <details class="box"><summary>Whole list (${it.length})</summary>${listHTML(it)}</details>`;
 }
-function listHTML(it,noTotals){
+function listHTML(it){
   return `<div class="list" aria-label="Whole list">${it.map((x,i)=>`
      <button class="row ${x.who} ${got.has(x.id)||alt.has(x.id)?"got":""} ${out.has(x.id)&&!isDone(x.id)?"out":""}" data-jump="${i}">
        <span class="stripe"></span>${pack(x.pkg,30,x.kind)}
        <span style="min-width:0"><span class="rn"><b>${esc(x.kind)}</b> · ${esc(x.brand)}${shades[x.id]?` · shade ${esc(shades[x.id])}`:""}</span><br><span class="ko note">${esc(x.ko)}</span></span>
        <span class="st">${got.has(x.id)?"✓ Found":alt.has(x.id)?"✓ Plan B":skip.has(x.id)?"Skipped":out.has(x.id)?"Sold out":""}</span>
-     </button>`).join("")}</div>${noTotals?"":totalsHTML(it)}`;
+     </button>`).join("")}</div>`;
 }
 function winHTML(it,score,max){
   const mins=t0?Math.max(1,Math.round((Date.now()-t0)/60000)):null, krGot=it.filter(p=>got.has(p.id)).reduce((s,p)=>s+(p.price.KR||0),0);
@@ -1995,19 +2000,6 @@ function winHTML(it,score,max){
     <div class="boss"><span class="eyebrow">Final boss: the till</span><p>Hand over your <b>real passport before you pay</b>. Under ₩1,000,000 on one receipt, the tax comes off right there.</p>
     <button class="primary" data-go="tax" data-amt="${krGot}">How much tax do I get back? →</button></div>
     <button class="ghost" id="replay">Play this list again</button></div>`;
-}
-function totalsHTML(it){
-  const pr=it.filter(p=>{const c=cmp(p);return c&&c.home!=null&&!c.diff});
-  const kr=pr.reduce((s,p)=>s+p.price.KR,0), home=pr.reduce((s,p)=>s+p.price[C],0), krAll=it.reduce((s,p)=>s+(p.price.KR||0),0);
-  const unv=pr.some(p=>cmp(p).unv), sv=home-toLocal(kr);
-  return `<div class="box"><h3>What this list saves you</h3><div class="totals">
-    <span>Whole list in Seoul (full price)</span><span>${won(krAll)} ≈ ${money(toLocal(krAll))}</span>
-    <span>Items we could compare</span><span>${pr.length} of ${it.length}</span>
-    <span>Those items in the ${D.fx[C].name}</span><span>${money(home)}${unv?'<span class="unv">*</span>':""}</span>
-    <span>Same items in Seoul</span><span>${money(toLocal(kr))}</span>
-    <span><b>${sv>=0?"You save":"Seoul costs more by"}</b></span><span class="bigsave" ${sv<0?'style="color:var(--warn)"':""}>${money(Math.abs(sv))}</span>
-    </div><p class="note">Seoul full price before sales and before the tax refund, so the real saving is usually bigger. ${unv?'<span class="unv">*</span> = includes a price from one source only.':""}</p>
-    <button class="ghost" data-go="tax" data-amt="${krAll}">Work out the tax back on ${won(krAll)} →</button></div>`;
 }
 function toast(txt){const t=$("#toast");t.textContent=txt;t.hidden=false;t.classList.remove("pop");void t.offsetWidth;t.classList.add("pop");clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,1700);}
 function nextOpen(){const it=items();const n=it.findIndex((x,i)=>i>cur&&!isDone(x.id));const m=n>=0?n:it.findIndex(x=>!isDone(x.id));if(m>=0)cur=m;}
@@ -2174,6 +2166,7 @@ document.addEventListener("click",e=>{
   else if(d.go){ if(d.amt){$("#taxAmt").value=(+d.amt).toLocaleString("en-US");} go(d.go); window.scrollTo({top:0}); }
   else if(d.amt){$("#taxAmt").value=(+d.amt).toLocaleString("en-US");renderTax();}
   else if(t.id==="close") closeStaff();
+  else if(t.id==="example"||d.example){list=new Set(D.example);shades=Object.assign({},D.exampleShades);resetHunt();save();if(d.example)renderShop();else renderPick();}
   else if(t.id==="startHunt"||t.id==="startQuiet"){t0=Date.now();save();if(t.id==="startHunt")Music.start();renderShop();window.scrollTo({top:0});}
   else if(t.id==="musicBtn"){Music.toggle();renderShop();}
   else if(t.id==="replay"){resetHunt();save();renderShop();}
@@ -2221,7 +2214,7 @@ function loadProgress(){got=new Set(load("got")||[]);out=new Set(load("out")||[]
 function openList(s){const same=load("code")===codeOf(s,s.shades);list=s;shades=s.shades;if(same)loadProgress();else resetHunt();save();}
 const fromHash=parse(location.hash);
 if(fromHash&&fromHash.size) openList(fromHash);
-else{const l=load("list");list=new Set(Array.isArray(l)&&l.length?l.filter(id=>P.some(p=>p.id===id)):D.example);shades=load("shades")||{};loadProgress();}
+else{const l=load("list");list=new Set(Array.isArray(l)&&l.length?l.filter(id=>P.some(p=>p.id===id)):[]);shades=load("shades")||{};loadProgress();}
 renderFoot();
 const h=location.hash.slice(1);
 go(fromHash&&fromHash.size?"shop":(["pick","shop","tax","stores"].includes(h)?h:"pick"));
