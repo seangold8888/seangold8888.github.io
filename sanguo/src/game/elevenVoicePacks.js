@@ -1,16 +1,20 @@
 // Local ElevenLabs recordings only: the game never calls a paid API.
 // Catchphrases stay intact; named techniques may have their own performance.
-import { FAMILY_SKILL_MAP, familySkillLines } from '../../../assets/audio/family-skill-voices.js?v=3';
+import { FAMILY_SKILL_MAP, familySkillLines } from '../../../assets/audio/family-skill-voices.js?v=4';
 // Actions with several lines keep them all; playback picks among them without repeating.
 const skillPack = hero => Object.freeze(Object.fromEntries(Object.keys(FAMILY_SKILL_MAP[hero]).map(action => [action, Object.freeze(familySkillLines(hero, action).map(line => line.file.replace(/^sanguo\//, '')))])));
-const familyPack = file => Object.freeze(Object.fromEntries(
-  ['dash', 'special', 'musou'].map(action => [action, `audio/hero-callouts-eleven-v2/${file}`]),
+// Catchphrase for dash/musou; special also takes turns among the shared skill lines (11-14 new shouts).
+const familyPack = (hero, file) => Object.freeze(Object.fromEntries(
+  ['dash', 'special', 'musou'].map(action => {
+    const lines = familySkillLines(hero, action).map(line => line.file.replace(/^sanguo\//, ''));
+    return [action, lines.length ? Object.freeze(lines) : `audio/hero-callouts-eleven-v2/${file}`];
+  }),
 ));
 export const ELEVEN_VOICE_PACKS = Object.freeze({
   taeo: skillPack('taeo'),
   jaei: skillPack('jaei'),
-  yunchan: familyPack('yunchan-callout-v2.wav'),
-  yungeon: familyPack('yungeon-callout-v2.wav'),
+  yunchan: familyPack('yunchan', 'yunchan-callout-v2.wav'),
+  yungeon: familyPack('yungeon', 'yungeon-callout-v2.wav'),
 });
 
 // Ages describe the approved fictional performance, not real child recordings.

@@ -1,6 +1,7 @@
 // 스카이 샷 — 세로로 나는 비행기 슈팅. 별을 먹고 수학 문제를 맞히면 무기가 한 단계씩 세진다.
 // 그림은 art/ 의 그림책풍 그림 파일을 쓴다(못 읽으면 캔버스 도형으로 대신 그린다). shadowBlur 는 쓰지 않는다 — 아이패드에서 가장 느리다.
 import { weapon, weaponLabel, forkAt, MAINS, SIDES, MAIN_IDS, SIDE_IDS, playerYRange, MAX_WEAPON, enemyHp, bossHp, enemySpeed, formation, isBossWave, BOSS_STAY, SHIELD_LEVELS, bossOf, tuning, TRAILS, unlockedTrails } from "./logic.js?v=4";
+import * as S from "./sfx.js?v=2";
 
 const $ = id => document.getElementById(id);
 const canvas = $("sky"), ctx = canvas.getContext("2d", { alpha: false });
@@ -108,33 +109,22 @@ function sky() {
   return skyTile;
 }
 
-/* ---------- 소리: Web Audio 로 그 자리에서 만든다(음성 합성 금지 — 아이패드 마이크가 죽는다) ---------- */
-let ac = null, soundOn = true;
+/* ---------- 소리: sfx.js(Web Audio 합성 효과음 + 조종사 함성 클립). 음성 합성 금지 — 아이패드 마이크가 죽는다 ---------- */
+let soundOn = true;
 try { soundOn = localStorage.getItem(SOUND_KEY) !== "0"; } catch (_) {}
-function audio() {
-  if (!soundOn) return null;
-  if (!ac) { const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null; try { ac = new AC(); } catch (_) { return null; } }
-  if (ac.state === "suspended") ac.resume().catch(() => {});
-  return ac;
-}
-function beep(freq, dur, type = "sine", vol = 0.12, slide = 0) {
-  const a = audio(); if (!a) return;
-  const o = a.createOscillator(), g = a.createGain(), t = a.currentTime;
-  o.type = type; o.frequency.setValueAtTime(freq, t);
-  if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(30, slide), t + dur);
-  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-  o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + dur + 0.02);
-}
+S.setEnabled(soundOn);
+// AudioContext 는 손가락·키가 닿을 때만 만들고 깨운다(iOS).
+function audio() { S.unlock(); }
+for (const ev of ["pointerdown", "touchend", "keydown", "click"]) addEventListener(ev, audio, { capture: true, passive: true });
 const sfx = {
-  pop: () => beep(520, 0.07, "triangle", 0.06, 260),
-  star: () => { beep(880, 0.10, "sine", 0.12); setTimeout(() => beep(1320, 0.14, "sine", 0.12), 80); },
-  up: () => [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => beep(f, 0.16, "triangle", 0.13), i * 90)),
-  no: () => beep(220, 0.18, "sine", 0.10, 160),
-  hit: () => beep(160, 0.28, "sawtooth", 0.12, 60),
-  boss: () => beep(110, 0.5, "square", 0.08, 55),
-  zap: () => beep(1500, 0.05, "square", 0.025, 700),
-  boom: () => beep(95, 0.32, "sawtooth", 0.10, 40),
-  warn: () => { beep(700, 0.12, "square", 0.07); setTimeout(() => beep(700, 0.12, "square", 0.07), 220); },
+  pop: () => S.play("pop"),
+  star: () => S.play("star"),
+  no: () => S.play("wrong"),
+  hit: () => S.play("playerHit"),
+  boss: () => S.play("bossWarn"),
+  zap: () => S.play("bolt", level),
+  boom: () => S.play("bomb", level),
+  warn: () => S.play("warn"),
 };
 
 /* ---------- 수학: 공통 모듈 GameQuiz(아이별 단계·기록) ----------
@@ -248,7 +238,7 @@ function disarm() { if (guard) guard.panel.classList.remove("locked"); guard = n
 function startWave() {
   wave++;
   queue = formation(wave, Math.random, tune).map(f => Object.assign({}, f));
-  if (isBossWave(wave)) { say(bossOf(wave).name + " 등장!", true); sfx.boss(); }
+  if (isBossWave(wave)) { say(bossOf(wave).name + " 등장!", true); sfx.boss(); setTimeout(() => S.shout("boss"), 1100); }
 }
 function spawn(f) {
   const x = 26 + f.x * (FW - 52), hp = Math.max(1, Math.round(enemyHp(wave) * tune.hp)), speed = enemySpeed(wave) * tune.speed;
@@ -269,7 +259,7 @@ function burst(x, y, color, n = 8) {
 // 문제 화면은 GameQuiz.ask 가 띄운다(위쪽 패널, 0.7초 잠금, 새로 누른 터치만, 숫자키 1~3, 틀리면 그 보기만 꺼짐).
 let quiz = null;
 function openQuiz() {
-  mode = "quiz"; grab = null;
+  mode = "quiz"; grab = null; S.gate(true);
   const nextFork = forkAt(level + 1);
   const title = level >= MAX_WEAPON ? "맞히면 보호막이 생겨요"
     : nextFork === "main" ? "맞히면 새 무기를 골라요! " + MAIN_IDS.map(id => MAINS[id].name).join(" · ")
@@ -279,7 +269,7 @@ function openQuiz() {
   quiz = { firstTry: true };
   let outcome = null;
   GameQuiz.ask({
-    kid: PILOTS[pilot].kid, title,
+    kid: PILOTS[pilot].kid, title, voice: false,          // 외침은 스카이 샷이 직접 낸다(무기 강화·보호막 때). 겹치지 않게 GameQuiz 외침은 끈다
     theme: { top: 62, bg: "rgba(12,18,58,.96)", accent: "#ffd95a" },
     onWrong: () => sfx.no(),
     onCorrect: r => { outcome = solve(r.firstTry, r.growth); return outcome.msg; },
@@ -313,7 +303,7 @@ function drawIcon(x, id, s) {
   }
 }
 function openFork(kind, onDone) {
-  mode = "quiz"; grab = null;
+  mode = "quiz"; grab = null; S.gate(true);
   const table = kind === "main" ? MAINS : SIDES, ids = Object.keys(table);
   $("forkKicker").textContent = kind === "main" ? "새 무기를 골라요!" : "곁무기를 하나 더 달아요!";
   $("forkTitle").textContent = kind === "main" ? "어떤 무기가 좋아요?" : "무엇을 더 달까요?";
@@ -328,7 +318,7 @@ function openFork(kind, onDone) {
   $("fork").hidden = false;
   armChoices($("fork"), buttons, (b, i) => {
     path = Object.assign({}, path, { [kind]: ids[i] }); disarm();
-    buttons.forEach(x => { x.disabled = true; }); b.classList.add("ok"); sfx.up();
+    buttons.forEach(x => { x.disabled = true; }); b.classList.add("ok"); S.play("fork"); S.shout("fork", true);
     setTimeout(() => { $("fork").hidden = true; onDone(); }, 380);
   });
 }
@@ -337,7 +327,7 @@ function resume(msg, leveled, fork) {
   if (fork && mode === "quiz") { openFork(fork.kind, () => resume(fork.levelMsg(), true)); return; }
   player.inv = Math.max(player.inv, 1.2); say(msg, leveled);
   if (leveled) { rings.push({ x: player.x, y: player.y, t: 0 }); flash = 0.3; burst(player.x, player.y, "#ffe45c", 22); }
-  hud(); if (mode === "quiz") mode = "play"; last = performance.now();
+  hud(); if (mode === "quiz") mode = "play"; if (mode === "play") S.gate(false); last = performance.now();
 }
 // 정답을 맞힌 순간(GameQuiz 가 기록을 마친 뒤) 보상을 정한다. 반환한 msg 는 패널에 잠깐 뜨고, 닫힌 뒤 resume 이 이어 간다.
 function solve(firstTry, growth) {
@@ -351,13 +341,15 @@ function solve(firstTry, growth) {
   let leveled = false;
   const gains = [], pre = growth && growth.promoted ? "수학 " + growth.level + "단계로 올라갔어요! · " : "";
   if (level < MAX_WEAPON && (quiz.firstTry || halfStep >= 2)) {
-    if (!quiz.firstTry) halfStep = 0; level++; leveled = true; sfx.up();
+    if (!quiz.firstTry) halfStep = 0; level++; leveled = true;
+    // 맞힌 그 순간 빰빠밤(1초 안에 느껴지는 보상). 갈림길이 아니면 0.55초 뒤 조종사 함성 — 갈림길이면 고를 때 외친다.
+    S.play("levelup", level); if (!forkAt(level)) setTimeout(() => S.shout("upgrade", true), 550);
     const before = weapon(level - 1, path), now = weapon(level, path);
     if ((now.guns || 0) > (before.guns || 0)) gains.push("기관총 +" + (now.guns - (before.guns || 0)));
     if ((now.helpers || 0) > (before.helpers || 0)) gains.push("호위기 +" + now.helpers);
     if (SHIELD_LEVELS.includes(level)) { shield = Math.min(2, shield + 1); gains.push("보호막 +1"); }
   }
-  else { shield = Math.min(2, shield + 1); msg = quiz.firstTry ? "보호막 +1" : "정답! 보호막 +1 · 한 번 더 맞히면 무기 강화"; sfx.star(); }
+  else { shield = Math.min(2, shield + 1); msg = quiz.firstTry ? "보호막 +1" : "정답! 보호막 +1 · 한 번 더 맞히면 무기 강화"; S.play("correct"); setTimeout(() => S.shout("shield", true), 450); }
   // 갈림길 단계면 고른 뒤에 이름이 정해지므로 배너 문구는 그때 만든다.
   const fork = leveled ? forkAt(level) : null;
   const levelMsg = () => pre + weaponLabel(level, path) + "!" + (gains.length ? " " + gains.join(" · ") : "");
@@ -369,12 +361,12 @@ function solve(firstTry, growth) {
 /* ---------- 진행 ---------- */
 function hurt() {
   if (player.inv > 0) return;
-  if (shield > 0) { shield--; player.inv = 1.2; say("보호막이 막아 줬어요"); sfx.star(); return; }
+  if (shield > 0) { shield--; player.inv = 1.2; say("보호막이 막아 줬어요"); S.play("shieldBreak"); return; }
   hearts--; player.inv = 1.8; shake = 0.35; sfx.hit(); hud();
   if (hearts <= 0) gameOver();
 }
 function gameOver() {
-  mode = "over"; grab = null; disarm(); if (GameQuiz) GameQuiz.close(); $("fork").hidden = true;
+  mode = "over"; grab = null; disarm(); S.gate(false); if (GameQuiz) GameQuiz.close(); $("fork").hidden = true;
   let best = 0; try { best = parseInt(localStorage.getItem(BEST_KEY) || "0", 10) || 0; } catch (_) {}
   const d = Math.floor(dist), record = d > best;
   if (record) { try { localStorage.setItem(BEST_KEY, String(d)); } catch (_) {} }
@@ -403,7 +395,7 @@ function arms(dt, w) {
         if (!targetable(e)) continue;
         const rx = e.x - g.ox, ry = e.y - g.oy, along = rx * g.sx + ry * g.sy;
         if (along < -e.r || Math.abs(rx * g.sy - ry * g.sx) > e.r + reach) continue;
-        damage(e, L.dps * dt);
+        damage(e, L.dps * dt); if (e.kind === "boss" && !e.dead) S.play("bossHit");
         if (Math.random() < dt * 8 && sparks.length < 80) sparks.push({ x: e.x + rnd(-6, 6), y: e.y + e.r * 0.6, vx: rnd(-90, 90), vy: rnd(20, 120), life: 0.3, color: "#ffffff" });
       }
     }
@@ -411,7 +403,7 @@ function arms(dt, w) {
   if (w.missile) {
     const M = w.missile; missileT -= dt;
     if (missileT <= 0) {
-      missileT = M.every;
+      missileT = M.every; S.play("missile", w.level);
       for (let i = 0; i < M.n && bullets.length < 140; i++) {
         const k = i % 2 ? 1 : -1, row = i >> 1;
         bullets.push({ kind: "missile", x: player.x + k * (14 + row * 8), y: player.y + 2, vx: k * (110 + row * 50), vy: -120 - row * 30, dmg: M.dmg, splash: M.splash, life: 3, smokeT: 0 });
@@ -447,18 +439,18 @@ function arms(dt, w) {
     const O = w.orb; orbAng += dt * 3.4;
     for (let i = 0; i < O.n; i++) {
       const a = orbAng + i * Math.PI * 2 / O.n, ox = player.x + Math.cos(a) * 46, oy = player.y + Math.sin(a) * 46;
-      for (const e of enemies) if (targetable(e) && !(e.cdOrb > 0) && (e.x - ox) ** 2 + (e.y - oy) ** 2 < (e.r + 10) ** 2) { damage(e, O.dmg); e.cdOrb = O.cd; burst(ox, oy, "#9ff0ff", 2); }
-      for (const r of rain) if (!r.dead && (r.x - ox) ** 2 + (r.y - oy) ** 2 < 15 * 15) { r.dead = true; burst(r.x, r.y, "#d8f6ff", 3); }       // 빗방울·눈송이를 막아 준다
+      for (const e of enemies) if (targetable(e) && !(e.cdOrb > 0) && (e.x - ox) ** 2 + (e.y - oy) ** 2 < (e.r + 10) ** 2) { damage(e, O.dmg); e.cdOrb = O.cd; burst(ox, oy, "#9ff0ff", 2); S.play("orb", w.level); }
+      for (const r of rain) if (!r.dead && (r.x - ox) ** 2 + (r.y - oy) ** 2 < 15 * 15) { r.dead = true; burst(r.x, r.y, "#d8f6ff", 3); S.play("orb", w.level); }       // 빗방울·눈송이를 막아 준다
     }
   }
   if (w.bomb) {
     const K = w.bomb; bombT -= dt;
-    if (bombT <= 0 && bombs.length < 4) { bombT = K.every; bombs.push({ x: player.x, y: player.y - 24, vy: -320, top: Math.max(70, player.y - 250), dmg: K.dmg, r: K.r, t: 0 }); }
+    if (bombT <= 0 && bombs.length < 4) { bombT = K.every; S.play("bombDrop", w.level); bombs.push({ x: player.x, y: player.y - 24, vy: -320, top: Math.max(70, player.y - 250), dmg: K.dmg, r: K.r, t: 0 }); }
   }
   if (w.boom) {
     const R = w.boom; boomT -= dt;
     if (boomT <= 0 && booms.length < 4) {
-      boomT = R.every;
+      boomT = R.every; S.play("boom", w.level);
       const sides = R.n >= 2 ? [-1, 1] : [boomSide = -boomSide];
       for (const k of sides) booms.push({ k, t: 0, T: 1.15, dmg: R.dmg, x: player.x, y: player.y });
     }
@@ -467,7 +459,7 @@ function arms(dt, w) {
     m.t += dt; m.y += m.vy * dt;
     let go = m.y <= m.top;
     if (!go) for (const e of enemies) if (targetable(e) && (e.x - m.x) ** 2 + (e.y - m.y) ** 2 < (e.r + 12) ** 2) { go = true; break; }
-    if (go) { m.dead = true; explode(m.x, m.y, m.r, m.dmg, null); rings.push({ x: m.x, y: m.y, t: 0, max: m.r * 1.3, color: "#ffb24a" }); burst(m.x, m.y, "#ffcf5a", 12); sfx.boom(); }
+    if (go) { m.dead = true; explode(m.x, m.y, m.r, m.dmg, null); rings.push({ x: m.x, y: m.y, t: 0, max: m.r * 1.3, color: "#ffb24a" }); burst(m.x, m.y, "#ffcf5a", 12); sfx.boom(); S.shout("bomb"); }
   }
   for (const m of booms) {
     m.t += dt; const th = m.t / m.T * Math.PI * 2;
@@ -481,6 +473,7 @@ function arms(dt, w) {
 }
 function fire() {
   const w = W();
+  S.play(w.laser ? "laser" : "shot", w.level);       // 레이저를 달면 바탕 탄 소리 대신 찌잉
   for (const [angle, dx] of w.shots) {
     if (bullets.length >= 140) break;
     bullets.push({ x: player.x + dx, y: player.y - 22, vx: Math.sin(angle) * 520, vy: -Math.cos(angle) * 520, dmg: w.dmg, pierce: !!w.pierce, beam: !!w.beam, art: w.bullet, hitT: 0 });
@@ -490,7 +483,8 @@ function fire() {
 function damage(e, amount) {
   e.hp -= amount; if (!(e.flash > -0.14)) e.flash = 0.06;      // 연사로 맞아도 계속 하얗게 남지 않도록 번쩍임 사이를 띄운다
   if (e.hp > 0) return;
-  e.dead = true; sfx.pop();
+  e.dead = true;
+  if (e.kind === "boss") { S.play("bossDown"); setTimeout(() => S.shout("bossDown", true), 900); } else sfx.pop();
   if (pops.length < 14) pops.push({ x: e.x, y: e.y, t: 0, w: e.kind === "boss" ? 190 : e.r * 3.4 });
   burst(e.x, e.y, e.kind === "gift" ? "#ffd95a" : "#ffffff", e.kind === "boss" ? 26 : 8);
   if (e.kind === "gift") drops.push({ x: e.x, y: e.y, vy: 70, t: 0 });
@@ -563,8 +557,9 @@ function update(dt) {
       if (b.dead || b.hitT > 0) continue;
       const rr = e.r + (b.beam ? 7 : b.kind === "missile" ? 6 : 4);
       if ((b.x - e.x) ** 2 + (b.y - e.y) ** 2 > rr * rr) continue;
-      if (b.kind === "missile") { b.dead = true; explode(b.x, b.y, b.splash, b.dmg, e); burst(b.x, b.y, "#ffb24a", 5); if (e.dead) break; continue; }
+      if (b.kind === "missile") { b.dead = true; explode(b.x, b.y, b.splash, b.dmg, e); burst(b.x, b.y, "#ffb24a", 5); S.play("missileHit", level); if (e.dead) break; continue; }
       damage(e, b.dmg);
+      if (!e.dead) S.play(e.kind === "boss" ? "bossHit" : "hit");
       if (b.pierce) b.hitT = 0.12; else b.dead = true;
       if (e.dead) break;
     }
@@ -726,12 +721,12 @@ function frame(now) {
 }
 
 /* ---------- 시작 ---------- */
-function begin() { disarm(); if (GameQuiz) { GameQuiz.close(); GameQuiz.setKid(PILOTS[pilot].kid); } quiz = null; $("start").hidden = true; $("over").hidden = true; $("fork").hidden = true; reset(); mode = "play"; last = performance.now(); audio(); }
+function begin() { disarm(); if (GameQuiz) { GameQuiz.close(); GameQuiz.setKid(PILOTS[pilot].kid); } quiz = null; $("start").hidden = true; $("over").hidden = true; $("fork").hidden = true; reset(); mode = "play"; last = performance.now(); S.gate(false); S.setPilot(PILOTS[pilot].kid); audio(); }
 $("startBtn").addEventListener("click", begin);
 $("againBtn").addEventListener("click", begin);
 const soundBtn = $("sound");
 function paintSound() { soundBtn.setAttribute("aria-pressed", String(soundOn)); soundBtn.textContent = soundOn ? "♪" : "♪×"; }
-soundBtn.addEventListener("click", () => { soundOn = !soundOn; try { localStorage.setItem(SOUND_KEY, soundOn ? "1" : "0"); } catch (_) {} paintSound(); });
+soundBtn.addEventListener("click", () => { soundOn = !soundOn; try { localStorage.setItem(SOUND_KEY, soundOn ? "1" : "0"); } catch (_) {} S.setEnabled(soundOn, true); paintSound(); if (soundOn) S.play("tap"); });
 paintSound();
 const pilotBox = $("pilots");
 // 조종사를 고르면 공통 수학 모듈의 "지금 하는 아이"도 같이 바뀐다(문제 수준·기록이 그 아이 것으로).
@@ -739,6 +734,7 @@ function pickPilot(i) {
   if (!(i >= 0 && i < PILOTS.length)) return;
   pilot = i; try { localStorage.setItem(PILOT_KEY, String(i)); } catch (_) {}
   if (GameQuiz) GameQuiz.setKid(PILOTS[i].kid);
+  S.setPilot(PILOTS[i].kid);
   [...pilotBox.children].forEach((c, k) => c.setAttribute("aria-pressed", String(k === i)));
 }
 PILOTS.forEach((p, i) => {
@@ -761,9 +757,10 @@ function paintTrails() {
   });
 }
 paintTrails();
+S.setPilot(PILOTS[pilot].kid);           // 함성 클립은 첫 터치(소리 깨우기) 뒤에 이 조종사 것만 받는다
 try { const best = parseInt(localStorage.getItem(BEST_KEY) || "0", 10) || 0; if (best) $("bestStart").textContent = "최고 기록 " + best + "m"; } catch (_) {}
 addEventListener("resize", resize);
 resize(); reset();
 // 미리보기·테스트가 프레임 없이도 한 걸음씩 돌려 볼 수 있게 내놓는다(주소에 ?qa=1 일 때만).
-if (new URLSearchParams(location.search).get("qa") === "1") window.__plane = { begin, step: dt => { if (mode === "play") update(dt); render(); }, tick: dt => { if (mode === "play") update(dt); }, get s() { return { mode, level, hearts, wave, dist, solved, enemies: enemies.length, bullets: bullets.length, drops: drops.length, shield, pilot, stars, trail }; }, set: o => { if (o.level) level = o.level; if (o.main || o.side) path = Object.assign({}, path, o.main ? { main: o.main } : {}, o.side ? { side: o.side } : {}); if (o.shield != null) shield = o.shield; if (o.wave) wave = o.wave; if (o.stars != null) { stars = o.stars; paintTrails(); } if (o.trail != null) trail = o.trail; hud(); }, spawn, player: () => player, answer: () => { const q = GameQuiz && GameQuiz.peek(); return q && q.kind === "ask" ? q.answer : null; }, quiz: () => (GameQuiz ? GameQuiz.peek() : null), setPilot: i => pickPilot(i), world: () => ({ enemies, drops, rain }), drop: () => drops.push({ x: player.x, y: player.y - 60, vy: 70, t: 0 }), hurt, path: () => path, yr: () => yr, openQuiz, openFork: kind => openFork(kind, () => resume(weaponLabel(level, path) + "!", true)), guard: () => { if (guard) return { panel: guard.panel.id, armIn: Math.round(guard.armAt - performance.now()) }; const q = GameQuiz && GameQuiz.peek(); return q ? { panel: "quiz", armIn: q.armIn } : null; }, extra: () => ({ smoke: smoke.length, zaps: zaps.length, bombs: bombs.length, booms: booms.length }) };
+if (new URLSearchParams(location.search).get("qa") === "1") window.__plane = { begin, step: dt => { if (mode === "play") update(dt); render(); }, tick: dt => { if (mode === "play") update(dt); }, get s() { return { mode, level, hearts, wave, dist, solved, enemies: enemies.length, bullets: bullets.length, drops: drops.length, shield, pilot, stars, trail }; }, set: o => { if (o.level) level = o.level; if (o.main || o.side) path = Object.assign({}, path, o.main ? { main: o.main } : {}, o.side ? { side: o.side } : {}); if (o.shield != null) shield = o.shield; if (o.wave) wave = o.wave; if (o.stars != null) { stars = o.stars; paintTrails(); } if (o.trail != null) trail = o.trail; hud(); }, spawn, player: () => player, answer: () => { const q = GameQuiz && GameQuiz.peek(); return q && q.kind === "ask" ? q.answer : null; }, quiz: () => (GameQuiz ? GameQuiz.peek() : null), setPilot: i => pickPilot(i), world: () => ({ enemies, drops, rain }), drop: () => drops.push({ x: player.x, y: player.y - 60, vy: 70, t: 0 }), hurt, path: () => path, yr: () => yr, openQuiz, openFork: kind => openFork(kind, () => resume(weaponLabel(level, path) + "!", true)), guard: () => { if (guard) return { panel: guard.panel.id, armIn: Math.round(guard.armAt - performance.now()) }; const q = GameQuiz && GameQuiz.peek(); return q ? { panel: "quiz", armIn: q.armIn } : null; }, extra: () => ({ smoke: smoke.length, zaps: zaps.length, bombs: bombs.length, booms: booms.length }), sfxLog: () => S.qa.log(), sfx: S.qa, solve: firstTry => { const r = solve(firstTry !== false, null); return r; } };
 requestAnimationFrame(frame);

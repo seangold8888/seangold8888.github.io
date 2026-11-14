@@ -1,0 +1,26 @@
+{
+  "hero": "yunchan",
+  "action": "special",
+  "model": "eleven_v3",
+  "voice_id": "bIHbv24MWmeRgasZH58o",
+  "text": "[10-year-old boy voice][childlike tone][whiny] 재밌는 거 없어?",
+  "voice_settings": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "use_speaker_boost": false
+  },
+  "take_id": "funthing-v1",
+  "take_no": 1,
+  "request_id": "YgVS1hhLeo3fvqsxiJPu",
+  "duration": 1.181,
+  "sha256": "84edc762d18dd7ee1aabe84c1cc6296280c953634f64233fa454a71cb0484d4b",
+  "duration_ok": true,
+  "peak_db": -1.9,
+  "mp3_bytes": 15090,
+  "chars": 56,
+  "phrase": "재밌는 거 없어?",
+  "reviewed": false,
+  "takes": 1,
+  "transcription": "not checked (no transcription allowed in this task; listening review required)",
+  "note": "11-14 new line, same voice/model/settings as existing family-skills"
+}

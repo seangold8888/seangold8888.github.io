@@ -63,9 +63,15 @@ test('every non-family card maps its big (last) attack to a shipped, cached clip
 test('family cards keep exactly their approved voices', () => {
   assert.deepEqual(Object.keys(FILES).sort(), [...FAMILY].sort());
   for (const id of FAMILY) assert.equal(Object.prototype.hasOwnProperty.call(ATTACK_LINES, id), false, id);
-  assert.deepEqual(Object.keys(ACTION_FILES).sort(), ['jaei', 'taeo']);
+  assert.deepEqual(Object.keys(ACTION_FILES).sort(), ['jaei', 'taeo', 'yunchan', 'yungeon']);
   assert.deepEqual(Object.keys(ACTION_FILES.taeo), ['발냄새 공격', '연속 방귀', '대왕 방귀', '메가랩터킥']);
   assert.deepEqual(Object.keys(ACTION_FILES.jaei), ['코딱지 날리기', '트림 폭탄', '참았던 방귀']);
+  // 11-14: 윤찬·윤건은 큰 기술 하나에서만 대표 대사 + 새 외침을 번갈아 낸다(첫 줄은 원래 대표 대사)
+  assert.deepEqual(Object.keys(ACTION_FILES.yunchan), ['장수풍뎅이 돌진']);
+  assert.deepEqual(Object.keys(ACTION_FILES.yungeon), ['불꽃 슛']);
+  assert.ok(ACTION_FILES.yunchan['장수풍뎅이 돌진'][0].endsWith('yunchan-callout-v2.wav'));
+  assert.ok(ACTION_FILES.yungeon['불꽃 슛'][0].endsWith('yungeon-callout-v2.wav'));
+  assert.ok(ACTION_FILES.taeo['대왕 방귀'].some(f => f.endsWith('taeo-special-eleven-nosleep-v1.wav')));
   for (const id of FAMILY) assert.equal(eligible({ cardId: id, big: true }), true);
   assert.equal(eligible({ cardId: 'zhangfei', big: true }), false, 'non-family cards need their exact big attack');
   assert.equal(eligible({ cardId: '__proto__', attack: 'constructor' }), false);

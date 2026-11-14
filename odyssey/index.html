@@ -4,13 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style id="no-zoom-style">*{touch-action:manipulation}canvas{touch-action:none}</style>
-<script src="../assets/study/play-timer.js?v=2"></script>
+<script src="../assets/study/play-timer.js?v=3"></script>
 <script src="../assets/touch-guard.js?v=1"></script>
 <script src="../math/curriculum.js?v=21"></script>
 <script src="../math/learning.js?v=30"></script>
 <script src="../math/store.js?v=34"></script>
 <script src="../assets/study/math-bridge.js?v=3"></script>
-<script src="../assets/study/game-quiz.js?v=2"></script>
+<script src="../assets/study/kid-voices.js?v=1"></script>
+<script src="../assets/study/game-quiz.js?v=3"></script>
 <script id="no-zoom-guard">/* 게임 중 화면이 갑자기 확대되는 것 방지: 핀치·더블탭 줌 차단 */
 (function(){var s=function(e){e.preventDefault()};
 document.addEventListener('gesturestart',s,{passive:false});
@@ -1973,6 +1974,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       if (token !== quizToken) return null;
       result = await G.ask({
         kid: kid || undefined,
+        voice: (function () { try { return localStorage.getItem('ody_muted') !== '1'; } catch (_) { return true; } })(),
         title: opts.title || '아테나의 부엉이 문제!',
         hint: opts.hint || '',
         theme: { bg: 'rgba(36,26,70,.96)', accent: '#ffe27a', button: '#fff7dc', buttonText: '#342442', top: 64 },
@@ -2122,6 +2124,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       let gains = [];
       k.asked++;
       Q.ask({
+        voice: (function () { try { return localStorage.getItem('ody_muted') !== '1'; } catch (_) { return true; } })(),
         title: o.promise || ('맞히면 ' + k.label + '이 세져요!'),
         hint: '한 번에 맞히면 선물 두 배 + 금빛 파동!',
         release: o.release,

@@ -80,7 +80,7 @@ test('battle wiring: scrolls only with GameQuiz outside automation, quiet pause,
   assert.match(battle, /GameQuiz\.close\(\)/);
   assert.match(battle, /quizFirstTries \}\);/);
   const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
-  const order = ['../math/curriculum.js', '../math/learning.js', '../math/store.js', '../assets/study/math-bridge.js', '../assets/study/game-quiz.js', './src/main.js'].map((s) => html.indexOf(s));
+  const order = ['../math/curriculum.js', '../math/learning.js', '../math/store.js', '../assets/study/math-bridge.js', '../assets/study/kid-voices.js', '../assets/study/game-quiz.js', './src/main.js'].map((s) => html.indexOf(s));
   assert.ok(order.every((v, i) => v > 0 && (i === 0 || v > order[i - 1])), 'script order');
 });
 

@@ -5,7 +5,8 @@
  *   <script src="../math/learning.js?v=30"></script>
  *   <script src="../math/store.js?v=34"></script>
  *   <script src="../assets/study/math-bridge.js?v=3"></script>
- *   <script src="../assets/study/game-quiz.js?v=2"></script>
+ *   <script src="../assets/study/kid-voices.js?v=1"></script>
+ *   <script src="../assets/study/game-quiz.js?v=3"></script>
  *
  * 쓰는 법:
  *   // 1) 누가 하는지 모르면 먼저 묻는다(이미 골랐으면 그 아이).
@@ -23,7 +24,10 @@
  *   if (r.firstTry) giveBigReward(); else giveSmallReward();
  *   resumeGame();
  *
- * 소리를 내지 않는다(게임이 낸다). speechSynthesis 는 절대 쓰지 않는다(iPad 마이크가 죽는다).
+ * 소리: 처음 고른 답이 맞으면 그 정답 터치 처리 안에서 바로 그 아이의 외침 하나를 낸다(KidVoices.shout, 1초 안 보상).
+ *   고쳐서 맞힌 답에는 외치지 않는다(처음 맞힘과 차이가 들리게). 그 밖의 효과음은 게임이 낸다.
+ *   끄기: ask({ voice:false }) 또는 GameQuiz.voiceEnabled = false. 게임 AudioContext 를 쓰려면 ask({ voiceCtx: ctx, voiceOut: node }).
+ *   speechSynthesis 는 절대 쓰지 않는다(iPad 마이크가 죽는다).
  * 패널 DOM·스타일은 이 모듈이 스스로 만들어 document.body 에 붙인다. 게임 HTML 에 마크업이 필요 없다.
  */
 (function (root) {
@@ -380,7 +384,8 @@
   function hide() { if (layer) layer.hidden = true; }
 
   /* ask(opts) → Promise<{ firstTry, correct:true, problem, growth }>
-     opts: { kid, title, hint, theme, onDone(result), onCorrect(result) → 문자열|없음, retryText, closeDelay(ms, 기본 650), quiz(forKid 결과를 직접 줄 때) } */
+     opts: { kid, title, hint, theme, onDone(result), onCorrect(result) → 문자열|없음, retryText, closeDelay(ms, 기본 650), quiz(forKid 결과를 직접 줄 때),
+           voice(false 면 정답 외침 끔), voiceCtx·voiceOut(게임 AudioContext 로 외침을 낼 때) } */
   var quizCache = {};
   function quizFor(kidId) { if (!quizCache[kidId]) quizCache[kidId] = forKid(kidId); return quizCache[kidId]; }
   function ask(opts) {
@@ -414,6 +419,11 @@
       s.done = true; disarm();
       b.classList.add("gq-ok");
       buttons.forEach(function (x) { x.disabled = true; });
+      // 처음 맞힘 = 그 자리(손가락 처리 안)에서 아이 외침. iOS 가 소리를 허락하는 유일한 순간이라 미루지 않는다.
+      if (s.firstTry && opts.voice !== false && api.voiceEnabled !== false) {
+        var KV = root.KidVoices;
+        if (KV && typeof KV.shout === "function") { try { KV.shout(kidId, { force: true, reason: "quiz", ctx: opts.voiceCtx, out: opts.voiceOut }); } catch (_) {} }
+      }
       var growth = q.record(problem, s.firstTry);
       var result = { firstTry: s.firstTry, correct: true, problem: problem, growth: growth, kid: kidId };
       var msg = "";
@@ -482,7 +492,8 @@
     stateKey: stateKey, kidById: kidById, bandForAge: bandForAge, fallbackProblem: fallbackProblem,
     PASS_KEY: PASS_KEY, PASS_LEND_MS: PASS_LEND_MS, lendPlayTime: lendPlayTime, settlePlayTime: settlePlayTime,
     forKid: forKid, currentKid: currentKid, setKid: setKid,
-    ask: ask, pickKid: pickKid, isOpen: isOpen, close: close, peek: peek, panel: panelElement
+    ask: ask, pickKid: pickKid, isOpen: isOpen, close: close, peek: peek, panel: panelElement,
+    voiceEnabled: true
   };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.GameQuiz = api;

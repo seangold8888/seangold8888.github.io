@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#2c1f5c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Spell Towers · PLAYGROUND</title>
+<link rel="preload" href="../sanguo/fonts/pretendard/PretendardVariable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css?v=1">
+<script src="../assets/study/play-timer.js?v=3"></script>
+<script src="../assets/touch-guard.js?v=1"></script>
+<script src="../math/curriculum.js?v=21"></script>
+<script src="../math/learning.js?v=30"></script>
+<script src="../math/store.js?v=34"></script>
+<script src="../assets/study/math-bridge.js?v=3"></script>
+<script src="../assets/study/kid-voices.js?v=1"></script>
+<script src="../assets/study/game-quiz.js?v=3"></script>
+</head>
+<body>
+<canvas id="map" aria-label="스펠 타워. 빈 받침을 누르면 마법 탑을 세워요. 괴물을 누르면 반짝 가루, ? 부엉이를 누르면 문제가 나와요."></canvas>
+
+<header class="hud" id="hud" hidden>
+  <a class="back" href="../game/" aria-label="PLAYGROUND로 돌아가기">←</a>
+  <div class="chip" aria-label="남은 케이크"><i class="ic ic-cake"></i><b id="cake">10</b></div>
+  <div class="chip" aria-label="수정"><i class="ic ic-gem"></i><b id="gems">120</b></div>
+  <div class="chip" id="wave">파도 1/8</div>
+</header>
+<div class="ctrl" id="ctrl" hidden>
+  <button class="chip go-now" id="goBtn" type="button">바로 시작</button>
+  <button class="chip icon" id="fastBtn" type="button" aria-pressed="false" aria-label="빨리 감기">▶▶</button>
+  <button class="chip icon" id="pauseBtn" type="button" aria-label="잠깐 멈춤">⏸</button>
+  <button class="chip icon" id="sound" type="button" aria-pressed="true" aria-label="소리">♪</button>
+</div>
+<p class="tip" id="tip" hidden></p>
+
+<section class="panel" id="start">
+  <h1>Spell Towers</h1>
+  <p class="lead">괴물들이 생일 케이크를 노려요! 받침에 <b>마법 탑</b>을 세우고, <b>? 부엉이</b> 문제를 맞혀 대마법을 터뜨려요.</p>
+  <p class="pick">누가 마법사가 될까요?</p>
+  <div class="pilots" id="pilots"></div>
+  <p class="pick">어디를 지킬까요?</p>
+  <div class="zones" id="maps"></div>
+  <div class="row">
+    <button class="ghost" id="dexBtn" type="button">마법 도감</button>
+    <span class="chest" id="badgeLine"></span>
+  </div>
+  <button class="go" id="startBtn" type="button">출발!</button>
+  <p class="small" id="bestLine"></p>
+</section>
+
+<section class="panel" id="dex" hidden>
+  <h2>마법 도감</h2>
+  <p class="pick">만난 괴물</p>
+  <div class="dexgrid" id="dexMon"></div>
+  <p class="pick">써 본 탑과 변신</p>
+  <div class="dexgrid towersdex" id="dexTow"></div>
+  <p class="small" id="dexNote"></p>
+  <button class="go" id="dexClose" type="button">닫기</button>
+</section>
+
+<section class="panel dock" id="build" hidden>
+  <p class="kicker" id="buildKicker">빈 받침</p>
+  <p class="cards-title">어떤 탑을 세울까요?</p>
+  <div class="buildrow" id="buildRow"></div>
+  <button class="ghost wide" id="buildClose" type="button">닫기</button>
+</section>
+
+<section class="panel dock" id="info" hidden>
+  <div class="inforow">
+    <canvas id="infoIcon" width="96" height="96"></canvas>
+    <div class="infotext">
+      <p class="info-name" id="infoName"></p>
+      <p class="info-gems" id="infoGems"></p>
+      <p class="small" id="infoSay"></p>
+    </div>
+  </div>
+  <button class="go" id="upBtn" type="button">수정으로 강화</button>
+  <p class="small" id="infoNote"></p>
+  <button class="ghost wide" id="infoClose" type="button">닫기</button>
+</section>
+
+<section class="panel" id="cards" hidden aria-live="polite">
+  <p class="kicker" id="cardKicker">한 번에 맞혔어요!</p>
+  <p class="cards-title" id="cardTitle">어떤 카드를 고를까요?</p>
+  <div class="cardrow" id="cardRow"></div>
+</section>
+
+<section class="panel" id="pause" hidden>
+  <h2>잠깐 쉬어요</h2>
+  <button class="go" id="resumeBtn" type="button">계속 지키기</button>
+  <button class="ghost wide" id="quitBtn" type="button">그만하고 처음 화면으로</button>
+</section>
+
+<section class="panel" id="over" hidden>
+  <h2 id="overTitle">케이크를 지켰어요!</h2>
+  <div id="overText"></div>
+  <button class="go" id="againBtn" type="button">다시 지키기</button>
+  <button class="ghost wide" id="menuBtn" type="button">처음 화면으로</button>
+  <a class="home" href="../game/">← PLAYGROUND</a>
+</section>
+
+<script type="module" src="src/main.js?v=2"></script>
+</body>
+</html>

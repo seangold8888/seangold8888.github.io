@@ -7,14 +7,15 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Deep Dive · PLAYGROUND</title>
 <link rel="preload" href="../sanguo/fonts/pretendard/PretendardVariable.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=1">
-<script src="../assets/study/play-timer.js?v=2"></script>
+<link rel="stylesheet" href="style.css?v=2">
+<script src="../assets/study/play-timer.js?v=3"></script>
 <script src="../assets/touch-guard.js?v=1"></script>
 <script src="../math/curriculum.js?v=21"></script>
 <script src="../math/learning.js?v=30"></script>
 <script src="../math/store.js?v=34"></script>
 <script src="../assets/study/math-bridge.js?v=3"></script>
-<script src="../assets/study/game-quiz.js?v=2"></script>
+<script src="../assets/study/kid-voices.js?v=1"></script>
+<script src="../assets/study/game-quiz.js?v=3"></script>
 </head>
 <body>
 <canvas id="sea" aria-label="딥 다이브. 화면을 누르고 끌면 잠수정이 그쪽으로 가요. 물방울은 저절로 나가요."></canvas>
@@ -23,10 +24,12 @@
   <a class="back" href="../game/" aria-label="PLAYGROUND로 돌아가기">←</a>
   <div class="chip" id="hearts" aria-label="남은 하트">♥♥♥</div>
   <div class="chip grow xpchip" aria-label="? 진주까지"><span class="xpbar"><i id="xpfill"></i></span><b id="qcount"></b></div>
-  <div class="chip" id="clock">5:00</div>
+  <div class="chip" id="clock">3:30</div>
   <button class="chip icon" id="pauseBtn" type="button" aria-label="잠깐 멈춤">⏸</button>
   <button class="chip icon" id="sound" type="button" aria-pressed="true" aria-label="소리">♪</button>
 </header>
+<div class="fever" id="fever" hidden aria-label="무지개 터보 게이지"><span class="fever-label">터보</span><span class="fever-bar"><i id="feverFill"></i></span></div>
+<button class="dash ready" id="dashBtn" type="button" hidden aria-label="슈웅! 앞으로 쭉 나가요"><span>슈웅!</span></button>
 
 <section class="panel" id="start">
   <h1>Deep Dive</h1>
@@ -71,6 +74,6 @@
   <a class="home" href="../game/">← PLAYGROUND</a>
 </section>
 
-<script type="module" src="src/main.js?v=1"></script>
+<script type="module" src="src/main.js?v=3"></script>
 </body>
 </html>

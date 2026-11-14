@@ -1,0 +1,26 @@
+{
+  "hero": "yungeon",
+  "action": "special",
+  "model": "eleven_v3",
+  "voice_id": "TX3LPaxmHKxFdv7VOQHJ",
+  "text": "[7-year-old boy voice][childlike tone][playful][shouting] 해리케인 슛!",
+  "voice_settings": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "use_speaker_boost": false
+  },
+  "take_id": "hurricaneshot-v1",
+  "take_no": 1,
+  "request_id": "GeZPj61UJy08BF2e0ckV",
+  "duration": 1.647,
+  "sha256": "6b8d779a952f719dd655136f4f532dbf469f0f1e7cf525b4a1cb9abd4e146389",
+  "duration_ok": true,
+  "peak_db": -2.0,
+  "mp3_bytes": 20733,
+  "chars": 65,
+  "phrase": "해리케인 슛!",
+  "reviewed": false,
+  "takes": 1,
+  "transcription": "not checked (no transcription allowed in this task; listening review required)",
+  "note": "11-14 new line, same voice/model/settings as existing family-skills"
+}

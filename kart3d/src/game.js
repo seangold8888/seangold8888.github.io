@@ -710,7 +710,7 @@ export function startGame() {
       }
       const place = state.player.place;
       const r = await GQ.ask({
-        kid, title: '맞히면 터보 부스트!', hint: quizHint(), theme: QUIZ_THEME,
+        kid, title: '맞히면 터보 부스트!', hint: quizHint(), theme: QUIZ_THEME, voice: !audio.isMuted(),
         onCorrect: res => '정답! ' + rewardText(quizReward(quiz.tier, res.firstTry), turboMult(place, res.firstTry))
       });
       if (tok !== quiz.token) return;

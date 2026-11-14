@@ -1,5 +1,5 @@
 "use strict";
-// 게임 시간(티켓 1장 = 5분)이 진짜 브라우저에서 지켜지는지 확인한다.
+// 게임 시간(티켓 1장 = 60분)이 진짜 브라우저에서 지켜지는지 확인한다.
 // 자동 점검 브라우저에서는 시간 제한이 꺼지므로 hub_play_timer_force 로 켠 채 본다.
 const { chromium } = require("playwright");
 const assert = require("node:assert/strict");
@@ -97,7 +97,7 @@ const GAMES = ["cards", "hogwarts", "bori", "avengers", "kart", "kart3d", "princ
       console.log("PASS 자유 모험은 시간 제한 없음");
     }
 
-    // 5. 대시보드: 티켓 1장을 쓰면 5분, 남은 시간이 있으면 다음 게임은 티켓 없이 들어간다.
+    // 5. 대시보드: 티켓 1장을 쓰면 60분, 남은 시간이 있으면 다음 게임은 티켓 없이 들어간다.
     {
       const context = await fresh("none");
       const page = await context.newPage();
@@ -119,20 +119,20 @@ const GAMES = ["cards", "hogwarts", "bori", "avengers", "kart", "kart3d", "princ
       await page.waitForURL("**/kart/");
       const pass = await page.evaluate(() => JSON.parse(localStorage.getItem("hub_play_pass")));
       const left = pass.until - Date.now();
-      assert.ok(left > 280000 && left <= 300000, "5분: " + left);
+      assert.ok(left > 3580000 && left <= 3600000, "60분: " + left);
       assert.equal(await page.evaluate(() => localStorage.getItem("hub2_credit")), "0");
       await page.waitForSelector(".hub-play-chip");
-      assert.match(await page.locator(".hub-play-chip").innerText(), /⏱ [45]:\d\d/);
+      assert.match(await page.locator(".hub-play-chip").innerText(), /⏱ (59|60):\d\d/);
       // 모험 상자로 돌아가 다른 게임을 고르면 남은 시간으로 들어가고 티켓을 더 쓰지 않는다.
       await page.goto(base + "/game/", { waitUntil: "domcontentloaded" });
       await page.waitForFunction(() => window.HubPlayTimer);
-      assert.match(await page.locator("#hubTicketStat").innerText(), /[45]:\d\d left/);
+      assert.match(await page.locator("#hubTicketStat").innerText(), /(59|60):\d\d left/);
       await page.locator('a.card[href="kart3d/"]').click();
       await page.waitForURL("**/kart3d/");
       const again = await page.evaluate(() => JSON.parse(localStorage.getItem("hub_play_pass")));
       assert.equal(again.until, pass.until, "남은 시간으로 들어가면 시간이 늘지 않는다");
       await context.close();
-      console.log("PASS 티켓 1장 = 5분 · 남은 시간으로 다른 게임 입장 · 티켓 추가 소모 없음");
+      console.log("PASS 티켓 1장 = 60분 · 남은 시간으로 다른 게임 입장 · 티켓 추가 소모 없음");
     }
   } finally {
     await browser.close();

@@ -8,12 +8,13 @@
 <link rel="preload" as="image" href="art/characters/mira-v2.webp?v=28">
 <link rel="preload" as="image" href="art/characters/joy-v2.webp?v=28">
 <style id="no-zoom-style">*{touch-action:manipulation}canvas{touch-action:none}</style>
-<script src="../assets/study/play-timer.js?v=2"></script>
+<script src="../assets/study/play-timer.js?v=3"></script>
 <script src="../math/curriculum.js?v=21"></script>
 <script src="../math/learning.js?v=30"></script>
 <script src="../math/store.js?v=34"></script>
 <script src="../assets/study/math-bridge.js?v=3"></script>
-<script src="../assets/study/game-quiz.js?v=2"></script>
+<script src="../assets/study/kid-voices.js?v=1"></script>
+<script src="../assets/study/game-quiz.js?v=3"></script>
 <script id="no-zoom-guard">/* 게임 중 화면이 갑자기 확대되는 것 방지: 핀치·더블탭 줌 차단 */
 (function(){var s=function(e){e.preventDefault()};
 document.addEventListener('gesturestart',s,{passive:false});
@@ -4320,6 +4321,7 @@ function fileToPortraitDataUrl(file, size = 320) {
       const lv = game ? game.quizLevel || 0 : 0;
       const r = await Q.ask({
         kid: kid || undefined,
+        voice: !(game && game.audio && game.audio.muted),
         title: '맞히면 하모니 파동! 적이 한꺼번에 날아가요',
         hint: lv >= 3
           ? '한 번에: 파동 + 체력 +1 + 골든 8초 (피해 +60% 최고 단계)'

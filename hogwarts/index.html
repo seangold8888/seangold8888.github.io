@@ -42,7 +42,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     @media(orientation:portrait) and (max-width:760px){#rotate{display:grid}canvas,#touch{visibility:hidden}}
     @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
   </style>
-<script src="../assets/study/play-timer.js?v=2"></script>
+<script src="../assets/study/play-timer.js?v=3"></script>
 <script src="../assets/touch-guard.js?v=1"></script>
 </head>
 <body>
@@ -61,7 +61,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   <script src="../math/learning.js?v=30"></script>
   <script src="../math/store.js?v=34"></script>
   <script src="../assets/study/math-bridge.js?v=3"></script>
-  <script src="../assets/study/game-quiz.js?v=2"></script>
+  <script src="../assets/study/kid-voices.js?v=1"></script>
+  <script src="../assets/study/game-quiz.js?v=3"></script>
 <script>
   /* keep the iPad screen awake during play (best effort, silent fallback) */
   (function(){
@@ -688,7 +689,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       if(KIDS.includes(heroId)){Q.setKid(heroId);kid=heroId}
       else{kid=Q.currentKid();if(!kid&&!picked){picked=true;kid=await Q.pickKid({title:'누가 문제를 풀어요?',kicker:'마법 수정 구슬',theme:THEME});if(my!==run)return}}
       const p=K.p,H=K.hooks.H,heart=H&&H.on?'빛 충전':p.hp<p.max?'하트 +1':'반짝 방패';
-      const r=await Q.ask({kid:kid||undefined,title:'맞히면 주문이 세지고 빛 파동!',theme:THEME,
+      const r=await Q.ask({kid:kid||undefined,title:'맞히면 주문이 세지고 빛 파동!',theme:THEME,voice:!(window.WQ&&WQ.Snd&&WQ.Snd.muted),
         hint:'한 번에: '+(lv<MAX?'주문 '+(lv+1)+'단계':'최고 단계')+' + '+heart+' + 큰 빛 파동 · 고쳐서: 반 단계 + 작은 빛 파동',
         onCorrect:res=>lv>=MAX?'잘했어요! 최고 단계!':res.firstTry?'주문 '+(lv+1)+'단계!':half?'주문 '+(lv+1)+'단계!':'반 단계 충전!'});
       done(r);

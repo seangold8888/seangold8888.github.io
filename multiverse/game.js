@@ -1,6 +1,6 @@
 // 재이와 태오의 멀티버스 2 — 90초 히어로 미션.
 // 혼자 하는 게임: 고른 아이가 주인공, 다른 아이는 컴퓨터 동료. 깨면 별, 별로 캡슐, 캡슐로 꾸미기.
-import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family-skill-voices.js?v=3';
+import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family-skill-voices.js?v=4';
 (function () {
   "use strict";
 
@@ -361,7 +361,7 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     try {
       if (Q.setKid) Q.setKid(kid);
       req = Q.ask({
-        kid: kid, title: full ? "맞히면 다음 필살기 +50%!" : "맞히면 필살기 가득!",
+        kid: kid, voice: !muted, title: full ? "맞히면 다음 필살기 +50%!" : "맞히면 필살기 가득!",
         hint: "한 번에 맞히면 " + (full ? "다음 필살기 +50%" : "필살기 가득") + " · 체력 +40% · 별 배지",
         theme: { bg: "rgba(27,22,64,.96)", accent: "#ffd84a", button: "#fff6d6", buttonText: "#2a1a5c", top: 70 },
         onCorrect: function (r) {

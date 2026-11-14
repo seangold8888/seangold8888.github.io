@@ -1,4 +1,4 @@
-// PLAYGROUND 게임 시간. 문제 15개로 받은 티켓 한 장 = 게임 5분.
+// PLAYGROUND 게임 시간. 문제 15개로 받은 티켓 한 장 = 게임 60분.
 // 대시보드(data-mode="hub")는 시간을 내주기만 하고, 게임 화면(기본)은 남은 시간을 보여 주다가
 // 끝나면 PLAYGROUND로 돌려보낸다. 하루 100문제를 채우거나 부모님 모드면 그날은 시간 제한이 없다.
 // 끝나는 시각을 기기에 적어 두므로 새로고침하거나 다른 게임으로 옮겨도 시간이 다시 차지 않는다.
@@ -7,7 +7,7 @@
 
   var KEY = "hub_play_pass";
   var FORCE_KEY = "hub_play_timer_force";
-  var MINUTES_PER_TICKET = 5;
+  var MINUTES_PER_TICKET = 60;
   var WARN_MS = 60 * 1000;
   var REDIRECT_MS = 10 * 1000;
   var script = document.currentScript;

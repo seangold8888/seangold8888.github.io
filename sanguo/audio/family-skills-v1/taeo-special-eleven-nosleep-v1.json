@@ -1,0 +1,26 @@
+{
+  "hero": "taeo",
+  "action": "special",
+  "model": "eleven_v3",
+  "voice_id": "TX3LPaxmHKxFdv7VOQHJ",
+  "text": "[5-year-old boy voice][childlike tone][playful][excited][shouting] 잠 못 자게 한다!",
+  "voice_settings": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "use_speaker_boost": false
+  },
+  "take_id": "nosleep-v1",
+  "take_no": 1,
+  "request_id": "pBUBYv9g29erUdFpiQJS",
+  "duration": 1.796,
+  "sha256": "a925bdfcca936129a6f63786c8e2b7359b0e63ed74bd2bacf6fcc4fff18e61aa",
+  "duration_ok": true,
+  "peak_db": -1.7,
+  "mp3_bytes": 22300,
+  "chars": 77,
+  "phrase": "잠 못 자게 한다!",
+  "reviewed": false,
+  "takes": 1,
+  "transcription": "not checked (no transcription allowed in this task; listening review required)",
+  "note": "11-14 new line, same voice/model/settings as existing family-skills"
+}

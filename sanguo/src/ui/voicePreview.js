@@ -1,7 +1,7 @@
 import { loadData, person } from '../data.js';
 import { workPerson } from '../data/works.js';
 import { ELEVEN_VOICE_PACKS, FAMILY_VOICE_PREVIEWS, WARRIOR_VOICE_PREVIEWS, selectWarriorVoice, warriorVoiceSelected } from '../game/elevenVoicePacks.js';
-import { FAMILY_SKILL_LINES } from '../../../assets/audio/family-skill-voices.js?v=3';
+import { FAMILY_SKILL_LINES } from '../../../assets/audio/family-skill-voices.js?v=4';
 
 const grid = document.getElementById('voice-grid');
 const status = document.getElementById('voice-status');

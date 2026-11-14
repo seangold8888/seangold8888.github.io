@@ -15,8 +15,15 @@
     taeo: Object.freeze({
       '발냄새 공격': Object.freeze([skill('taeo-special-eleven-fight-v1'), skill('taeo-special-eleven-yummy-v1')]),
       '연속 방귀': Object.freeze([skill('taeo-special-eleven-kiap-v1')]),
-      '대왕 방귀': Object.freeze([skill('taeo-special-eleven-sseugumi-only-v1')]),
+      '대왕 방귀': Object.freeze([skill('taeo-special-eleven-sseugumi-only-v1'), skill('taeo-special-eleven-nosleep-v1')]),
       '메가랩터킥': Object.freeze([skill('taeo-special-eleven-meganaptor-v1')]),
+    }),
+    // 11-14: 큰 기술은 대표 대사 + 새 외침을 번갈아 낸다(첫 줄 = 원래 대표 대사).
+    yunchan: Object.freeze({
+      '장수풍뎅이 돌진': Object.freeze(['../sanguo/audio/hero-callouts-eleven-v2/yunchan-callout-v2.wav', skill('yunchan-special-eleven-bored-v1'), skill('yunchan-special-eleven-funthing-v1')]),
+    }),
+    yungeon: Object.freeze({
+      '불꽃 슛': Object.freeze(['../sanguo/audio/hero-callouts-eleven-v2/yungeon-callout-v2.wav', skill('yungeon-special-eleven-bulletshot-v1'), skill('yungeon-special-eleven-hurricaneshot-v1'), skill('yungeon-special-eleven-yamalshot-v1')]),
     }),
   });
   // Every other card shouts only its big (last) attack name, once, in its own cast voice.

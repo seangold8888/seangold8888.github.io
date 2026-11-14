@@ -760,6 +760,7 @@
   .card.onecard { --cover:url('onecard/cover.webp?v=2'); --cover-pos:50% 40%; }
   .card.plane { --cover:url('plane/cover.webp'); --cover-pos:50% 60%; }
   .card.dive { --cover:url('dive/cover.webp'); --cover-pos:50% 50%; }
+  .card.towers { --cover:url('towers/cover.webp'); --cover-pos:50% 50%; }
   .card.stage { --cover: url('assets/covers/cover-kedehun-team-v1.webp'); --cover-pos: 50% 24%; }
   .card.gem { --cover: url('assets/covers/cover-ribbon-room-v1.webp'); --cover-pos: 55% 42%; }
   .card.princess { --cover-size: 78%; --cover-pos: 50% 22%; background: linear-gradient(150deg, #f7b8dc, #7e58c8); }
@@ -1413,7 +1414,7 @@
   <section class="world-deck" id="adventureWorlds">
     <div class="section-heading">
       <div><h2>Choose Next Adventure</h2></div>
-      <p id="worldAccessHint">One ticket for 5 minutes of play!</p>
+      <p id="worldAccessHint">One ticket for 60 minutes of play!</p>
     </div>
     <nav class="games" aria-label="Game list">
     <a class="card hero" href="multiverse/" style="--cover:url('multiverse/art/cover.webp')">
@@ -1464,6 +1465,16 @@
         <span class="tags"><span class="genre">🌊 Ocean Survival</span></span>
         <span class="desc">Solve problems to gear up your sub.</span>
         <span class="go">Dive In ▶</span>
+      </span>
+    </a>
+    <a class="card towers" href="towers/">
+      <span class="padlock">🔒</span>
+      <span class="badge">🏰</span>
+      <span class="meta">
+        <span class="name">Spell Towers</span>
+        <span class="tags"><span class="genre">🏰 Tower Defense</span></span>
+        <span class="desc">Solve problems to cast big magic.</span>
+        <span class="go">Cast ▶</span>
       </span>
     </a>
     <a class="card onecard" href="onecard/">
@@ -1662,7 +1673,7 @@
 <script src="assets/study/english-reading.js?v=24"></script>
 <script src="story/english/books.js?v=7"></script>
 <script src="assets/bgm/bgm-player.js?v=66"></script>
-<script src="assets/study/play-timer.js?v=2" data-mode="hub"></script>
+<script src="assets/study/play-timer.js?v=3" data-mode="hub"></script>
 <script>
 (function () {
   'use strict';
@@ -2304,7 +2315,7 @@
       hubTicketStat.textContent = state.parentMode ? 'Parent Mode' : isFree()
         ? 'Free Play'
         : (playTimeLeft() ? window.HubPlayTimer.format(window.HubPlayTimer.remainingMs()) + ' left'
-        : (hasTicket() ? '1 ticket · 5 min' : Math.max(1, SET - setCorrect) + ' to go'));
+        : (hasTicket() ? '1 ticket · 60 min' : Math.max(1, SET - setCorrect) + ' to go'));
     }
     var worldAccessHint = document.getElementById('worldAccessHint');
     var studyPitch = document.getElementById('studyPitch');

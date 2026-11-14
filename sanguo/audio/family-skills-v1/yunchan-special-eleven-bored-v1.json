@@ -1,0 +1,26 @@
+{
+  "hero": "yunchan",
+  "action": "special",
+  "model": "eleven_v3",
+  "voice_id": "bIHbv24MWmeRgasZH58o",
+  "text": "[10-year-old boy voice][childlike tone][whiny] 엄마 심심해!",
+  "voice_settings": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "use_speaker_boost": false
+  },
+  "take_id": "bored-v1",
+  "take_no": 1,
+  "request_id": "o9CnhvvQOTsK0Bk6pz66",
+  "duration": 2.458,
+  "sha256": "f452b932f36e4a4a17421cf80f413c9ca8fb8191664dce6a5fca50590cbc2bb5",
+  "duration_ok": true,
+  "peak_db": -1.9,
+  "mp3_bytes": 30450,
+  "chars": 54,
+  "phrase": "엄마 심심해!",
+  "reviewed": false,
+  "takes": 1,
+  "transcription": "not checked (no transcription allowed in this task; listening review required)",
+  "note": "11-14 new line, same voice/model/settings as existing family-skills"
+}

@@ -1,0 +1,26 @@
+{
+  "hero": "yungeon",
+  "action": "special",
+  "model": "eleven_v3",
+  "voice_id": "TX3LPaxmHKxFdv7VOQHJ",
+  "text": "[7-year-old boy voice][childlike tone][playful][shouting] 라민 야말 슛!",
+  "voice_settings": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "use_speaker_boost": false
+  },
+  "take_id": "yamalshot-v1",
+  "take_no": 2,
+  "request_id": "JNTn8Hdokf9edfdRzya9",
+  "duration": 2.266,
+  "sha256": "466021bd125aac08227e233044ca96e0a270d27ea83ba6d820aa7c2e652a9611",
+  "duration_ok": true,
+  "peak_db": -2.0,
+  "mp3_bytes": 27942,
+  "chars": 66,
+  "phrase": "라민 야말 슛!",
+  "reviewed": false,
+  "takes": 2,
+  "transcription": "not checked (no transcription allowed in this task; listening review required)",
+  "note": "11-14 new line, same voice/model/settings as existing family-skills"
+}

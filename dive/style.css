@@ -18,6 +18,24 @@ html, body { height: 100%; margin: 0; overflow: hidden; background: #0d3b66; col
 #qcount { color: #ffe27a; font-size: 15px; }
 #qcount:empty { display: none; }
 
+/* 무지개 터보 게이지: HUD 아래 가운데 */
+.fever { position: fixed; z-index: 3; left: 50%; top: calc(62px + env(safe-area-inset-top)); transform: translateX(-50%); width: min(46vw, 300px); display: flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 999px; background: rgba(6,36,70,.55); pointer-events: none; }
+.fever[hidden] { display: none; }
+.fever-label { font-size: 13px; font-weight: 900; color: #ffe27a; white-space: nowrap; }
+.fever-bar { position: relative; flex: 1 1 auto; height: 10px; border-radius: 99px; background: rgba(255,255,255,.18); overflow: hidden; }
+.fever-bar i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 99px; background: linear-gradient(90deg, #ff7a9c, #ffb24a, #ffe45c, #7dffb0, #6fd3ff, #b9a2ff); }
+.fever.on { background: rgba(80,30,110,.7); }
+.fever.on .fever-label { color: #fff; }
+/* 슈웅! 버튼: 오른쪽 아래 큰 동그라미, 다시 쓸 수 있을 때까지 고리가 찬다(--p 0~1) */
+.dash { --p: 1; position: fixed; z-index: 3; right: calc(18px + env(safe-area-inset-right)); bottom: calc(18px + env(safe-area-inset-bottom)); width: 112px; height: 112px; padding: 0; border: 0; border-radius: 50%; background: conic-gradient(#ffe27a calc(var(--p) * 360deg), rgba(255,255,255,.16) 0); color: #2a1c00; font: inherit; touch-action: none; -webkit-user-select: none; user-select: none; }
+.dash[hidden] { display: none; }
+.dash span { position: absolute; inset: 9px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(6,36,70,.82); color: #cfe6ff; font-size: 22px; font-weight: 900; letter-spacing: -.02em; pointer-events: none; }
+.dash.ready span { background: linear-gradient(180deg, #ffe58a, #ffc93c); color: #2a1c00; }
+.dash.ready { animation: dashpulse 1.1s ease-in-out infinite; }
+.dash:active span { transform: scale(.94); }
+@keyframes dashpulse { 50% { box-shadow: 0 0 0 7px rgba(255,226,122,.28); } }
+@media (max-width: 520px), (max-height: 520px) { .dash { width: 92px; height: 92px; } .dash span { font-size: 19px; } }
+
 .panel { position: fixed; z-index: 4; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(calc(100vw - 32px), 560px); max-height: calc(100vh - 24px); overflow-y: auto; padding: 20px 20px; border: 1px solid rgba(255,255,255,.24); border-radius: 26px; background: rgba(6,34,66,.93); text-align: center; }
 .panel[hidden] { display: none; }
 .panel h1 { margin: 0 0 4px; font-size: clamp(30px, 7vw, 44px); letter-spacing: -.02em; color: #bff3ff; }

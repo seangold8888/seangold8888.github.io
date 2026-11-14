@@ -15,12 +15,27 @@ export const FAMILY_SKILL_LINES = Object.freeze({
     kick: take('메가냅터킥!', 'sanguo/audio/family-skills-v1/taeo-special-eleven-meganaptor-v1.wav'),
     yummy: take('맛있는 거죠!', 'sanguo/audio/family-skills-v1/taeo-special-eleven-yummy-v1.wav'),
     fight: take('싸우자!', 'sanguo/audio/family-skills-v1/taeo-special-eleven-fight-v1.wav'),
+    nosleep: take('잠 못 자게 한다!', 'sanguo/audio/family-skills-v1/taeo-special-eleven-nosleep-v1.wav'),
+  }),
+  // 11-14: 윤찬·윤건도 필살기 외침을 여러 개 돌려 쓴다(첫 줄 = 원래 대표 대사).
+  yunchan: Object.freeze({
+    mamaboy: take('마마보이!', 'sanguo/audio/hero-callouts-eleven-v2/yunchan-callout-v2.wav'),
+    bored: take('엄마 심심해!', 'sanguo/audio/family-skills-v1/yunchan-special-eleven-bored-v1.wav'),
+    funthing: take('재밌는 거 없어?', 'sanguo/audio/family-skills-v1/yunchan-special-eleven-funthing-v1.wav'),
+  }),
+  yungeon: Object.freeze({
+    easy: take('너무 쉽잖아!', 'sanguo/audio/hero-callouts-eleven-v2/yungeon-callout-v2.wav'),
+    bullet: take('총알 슛!', 'sanguo/audio/family-skills-v1/yungeon-special-eleven-bulletshot-v1.wav'),
+    hurricane: take('해리케인 슛!', 'sanguo/audio/family-skills-v1/yungeon-special-eleven-hurricaneshot-v1.wav'),
+    yamal: take('라민 야말 슛!', 'sanguo/audio/family-skills-v1/yungeon-special-eleven-yamalshot-v1.wav'),
   }),
 });
 export const FAMILY_SKILL_MAP = Object.freeze({
   // A list means the game takes turns among those lines; the first one is the default.
   jaei: Object.freeze({ attack:'kim', heavy:['no','sireo'], dash:['wait','no'], ranged:'water', special:['water','sireo','wait'], musou:'kim', whirlwind:['sireo','no'], counter:['wait','sireo'], hurt:['sireo','no'] }),
-  taeo: Object.freeze({ attack:'kiap', heavy:'yummy', dash:'sseugumi', ranged:'fight', special:'kick', musou:'fight', whirlwind:'kiap', counter:'sseugumi', combo:'sseugumi', finisher:'fight', pickup:'yummy' }),
+  taeo: Object.freeze({ attack:'kiap', heavy:'yummy', dash:'sseugumi', ranged:'fight', special:['kick','nosleep'], musou:'fight', whirlwind:'kiap', counter:'sseugumi', combo:'sseugumi', finisher:'fight', pickup:'yummy' }),
+  yunchan: Object.freeze({ special:['mamaboy','bored','funthing'] }),
+  yungeon: Object.freeze({ special:['easy','bullet','hurricane','yamal'] }),
 });
 export function familySkillLines(hero, action) {
   const keys = [].concat(FAMILY_SKILL_MAP[hero]?.[action] ?? []);

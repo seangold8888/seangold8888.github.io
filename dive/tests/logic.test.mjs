@@ -44,7 +44,7 @@ test("단계 차이는 한눈에: 단계마다 색이 바뀌고, 개수가 늘�
 
 test("문제를 맞힌 순간의 보상: 한 번에 → 화면 안 친구 전부 + 하트 1, 고쳐서 → 가까운 친구만", () => {
   const make = () => {
-    const w = E.createWorld({ kid: 1, rng: seeded(9), view: { w: 720, h: 540 } }); w.t = 100;
+    const w = E.createWorld({ kid: 1, rng: seeded(9), view: { w: 720, h: 540 } }); w.t = 100; w.enemies = [];
     for (const [dx, dy] of [[100, 0], [-150, 60], [300, 200], [-330, -240], [600, 0], [0, 500]]) E.spawnEnemy(w, "jelly", { x: w.p.x + dx, y: w.p.y + dy });
     const boss = E.spawnEnemy(w, "boss", { x: w.p.x + 200, y: w.p.y - 100 });
     w.hearts = 1; return { w, boss };
@@ -78,36 +78,41 @@ test("적 곡선: 시간에 따라 많아지고 단단해지고 빨라지되 상
     assert.ok(L.hpMul(t) >= L.hpMul(t - 1), "hp " + t);
     assert.ok(L.speedMul(t) >= L.speedMul(t - 1), "speed " + t);
   }
-  assert.ok(L.spawnRate(0) > 0.3 && L.spawnRate(0) < 1, "처음엔 천천히");
-  assert.ok(L.spawnRate(239) < 3, "1초에 3마리 안쪽");
-  assert.ok(L.spawnRate(250) < L.spawnRate(239), "대왕이 나오면 졸개는 줄어든다");
+  assert.ok(L.spawnRate(0) >= 1 && L.spawnRate(0) <= 3, "처음부터 떼로(1초에 1~3마리)");
+  assert.ok(L.spawnRate(L.BOSS_AT - 1) < 6, "1초에 6마리 안쪽");
+  assert.ok(L.spawnRate(L.BOSS_AT + 10) < L.spawnRate(L.BOSS_AT - 1), "대왕이 나오면 졸개는 줄어든다");
   assert.ok(L.hpMul(1e4) <= 4, "체력 배수 상한");
   assert.ok(L.speedMul(1e4) <= 1.4, "속도 배수 상한");
   // 친구별로 나오는 때가 지켜진다
-  for (const [k, from] of Object.entries({ crab: 40, jelly: 80, puffer: 130 })) {
+  for (const [k, from] of Object.entries({ crab: 25, jelly: 50, puffer: 80 })) {
     assert.equal(k in L.enemyMix(from - 1), false, k); assert.equal(k in L.enemyMix(from), true, k);
   }
   assert.equal("eel" in L.enemyMix(299), false, "곰치는 섞는 표가 아니라 경고 뒤 따로 나온다");
+  for (const k of [...L.KINGS, "gold", "clam"]) assert.equal(k in L.enemyMix(200), false, k + " 는 이벤트로만");
+  // 약한 친구가 떼로: 처음 물고기는 두두두 두 발, 꼬마 물고기는 한 발에 씻긴다
+  assert.ok(L.enemyHp("inkfish", 0) <= L.WEAPONS.bubble.tiers[0].dmg * 2, "첫 물고기는 두 발");
+  const fw = E.createWorld({ kid: 1, rng: seeded(2) }); const fry = E.spawnEnemy(fw, "inkfish", { x: 100, y: 100 }, { small: true });
+  assert.ok(fry.hp <= L.WEAPONS.bubble.tiers[0].dmg && fry.r < L.ENEMIES.inkfish.r, "꼬마 물고기는 한 발");
   // 쫓아오는 친구는 늘 잠수정보다 느리다(복어 부풀기 1.9배까지 포함해 기본 속도로는 못 따라잡게)
   for (let i = 0; i < 4; i++) for (const k of ["inkfish", "crab", "jelly", "puffer"]) assert.ok(L.enemySpeed(k, 300, L.tuning(i)) < L.SUB_SPEED * 0.6, k + " " + i);
   assert.ok(L.bossHp(L.zoneOf("cave")) > L.bossHp(L.zoneOf("wreck")) && L.bossHp(L.zoneOf("wreck")) > L.bossHp(L.zoneOf("coral")));
 });
 
-test("경험치 곡선: ? 진주가 갈수록 조금씩 멀어지고, 한 판에 10~14번쯤", () => {
+test("경험치 곡선: ? 진주가 갈수록 조금씩 멀어진다", () => {
   for (let n = 1; n < 30; n++) assert.ok(L.xpNeed(n) > L.xpNeed(n - 1));
-  assert.ok(L.xpNeed(0) <= 8, "첫 진주는 금방");
+  assert.ok(L.xpNeed(0) <= 24, "첫 진주는 금방(떼 한 번 씻기면)");
   assert.ok(L.xpNeedFor(0, true) < L.xpNeed(0) && L.xpNeedFor(1, true) === L.xpNeed(1));
   assert.equal(L.pearlsFor(0), 0); assert.equal(L.pearlsFor(L.xpNeed(0)), 1);
-  // 잘하는 판의 빛 방울 양(구해 준 친구 ~310마리, 평균 값 ~1.5)이면 10~14개
-  const p = L.pearlsFor(310 * 1.5);
-  assert.ok(p >= 10 && p <= 14, "pearls " + p);
+  // 잘하는 판의 빛 방울 양(~2000)이면 7~11개(+ 왕 친구 진주 2개)
+  const p = L.pearlsFor(2000);
+  assert.ok(p >= 7 && p <= 11, "pearls " + p);
 });
 
 test("아이별 난이도: 어릴수록 쉽고, 태오는 하트 4·끌림 1.6배·곰치 없음·카드 2장", () => {
   const T = L.PILOT_TUNING;
   assert.equal(T.length, 4);
   for (let i = 1; i < 4; i++) { assert.ok(T[i].speed <= T[i - 1].speed); assert.ok(T[i].hp <= T[i - 1].hp); assert.ok(T[i].hearts >= T[i - 1].hearts); assert.ok(T[i].magnet >= T[i - 1].magnet); }
-  assert.deepEqual([T[0].speed, T[0].hp], [1.15, 1.3]);
+  assert.deepEqual([T[0].speed, T[0].hp], [1.1, 1.2]);
   assert.deepEqual([T[3].speed, T[3].hp, T[3].hearts, T[3].magnet, T[3].eel, T[3].cards], [0.7, 0.6, 4, 1.6, false, 2]);
   assert.equal(L.tuning(99), T[1]);
   // 태오 판에는 곰치가 나오지 않는다
@@ -167,11 +172,11 @@ test("저장: 깨진 값은 기본값으로, 진주 누적으로 구역·선물�
   assert.deepEqual(L.openGifts(20), ["support"]); assert.deepEqual(L.openGifts(160), ["support", "quickpearl", "weapon", "rescue3"]);
   assert.deepEqual(L.openZones(120), ["coral", "wreck", "cave"]);
   // 판 결과 더하기
-  const r = L.applyRun(L.defaultSave(), { kid: "jaei", time: 300, solved: 10, rescued: 305, dex: { inkfish: 200, crab: 105, boss: 1 }, result: "boss" });
-  assert.equal(r.pearls, 30 + 20 + 10); assert.equal(r.save.pearls, 60); assert.deepEqual(r.newZones, ["wreck"]); assert.deepEqual(r.newGifts, ["support", "quickpearl"]);
+  const r = L.applyRun(L.defaultSave(), { kid: "jaei", time: 300, solved: 10, rescued: 755, dex: { inkfish: 600, crab: 155, boss: 1 }, result: "boss" });
+  assert.equal(r.pearls, 30 + 20 + 10); assert.equal(r.save.best.jaei.time, L.RUN_TIME, "옛 5분 기록도 판 길이로 자른다"); assert.equal(r.save.pearls, 60); assert.deepEqual(r.newZones, ["wreck"]); assert.deepEqual(r.newGifts, ["support", "quickpearl"]);
   assert.equal(r.save.bossRescued, 1); assert.equal(r.save.best.jaei.wins, 1); assert.ok(r.newFriends.includes("crab"));
-  assert.equal(L.runPearls({ rescued: 50, solved: 0, result: "escape" }), 9);
-  assert.equal(L.runPearls({ rescued: 50, solved: 0, result: "tired" }), 5);
+  assert.equal(L.runPearls({ rescued: 125, solved: 0, result: "escape" }), 9);
+  assert.equal(L.runPearls({ rescued: 125, solved: 0, result: "tired" }), 5);
   assert.deepEqual(L.normalizeSave(JSON.stringify(r.save)), r.save, "저장→읽기 왕복");
 });
 
@@ -184,13 +189,13 @@ test("엔진: 하트 0 → 구조(한 번) → 두 번째엔 끝, 문제 뒤 무
   const t = w.t; E.stepWorld(w, 1); assert.equal(w.t, t, "멈춘 동안 시간이 안 간다");
   E.revive(w); assert.equal(w.hearts, 2); assert.ok(w.p.inv >= L.RESUME_INV - 1e-9); assert.equal(w.rescueUsed, true);
   w.p.inv = 0; w.hearts = 1; E.hurt(w); assert.equal(w.over.result, "tired");
-  // 300초가 지나면 대왕이 있으면 도망, 없으면 성공
+  // 판 길이가 지나면 대왕이 있으면 도망, 없으면 성공
   const w2 = E.createWorld({ kid: 1, rng: seeded(4) }); w2.t = L.RUN_TIME - 0.01; w2.bossSpawned = true; w2.boss = { kind: "boss" };
   E.stepWorld(w2, 0.05); assert.equal(w2.over.result, "escape");
   // ? 진주는 최대 2개까지 쌓이고, 막대는 가득 찬 채 기다린다
   const w3 = E.createWorld({ kid: 1, rng: seeded(5) });
   E.gainXp(w3, 10000); assert.equal(w3.qpearls.length, L.MAX_QPEARLS); assert.equal(w3.xp, E.xpGoal(w3));
-  // 상한: 적 60, 빛 방울 150
+  // 상한: 적 MAX_ENEMIES, 빛 방울 MAX_ORBS
   const w4 = E.createWorld({ kid: 1, rng: seeded(6) });
   for (let i = 0; i < 90; i++) E.spawnEnemy(w4, "jelly");
   assert.equal(w4.enemies.length, L.MAX_ENEMIES);
@@ -200,24 +205,151 @@ test("엔진: 하트 0 → 구조(한 번) → 두 번째엔 끝, 문제 뒤 무
   assert.equal(w4.rescued, 300);
 });
 
-test("균형 시뮬레이션 (가)~(라)", { timeout: 240000 }, () => {
-  const S = 8;
-  const none = summary({ kid: 1, policy: "none" }, S), all = summary({ kid: 1, policy: "all" }, S), half = summary({ kid: 1, policy: "half" }, S), taeo = summary({ kid: 3, policy: "half" }, S);
-  const line = (n, r) => console.log("  " + n, JSON.stringify({ success: r.success, bossWashed: r.bossWashed, time: r.time, firstHurt: r.firstHurtMedian, pearls: r.pearls, dps: r.dps }));
-  line("(가) 재이·문제 안 풂", none); line("(나) 재이·다 맞힘  ", all); line("(다) 재이·절반     ", half); line("(라) 태오·절반     ", taeo);
-  // (가) 안 풀면 180초 전후로 버거워진다(첫 다침 120~200초, 성공 거의 없음)
-  assert.ok(none.firstHurtMedian >= 110 && none.firstHurtMedian <= 210, "가 첫 다침 " + none.firstHurtMedian);
-  assert.ok(none.time >= 140 && none.time <= 240, "가 버틴 시간 " + none.time);
-  assert.ok(none.success <= 0.25, "가 성공률 " + none.success);
-  // (나) 다 맞히면 무난히 성공
-  assert.ok(all.success >= 0.85, "나 성공률 " + all.success);
-  // (다) 절반도 성공 가능
-  assert.ok(half.success >= 0.4, "다 성공률 " + half.success);
-  // (라) 태오 설정에서는 절반이 더 쉽다
-  assert.ok(taeo.success >= half.success && taeo.success >= 0.75, "라 성공률 " + taeo.success);
-  assert.ok(taeo.hurts <= half.hurts);
-  // 풀수록 확실히 유리: 다 맞히는 아이와 안 푸는 아이의 버틴 시간 차이
-  assert.ok(all.time - none.time >= 80, "차이 " + (all.time - none.time));
-  // 진주는 한 판에 10~14번쯤(다 맞히는 아이 기준)
-  assert.ok(all.pearls >= 9.5 && all.pearls <= 14.5, "진주 " + all.pearls);
+test("판 길이: 3분 30초, 대왕 170초, 화면 글자도 같이", () => {
+  assert.equal(L.RUN_TIME, 210); assert.equal(L.BOSS_AT, 170);
+  assert.equal(L.runLabel(), "3분 30초"); assert.equal(L.runLabel(300), "5분");
+  assert.ok(L.EVENT_PLAN.every(e => e.t < L.RUN_TIME), "이벤트는 판 안에서");
+  // 20~25초마다 이벤트, 큰 친구는 55·115초쯤
+  const pre = L.EVENT_PLAN.filter(e => e.t < L.BOSS_AT);
+  for (let i = 1; i < pre.length; i++) assert.ok(pre[i].t - pre[i - 1].t <= 25 && pre[i].t - pre[i - 1].t >= 12, "간격 " + pre[i].t);
+  assert.ok(pre[0].t <= 25, "첫 이벤트는 25초 안");
+  assert.deepEqual(L.EVENT_PLAN.filter(e => e.id === "king").map(e => e.t), [55, 115]);
+  assert.ok(new Set(L.EVENT_PLAN.map(e => e.id)).size >= 5, "이벤트 5가지 이상이 돌아가며");
+  for (const id in L.EVENTS) for (const s of [L.EVENTS[id].name, L.EVENTS[id].sub]) assert.ok(!s.includes("별빛"), s);
+  // 잠수정은 예전(190)보다 25~35% 빠르다
+  assert.ok(L.SUB_SPEED >= 190 * 1.25 && L.SUB_SPEED <= 190 * 1.35);
+});
+
+test("슈웅!: 바라보는 쪽으로 쭉, 그동안 안 다치고 지나간 친구를 씻김, 다시 쓰기까지 기다림", () => {
+  const w = E.createWorld({ kid: 1, rng: seeded(21) }); w.enemies = [];
+  w.p.face = 0; const x0 = w.p.x;
+  for (let i = 0; i < 4; i++) E.spawnEnemy(w, "inkfish", { x: x0 + 60 + i * 35, y: w.p.y });
+  const boss = E.spawnEnemy(w, "boss", { x: x0 + 400, y: w.p.y + 300 });
+  assert.equal(E.dash(w), true);
+  assert.equal(E.dash(w), false, "바로 또는 안 됨");
+  assert.equal(E.hurt(w), false, "슈웅! 중에는 안 다친다");
+  for (let i = 0; i < 14; i++) E.stepWorld(w, 1 / 60, { x: 0, y: 0 });
+  assert.ok(w.p.x - x0 > 120, "쭉 나갔다 " + (w.p.x - x0));
+  assert.equal(w.enemies.filter(e => e.kind === "inkfish").length, 0, "지나간 친구는 씻김");
+  assert.ok(boss.hp > 0, "대왕은 한 번에 안 씻김");
+  assert.ok(w.dashCd > 0);
+  for (let i = 0; i < Math.ceil(L.tuning(1).dashCd * 20) + 2; i++) { E.stepWorld(w, 0.05, { x: 0, y: 0 }); w.hearts = 3; w.pending = null; }
+  assert.ok(E.dashReady(w), "기다리면 다시 쓸 수 있다");
+  // 태오는 더 짧고, 부딪히기 직전에 저절로 슈웅!(그 사이 몇 초)
+  assert.ok(L.tuning(3).dashCd < L.tuning(1).dashCd && L.tuning(3).autoDash >= 3);
+  for (let i = 0; i < 3; i++) assert.equal(L.tuning(i).autoDash, 0);
+  const t = E.createWorld({ kid: 3, rng: seeded(22) }); t.enemies = [];
+  E.spawnEnemy(t, "inkfish", { x: t.p.x + 40, y: t.p.y });
+  E.stepWorld(t, 1 / 60, { x: 0, y: 0 });
+  assert.equal(t.autoDashes, 1, "태오 자동 슈웅!"); assert.equal(t.hurts, 0);
+  for (let i = 0; i < 20; i++) { t.enemies = []; E.spawnEnemy(t, "inkfish", { x: t.p.x + 30, y: t.p.y }); E.stepWorld(t, 1 / 60, { x: 0, y: 0 }); t.hearts = 4; t.pending = null; }
+  assert.equal(t.autoDashes, 1, "자동 슈웅!은 몇 초에 한 번만");
+});
+
+test("콤보 → 무지개 터보: 이어서 씻기면 콤보, 게이지가 차면 6초 터보(더 자주·크게·빛 방울 끌림)", () => {
+  const w = E.createWorld({ kid: 1, rng: seeded(31) }); w.enemies = [];
+  for (let i = 0; i < 5; i++) { const e = E.spawnEnemy(w, "inkfish", { x: 200 + i * 200, y: 200 }); E.damage(w, e, 99); }
+  assert.equal(w.combo, 5); assert.ok(w.gauge > 0, "콤보 3부터 게이지");
+  w.enemies = []; E.stepWorld(w, L.FEVER.gap + 0.05, { x: 0, y: 0 });
+  assert.equal(w.combo, 0, "쉬면 콤보가 끊긴다");
+  // 게이지는 터보를 거듭할수록 조금씩 더 모아야 한다
+  assert.ok(L.feverGain(10, 0) > L.feverGain(10, 2) && L.feverGain(2, 0) === 0);
+  w.gauge = 0.999; w.combo = 9; w.comboT = 1;
+  const e = E.spawnEnemy(w, "inkfish", { x: 300, y: 900 }); E.damage(w, e, 99);
+  assert.ok(w.fever > 0 && w.fevers === 1 && w.gauge === 0, "터보 시작");
+  const m = L.mods({}), f = L.feverMods(m);
+  assert.ok(L.weaponStats("bubble", 1, false, f).every < L.weaponStats("bubble", 1, false, m).every, "더 자주");
+  assert.ok(L.weaponStats("bubble", 1, false, f).size > L.weaponStats("bubble", 1, false, m).size, "더 크게");
+  w.orbs.push({ x: w.p.x + 500, y: w.p.y, v: 1, t: 0, pull: false });
+  E.stepWorld(w, 0.05, { x: 0, y: 0 });
+  assert.ok(w.orbs.every(o => o.pull), "터보 중엔 빛 방울이 다 날아온다");
+  for (let i = 0; i < 130; i++) { E.stepWorld(w, 0.05, { x: 0, y: 0 }); w.hearts = 3; w.pending = null; }
+  assert.equal(w.fever, 0, "6초 뒤 끝");
+});
+
+test("연쇄: 씻긴 친구가 터지며 가까운 약한 친구를 씻기고, 두 칸에서 멈춘다. 단단한 친구는 크게 터진다", () => {
+  const w = E.createWorld({ kid: 1, rng: seeded(41) }); w.enemies = []; w.t = 10;
+  w.p.x = 1500; w.p.y = 1100;
+  const line = []; for (let i = 0; i < 6; i++) line.push(E.spawnEnemy(w, "inkfish", { x: 300 + i * 40, y: 300 }));
+  E.damage(w, line[0], 99);
+  E.stepWorld(w, 1 / 60, { x: 0, y: 0 });
+  const left = line.filter(e => !e.dead).length;
+  assert.ok(left >= 2 && left <= 4, "짧게 이어지고 멈춤: 남은 " + left);
+  assert.ok(w.chained >= 2);
+  const v = E.createWorld({ kid: 1, rng: seeded(42) }); v.enemies = []; v.t = 10;
+  v.p.x = 1500; v.p.y = 1100;
+  const el = E.spawnEnemy(v, "inkfish", { x: 400, y: 400 }, { elite: true });
+  assert.ok(el.max >= L.enemyHp("inkfish", 10) * 3 && el.r > L.ENEMIES.inkfish.r, "단단한 친구는 크고 튼튼");
+  const ring = []; for (let i = 0; i < 8; i++) ring.push(E.spawnEnemy(v, "inkfish", { x: 400 + Math.cos(i) * 95, y: 400 + Math.sin(i) * 95 }));
+  E.damage(v, el, 999); E.stepWorld(v, 1 / 60, { x: 0, y: 0 });
+  assert.ok(ring.filter(e => e.dead).length >= 6, "크게 터져 둘레를 씻김");
+});
+
+test("이벤트: 먹물 떼 · 황금 물고기 · 큰 친구(? 진주) · 물살 · 보물 조개 · 고래", () => {
+  const mk = () => { const w = E.createWorld({ kid: 1, rng: seeded(51) }); w.enemies = []; w.t = 60; return w; };
+  let w = mk(); E.startEventQA(w, { id: "ring" });
+  assert.ok(w.enemies.length >= 18, "먹물 떼가 둘러쌈");
+  assert.ok(w.events.some(e => e.type === "event" && e.id === "ring" && e.name));
+  w = mk(); E.startEventQA(w, { id: "gold" }); const g = w.enemies.find(e => e.kind === "gold");
+  assert.ok(g && L.harmless("gold")); E.damage(w, g, 999); assert.ok(w.orbs.length >= 15 && w.goldCaught === 1, "빛 방울 비");
+  w = mk(); E.startEventQA(w, { id: "king", kind: "kingjelly" }); const k = w.enemies.find(e => e.kind === "kingjelly");
+  assert.ok(k && k.king); E.damage(w, k, 1e5); assert.equal(w.qpearls.length, 1, "큰 친구는 ? 진주를 꼭 준다");
+  w.qpearls.push({ x: 0, y: 0, t: 0 }, { x: 0, y: 0, t: 0 }); const k2 = E.spawnEnemy(w, "kingpuffer"); E.damage(w, k2, 1e5); assert.equal(w.qpearls.length, L.MAX_QPEARLS + 1, "쌓여 있어도 하나 더");
+  w = mk(); E.startEventQA(w, { id: "current" }); const f = E.spawnEnemy(w, "jelly", { x: 900, y: 300 }); const fx0 = f.x;
+  for (let i = 0; i < 20; i++) { E.stepWorld(w, 0.05, { x: 0, y: 0 }); w.hearts = 3; w.pending = null; }
+  assert.ok(Math.abs(f.x - fx0) > 60 || f.dead, "물살에 옆으로 밀림");
+  w = mk(); E.startEventQA(w, { id: "clam" }); const c = w.enemies.find(e => e.kind === "clam");
+  assert.ok(c && c.max >= 30, "여러 번 맞혀야"); E.damage(w, c, 1e4); assert.equal(w.pending, "chest", "장비 선물");
+  w = mk(); E.startEventQA(w, { id: "whale" }); const lane = []; for (let i = 0; i < 5; i++) lane.push(E.spawnEnemy(w, "crab", { x: w.p.x - 300 + i * 150, y: w.whale.y }));
+  for (let i = 0; i < 90 && w.whale; i++) { E.stepWorld(w, 1 / 30, { x: 0, y: 0 }); w.hearts = 3; w.pending = null; }
+  assert.ok(lane.every(e => e.dead), "고래가 지나간 줄은 싹");
+  // 이벤트 계획대로 판에서 저절로 일어난다
+  const r = E.createWorld({ kid: 3, rng: seeded(52) });
+  for (let i = 0; i < 160 * 20; i++) { E.stepWorld(r, 0.05, { x: 0, y: 0 }); r.hearts = 9; r.pending = null; }
+  assert.deepEqual(r.eventsSeen, L.EVENT_PLAN.filter(e => e.t <= 160).map(e => e.id));
+});
+
+test("균형 시뮬레이션: 안 풂·절반·다 맞힘 · 첫 진주 · 터보 횟수 · 화면 친구 수", { timeout: 300000 }, () => {
+  const S = 12;
+  const none = summary({ kid: 1, policy: "none" }, S), half = summary({ kid: 1, policy: "half" }, S), all = summary({ kid: 1, policy: "all" }, S);
+  const tNone = summary({ kid: 3, policy: "none" }, S), tHalf = summary({ kid: 3, policy: "half" }, S), cAll = summary({ kid: 0, policy: "all" }, S);
+  const line = (n, r) => console.log("  " + n, JSON.stringify({ success: r.success, bossWashed: r.bossWashed, time: r.time, timeMed: r.timeMed, firstPearl: r.firstPearl, quiz60: r.quiz60, fevers: r.fevers, screenMed: r.screenMed, washPerMin: r.washPerMin }));
+  line("재이·안 풂 ", none); line("재이·절반  ", half); line("재이·다 맞힘", all); line("태오·안 풂 ", tNone); line("태오·절반  ", tHalf); line("윤찬·다 맞힘", cAll);
+  // 안 풀면 판의 중간쯤부터 버겁다(재이: 판의 55~78%에서 끝, 성공 거의 없음)
+  assert.ok(none.time >= L.RUN_TIME * 0.55 && none.time <= L.RUN_TIME * 0.78, "안 풂 버틴 시간 " + none.time);
+  assert.ok(none.success <= 0.1, "안 풂 성공률 " + none.success);
+  // 태오는 안 풀어도 거의 대왕까지 간다
+  assert.ok(tNone.time >= L.BOSS_AT, "태오 안 풂 " + tNone.time);
+  // 절반은 70% 넘게, 다 맞히면 95% 넘게 대왕까지 씻김
+  assert.ok(half.success >= 0.7 && tHalf.success >= 0.7, "절반 " + half.success + "/" + tHalf.success);
+  assert.ok(all.bossWashed >= 0.95 && cAll.bossWashed >= 0.95, "다 맞힘 대왕 " + all.bossWashed + "/" + cAll.bossWashed);
+  // 빨리 시작: 첫 ? 진주 12초 안, 첫 1분에 문제 서너 번
+  for (const r of [half, all, tHalf]) { assert.ok(r.firstPearl <= 12, "첫 진주 " + r.firstPearl); assert.ok(r.quiz60 >= 2.5 && r.quiz60 <= 5, "첫 1분 문제 " + r.quiz60); }
+  // 보통으로 움직이는 아이: 터보 3~5번
+  assert.ok(half.fevers >= 3 && half.fevers <= 5.5, "터보 " + half.fevers);
+  // 화면이 북적: 안 푸는 아이 화면은 20초 뒤 가운데값 20마리 이상, 분당 씻김 200 이상
+  assert.ok(none.screenMed >= 20, "화면 친구 " + none.screenMed);
+  assert.ok(none.washPerMin >= 200 && half.washPerMin >= 350, "분당 씻김 " + none.washPerMin + "/" + half.washPerMin);
+  // 문제 푸는 아이 화면도 북적(20초 뒤 가운데값 25 이상)
+  assert.ok(half.screenMed >= 25 && all.screenMed >= 22, "푸는 아이 화면 " + half.screenMed + "/" + all.screenMed);
+  // 풀수록 확실히 유리: 다 맞히면 대왕까지 씻기고, 안 풀면 그 전에 지친다(다 맞힌 판은 대왕을 씻겨 일찍 끝나므로 시간 차이는 작다)
+  assert.ok(all.bossWashed - none.success >= 0.85 && all.time - none.time >= 30, "차이 " + (all.time - none.time));
+});
+
+test("한 번에 여러 마리 · 콤보 단계 · 오래된 빛 방울은 저절로 날아옴", () => {
+  const w = E.createWorld({ kid: 1, rng: seeded(61) }); w.enemies = []; w.t = 20;
+  for (let i = 0; i < 12; i++) { const e = E.spawnEnemy(w, "inkfish", { x: 200 + i * 90, y: 1200 }); E.damage(w, e, 99); }
+  const multis = w.events.filter(e => e.type === "multi").map(e => e.n);
+  assert.deepEqual(multis, [5, 10], "5마리·10마리 고비에서 한 번씩");
+  assert.ok(w.events.some(e => e.type === "combo-tier" && e.tier === 0), "콤보 10 = 좋아요");
+  assert.equal(L.COMBO_TIERS.map(t => t.name).join(","), "좋아요,멋져요,굉장해요,전설!");
+  assert.equal(L.comboTier(9), -1); assert.equal(L.comboTier(30), 1); assert.equal(L.comboTier(150), 3);
+  assert.ok(L.FEVER.gap >= 0.8 && L.FEVER.gap <= 1.0, "콤보 유지 0.9초 안팎");
+  // 오래된 빛 방울은 멀리 있어도 날아온다
+  const v = E.createWorld({ kid: 1, rng: seeded(62) }); v.enemies = [];
+  v.orbs.push({ x: v.p.x + 600, y: v.p.y, v: 1, t: L.ORB_DRIFT + 0.1, pull: false });
+  E.stepWorld(v, 0.05, { x: 0, y: 0 });
+  assert.equal(v.orbs[0].pull, true);
+  // 두두두: 1단계 물방울은 예전보다 자주(0.62초 → 0.35초 안), 방울은 2배 이상(7 → 14 이상)
+  assert.ok(L.WEAPONS.bubble.tiers[0].every <= 0.35 && L.WEAPONS.bubble.tiers[0].size >= 14);
 });

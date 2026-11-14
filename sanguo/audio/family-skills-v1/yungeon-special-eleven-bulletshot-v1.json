@@ -1,0 +1,26 @@
+{
+  "hero": "yungeon",
+  "action": "special",
+  "model": "eleven_v3",
+  "voice_id": "TX3LPaxmHKxFdv7VOQHJ",
+  "text": "[7-year-old boy voice][childlike tone][playful][shouting] 총알 슛!",
+  "voice_settings": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "use_speaker_boost": false
+  },
+  "take_id": "bulletshot-v1",
+  "take_no": 1,
+  "request_id": "zdcE9rGx1jCfUA0LktQB",
+  "duration": 1.36,
+  "sha256": "5c1a49a5a995442ef5ad82e0079b43b193eb24ee2e5cd53c1ab2a41509233f8f",
+  "duration_ok": true,
+  "peak_db": -2.0,
+  "mp3_bytes": 17284,
+  "chars": 63,
+  "phrase": "총알 슛!",
+  "reviewed": false,
+  "takes": 1,
+  "transcription": "not checked (no transcription allowed in this task; listening review required)",
+  "note": "11-14 new line, same voice/model/settings as existing family-skills"
+}

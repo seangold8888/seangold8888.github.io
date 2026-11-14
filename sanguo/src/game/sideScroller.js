@@ -1236,6 +1236,8 @@ function makeAudio(heroId = 'guanyu', stageKey = 'hulao') {
       playSample('playerShout', voiceProfile.gain * .62, Math.max(.94, voiceProfile.rate), 0, .10, voiceProfile, true);
     },
 
+    isMuted() { return muted; },
+
     toggleMute() {
       ensure();
       muted = !muted;
@@ -1788,7 +1790,7 @@ export async function startSideBattle(heroId = 'guanyu', stageKey = 'hulao', { o
       if (ended) return;
       quizKid = kid;
       result = await GQ.ask({
-        kid, theme,
+        kid, theme, voice: !audio.isMuted?.(),
         title: quizSteps >= QUIZ_MAX_STEPS ? '맞히면 무쌍 +50 · 체력 회복!' : '맞히면 ' + weaponName + ' 강화! (지금 공격 +' + quizPowerPercent(quizSteps) + '%)',
         hint: quizPreviewHint(weaponName, quizSteps),
         onCorrect: (r) => {
