@@ -1,0 +1,10 @@
+{
+  "text": "I'm so sorry.",
+  "audio": "lines/line-4a35d147.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I'm so sorry.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "7e6e78d184809a6c7389cff0dc797c6871aa9ac426207fd8e003b65b2125207e"
+}

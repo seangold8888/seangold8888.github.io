@@ -1,0 +1,10 @@
+{
+  "text": "Can you tie my shoe?",
+  "audio": "lines/line-35583d26.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Can you tie my shoe?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "23fc115eefa309887b2c20cfd743e696d1ef8d54eb67c66797c9fa4a59636c70"
+}

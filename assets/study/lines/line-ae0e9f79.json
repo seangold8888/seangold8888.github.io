@@ -1,0 +1,10 @@
+{
+  "text": "Can I have a turn when you finish?",
+  "audio": "lines/line-ae0e9f79.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Can I have a turn when you finish?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "cec5a67c0804aed2e4a62545be7a1b5235aa64aec94dec709e53adf239f3b538"
+}

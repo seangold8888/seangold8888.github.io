@@ -1,0 +1,10 @@
+{
+  "text": "Good morning! How are you? I'm great, thanks!",
+  "audio": "lines/line-40ae46cd.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Good morning. How are you? I'm great, thanks.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "85aa01116291775d9dda3b64dfa551745a4cb1fe35943ad0602b8330d04d9439"
+}

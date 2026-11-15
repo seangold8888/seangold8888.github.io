@@ -1,0 +1,10 @@
+{
+  "text": "It's snowing.",
+  "audio": "lines/line-ad65a9fb.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "It's snowing.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "1de54fefa0f56a4620f82f70d71690c5e207c1d35af41a694be3d7a6a3eeecad"
+}

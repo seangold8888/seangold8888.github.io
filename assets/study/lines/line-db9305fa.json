@@ -1,0 +1,10 @@
+{
+  "text": "Let's play in the sand.",
+  "audio": "lines/line-db9305fa.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Let's play in the sand.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "1a10c741063ba08f943a242187e1510c049190064107177258b1e0ddda127de0"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "I'm scared.",
+  "audio": "lines/line-2b16f302.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I'm scared.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "daff1e1b9561305567664090ecbd7d6946c1c9fa8ffddd4dbfc6e104cfe8090c"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Have fun!",
+  "audio": "lines/line-521ad6e1.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Have fun.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "33a503c85e871d5bad58f19e8d132ef2472c666fe3bcd20e7acae144aec64d43"
+}

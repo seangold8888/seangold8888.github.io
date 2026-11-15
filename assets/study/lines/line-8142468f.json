@@ -1,0 +1,10 @@
+{
+  "text": "Twinkle, twinkle, little star.",
+  "audio": "lines/line-8142468f.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Twinkle, twinkle, little star.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "a1c63bab8cfd83e6228d1f076b0bb3d391d32949806ba0df800289f93626cb33"
+}

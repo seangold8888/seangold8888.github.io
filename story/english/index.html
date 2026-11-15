@@ -45,8 +45,6 @@
   .row { display:flex; flex-wrap:wrap; gap:10px; }
   .row button { flex:1; min-width:120px; min-height:52px; border:0; border-radius:14px; font-weight:900; font-size:17px; }
   .listen { background:#ffd93d; color:#3a2a00; box-shadow:0 4px 0 #c9a21a; }
-  .show { background:#e5ddff; color:#3b2a78; }
-  .read { background:#c6f28a; color:#1f3a05; box-shadow:0 4px 0 #8ab653; }
   .nav { display:flex; align-items:center; gap:10px; margin-top:16px; }
   .nav button { min-height:54px; padding:0 20px; border:0; border-radius:14px; font-weight:900; font-size:18px; background:rgba(255,255,255,.12); color:var(--paper); }
   .nav button:disabled { opacity:.35; }
@@ -54,42 +52,42 @@
   .dots { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; flex:1; }
   .dots span { width:9px; height:9px; border-radius:50%; background:rgba(255,255,255,.25); }
   .dots span.on { background:var(--star); }
-  .practice { background:#241c4a; color:var(--paper); border-radius:16px; padding:16px; }
-  .practice[hidden] { display:none; }
   .finish { text-align:center; padding:26px 18px; display:grid; gap:12px; }
   .finish .big { font-size:48px; }
   .finish h2 { font-size:26px; }
-  /* 영어 읽기(마이크) 기능 스타일: 대시보드와 같은 모양 */
-  .reading-practice { display:flex; flex-direction:column; gap:12px; }
-  .reading-label, .reading-meaning, .reading-status { font-size:16px; line-height:1.5; }
-  .reading-sentence { display:flex; flex-wrap:wrap; gap:0 .22em; font-size:clamp(24px,4vw,34px); line-height:1.4; font-weight:900; color:#fff; }
-  .reading-word { border-bottom:3px solid #65719d; overflow-wrap:anywhere; }
-  .reading-word.heard { color:#c6f28a; border-color:#c6f28a; }
-  .reading-word.retry { color:#ffb4b4; border-color:#ff8686; text-decoration:underline wavy; text-underline-offset:7px; }
-  .reading-word.listening { color:#342300; background:#ffe680; border-color:#ffe680; border-radius:6px; }
-  .reading-praise { display:block; font-size:clamp(26px,4vw,36px); font-weight:900; color:#ffe680; }
-  .reading-praise-detail { display:block; color:#e0d5ff; }
-  .reading-star-burst { display:block; color:#ffe680; font-size:28px; }
-  .reading-status.retry, .reading-heard.retry { color:#ffb4b4; }
-  .reading-meaning, .reading-label { color:var(--soft); }
-  .reading-meaning[hidden] { display:none; }
-  .reading-actions { display:flex; flex-wrap:wrap; gap:8px; }
-  .reading-actions button { flex:1; min-height:48px; padding:12px; border:0; border-radius:12px; font-weight:800; font-size:16px; }
-  .reading-actions button:disabled { opacity:.5; }
-  .reading-actions button[hidden] { display:none; }
-  .reading-privacy { font-size:13px; line-height:1.6; color:#bbc5df; }
-  .reading-heard { font-size:16px; color:#e0d5ff; overflow-wrap:anywhere; }
-  .reading-log { display:none; }
-  .reading-mode-setting { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 0 0 18px; color: var(--soft); font-size: 14px; }
-  .reading-mode-setting select { min-height: 44px; padding: 8px 12px; border: 1px solid #9daed3; border-radius: 12px; background: #202d48; color: #fff; font: inherit; }
   .study-return { display:block; padding:14px 16px; border-radius:14px; background:#ffe08a; color:#17213b; text-decoration:none; font-weight:800; }
-  .listening-guide { margin:14px 0; padding:14px 16px; border:1px solid #ffe08a; border-radius:14px; color:#fff0bc; line-height:1.6; }
-  .listening-guide p { margin:6px 0 0; }
-  .listen.is-help { background:#ffe08a; color:#17213b; }
-  .listening-original { margin-top:12px; font-size:15px; line-height:1.6; }
-  .listening-original summary { cursor:pointer; min-height:44px; }
-  .original-listen { min-height:48px; padding:12px 16px; border:0; border-radius:12px; font-weight:800; }
-  .study-return[hidden], .listening-guide[hidden] { display:none; }
+  .study-return[hidden] { display:none; }
+  /* 듣기 전용 그림책(2026-11-15): 그림 · 문장 · 🔊 듣기 · 뜻(듣고 나면) · 앞/다음만. 스크롤 없이 한 화면. */
+  body.book-open .top { margin-bottom:8px; }
+  body.book-open .top h1 { font-size:20px; }
+  body.book-open .back { padding:8px 12px; }
+  body.book-open .wrap { max-width:1100px; height:100vh; height:100dvh; display:flex; flex-direction:column;
+    padding:calc(10px + env(safe-area-inset-top,0px)) 12px calc(10px + env(safe-area-inset-bottom,0px)); }
+  body.book-open .reader { flex:1; min-height:0; display:flex; flex-direction:column; justify-content:center; }
+  body.book-open .page { min-height:0; max-height:100%; display:flex; flex-direction:column; }
+  body.book-open .page img { flex:0 1 auto; width:100%; height:auto; aspect-ratio:4/3; max-height:none; min-height:0; object-fit:cover; }
+  body.book-open .page .body { flex:none; padding:12px 16px 14px; gap:10px; align-content:center; }
+  body.book-open .text { font-size:clamp(24px, min(5.6vw, 5.2vh), 44px); line-height:1.3; text-align:center; }
+  body.book-open .meaning { font-size:clamp(18px, min(3.4vw, 3vh), 21px); text-align:center; line-height:1.35; }
+  body.book-open .row .listen { min-height:clamp(56px, 8.5vh, 72px); font-size:clamp(22px, min(4.5vw, 4.2vh), 28px); border-radius:18px; }
+  body.book-open .nav { margin-top:0; }
+  body.book-open .nav button { min-height:56px; background:#ebe2f7; color:var(--ink); }
+  body.book-open .nav .next { background:#ffd93d; color:#3a2a00; }
+  body.book-open .dots span { background:#d6cce6; }
+  body.book-open .dots span.on { background:#7a3fd1; }
+  body.book-open .finish { padding:18px; }
+  .listen.pulse { animation:listen-pulse 1.1s ease-in-out infinite; }
+  @keyframes listen-pulse { 0%,100% { transform:scale(1); box-shadow:0 4px 0 #c9a21a, 0 0 0 0 rgba(255,217,61,.7); }
+    50% { transform:scale(1.03); box-shadow:0 4px 0 #c9a21a, 0 0 0 12px rgba(255,217,61,0); } }
+  @media (prefers-reduced-motion: reduce) { .listen.pulse { animation:none; outline:4px solid #ffd93d; } }
+  /* 가로로 넓은 화면(아이패드 가로·휴대폰 가로): 그림 왼쪽, 문장·버튼·앞뒤 오른쪽 */
+  @media (min-aspect-ratio: 5/4) {
+    body.book-open .reader { justify-content:stretch; }
+    body.book-open .page { flex:1; display:grid; grid-template-rows:minmax(0,1fr); grid-template-columns:minmax(0,1.2fr) minmax(0,1fr); }
+    body.book-open .page img { height:100%; max-height:none; aspect-ratio:auto; }
+    body.book-open .text { font-size:clamp(22px, min(3.6vw, 6.4vh), 44px); }
+  }
+  @media (max-height: 420px) { body.book-open .top { display:none; } }
 </style>
 </head>
 <body>
@@ -99,19 +97,9 @@
     <h1>📚 영어 그림책</h1>
   </div>
 
-  <a id="studyReturn" class="study-return" href="../../game/#study" hidden>← 오늘의 공부로 돌아가 다시 읽기</a>
-  <aside id="listeningGuide" class="listening-guide" hidden>
-    <strong>모르면 먼저 들어도 괜찮아요 😊</strong>
-    <p>노란 ‘이 문장 듣기’를 눌러 보세요. 화면에 나온 문장 그대로 들어요. 듣고 나면 위 버튼으로 돌아가 다시 읽어요. 듣기만으로 정답·티켓·난이도는 바뀌지 않아요.</p>
-    <p>이 쪽의 원래 긴 이야기는 아래 ‘원문 듣기 (이 쪽 전체)’에서 따로 들을 수 있어요.</p>
-  </aside>
-  <div class="reading-mode-setting">
-    <label for="bookReadingMode">읽기 난이도</label>
-    <select id="bookReadingMode"><option value="easy">짧은 문장</option><option value="sentence">한 문장씩</option><option value="page">한 쪽 전체</option></select>
-    <span id="readingGrowth" role="status" aria-live="polite"></span>
-  </div>
+  <a id="studyReturn" class="study-return" href="../../game/#study" hidden>← 오늘의 공부로</a>
   <section class="shelf-view" id="shelfView">
-    <p class="lead">그림을 보며 영어 이야기를 들어요. 🔊로 듣고, 🎤로 직접 읽어 봐요. 별이 적은 책부터 시작해요.</p>
+    <p class="lead">그림을 보며 영어 이야기를 들어요. 쪽을 열면 읽어 주고, 🔊를 누르면 다시 들려줘요. 별이 적은 책부터 들어 봐요.</p>
     <div class="shelf" id="shelf"></div>
   </section>
 
@@ -125,42 +113,27 @@
   </section>
 </div>
 
-<script src="../../assets/study/english-reading.js?v=24"></script>
 <script src="books.js?v=7"></script>
 <script>
 (function () {
   "use strict";
+  // 영어 그림책 = 듣기 전용(2026-11-15). 읽기(마이크)는 허브의 회화 문장 읽기에서 한다.
   var BOOKS = window.EnglishBooks.books;
   var DONE_KEY = "story_english_done";
   var shelfView = document.getElementById("shelfView");
   var shelf = document.getElementById("shelf");
   var reader = document.getElementById("reader");
   var pageEl = document.getElementById("page");
+  var nav = reader.querySelector(".nav");
   var dots = document.getElementById("dots");
   var prevBtn = document.getElementById("prevBtn");
   var nextBtn = document.getElementById("nextBtn");
   var backLink = document.getElementById("backLink");
-  var book = null, index = 0, part = 0, audio = null, practiceView = null;
+  var book = null, index = 0, audio = null;
   var startParams = new URLSearchParams(location.search);
-  var fromStudy = startParams.get('from') === 'study';
-  var listeningHelp = fromStudy && startParams.get('listen') === '1';
-  document.getElementById('studyReturn').hidden = !fromStudy;
-  document.getElementById('listeningGuide').hidden = !listeningHelp;
-  var readingMode = window.EnglishBooks.readMode(localStorage);
-  var growthNotice = "", renderSerial = 0;
-  var modeSelect = document.getElementById("bookReadingMode");
-  function paintGrowth() {
-    modeSelect.value = readingMode;
-    document.getElementById("readingGrowth").textContent = growthNotice || window.EnglishBooks.growthLabel(localStorage);
-  }
-  paintGrowth();
-  modeSelect.value = readingMode;
-  modeSelect.addEventListener("change", function () {
-    readingMode = window.EnglishBooks.cleanMode(modeSelect.value); part = 0;
-    window.EnglishBooks.saveMode(localStorage, readingMode);
-    growthNotice = ""; paintGrowth();
-    if (book) renderPage();
-  });
+  // 예전 '먼저 듣기' 링크(?book=…&page=…&listen=1&from=study)로 와도 그 쪽을 열고, 공부로 돌아가는 링크만 더 보인다.
+  var fromStudy = startParams.get("from") === "study";
+  document.getElementById("studyReturn").hidden = !fromStudy;
 
   function art(id) { return "../../cards/art/" + id + ".webp"; }
   function readDone() {
@@ -177,18 +150,13 @@
     return node;
   }
   function stopAudio() {
-    // audio = { ctx, node }. 컨텍스트를 close 해서 오디오 장치를 완전히 놓아야 바로 뒤의 음성 인식이 산다.
+    // audio = { ctx, node }. 컨텍스트를 close 해서 오디오 장치를 완전히 놓는다(아이패드).
     if (audio) {
       var old = audio; audio = null;
       if (old.node) { try { old.node.onended = null; old.node.stop(0); } catch (error) {} }
       if (old.ctx && old.ctx.close) { try { old.ctx.close(); } catch (error) {} }
-      if (old.element) { try { old.element.pause(); old.element.removeAttribute('src'); old.element.load(); } catch (error) {} }
     }
-    pageEl.querySelectorAll('.playing').forEach(function (text) { text.classList.remove('playing'); });
-  }
-  function stopPractice() {
-    if (practiceView && practiceView.destroy) { try { practiceView.destroy(); } catch (error) {} }
-    practiceView = null;
+    pageEl.querySelectorAll(".playing").forEach(function (text) { text.classList.remove("playing"); });
   }
 
   function renderShelf() {
@@ -204,25 +172,27 @@
       meta.append(el("span", "en", item.title), el("span", "ko", item.titleKo + " · " + item.pages.length + "쪽"),
         el("span", "stars", "★".repeat(item.stars) + "☆".repeat(3 - item.stars)));
       card.append(img, meta);
-      if (done[item.id]) card.appendChild(el("span", "done", "다 읽었어요 ⭐"));
+      if (done[item.id]) card.appendChild(el("span", "done", "다 들었어요 ⭐"));
       card.addEventListener("click", function () { openBook(item); });
       shelf.appendChild(card);
     });
   }
 
-  function openBook(item) {
-    book = item; index = 0; part = 0;
+  function openBook(item, startIndex) {
+    book = item; index = startIndex || 0;
     shelfView.hidden = true; reader.hidden = false;
+    document.body.classList.add("book-open");
     backLink.textContent = "← 책장";
     backLink.setAttribute("href", "#");
     renderPage();
     scrollTo(0, 0);
   }
   function closeBook() {
-    stopAudio(); stopPractice();
-    renderSerial++;
+    stopAudio();
     book = null;
     reader.hidden = true; shelfView.hidden = false;
+    document.body.classList.remove("book-open");
+    reader.appendChild(nav);
     backLink.textContent = "← 이야기 극장";
     backLink.setAttribute("href", "../");
     renderShelf();
@@ -239,143 +209,98 @@
   }
 
   function renderPage() {
-    stopAudio(); stopPractice();
-    var serial = ++renderSerial;
-    paintGrowth();
+    stopAudio();
     pageEl.textContent = "";
     renderDots();
     prevBtn.disabled = index === 0;
     if (index >= book.pages.length) {
       markDone(book.id);
-      var finish = el("div", "finish");
-      finish.append(el("div", "big", "🌟"), el("h2", "", "The End"), el("p", "", "「" + book.titleKo + "」을 다 읽었어요! 멋져요!"));
-      var again = el("button", "listen", "처음부터 다시 읽기");
+      var finish = el("div", "finish body");
+      finish.append(el("div", "big", "🌟"), el("h2", "", "The End"), el("p", "", "「" + book.titleKo + "」을 다 들었어요! 멋져요!"));
+      var again = el("button", "listen", "처음부터 다시 듣기");
       again.type = "button";
-      again.addEventListener("click", function () { index = 0; part = 0; renderPage(); });
-      finish.appendChild(again);
+      again.addEventListener("click", function () { index = 0; renderPage(); });
+      finish.append(again, nav);
       pageEl.appendChild(finish);
       nextBtn.textContent = "책장으로";
       return;
     }
     nextBtn.textContent = index === book.pages.length - 1 ? "끝 →" : "다음 →";
     var page = book.pages[index];
-    var parts = window.EnglishBooks.practice(page, readingMode);
-    part = Math.min(part, parts.length - 1);
-    var line = parts[part];
-    var missed = false, accepted = false;
-    var challenge = { mode: readingMode, id: book.id + ':' + index + ':' + part,
-      pageComplete: part === parts.length - 1 };
     var img = el("img"); img.alt = "";
     // 쪽 전용 삽화가 없으면 카드 원화로 대신한다.
     img.addEventListener("error", function () { if (img.src.indexOf("/cards/art/") < 0) img.src = art(page.art); });
     img.src = page.image;
     var body = el("div", "body");
-    var text = el("p", "text", line.text); text.lang = "en";
-    var meaning = el("p", "meaning", line.meaning); meaning.hidden = true;
+    var text = el("p", "text", page.text); text.lang = "en";
+    // 뜻은 다 듣고 난 뒤 문장 아래에 작게 한 줄로 보인다.
+    var meaning = el("p", "meaning", page.meaning); meaning.hidden = true;
     var row = el("div", "row");
-    var listen = el("button", listeningHelp ? "listen is-help" : "listen", "🔊 이 문장 듣기"); listen.type = "button";
-    var show = el("button", "show", "한글 뜻 보기"); show.type = "button";
-    var read = el("button", "read", "🎤 내가 읽기"); read.type = "button";
-    var practice = el("div", "practice"); practice.hidden = true;
-    row.append(listen, show, read);
-    body.append(el("span", "count", (index + 1) + " / " + book.pages.length + "쪽 · " + window.EnglishBooks.modeLabels[readingMode] + (parts.length > 1 ? " " + (part + 1) + "/" + parts.length : "")), text, meaning, row, practice);
+    var listen = el("button", "listen", "🔊 듣기"); listen.type = "button";
+    listen.setAttribute("aria-label", "이 쪽 듣기");
+    row.append(listen);
+    body.append(text, meaning, row, nav);
     pageEl.append(img, body);
-    var original = el('details', 'listening-original');
-    var originalText = el('p', 'original-text', page.text); originalText.lang = 'en';
-    var originalListen = el('button', 'original-listen', '🔊 원문 듣기 · 이 쪽 전체'); originalListen.type = 'button';
-    original.append(el('summary', '', '원문 듣기 (이 쪽 전체)'), originalText, el('p', '', page.meaning), originalListen);
-    body.appendChild(original);
-
     listen.addEventListener("click", function () {
-      playNarration(line.audio, text, listen, listeningHelp);
+      listen.classList.remove("pulse");
+      playNarration(page.audio, text, listen, meaning, false);
     });
-    originalListen.addEventListener('click', function () {
-      playNarration(page.audio, originalText, originalListen, false);
-    });
-    function playNarration(file, playingText, button, showMeaning) {
-      stopPractice(); practice.hidden = true;
-      stopAudio();
-      if (showMeaning) meaning.hidden = false;
-      playingText.classList.add("playing");
-      // <audio> 로 틀면 iPad Safari 가 그 뒤 음성 인식을 조용히 멈춘다(WebKit 321436).
-      // 영어 읽기와 같은 방식으로 Web Audio 로만 틀고, 끝나면 컨텍스트를 닫는다.
-      var AC = window.AudioContext || window.webkitAudioContext;
-      var missing = function () { if (audio !== mine) return; stopAudio(); button.textContent = "🔊 소리를 못 찾았어요 · 다시 누르기"; };
-      var mine;
-      if (!AC || !window.fetch) {
-        var element = new Audio(file);
-        mine = audio = { element: element };
-        element.addEventListener("ended", function () { if (audio === mine) stopAudio(); });
-        element.addEventListener("error", missing);
-        var playing = element.play();
-        if (playing && playing.catch) playing.catch(function () { if (audio === mine) stopAudio(); button.textContent = '🔊 다시 눌러 듣기'; });
-        return;
-      }
-      var ctx;
-      try { ctx = new AC(); } catch (error) { playingText.classList.remove("playing"); button.textContent = '🔊 다시 눌러 듣기'; return; }
-      mine = audio = { ctx: ctx, node: null };
-      if (ctx.state === "suspended" && ctx.resume) { var ready = ctx.resume(); if (ready && ready.catch) ready.catch(function () {}); }
-      fetch(file).then(function (response) {
-        if (!response || !response.ok) throw new Error("narration");
-        return response.arrayBuffer();
-      }).then(function (data) {
-        return new Promise(function (resolve, reject) {
-          var decoded = ctx.decodeAudioData(data, resolve, reject);
-          if (decoded && decoded.then) decoded.then(resolve, reject);
-        });
-      }).then(function (sound) {
-        if (audio !== mine) return;
-        var node = ctx.createBufferSource();
-        node.buffer = sound; node.connect(ctx.destination);
-        node.onended = function () { if (audio === mine) stopAudio(); };
-        mine.node = node; node.start(0);
-      }).catch(missing);
-    }
-    show.addEventListener("click", function () {
-      meaning.hidden = !meaning.hidden;
-      show.textContent = meaning.hidden ? "한글 뜻 보기" : "한글 뜻 숨기기";
-    });
-    read.addEventListener("click", function () {
-      stopAudio();
-      if (!practice.hidden) { stopPractice(); practice.hidden = true; return; }
-      practice.hidden = false;
-      practiceView = window.EnglishReading.mount(practice, line, function (info) {
-        if (serial !== renderSerial || accepted || !book) return;
-        accepted = true;
-        // 다 읽으면 칭찬이 끝난 뒤 다음 쪽으로 넘어간다.
-        stopPractice();
-        if (part < parts.length - 1) part += 1;
-        else { index += 1; part = 0; }
-        challenge.firstTry = !missed && !(info && info.gentle);
-        var growth = window.EnglishBooks.recordPass(localStorage, challenge);
-        readingMode = growth.mode;
-        growthNotice = growth.promoted ? '🌟 잘 읽어서 「' + window.EnglishBooks.modeLabels[readingMode] + '」로 올라가요!'
-          : growth.eased ? '잘 끝냈어요! 다음 쪽은 조금 짧게 읽어요 🌱' : '';
-        renderPage();
-      }, window, { onRetry: function () { if (serial === renderSerial && !accepted) missed = true; },
-        diagnostics: (function () { try { return window.localStorage; } catch (_) { return null; } })() });
-    });
+    // 쪽을 열면 한 번 저절로 읽어 준다. 브라우저가 막으면 듣기 버튼이 깜빡인다.
+    playNarration(page.audio, text, listen, meaning, true);
   }
 
-  prevBtn.addEventListener("click", function () { if (index > 0) { index -= 1; part = 0; renderPage(); } });
+  // <audio> 대신 Web Audio 로만 튼다(iPad Safari 소리·음성 인식 충돌 방지). 끝나면 컨텍스트를 닫는다.
+  function playNarration(file, playingText, button, meaning, auto) {
+    stopAudio();
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC || !window.fetch) { if (auto) button.classList.add("pulse"); else button.textContent = "🔊 소리를 낼 수 없어요"; return; }
+    var ctx;
+    try { ctx = new AC(); } catch (error) { button.classList.add("pulse"); return; }
+    var mine = audio = { ctx: ctx, node: null };
+    playingText.classList.add("playing");
+    var blocked = function () { if (audio === mine) stopAudio(); button.classList.add("pulse"); };
+    var missing = function () { if (audio !== mine) return; stopAudio(); button.textContent = "🔊 소리를 못 찾았어요 · 다시 누르기"; };
+    var ready = null;
+    if (ctx.state === "suspended" && ctx.resume) { ready = ctx.resume(); if (ready && ready.catch) ready.catch(function () {}); }
+    var unlocked = !auto ? Promise.resolve(true) : new Promise(function (resolve) {
+      if (ctx.state === "running") { resolve(true); return; }
+      var settle = function () { resolve(ctx.state === "running"); };
+      if (ready && ready.then) ready.then(settle, settle);
+      setTimeout(settle, 500);
+    });
+    unlocked.then(function (ok) {
+      if (audio !== mine) throw new Error("stale");
+      if (!ok) { blocked(); throw new Error("blocked"); }
+      return fetch(file);
+    }).then(function (response) {
+      if (!response || !response.ok) throw new Error("narration");
+      return response.arrayBuffer();
+    }).then(function (data) {
+      return new Promise(function (resolve, reject) {
+        var decoded = ctx.decodeAudioData(data, resolve, reject);
+        if (decoded && decoded.then) decoded.then(resolve, reject);
+      });
+    }).then(function (sound) {
+      if (audio !== mine) return;
+      var node = ctx.createBufferSource();
+      node.buffer = sound; node.connect(ctx.destination);
+      node.onended = function () { if (audio === mine) { stopAudio(); meaning.hidden = false; } };
+      mine.node = node; node.start(0);
+    }).catch(function (error) { if (error && (error.message === "blocked" || error.message === "stale")) return; missing(); });
+  }
+
+  prevBtn.addEventListener("click", function () { if (index > 0) { index -= 1; renderPage(); } });
   nextBtn.addEventListener("click", function () {
     if (index >= book.pages.length) { closeBook(); return; }
-    index += 1; part = 0; renderPage();
+    index += 1; renderPage();
   });
   document.addEventListener("visibilitychange", function () { if (document.hidden) stopAudio(); });
-  window.addEventListener('pagehide', function () { stopAudio(); stopPractice(); });
+  window.addEventListener("pagehide", function () { stopAudio(); });
 
   var start = startParams.get("book");
   renderShelf();
   var first = BOOKS.find(function (item) { return item.id === start; });
-  if (first) {
-    openBook(first);
-    if (fromStudy) {
-      index = Math.max(0, Math.min(first.pages.length - 1, parseInt(startParams.get('page'), 10) || 0));
-      part = Math.max(0, Math.min(7, parseInt(startParams.get('part'), 10) || 0));
-      renderPage();
-    }
-  }
+  if (first) openBook(first, Math.max(0, Math.min(first.pages.length - 1, parseInt(startParams.get("page"), 10) || 0)));
 })();
 </script>
 </body>

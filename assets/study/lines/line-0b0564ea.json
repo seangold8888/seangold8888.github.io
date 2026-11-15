@@ -1,0 +1,10 @@
+{
+  "text": "I like to jump.",
+  "audio": "lines/line-0b0564ea.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I like to jump.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "c6085f550643f30186a7d7225ae23f104e68958a3bb96e7b7e1242aedad4ea50"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "It is a big triangle.",
+  "audio": "lines/line-0c86a057.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "It is a big triangle.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "bade0848d16e954096c432b24cb6c85c50346cbd822a3c373bbf6412211adf4a"
+}

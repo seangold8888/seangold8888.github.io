@@ -1,0 +1,10 @@
+{
+  "text": "Are you okay?",
+  "audio": "lines/line-6d709def.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Are you okay?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "62f4b41e0346f59ae53160e626c2f4173b643a5ada583b4b6eb57998c8747996"
+}

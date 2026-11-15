@@ -1,0 +1,10 @@
+{
+  "text": "I feel great!",
+  "audio": "lines/line-59117bdc.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I feel great.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "59f24999ff7f62b762e5a4a08aa7d6bcd096609254896240a48cf46b4999e7d8"
+}

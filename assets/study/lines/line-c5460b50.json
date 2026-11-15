@@ -1,0 +1,10 @@
+{
+  "text": "How many apples? There are three.",
+  "audio": "lines/line-c5460b50.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "How many apples? There are three.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "74807bd8fa8d6216c0fe3e79381292801c7620ceaebcbaaa87f773088a90ce7b"
+}

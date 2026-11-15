@@ -1,0 +1,10 @@
+{
+  "text": "Three, four, shut the door.",
+  "audio": "lines/line-b229adbc.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Three, four, shut the door.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "3cbd26b9a349cc17804bfcb38ed9f9c66d64135ce9f06888ee1ecd8285915fce"
+}

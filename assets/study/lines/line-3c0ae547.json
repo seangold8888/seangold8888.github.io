@@ -1,0 +1,10 @@
+{
+  "text": "I'm drawing a big house.",
+  "audio": "lines/line-3c0ae547.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I'm drawing a big house.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "9bef1c7d98858bb6828a1c783a6b1753f90b08479e7a7c458a43ab30b631b9e1"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "My tummy hurts.",
+  "audio": "lines/line-4603bc2d.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "My tummy hurts.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "272646c3e7e5f91bbed9fb16c84297c7edcf088ae778e884856fb87a92bd76b3"
+}

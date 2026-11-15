@@ -1,0 +1,10 @@
+{
+  "text": "My mom is here!",
+  "audio": "lines/line-bf2c4ba9.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "My mom is here.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "313a6bab673aee59e621528137f1747144b9fc64bc4eaf52947211910e3a8f40"
+}

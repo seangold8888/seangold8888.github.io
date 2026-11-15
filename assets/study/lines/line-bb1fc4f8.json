@@ -1,0 +1,10 @@
+{
+  "text": "What is your name?",
+  "audio": "lines/line-bb1fc4f8.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "What is your name?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "91801d5356615ce2dc318b6302e3fbaf0a668ab1d7fb63d65c0337c61b9b5f06"
+}

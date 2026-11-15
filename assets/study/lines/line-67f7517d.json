@@ -1,0 +1,10 @@
+{
+  "text": "Hot cross buns!",
+  "audio": "lines/line-67f7517d.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Hot cross buns.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "4f06b2f0476cdeea396b0d1b21047c0df70feada8feed45e7f95e74b4bd41586"
+}

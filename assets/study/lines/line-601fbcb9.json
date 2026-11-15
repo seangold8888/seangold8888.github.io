@@ -1,0 +1,10 @@
+{
+  "text": "Can I have a turn, please?",
+  "audio": "lines/line-601fbcb9.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Can I have a turn, please?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "22a079abc6cd829e89ca5451876253e9c5c887efbacddf92366b2cb67f8f0a70"
+}

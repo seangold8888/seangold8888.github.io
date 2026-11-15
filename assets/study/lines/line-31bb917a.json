@@ -1,0 +1,10 @@
+{
+  "text": "I didn't mean to.",
+  "audio": "lines/line-31bb917a.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I didn't mean to.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "6e9e5333c9808a8e3b4e28713d54d0ccb9171160b3455a6074ce309898544e69"
+}

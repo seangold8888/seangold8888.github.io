@@ -1,0 +1,10 @@
+{
+  "text": "Good morning, class! Good morning, teacher! What day is it today? It's Monday!",
+  "audio": "lines/line-896627c8.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Good morning, class. Good morning, teacher. What day is it today? It's Monday.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "93531120818bc695bfc6ada3f6e933b002823c940de46be686d8c2a25a81d401"
+}

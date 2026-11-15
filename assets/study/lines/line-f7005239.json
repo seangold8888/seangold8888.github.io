@@ -1,0 +1,10 @@
+{
+  "text": "I feel sad today.",
+  "audio": "lines/line-f7005239.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I feel sad today.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "baa3231e7968b0afaa1ab279b01e68a56350713e9e476c17fd66e8b289dcde23"
+}

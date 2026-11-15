@@ -1,0 +1,10 @@
+{
+  "text": "What's this?",
+  "audio": "lines/line-9938b2cc.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "What's this?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "a42f60c0c49afdd8d4b5ee07abedb17555d6e63cab82b627db2d8e0747278834"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Who is picking you up? My dad is.",
+  "audio": "lines/line-549e154c.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Who is picking you up? My dad is.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "e45d746d2061915c511e9d805f359f1127106f19b55b2f305ca22814ce20951d"
+}

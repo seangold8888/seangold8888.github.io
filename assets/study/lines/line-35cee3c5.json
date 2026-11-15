@@ -1,0 +1,10 @@
+{
+  "text": "Today is Friday.",
+  "audio": "lines/line-35cee3c5.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Today is Friday.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "e9131625529d854c8e117a25985db174e6a255612deaaab0ad937bcfb67625ab"
+}

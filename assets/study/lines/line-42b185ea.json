@@ -1,0 +1,10 @@
+{
+  "text": "Who wants to feed the fish? Me, please! Okay, just a little bit.",
+  "audio": "lines/line-42b185ea.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Who wants to feed the fish? Me, please. Okay, just a little bit.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "8a4433db9bdd42da53237f4444857b1b423b94757519b76cae3e6a5b8f0e729c"
+}

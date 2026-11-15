@@ -1,0 +1,10 @@
+{
+  "text": "Can I have paper?",
+  "audio": "lines/line-b0046d47.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Can I have paper?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "f7763e16665fd3fcf116d8293bf7d1f56ee6e457f8058ad8553b95425fc858d7"
+}

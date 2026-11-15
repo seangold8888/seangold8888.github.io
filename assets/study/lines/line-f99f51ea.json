@@ -1,0 +1,10 @@
+{
+  "text": "I found a bug! Come and look.",
+  "audio": "lines/line-f99f51ea.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I found a bug. Come and look.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "9132343f8484c37596aafbb8d2581677b4a223feb961e269c0470e89531cc1b0"
+}

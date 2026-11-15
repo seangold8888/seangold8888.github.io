@@ -1,0 +1,10 @@
+{
+  "text": "I feel happy because I made a friend.",
+  "audio": "lines/line-43ee3a33.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I feel happy because I made a friend.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "3b7ff29c2b05f890373465ee1be4eaa9384e3f33220b2e3ee0f80f13d9384f9b"
+}

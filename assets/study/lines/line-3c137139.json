@@ -1,0 +1,10 @@
+{
+  "text": "What day is it?",
+  "audio": "lines/line-3c137139.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "What day is it?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "9f706fbd428ba820aedc267c8e5705440023d9cc4084250ed2e0a012d1b42d57"
+}

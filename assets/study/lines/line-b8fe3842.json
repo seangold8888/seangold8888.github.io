@@ -1,0 +1,10 @@
+{
+  "text": "Look at me!",
+  "audio": "lines/line-b8fe3842.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Look at me.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "b363ca390f1d8a8526608e7b71e0ef364695f703ce3cbb6569e5d0d3acb791ba"
+}

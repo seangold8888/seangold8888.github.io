@@ -1,0 +1,10 @@
+{
+  "text": "Bathroom, please.",
+  "audio": "lines/line-95310e25.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "bathroom, please.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "9dad9127e75cb64c70de53699733e6291e2cb8e13669f28f6e882fdd1de1de2d"
+}

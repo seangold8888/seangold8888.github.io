@@ -1,0 +1,10 @@
+{
+  "text": "This is a red square.",
+  "audio": "lines/line-aed69a7c.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "This is a red square.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "289c3b109b00873abf759f462ee70f6046dd5c886ac040d61a0710f842a4f889"
+}

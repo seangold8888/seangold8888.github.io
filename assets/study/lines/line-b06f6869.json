@@ -1,0 +1,10 @@
+{
+  "text": "Ready, set, go!",
+  "audio": "lines/line-b06f6869.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Ready, set, go.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "2bf7d0e21d0621ef39aca48d5d5f6878bd722460a93e8f121725d0ddba9610ff"
+}

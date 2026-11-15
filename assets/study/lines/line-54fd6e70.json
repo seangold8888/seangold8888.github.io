@@ -1,0 +1,10 @@
+{
+  "text": "You're it!",
+  "audio": "lines/line-54fd6e70.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "You're it.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "35b41a464ebeede25ad25c24a7ae22fc5a92732daf6725e85db961ac216126e2"
+}

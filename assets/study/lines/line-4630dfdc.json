@@ -1,0 +1,10 @@
+{
+  "text": "I'm tired.",
+  "audio": "lines/line-4630dfdc.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I'm tired.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "1a6cdfe41b4a361b72de589593d288f81063d8d5ffecd15f358df57554fe5167"
+}

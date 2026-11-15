@@ -1054,9 +1054,23 @@
   .reading-help summary::before, .learning-more > summary::before { content: '+'; font-size: 17px; }
   .reading-help[open] summary::before, .learning-more[open] > summary::before { content: '−'; }
   .reading-help .reading-privacy { padding-top: 4px; font-size: 13px; }
-  #study .book-listening-help { display:block; padding:13px 15px; min-height:48px; border:1px solid #ffe08a; border-radius:12px; color:#18203c; background:#fff0bc; text-decoration:none; font-size:15px; font-weight:800; }
-  #study .book-listening-help.is-recommended { background:#ffe08a; }
-  #study .book-listening-help:focus-visible { outline:3px solid #66e3ff; outline-offset:3px; }
+  #study .reading-listen { display:flex; align-items:center; justify-content:center; flex:1; padding:12px 15px; min-height:48px; font:inherit; cursor:pointer; border:1px solid #ffe08a; border-radius:12px; color:#18203c; background:#fff0bc; text-decoration:none; font-size:16px; font-weight:800; }
+  #study .reading-actions .reading-listen { flex:1; }
+  #study .reading-listen.is-recommended { background:#ffe08a; box-shadow:0 0 0 3px #ffb800; }
+  #study .reading-listen.is-playing { background:#ffd23f; }
+  /* 회화 읽기 카드: 큰 이모지와 상황 꼬리표 */
+  #study .items .conv-scene { display:flex; align-items:center; justify-content:center; gap:14px; width:100%; min-height:120px; padding:14px 18px; border-radius:18px;
+    background:linear-gradient(135deg, #fff4d6, #e6f0ff); }
+  #study .items .conv-emoji { font-size:64px; line-height:1; filter:drop-shadow(0 4px 6px rgba(0,0,0,.15)); }
+  #study .items .conv-tag { font-size:22px; font-weight:900; color:#2b3a67; }
+  @media (max-width: 520px) { #study .items .conv-scene { min-height:92px; } #study .items .conv-emoji { font-size:48px; } #study .items .conv-tag { font-size:19px; } }
+  /* 들어보기 단순화: 꺼진 '다 읽었어요'는 숨기고, 틀린 뒤에는 색 단어·상태 한 줄·다시 읽기·먼저 듣기만 남긴다. */
+  #study .reading-actions > button:nth-child(2):disabled { display:none; }
+  #study .read-failed .reading-label { display:none; }
+  #study .reading-practice:not(.show-heard) .reading-heard { display:none; }
+  #study .reading-help summary { font-size:15px; }
+  #study .reading-help summary::before { content:none; }
+  #study .reading-listen:focus-visible { outline:3px solid #66e3ff; outline-offset:3px; }
   .learning-more { border-top: 1px solid #ffffff20; }
   .feature-stage { min-height: 430px; border: 1px solid #ffffff1a; border-radius: 24px; background: #171d37; box-shadow: none; }
   .feature-stage::after { background: linear-gradient(90deg,#11172fea 0%,#11172fa0 50%,#11172f00 100%); }
@@ -1282,8 +1296,8 @@
   #study .reading-actions .reading-alternative, #study .reading-resume { background: var(--soft); color: #2c4266; border: 1px solid var(--card-line); box-shadow: none; }
   .reading-help, .learning-more { border-color: #e4ecf6; }
   .reading-help summary, .learning-more > summary { color: var(--muted); }
-  #study .book-listening-help { border-color: #f0cd5c; background: #fff6cf; color: var(--text); }
-  #study .book-listening-help.is-recommended { background: #ffe88f; }
+  #study .reading-listen { border-color: #f0cd5c; background: #fff6cf; color: var(--text); }
+  #study .reading-listen.is-recommended { background: #ffe88f; }
 
   /* 수학놀이터 */
   .math-launch { border: 1px solid #bfe5d3; background: linear-gradient(115deg, #e6f8ef, #e3f3ff); color: #1d3a32; box-shadow: var(--lift); }
@@ -1642,14 +1656,10 @@
       <p><a id="mathPlacementAgain" href="math/?placement=1">Re-check math skills (up to 16 problems) →</a></p>
     </section>
     <section class="study-settings" aria-labelledby="readingSettingTitle">
-      <label id="readingSettingTitle" for="readingLevelSelect">English Reading Level</label>
+      <label id="readingSettingTitle" for="readingLevelSelect">English Speaking Practice</label>
       <select id="readingLevelSelect"></select>
-      <label for="bookReadingMode">Reading Difficulty</label>
-      <select id="bookReadingMode">
-        <option value="easy">Short sentences</option><option value="sentence">One sentence</option><option value="page">Full page</option>
-      </select>
       <strong id="readingStage">Loading English level</strong>
-      <p>Get 30 sentences of that level right on the first try to move up. If it feels too hard or too easy, change it here.</p>
+      <p>Speaking practice with the English used in US preschool and kindergarten classrooms: daily routines, asking, sharing, feelings, sight-word patterns and traditional nursery rhymes. About 15 sentences are open for practice at a time; a sentence counts as learned after it is read right on the first try on two different days, then a new one opens. Get 30 sentences of the current level right on the first try to move up. Change the level here if it feels too hard or too easy.</p>
     </section>
     <h3 class="book-sub">Skills Map</h3>
     <p class="book-hint">Skill by problem type. Weak types appear more often, and 👑 mastered types return after a few days so they are not forgotten.</p>
@@ -1670,8 +1680,7 @@
 <script src="math/store.js?v=34"></script>
 <script src="assets/study/math-bridge.js?v=3"></script>
 <script src="assets/study/math-credits.js?v=2"></script>
-<script src="assets/study/english-reading.js?v=24"></script>
-<script src="story/english/books.js?v=7"></script>
+<script src="assets/study/english-reading.js?v=25"></script>
 <script src="assets/bgm/bgm-player.js?v=66"></script>
 <script src="assets/study/play-timer.js?v=4" data-mode="hub"></script>
 <script>
@@ -1808,7 +1817,7 @@
     word:     { name: '반대말',             icon: '🔄' },
     clock:    { name: '시계 읽기',           icon: '⏰' },
     english:  { name: '영어 낱말',           icon: '🅰️' },
-    reading:  { name: '영어 문장 읽기',       icon: '🎤' }
+    reading:  { name: '영어 말하기 연습',     icon: '🎤' }
   };
 
   /* ---- 새 과목 문제 은행 (수학 외 과목은 idx로 같은 문제를 다시 만든다) ---- */
@@ -1845,49 +1854,19 @@
   ];
   var EXTRA_TYPES = ['proverb', 'word', 'clock', 'english'];
   var EXTRA_RATE = 0.35;   // 새 과목이 나올 확률 (나머지는 가르기 수학)
-  /* 영어 읽기 = 그림책 한 쪽씩(2026-09-26). 따로 노는 문장 대신 이야기를 이어 읽는다.
-     reading 문제 번호가 STORY_BASE 이상이면 그림책 쪽이다. 그림책이 없으면 옛 문장 은행을 쓴다. */
-  var STORY_BASE = 100000;
-  var BOOK_PAGES = [];
-  if (window.EnglishBooks && window.EnglishBooks.books) {
-    window.EnglishBooks.books.forEach(function (book, bookIndex) {
-      book.pages.forEach(function (page, pageIndex) {
-        BOOK_PAGES.push({ book: book, bookIndex: bookIndex, pageIndex: pageIndex, pages: book.pages.length,
-          text: page.text, meaning: page.meaning, image: 'story/english/' + page.image });
-      });
-    });
+  /* 영어 읽기 = 회화 문장 집중 읽기(2026-11-15). 그림책은 /story/english/ 에서 듣기만 한다.
+     옛 그림책 진도(hub2_book_cursor)는 지우지 않고 그대로 둔다(더는 읽지 않음). */
+  var readingFocus = { s: {}, open: [] };
+  try { readingFocus = window.EnglishReading.cleanFocus(JSON.parse(localStorage.getItem('hub2_reading_focus') || 'null')); } catch (_) {}
+  function saveReadingFocus() {
+    try { localStorage.setItem('hub2_reading_focus', JSON.stringify(readingFocus)); } catch (_) {}
   }
-  var bookReadingMode = window.EnglishBooks && window.EnglishBooks.readMode ? window.EnglishBooks.readMode(localStorage) : 'easy';
-  var bookCursor = { i: 0, part: 0, done: [] };
-  try {
-    var savedCursor = JSON.parse(localStorage.getItem('hub2_book_cursor') || 'null');
-    if (savedCursor && BOOK_PAGES.length) {
-      bookCursor.i = Math.max(0, parseInt(savedCursor.i, 10) || 0) % BOOK_PAGES.length;
-      bookCursor.part = Math.max(0, Math.min(7, parseInt(savedCursor.part, 10) || 0));
-      bookCursor.done = Array.isArray(savedCursor.done) ? savedCursor.done.filter(function (id) { return typeof id === 'string'; }) : [];
-    }
-  } catch (_) {}
-  function saveBookCursor() {
-    try { localStorage.setItem('hub2_book_cursor', JSON.stringify(bookCursor)); } catch (_) {}
-  }
-  function storySeed() {
-    return BOOK_PAGES.length ? { type: 'reading', idx: STORY_BASE + bookCursor.i } : null;
-  }
-  /* 맞게 읽은 쪽이 지금 읽을 쪽이면 다음 쪽으로. 책 한 권을 끝내면 그 책을 돌려준다. */
-  function advanceBook(idx) {
-    var at = idx - STORY_BASE;
-    if (at !== bookCursor.i || !BOOK_PAGES[at]) return null;
-    var page = BOOK_PAGES[at];
-    var parts = window.EnglishBooks.practice ? window.EnglishBooks.practice(page.book.pages[page.pageIndex], bookReadingMode) : [page];
-    if (bookCursor.part < parts.length - 1) {
-      bookCursor.part++; saveBookCursor(); return null;
-    }
-    bookCursor.i = (at + 1) % BOOK_PAGES.length;
-    bookCursor.part = 0;
-    var finished = page.pageIndex === page.pages - 1;
-    if (finished && bookCursor.done.indexOf(page.book.id) < 0) bookCursor.done.push(page.book.id);
-    saveBookCursor();
-    return finished ? page.book : null;
+  /* 한 번에 맞힌 회화 문장: 서로 다른 날 두 번이면 익힘. */
+  function noteFocus(idx) {
+    if (!window.EnglishReading || !window.EnglishReading.recordFocus) return false;
+    var mastered = window.EnglishReading.recordFocus(readingFocus, idx, todayKey());
+    saveReadingFocus();
+    return mastered;
   }
   /* 조용 모드: 기차·비행기처럼 소리 내면 안 되는 곳. 오늘 하루만 켜지고 내일은 저절로 꺼진다. */
   function quietDay() {
@@ -1896,6 +1875,14 @@
   }
   function quietToday() {
     try { return localStorage.getItem('hub_quiet_day') === quietDay(); } catch (_) { return false; }
+  }
+  /* 마이크 안내 ⓘ: 이 기기에서 처음 맞게 읽을 때까지만 보인다. */
+  var PRIVACY_SEEN_KEY = 'hub2_reading_privacy_seen';
+  function privacyKnown() {
+    try { return localStorage.getItem(PRIVACY_SEEN_KEY) === '1'; } catch (_) { return false; }
+  }
+  function markPrivacyKnown() {
+    try { localStorage.setItem(PRIVACY_SEEN_KEY, '1'); } catch (_) {}
   }
   var BANK_SIZES = { proverb: PROVERBS.length, word: OPPOSITES.length, clock: 24, english: ENGLISH.length, reading: window.EnglishReading ? window.EnglishReading.sentences.length : 0 };
 
@@ -1906,18 +1893,9 @@
   /* 은행 문제 = { formula, items, question, answer, unit, choices, book }
      choices: 보기 문자열 3개(정답 포함), book: 부모 리포트용 한 줄 */
   function buildBankProblem(type, idx) {
-    if (type === 'reading' && idx >= STORY_BASE && BOOK_PAGES.length) {
-      var pg = BOOK_PAGES[(idx - STORY_BASE) % BOOK_PAGES.length];
-      var parts = window.EnglishBooks.practice ? window.EnglishBooks.practice(pg.book.pages[pg.pageIndex], bookReadingMode) : [pg];
-      var part = idx - STORY_BASE === bookCursor.i ? Math.min(bookCursor.part || 0, parts.length - 1) : 0;
-      var line = parts[part];
-      return { formula: '', items: '', question: '그림책을 소리 내어 읽어요', answer: line.text, unit: '',
-        reading: { text: line.text, meaning: line.meaning }, story: Object.assign({}, pg, { part: part, partCount: parts.length }),
-        book: '📖 ' + pg.book.titleKo + ' page ' + (pg.pageIndex + 1) + ' · ' + line.text };
-    }
     if (type === 'reading' && window.EnglishReading) {
       var sentence = window.EnglishReading.sentences[idx % BANK_SIZES.reading];
-      return { formula: '', items: '', question: '영어 문장을 소리 내어 읽어요', answer: sentence.text,
+      return { formula: '', items: '', question: '영어로 소리 내어 말해 봐요', answer: sentence.text,
         unit: '', reading: sentence, book: sentence.text };
     }
     var wrongs, pool, i;
@@ -2074,6 +2052,16 @@
   var readingSilent = false;
   /* v9: 예전 마이크 복구가 남긴 영구 무음을 지운다. 복구 무음은 현재 페이지에서만 유지. */
   try { localStorage.removeItem('hub2_reading_silent'); } catch (_) {}
+  /* 2026-11-15 회화 문장 은행으로 바꿨다. 예전 문장 번호를 가리키던 읽기 오답노트·최근 목록은 한 번만 비운다
+     (번호가 다른 문장을 가리키게 되므로). 단계·못 읽은 단어 기록은 그대로 둔다. */
+  try {
+    if (localStorage.getItem('hub2_reading_bank') !== 'conv1') {
+      state.wrong = state.wrong.filter(function (entry) { return entry.type !== 'reading'; });
+      localStorage.removeItem('hub2_reading_recent');
+      localStorage.setItem('hub2_wrongbook', JSON.stringify(state.wrong));
+      localStorage.setItem('hub2_reading_bank', 'conv1');
+    }
+  } catch (_) {}
   var readingRecent = [];
   try { readingRecent = (JSON.parse(localStorage.getItem('hub2_reading_recent') || '[]') || []).filter(function (n) { return typeof n === 'number' && n >= 0; }).slice(-12); } catch (_) { readingRecent = []; }
   /* 영어 읽기 단계: 그 단계 문장을 한 번에 맞힌 횟수가 쌓이면 다음 단계로 오른다. */
@@ -2104,7 +2092,6 @@
   function paintReadingSetting() {
     var select = document.getElementById('readingLevelSelect');
     var stage = document.getElementById('readingStage');
-    if (select && typeof BOOK_PAGES !== 'undefined' && BOOK_PAGES.length) return paintBookSetting(select, stage);
     if (!select || !window.EnglishReading) return;
     var names = window.EnglishReading.levelNames || [];
     if (!select.options.length) {
@@ -2128,54 +2115,58 @@
         ? readingLevel.level + '단계 · ' + (names[readingLevel.level] || '') + ' · 마지막 단계'
         : readingLevel.level + '단계 · ' + (names[readingLevel.level] || '') + ' · 다음 단계까지 ' +
           readingLevel.passes + '/' + window.EnglishReading.passesToLevelUp;
-    }
-  }
-  /* 그림책 읽기일 때 리포트: 읽을 책을 고르고 진도를 본다. */
-  function paintBookSetting(select, stage) {
-    var title = document.getElementById('readingSettingTitle');
-    if (title) title.textContent = '영어 그림책 읽기';
-    var help = select.parentNode.querySelector('p');
-    if (help) help.textContent = '짧은 문장 6개 → 한 문장씩 8개를 연속으로 한 번에 읽으면 다음 단계로 자동 성장해요. 쪽을 끝낸 뒤 바뀌며, 어려워하면 한 단계 쉬워져요. 직접 난이도를 바꿔도 책 진도는 유지돼요.';
-    var modeSelect = document.getElementById('bookReadingMode');
-    if (modeSelect) {
-      modeSelect.value = bookReadingMode;
-      if (!modeSelect.dataset.ready) {
-        modeSelect.dataset.ready = '1';
-        modeSelect.addEventListener('change', function () {
-          bookReadingMode = window.EnglishBooks.cleanMode(modeSelect.value);
-          bookCursor.part = 0;
-          window.EnglishBooks.saveMode(localStorage, bookReadingMode); saveBookCursor();
-          paintReadingSetting(); applyState();
-        });
+      if (window.EnglishReading.focusCounts) {
+        var counts = window.EnglishReading.focusCounts(readingFocus, readingLevel.level);
+        stage.textContent += ' · 익힌 문장 ' + counts.mastered + '개 / 배우는 중 ' + counts.learning + '개';
       }
     }
-    var books = window.EnglishBooks.books;
-    if (select.dataset.books !== '1') {
-      select.dataset.books = '1';
-      select.textContent = '';
-      books.forEach(function (book, i) {
-        var option = document.createElement('option');
-        option.value = String(i);
-        option.textContent = '⭐'.repeat(book.stars || 1) + ' ' + book.titleKo;
-        select.appendChild(option);
-      });
-      select.addEventListener('change', function () {
-        var first = -1;
-        BOOK_PAGES.some(function (page, i) { if (page.bookIndex === Number(select.value)) { first = i; return true; } return false; });
-        if (first >= 0) { bookCursor.i = first; bookCursor.part = 0; saveBookCursor(); }
-        paintReadingSetting();
-        drawDaily();
-      });
-    }
-    var here = BOOK_PAGES[bookCursor.i];
-    select.value = String(here.bookIndex);
-    if (stage) stage.textContent = '「' + here.book.titleKo + '」 ' + (here.pageIndex + 1) + ' / ' + here.pages + '쪽 · ' + window.EnglishBooks.modeLabels[bookReadingMode] + ' · ' + window.EnglishBooks.growthLabel(localStorage) + ' · 다 읽은 책 ' + bookCursor.done.length + ' / ' + books.length + '권';
   }
   function rememberReading(idx) {
     readingRecent = readingRecent.filter(function (n) { return n !== idx; }).concat([idx]).slice(-12);
     try { localStorage.setItem('hub2_reading_recent', JSON.stringify(readingRecent)); } catch (_) {}
   }
+  /* 회화 문장 녹음 듣기(먼저 듣기). iPad 에서 음성 인식이 살아 있도록 Web Audio 로만 틀고, 끝나면 컨텍스트를 닫는다. */
+  var listenAudio = null;
+  function stopListenClip() {
+    var old = listenAudio; listenAudio = null;
+    if (old) {
+      if (old.node) { try { old.node.onended = null; old.node.stop(0); } catch (_) {} }
+      if (old.ctx && old.ctx.close) { try { old.ctx.close(); } catch (_) {} }
+      if (old.button) old.button.classList.remove('is-playing');
+    }
+  }
+  function playReadingClip(target, button) {
+    stopListenClip();
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC || !window.fetch || current !== target) return;
+    var mic = choicesEl.querySelector && choicesEl.querySelector('.reading-actions > button');
+    var micBusy = !!(mic && mic.disabled);
+    if (micBusy && readingView && readingView.stop) readingView.stop();
+    var ctx;
+    try { ctx = new AC(); } catch (_) { return; }
+    var mine = listenAudio = { ctx: ctx, node: null, button: button };
+    if (ctx.resume) { var ready = ctx.resume(); if (ready && ready.catch) ready.catch(function () {}); }
+    button.classList.add('is-playing');
+    new Promise(function (resolve) { setTimeout(resolve, micBusy ? 350 : 0); }).then(function () {
+      return fetch(window.EnglishReading.sentenceClip(target.reading));
+    }).then(function (response) {
+      if (!response || !response.ok) throw new Error('clip');
+      return response.arrayBuffer();
+    }).then(function (data) {
+      return new Promise(function (resolve, reject) {
+        var decoded = ctx.decodeAudioData(data, resolve, reject);
+        if (decoded && decoded.then) decoded.then(resolve, reject);
+      });
+    }).then(function (sound) {
+      if (listenAudio !== mine || current !== target) { if (listenAudio === mine) stopListenClip(); return; }
+      var node = ctx.createBufferSource();
+      node.buffer = sound; node.connect(ctx.destination);
+      node.onended = function () { if (listenAudio === mine) stopListenClip(); };
+      mine.node = node; node.start(0);
+    }).catch(function () { if (listenAudio === mine) stopListenClip(); });
+  }
   function stopReading() {
+    stopListenClip();
     clearTimeout(answerTimer);
     if (readingView) { readingView.destroy(); readingView = null; }
   }
@@ -2219,7 +2210,7 @@
     if (current !== target || target.answered || isFree() || hasTicket()) return;
     if (!target.missed) {
       target.missed = true;
-      if (!(typeof STORY_BASE !== 'undefined' && target.seed.idx >= STORY_BASE)) addToBook(target.seed);
+      addToBook(target.seed);
       var skill = skillOf('reading');
       skill.s = Math.max(0, skill.s - 1); skill.d = dayNum();
     }
@@ -2247,8 +2238,12 @@
     }
     if (review) return review;
     if (!reading) return null;
-    if (typeof storySeed === 'function') { var story = storySeed(); if (story) return story; }
     var ordinal = state.solved - Math.floor(state.solved / 5);
+    if (window.EnglishReading.chooseFocus) {
+      var focusIdx = window.EnglishReading.chooseFocus(readingFocus, readingLevel.level, state.readingWords, ordinal, lastReadingIndex, null, readingRecent);
+      saveReadingFocus();
+      return { type: 'reading', idx: focusIdx };
+    }
     return { type: 'reading', idx: window.EnglishReading.chooseSentence(state.readingWords, ordinal, lastReadingIndex, null, readingRecent, readingLevel.level) };
   }
 
@@ -2301,8 +2296,7 @@
       (crowns ? ' · Crowns 👑 ' + crowns : '') +
       (mathState ? ' · Math Level ' + mathState.level : '') +
       (typeof quietToday === 'function' && quietToday() ? ' · 🤫 Quiet Mode' :
-        typeof BOOK_PAGES !== 'undefined' && BOOK_PAGES.length ? ' · Book 「' + BOOK_PAGES[bookCursor.i].book.titleKo + '」 page ' + (BOOK_PAGES[bookCursor.i].pageIndex + 1)
-        : window.EnglishReading ? ' · English Level ' + readingLevel.level : '');
+        window.EnglishReading ? ' · Speaking Level ' + readingLevel.level : '');
     updateLobbyHud(crowns);
   }
   function updateLobbyHud(crowns) {
@@ -2645,43 +2639,54 @@
     if (!current.mathProblem) current.review = state.wrong.some(function (entry) { return bookKey(entry) === bookKey(current.seed); });
     sinceReview = current.review ? 0 : sinceReview + 1;
     lastReviewKey = bookKey(current.seed);
-    eyebrowEl.textContent = current.story ? '영어 그림책 · 「' + current.story.book.titleKo + '」 ' + (current.story.pageIndex + 1) + ' / ' + current.story.pages + '쪽 · ' + window.EnglishBooks.modeLabels[bookReadingMode] + (current.story.partCount > 1 ? ' ' + (current.story.part + 1) + '/' + current.story.partCount : '')
-      : current.reading ? '영어 문장 읽기'
+    eyebrowEl.textContent = current.reading ? '영어 말하기 연습 · ' + current.reading.level + '단계 「' + ((window.EnglishReading.levelNames || [])[current.reading.level] || '') + '」'
       : current.mathProblem ? '재이의 수학놀이터 · ' + mathState.level + '단계'
       : '오늘의 공부 · ' + currentLevel().name;
     itemsEl.textContent = current.items;
     itemsEl.classList.toggle('clock-face', current.seed.type === 'clock');
-    if (current.story) {
-      var storyArt = document.createElement('img');
-      storyArt.className = 'story-page-art';
-      storyArt.src = current.story.image;
-      storyArt.alt = current.story.book.titleKo + ' ' + (current.story.pageIndex + 1) + '쪽 그림';
-      itemsEl.appendChild(storyArt);
+    if (current.reading && current.reading.tag) {
+      /* 회화 카드: 큰 이모지 + 언제 쓰는 말인지(상황 꼬리표). 뜻은 맞게 읽은 뒤에만 보인다. */
+      var scene = document.createElement('div');
+      scene.className = 'conv-scene';
+      var sceneEmoji = document.createElement('span');
+      sceneEmoji.className = 'conv-emoji'; sceneEmoji.setAttribute('aria-hidden', 'true');
+      sceneEmoji.textContent = current.reading.emoji || '💬';
+      var sceneTag = document.createElement('span');
+      sceneTag.className = 'conv-tag';
+      sceneTag.textContent = current.reading.tag.replace(current.reading.emoji || '', '').trim();
+      scene.appendChild(sceneEmoji); scene.appendChild(sceneTag);
+      itemsEl.appendChild(scene);
     }
     document.getElementById('formula').textContent = current.formula;
     questionEl.textContent = (current.review ? '📖 복습 문제! ' : '') + current.question;
 
     if (current.reading) {
       choicesEl.classList.remove('wordy');
+      choicesEl.classList.remove('read-failed');
       var target = current;
+      if (choicesEl.dataset && !choicesEl.dataset.listenGuard) {
+        /* 🎤 를 누르면 듣던 녹음을 먼저 끈다(마이크와 소리를 겹치지 않는다). */
+        choicesEl.dataset.listenGuard = '1';
+        choicesEl.addEventListener('click', function (event) {
+          var pressed = event.target && event.target.closest ? event.target.closest('.reading-actions > button') : null;
+          if (pressed && !pressed.classList.contains('reading-listen')) stopListenClip();
+        }, true);
+      }
       readingView = window.EnglishReading.mount(choicesEl, current.reading, function (info) {
         if (current !== target || isFree() || hasTicket() || target.answered) return;
         // 세 번 읽고 넘어가는 "부드러운 통과"는 한 번에 맞힌 기록·단계 승급에 넣지 않는다.
         if (info && info.gentle) target.gentle = true;
-        if (target.story) {
-          target.bookDone = advanceBook(target.seed.idx);
-        } else {
-          lastReadingIndex = target.seed.idx;
-          rememberReading(target.seed.idx);
-        }
+        lastReadingIndex = target.seed.idx;
+        rememberReading(target.seed.idx);
         pick(target.answer, null);
       }, window, {
         silent: readingSilent,
         diagnostics: (function () { try { return window.localStorage; } catch (_) { return null; } })(),
         onRetry: function (words) {
           readingMistake(target, words);
-          var listenHelp = document.getElementById('bookListeningHelp');
-          if (current === target && listenHelp) { listenHelp.classList.add('is-recommended'); listenHelp.textContent = '괜찮아요 😊 먼저 그림책 듣고 다시 읽어요'; }
+          if (current === target) choicesEl.classList.add('read-failed');
+          var listenHelp = document.getElementById('readingListen');
+          if (current === target && listenHelp) listenHelp.classList.add('is-recommended');
         },
         onUnavailable: function () {
           if (current !== target || target.answered || isFree() || hasTicket()) return;
@@ -2690,22 +2695,30 @@
           cheerEl.textContent = '마이크 문제는 오답이 아니에요. 다른 문제를 풀거나 아래에서 영어 읽기로 돌아가요.';
         }
       });
+      choicesEl.classList.toggle('show-heard', /(?:\?|&)readinglog=1/.test(location.search || ''));
       // Preserve the full microphone disclosure, but keep it below the task on demand.
+      // It is a small ⓘ until this device's first successful read; after that it stays out of the child's way.
       var privacy = choicesEl.querySelector && choicesEl.querySelector('.reading-privacy');
       if (privacy) {
-        var help = document.createElement('details');
-        help.className = 'reading-help';
-        var summary = document.createElement('summary');
-        summary.textContent = '마이크·개인정보 안내';
-        help.appendChild(summary); help.appendChild(privacy); choicesEl.appendChild(help);
+        if (privacyKnown()) privacy.remove();
+        else {
+          var help = document.createElement('details');
+          help.className = 'reading-help';
+          var summary = document.createElement('summary');
+          summary.textContent = 'ⓘ'; summary.setAttribute('aria-label', '마이크·개인정보 안내');
+          help.appendChild(summary); help.appendChild(privacy); choicesEl.appendChild(help);
+        }
       }
-      if (target.story) {
-        var listenHelp = document.createElement('a');
-        listenHelp.id = 'bookListeningHelp'; listenHelp.className = 'book-listening-help';
-        listenHelp.textContent = '잘 모르겠어요? 🔊 그림책 먼저 듣기';
-        listenHelp.href = 'story/english/?book=' + encodeURIComponent(target.story.book.id) + '&page=' + target.story.pageIndex + '&part=' + target.story.part + '&listen=1&from=study';
-        listenHelp.addEventListener('click', function () { stopReading(); });
-        choicesEl.appendChild(listenHelp);
+      if (window.EnglishReading.sentenceClip) {
+        /* 먼저 듣기 = 그 자리에서 그 문장 녹음을 한 번 튼다. 마이크는 먼저 멈추고, 듣고 나서 저절로 다시 켜지 않는다.
+           점수·단계·익힘에는 영향이 없다. */
+        var listenHelp = document.createElement('button');
+        listenHelp.type = 'button';
+        listenHelp.id = 'readingListen'; listenHelp.className = 'reading-listen';
+        listenHelp.textContent = '🔊 먼저 듣기';
+        listenHelp.addEventListener('click', function () { playReadingClip(target, listenHelp); });
+        var readingRow = choicesEl.querySelector && choicesEl.querySelector('.reading-actions');
+        (readingRow || choicesEl).appendChild(listenHelp);
       }
       return;
     }
@@ -2764,16 +2777,9 @@
     if (n === current.answer) {
       current.answered = true;
       var firstTry = !current.missed && !current.gentle;
-      var readingPromoted = !!(current.reading && !current.story && firstTry && recordReadingPass(current.reading));
-      var bookGrowth = null;
-      if (current.story) {
-        bookGrowth = window.EnglishBooks.recordPass(localStorage, {
-          mode: bookReadingMode,
-          id: current.story.book.id + ':' + current.story.pageIndex + ':' + current.story.part,
-          firstTry: firstTry, pageComplete: current.story.part === current.story.partCount - 1
-        });
-        bookReadingMode = bookGrowth.mode;
-      }
+      var readingPromoted = !!(current.reading && firstTry && recordReadingPass(current.reading));
+      var focusLearned = !!(current.reading && firstTry && typeof noteFocus === 'function' && noteFocus(current.seed.idx));
+      if (current.reading && typeof markPrivacyKnown === 'function') markPrivacyKnown();
       if (current.reading && firstTry && state.readingWords) {
         window.EnglishReading.normalize(current.answer).split(' ').forEach(function (word) {
           if (state.readingWords[word]) {
@@ -2840,12 +2846,7 @@
       }
 
       if (readingPromoted) msg = '🎉 영어 읽기 ' + readingLevel.level + '단계 「' + ((window.EnglishReading.levelNames || [])[readingLevel.level] || '') + '」로 올라갔어요!';
-      if (current.bookDone) {
-        var nextBook = BOOK_PAGES[bookCursor.i] ? BOOK_PAGES[bookCursor.i].book : null;
-        msg = '📚 「' + current.bookDone.titleKo + '」을(를) 끝까지 읽었어요!' + (nextBook ? ' 다음 책은 「' + nextBook.titleKo + '」' : '');
-      }
-      if (bookGrowth && bookGrowth.promoted) msg += ' 🌟 잘 읽어서 다음 쪽부터 「' + window.EnglishBooks.modeLabels[bookGrowth.mode] + '」로 올라가요!';
-      if (bookGrowth && bookGrowth.eased) msg = '잘 끝냈어요! 다음 쪽은 조금 짧게 읽어 볼까요? 🌱';
+      if (focusLearned && !readingPromoted) msg = '🌱 이 문장을 익혔어요! 새 문장이 열려요.';
       cheerEl.textContent = msg;
       drawSetStars();
       drawDaily();

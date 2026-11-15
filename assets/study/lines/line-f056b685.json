@@ -1,0 +1,10 @@
+{
+  "text": "Where is my bag?",
+  "audio": "lines/line-f056b685.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Where is my bag?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "57ca7c87e3ec7e581cb91e34999a4fe01b093d33ba2e127da5b63e87a02c17e2"
+}

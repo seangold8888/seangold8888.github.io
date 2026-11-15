@@ -1,0 +1,10 @@
+{
+  "text": "I miss my mom.",
+  "audio": "lines/line-c042594d.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I miss my mom.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "1e63a4552b136d8c5273980e2454f23883fd0d5598e95772f39cb265bf932e5a"
+}

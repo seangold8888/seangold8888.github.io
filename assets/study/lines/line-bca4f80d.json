@@ -1,0 +1,10 @@
+{
+  "text": "I have a little brother.",
+  "audio": "lines/line-bca4f80d.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I have a little brother.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "397f44707f505a148089972797b74c2df7d8a36ce49c316836c1381d95c3bde4"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Are you sad? Yes, I miss my mom. She will come after nap. Okay, I feel better.",
+  "audio": "lines/line-288d6284.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Are you sad? Yes, I miss my mom. She will come after nap. Okay, I feel better.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "e13aacde7453538eb455c1cf21889e12505a07dcb9aae1ab845dc12c70b92b94"
+}

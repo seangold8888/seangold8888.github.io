@@ -1,0 +1,10 @@
+{
+  "text": "What day is it today? It's Monday.",
+  "audio": "lines/line-964216bb.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "What day is it today? It's Monday.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "bb25b185b6ad8ab7b0b1276296470cba1803862ace5214fd5cb93b579f338fd9"
+}

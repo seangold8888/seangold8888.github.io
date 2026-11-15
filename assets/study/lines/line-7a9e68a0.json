@@ -1,0 +1,10 @@
+{
+  "text": "Let's play hide and seek outside.",
+  "audio": "lines/line-7a9e68a0.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Let's play hide and seek outside.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "f09cae4b4b28c655456b87572afcbbecceac00abd039a976038c7decb0899d81"
+}

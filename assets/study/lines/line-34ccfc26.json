@@ -1,0 +1,10 @@
+{
+  "text": "Who wants to be first? Me, please!",
+  "audio": "lines/line-34ccfc26.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Who wants to be first? Me, please.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "7fbf18b5f1257e4bd93540ddd8a3348332fca8c1944022367288664fcf852cdc"
+}

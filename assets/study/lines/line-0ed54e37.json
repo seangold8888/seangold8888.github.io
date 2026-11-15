@@ -1,0 +1,10 @@
+{
+  "text": "What are you making? I'm making a robot.",
+  "audio": "lines/line-0ed54e37.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "What are you making? I'm making a robot.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "c69b9443473af5d5fdabbf1f10d7637193123f26f3c5f0cf3a6b234d83b4adbf"
+}

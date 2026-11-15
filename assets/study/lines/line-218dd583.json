@@ -1,0 +1,10 @@
+{
+  "text": "Do you want some milk? No, thank you.",
+  "audio": "lines/line-218dd583.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Do you want some milk? No, thank you.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "f87f599097fe2fadba4bfa096f8acde52d3a4821bcc6570b4c7999f999d606cb"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Where is your backpack? It's in my cubby.",
+  "audio": "lines/line-d4965aa3.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Where is your backpack? It's in my cubby.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "ad6632d39db27a28427a55e8e25833c0c0dacbe2d6cd6156a1d2d91c462148a5"
+}

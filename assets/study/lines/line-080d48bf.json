@@ -1,0 +1,10 @@
+{
+  "text": "Put it away.",
+  "audio": "lines/line-080d48bf.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Put it away.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "92738de7eaf6fc949765457dbe6145f5a825dfa6824c999b416d850c387f6e6d"
+}

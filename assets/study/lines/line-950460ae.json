@@ -1,0 +1,10 @@
+{
+  "text": "I live with my family.",
+  "audio": "lines/line-950460ae.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I live with my family.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "12278fca9d2e446bd766be7e176b536d34dc8f4c2f5dcd94b91656a20b7ef61f"
+}

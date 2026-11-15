@@ -1,0 +1,10 @@
+{
+  "text": "Do you need help? Yes, please.",
+  "audio": "lines/line-73c68d5e.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Do you need help? Yes, please.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "3f9cc560d8d629876112505e692df3e2fc40e7749ff1c453a6ce50951b3c0e22"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Do you like to paint? Yes, I love it!",
+  "audio": "lines/line-3bf37776.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Do you like to paint? Yes, I love it.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "effee477fbf04a702cd4f50ebb624e0064650736fffd0da154b505003cd938fe"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Me, please!",
+  "audio": "lines/line-13b55cb4.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Me, please.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "63348eaf648fa94a9dfaf8d2602aa6da5342b4b90b19ad5008012717e0cb15cc"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Do you want to swing? Yes! Can you push me?",
+  "audio": "lines/line-6c772f15.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Do you want to swing? Yes. Can you push me?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "b54b3b3bfc979508aec1ab20e9251969a53064b11baeea6f24976e120aa78523"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Can you help me? Of course I can.",
+  "audio": "lines/line-ba48ee85.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Can you help me? Of course I can.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "b2873076900d75339f63ee9d3c344acf15280b81bfd5752ad996163fb6807acc"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "You can use my crayons if you want.",
+  "audio": "lines/line-83513142.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "You can use my crayons if you want.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "845588ab9c40a09df1feff08653a54d55c52c6f4f8556c678a375ce7a2535b00"
+}

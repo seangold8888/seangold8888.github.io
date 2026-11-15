@@ -1,0 +1,10 @@
+{
+  "text": "Whose turn is it? It's my turn. Okay, you go first.",
+  "audio": "lines/line-47e56d91.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Whose turn is it? It's my turn. Okay, you go first.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "be1738adaa0a10a67312b8c3db145a7df9f6a4cdcab57d2e9af565ec2ee5e2ae"
+}

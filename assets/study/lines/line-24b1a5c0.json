@@ -1,0 +1,10 @@
+{
+  "text": "Can I have a turn? I'll wait.",
+  "audio": "lines/line-24b1a5c0.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Can I have a turn? I'll wait.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "ac341d11f07e8ec23d5710bb6b640ac1703e301012e4086027161b6437a37c8c"
+}

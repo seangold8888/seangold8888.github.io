@@ -1,0 +1,10 @@
+{
+  "text": "Clean up time, everybody! Where do the blocks go? They go on the shelf. Good job!",
+  "audio": "lines/line-ffbbaa23.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Clean up time, everybody. Where do the blocks go? They go on the shelf. Good job.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "69f8d9afe984265965b242b6431be62054efaee798c20c734395a5b1f47c47ac"
+}

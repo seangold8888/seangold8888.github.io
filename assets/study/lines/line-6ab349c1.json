@@ -1,0 +1,10 @@
+{
+  "text": "I am painting a picture for my mom.",
+  "audio": "lines/line-6ab349c1.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I am painting a picture for my mom.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "9db1435b9c2b7c69655abc685ab73e30007e75ad5e0392c0c244cc8157b7762e"
+}

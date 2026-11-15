@@ -1,0 +1,10 @@
+{
+  "text": "Can I sit here? Yes, you can. Thanks, friend!",
+  "audio": "lines/line-ee38b0fb.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Can I sit here? Yes, you can. Thanks, friend.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "f7fc5f6f5129068730bb230ee7f5f3f6a3427c42e46e886dabca1208a4804675"
+}

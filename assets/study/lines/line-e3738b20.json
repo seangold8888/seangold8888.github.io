@@ -1,0 +1,10 @@
+{
+  "text": "Are you hurt?",
+  "audio": "lines/line-e3738b20.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Are you hurt?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "5eafa4fa96477996d268ca7eb0c79d28257f19c92158194bb842d0b36f3d5496"
+}

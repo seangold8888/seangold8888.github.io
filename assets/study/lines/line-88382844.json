@@ -1,0 +1,10 @@
+{
+  "text": "Let's play tag.",
+  "audio": "lines/line-88382844.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Let's play tag.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "e6933886bd74ff14bc7d289ae77f4b1dd70935d45bbd042d714bad7accc6c6a5"
+}

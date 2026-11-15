@@ -70,7 +70,7 @@ const server = http.createServer((req, res) => {
       await page.locator('.book').filter({ hasText: 'Momo and the Red Kite' }).click();
       await page.waitForSelector('.page .text');
       assert.equal(await page.locator('.page .text').innerText(), practice(books.find(book => book.id === 'momo').pages[0],'easy')[0].text);
-      assert.equal(await page.locator('.page img').getAttribute('src'), 'art/momo-1.png');
+      assert.equal(await page.locator('.page img').getAttribute('src'), 'art/momo-1.webp');
       await page.waitForFunction(() => { const image = document.querySelector('.page img'); return image.complete && image.naturalWidth > 0; });
       await page.locator('.page .listen').click();
       await page.waitForTimeout(600);

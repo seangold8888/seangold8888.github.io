@@ -1,0 +1,10 @@
+{
+  "text": "Nice to meet you.",
+  "audio": "lines/line-a3d72107.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Nice to meet you.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "fd7a859c765e043f6e93f157e1b5dbc21ec9146eb0ba639a503bdfc439d89070"
+}

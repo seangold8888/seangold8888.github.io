@@ -1,0 +1,10 @@
+{
+  "text": "Look up!",
+  "audio": "lines/line-5146705a.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Look up.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "0cafc6dacc9a93f7cfa421a988e0308f4e70fdb4b904b3b052a490095d05d97e"
+}

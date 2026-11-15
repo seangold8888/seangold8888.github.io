@@ -1,0 +1,10 @@
+{
+  "text": "Is it raining outside? Yes, it is.",
+  "audio": "lines/line-9e370d50.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Is it raining outside? Yes, it is.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "58f1a9b6e2242181f752d28a01eb4ec2b166b96e55a925af36da55dd9503864b"
+}

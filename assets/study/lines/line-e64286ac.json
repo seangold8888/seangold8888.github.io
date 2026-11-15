@@ -1,0 +1,10 @@
+{
+  "text": "I don't feel good. My tummy hurts. Let's go see the nurse. Okay, thank you.",
+  "audio": "lines/line-e64286ac.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I don't feel good. My tummy hurts. Let's go see the nurse. Okay, thank you.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "89917fe4a2e646ffa53d6036ff898e6973001606bd2a41c7efe8eaa7c75cf55c"
+}

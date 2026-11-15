@@ -1,0 +1,10 @@
+{
+  "text": "It's cloudy.",
+  "audio": "lines/line-e9691960.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "It's cloudy.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "a62a3a41d7539279115148874e73a0dc9b1b067bde4e139e6a3d513cbf5a6c1b"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Today is my birthday!",
+  "audio": "lines/line-c9093954.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Today is my birthday.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "e3ca042975eaade0708bb428d757524d9e4caba90ccc3310cbe6b23c36d86104"
+}

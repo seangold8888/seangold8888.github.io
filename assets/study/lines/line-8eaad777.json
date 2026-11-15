@@ -1,0 +1,10 @@
+{
+  "text": "I can go across the monkey bars.",
+  "audio": "lines/line-8eaad777.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I can go across the monkey bars.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "3e998a28ddebcc87bf3e0a49a9d185c072644f451b787d317dbfa0fde5eb1c22"
+}

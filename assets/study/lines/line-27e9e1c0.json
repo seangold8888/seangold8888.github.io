@@ -1,0 +1,10 @@
+{
+  "text": "The sun is yellow.",
+  "audio": "lines/line-27e9e1c0.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The sun is yellow.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "c41e896aeb1f59d537963450ef6f454db55629c069967e6f9d5fa2ec15592a6d"
+}

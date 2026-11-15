@@ -1,0 +1,10 @@
+{
+  "text": "Do you want to play?",
+  "audio": "lines/line-1e9829eb.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Do you want to play?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "cd08178e50f63cff928edad0d2bf92887675bb3e13e70f468a4a757446901e04"
+}

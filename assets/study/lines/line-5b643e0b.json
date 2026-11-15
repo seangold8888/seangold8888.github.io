@@ -1,0 +1,10 @@
+{
+  "text": "Let's share the blocks, okay?",
+  "audio": "lines/line-5b643e0b.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Let's share the blocks, okay?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "6187aa113c9857e3043f465093779e185f0158150af585bd847eeb4f04798db3"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Are you ready? Yes, I'm ready!",
+  "audio": "lines/line-5998494e.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Are you ready? Yes, I'm ready.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "ee32f8935d8ccd4a7687d75c61b02d05157fe04612be97bc533b3a6a531f6900"
+}

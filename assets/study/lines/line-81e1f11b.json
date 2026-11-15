@@ -1,0 +1,10 @@
+{
+  "text": "Can I have the red crayon?",
+  "audio": "lines/line-81e1f11b.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Can I have the red crayon?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "f1b1015485ab5d308b05d67b292ba24a8a56059015a6f162cd74c62e21e231e8"
+}

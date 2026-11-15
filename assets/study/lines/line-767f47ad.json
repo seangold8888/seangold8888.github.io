@@ -1,0 +1,10 @@
+{
+  "text": "Watch me!",
+  "audio": "lines/line-767f47ad.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Watch me.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "c7a698579fff130ef519f71f1cc1a798f3e0513c93e488cfca7c8d578bdb8066"
+}

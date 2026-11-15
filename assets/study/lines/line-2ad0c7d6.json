@@ -1,0 +1,10 @@
+{
+  "text": "Five, six, pick up sticks.",
+  "audio": "lines/line-2ad0c7d6.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Five, six, pick up sticks.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "05ffcd00d75004d6d4f02d18ecb39de892bfdb0fb96dc28c931e8f4a540be722"
+}

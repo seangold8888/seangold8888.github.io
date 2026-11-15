@@ -1,0 +1,10 @@
+{
+  "text": "See you tomorrow!",
+  "audio": "lines/line-4c7fe0e9.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "See you tomorrow.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "375423ae582dd682820867c63379e877e43d2052e4b9705c649d9649fe36ac30"
+}

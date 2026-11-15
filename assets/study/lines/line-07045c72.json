@@ -1,0 +1,10 @@
+{
+  "text": "Wash your hands. Use lots of soap.",
+  "audio": "lines/line-07045c72.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Wash your hands. Use lots of soap.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "682e17783741414f62aa296143626aa87ea8660fdff55a9f0d6fa3e06be7f776"
+}

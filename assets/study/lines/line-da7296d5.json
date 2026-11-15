@@ -1,0 +1,10 @@
+{
+  "text": "I'm full.",
+  "audio": "lines/line-da7296d5.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I'm full.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "9452990a6a1964badd96d0f4d2369e38388a007069a6927e0645fafbccc1b825"
+}

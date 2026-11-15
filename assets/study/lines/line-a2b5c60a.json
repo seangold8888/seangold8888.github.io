@@ -1,0 +1,10 @@
+{
+  "text": "I feel sad because I fell.",
+  "audio": "lines/line-a2b5c60a.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I feel sad because I fell.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "28d1d282142cc1cc6cc915e2fb272ba125ae04c57e98b456b2308170fee20ac3"
+}

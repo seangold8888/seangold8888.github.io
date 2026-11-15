@@ -1,0 +1,10 @@
+{
+  "text": "Thank you for sharing with me.",
+  "audio": "lines/line-15c5f30d.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Thank you for sharing with me.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "ddaa4ac26e4ad3c806646ac65641eb020544145906904062707f1aa4812b922e"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Out came the sun.",
+  "audio": "lines/line-73a65fc8.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Out came the sun.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "cb9d569c1d558f43342a2f21b933f0acdfd5471afa5b86da54d6c71ef4f2e273"
+}

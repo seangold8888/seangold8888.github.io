@@ -1,0 +1,10 @@
+{
+  "text": "Good night!",
+  "audio": "lines/line-c3bc799d.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Good night.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "5c6a73c4c236c97c6ba1ab2dc04d84b4fafd9c068365f3438c641d2ea9a6aca9"
+}

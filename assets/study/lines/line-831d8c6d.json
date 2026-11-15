@@ -1,0 +1,10 @@
+{
+  "text": "I like to run.",
+  "audio": "lines/line-831d8c6d.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I like to run.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "7aa17220dcaeaa738077e87f174df38ff9b5f0b358e408691032506da0acc196"
+}

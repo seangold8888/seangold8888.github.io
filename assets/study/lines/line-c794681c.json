@@ -1,0 +1,10 @@
+{
+  "text": "What do you want to play today?",
+  "audio": "lines/line-c794681c.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "What do you want to play today?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "f35f83e1e450b72b5f097dad1d97f1609567906bafd94d6ef2593bc523e04002"
+}

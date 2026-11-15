@@ -1,0 +1,10 @@
+{
+  "text": "Let's go down the slide!",
+  "audio": "lines/line-0e7b58e7.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Let's go down the slide.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "fc76d20f9de143ab6bcecd63edadcbe71e2c7ed3bed3c8e6b16994ffa090cc31"
+}

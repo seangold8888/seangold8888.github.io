@@ -1,0 +1,10 @@
+{
+  "text": "Can you help me zip my jacket, please?",
+  "audio": "lines/line-d21c1da5.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Can you help me zip my jacket, please?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "956b1826e0f3345f2c648af8158db6ee81bfb756bbf7353033342941e3d7401d"
+}

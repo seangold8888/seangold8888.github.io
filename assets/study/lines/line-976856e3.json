@@ -1,0 +1,10 @@
+{
+  "text": "Can you push me, please?",
+  "audio": "lines/line-976856e3.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Can you push me, please?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "39d5d46dba077da99e6fcc0bf0aa51e3c1dc2f7b8ec77bbf20e4cfaca9d3aae7"
+}

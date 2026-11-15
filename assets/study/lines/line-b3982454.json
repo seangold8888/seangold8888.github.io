@@ -1,0 +1,10 @@
+{
+  "text": "This is my dad.",
+  "audio": "lines/line-b3982454.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "This is my dad.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "817b4e2dce6622d6064d78584b22f726795676362ef0d89bee40feaf0807ffca"
+}

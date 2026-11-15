@@ -1,0 +1,10 @@
+{
+  "text": "Rain, rain, go away.",
+  "audio": "lines/line-1cc6407f.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Rain, rain, go away.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "4f6fadd6d4ad17578e5cf64d81c74bdfcbecae3ffdc422209efe05b2224abfa9"
+}

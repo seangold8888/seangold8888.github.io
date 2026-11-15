@@ -1,0 +1,10 @@
+{
+  "text": "Cover your cough.",
+  "audio": "lines/line-8d93d0c9.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Cover your cough.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "6c84609ea069043f83c01980d99452d1251dfb4c8b6b8d4fab397b17011d1d25"
+}

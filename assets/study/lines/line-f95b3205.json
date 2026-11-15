@@ -1,0 +1,10 @@
+{
+  "text": "Can I play?",
+  "audio": "lines/line-f95b3205.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Can I play?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "1f5551e8edc51c7199e0f783e015f8772dc2d8b65f2ef315dcf071ad75cf3844"
+}

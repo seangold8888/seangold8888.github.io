@@ -1,0 +1,10 @@
+{
+  "text": "Baa, baa, black sheep, have you any wool?",
+  "audio": "lines/line-7ebb0fea.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Baa, baa, black sheep, have you any wool?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "d772be66b204a5b42037314aec322ea5ec8276d28e9aaa30312322c9feac3aba"
+}

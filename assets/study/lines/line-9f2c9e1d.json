@@ -1,0 +1,10 @@
+{
+  "text": "I'm sorry I took your block. That's okay. Let's build together.",
+  "audio": "lines/line-9f2c9e1d.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I'm sorry, I took your block. That's okay. Let's build together.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "acd9fabb44818ef1330c4b1d3af5496fb0e3455dc9f01c0568afc887b6796f94"
+}

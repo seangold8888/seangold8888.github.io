@@ -1,0 +1,10 @@
+{
+  "text": "The cat is very little.",
+  "audio": "lines/line-272ec21a.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The cat is very little.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "2ea43908483c63c644e456cbc455f1b674bb626047994404f89872aab46e13a0"
+}

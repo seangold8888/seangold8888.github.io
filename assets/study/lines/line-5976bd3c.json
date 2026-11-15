@@ -1,0 +1,10 @@
+{
+  "text": "Your turn!",
+  "audio": "lines/line-5976bd3c.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Your turn.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "47678dbfc27e2a8c33dafbf4b36522077b771c15c6baa1830cc7525282f3ada4"
+}

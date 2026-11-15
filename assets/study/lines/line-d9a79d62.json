@@ -1,0 +1,10 @@
+{
+  "text": "I'm good, thanks.",
+  "audio": "lines/line-d9a79d62.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I'm good. Thanks.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "5298d9cd72452f0b05887bb1a0eab4d9be933130711e75907da300f009c7f33e"
+}

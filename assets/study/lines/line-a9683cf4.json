@@ -1,0 +1,10 @@
+{
+  "text": "Line up, please.",
+  "audio": "lines/line-a9683cf4.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Line up, please.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "29d0feb9592685c2efa0454d3c8118c372d047c4d4ebea7b8ebaf307062406ff"
+}

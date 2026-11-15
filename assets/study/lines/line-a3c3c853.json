@@ -1,0 +1,10 @@
+{
+  "text": "Can I play with you? Yes, come on!",
+  "audio": "lines/line-a3c3c853.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Can I play with you? Yes, come on.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "fdb1d998a2764ea2a950569a8314d28697425edc15e4c6ce44f2fcc2780bc616"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Can you count to ten? Yes, I can!",
+  "audio": "lines/line-a21da8f5.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Can you count to 10? Yes, I can.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "c3f8bfe5f074f169e01579db2935f1fe544738bb8b305cd05f89b6814cb7eafe"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Clean up time!",
+  "audio": "lines/line-1014a24f.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Clean up time.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "0b696a20e5f65aae636d9d1c3a64c1556f4756e40b567a6d67e5db3abaa6733e"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Please open my milk carton.",
+  "audio": "lines/line-39e9e13b.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Please open my milk carton.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "33ce9fef1e635034b901478384418cbe6bc4647c54f60e8233e8174e97658b31"
+}

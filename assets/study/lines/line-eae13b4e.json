@@ -1,0 +1,10 @@
+{
+  "text": "Thank you for the snack. It was yummy!",
+  "audio": "lines/line-eae13b4e.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Thank you for the snack. It was yummy.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "585aacb09ee2beea4c5df0b18a96cdf1df9edd08948511e191cf407967b5609c"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Come here!",
+  "audio": "lines/line-a674b544.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Come here.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "04acd21ac59f0ba51ab816c2652b41c9267a31ef43a374157e4a669d1dd5164c"
+}

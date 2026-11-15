@@ -1,0 +1,10 @@
+{
+  "text": "Put the toys in the box.",
+  "audio": "lines/line-dece2ed3.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Put the toys in the box.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "a0c99151221f25cf8d2fd10eccc47b6b5d68b5023723c15d036852a7fdb7b206"
+}

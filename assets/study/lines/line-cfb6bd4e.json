@@ -1,0 +1,10 @@
+{
+  "text": "Time to go home.",
+  "audio": "lines/line-cfb6bd4e.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Time to go home.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "25588b4fbb4fc436c65d6ad7f69ff52bb6bd449d059e63c2417aeec15a90285f"
+}

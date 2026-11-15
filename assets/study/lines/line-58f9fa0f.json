@@ -1,0 +1,10 @@
+{
+  "text": "How old are you? I'm five.",
+  "audio": "lines/line-58f9fa0f.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "How old are you? I'm five.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "026dcdd713740370f222daaff2bee2966eb67e8646d6c5ff48fb26f5c93b3efa"
+}

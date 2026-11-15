@@ -1,0 +1,10 @@
+{
+  "text": "It's windy.",
+  "audio": "lines/line-1b2386f3.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "It's windy.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "ca31ba1bfcc4893497a2d6a665769dda4dca3a48a5a927ecc15cce66a57f51d0"
+}

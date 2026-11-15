@@ -1,0 +1,10 @@
+{
+  "text": "Thank you for playing with me today.",
+  "audio": "lines/line-71e51f90.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Thank you for playing with me today.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "11885de0881da9ac5d5a43f3b472791ab5f716b7fd5043745e197b0321c46b92"
+}

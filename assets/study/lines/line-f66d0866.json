@@ -1,0 +1,10 @@
+{
+  "text": "It's snack time! What do we have? We have apples and crackers. Yummy!",
+  "audio": "lines/line-f66d0866.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "It's snack time. What do we have? We have apples and crackers. Yummy.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "56bc24aa28346848af997910ea3b42e4e0a35764fd7b6fc3bcb6bdc602fcda1b"
+}

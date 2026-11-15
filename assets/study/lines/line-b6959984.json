@@ -1,0 +1,10 @@
+{
+  "text": "Who wants to go first?",
+  "audio": "lines/line-b6959984.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Who wants to go first?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "0cfc73bdd068b1177119da244ec0c6fbcac0f558e25846c537d18b7a913dc647"
+}

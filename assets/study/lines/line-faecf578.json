@@ -1,0 +1,10 @@
+{
+  "text": "Where are you going? I'm going outside.",
+  "audio": "lines/line-faecf578.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Where are you going? I'm going outside.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "a1e4ea640c25dd4e6ace7e2a005f1876f924e5d0e9279434d37a9e84955c3a49"
+}

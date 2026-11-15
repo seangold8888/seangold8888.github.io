@@ -1,0 +1,10 @@
+{
+  "text": "Let's go outside!",
+  "audio": "lines/line-2782dee8.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Let's go outside.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "66f2d187831a49e62e01e374d25571107495e07555b2d870c572c49330f655fb"
+}

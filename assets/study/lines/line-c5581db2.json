@@ -1,0 +1,10 @@
+{
+  "text": "What do you see? I see a red bird.",
+  "audio": "lines/line-c5581db2.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "What do you see? I see a red bird.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "9e3e161ec18b3697c8f4ef721e5e4d0618449e2a16c021c1277328d67382121f"
+}

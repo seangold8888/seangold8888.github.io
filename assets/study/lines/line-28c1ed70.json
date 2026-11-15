@@ -1,0 +1,10 @@
+{
+  "text": "I did it! I wrote my name.",
+  "audio": "lines/line-28c1ed70.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I did it. I wrote my name.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "b4077de838996fb7a4511b7e1c8c16d4ae8e92301fd9cd59602c22ea860fae11"
+}

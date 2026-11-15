@@ -1,0 +1,10 @@
+{
+  "text": "I made this!",
+  "audio": "lines/line-645577c6.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I made this.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "5197f35f4ebc4437ba93ff15e40f23c8c6a533f7393afa6592359d3b23911ddb"
+}

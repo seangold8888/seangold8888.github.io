@@ -1,0 +1,10 @@
+{
+  "text": "Can I have a turn? Sure, here you go.",
+  "audio": "lines/line-86a09c31.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Can I have a turn? Sure, here you go.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "fe1083a58962823e07aa3870f9eb2f3c652127145a5bdb01bcf9fa625774fc94"
+}

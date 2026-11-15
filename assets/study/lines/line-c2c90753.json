@@ -1,0 +1,10 @@
+{
+  "text": "Help, please!",
+  "audio": "lines/line-c2c90753.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Help, please.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "c1862d7cf391a0f95a9407257ac0c0f061750f9939439762c51cb998d383f177"
+}

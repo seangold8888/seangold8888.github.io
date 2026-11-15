@@ -1,0 +1,10 @@
+{
+  "text": "I'm so happy!",
+  "audio": "lines/line-6487caf7.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I'm so happy.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "5719ef45076fe04e2d736afb562b57fb950b3323e98bf3e7942653e0a5b82cc6"
+}

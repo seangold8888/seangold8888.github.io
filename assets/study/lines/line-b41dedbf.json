@@ -1,0 +1,10 @@
+{
+  "text": "Line up, please. Where are we going? We are going to the library. I love the library!",
+  "audio": "lines/line-b41dedbf.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Line up, please. Where are we going? We are going to the library. I love the library.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "13b71c0c606222d2de813d3b4295cefcc4b0491d2e47b7ce2e614eb621866585"
+}

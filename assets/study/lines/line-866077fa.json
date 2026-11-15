@@ -1,0 +1,10 @@
+{
+  "text": "Wash your hands before you eat your snack.",
+  "audio": "lines/line-866077fa.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Wash your hands before you eat your snack.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "664464e9066085860fa001a3a9e33057d4062d195cc1549a816cf0d48417722b"
+}

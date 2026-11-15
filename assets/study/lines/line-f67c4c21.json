@@ -1,0 +1,10 @@
+{
+  "text": "Can I use the scissors and the glue?",
+  "audio": "lines/line-f67c4c21.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Can I use the scissors and the glue?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "d49806533807943fe49f3ff4a601072a89b937094e3f98723bf04046d129df53"
+}

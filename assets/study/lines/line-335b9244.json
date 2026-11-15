@@ -1,0 +1,10 @@
+{
+  "text": "Water, please.",
+  "audio": "lines/line-335b9244.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Water, please.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "be5988e34cad15b189ff8d349cc3049bfa353b2435b87571cf9c1f6b0c5de59c"
+}

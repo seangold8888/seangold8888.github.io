@@ -1,0 +1,10 @@
+{
+  "text": "Hi, friends!",
+  "audio": "lines/line-1473d436.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Hi friends.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "95bac3479cc3e27873c5c8816d44dadde1bfdb4c765a790486d1d8bc5ece5315"
+}

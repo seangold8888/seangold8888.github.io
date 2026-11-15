@@ -1,0 +1,10 @@
+{
+  "text": "Look, a rainbow!",
+  "audio": "lines/line-27287f22.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Look, a rainbow.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "7b0e26b3155e75934c57a234b8ff09c2ce645f03ca6c44345b2cb2a07d7a7b1c"
+}

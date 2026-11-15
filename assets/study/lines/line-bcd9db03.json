@@ -1,0 +1,10 @@
+{
+  "text": "I can climb up high!",
+  "audio": "lines/line-bcd9db03.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I can climb up high.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "ece4ccc04039616276b728e12a26b1706bdeb261e16c803328cc93968d7f1f37"
+}

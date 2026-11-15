@@ -1,0 +1,10 @@
+{
+  "text": "Can I see?",
+  "audio": "lines/line-5afdeb5a.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Can I see?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "861fcdc883c0692ebe29aaa0983be63518ca872d67c51716bb5a376d54bc3b32"
+}

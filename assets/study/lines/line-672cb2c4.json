@@ -1,0 +1,10 @@
+{
+  "text": "Sorry, I did not mean to push you.",
+  "audio": "lines/line-672cb2c4.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Sorry, I did not mean to push you.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "d1b96295f885f018f1da88e8abfe3327e643a8cab474df219591ef403ae379e0"
+}

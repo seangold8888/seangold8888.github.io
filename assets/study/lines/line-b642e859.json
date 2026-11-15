@@ -1,0 +1,10 @@
+{
+  "text": "Where should I put my wet coat?",
+  "audio": "lines/line-b642e859.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Where should I put my wet coat?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "9a4f2c3ba79165cf5c8c1c020daa033a07c9096e62657cd2e919d8cbc7fdd010"
+}

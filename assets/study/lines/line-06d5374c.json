@@ -1,0 +1,10 @@
+{
+  "text": "See you later!",
+  "audio": "lines/line-06d5374c.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "See you later.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "7380c8b3329d64c420c87a77b3dfe2187ac7b327a04a6d995722c68e562e6cb7"
+}

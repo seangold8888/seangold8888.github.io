@@ -1,0 +1,10 @@
+{
+  "text": "And washed the spider out.",
+  "audio": "lines/line-83b30a9a.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "and washed the spider out.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "6da5d369ba9001a1ff0eead9a260b52c614ef46c40553c4f9753d23f739c54ef"
+}

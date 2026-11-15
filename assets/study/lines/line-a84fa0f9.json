@@ -1,0 +1,10 @@
+{
+  "text": "Is your tummy full? Yes, I'm full.",
+  "audio": "lines/line-a84fa0f9.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Is your tummy full? Yes, I'm full.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "1a0efc7c32d9a8d638f21ec8f17c1be0ed5264af389646824847f92a4ad34b22"
+}

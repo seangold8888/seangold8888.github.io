@@ -1,0 +1,10 @@
+{
+  "text": "I need the blue crayon. Here you go. Thank you so much!",
+  "audio": "lines/line-a4e1caa1.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I need the blue crayon. Here you go. Thank you so much.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "48b9a903cab890c68e685f1b54b3571e2a0cb89683dc25d54f1f385e8be36910"
+}

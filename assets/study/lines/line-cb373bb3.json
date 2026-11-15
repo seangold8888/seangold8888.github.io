@@ -1,0 +1,10 @@
+{
+  "text": "Wash your hands.",
+  "audio": "lines/line-cb373bb3.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Wash your hands.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "7346c08bf9e699937bde8cbcdcfb9eaec66e3e6c123157a80414701f6c20b144"
+}

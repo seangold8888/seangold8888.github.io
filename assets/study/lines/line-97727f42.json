@@ -1,0 +1,10 @@
+{
+  "text": "This is a circle.",
+  "audio": "lines/line-97727f42.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "This is a circle.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "6368f3689b4840da3c66eddcbc8e7e0dfa6fb8e5bdaba3d30b90ef61a339d37b"
+}

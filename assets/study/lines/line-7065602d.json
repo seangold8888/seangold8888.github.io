@@ -1,0 +1,10 @@
+{
+  "text": "Did you wash your hands? Yes, I did.",
+  "audio": "lines/line-7065602d.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Did you wash your hands? Yes, I did.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "c4025a0135d8d73d80f0440c84ac7a087dccc4a6c5f023802a2c99f2e4e3b108"
+}

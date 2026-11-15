@@ -1,0 +1,10 @@
+{
+  "text": "Please pass the paper. Here you go. What are you making? I'm making a card for Grandma.",
+  "audio": "lines/line-79875d4f.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Please pass the paper. Here you go. What are you making? I'm making a card for Grandma.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "f8a090dcc95acb2310f654aa6255c2304e5785e9adb9cb1fb79dbac6b12278e8"
+}

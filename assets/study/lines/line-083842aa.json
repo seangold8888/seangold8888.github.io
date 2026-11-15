@@ -1,0 +1,10 @@
+{
+  "text": "Wait for me!",
+  "audio": "lines/line-083842aa.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Wait for me.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "ffd5a3b32b413916f7c6374e22150ac98f393897fbbf1e18a9cb1d58bff48fea"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "I'm all done.",
+  "audio": "lines/line-fa00e6c5.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I'm all done.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "a6efa777b64f0ea2e40597f16ac666fd436909ae4d81de1b0d5686669edac9c4"
+}

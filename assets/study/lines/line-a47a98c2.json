@@ -1,0 +1,10 @@
+{
+  "text": "May I go to the bathroom?",
+  "audio": "lines/line-a47a98c2.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "May I go to the bathroom?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "e1e01ab9d639010d59adfb1c8869e19e022c23db673e7f8ed6905056776926fa"
+}

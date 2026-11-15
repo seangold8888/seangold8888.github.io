@@ -1,0 +1,10 @@
+{
+  "text": "Can I have a turn on the slide? Sure, after me. Okay, I'll wait. Thank you!",
+  "audio": "lines/line-8a7a5882.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Can I have a turn on the slide? Sure, after me. Okay, I'll wait. Thank you.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "79e2b84e68d0feab549dccb7327e85f8307a23438b9296c8cde78955d180c208"
+}

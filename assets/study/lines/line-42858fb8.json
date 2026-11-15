@@ -1,0 +1,10 @@
+{
+  "text": "Could you say that again?",
+  "audio": "lines/line-42858fb8.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Could you say that again?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "1b04fda23c66ef07c666151d8ed3d9eefe32cca6378bf6ab2e19cdde25dbdbf1"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Let's clean up the room.",
+  "audio": "lines/line-9f012cba.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Let's clean up the room.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "80574723f231f64d57b71515b08e2eb462e9bf81a9f69959a42000352751a960"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Hello, teacher!",
+  "audio": "lines/line-f6efce0e.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Hello, teacher.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "f824ae5159b85c6b2860cc578dbdd0853a0f9ccbfd237b106824674e6e64188b"
+}

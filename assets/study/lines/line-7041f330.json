@@ -1,0 +1,10 @@
+{
+  "text": "You can go first.",
+  "audio": "lines/line-7041f330.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "You can go first.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "ead2e8ba147ae387909fb2e8d1e54c0cea5ea813e091e2b802a66f344789bf93"
+}

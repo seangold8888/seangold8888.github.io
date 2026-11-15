@@ -1,4 +1,4 @@
-// 영어 그림책. 쉬운 책부터 차례로 놓는다. 쪽마다 전용 삽화(기본 webp, 책별 imageExt 지정 가능), 없으면 카드 원화.
+// 영어 그림책 7권 × 8쪽(듣기 전용). 쪽마다 전용 삽화 art/<책 id>-<쪽>.webp, 없으면 카드 원화.
 // 낭독 음성: english/audio/<책 id>-<쪽 번호>.mp3 (Gemini TTS Leda, 천천히).
 (function (root) {
   "use strict";
@@ -64,7 +64,7 @@
       ]
     },
     {
-      id: "momo", title: "Momo and the Red Kite", titleKo: "모모와 빨간 연", stars: 1, cover: "tortoisehare", imageExt: "png",
+      id: "momo", title: "Momo and the Red Kite", titleKo: "모모와 빨간 연", stars: 1, cover: "tortoisehare",
       pages: [
         ["tortoisehare", "Momo is a little rabbit. He has a red kite.", "모모는 작은 토끼예요. 빨간 연이 있어요."],
         ["tortoisehare", "The wind blows. The kite flies high!", "바람이 불어요. 연이 높이 날아요!"],
@@ -147,7 +147,7 @@
       pages: book.pages.map(function (page, index) {
         const easy = EASY[book.id][index];
         return { art: page[0], text: page[1], meaning: page[2], easy: { text: easy[0], meaning: easy[1] }, audio: "audio/" + book.id + "-" + (index + 1) + ".mp3",
-          image: "art/" + book.id + "-" + (index + 1) + "." + (book.imageExt || "webp") };
+          image: "art/" + book.id + "-" + (index + 1) + ".webp" };
       })
     };
   });

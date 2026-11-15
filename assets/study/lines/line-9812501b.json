@@ -1,0 +1,10 @@
+{
+  "text": "Look at the bird.",
+  "audio": "lines/line-9812501b.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Look at the bird.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "05dfe146528085d2dc2b5bef5101e4a3606ff690e7a71c77bc43cae1346dc33c"
+}

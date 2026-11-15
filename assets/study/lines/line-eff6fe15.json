@@ -1,0 +1,10 @@
+{
+  "text": "I'm proud of my picture.",
+  "audio": "lines/line-eff6fe15.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I'm proud of my picture.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "02547a66e593d13cabad2c2c073857f3e7703302bd9dcecd1f6be3dd663ffda1"
+}

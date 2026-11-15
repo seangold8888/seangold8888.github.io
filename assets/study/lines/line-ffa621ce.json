@@ -1,0 +1,10 @@
+{
+  "text": "Let's clean up before we go outside.",
+  "audio": "lines/line-ffa621ce.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Let's clean up before we go outside.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "01f06d22176b87abce62411f28e1923b647abd9e4834c2a8918671300ae6f5c6"
+}

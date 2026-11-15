@@ -1,0 +1,10 @@
+{
+  "text": "Can I play with you and your friends?",
+  "audio": "lines/line-281dc111.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Can I play with you and your friends?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "f27c696c5fd790a1b454b86c90dbcf2ed84f42c8ddf0a7f6f57db134895510eb"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "It's snack time!",
+  "audio": "lines/line-e7406f7c.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "It's snack time.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "fc804cfc64efe3fb725d4e0b960cca8ef76d64235a612b1e54696313d5fe0ab6"
+}

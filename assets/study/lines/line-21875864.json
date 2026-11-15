@@ -1,0 +1,10 @@
+{
+  "text": "Throw it away.",
+  "audio": "lines/line-21875864.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Throw it away.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "edec49fe5ebcf62ee56a017221c2b430084d219552eaf74b01ae75977496ea36"
+}

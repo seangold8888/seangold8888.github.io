@@ -1,0 +1,10 @@
+{
+  "text": "I can jump.",
+  "audio": "lines/line-806cd724.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I can jump.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "e5c1f6a68225ebf2c0075e46bb56cf9718b922228b1c28c8b7b689ea7c0cb4c0"
+}

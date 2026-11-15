@@ -1,0 +1,10 @@
+{
+  "text": "What are you making today?",
+  "audio": "lines/line-e7b65f77.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "What are you making today?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "e66c50a826cd3da601a2c07987a86d67f098dbf3375e98ea7d31e6e68c2b374a"
+}

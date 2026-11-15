@@ -1,0 +1,10 @@
+{
+  "text": "I'm seven.",
+  "audio": "lines/line-c5b0b2ed.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I'm seven.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "a27ea1b247dad281e762876b657a92f69b793c9b3a557620678735d190e18fcc"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Thank you for helping me.",
+  "audio": "lines/line-d8f75b92.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Thank you for helping me.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "bad5a6c3f6c3087da0a31d1ac7a4deb6a4c35245d267b0a8dbb4ec9eb4373238"
+}

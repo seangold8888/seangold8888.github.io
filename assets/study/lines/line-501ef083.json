@@ -1,0 +1,10 @@
+{
+  "text": "Please open this.",
+  "audio": "lines/line-501ef083.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Please open this.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "e5928cc5340dc03d8f6e62d6aee5c98725ab6baccd86a04b7388f5dedcfcf04e"
+}

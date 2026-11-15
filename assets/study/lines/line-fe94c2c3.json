@@ -1,0 +1,10 @@
+{
+  "text": "Jack and Jill went up the hill.",
+  "audio": "lines/line-fe94c2c3.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Jack and Jill went up the hill.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "743b84d9fa07836682557e1eafeca3547bfcfc17db5baa42246965fda5984798"
+}

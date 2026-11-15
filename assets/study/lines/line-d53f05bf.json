@@ -1,0 +1,10 @@
+{
+  "text": "I can run.",
+  "audio": "lines/line-d53f05bf.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I can run.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "e0c793237d332212fa19fd00c25fc580f10a8ad09fda0e77ad52029f659318f5"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Bye-bye, friends! See you tomorrow.",
+  "audio": "lines/line-bb94c1ed.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Bye-bye, friends. See you tomorrow.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "598b39218e7877c4ec8bc449ff73f96e8054aef2ff44dfca0ee2b1729ea42dea"
+}

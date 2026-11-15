@@ -1,0 +1,10 @@
+{
+  "text": "I see you!",
+  "audio": "lines/line-9818fbe7.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I see you.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "3a3ba493ce57689b3c47e2a75a83e0d55496adb1af220ae1f17c9d5767a9ed69"
+}

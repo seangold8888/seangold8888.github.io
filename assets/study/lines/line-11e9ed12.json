@@ -1,0 +1,10 @@
+{
+  "text": "You're welcome.",
+  "audio": "lines/line-11e9ed12.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "You're welcome.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "8744605ac609435bcd1fe1bc0f8c641f7220776611e38a1b04cec3324161d402"
+}

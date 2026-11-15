@@ -1,0 +1,10 @@
+{
+  "text": "I need a tissue.",
+  "audio": "lines/line-88414098.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I need a tissue.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "8fbdaf522c1b511d9934e32187e94e4b8ff2542e18ff2f8a95c15ef1fc1c93a8"
+}

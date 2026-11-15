@@ -1,0 +1,10 @@
+{
+  "text": "I have two hands.",
+  "audio": "lines/line-3779278c.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I have two hands.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "d96a798a244f18913eb7275db55069e418a02f92b588024c57e93787028d15d3"
+}

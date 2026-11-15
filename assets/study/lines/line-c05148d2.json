@@ -1,0 +1,10 @@
+{
+  "text": "Have a nice day, teacher!",
+  "audio": "lines/line-c05148d2.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Have a nice day, teacher.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "2e6bb32c6000db29fbe6e8a7aa8ca7aecbb1c42b11759c651804fb29aff54ac2"
+}

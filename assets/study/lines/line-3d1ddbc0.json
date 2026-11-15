@@ -1,0 +1,10 @@
+{
+  "text": "It's cold outside, so wear your coat.",
+  "audio": "lines/line-3d1ddbc0.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "It's cold outside, so wear your coat.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "b7c5b1ebf24f9e71a97daf94d9ccc1b75786bbf954c1a08c23ceabdd4d396a73"
+}

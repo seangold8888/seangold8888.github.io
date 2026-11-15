@@ -1,0 +1,10 @@
+{
+  "text": "I feel a little bit tired.",
+  "audio": "lines/line-90fecc8e.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I feel a little bit tired.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "c5c2f9cec222bef9860b44b37464227cd9c7ff221f496a042b7eed4e405a1d8b"
+}

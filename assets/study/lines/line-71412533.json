@@ -1,0 +1,10 @@
+{
+  "text": "I see three green frogs.",
+  "audio": "lines/line-71412533.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I see three green frogs.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "389b70c1d175cbf19ba6994768a723ed09ea552777d100081992c1bcf4e31989"
+}

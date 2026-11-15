@@ -1,0 +1,10 @@
+{
+  "text": "How I wonder what you are.",
+  "audio": "lines/line-49b37472.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "How I wonder what you are.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "224fe8cc5f882c6ed04de53cb655b13c29489df79d72f4a700a43aca2abb9279"
+}

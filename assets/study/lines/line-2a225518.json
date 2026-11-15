@@ -1,0 +1,10 @@
+{
+  "text": "I like crackers and cheese for snack.",
+  "audio": "lines/line-2a225518.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I like crackers and cheese for snack.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "dd64e727a03c811939fd64968957058a1d5af84c8bc293198ea921a9bfa24296"
+}

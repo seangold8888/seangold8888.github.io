@@ -1,0 +1,10 @@
+{
+  "text": "One, two, buckle my shoe.",
+  "audio": "lines/line-e7cab358.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "One, two, buckle my shoe.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "b40d0e572ff973d227810d8436a37977104f36432d20a948005810a610079aac"
+}

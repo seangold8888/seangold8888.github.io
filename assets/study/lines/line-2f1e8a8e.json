@@ -1,0 +1,10 @@
+{
+  "text": "Cover your mouth when you cough or sneeze.",
+  "audio": "lines/line-2f1e8a8e.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Cover your mouth when you cough or sneeze.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "b465654ebf0c8b6cbcdc1d5469921e0c689fa927457ac1540f297479463fac57"
+}

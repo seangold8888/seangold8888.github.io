@@ -1,0 +1,10 @@
+{
+  "text": "Look at my picture. Wow, what is it? It's my family.",
+  "audio": "lines/line-8c19d31b.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Look at my picture. Wow, what is it? It's my family.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "9ef140f703cf4bf15c8d54a29c066e8d0f8121b617174aca3f6408e12f89b465"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "It's clean up time. Can you help me? Sure, I'll get the blocks.",
+  "audio": "lines/line-5c91508e.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "It's clean up time. Can you help me? Sure, I'll get the blocks.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "a156bb4e6ace2e8de475c1558f0e0b54b459140a729b5a7bb5aee1d1aca45a9a"
+}

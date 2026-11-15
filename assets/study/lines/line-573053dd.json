@@ -1,0 +1,10 @@
+{
+  "text": "Let's take turns on the red bike.",
+  "audio": "lines/line-573053dd.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Let's take turns on the red bike.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "e21506cb2f2db9810a052c0b17d6bd83a1d95e962b4dc223fc60d20864e6e0a3"
+}

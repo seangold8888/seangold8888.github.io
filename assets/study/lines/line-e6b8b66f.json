@@ -1,0 +1,10 @@
+{
+  "text": "I can't open my milk. Let me help you. There you go!",
+  "audio": "lines/line-e6b8b66f.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I can't open my milk. Let me help you. There you go.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "e7fd097fa233341d5439e8b6da25b33cfe18c298924525ea4a635a5607580c21"
+}

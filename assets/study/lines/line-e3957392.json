@@ -1,0 +1,10 @@
+{
+  "text": "Good morning, teacher! I'm here.",
+  "audio": "lines/line-e3957392.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Good morning, teacher. I'm here.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "7651eed0fd8f1bf335f1441d3e002295bbcc442b7a979f0614ce9a448fe9147b"
+}

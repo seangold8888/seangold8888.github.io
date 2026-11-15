@@ -1,0 +1,10 @@
+{
+  "text": "Line up, please. It's time for lunch.",
+  "audio": "lines/line-9d06a29b.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Line up, please. It's time for lunch.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "b5d4eeceae87f6c008b41fe2ac98a2af3f3d4c49df48b0ad56c5c6a86c083c20"
+}

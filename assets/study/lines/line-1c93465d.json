@@ -1,0 +1,10 @@
+{
+  "text": "I need to go potty.",
+  "audio": "lines/line-1c93465d.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I need to go potty.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "4208abe2eb86ca7a472c95c9396827e9bc268338cc2ad8e19910a8dd4bfd46bd"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "I made a card for Mom.",
+  "audio": "lines/line-fec48c1a.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I made a card for mom.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "7115765680be4287e765e388994ae29d5e1f0b504ce5fee324030932f6a30cea"
+}

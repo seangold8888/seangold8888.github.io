@@ -1,0 +1,10 @@
+{
+  "text": "Wash your hands with soap.",
+  "audio": "lines/line-c4d0e006.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Wash your hands with soap.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "de9506d9050e9ccd5d78e0bcedc914f5ca9641246510a0e3ca99eeaaaee39a1a"
+}

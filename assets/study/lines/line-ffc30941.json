@@ -1,0 +1,10 @@
+{
+  "text": "May I go to the bathroom? Yes, you may.",
+  "audio": "lines/line-ffc30941.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "May I go to the bathroom? Yes, you may.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "b16bf91dbebad72f401bf89a19b7a7a75c41e7fa4e1fc2f0e2698e282bc781f9"
+}

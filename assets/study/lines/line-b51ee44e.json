@@ -1,0 +1,10 @@
+{
+  "text": "What animal is this? It's a lion.",
+  "audio": "lines/line-b51ee44e.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "What animal is this? It's a lion.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "a9e2aefcc78ed5ed3f282c4c3ceb63bc38b637fb45bfb4bda3ebbf8c481bc0f9"
+}

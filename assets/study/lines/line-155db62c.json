@@ -1,0 +1,10 @@
+{
+  "text": "Good morning, I am happy to see you.",
+  "audio": "lines/line-155db62c.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Good morning. I am happy to see you.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "f33dca58ff862b6576fff4a0362bca63113698a54efaedf179115e6cb57d08fd"
+}

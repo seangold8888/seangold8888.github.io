@@ -1,0 +1,10 @@
+{
+  "text": "More, please.",
+  "audio": "lines/line-6094f374.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "More, please.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "60f087a7985d997340c99fcaf71c00950a14b22986538259f68bf94606cf5afd"
+}

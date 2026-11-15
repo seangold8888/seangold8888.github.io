@@ -1,0 +1,10 @@
+{
+  "text": "What color is this? It's purple.",
+  "audio": "lines/line-56a3a5ec.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "What color is this? It's purple.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "e55a79b939e75d9b9e6f5de96f33c39f610eeb55f69787723e5ff63b2551bf7e"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Did you wash your hands? Not yet. Go wash them, please.",
+  "audio": "lines/line-87ecbd3e.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Did you wash your hands? Not yet. Go wash them, please.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "da6f019fe8df3a3f68b800a7ad6e8477d14337ea1088e5ea5a4502899cd5578b"
+}

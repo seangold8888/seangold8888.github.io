@@ -1,0 +1,10 @@
+{
+  "text": "Look at the big dog.",
+  "audio": "lines/line-4373832e.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Look at the big dog.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "5121dedce30a1f59b70780bb628a74ffe8a8e326ee00bad54fea8c69885e09c4"
+}

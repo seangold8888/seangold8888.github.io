@@ -1,0 +1,10 @@
+{
+  "text": "Please stop. I don't like that.",
+  "audio": "lines/line-9386a58e.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Please stop. I don't like that.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "a9c6ba842aa350b25dbc96c5655aeef362d2587613260c7640e42adf15dcaad9"
+}

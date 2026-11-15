@@ -1,0 +1,10 @@
+{
+  "text": "I don't feel good.",
+  "audio": "lines/line-8ede6d5f.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I don't feel good.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "fb4b047309b7fc3f97bcf19fbdc8c9ba54486ecaade4eba610341f7db25342e1"
+}

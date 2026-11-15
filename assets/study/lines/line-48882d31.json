@@ -1,0 +1,10 @@
+{
+  "text": "Clean up, everybody!",
+  "audio": "lines/line-48882d31.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Clean up, everybody.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "ea7e95ebaac805ece868a3eed0e9f3fe03c534af074dbbcc7f55eb5cfc5b9855"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Push me, please. I want to go high!",
+  "audio": "lines/line-55b0f67c.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Push me, please. I want to go high.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "0944617defd2b15f000d52c5d558f874d79988bb7bc1115a2403b225a26d3ede"
+}

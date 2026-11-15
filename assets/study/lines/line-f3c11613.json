@@ -1,0 +1,10 @@
+{
+  "text": "Let's share.",
+  "audio": "lines/line-f3c11613.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Let's share.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "ba0a92ed6d1ce6ed5156be3fa4c233d6ebc0b162dd99fafba9ee264850ab979c"
+}

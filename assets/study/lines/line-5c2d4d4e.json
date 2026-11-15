@@ -1,0 +1,10 @@
+{
+  "text": "The ball is red.",
+  "audio": "lines/line-5c2d4d4e.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The ball is red.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "105c2d57108e1abda70f0450b22c2a93c2212fd324661a59db36b86f15c3c94c"
+}

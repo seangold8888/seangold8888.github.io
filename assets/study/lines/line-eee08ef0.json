@@ -1,0 +1,10 @@
+{
+  "text": "Me too!",
+  "audio": "lines/line-eee08ef0.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Me too.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "013ac204fd0946fa5b48674732944dcb06f80ac44c0507fdc27905296ce8b72c"
+}

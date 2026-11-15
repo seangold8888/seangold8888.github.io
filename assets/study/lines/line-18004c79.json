@@ -1,0 +1,10 @@
+{
+  "text": "Bye-bye!",
+  "audio": "lines/line-18004c79.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Bye-bye.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "9152328b039266e72f82bb99d3157876bbb191aba6e63fca66c0e21806bc7141"
+}

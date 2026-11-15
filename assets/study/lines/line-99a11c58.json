@@ -1,0 +1,10 @@
+{
+  "text": "Don't forget your backpack!",
+  "audio": "lines/line-99a11c58.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Don't forget your backpack.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "d58ae96e5e1391e5de0fc12961b9a7a3e007a589c8229130a8d7ff79e397f677"
+}

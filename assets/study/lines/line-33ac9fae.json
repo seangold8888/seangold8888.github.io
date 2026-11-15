@@ -1,0 +1,10 @@
+{
+  "text": "My dog is big and brown.",
+  "audio": "lines/line-33ac9fae.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "My dog is big and brown.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "2d794932d55b82032551e63fc164f8d9d2622ddf41f44ae88f3c7ce5b85be8ce"
+}

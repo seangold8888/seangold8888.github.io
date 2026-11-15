@@ -1,0 +1,10 @@
+{
+  "text": "That's okay. I'm fine.",
+  "audio": "lines/line-03e161d1.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "That's okay. I'm fine.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "462f2a44ccce97dcb7076882da9f3767abedf560fde6083984db738d4e4aac4b"
+}

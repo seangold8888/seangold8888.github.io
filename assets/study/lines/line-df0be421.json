@@ -1,0 +1,10 @@
+{
+  "text": "London Bridge is falling down.",
+  "audio": "lines/line-df0be421.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "London Bridge is falling down.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "88a1b3cba4d1d9afe4af211304739487e3172960e9ccb7b056e7a0ba338f92ae"
+}

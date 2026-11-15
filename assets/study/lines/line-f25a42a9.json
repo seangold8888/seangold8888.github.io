@@ -1,0 +1,10 @@
+{
+  "text": "Are you okay? I fell down. Let me get the teacher.",
+  "audio": "lines/line-f25a42a9.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Are you okay? I fell down. Let me get the teacher.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "7d8ad527bfb1a8f01d51ca53f2052fe3ad47c7aaa9577e092f68fa685a241123"
+}

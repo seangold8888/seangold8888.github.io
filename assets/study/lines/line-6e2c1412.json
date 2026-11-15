@@ -1,0 +1,10 @@
+{
+  "text": "My shoe is untied. Can you help me?",
+  "audio": "lines/line-6e2c1412.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "My shoe is untied. Can you help me?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "f6f99676052a1e5eea4c06bd2539b85d57d91e035ad4dc3c1c56d6f14f3d6c95"
+}

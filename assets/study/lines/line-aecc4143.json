@@ -1,0 +1,10 @@
+{
+  "text": "Look at me! I can hop on one foot.",
+  "audio": "lines/line-aecc4143.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Look at me. I can hop on one foot.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "9162376db847c98dfd60906470f31c8b900fe4775398ce055ac24ab9c895ce2f"
+}

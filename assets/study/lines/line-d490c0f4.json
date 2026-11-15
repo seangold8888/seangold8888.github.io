@@ -1,0 +1,10 @@
+{
+  "text": "Like a diamond in the sky.",
+  "audio": "lines/line-d490c0f4.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "like a diamond in the sky.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "bff7f9bdf37ea5618b6268989cc316956d90e557fe1f1ed8b93783d347ef35b9"
+}

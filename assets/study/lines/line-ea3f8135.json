@@ -1,0 +1,10 @@
+{
+  "text": "Gently down the stream.",
+  "audio": "lines/line-ea3f8135.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Gently down the stream.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "fdf48f49c07472abbbe6c2f6b5e02b614cf50010abcc646f3b86852294079b8c"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "I like your drawing.",
+  "audio": "lines/line-b1d95172.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I like your drawing.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "453d1314e0226f08131c65da7704959feec0573f48cc240b87419397af79cf73"
+}

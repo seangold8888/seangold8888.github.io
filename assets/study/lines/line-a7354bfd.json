@@ -1,0 +1,10 @@
+{
+  "text": "Do you want to be my friend? Yes, I do! Let's play on the swings. Okay, race you there!",
+  "audio": "lines/line-a7354bfd.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Do you want to be my friend? Yes, I do. Let's play on the swings. Okay, race you there.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "36fa9694c1443c34dcfe6e36777f0eeb29c4e26ecf7d7bfe8c8f4fa8570c3688"
+}

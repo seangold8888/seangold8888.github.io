@@ -1,0 +1,10 @@
+{
+  "text": "Is it raining outside? Yes, it is. We can play inside today. Let's build a fort!",
+  "audio": "lines/line-795a8431.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Is it raining outside? Yes, it is. We can play inside today. Let's build a fort.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "b1ad5a3a1c299486f79ee8c9e5cea99f8bfd6655d4a4e4d5d98b19f33563bf76"
+}

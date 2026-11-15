@@ -1,0 +1,10 @@
+{
+  "text": "Let's play house. I'll be the mom. You can be the baby. Okay, let's play!",
+  "audio": "lines/line-df1ca432.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Let's play house. I'll be the mom. You can be the baby. Okay, let's play.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "143e241a5988fb2dfee93ff06d832ce02b9518164c1e29a7ffd62b8ff5952217"
+}

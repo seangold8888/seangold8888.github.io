@@ -1,0 +1,10 @@
+{
+  "text": "We can run and jump.",
+  "audio": "lines/line-ae6b03f1.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "We can run and jump.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "902e86c0e4bf739f7af9d69cf18038d0299cb8e6cece29684b234d0d8c6e33a4"
+}

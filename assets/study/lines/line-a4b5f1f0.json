@@ -1,0 +1,10 @@
+{
+  "text": "Please put the blocks back on the shelf.",
+  "audio": "lines/line-a4b5f1f0.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Please put the blocks back on the shelf.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "e7ee3f9dba3efc570aba56d5d9c86dd673f36b8bcd6e2f57dc3ab8470d76ad3c"
+}

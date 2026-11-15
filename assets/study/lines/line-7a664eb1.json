@@ -1,0 +1,10 @@
+{
+  "text": "Good morning, teacher!",
+  "audio": "lines/line-7a664eb1.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Good morning, teacher.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "dd11bb427457b291b859166f6534f872a044c1c4330bcc4689c014c0bc38cd29"
+}

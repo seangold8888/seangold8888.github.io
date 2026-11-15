@@ -1,0 +1,10 @@
+{
+  "text": "What day is it today? It's Friday. Yay, it's pizza day!",
+  "audio": "lines/line-0ce395fb.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "What day is it today? It's Friday. Yay! It's pizza day.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "5e587901e0d17d05f0c2dc6abd21a318d4c7423f1348c471b5be056282657893"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Let me help you.",
+  "audio": "lines/line-788a906e.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Let me help you.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "aaa0232a6162dd582c5041ecd221af9e0ec0ea8214706ce16c900aecc6ce266b"
+}

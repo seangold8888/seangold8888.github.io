@@ -1,0 +1,10 @@
+{
+  "text": "No, thank you.",
+  "audio": "lines/line-fe9bf425.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "No, thank you.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "e992ea8038638bfbbfb6ab9339e21bbbef081c8cf799e4ffd64929396049f09f"
+}

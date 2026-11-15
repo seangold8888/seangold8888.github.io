@@ -1,0 +1,10 @@
+{
+  "text": "Down came the rain.",
+  "audio": "lines/line-af6194e2.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Down came the rain.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "3cf17dd7b47de4126d0ed03cfbb7c92cb5e9d637cf14a6c86275d7bbc8fe1472"
+}

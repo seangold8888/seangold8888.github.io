@@ -1,0 +1,10 @@
+{
+  "text": "I love you!",
+  "audio": "lines/line-29b38f72.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I love you.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "996d845d7ce7e477258af70a039007f89c00c41f4a6abdcbc19e9bc3ec6ce079"
+}

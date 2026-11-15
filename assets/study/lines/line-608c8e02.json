@@ -1,0 +1,10 @@
+{
+  "text": "Where do I put this?",
+  "audio": "lines/line-608c8e02.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Where do I put this?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "002e76d9e52ecffe56a8f3e245cc62c53e7f8e90928580d7a4eee37622114262"
+}

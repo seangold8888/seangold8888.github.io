@@ -1,0 +1,10 @@
+{
+  "text": "Humpty Dumpty sat on a wall.",
+  "audio": "lines/line-625d43ef.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Humpty Dumpty sat on a wall.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "f3097585a38d07235dcee2e912a5f953f47d6354b5b156b0692cee267e9a8638"
+}

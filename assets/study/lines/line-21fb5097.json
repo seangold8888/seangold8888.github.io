@@ -1,0 +1,10 @@
+{
+  "text": "What's the weather?",
+  "audio": "lines/line-21fb5097.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "What's the weather?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "a1bbc2f761fb0def9636d9798a7fe3805779a39864a105f39d1834f59a61589d"
+}

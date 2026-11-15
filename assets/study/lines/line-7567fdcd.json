@@ -1,0 +1,10 @@
+{
+  "text": "I had so much fun at school today.",
+  "audio": "lines/line-7567fdcd.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I had so much fun at school today.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "589596e0bfddbfd119f58f3a98a8752960bda8e86c0e72de3518ef75f09f312f"
+}

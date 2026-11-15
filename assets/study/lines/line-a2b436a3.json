@@ -1,0 +1,10 @@
+{
+  "text": "May I have water?",
+  "audio": "lines/line-a2b436a3.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "May I have water?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "667f08bb29a699772cb2cfbd89db5e45c9630d003379263394a29746f00da2c1"
+}

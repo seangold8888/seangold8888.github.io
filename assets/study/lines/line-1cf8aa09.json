@@ -1,0 +1,10 @@
+{
+  "text": "I need glue.",
+  "audio": "lines/line-1cf8aa09.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I need glue.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "163a8dc8bfc0d2c911f2231448a931ebbfa0738883ba546423d631e664bdada4"
+}

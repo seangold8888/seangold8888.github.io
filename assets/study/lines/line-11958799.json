@@ -1,0 +1,10 @@
+{
+  "text": "What did you make? I made a paper hat. It looks so cool!",
+  "audio": "lines/line-11958799.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "What did you make? I made a paper hat. It looks so cool.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "7cbe78860f9875575cd8259ba959e0b2e2479d87e47f7ff2a463d24ff238ef82"
+}

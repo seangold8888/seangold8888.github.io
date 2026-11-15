@@ -1,0 +1,10 @@
+{
+  "text": "What's the weather like today?",
+  "audio": "lines/line-e11bc48d.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "What's the weather like today?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "fabe3dc1ab3e0b09223279e5e35b1b90ff65b4912630c080656d6d3ca81741dd"
+}

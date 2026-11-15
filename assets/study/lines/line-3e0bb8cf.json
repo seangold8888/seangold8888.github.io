@@ -1,0 +1,10 @@
+{
+  "text": "I like to paint pictures.",
+  "audio": "lines/line-3e0bb8cf.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I like to paint pictures.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "b63168fa3013e76199285e03ccea9029ea826ab4a5f6d8a08592be55d4938377"
+}

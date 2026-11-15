@@ -1,0 +1,10 @@
+{
+  "text": "Let's count the apples. One, two, three. There are three apples!",
+  "audio": "lines/line-ee712e7f.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Let's count the apples. 1, 2, 3. There are three apples.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "ff9fb7cd2c89c384a8b2877b0f96bc2ea15f19d23fbbbd393faa6d394213ba85"
+}

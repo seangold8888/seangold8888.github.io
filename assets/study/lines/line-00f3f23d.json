@@ -1,0 +1,10 @@
+{
+  "text": "I can hop.",
+  "audio": "lines/line-00f3f23d.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I can hop.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "2dcb24b6b1d15471484186fac8c16b2d5767d8224884b0ddf2429f782fa9fecd"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "This is Mom.",
+  "audio": "lines/line-42759592.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "This is Mom.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "a45396257527fa7e617fdc7cdb3168653147b7871a63cf893264b9f36c1e29c3"
+}

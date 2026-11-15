@@ -1,0 +1,10 @@
+{
+  "text": "I can't find my shoe. Did you look in your cubby? Oh, here it is! Thank you!",
+  "audio": "lines/line-b12aadc1.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I can't find my shoe. Did you look in your cubby? Oh, here it is. Thank you.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "34dea60076db0c7d755eddbffa226b114a1416cbc8ac28835c3bcfaa6c5631c5"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Please pass me the glue.",
+  "audio": "lines/line-dd3ffe7c.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Please pass me the glue.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "084187447ad3b6bea043b29f8dbc0a8a6c3de9fbf46df1bda8de00b9e1f41170"
+}

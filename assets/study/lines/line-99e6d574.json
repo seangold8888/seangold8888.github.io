@@ -1,0 +1,10 @@
+{
+  "text": "It's my birthday today. I'm six!",
+  "audio": "lines/line-99e6d574.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "It's my birthday today. I'm six.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "cfb3907d139f9c3ac79a24d85070c302b9d3e31f7a93d56e7003c047eecb7c4b"
+}

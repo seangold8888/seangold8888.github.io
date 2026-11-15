@@ -1,0 +1,10 @@
+{
+  "text": "Can you help me zip my coat? Sure, hold still. There you go. Thank you, teacher!",
+  "audio": "lines/line-7f17c80b.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Can you help me zip my coat? Sure, hold still. There you go. Thank you, teacher.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "5a35443c78c616780573b9d65ed2d551fb11dfdc4ebe6797bad52df6ab3a25b9"
+}

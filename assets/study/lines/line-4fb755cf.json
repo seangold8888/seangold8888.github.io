@@ -1,0 +1,10 @@
+{
+  "text": "I can swing by myself.",
+  "audio": "lines/line-4fb755cf.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I can swing by myself.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "ff179d61788b2ab33b1d864a6cc767eacae281f04a071cdf80cb7924fadc77e4"
+}

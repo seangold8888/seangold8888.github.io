@@ -1,0 +1,10 @@
+{
+  "text": "Watch me jump!",
+  "audio": "lines/line-9502e2c9.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Watch me jump.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "bce9ce6918914264fae036ad1d6b29fa1534865703250f82069a58e4bab07640"
+}

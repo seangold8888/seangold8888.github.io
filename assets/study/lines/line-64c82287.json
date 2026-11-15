@@ -1,0 +1,10 @@
+{
+  "text": "Let's sing a song. Everybody clap!",
+  "audio": "lines/line-64c82287.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Let's sing a song. Everybody clap.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "3d24f2c158c33124dbfe6cf69c7f00ca2aa3adffacfea8e589cddfe10438e5b8"
+}

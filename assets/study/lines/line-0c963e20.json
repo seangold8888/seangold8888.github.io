@@ -1,0 +1,10 @@
+{
+  "text": "We go to school.",
+  "audio": "lines/line-0c963e20.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "We go to school.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "bfca17ac1e646811fbd2412b623b969339886235efc23006a8b02883cf7dca65"
+}

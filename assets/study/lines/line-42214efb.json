@@ -1,0 +1,10 @@
+{
+  "text": "Let's count to ten together.",
+  "audio": "lines/line-42214efb.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Let's count to 10 together.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "fdfb37009baf63f26a4878accd73c168849a4e157362bac0ea452da8086d7aec"
+}

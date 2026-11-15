@@ -1,0 +1,10 @@
+{
+  "text": "I'm all done. Can I go play?",
+  "audio": "lines/line-4ad7b361.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I'm all done. Can I go play?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "9ee0ba715c8a30f1aca9072677a2b83604416d219a5b409a03eb7900f2cdcecb"
+}

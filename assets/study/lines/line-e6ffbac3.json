@@ -1,0 +1,10 @@
+{
+  "text": "I have a sister.",
+  "audio": "lines/line-e6ffbac3.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I have a sister.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "5958d70dd402b6cb7f81ff6ed1a6a09063e80560e11873f728837241419eff85"
+}

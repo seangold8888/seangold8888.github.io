@@ -1,0 +1,10 @@
+{
+  "text": "I live in Korea.",
+  "audio": "lines/line-c1ae4a13.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I live in Korea.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "4961ce536ac82ef2fd48c83e874d01b07e0e4d96100cbff4817bf0e7439d0288"
+}

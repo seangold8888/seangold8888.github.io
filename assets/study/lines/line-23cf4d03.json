@@ -1,0 +1,10 @@
+{
+  "text": "I feel tired. Can I rest a little?",
+  "audio": "lines/line-23cf4d03.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I feel tired. Can I rest a little?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "df39a576ea86a9baf92c28c532e8cbeca940bd18785d0717063546e26f8a63ba"
+}

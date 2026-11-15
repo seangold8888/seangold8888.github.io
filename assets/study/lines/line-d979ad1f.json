@@ -1,0 +1,10 @@
+{
+  "text": "What's wrong? I lost my mitten.",
+  "audio": "lines/line-d979ad1f.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "What's wrong? I lost my mitten.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "d2bebc6a51ca71f0fadee9c23561eda3e75ed4f93406a81735bf106a7083efc3"
+}

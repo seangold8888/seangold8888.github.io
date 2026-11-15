@@ -1,0 +1,10 @@
+{
+  "text": "I'm mad.",
+  "audio": "lines/line-d2e8a370.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I'm mad.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "40c25475e677ac0566235ecf9a79a2189d6adc0c310f7da1c3f1a015704340c6"
+}

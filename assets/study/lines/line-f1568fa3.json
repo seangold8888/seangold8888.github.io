@@ -1,0 +1,10 @@
+{
+  "text": "Why are you sad? I miss my mom.",
+  "audio": "lines/line-f1568fa3.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Why are you sad? I miss my mom.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "c3f8dad92d38361737722aa17a32bb4a79c4a319509f6f7580984ba66205ba48"
+}

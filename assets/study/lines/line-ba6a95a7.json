@@ -1,0 +1,10 @@
+{
+  "text": "I'm all done with lunch.",
+  "audio": "lines/line-ba6a95a7.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I'm all done with lunch.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "60c8ed8c8fc0eafb59666b3389bbc39b5cf30623dc168b09e290c896c7b5b44b"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Is it my turn yet? Not yet. You are next!",
+  "audio": "lines/line-cbacb6b0.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Is it my turn yet? Not yet. You are next.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "6e7093523b9ac8845db7be8da1cfb6268d94d30c84cce8c1f169782e4b25800a"
+}

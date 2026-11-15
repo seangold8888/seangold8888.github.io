@@ -1,0 +1,10 @@
+{
+  "text": "How's the weather today? It's sunny.",
+  "audio": "lines/line-8b5c77d8.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "How's the weather today? It's sunny.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "d61ca911a583622c71aab27ab9380e719219db2a03d68a1db913ab5ab4ea5968"
+}

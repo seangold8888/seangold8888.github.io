@@ -1,0 +1,10 @@
+{
+  "text": "It's raining. We can't go outside.",
+  "audio": "lines/line-fb7a37a6.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "It's raining. We can't go outside.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "77f98fed2b8fbc467619df45133ccfbaaf4ffd9d597a9e1df17b760ec59819fb"
+}

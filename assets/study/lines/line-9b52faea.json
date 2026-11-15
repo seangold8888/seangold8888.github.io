@@ -1,0 +1,10 @@
+{
+  "text": "Let's build a big tower.",
+  "audio": "lines/line-9b52faea.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Let's build a big tower.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "2449bd2ae4921698c756db0935afa548f08a3b5e95ac234eef15612b32b55931"
+}

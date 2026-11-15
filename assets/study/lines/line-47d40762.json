@@ -1,0 +1,10 @@
+{
+  "text": "I'm sad.",
+  "audio": "lines/line-47d40762.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I'm sad.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "b9d9047cc703b16140871503e1e22066327f9db104d239b510eb46e76a406e14"
+}

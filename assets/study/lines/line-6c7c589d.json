@@ -1,0 +1,10 @@
+{
+  "text": "What are you drawing? I'm drawing a dinosaur. It has big teeth. Wow, that's so cool!",
+  "audio": "lines/line-6c7c589d.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "What are you drawing? I'm drawing a dinosaur. It has big teeth. Wow, that's so cool.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "7524dea86fa51341c08a7fe469e4fbcb4b028fdb930890f29fd104a68af61081"
+}

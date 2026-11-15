@@ -1,0 +1,10 @@
+{
+  "text": "Mary had a little lamb.",
+  "audio": "lines/line-4a89b89a.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Mary had a little lamb.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "cbd19e1e9123cb067dd2354573ba6f0320efdee775e29f60f5619bd7a6bffcd0"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "It's raining.",
+  "audio": "lines/line-c9dfafd6.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "It's raining.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "2703e5435c3a8e63adc7c1bd7e8906d8dc3c071ac1621a095a2e338885843d21"
+}

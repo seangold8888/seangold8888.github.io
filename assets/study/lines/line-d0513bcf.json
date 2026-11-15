@@ -1,0 +1,10 @@
+{
+  "text": "What did you eat for lunch? I ate rice.",
+  "audio": "lines/line-d0513bcf.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "What did you eat for lunch? I ate rice.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "dbbdf7882e42490d76ed219a5f4d5fe1fd62916c97093b1080d6657b731b39af"
+}

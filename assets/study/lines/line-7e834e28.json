@@ -1,0 +1,10 @@
+{
+  "text": "Thank you for the snack.",
+  "audio": "lines/line-7e834e28.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Thank you for the snack.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "eaa48834ab9323586ef085c59f551846c849b0ebd5e92b1684b0efdd35884377"
+}

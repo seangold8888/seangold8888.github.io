@@ -1,0 +1,10 @@
+{
+  "text": "Wash with soap.",
+  "audio": "lines/line-0f593c89.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Wash with soap.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "97031523e0382025b76376f9d32b9de672c038e4c0c8b7f68ba3d6c226a77f8d"
+}

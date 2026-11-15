@@ -1,0 +1,10 @@
+{
+  "text": "Can I play with you? Sure! You can be the doctor.",
+  "audio": "lines/line-eb6e76c6.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Can I play with you? Sure, you can be the doctor.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "1ec128fba7090e3fee56614f562dc612768eb78944537f094cfb109c551d9d8c"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "What's your favorite color? I like green.",
+  "audio": "lines/line-80efb3f1.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "What's your favorite color? I like green.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "775fe4ea8a53ecba5936eb9397e0681ac0a8507d9628a40016af06de053e2e59"
+}

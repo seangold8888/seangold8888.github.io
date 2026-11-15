@@ -1,0 +1,10 @@
+{
+  "text": "How old are you?",
+  "audio": "lines/line-4d62bdfa.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "How old are you?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "82615fda030cd9465844af0c77744b9cc0b3277f0eff41dcf91dfafdf2edbc76"
+}

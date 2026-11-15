@@ -1,0 +1,10 @@
+{
+  "text": "The cow jumped over the moon.",
+  "audio": "lines/line-35219d18.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The cow jumped over the moon.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "eaf31eaa072d9e7c0d7041b7cb53da099c31ff3b74b7bb30613afe984b27bab8"
+}

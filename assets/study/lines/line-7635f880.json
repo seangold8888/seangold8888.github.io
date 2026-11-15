@@ -1,0 +1,10 @@
+{
+  "text": "Excuse me.",
+  "audio": "lines/line-7635f880.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Excuse me.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "a142354c50141adec5268257694ff4fcd8b1a29614a7c03b22ed201d204cc2b0"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Let's take turns.",
+  "audio": "lines/line-629d7b2f.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Let's take turns.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "bec5a396e78bf1a7c7e5350abff707a4e91f48cbe05ce73256c4dc544a33181e"
+}

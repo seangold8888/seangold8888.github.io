@@ -1,0 +1,10 @@
+{
+  "text": "Be gentle with the bunny. It's very small.",
+  "audio": "lines/line-874fd806.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Be gentle with the bunny. It's very small.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "dd1ae265d0508190ff7baf65adba8390f6dba5c22a26b19b6c9c841f32c5e8fe"
+}

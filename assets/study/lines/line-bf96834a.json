@@ -1,0 +1,10 @@
+{
+  "text": "Let's play together.",
+  "audio": "lines/line-bf96834a.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Let's play together.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "9fad3edd4a64ace017b689cd526c04df54502a871ad74db9366f4d50287a37d4"
+}

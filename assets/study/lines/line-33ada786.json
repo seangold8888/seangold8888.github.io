@@ -1,0 +1,10 @@
+{
+  "text": "It's hot today.",
+  "audio": "lines/line-33ada786.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "It's hot today.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "15dfa69e237fc11fac420b88278a54f5cc7f1d72fde895b04d556e2e85323e27"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Life is but a dream.",
+  "audio": "lines/line-d64e65cc.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Life is but a dream.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "789d60a665158d486335c023b28f175748f1199af42f67088e7f8e7fd021b973"
+}

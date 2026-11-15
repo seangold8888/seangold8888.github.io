@@ -1,0 +1,10 @@
+{
+  "text": "I see a dog.",
+  "audio": "lines/line-0e36cc60.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I see a dog.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "be564636df3d19b232351b54e4b943f6d3db1956bfccaa9c49d872dbd26f0ecf"
+}

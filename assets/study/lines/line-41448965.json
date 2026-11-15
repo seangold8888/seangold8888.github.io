@@ -1,0 +1,10 @@
+{
+  "text": "What's the weather today? It's snowing! Let's wear our mittens.",
+  "audio": "lines/line-41448965.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "What's the weather today? It's snowing. Let's wear our mittens.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "cf8c40b084bb8711a1ea4c7070326dae90429fe95c114f2aa9b0e716e733a6db"
+}

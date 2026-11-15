@@ -1,0 +1,10 @@
+{
+  "text": "Why?",
+  "audio": "lines/line-50d99212.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Why?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "a8c2b38f7fdbc4aa0e60413b1034eb493bd176bb6066ebfe3917ead162859165"
+}

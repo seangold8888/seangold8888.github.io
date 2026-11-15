@@ -1,0 +1,10 @@
+{
+  "text": "Who took my crayon? I'm sorry, I did. Here you go. Thanks for giving it back.",
+  "audio": "lines/line-0d0de68c.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Who took my crayon? I'm sorry, I did. Here you go. Thanks for giving it back.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "2b3f80c316c0c080584a49bd79684fc88975605dbd484555b7013b5d48714bb3"
+}

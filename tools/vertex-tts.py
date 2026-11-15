@@ -1,11 +1,15 @@
 # 영어 읽기·그림책 소리(Leda 목소리)를 구글 클라우드 Vertex AI(크레딧 프로젝트)로 만든다.
-# 인증은 gcloud ADC. API 키는 쓰지 않는다(조직 정책). 제미나이 API 크레딧이 끝나 2026-09-25 옮겼다.
+# 인증은 오직 gcp_auth.py(무료 크레딧 계정)로만 한다. ADC·하드코딩 프로젝트·API 키는 쓰지 않는다.
+#   GCP_PROFILE 환경변수를 반드시 지정한다(예: GCP_PROFILE=allin8). gcp_auth 를 못 불러오면 멈춘다.
+#   gcp_auth 위치: GCP_AUTH_DIR 환경변수, 없으면 C:\Users\김시현\Videos\유튜브\쇼츠\tools
 #
 # 사용법
 #   python tools/vertex-tts.py word <출력폴더> 단어 [단어=읽는법 ...]      단어 발음 클립
 #   python tools/vertex-tts.py page [시작] [끝]                             그림책 쪽 낭독(없는 파일만)
 #   python tools/vertex-tts.py practice [시작] [끝]                         난이도별 문장 낭독·전사 검증(이어서 생성)
 #   python tools/vertex-tts.py practice-verify [시작] [끝]                  기존 녹음 전사만 재검증(재생성 없음)
+#   python tools/vertex-tts.py lines [시작] [끝]                            허브 회화 문장 낭독·전사 검증(assets/study/lines)
+#   python tools/vertex-tts.py lines-verify [시작] [끝]                     회화 문장 녹음 전사만 재검증
 #   python tools/vertex-tts.py say <출력.mp3> "<읽을 말>" ["<읽는 방식>"]   아무 문장
 #
 # 결과는 기존 클립과 같은 규격: 앞뒤 무음 제거, loudnorm -16, 48kHz 모노 mp3.
@@ -16,8 +20,22 @@ from google import genai
 from google.genai import types
 
 SITE = pathlib.Path(__file__).resolve().parents[1]
-PROJECT = os.environ.get("GOOGLE_CLOUD_PROJECT", "project-b6386b67-b505-47c8-9ac")
+if not os.environ.get("GCP_PROFILE"):
+    raise SystemExit("GCP_PROFILE 를 지정하세요(예: GCP_PROFILE=allin8). 다른 인증으로 넘어가지 않습니다.")
+sys.path.insert(0, os.environ.get("GCP_AUTH_DIR", r"C:\Users\김시현\Videos\유튜브\쇼츠\tools"))
+try:
+    import gcp_auth
+except Exception as error:  # 절대 ADC 로 넘어가지 않는다.
+    raise SystemExit("gcp_auth 를 불러오지 못해 멈춥니다: " + str(error))
 LOCATION = os.environ.get("VERTEX_TTS_LOCATION", "us-central1")
+VERIFY_MODEL, VERIFY_LOCATION = gcp_auth.TEXT_MODEL
+# 2.5 계열은 생각 예산 0, 3 계열은 가장 낮은 생각 수준으로 받아쓰기만 시킨다.
+VERIFY_THINKING = ({"thinking_config": types.ThinkingConfig(thinking_budget=0)} if VERIFY_MODEL.startswith("gemini-2.5")
+                   else {"thinking_config": types.ThinkingConfig(thinking_level="minimal")})
+
+
+def make_client(location=None):
+    return genai.Client(vertexai=True, project=gcp_auth.PROJECT, location=location or LOCATION, credentials=gcp_auth.creds())
 MODEL = os.environ.get("VERTEX_TTS_MODEL", "gemini-2.5-flash-tts")
 VOICE = os.environ.get("VERTEX_TTS_VOICE", "Leda")
 practice_rate_lock = threading.Lock()
@@ -76,13 +94,21 @@ def main():
     if len(sys.argv) < 2:
         print(__doc__ or "사용법은 파일 머리말을 보세요"); sys.exit(1)
     mode = sys.argv[1]
-    client = genai.Client(vertexai=True, project=PROJECT, location=LOCATION)
+    client = make_client()
     if mode == "word":
         out_dir = pathlib.Path(sys.argv[2])
+        failed = []
         for entry in sys.argv[3:]:
             word, spoken = entry.split("=", 1) if "=" in entry else (entry, entry)
-            raw, mime = speak(client, WORD_STYLE + spoken)
+            if (out_dir / (word + ".mp3")).exists():
+                print("EXISTS", word, flush=True); continue
+            try:
+                raw, mime = speak(make_client(), WORD_STYLE + spoken)
+            except RuntimeError as error:  # 한도에 걸린 단어는 건너뛰고 끝에 알린다(다시 실행하면 이어서 만든다).
+                print("FAILED", word, error, flush=True); failed.append(word); time.sleep(30); continue
             print(word, to_mp3(raw, mime, out_dir / (word + ".mp3"), "40k", 0.08), "B", flush=True)
+            time.sleep(1.5)
+        if failed: raise SystemExit("못 만든 단어: " + " ".join(failed))
     elif mode == "page":
         books = json.loads(subprocess.run(
             ["node", "-e", "console.log(JSON.stringify(require(process.argv[1]).books))", str(SITE / "story" / "english" / "books.js")],
@@ -96,30 +122,45 @@ def main():
                 continue
             raw, mime = speak(client, PAGE_STYLE + page["text"])
             print(page["audio"], to_mp3(raw, mime, out, "48k", 0.15), "B", flush=True)
-    elif mode in ("practice", "practice-verify"):
-        plan = json.loads(subprocess.run(
-            ["node", "-e", "console.log(JSON.stringify(require(process.argv[1]).practiceAudioPlan()))", str(SITE / "story" / "english" / "books.js")],
-            capture_output=True, encoding="utf-8", check=True).stdout)
-        lines = [line for line in plan if line["audio"].startswith("audio/practice-v1/")]
+    elif mode in ("practice", "practice-verify", "lines", "lines-verify"):
+        verify_only = mode.endswith("-verify")
+        if mode.startswith("lines"):
+            # 허브 회화 문장: assets/study/lines/line-<해시>.mp3 (english-reading.js 의 linePlan)
+            reading_js = str(SITE / "assets" / "study" / "english-reading.js")
+            lines = json.loads(subprocess.run(
+                ["node", "-e", "console.log(JSON.stringify(require(process.argv[1]).linePlan()))", reading_js],
+                capture_output=True, encoding="utf-8", check=True).stdout)
+            base = SITE / "assets" / "study"
+            def normalize(text):
+                # 축약형·숫자는 읽기 채점과 똑같이 풀어서 비교한다(I'm = I am, 3 = three).
+                return subprocess.run(["node", "-e", "process.stdout.write(require(process.argv[1]).normalize(process.argv[2]))", reading_js, text],
+                                      capture_output=True, encoding="utf-8", check=True).stdout.split()
+        else:
+            plan = json.loads(subprocess.run(
+                ["node", "-e", "console.log(JSON.stringify(require(process.argv[1]).practiceAudioPlan()))", str(SITE / "story" / "english" / "books.js")],
+                capture_output=True, encoding="utf-8", check=True).stdout)
+            lines = [line for line in plan if line["audio"].startswith("audio/practice-v1/")]
+            base = SITE / "story" / "english"
+            def normalize(text):
+                return re.findall(r"[a-z]+", text.lower())
         start = int(sys.argv[2]) if len(sys.argv) > 2 else 0
         end = int(sys.argv[3]) if len(sys.argv) > 3 else len(lines)
-        def normalize(text):
-            return re.findall(r"[a-z]+", text.lower())
         def make_line(line):
-            out = SITE / "story" / "english" / line["audio"]
+            out = base / line["audio"]
             info_path = out.with_suffix(".json")
             if out.exists() and info_path.exists():
                 try:
                     info = json.loads(info_path.read_text(encoding="utf-8"))
                 except (json.JSONDecodeError, OSError):
                     info = {}
-                if info.get("text") == line["text"] and info.get("transcript_verified") and info.get("sha256") == hashlib.sha256(out.read_bytes()).hexdigest() and (mode != "practice-verify" or info.get("verification_version") == 2):
+                if info.get("text") == line["text"] and info.get("transcript_verified") and info.get("sha256") == hashlib.sha256(out.read_bytes()).hexdigest() and (not verify_only or info.get("verification_version") == 2):
                     print("EXISTS", line["audio"], flush=True); return
-            local_client = genai.Client(vertexai=True, project=PROJECT, location=LOCATION)
+            local_client = make_client()
+            verify_client = make_client(VERIFY_LOCATION)
             def verify_existing():
-                check = local_client.models.generate_content(model="gemini-2.5-flash", config=types.GenerateContentConfig(
+                check = verify_client.models.generate_content(model=VERIFY_MODEL, config=types.GenerateContentConfig(
                     automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
-                    temperature=0, max_output_tokens=128, thinking_config=types.ThinkingConfig(thinking_budget=0)), contents=[
+                    temperature=0, max_output_tokens=256, **VERIFY_THINKING), contents=[
                     "Transcribe only the English speech in this audio, exactly as spoken. "
                     "Preserve every spoken word, including repeated words or sentences if present. "
                     "Proper names in this picture book are Jay, Teo, Momo, Cinderella and Pinocchio. "
@@ -138,7 +179,7 @@ def main():
                 print("VERIFIED", line["audio"], out.stat().st_size, line["text"], flush=True); return True
             # Resume an interrupted take without paying to regenerate matching speech.
             if out.exists() and verify_existing(): return True
-            if mode == "practice-verify":
+            if verify_only:
                 print("FAILED", line["audio"], flush=True); return False
             for attempt in range(3):
                 global practice_next_request
@@ -149,7 +190,7 @@ def main():
                 to_mp3(raw, mime, out, "48k", 0.15)
                 if verify_existing(): return True
             print("FAILED", line["audio"], flush=True); return False
-        with ThreadPoolExecutor(max_workers=4 if mode == 'practice-verify' else 2) as pool:
+        with ThreadPoolExecutor(max_workers=4 if verify_only else 2) as pool:
             results = list(pool.map(make_line, lines[start:end]))
         if any(result is False for result in results): raise RuntimeError("Unverified clips remain; nothing should be deployed yet")
     elif mode == "say":
@@ -158,7 +199,7 @@ def main():
         raw, mime = speak(client, style + text)
         print(out, to_mp3(raw, mime, out, "48k", 0.15), "B")
     else:
-        print("모드는 word / page / practice / practice-verify / say"); sys.exit(1)
+        print("모드는 word / page / practice / practice-verify / lines / lines-verify / say"); sys.exit(1)
 
 
 if __name__ == "__main__":

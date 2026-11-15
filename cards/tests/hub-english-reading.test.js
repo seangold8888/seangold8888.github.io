@@ -21,11 +21,10 @@ test("family picture-book names are Jay and Teo without changing progress or ass
     assert.ok(fs.existsSync(path.resolve(__dirname, "../../story/english", page.audio)));
   }
   const root = path.resolve(__dirname, "../..");
-  for (const entry of ["game/index.html", "story/english/index.html"]) {
-    const html = fs.readFileSync(path.join(root, entry), "utf8");
-    assert.match(html, /books\.js\?v=7/);
-    assert.match(html, /english-reading\.js\?v=24/);
-  }
+  // 그림책은 듣기 전용(책 도우미만), 허브는 회화 읽기(읽기 모듈만)를 불러온다.
+  const hub = fs.readFileSync(path.join(root, "game/index.html"), "utf8"), story = fs.readFileSync(path.join(root, "story/english/index.html"), "utf8");
+  assert.match(story, /books\.js\?v=7/); assert.doesNotMatch(story, /english-reading\.js/);
+  assert.match(hub, /english-reading\.js\?v=25/); assert.doesNotMatch(hub, /story\/english\/books\.js/);
 });
 function target() {
   const listeners = {};
@@ -122,11 +121,16 @@ test("unsupported and offline devices offer fallback without requesting micropho
   }
 });
 
-test("eight reading levels keep old indexes and grow from short lines to a picture-book page", () => {
-  assert.equal(reading.sentences.length, 276);
-  assert.equal(new Set(reading.sentences.map(s => s.text)).size, 276);
-  assert.equal(reading.sentences[0].text, "I like apples.", "기존 번호가 그대로여야 오답노트가 안 깨진다");
-  assert.equal(reading.sentences[67].text, "The bird is small.");
+test("eight conversation levels grow from one or two words to short dialogues, each with a situation tag", () => {
+  assert.equal(reading.sentences.length, 377);
+  assert.equal(new Set(reading.sentences.map(s => s.text)).size, 377);
+  assert.equal(reading.sentences[0].text, "I like apples.");
+  for (const s of reading.sentences) {
+    assert.ok(reading.situations[s.situation], s.text); assert.equal(s.tag, reading.situations[s.situation]);
+    assert.ok(s.emoji && s.tag.startsWith(s.emoji), s.text);
+    assert.doesNotMatch(s.text, /\b(?:Jay|Teo|Jaei|Taeo|Yunchan|Yungeon)\b/, "no family names");
+  }
+  assert.equal(Object.keys(reading.situations).length, 17);
   const count = {}, words = {}, lines = {};
   reading.sentences.forEach((s) => {
     assert.ok(s.meaning, s.text);
@@ -135,11 +139,11 @@ test("eight reading levels keep old indexes and grow from short lines to a pictu
     words[s.level] = [Math.min(n, (words[s.level] || [99])[0]), Math.max(n, (words[s.level] || [0, 0])[1])];
     lines[s.level] = [Math.min(k, (lines[s.level] || [99])[0]), Math.max(k, (lines[s.level] || [0, 0])[1])];
   });
-  assert.deepEqual(count, { 1: 63, 2: 32, 3: 31, 4: 30, 5: 30, 6: 30, 7: 30, 8: 30 });
-  assert.deepEqual(words[1], [3, 4]); assert.deepEqual(words[2], [5, 6]); assert.deepEqual(words[3], [7, 8]);
-  assert.deepEqual(lines[4], [2, 2]); assert.deepEqual(lines[5], [2, 2]); assert.deepEqual(lines[6], [1, 1]);
-  assert.deepEqual(lines[7], [3, 3]); assert.deepEqual(lines[8], [4, 4]);
-  assert.ok(reading.sentences.filter(s => s.level === 5).every(s => s.text.includes("?")), "5단계는 묻고 답하기");
+  assert.deepEqual(count, { 1: 84, 2: 81, 3: 82, 4: 32, 5: 33, 6: 25, 7: 22, 8: 18 });
+  assert.deepEqual(words[1], [1, 3]); assert.deepEqual(words[2], [3, 4]); assert.deepEqual(words[3], [5, 6]); assert.deepEqual(words[4], [7, 8]);
+  for (const lv of [1, 2, 3, 4]) assert.deepEqual(lines[lv], [1, 1]);
+  assert.deepEqual(lines[5], [2, 2]); assert.deepEqual(lines[6], [2, 2]); assert.deepEqual(lines[7], [3, 3]); assert.deepEqual(lines[8], [4, 4]);
+  assert.ok(reading.sentences.filter(s => s.level === 5).every(s => /^[^.!]*\?/.test(s.text)), "5단계는 묻고 답하기(질문이 먼저)");
   assert.equal(reading.levelNames.length, 9);
 });
 test("every word in every level has a recorded clip that the worker precaches", () => {
@@ -343,8 +347,8 @@ test("a reading success advances progress once and earns the fifteenth-answer ti
 });
 test("reading support is cached and its script loads before the study controller", () => {
   const sw = require("../../sw.js");
-  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=24"));
-  assert.ok(html.indexOf('src="assets/study/english-reading.js?v=24"') < html.indexOf("var BANK_SIZES"));
+  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=25"));
+  assert.ok(html.indexOf('src="assets/study/english-reading.js?v=25"') < html.indexOf("var BANK_SIZES"));
   assert.match(html, /\.reading-word\.retry\s*\{[^}]*text-decoration:underline wavy/);
   assert.match(html, /if \(current !== target \|\| isFree\(\) \|\| hasTicket\(\) \|\| target\.answered\) return/);
   assert.match(html, /function stopReading\(\)[\s\S]*?clearTimeout\(answerTimer\)/);
@@ -450,6 +454,5 @@ test("a gentle stuck pass moves on but never counts as a first-try pass", () => 
   assert.equal(skill.s, 0, "no first-try skill point");
   assert.match(html, /if \(info && info\.gentle\) target\.gentle = true/);
   assert.match(html, /diagnostics: \(function \(\) \{ try \{ return window\.localStorage/);
-  const story = fs.readFileSync(path.join(__dirname, "../../story/english/index.html"), "utf8");
-  assert.match(story, /challenge\.firstTry = !missed && !\(info && info\.gentle\)/);
+  assert.match(html, /focusLearned = !!\(current\.reading && firstTry && /, "a gentle pass never counts toward a learned sentence");
 });

@@ -1,0 +1,10 @@
+{
+  "text": "Row, row, row your boat.",
+  "audio": "lines/line-59ee83e6.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Row. Row. Row your boat.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "f8def200d4f4749eba6ffa623f70bb3abde865b539d648096c2c04d7b917632b"
+}

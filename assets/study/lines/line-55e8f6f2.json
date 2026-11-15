@@ -1,0 +1,10 @@
+{
+  "text": "I see a cat.",
+  "audio": "lines/line-55e8f6f2.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I see a cat.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "5c7bcea36fb0a7148bba277eb930aa795bd9e4b4036e577feac8014c65c7163e"
+}

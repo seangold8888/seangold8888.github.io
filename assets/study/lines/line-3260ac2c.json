@@ -1,0 +1,10 @@
+{
+  "text": "Can I sit next to you?",
+  "audio": "lines/line-3260ac2c.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Can I sit next to you?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "acdeabb705fa5af14f49549ffed3e2bc14a48546e716224309db69e3b5ec0b44"
+}

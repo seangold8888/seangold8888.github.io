@@ -1,0 +1,10 @@
+{
+  "text": "I need a crayon.",
+  "audio": "lines/line-9a541b8f.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I need a crayon.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "aa5a20e558c154c43415963819fcd0bf3ceffa16ca69526b54deb648ad8fec0b"
+}

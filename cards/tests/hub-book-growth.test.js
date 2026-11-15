@@ -53,11 +53,11 @@ test('invalid state and denied storage remain usable and bounded',()=>{
   const blocked={getItem(){throw Error('denied');},setItem(){throw Error('denied');}};
   a.equal(pass(blocked,'picnic:0:0').mode,'easy');a.match(books.growthLabel(blocked),/0\/6/);
 });
-test('hub and reader wire accepted passages, guard duplicates, and leave microphone faults out',()=>{
+test('picture books are listening only: no microphone or growth wiring in the reader or the hub',()=>{
   const root=path.resolve(__dirname,'../..'),hub=fs.readFileSync(path.join(root,'game/index.html'),'utf8'),reader=fs.readFileSync(path.join(root,'story/english/index.html'),'utf8');
-  a.match(hub,/!current\.story && firstTry && recordReadingPass/);
-  a.match(hub,/firstTry: firstTry, pageComplete: current\.story\.part === current\.story\.partCount - 1/);
-  a.match(reader,/serial !== renderSerial \|\| accepted/);a.match(reader,/onRetry: function/);
+  a.doesNotMatch(reader,/EnglishReading|recordPass|내가 읽기|bookReadingMode|readingGrowth/);
+  a.doesNotMatch(hub,/EnglishBooks\.recordPass/);
+  a.match(hub,/!!\(current\.reading && firstTry && recordReadingPass/);
   const errors=hub.slice(hub.indexOf('onUnavailable: function'),hub.indexOf('// Preserve the full microphone'));
-  a.doesNotMatch(errors,/recordPass/);
+  a.doesNotMatch(errors,/recordPass|noteFocus/);
 });

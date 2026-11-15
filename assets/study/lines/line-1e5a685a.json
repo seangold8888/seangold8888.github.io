@@ -1,0 +1,10 @@
+{
+  "text": "How was school today? It was fun. I painted a rainbow. Can I see it?",
+  "audio": "lines/line-1e5a685a.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "How was school today? It was fun. I painted a rainbow. Can I see it?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "0e083a4b86246a64bb8f7b04edf204698579bbbbe7b670a134f1f21ea01114cd"
+}

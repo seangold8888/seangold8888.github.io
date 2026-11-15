@@ -1,0 +1,10 @@
+{
+  "text": "Let's share. You can have half.",
+  "audio": "lines/line-d3a1fcdd.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Let's share. You can have half.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "46368d607a97b1d92bb2a6030f5b69dfbe029198f89444fe163fb9608951a163"
+}

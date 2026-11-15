@@ -1,0 +1,10 @@
+{
+  "text": "I live with my mom, dad, and brother.",
+  "audio": "lines/line-32cc178b.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I live with my mom, dad, and brother.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "8060b94aa501065741e0830acf1d3cda4ca653ffe62e630004555a9380496519"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Look at my picture!",
+  "audio": "lines/line-dd89d024.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Look at my picture.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "948974d9084febd57986fce484dcef9d626452084bed4b1eb0b1a420b33dc07f"
+}

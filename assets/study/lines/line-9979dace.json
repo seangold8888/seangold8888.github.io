@@ -1,0 +1,10 @@
+{
+  "text": "Here it is.",
+  "audio": "lines/line-9979dace.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Here it is.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "d2181c6d5e386f2eb6966f99b463d10107b46bf419f9e771f8896f6984cd3bf4"
+}

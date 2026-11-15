@@ -1,0 +1,10 @@
+{
+  "text": "Its fleece was white as snow.",
+  "audio": "lines/line-bdc10042.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Its fleece was white as snow.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "e7753a53cafe3a98279c0f69f5814fcb34d52d29c83194ef520d2fec09dcbb58"
+}

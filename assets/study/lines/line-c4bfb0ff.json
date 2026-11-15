@@ -1,0 +1,10 @@
+{
+  "text": "Sorry, I bumped into you.",
+  "audio": "lines/line-c4bfb0ff.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Sorry, I bumped into you.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "56ab0337ce71572e9d5f968d99b1453a94801ae58d47147d594f5a69d908bb83"
+}

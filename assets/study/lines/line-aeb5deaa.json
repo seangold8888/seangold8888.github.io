@@ -1,0 +1,10 @@
+{
+  "text": "Up above the world so high.",
+  "audio": "lines/line-aeb5deaa.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Up above the world so high.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "7fc32875344fd708049be85c47439efa7eafad11617bd168014c663df1bce9cb"
+}

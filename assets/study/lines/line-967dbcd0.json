@@ -1,0 +1,10 @@
+{
+  "text": "Please line up at the door.",
+  "audio": "lines/line-967dbcd0.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Please line up at the door.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "9f7b55263133af719ab4b1b865c35521120cf11c70835c1b89404193ca2e3df7"
+}

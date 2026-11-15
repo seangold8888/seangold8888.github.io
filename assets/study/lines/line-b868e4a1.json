@@ -1,0 +1,10 @@
+{
+  "text": "I see a yellow duck.",
+  "audio": "lines/line-b868e4a1.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I see a yellow duck.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "8f03d92429e7523162daebb141a5dd2f5120f83e8e544ccee562030f0f2fc68a"
+}

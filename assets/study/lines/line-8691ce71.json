@@ -1,0 +1,10 @@
+{
+  "text": "I'm sorry. Are you okay?",
+  "audio": "lines/line-8691ce71.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I'm sorry. Are you okay?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "aa8812b34a5ec60a0d12a671f352ab4e680af353f0c0a930c81af92b71695ca1"
+}

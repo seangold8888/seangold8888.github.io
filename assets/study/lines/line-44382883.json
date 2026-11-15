@@ -1,0 +1,10 @@
+{
+  "text": "What shape is this? It's a circle.",
+  "audio": "lines/line-44382883.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "What shape is this? It's a circle.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "1af28673410029dda080c6fe0d816ca6e67a67c0e3fb18e5f532d08fd3bd8f93"
+}

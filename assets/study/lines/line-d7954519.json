@@ -1,0 +1,10 @@
+{
+  "text": "May I please have a glass of water?",
+  "audio": "lines/line-d7954519.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "May I please have a glass of water?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "1ddbdd74ce3029f3b62c2886ddbdd7fbe076395258f462b8cf42745c328abc08"
+}

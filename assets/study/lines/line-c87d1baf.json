@@ -1,0 +1,10 @@
+{
+  "text": "Push me higher!",
+  "audio": "lines/line-c87d1baf.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Push me higher.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "23c8e55ba6c1c6d09ed631e870334a601126d95e3cd54c25af9c4f9765e15512"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Clean up time! Put the toys away.",
+  "audio": "lines/line-f4f7233e.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Clean up time. Put the toys away.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "85f0fd2c1c9dacb4952c0f0fcdff891d41bee39d78b11a57d018184de8c62579"
+}

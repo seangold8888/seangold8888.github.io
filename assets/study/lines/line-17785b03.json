@@ -1,0 +1,10 @@
+{
+  "text": "Cut on the line.",
+  "audio": "lines/line-17785b03.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Cut on the line.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "61fae3de21ca0ea9f4a11707e1a0186f1848f7124192faa678ed49c147c62419"
+}

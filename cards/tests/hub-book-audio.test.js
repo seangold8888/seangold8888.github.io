@@ -20,10 +20,13 @@ test('all new clips have matching actual speech transcripts and checksums; no st
     a.equal(info.sha256,crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex'));
   }
 });
-test('practice listening and original narration are separate, stop the microphone, and never fall back to wrong text',()=>{
+test('the picture book is listening only: page narration through Web Audio, auto-play once per page, meaning after listening',()=>{
   const html=fs.readFileSync(path.join(root,'story/english/index.html'),'utf8');
-  a.match(html,/playNarration\(line\.audio, text, listen/);a.match(html,/playNarration\(page\.audio, originalText, originalListen/);
-  a.match(html,/원문 듣기/);a.match(html,/이 문장 듣기/);a.match(html,/stopPractice\(\); practice\.hidden = true/);
-  const handler=html.slice(html.indexOf('function playNarration('),html.indexOf('show.addEventListener'));
-  a.doesNotMatch(handler,/recordPass|markDone|new Audio\(page\.audio\)/);
+  a.match(html,/playNarration\(page\.audio, text, listen, meaning, false\)/);a.match(html,/playNarration\(page\.audio, text, listen, meaning, true\)/);
+  a.match(html,/meaning\.hidden = true/);a.match(html,/node\.onended = function \(\) \{ if \(audio === mine\) \{ stopAudio\(\); meaning\.hidden = false; \} \}/);
+  a.doesNotMatch(html,/new Audio\(|🎤|bookReadingMode|원문 듣기/);
+  const handler=html.slice(html.indexOf('function playNarration('),html.indexOf('prevBtn.addEventListener'));
+  a.doesNotMatch(handler,/recordPass|markDone/);
+  for(const book of books.books)for(const page of book.pages){a.ok(fs.existsSync(path.join(root,'story/english',page.audio)));a.ok(sw.CORE_SHELL.includes('./story/english/'+page.audio));
+    a.ok(fs.existsSync(path.join(root,'story/english',page.image)),page.image);a.match(page.image,/\.webp$/);a.ok(sw.APP_SHELL.includes('./story/english/'+page.image),page.image);}
 });

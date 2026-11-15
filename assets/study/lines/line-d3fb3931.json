@@ -1,0 +1,10 @@
+{
+  "text": "Don't forget to flush.",
+  "audio": "lines/line-d3fb3931.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Don't forget to flush.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "01ba37bbd72ed2104e0aed64e12eb4a64476ab3b25c1bb0fecbea885b8b0dd41"
+}

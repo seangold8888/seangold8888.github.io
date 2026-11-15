@@ -1,0 +1,10 @@
+{
+  "text": "Today is Monday and it is very sunny.",
+  "audio": "lines/line-6c179113.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Today is Monday and it is very sunny.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "9ed0c0a395eaf426c5fd8c1cf276e19e4f0f9707aac9c8c23a792966551d599a"
+}

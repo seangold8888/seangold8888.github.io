@@ -1,0 +1,10 @@
+{
+  "text": "Here is my picture. It's a big rainbow.",
+  "audio": "lines/line-6ed2ce85.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Here is my picture. It's a big rainbow.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "e44f06f19e7919cdcdb6e4c38cd582f8f28a292d137901673a2cbbac37ebe659"
+}

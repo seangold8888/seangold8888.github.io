@@ -1,0 +1,10 @@
+{
+  "text": "What are you building? A tall tower. Can I help?",
+  "audio": "lines/line-3407cf75.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "What are you building? A tall tower. Can I help?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "df240883c3f079151fece35055dc69e28c04dd7a12f06011e8f919fe037d8f46"
+}

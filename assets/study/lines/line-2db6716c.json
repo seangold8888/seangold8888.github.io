@@ -1,0 +1,10 @@
+{
+  "text": "Can you help me, please?",
+  "audio": "lines/line-2db6716c.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Can you help me, please?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "8004164b1b795903a1acd7f03c37ec7a049f4e5b82d415156fd96cfbea764abe"
+}

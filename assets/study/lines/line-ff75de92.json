@@ -1,0 +1,10 @@
+{
+  "text": "How are you today? I'm happy!",
+  "audio": "lines/line-ff75de92.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "How are you today? I'm happy.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "47007b5687a425024f47567140ae197c73a8ee30d7ca2d69c136c2dd49dfe4de"
+}

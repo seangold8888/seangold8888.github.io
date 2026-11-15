@@ -1,0 +1,10 @@
+{
+  "text": "I'm excited!",
+  "audio": "lines/line-b14d2651.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I'm excited.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "9fbc6c0d8df7395c250ce292adcc687eb4d8a9712c428f1188dd89bd11d193dc"
+}

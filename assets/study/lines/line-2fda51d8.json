@@ -1,0 +1,10 @@
+{
+  "text": "Come play!",
+  "audio": "lines/line-2fda51d8.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Come play.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "960f008f65554e6cb758fe0f180caa59edb9dd20a442242c7b93451aecab3b3b"
+}

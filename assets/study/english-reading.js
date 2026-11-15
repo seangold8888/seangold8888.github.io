@@ -1,313 +1,421 @@
 (function (root) {
   "use strict";
-  const sentences = [
-    ["I like apples.", "나는 사과를 좋아해요."],
-    ["I see a cat.", "고양이가 보여요."],
-    ["This is my book.", "이것은 내 책이에요."],
-    ["I can run.", "나는 달릴 수 있어요."],
-    ["The sun is bright.", "해가 밝아요."],
-    ["I like milk.", "나는 우유를 좋아해요."],
-    ["This is my family.", "우리 가족이에요."],
-    ["I have a dog.", "나는 강아지가 있어요."],
-    ["The bird can fly.", "새는 날 수 있어요."],
-    ["I am happy.", "나는 행복해요."],
-    ["I see a red flower.", "빨간 꽃이 보여요."],
-    ["We can play together.", "우리는 함께 놀 수 있어요."],
-    ["I wash my hands.", "나는 손을 씻어요."],
-    ["Please open the door.", "문을 열어 주세요."],
-    ["Thank you very much.", "정말 고마워요."],
-    ["I love my family.", "나는 우리 가족을 사랑해요."],
-    ["I see a big dog.", "큰 강아지가 보여요."],
-    ["I have a red ball.", "나는 빨간 공이 있어요."],
-    ["I can jump.", "나는 뛸 수 있어요."],
-    ["I can swim.", "나는 수영할 수 있어요."],
-    ["The cat is small.", "고양이는 작아요."],
-    ["The dog is big.", "강아지는 커요."],
-    ["I like bananas.", "나는 바나나를 좋아해요."],
-    ["I like my mom.", "나는 엄마를 좋아해요."],
-    ["I love my dad.", "나는 아빠를 사랑해요."],
-    ["This is my bag.", "이것은 내 가방이에요."],
-    ["This is a pen.", "이것은 펜이에요."],
-    ["I have two cats.", "나는 고양이 두 마리가 있어요."],
-    ["I see three birds.", "새 세 마리가 보여요."],
-    ["The sky is blue.", "하늘은 파래요."],
-    ["The grass is green.", "풀은 초록색이에요."],
-    ["The apple is red.", "사과는 빨개요."],
-    ["I like the moon.", "나는 달을 좋아해요."],
-    ["The moon is round.", "달은 둥글어요."],
-    ["I see a star.", "별이 보여요."],
-    ["Good morning, Mom.", "엄마, 좋은 아침이에요."],
-    ["Good night, Dad.", "아빠, 안녕히 주무세요."],
-    ["I am a girl.", "나는 여자아이예요."],
-    ["You are my friend.", "너는 내 친구야."],
-    ["We are happy.", "우리는 행복해요."],
-    ["It is a fish.", "그것은 물고기예요."],
-    ["The fish can swim.", "물고기는 수영할 수 있어요."],
-    ["I can sing.", "나는 노래할 수 있어요."],
-    ["I sing a song.", "나는 노래를 불러요."],
-    ["I can jump high.", "나는 높이 뛸 수 있어요."],
-    ["We go home.", "우리는 집에 가요."],
-    ["I go to school.", "나는 학교에 가요."],
-    ["I like my school.", "나는 우리 학교를 좋아해요."],
-    ["The bus is yellow.", "버스는 노란색이에요."],
-    ["I have a pink hat.", "나는 분홍 모자가 있어요."],
-    ["I eat an egg.", "나는 달걀을 먹어요."],
-    ["I drink water.", "나는 물을 마셔요."],
-    ["I like ice cream.", "나는 아이스크림을 좋아해요."],
-    ["The rabbit is white.", "토끼는 하얘요."],
-    ["The pig is pink.", "돼지는 분홍색이에요."],
-    ["I see a frog.", "개구리가 보여요."],
-    ["The frog can jump.", "개구리는 뛸 수 있어요."],
-    ["It is hot.", "더워요."],
-    ["It is cold.", "추워요."],
-    ["I have a blue cup.", "나는 파란 컵이 있어요."],
-    ["Please sit down.", "앉아 주세요."],
-    ["Please come here.", "이리 와 주세요."],
-    ["Thank you, Mom.", "엄마, 고마워요."],
-    ["I am seven.", "나는 일곱 살이에요."],
-    ["Happy birthday, Dad.", "아빠, 생일 축하해요."],
-    ["I love you.", "사랑해요."],
-    ["See you soon.", "곧 만나요."],
-    ["The bird is small.", "새는 작아요."]
-  ].map(function (pair) { return { text: pair[0], meaning: pair[1], level: 1 }; });
-  // 원래 68문장 중 5단어짜리 다섯 개는 2단계로 옮긴다.
-  sentences.forEach(function (sentence) { if (sentence.text.split(/\s+/).length >= 5) sentence.level = 2; });
-  // 2단계: 5~8단어 한 문장. 3단계: 짧은 두 문장 이어 읽기.
-  const LEVEL_TWO = [
-    ["I like to eat red apples.", "나는 빨간 사과 먹는 걸 좋아해요."],
-    ["The big dog can run fast.", "큰 강아지는 빨리 달릴 수 있어요."],
-    ["My mom and dad love me.", "엄마 아빠는 나를 사랑해요."],
-    ["I can see the moon at night.", "밤에 달이 보여요."],
-    ["The little cat is on the bed.", "작은 고양이가 침대 위에 있어요."],
-    ["We go to school in the morning.", "우리는 아침에 학교에 가요."],
-    ["I have a blue bag and a pen.", "나는 파란 가방과 펜이 있어요."],
-    ["The birds sing in the tree.", "새들이 나무에서 노래해요."],
-    ["Please open the door for me.", "문 좀 열어 주세요."],
-    ["I want to drink cold water.", "차가운 물을 마시고 싶어요."],
-    ["The frog can jump very high.", "개구리는 아주 높이 뛸 수 있어요."],
-    ["My friend has a pink hat.", "내 친구는 분홍 모자가 있어요."],
-    ["We can play ball together.", "우리는 같이 공놀이를 할 수 있어요."],
-    ["The sun is hot and bright.", "해가 뜨겁고 밝아요."],
-    ["I wash my hands before I eat.", "나는 먹기 전에 손을 씻어요."],
-    ["There are three fish in the water.", "물속에 물고기 세 마리가 있어요."],
-    ["The rabbit likes to eat grass.", "토끼는 풀 먹는 걸 좋아해요."],
-    ["I sing a happy song with Mom.", "엄마랑 신나는 노래를 불러요."],
-    ["The bus is big and yellow.", "버스는 크고 노란색이에요."],
-    ["We swim in the blue water.", "우리는 파란 물에서 수영해요."],
-    ["I see two white birds in the sky.", "하늘에 하얀 새 두 마리가 보여요."],
-    ["This is my new green book.", "이건 내 새 초록색 책이에요."],
-    ["The ice cream is very cold.", "아이스크림이 아주 차가워요."],
-    ["Come here and sit with me.", "이리 와서 나랑 같이 앉아요."],
-    ["My dad can swim very well.", "아빠는 수영을 아주 잘해요."],
-    ["I like the star in the sky.", "나는 하늘의 별이 좋아요."],
-    ["The pig and the cat are friends.", "돼지랑 고양이는 친구예요."],
-    ["I am happy to see you.", "만나서 기뻐요."],
-    ["Thank you for the red flower.", "빨간 꽃 고마워요."],
-    ["We eat an egg in the morning.", "우리는 아침에 달걀을 먹어요."]
-  ];
-  const LEVEL_THREE = [
-    ["I see a cat. It is very small.", "고양이가 보여요. 아주 작아요."],
-    ["The sun is up. Good morning, Mom!", "해가 떴어요. 엄마, 좋은 아침이에요!"],
-    ["I have a dog. We play every day.", "나는 강아지가 있어요. 우리는 날마다 놀아요."],
-    ["It is cold. I want a hot drink.", "추워요. 따뜻한 음료를 마시고 싶어요."],
-    ["Look at the sky. The moon is round.", "하늘을 봐요. 달이 둥글어요."],
-    ["I can swim. The water is not cold.", "나는 수영할 수 있어요. 물이 차갑지 않아요."],
-    ["My bag is blue. My hat is red.", "내 가방은 파란색이에요. 내 모자는 빨간색이에요."],
-    ["We sing a song. It is fun!", "우리는 노래를 불러요. 재미있어요!"],
-    ["The frog is green. It can jump high.", "개구리는 초록색이에요. 높이 뛸 수 있어요."],
-    ["Open the book. We can read together.", "책을 펴요. 우리 같이 읽을 수 있어요."],
-    ["I am hungry. Can I eat an apple?", "배고파요. 사과 먹어도 돼요?"],
-    ["Wash your hands. Then we can eat.", "손을 씻어요. 그다음에 먹을 수 있어요."],
-    ["The birds can fly. I can run.", "새는 날 수 있어요. 나는 달릴 수 있어요."],
-    ["It is my birthday. I am seven now!", "내 생일이에요. 이제 일곱 살이에요!"],
-    ["Mom is home. I run to the door.", "엄마가 집에 왔어요. 나는 문으로 달려가요."],
-    ["The ice cream is pink. I love it!", "아이스크림이 분홍색이에요. 너무 좋아요!"],
-    ["I see three stars. They are bright.", "별 세 개가 보여요. 밝게 빛나요."],
-    ["Good night, Dad. See you in the morning.", "아빠, 잘 자요. 아침에 만나요."],
-    ["My friend is here. We play ball.", "친구가 왔어요. 우리는 공놀이를 해요."],
-    ["The pig is pink. The cat is white.", "돼지는 분홍색이에요. 고양이는 하얀색이에요."]
-  ];
-  LEVEL_TWO.forEach(function (pair) { sentences.push({ text: pair[0], meaning: pair[1], level: pair[0].split(/\s+/).length <= 6 ? 2 : 3 }); });
-  LEVEL_THREE.forEach(function (pair) { sentences.push({ text: pair[0], meaning: pair[1], level: 4 }); });
-  // 8단계: 1 짧은 문장 · 2 5~6단어 · 3 7~8단어 · 4 짧은 두 문장 · 5 묻고 답하기 · 6 지난 일 말하기 · 7 세 문장 이야기 · 8 네 문장 그림책 한 쪽
-  const LEVEL_MORE = {
+  // 2026-11-15 영어 읽기 = "말하기 연습": 미국 프리스쿨·킨더가튼 교실에서 실제로 배우고 쓰는 말.
+  // 교실 회화(아침 인사·서클 타임·부탁·차례·정리·간식·놀이터·손 씻기), 사이트 워드 반복 패턴 문장(새로 씀),
+  // 퍼블릭 도메인 전래 동요 한 줄(Mother Goose 계열 등 19세기 이전 출판)만 쓴다. 현대 그림책·교재·근래 노래 문장은 넣지 않는다.
+  // 단계: 1 한두 마디(1~3단어) · 2 짧은 말(3~4) · 3 조금 긴 말(5~6) · 4 긴 말(7~8)
+  //       5 묻고 답하기 한 쌍 · 6 두 마디 대화 · 7 세 마디 대화 · 8 긴 대화(3~4문장)
+  // 항목: [상황, 영어, 한국어 뜻]. 상황 꼬리표는 읽기 전에 보이고, 뜻은 맞게 읽은 뒤에 보인다.
+  // 아이 실명은 쓰지 않는다(my brother, my friend 식으로).
+  const SITUATIONS = {
+    morning: "🌅 아침 인사", circle: "⭕ 서클 타임", ask: "🙋 부탁할 때", feel: "😊 기분 말하기",
+    share: "🤝 함께 놀 때", play: "🛝 놀이터", clean: "🧹 정리 시간", art: "🎨 만들기 시간",
+    snack: "🍎 간식 시간", care: "🧼 손 씻기·화장실", me: "👪 나와 가족", sorry: "💛 미안할 때",
+    thanks: "🙏 고마울 때", pattern: "📖 따라 말하기", song: "🎵 노래", bye: "👋 집에 갈 때", q: "❓ 물어볼 때"
+  };
+  const CONVERSATION = {
+    1: [
+      ["pattern", "I like apples.", "나는 사과를 좋아해요."],
+      ["morning", "Good morning!", "좋은 아침이에요!"],
+      ["morning", "Hello, teacher!", "선생님, 안녕하세요!"],
+      ["morning", "Hi, friends!", "친구들, 안녕!"],
+      ["morning", "Good morning, everyone!", "여러분, 좋은 아침이에요!"],
+      ["circle", "It's sunny.", "날씨가 맑아요."],
+      ["circle", "It's cloudy.", "구름이 꼈어요."],
+      ["circle", "It's raining.", "비가 와요."],
+      ["circle", "It's snowing.", "눈이 와요."],
+      ["circle", "It's windy.", "바람이 불어요."],
+      ["circle", "Today is Monday.", "오늘은 월요일이에요."],
+      ["circle", "Today is Friday.", "오늘은 금요일이에요."],
+      ["ask", "Help, please!", "도와주세요!"],
+      ["ask", "Yes, please.", "네, 주세요."],
+      ["ask", "No, thank you.", "아니요, 괜찮아요."],
+      ["ask", "Me, please!", "저요, 저 시켜 주세요!"],
+      ["ask", "Wait for me!", "나 기다려 줘!"],
+      ["ask", "More, please.", "더 주세요."],
+      ["ask", "One more, please.", "하나 더 주세요."],
+      ["feel", "I'm happy.", "기뻐요."],
+      ["feel", "I'm sad.", "슬퍼요."],
+      ["feel", "I'm mad.", "화가 나요."],
+      ["feel", "I'm tired.", "피곤해요."],
+      ["feel", "I'm scared.", "무서워요."],
+      ["feel", "I'm hungry.", "배고파요."],
+      ["feel", "I feel great!", "기분 최고예요!"],
+      ["feel", "I'm excited!", "신나요!"],
+      ["share", "My turn!", "내 차례야!"],
+      ["share", "Your turn!", "네 차례야!"],
+      ["share", "Let's share.", "같이 나눠 쓰자."],
+      ["share", "Me too!", "나도!"],
+      ["share", "Come play!", "와서 같이 놀자!"],
+      ["share", "Let's play!", "놀자!"],
+      ["play", "Look at me!", "나 좀 봐!"],
+      ["play", "Watch me!", "나 보고 있어!"],
+      ["play", "I did it!", "해냈어!"],
+      ["play", "Go, go, go!", "가자, 가자, 가자!"],
+      ["play", "Push me, please!", "그네 좀 밀어 줘!"],
+      ["play", "Catch the ball!", "공 잡아!"],
+      ["play", "Ready, set, go!", "준비, 땅!"],
+      ["clean", "Clean up time!", "정리 시간이에요!"],
+      ["clean", "I'm done!", "다 했어요!"],
+      ["clean", "Line up, please.", "줄 서세요."],
+      ["clean", "All done!", "다 끝났어요!"],
+      ["art", "I need glue.", "풀이 필요해요."],
+      ["art", "Look, a rainbow!", "봐, 무지개야!"],
+      ["art", "I made this!", "내가 만들었어요!"],
+      ["snack", "Yummy!", "맛있어요!"],
+      ["snack", "I'm full.", "배불러요."],
+      ["snack", "Snack time!", "간식 시간이에요!"],
+      ["snack", "Water, please.", "물 주세요."],
+      ["care", "Wash your hands.", "손을 씻어요."],
+      ["care", "Bathroom, please.", "화장실 가고 싶어요."],
+      ["care", "Bless you!", "몸조심해!(재채기했을 때)"],
+      ["me", "I'm five.", "나는 다섯 살이에요."],
+      ["me", "I'm seven.", "나는 일곱 살이에요."],
+      ["me", "This is Mom.", "이분은 우리 엄마예요."],
+      ["me", "I love you!", "사랑해요!"],
+      ["sorry", "I'm sorry.", "미안해요."],
+      ["sorry", "Are you okay?", "괜찮아?"],
+      ["sorry", "That's okay.", "괜찮아요."],
+      ["sorry", "Excuse me.", "실례합니다."],
+      ["sorry", "It's okay.", "괜찮아."],
+      ["thanks", "Thank you!", "고마워요!"],
+      ["thanks", "Thanks, teacher!", "선생님, 고맙습니다!"],
+      ["thanks", "You're welcome.", "천만에요."],
+      ["pattern", "I can run.", "나는 달릴 수 있어요."],
+      ["pattern", "I can jump.", "나는 뛸 수 있어요."],
+      ["pattern", "I can hop.", "나는 깡충 뛸 수 있어요."],
+      ["pattern", "We can run.", "우리는 달릴 수 있어요."],
+      ["pattern", "I see you!", "너 보인다!"],
+      ["pattern", "Here it is.", "여기 있어요."],
+      ["pattern", "Come here!", "이리 와!"],
+      ["pattern", "Look up!", "위를 봐!"],
+      ["song", "Hot cross buns!", "핫 크로스 번!"],
+      ["bye", "Bye-bye!", "안녕!"],
+      ["bye", "See you tomorrow!", "내일 봐요!"],
+      ["bye", "Have fun!", "재미있게 놀아!"],
+      ["bye", "Good night!", "잘 자요!"],
+      ["q", "What's this?", "이건 뭐예요?"],
+      ["q", "Who's next?", "다음은 누구예요?"],
+      ["q", "Really?", "정말요?"],
+      ["q", "Why?", "왜요?"],
+      ["q", "Is it lunch?", "점심시간이에요?"]
+    ],
     2: [
-      ["I can ride my red bike.", "나는 빨간 자전거를 탈 수 있어요."],
-      ["The cat is under the table.", "고양이가 탁자 밑에 있어요."],
-      ["My sister likes pink flowers.", "내 여동생은 분홍 꽃을 좋아해요."],
-      ["We have milk and bread.", "우리는 우유와 빵이 있어요."],
-      ["The dog runs to me.", "강아지가 나에게 달려와요."],
-      ["I can draw a big star.", "나는 큰 별을 그릴 수 있어요."],
-      ["Dad reads a book to me.", "아빠가 나에게 책을 읽어 줘요."],
-      ["The baby is sleeping now.", "아기가 지금 자고 있어요."]
+      ["morning", "How are you today?", "오늘 기분 어때요?"],
+      ["morning", "I'm good, thanks.", "좋아요, 고마워요."],
+      ["morning", "Nice to meet you.", "만나서 반가워요."],
+      ["morning", "Good morning, teacher!", "선생님, 좋은 아침이에요!"],
+      ["circle", "What day is it?", "무슨 요일이에요?"],
+      ["circle", "What's the weather?", "날씨가 어때요?"],
+      ["circle", "It's cold today.", "오늘은 추워요."],
+      ["circle", "It's hot today.", "오늘은 더워요."],
+      ["circle", "Today is my birthday!", "오늘은 내 생일이에요!"],
+      ["ask", "Can you help me?", "도와줄 수 있어요?"],
+      ["ask", "May I have water?", "물 마셔도 돼요?"],
+      ["ask", "Can I go outside?", "밖에 나가도 돼요?"],
+      ["ask", "Please open this.", "이것 좀 열어 주세요."],
+      ["ask", "I need help.", "도움이 필요해요."],
+      ["ask", "Can I try?", "내가 해 봐도 돼?"],
+      ["feel", "I feel sad today.", "오늘은 슬퍼요."],
+      ["feel", "I'm so happy!", "정말 기뻐요!"],
+      ["feel", "I feel sick.", "몸이 아파요."],
+      ["feel", "My tummy hurts.", "배가 아파요."],
+      ["feel", "I miss my mom.", "엄마가 보고 싶어요."],
+      ["share", "It's my turn.", "내 차례야."],
+      ["share", "Can I play?", "나도 놀아도 돼?"],
+      ["share", "Let's take turns.", "차례대로 하자."],
+      ["share", "You can go first.", "너 먼저 해."],
+      ["share", "Let's play together.", "같이 놀자."],
+      ["play", "Let's go outside!", "밖에 나가자!"],
+      ["play", "Push me higher!", "더 높이 밀어 줘!"],
+      ["play", "Watch me jump!", "나 뛰는 거 봐!"],
+      ["play", "You're it!", "네가 술래야!"],
+      ["play", "Let's play tag.", "술래잡기하자."],
+      ["clean", "I'm all done.", "다 끝났어요."],
+      ["clean", "Put it away.", "제자리에 갖다 놔요."],
+      ["clean", "Clean up, everybody!", "모두 정리해요!"],
+      ["clean", "Throw it away.", "쓰레기통에 버려요."],
+      ["art", "I need a crayon.", "크레용이 필요해요."],
+      ["art", "Can I have paper?", "종이 받아도 돼요?"],
+      ["art", "Look at my picture!", "내 그림 좀 봐요!"],
+      ["art", "I like your drawing.", "네 그림 좋다."],
+      ["art", "Cut on the line.", "선을 따라 잘라요."],
+      ["snack", "Can I have more?", "더 먹어도 돼요?"],
+      ["snack", "It's snack time!", "간식 시간이에요!"],
+      ["snack", "This is yummy!", "이거 맛있어요!"],
+      ["snack", "I'm still hungry.", "아직 배고파요."],
+      ["care", "Wash with soap.", "비누로 씻어요."],
+      ["care", "Cover your cough.", "기침할 땐 입을 가려요."],
+      ["care", "I need a tissue.", "휴지가 필요해요."],
+      ["me", "I have a brother.", "나는 남자 형제가 있어요."],
+      ["me", "I have a sister.", "나는 여자 형제가 있어요."],
+      ["me", "I live in Korea.", "나는 한국에 살아요."],
+      ["me", "This is my dad.", "이분은 우리 아빠예요."],
+      ["sorry", "I'm so sorry.", "정말 미안해요."],
+      ["sorry", "Are you hurt?", "다쳤어?"],
+      ["sorry", "Let me help you.", "내가 도와줄게."],
+      ["thanks", "Thank you, friend!", "친구야, 고마워!"],
+      ["thanks", "Thank you so much!", "정말 고마워요!"],
+      ["pattern", "I see a cat.", "고양이가 보여요."],
+      ["pattern", "I see a dog.", "강아지가 보여요."],
+      ["pattern", "I like to jump.", "나는 뛰는 게 좋아요."],
+      ["pattern", "I like to run.", "나는 달리는 게 좋아요."],
+      ["pattern", "Here is my bag.", "여기 내 가방이 있어요."],
+      ["pattern", "The ball is red.", "공은 빨간색이에요."],
+      ["pattern", "The sun is yellow.", "해는 노란색이에요."],
+      ["pattern", "I have two hands.", "나는 손이 두 개 있어요."],
+      ["pattern", "This is a circle.", "이건 동그라미예요."],
+      ["pattern", "Look at the bird.", "새를 봐요."],
+      ["pattern", "Can you see me?", "내가 보여요?"],
+      ["pattern", "We go to school.", "우리는 학교에 가요."],
+      ["song", "Twinkle, twinkle, little star.", "반짝반짝 작은 별."],
+      ["song", "Gently down the stream.", "시냇물 따라 살살."],
+      ["song", "Rain, rain, go away.", "비야, 비야, 저리 가."],
+      ["song", "Come again another day.", "다른 날 다시 오렴."],
+      ["song", "Down came the rain.", "비가 내렸어요."],
+      ["song", "Out came the sun.", "해가 나왔어요."],
+      ["bye", "See you later!", "나중에 봐!"],
+      ["bye", "Time to go home.", "집에 갈 시간이에요."],
+      ["bye", "My mom is here!", "엄마 오셨다!"],
+      ["q", "Where is my bag?", "내 가방 어디 있어요?"],
+      ["q", "What is your name?", "이름이 뭐예요?"],
+      ["q", "How old are you?", "몇 살이에요?"],
+      ["q", "Who is that?", "저 사람은 누구예요?"],
+      ["q", "Can I see?", "나도 봐도 돼?"]
     ],
     3: [
-      ["I put on my shoes and go outside.", "나는 신발을 신고 밖에 나가요."],
-      ["The little bird sings a song for me.", "작은 새가 나를 위해 노래해요."],
-      ["My brother and I play in the park.", "동생과 나는 공원에서 놀아요."],
-      ["Mom makes a cake for my birthday.", "엄마가 내 생일 케이크를 만들어요."],
-      ["The yellow duck swims in the pond.", "노란 오리가 연못에서 헤엄쳐요."],
-      ["I brush my teeth every morning and night.", "나는 아침저녁으로 이를 닦아요."],
-      ["We can see many stars at night.", "밤에는 별을 많이 볼 수 있어요."],
-      ["The big bear likes to eat honey.", "큰 곰은 꿀 먹는 걸 좋아해요."],
-      ["I help my mom wash the dishes.", "나는 엄마가 설거지하는 걸 도와요."],
-      ["The children are playing with a red ball.", "아이들이 빨간 공으로 놀고 있어요."],
-      ["My grandma gives me a warm hug.", "할머니가 나를 따뜻하게 안아 줘요."],
-      ["The rabbit has two long white ears.", "토끼는 길고 하얀 귀가 두 개 있어요."],
-      ["I read a book before I sleep.", "나는 자기 전에 책을 읽어요."],
-      ["We go to the beach in summer.", "우리는 여름에 바닷가에 가요."],
-      ["The green frog sits on a leaf.", "초록 개구리가 나뭇잎 위에 앉아 있어요."],
-      ["My dad and I build a sandcastle.", "아빠와 나는 모래성을 쌓아요."],
-      ["The rain is falling on my umbrella.", "비가 내 우산 위로 떨어져요."],
-      ["I share my toys with my friends.", "나는 친구들과 장난감을 나눠 써요."],
-      ["The monkey climbs up the tall tree.", "원숭이가 키 큰 나무에 올라가요."],
-      ["We eat lunch together at school today.", "우리는 오늘 학교에서 같이 점심을 먹어요."]
+      ["morning", "Good morning, how are you?", "좋은 아침이에요, 잘 지내요?"],
+      ["morning", "I'm happy to see you.", "만나서 기뻐요."],
+      ["circle", "What day is it today?", "오늘은 무슨 요일이에요?"],
+      ["circle", "It's sunny and warm today.", "오늘은 맑고 따뜻해요."],
+      ["circle", "What's the weather like today?", "오늘 날씨는 어때요?"],
+      ["circle", "Let's count to ten together.", "같이 열까지 세어요."],
+      ["ask", "Can I have a turn, please?", "나도 한 번 해도 돼요?"],
+      ["ask", "May I go to the bathroom?", "화장실 가도 돼요?"],
+      ["ask", "Can you help me, please?", "좀 도와주실래요?"],
+      ["ask", "Can I sit next to you?", "네 옆에 앉아도 돼?"],
+      ["ask", "Can you tie my shoe?", "신발 끈 묶어 줄래요?"],
+      ["ask", "Could you say that again?", "다시 말해 줄래요?"],
+      ["feel", "I feel sad because I fell.", "넘어져서 슬퍼요."],
+      ["feel", "I feel a little bit tired.", "조금 피곤해요."],
+      ["feel", "I don't feel good.", "몸이 안 좋아요."],
+      ["feel", "I'm proud of my picture.", "내 그림이 자랑스러워요."],
+      ["share", "Can I play with you?", "같이 놀아도 돼?"],
+      ["share", "Let's share the blocks, okay?", "블록 같이 쓰자, 알았지?"],
+      ["share", "You can have a turn.", "너도 한 번 해."],
+      ["share", "Do you want to play?", "같이 놀래?"],
+      ["share", "Let's build a big tower.", "큰 탑을 쌓자."],
+      ["play", "Let's go down the slide!", "미끄럼틀 타자!"],
+      ["play", "I can climb up high!", "나는 높이 올라갈 수 있어!"],
+      ["play", "Let's play in the sand.", "모래 놀이하자."],
+      ["play", "Can you push me, please?", "그네 좀 밀어 줄래?"],
+      ["play", "I can swing by myself.", "나 혼자 그네 탈 수 있어."],
+      ["clean", "Put the toys in the box.", "장난감을 상자에 넣어요."],
+      ["clean", "Let's clean up the room.", "교실을 정리해요."],
+      ["clean", "I'm all done with lunch.", "점심 다 먹었어요."],
+      ["clean", "Please line up at the door.", "문 앞에 줄 서세요."],
+      ["art", "Can I have the red crayon?", "빨간 크레용 줄래요?"],
+      ["art", "I'm drawing a big house.", "큰 집을 그리고 있어요."],
+      ["art", "Please pass me the glue.", "풀 좀 건네주세요."],
+      ["art", "I made a card for Mom.", "엄마 드릴 카드를 만들었어요."],
+      ["snack", "Can I have some more, please?", "조금 더 먹어도 돼요?"],
+      ["snack", "I want apple juice, please.", "사과 주스 주세요."],
+      ["snack", "Thank you for the snack.", "간식 고맙습니다."],
+      ["snack", "Please open my milk carton.", "우유갑 좀 열어 주세요."],
+      ["care", "Wash your hands with soap.", "비누로 손을 씻어요."],
+      ["care", "I need to go potty.", "쉬하러 가야 해요."],
+      ["care", "Don't forget to flush.", "물 내리는 거 잊지 마."],
+      ["me", "I am five years old.", "나는 다섯 살이에요."],
+      ["me", "I have a little brother.", "나는 남동생이 있어요."],
+      ["me", "My favorite color is blue.", "내가 제일 좋아하는 색은 파란색이에요."],
+      ["me", "I live with my family.", "나는 가족과 함께 살아요."],
+      ["sorry", "Sorry, I bumped into you.", "미안, 너랑 부딪쳤어."],
+      ["sorry", "I didn't mean to.", "일부러 그런 거 아니야."],
+      ["thanks", "Thank you for helping me.", "도와줘서 고마워."],
+      ["thanks", "Thank you for sharing with me.", "나랑 나눠 줘서 고마워."],
+      ["pattern", "I see a red bird.", "빨간 새가 보여요."],
+      ["pattern", "I see a yellow duck.", "노란 오리가 보여요."],
+      ["pattern", "Look at the big dog.", "큰 강아지를 봐요."],
+      ["pattern", "The cat is very little.", "고양이는 아주 작아요."],
+      ["pattern", "I like to paint pictures.", "나는 그림 그리는 게 좋아요."],
+      ["pattern", "We can run and jump.", "우리는 달리고 뛸 수 있어요."],
+      ["pattern", "Here is my blue cup.", "여기 내 파란 컵이 있어요."],
+      ["pattern", "I see three green frogs.", "초록 개구리 세 마리가 보여요."],
+      ["pattern", "This is a red square.", "이건 빨간 네모예요."],
+      ["pattern", "It is a big triangle.", "그건 큰 세모예요."],
+      ["pattern", "The fish can swim fast.", "물고기는 빨리 헤엄칠 수 있어요."],
+      ["pattern", "My dog is big and brown.", "우리 강아지는 크고 갈색이에요."],
+      ["song", "How I wonder what you are.", "네가 무엇인지 정말 궁금해."],
+      ["song", "Up above the world so high.", "세상 위 저 높은 곳에."],
+      ["song", "Like a diamond in the sky.", "하늘의 다이아몬드처럼."],
+      ["song", "Row, row, row your boat.", "저어라, 저어라, 배를 저어라."],
+      ["song", "Life is but a dream.", "인생은 꿈일 뿐이에요."],
+      ["song", "One, two, buckle my shoe.", "하나, 둘, 신발 버클을 채워요."],
+      ["song", "Three, four, shut the door.", "셋, 넷, 문을 닫아요."],
+      ["song", "Five, six, pick up sticks.", "다섯, 여섯, 나뭇가지를 주워요."],
+      ["song", "Humpty Dumpty sat on a wall.", "험프티 덤프티가 담장 위에 앉았어요."],
+      ["song", "Mary had a little lamb.", "메리에게 어린 양이 있었어요."],
+      ["song", "Its fleece was white as snow.", "양털은 눈처럼 하얬어요."],
+      ["song", "London Bridge is falling down.", "런던 다리가 무너져요."],
+      ["song", "The cow jumped over the moon.", "소가 달을 뛰어넘었어요."],
+      ["song", "And washed the spider out.", "그리고 거미를 쓸어 내렸어요."],
+      ["bye", "See you tomorrow, my friend!", "친구야, 내일 봐!"],
+      ["bye", "Have a nice day, teacher!", "선생님, 좋은 하루 보내세요!"],
+      ["bye", "Don't forget your backpack!", "가방 잊지 마!"],
+      ["q", "Where do I put this?", "이거 어디에 둬요?"],
+      ["q", "What are you making today?", "오늘 뭐 만들어?"],
+      ["q", "Who wants to go first?", "누가 먼저 할래요?"],
+      ["q", "Is it time to go home?", "집에 갈 시간이에요?"]
     ],
     4: [
-      ["It is raining. I have an umbrella.", "비가 와요. 나는 우산이 있어요."],
-      ["Look at the cat. It is sleeping.", "고양이를 봐요. 자고 있어요."],
-      ["I like red. My sister likes blue.", "나는 빨강이 좋아요. 여동생은 파랑을 좋아해요."],
-      ["The dog is hungry. It wants food.", "강아지가 배고파요. 밥을 먹고 싶어 해요."],
-      ["We are at the park. It is fun!", "우리는 공원에 있어요. 재미있어요!"],
-      ["My brother is little. He is five.", "내 동생은 작아요. 다섯 살이에요."],
-      ["I lost my hat. Where is it?", "모자를 잃어버렸어요. 어디 있지?"],
-      ["The flower is pretty. It smells good.", "꽃이 예뻐요. 좋은 냄새가 나요."],
-      ["Mom is cooking dinner. It smells yummy!", "엄마가 저녁을 만들어요. 맛있는 냄새가 나요!"],
-      ["My hands are dirty. I wash them.", "손이 더러워요. 손을 씻어요."]
+      ["morning", "Good morning, I am happy to see you.", "좋은 아침이에요, 만나서 기뻐요."],
+      ["circle", "Today is Monday and it is very sunny.", "오늘은 월요일이고 아주 맑아요."],
+      ["circle", "It's cold outside, so wear your coat.", "밖이 추우니까 외투를 입어요."],
+      ["ask", "Can I have a turn when you finish?", "너 다 하면 나도 해도 돼?"],
+      ["ask", "Can you help me zip my jacket, please?", "외투 지퍼 올리는 것 좀 도와주실래요?"],
+      ["ask", "May I please have a glass of water?", "물 한 잔 마셔도 될까요?"],
+      ["feel", "I don't like that, please stop.", "그거 싫어, 그만해 줘."],
+      ["feel", "I feel happy because I made a friend.", "친구를 사귀어서 기뻐요."],
+      ["feel", "I'm scared of the big dog.", "큰 개가 무서워요."],
+      ["share", "Can I play with you and your friends?", "너랑 네 친구들이랑 같이 놀아도 돼?"],
+      ["share", "Let's take turns on the red bike.", "빨간 자전거 차례대로 타자."],
+      ["share", "You can use my crayons if you want.", "원하면 내 크레용 써도 돼."],
+      ["play", "Let's play hide and seek outside.", "밖에서 숨바꼭질하자."],
+      ["play", "I can go across the monkey bars.", "나는 구름사다리를 건널 수 있어."],
+      ["play", "Can we play outside after snack time?", "간식 먹고 밖에서 놀아도 돼요?"],
+      ["clean", "Please put the blocks back on the shelf.", "블록을 선반에 다시 놓아 주세요."],
+      ["clean", "Let's clean up before we go outside.", "밖에 나가기 전에 정리해요."],
+      ["art", "I am painting a picture for my mom.", "엄마께 드릴 그림을 그리고 있어요."],
+      ["art", "Can I use the scissors and the glue?", "가위랑 풀 써도 돼요?"],
+      ["snack", "Can I have a little more apple, please?", "사과 조금 더 먹어도 돼요?"],
+      ["snack", "I like crackers and cheese for snack.", "간식으로 크래커랑 치즈가 좋아요."],
+      ["care", "Wash your hands before you eat your snack.", "간식 먹기 전에 손을 씻어요."],
+      ["care", "Cover your mouth when you cough or sneeze.", "기침이나 재채기할 땐 입을 가려요."],
+      ["me", "I live with my mom, dad, and brother.", "나는 엄마, 아빠, 형제와 함께 살아요."],
+      ["sorry", "Sorry, I did not mean to push you.", "미안, 일부러 민 거 아니야."],
+      ["thanks", "Thank you for playing with me today.", "오늘 같이 놀아 줘서 고마워."],
+      ["song", "Baa, baa, black sheep, have you any wool?", "매, 매, 검은 양아, 양털 있니?"],
+      ["song", "Yes, sir, yes, sir, three bags full.", "네, 네, 세 자루 가득 있어요."],
+      ["song", "Jack and Jill went up the hill.", "잭과 질이 언덕을 올라갔어요."],
+      ["bye", "I had so much fun at school today.", "오늘 학교에서 정말 재미있었어요."],
+      ["q", "What do you want to play today?", "오늘 뭐 하고 놀고 싶어?"],
+      ["q", "Where should I put my wet coat?", "젖은 외투는 어디에 둬요?"]
     ],
     5: [
-      ["What is this? It is a pen.", "이게 뭐예요? 펜이에요."],
-      ["Where is my cat? It is under the bed.", "내 고양이 어디 있어요? 침대 밑에 있어요."],
-      ["Do you like apples? Yes, I do.", "사과 좋아해요? 네, 좋아해요."],
-      ["Can you swim? Yes, I can.", "수영할 수 있어요? 네, 할 수 있어요."],
-      ["How old are you? I am seven.", "몇 살이에요? 일곱 살이에요."],
-      ["What color is it? It is blue.", "무슨 색이에요? 파란색이에요."],
-      ["Is it hot today? No, it is cold.", "오늘 더워요? 아니요, 추워요."],
-      ["Where is Dad? He is in the kitchen.", "아빠 어디 계세요? 부엌에 계세요."],
-      ["Do you have a pencil? Yes, I have two.", "연필 있어요? 네, 두 개 있어요."],
-      ["What do you want? I want some water.", "뭘 원해요? 물을 좀 마시고 싶어요."],
-      ["Who is she? She is my teacher.", "저 사람은 누구예요? 우리 선생님이에요."],
-      ["Can you jump high? Yes, look at me!", "높이 뛸 수 있어요? 네, 나를 봐요!"],
-      ["Is this your bag? No, it is not.", "이거 네 가방이야? 아니, 아니야."],
-      ["Are you hungry? Yes, I am very hungry.", "배고파요? 네, 아주 배고파요."],
-      ["Where are you going? I am going to school.", "어디 가요? 학교에 가요."],
-      ["What do you see? I see a rainbow.", "뭐가 보여요? 무지개가 보여요."],
-      ["Do you like dogs? Yes, I love dogs.", "강아지 좋아해요? 네, 아주 좋아해요."],
-      ["How are you? I am fine, thank you.", "잘 지내요? 잘 지내요, 고마워요."],
-      ["Who is at the door? It is Grandma.", "문 앞에 누구예요? 할머니예요."],
-      ["Can I have one? Yes, you can.", "하나 가져도 돼요? 네, 돼요."],
-      ["Is the baby sleeping? Yes, she is.", "아기가 자요? 네, 자요."],
-      ["What is in the box? It is a toy car.", "상자 안에 뭐가 있어요? 장난감 자동차예요."],
-      ["Where is the ball? It is on the grass.", "공이 어디 있어요? 풀밭 위에 있어요."],
-      ["Do you want to play? Yes, I want to play!", "놀고 싶어요? 네, 놀고 싶어요!"],
-      ["What are you eating? I am eating a banana.", "뭘 먹어요? 바나나를 먹어요."],
-      ["Is it your birthday? Yes, it is my birthday!", "오늘 생일이에요? 네, 내 생일이에요!"],
-      ["Are you tired? Yes, I want to sleep.", "피곤해요? 네, 자고 싶어요."],
-      ["What is your favorite color? It is pink.", "가장 좋아하는 색이 뭐예요? 분홍색이에요."],
-      ["Can the bird fly? Yes, it can fly.", "새는 날 수 있어요? 네, 날 수 있어요."],
-      ["Who has my pencil? My brother has it.", "누가 내 연필을 가졌어요? 동생이 가졌어요."]
+      ["morning", "How are you today? I'm happy!", "오늘 기분 어때? 기뻐요!"],
+      ["circle", "What day is it today? It's Monday.", "오늘 무슨 요일이에요? 월요일이에요."],
+      ["circle", "How's the weather today? It's sunny.", "오늘 날씨 어때요? 맑아요."],
+      ["circle", "Is it raining outside? Yes, it is.", "밖에 비 와요? 네, 와요."],
+      ["circle", "Can you count to ten? Yes, I can!", "열까지 셀 수 있어? 응, 할 수 있어!"],
+      ["me", "How old are you? I'm five.", "몇 살이에요? 다섯 살이에요."],
+      ["me", "What's your favorite color? I like green.", "제일 좋아하는 색이 뭐야? 초록색이 좋아."],
+      ["me", "Who is picking you up? My dad is.", "누가 데리러 와? 우리 아빠가."],
+      ["share", "Can I have a turn? Sure, here you go.", "나도 해도 돼? 그럼, 여기 있어."],
+      ["share", "Can I play with you? Yes, come on!", "같이 놀아도 돼? 응, 어서 와!"],
+      ["share", "Whose turn is it? It's my turn.", "누구 차례야? 내 차례야."],
+      ["sorry", "Are you okay? Yes, I'm okay.", "괜찮아? 응, 괜찮아."],
+      ["ask", "Do you need help? Yes, please.", "도와줄까? 네, 도와주세요."],
+      ["ask", "May I go to the bathroom? Yes, you may.", "화장실 가도 돼요? 그래, 다녀오렴."],
+      ["ask", "Can you help me? Of course I can.", "도와줄래? 물론이지."],
+      ["pattern", "What color is this? It's purple.", "이건 무슨 색이에요? 보라색이에요."],
+      ["pattern", "How many apples? There are three.", "사과가 몇 개예요? 세 개예요."],
+      ["pattern", "What shape is this? It's a circle.", "이건 무슨 모양이에요? 동그라미예요."],
+      ["pattern", "What do you see? I see a red bird.", "뭐가 보여요? 빨간 새가 보여요."],
+      ["pattern", "What animal is this? It's a lion.", "이건 무슨 동물이에요? 사자예요."],
+      ["art", "What are you making? I'm making a robot.", "뭐 만들어? 로봇 만들고 있어."],
+      ["art", "Do you like to paint? Yes, I love it!", "그림 그리는 거 좋아해? 응, 정말 좋아!"],
+      ["q", "Who wants to be first? Me, please!", "누가 먼저 할래요? 저요!"],
+      ["clean", "Is it clean up time? Yes, let's clean up.", "정리 시간이에요? 응, 정리하자."],
+      ["clean", "Where is your backpack? It's in my cubby.", "가방 어디 있어? 내 사물함에 있어."],
+      ["care", "Did you wash your hands? Yes, I did.", "손 씻었어? 응, 씻었어."],
+      ["snack", "Do you want some milk? No, thank you.", "우유 마실래? 아니요, 괜찮아요."],
+      ["snack", "Is your tummy full? Yes, I'm full.", "배불러? 응, 배불러."],
+      ["snack", "What did you eat for lunch? I ate rice.", "점심에 뭐 먹었어? 밥 먹었어."],
+      ["play", "Where are you going? I'm going outside.", "어디 가? 밖에 가."],
+      ["play", "Are you ready? Yes, I'm ready!", "준비됐어? 응, 준비됐어!"],
+      ["feel", "What's wrong? I lost my mitten.", "무슨 일이야? 벙어리장갑을 잃어버렸어."],
+      ["feel", "Why are you sad? I miss my mom.", "왜 슬퍼? 엄마가 보고 싶어."]
     ],
     6: [
-      ["I played with my dog yesterday.", "나는 어제 강아지랑 놀았어요."],
-      ["We went to the zoo last Sunday.", "우리는 지난 일요일에 동물원에 갔어요."],
-      ["I saw a big lion at the zoo.", "나는 동물원에서 큰 사자를 봤어요."],
-      ["Mom made pancakes this morning.", "엄마가 오늘 아침에 팬케이크를 만들었어요."],
-      ["I drank a glass of milk.", "나는 우유 한 잔을 마셨어요."],
-      ["Dad washed the car yesterday.", "아빠는 어제 세차를 했어요."],
-      ["We ate pizza for dinner.", "우리는 저녁으로 피자를 먹었어요."],
-      ["I was very happy today.", "나는 오늘 아주 행복했어요."],
-      ["The cat jumped on the bed.", "고양이가 침대 위로 뛰어올랐어요."],
-      ["It rained all day yesterday.", "어제는 하루 종일 비가 왔어요."],
-      ["I found a pretty shell at the beach.", "나는 바닷가에서 예쁜 조개껍데기를 찾았어요."],
-      ["My brother cried because he fell down.", "동생이 넘어져서 울었어요."],
-      ["We sang a song at school.", "우리는 학교에서 노래를 불렀어요."],
-      ["I cleaned my room this morning.", "나는 오늘 아침에 방을 치웠어요."],
-      ["The bird flew over the house.", "새가 집 위로 날아갔어요."],
-      ["Grandma gave me a new book.", "할머니가 나에게 새 책을 주셨어요."],
-      ["I finished my homework last night.", "나는 어젯밤에 숙제를 다 했어요."],
-      ["We walked to the park together.", "우리는 같이 공원까지 걸어갔어요."],
-      ["The baby laughed at the funny dog.", "아기가 웃긴 강아지를 보고 웃었어요."],
-      ["I lost my red pencil today.", "나는 오늘 빨간 연필을 잃어버렸어요."],
-      ["Dad cooked noodles for lunch.", "아빠가 점심으로 국수를 만들었어요."],
-      ["We played soccer after school.", "우리는 방과 후에 축구를 했어요."],
-      ["I drew a picture of my family.", "나는 우리 가족 그림을 그렸어요."],
-      ["The snowman melted in the sun.", "눈사람이 햇볕에 녹았어요."],
-      ["My friend came to my house.", "친구가 우리 집에 왔어요."],
-      ["I helped Mom carry the bags.", "나는 엄마가 가방 드는 걸 도왔어요."],
-      ["We watched a movie on Saturday.", "우리는 토요일에 영화를 봤어요."],
-      ["The frog jumped into the pond.", "개구리가 연못으로 뛰어들었어요."],
-      ["I got a star from my teacher.", "나는 선생님께 별을 받았어요."],
-      ["We had a picnic in the park.", "우리는 공원에서 소풍을 했어요."]
+      ["sorry", "I'm sorry. Are you okay?", "미안해. 괜찮아?"],
+      ["sorry", "That's okay. I'm fine.", "괜찮아. 나 괜찮아."],
+      ["clean", "Clean up time! Put the toys away.", "정리 시간이에요! 장난감을 치워요."],
+      ["clean", "Line up, please. It's time for lunch.", "줄 서세요. 점심시간이에요."],
+      ["play", "Look at me! I can hop on one foot.", "나 좀 봐! 한 발로 뛸 수 있어."],
+      ["play", "Push me, please. I want to go high!", "밀어 줘. 높이 올라가고 싶어!"],
+      ["art", "I did it! I wrote my name.", "해냈어! 내 이름을 썼어."],
+      ["art", "Here is my picture. It's a big rainbow.", "여기 내 그림이야. 커다란 무지개야."],
+      ["share", "Let's share. You can have half.", "나눠 먹자. 반 줄게."],
+      ["share", "Can I have a turn? I'll wait.", "나도 해도 돼? 기다릴게."],
+      ["care", "Wash your hands. Use lots of soap.", "손을 씻어요. 비누를 듬뿍 써요."],
+      ["clean", "I'm all done. Can I go play?", "다 했어요. 놀러 가도 돼요?"],
+      ["circle", "It's raining. We can't go outside.", "비가 와요. 밖에 못 나가요."],
+      ["snack", "Thank you for the snack. It was yummy!", "간식 고맙습니다. 맛있었어요!"],
+      ["feel", "Please stop. I don't like that.", "그만해. 그거 싫어."],
+      ["feel", "I feel tired. Can I rest a little?", "피곤해요. 조금 쉬어도 돼요?"],
+      ["feel", "Use your words. Tell me how you feel.", "말로 해 보자. 기분이 어떤지 말해 줘."],
+      ["morning", "Good morning, teacher! I'm here.", "선생님, 좋은 아침이에요! 저 왔어요."],
+      ["bye", "Bye-bye, friends! See you tomorrow.", "친구들, 안녕! 내일 봐."],
+      ["ask", "My shoe is untied. Can you help me?", "신발 끈이 풀렸어요. 도와주실래요?"],
+      ["me", "It's my birthday today. I'm six!", "오늘 내 생일이야. 여섯 살이 됐어!"],
+      ["circle", "Let's sing a song. Everybody clap!", "노래 부르자. 모두 손뼉 쳐요!"],
+      ["circle", "Be gentle with the bunny. It's very small.", "토끼를 살살 만져요. 아주 작거든요."],
+      ["circle", "Walking feet, please. No running inside.", "걸어서 다녀요. 교실에서는 뛰지 않아요."],
+      ["play", "I found a bug! Come and look.", "벌레 찾았어! 와서 봐."]
     ],
     7: [
-      ["The cat is on the tree. It cannot come down. Dad helps the cat.", "고양이가 나무 위에 있어요. 내려오지 못해요. 아빠가 고양이를 도와줘요."],
-      ["I have a little dog. His name is Max. He likes to run.", "나는 작은 강아지가 있어요. 이름은 맥스예요. 달리기를 좋아해요."],
-      ["It is snowing. We make a snowman. He has a red hat.", "눈이 와요. 우리는 눈사람을 만들어요. 빨간 모자를 썼어요."],
-      ["Mom bakes cookies. They smell so good. I eat two cookies.", "엄마가 쿠키를 구워요. 냄새가 정말 좋아요. 나는 쿠키 두 개를 먹어요."],
-      ["The sun goes down. The sky is orange. It is time for bed.", "해가 져요. 하늘이 주황색이에요. 잘 시간이에요."],
-      ["I plant a seed. I give it water. It grows into a flower.", "씨앗을 심어요. 물을 줘요. 꽃으로 자라요."],
-      ["My brother is sad. He lost his toy. I help him find it.", "동생이 슬퍼해요. 장난감을 잃어버렸어요. 내가 찾는 걸 도와줘요."],
-      ["We go to the beach. The water is cold. We build a sandcastle.", "바닷가에 가요. 물이 차가워요. 모래성을 쌓아요."],
-      ["A little bird is hungry. I give it some bread. It sings for me.", "작은 새가 배고파요. 빵을 좀 줘요. 새가 나를 위해 노래해요."],
-      ["I wake up early. I brush my teeth. Then I eat breakfast.", "일찍 일어나요. 이를 닦아요. 그다음 아침을 먹어요."],
-      ["The rabbit runs fast. The turtle walks slowly. But the turtle wins!", "토끼는 빨리 달려요. 거북이는 천천히 걸어요. 하지만 거북이가 이겨요!"],
-      ["It is my birthday. My friends come to my party. We eat a big cake.", "내 생일이에요. 친구들이 파티에 와요. 큰 케이크를 먹어요."],
-      ["The dog finds a ball. He brings it to me. I throw it again.", "강아지가 공을 찾아요. 나에게 가져와요. 다시 던져요."],
-      ["We go to the library. I find a book about dinosaurs. I read it with Mom.", "도서관에 가요. 공룡 책을 찾아요. 엄마랑 같이 읽어요."],
-      ["The wind is strong. My kite flies high. I hold the string tight.", "바람이 세요. 연이 높이 날아요. 줄을 꽉 잡아요."],
-      ["I fall down in the park. My knee hurts. Mom gives me a hug.", "공원에서 넘어졌어요. 무릎이 아파요. 엄마가 안아 줘요."],
-      ["The frog sits on a leaf. A fly comes near. The frog eats the fly!", "개구리가 나뭇잎에 앉아 있어요. 파리가 가까이 와요. 개구리가 파리를 먹어요!"],
-      ["Grandpa has a garden. He grows tomatoes. I help him pick them.", "할아버지는 텃밭이 있어요. 토마토를 길러요. 나는 따는 걸 도와드려요."],
-      ["The moon is round tonight. The stars are bright. I make a wish.", "오늘 밤 달이 둥글어요. 별이 밝아요. 소원을 빌어요."],
-      ["My shoes are too small. My feet have grown. We buy new shoes.", "신발이 너무 작아요. 발이 자랐어요. 새 신발을 사요."],
-      ["The bus is late. We wait at the stop. Here it comes!", "버스가 늦어요. 정류장에서 기다려요. 저기 와요!"],
-      ["I paint a picture. I use blue and green. It is a picture of the sea.", "그림을 그려요. 파랑과 초록을 써요. 바다 그림이에요."],
-      ["The baby is crying. She is hungry. Mom gives her some milk.", "아기가 울어요. 배가 고파요. 엄마가 우유를 줘요."],
-      ["We go camping. We sleep in a tent. We see many stars.", "캠핑을 가요. 텐트에서 자요. 별을 많이 봐요."],
-      ["The monkey sees a banana. He climbs the tree. He eats the banana happily.", "원숭이가 바나나를 봐요. 나무에 올라가요. 신나게 바나나를 먹어요."],
-      ["I have a new friend. She sits next to me. We play together at lunch.", "새 친구가 생겼어요. 내 옆에 앉아요. 점심시간에 같이 놀아요."],
-      ["It is cold outside. I wear my coat. I wear my hat too.", "밖이 추워요. 코트를 입어요. 모자도 써요."],
-      ["The fish swims in the tank. It is orange and white. I feed it every day.", "물고기가 어항에서 헤엄쳐요. 주황색과 하얀색이에요. 날마다 밥을 줘요."],
-      ["Dad reads me a story. It is about a dragon. I fall asleep.", "아빠가 이야기를 읽어 줘요. 용 이야기예요. 나는 잠이 들어요."],
-      ["The leaves are falling. They are red and yellow. I jump in the leaves.", "나뭇잎이 떨어져요. 빨갛고 노래요. 나뭇잎 속으로 뛰어들어요."]
+      ["share", "Can I play with you? Sure! You can be the doctor.", "같이 놀아도 돼? 그럼! 네가 의사 해."],
+      ["sorry", "Are you okay? I fell down. Let me get the teacher.", "괜찮아? 넘어졌어. 선생님 모셔 올게."],
+      ["share", "Whose turn is it? It's my turn. Okay, you go first.", "누구 차례야? 내 차례야. 좋아, 너 먼저 해."],
+      ["snack", "May I have more crackers? Yes, you may. Thank you!", "크래커 더 먹어도 돼요? 그래, 먹으렴. 고맙습니다!"],
+      ["share", "What are you building? A tall tower. Can I help?", "뭐 만들어? 높은 탑. 나도 도와줘도 돼?"],
+      ["sorry", "I'm sorry I took your block. That's okay. Let's build together.", "네 블록 가져가서 미안해. 괜찮아. 같이 쌓자."],
+      ["morning", "Good morning! How are you? I'm great, thanks!", "좋은 아침! 잘 지내? 아주 좋아, 고마워!"],
+      ["clean", "It's clean up time. Can you help me? Sure, I'll get the blocks.", "정리 시간이야. 도와줄래? 그럼, 내가 블록 치울게."],
+      ["circle", "What's the weather today? It's snowing! Let's wear our mittens.", "오늘 날씨 어때요? 눈이 와요! 벙어리장갑 끼자."],
+      ["care", "Did you wash your hands? Not yet. Go wash them, please.", "손 씻었니? 아직요. 가서 씻고 오렴."],
+      ["art", "I need the blue crayon. Here you go. Thank you so much!", "파란 크레용이 필요해. 여기 있어. 정말 고마워!"],
+      ["circle", "Who wants to feed the fish? Me, please! Okay, just a little bit.", "누가 물고기 밥 줄래요? 저요! 좋아, 조금만 주렴."],
+      ["art", "Look at my picture. Wow, what is it? It's my family.", "내 그림 봐. 와, 이게 뭐야? 우리 가족이야."],
+      ["snack", "I can't open my milk. Let me help you. There you go!", "우유를 못 열겠어요. 도와줄게. 자, 됐다!"],
+      ["circle", "What day is it today? It's Friday. Yay, it's pizza day!", "오늘 무슨 요일이에요? 금요일이에요. 야호, 피자 먹는 날이다!"],
+      ["play", "Do you want to swing? Yes! Can you push me?", "그네 탈래? 응! 밀어 줄래?"],
+      ["feel", "Why are you crying? He took my toy. Let's go talk to him.", "왜 울어? 걔가 내 장난감을 가져갔어. 같이 가서 말해 보자."],
+      ["share", "Can I sit here? Yes, you can. Thanks, friend!", "여기 앉아도 돼? 응, 앉아. 고마워, 친구야!"],
+      ["bye", "Time to go home. Get your backpack. See you tomorrow!", "집에 갈 시간이에요. 가방 챙겨요. 내일 봐요!"],
+      ["q", "Is it my turn yet? Not yet. You are next!", "아직 내 차례 아니야? 아직이야. 네가 다음이야!"],
+      ["art", "What did you make? I made a paper hat. It looks so cool!", "뭐 만들었어? 종이 모자 만들었어. 정말 멋지다!"],
+      ["pattern", "Let's count the apples. One, two, three. There are three apples!", "사과를 세어 보자. 하나, 둘, 셋. 사과가 세 개야!"]
     ],
     8: [
-      ["There was a little pig. He built a brick house. The wolf blew hard. The house did not fall.", "작은 돼지가 있었어요. 벽돌집을 지었어요. 늑대가 세게 불었어요. 집은 무너지지 않았어요."],
-      ["A girl wore a red hood. She walked to see her grandma. She met a wolf. The wolf was not nice.", "한 소녀가 빨간 두건을 썼어요. 할머니를 보러 걸어갔어요. 늑대를 만났어요. 늑대는 착하지 않았어요."],
-      ["The hare was very fast. The tortoise was very slow. The hare took a nap. The tortoise won the race.", "토끼는 아주 빨랐어요. 거북이는 아주 느렸어요. 토끼는 낮잠을 잤어요. 거북이가 경주에서 이겼어요."],
-      ["Jack had a cow. He sold it for magic beans. The beans grew very tall. Jack climbed up to the sky.", "잭에게 소가 있었어요. 요술 콩과 바꿨어요. 콩이 아주 높이 자랐어요. 잭은 하늘까지 올라갔어요."],
-      ["Today is Sunday. We go to the park. I ride my bike. My brother plays in the sand.", "오늘은 일요일이에요. 공원에 가요. 나는 자전거를 타요. 동생은 모래에서 놀아요."],
-      ["I have a garden. I grow carrots and beans. A rabbit comes every day. I give him one carrot.", "나는 텃밭이 있어요. 당근과 콩을 길러요. 토끼가 날마다 와요. 당근 하나를 줘요."],
-      ["It is a rainy day. We stay inside. We build a fort with blankets. We read books in our fort.", "비 오는 날이에요. 집 안에 있어요. 이불로 요새를 만들어요. 요새에서 책을 읽어요."],
-      ["My tooth is loose. It wiggles and wiggles. Then it falls out. I put it under my pillow.", "이가 흔들려요. 흔들흔들해요. 그러다 빠져요. 베개 밑에 넣어요."],
-      ["The duck has five babies. They walk in a line. They jump into the pond. They swim after their mom.", "오리에게 아기가 다섯 마리 있어요. 줄지어 걸어요. 연못에 뛰어들어요. 엄마를 따라 헤엄쳐요."],
-      ["I want to be a doctor. I will help sick people. I will be kind. People will feel better.", "나는 의사가 되고 싶어요. 아픈 사람을 도울 거예요. 친절할 거예요. 사람들이 나아질 거예요."],
-      ["We made a card for Dad. We drew a big heart. We wrote I love you. Dad smiled and hugged us.", "아빠에게 줄 카드를 만들었어요. 큰 하트를 그렸어요. 사랑해요라고 썼어요. 아빠가 웃으며 안아 줬어요."],
-      ["A small mouse helped a lion. The lion was in a net. The mouse cut the net. Now they are friends.", "작은 생쥐가 사자를 도왔어요. 사자는 그물에 걸렸어요. 생쥐가 그물을 끊었어요. 이제 둘은 친구예요."],
-      ["The boy saw a star fall. He made a wish. He wished for a puppy. The next day, he got one!", "소년이 별똥별을 봤어요. 소원을 빌었어요. 강아지를 갖고 싶었어요. 다음 날 강아지가 생겼어요!"],
-      ["Snow is falling. The world is white. We put on our boots. We run outside to play.", "눈이 내려요. 세상이 하얘요. 장화를 신어요. 놀러 밖으로 달려가요."],
-      ["The bear woke up in spring. He was very hungry. He looked for honey. He found a tree full of bees.", "곰이 봄에 깨어났어요. 아주 배고팠어요. 꿀을 찾았어요. 벌이 가득한 나무를 찾았어요."],
-      ["I go to school by bus. My friend sits with me. We talk and laugh. The ride is fun.", "나는 버스로 학교에 가요. 친구가 옆에 앉아요. 이야기하고 웃어요. 가는 길이 즐거워요."],
-      ["The princess lost her shoe. The prince found it. He looked for her everywhere. The shoe fit her foot.", "공주가 신발을 잃어버렸어요. 왕자가 찾았어요. 공주를 여기저기 찾았어요. 신발이 공주 발에 맞았어요."],
-      ["Mom planted a small seed. We watered it every day. A green sprout came up. Now it is a big sunflower.", "엄마가 작은 씨앗을 심었어요. 날마다 물을 줬어요. 초록 싹이 났어요. 이제 큰 해바라기예요."],
-      ["The dog was dirty. We gave him a bath. He shook the water off. Now we are all wet!", "강아지가 더러웠어요. 목욕을 시켰어요. 강아지가 물을 털었어요. 이제 우리가 다 젖었어요!"],
-      ["It was dark at night. I heard a noise. I was a little scared. It was only my cat.", "밤이라 어두웠어요. 무슨 소리가 났어요. 조금 무서웠어요. 우리 고양이였어요."],
-      ["The class went on a trip. We saw fish and sharks. The shark had big teeth. I liked the turtles best.", "우리 반이 견학을 갔어요. 물고기와 상어를 봤어요. 상어는 이빨이 컸어요. 나는 거북이가 제일 좋았어요."],
-      ["Grandma came to visit. She brought a big box. Inside was a teddy bear. I named him Honey.", "할머니가 오셨어요. 큰 상자를 가져오셨어요. 안에 곰 인형이 있었어요. 이름을 허니라고 지었어요."],
-      ["The robot can walk and talk. It can clean my room. It can play games with me. I love my robot.", "로봇은 걷고 말할 수 있어요. 내 방을 치울 수 있어요. 나랑 게임도 해요. 내 로봇이 정말 좋아요."],
-      ["The caterpillar ate and ate. It made a cocoon. It slept for many days. Then it became a butterfly.", "애벌레가 먹고 또 먹었어요. 고치를 만들었어요. 여러 날 잠을 잤어요. 그러고 나비가 됐어요."],
-      ["We baked bread today. We mixed flour and water. We waited for the bread to grow. It smelled so good.", "오늘 빵을 구웠어요. 밀가루와 물을 섞었어요. 빵이 부풀기를 기다렸어요. 냄새가 정말 좋았어요."],
-      ["The wind blew my hat away. I ran after it. A kind man caught it. I said thank you.", "바람이 모자를 날려 버렸어요. 쫓아 달려갔어요. 친절한 아저씨가 잡아 줬어요. 고맙다고 했어요."],
-      ["I learned to ride a bike. I fell down at first. Dad held the seat. Now I can ride by myself.", "자전거 타기를 배웠어요. 처음엔 넘어졌어요. 아빠가 안장을 잡아 줬어요. 이제 혼자 탈 수 있어요."],
-      ["There is a big moon tonight. It looks like a cookie. I want to eat it. Mom laughs at me.", "오늘 밤 큰 달이 떴어요. 쿠키처럼 보여요. 먹고 싶어요. 엄마가 웃어요."],
-      ["The little star was lonely. It looked for a friend. It found a bright moon. They shone together all night.", "작은 별은 외로웠어요. 친구를 찾았어요. 밝은 달을 찾았어요. 둘은 밤새 함께 빛났어요."],
-      ["The ant worked all summer. The grasshopper sang and played. Winter came. The ant had food, but the grasshopper did not.", "개미는 여름 내내 일했어요. 베짱이는 노래하며 놀았어요. 겨울이 왔어요. 개미는 먹을 게 있었지만 베짱이는 없었어요."]
+      ["play", "Can I have a turn on the slide? Sure, after me. Okay, I'll wait. Thank you!", "나도 미끄럼틀 타도 돼? 그럼, 나 다음에. 알았어, 기다릴게. 고마워!"],
+      ["morning", "Good morning, class! Good morning, teacher! What day is it today? It's Monday!", "여러분, 좋은 아침! 선생님, 좋은 아침이에요! 오늘 무슨 요일이죠? 월요일이에요!"],
+      ["feel", "I don't feel good. My tummy hurts. Let's go see the nurse. Okay, thank you.", "몸이 안 좋아요. 배가 아파요. 보건 선생님께 가 보자. 네, 고마워요."],
+      ["share", "Let's play house. I'll be the mom. You can be the baby. Okay, let's play!", "소꿉놀이하자. 내가 엄마 할게. 너는 아기 해. 좋아, 놀자!"],
+      ["sorry", "Who took my crayon? I'm sorry, I did. Here you go. Thanks for giving it back.", "누가 내 크레용 가져갔어? 미안, 내가 그랬어. 여기 있어. 돌려줘서 고마워."],
+      ["snack", "It's snack time! What do we have? We have apples and crackers. Yummy!", "간식 시간이에요! 뭐가 있어요? 사과랑 크래커가 있어요. 맛있겠다!"],
+      ["ask", "Can you help me zip my coat? Sure, hold still. There you go. Thank you, teacher!", "외투 지퍼 올리는 것 좀 도와주실래요? 그래, 가만히 있어. 다 됐다. 고맙습니다, 선생님!"],
+      ["play", "Look, it's snowing! Can we go outside? Put on your boots first. Yay, let's go!", "봐, 눈이 와! 밖에 나가도 돼요? 장화부터 신으렴. 야호, 가자!"],
+      ["art", "What are you drawing? I'm drawing a dinosaur. It has big teeth. Wow, that's so cool!", "뭐 그려? 공룡 그리고 있어. 이빨이 커. 와, 정말 멋지다!"],
+      ["clean", "Clean up time, everybody! Where do the blocks go? They go on the shelf. Good job!", "모두 정리 시간이에요! 블록은 어디에 둬요? 선반에 둬요. 잘했어요!"],
+      ["feel", "Are you sad? Yes, I miss my mom. She will come after nap. Okay, I feel better.", "슬프니? 네, 엄마가 보고 싶어요. 낮잠 자고 나면 오실 거야. 네, 기분이 나아졌어요."],
+      ["share", "Do you want to be my friend? Yes, I do! Let's play on the swings. Okay, race you there!", "내 친구 할래? 응, 좋아! 그네 타러 가자. 좋아, 누가 먼저 가나 시합하자!"],
+      ["circle", "Let's read a book together. Which one? The one about the bear. I love that one!", "같이 책 읽자. 어떤 거? 곰 나오는 책. 나 그거 정말 좋아!"],
+      ["circle", "Is it raining outside? Yes, it is. We can play inside today. Let's build a fort!", "밖에 비 와요? 응, 와. 오늘은 안에서 놀자. 요새를 만들자!"],
+      ["q", "I can't find my shoe. Did you look in your cubby? Oh, here it is! Thank you!", "신발을 못 찾겠어요. 사물함 봤니? 아, 여기 있다! 고맙습니다!"],
+      ["bye", "How was school today? It was fun. I painted a rainbow. Can I see it?", "오늘 학교 어땠어? 재미있었어. 무지개를 그렸어. 보여 줄래?"],
+      ["art", "Please pass the paper. Here you go. What are you making? I'm making a card for Grandma.", "종이 좀 건네줘. 여기 있어. 뭐 만들어? 할머니 드릴 카드 만들어."],
+      ["clean", "Line up, please. Where are we going? We are going to the library. I love the library!", "줄 서세요. 어디 가요? 도서관에 가요. 나 도서관 정말 좋아!"]
     ]
   };
-  Object.keys(LEVEL_MORE).forEach(function (level) {
-    LEVEL_MORE[level].forEach(function (pair) { sentences.push({ text: pair[0], meaning: pair[1], level: Number(level) }); });
+  const sentences = [];
+  Object.keys(CONVERSATION).forEach(function (level) {
+    CONVERSATION[level].forEach(function (item) {
+      const tag = SITUATIONS[item[0]];
+      sentences.push({ text: item[1], meaning: item[2], level: Number(level), situation: item[0], tag: tag, emoji: tag.split(" ")[0] });
+    });
   });
-  const LEVEL_NAMES = ["", "짧은 문장", "조금 긴 문장", "긴 문장", "두 문장", "묻고 답하기", "지난 일 말하기", "세 문장 이야기", "그림책 한 쪽"];
+  const LEVEL_NAMES = ["", "한두 마디", "짧은 말", "조금 긴 말", "긴 말", "묻고 답하기", "두 마디 대화", "세 마디 대화", "긴 대화"];
   const MAX_LEVEL = 8;
   // 한 번에 맞힌 문장이 이만큼 쌓이면 다음 단계로 올라간다.
   const PASSES_TO_LEVEL_UP = 30;
@@ -777,6 +885,67 @@
     for (let step = 0; step < n; step++) { const idx = (base + step) % n; if (!avoid[idx]) return idx; }
     return base;
   }
+  // 집중 읽기(2026-11-15): 지금 단계에서 한 번에 OPEN_SIZE 문장만 '배우는 중'으로 열어 두고,
+  // 서로 다른 날 한 번에 맞힌 날이 MASTER_DAYS 번 쌓이면 '익힘'으로 바꾸고 새 문장을 연다.
+  // 출제 = 배우는 중 약 70% + 익힌 문장 복습 약 30%(REVIEW_SHARE). 최근 12문장 회피·못 읽은 단어 가중은 그대로.
+  // 저장은 부르는 쪽(허브)이 한다. 이 파일은 저장소 API 를 쓰지 않는다.
+  const OPEN_SIZE = 15, MASTER_DAYS = 2, REVIEW_SHARE = 0.3;
+  function validIndex(idx) { return Number.isInteger(idx) && idx >= 0 && idx < sentences.length; }
+  function cleanFocus(raw) {
+    const out = { s: {}, open: [] };
+    if (!raw || typeof raw !== "object") return out;
+    const saved = raw.s && typeof raw.s === "object" ? raw.s : {};
+    Object.keys(saved).forEach(function (key) {
+      const idx = Number(key), entry = saved[key];
+      if (!validIndex(idx) || !entry || typeof entry !== "object") return;
+      const n = Math.max(0, Math.min(MASTER_DAYS, parseInt(entry.n, 10) || 0));
+      const d = typeof entry.d === "string" && entry.d.length <= 12 ? entry.d : "";
+      if (n || d) out.s[idx] = { n: n, d: d };
+    });
+    if (Array.isArray(raw.open)) raw.open.forEach(function (idx) {
+      if (validIndex(idx) && out.open.indexOf(idx) < 0 && out.open.length < OPEN_SIZE) out.open.push(idx);
+    });
+    return out;
+  }
+  function isMastered(focus, idx) { const entry = focus.s[idx]; return !!entry && entry.n >= MASTER_DAYS; }
+  // 한 번에 맞혔을 때만 부른다. 같은 날 여러 번은 한 번으로 친다. 이번에 익혔으면 true.
+  function recordFocus(focus, idx, day) {
+    if (!validIndex(idx) || !day) return false;
+    const entry = focus.s[idx] || { n: 0, d: "" };
+    focus.s[idx] = entry;
+    if (entry.n >= MASTER_DAYS || entry.d === day) return false;
+    entry.n += 1; entry.d = day;
+    if (entry.n < MASTER_DAYS) return false;
+    focus.open = focus.open.filter(function (i) { return i !== idx; });
+    return true;
+  }
+  // 배우는 중 묶음을 채운다: 지금 단계의 안 익힌 문장부터 차례로, 모자라면 아래 단계의 안 익힌 문장.
+  function refillOpen(focus, level) {
+    const top = clampLevel(level);
+    focus.open = focus.open.filter(function (idx) { return validIndex(idx) && sentences[idx].level <= top && !isMastered(focus, idx); });
+    for (let lv = top; lv >= 1 && focus.open.length < OPEN_SIZE; lv--) {
+      for (let idx = 0; idx < sentences.length && focus.open.length < OPEN_SIZE; idx++) {
+        if (sentences[idx].level === lv && !isMastered(focus, idx) && focus.open.indexOf(idx) < 0) focus.open.push(idx);
+      }
+    }
+    return focus.open;
+  }
+  function focusCounts(focus, level) {
+    let mastered = 0;
+    Object.keys(focus.s).forEach(function (key) { if (focus.s[key].n >= MASTER_DAYS) mastered++; });
+    return { mastered: mastered, learning: refillOpen(focus, level).length, total: sentences.length };
+  }
+  function chooseFocus(focus, level, scores, ordinal, previous, random, recent) {
+    random = random || Math.random;
+    const top = clampLevel(level);
+    const open = refillOpen(focus, top).slice();
+    const mastered = [];
+    sentences.forEach(function (sentence, idx) { if (sentence.level <= top && isMastered(focus, idx)) mastered.push(idx); });
+    let pool = open;
+    if (mastered.length && (!open.length || random() < REVIEW_SHARE)) pool = mastered;
+    if (!pool.length) pool = levelPool(top, random);
+    return pool[chooseFromPool(pool, scores, ordinal, previous, random, recent)];
+  }
   const FIRST_PRAISE = ["excellent", "perfect", "awesome", "wonderful"];
   const RETRY_PRAISE = ["great", "verygood", "youdidit", "super"];
   const PRAISE_TEXT = { excellent: "Excellent!", perfect: "Perfect!", awesome: "Awesome!", wonderful: "Wonderful!", great: "Great!", verygood: "Very good!", youdidit: "You did it!", super: "Super!", threeinarow: "Three in a row!" };
@@ -795,6 +964,15 @@
   function praiseFile(clip) { return PRAISE_FILES[clip] || PRAISE_PATH + clip + ".mp3"; }
   const WORD_CLIPS = {};
   sentences.forEach(function (sentence) { normalize(sentence.text).split(" ").forEach(function (word) { WORD_CLIPS[word] = WORD_PATH + word + ".mp3"; }); });
+  // 문장 전체 녹음(허브의 듣기 버튼용). 보이는 글자 그대로 녹음했고, 이름은 글자의 FNV-1a 해시.
+  const LINE_DIR = "assets/study/lines/";
+  function lineFile(text) {
+    let hash = 2166136261;
+    for (let i = 0; i < text.length; i++) hash = Math.imul(hash ^ text.charCodeAt(i), 16777619) >>> 0;
+    return "line-" + hash.toString(16).padStart(8, "0") + ".mp3";
+  }
+  function sentenceClip(sentence) { return ASSET_ROOT + LINE_DIR + lineFile(sentence && sentence.text ? sentence.text : String(sentence || "")); }
+  function linePlan() { return sentences.map(function (sentence) { return { text: sentence.text, audio: "lines/" + lineFile(sentence.text) }; }); }
   const STALL_MS = 5000, NO_AUDIO_MS = 1800, WORD_STALL_MS = 4000, WORD_GAP_MS = 400, STOP_WAIT_MS = 600;
   const PRAISE_GAIN = 1.28;
   // 칭찬·단어 소리는 Web Audio 로만 낸다. <audio> 재생 뒤 iOS Safari 가 음성 인식을
@@ -963,7 +1141,7 @@
       if (diagStore) saveDiagnostics(diagStore, session.log);
       if (logNode && !disposed) logNode.textContent = session.log.join("\n");
     }
-    log("mount-v24 w" + wordCount + (touchIOS ? " ios-quiet-round" : ""));
+    log("mount-v25 w" + wordCount + (touchIOS ? " ios-quiet-round" : ""));
 
     function controls() {
       nodes.mic.disabled = disposed || awarded || recovering || !!active || restarting || soundActive || !Recognition || env.isSecureContext === false || nav.onLine === false;
@@ -1663,7 +1841,7 @@
       }
     };
   }
-  const api = { sentences: sentences, normalize: normalize, matches: matches, sameWord: sameWord, aliases: ALIASES, isPrefix: isPrefix, alternativeTexts: alternativeTexts, anyMatches: anyMatches, collapseRepeats: collapseRepeats, wordClips: WORD_CLIPS, praiseFile: praiseFile, matchedWords: matchedWords, cleanWordScores: cleanWordScores, chooseSentence: chooseSentence, recentLimit: RECENT_LIMIT, maxLevel: MAX_LEVEL, levelNames: LEVEL_NAMES, passesToLevelUp: PASSES_TO_LEVEL_UP, clampLevel: clampLevel, createFeedbackSession: createFeedbackSession, choosePraise: choosePraise, retryWords: retryWords, mount: mount,
+  const api = { sentences: sentences, situations: SITUATIONS, chooseFocus: chooseFocus, recordFocus: recordFocus, cleanFocus: cleanFocus, focusCounts: focusCounts, openSize: OPEN_SIZE, masterDays: MASTER_DAYS, reviewShare: REVIEW_SHARE, sentenceClip: sentenceClip, linePlan: linePlan, normalize: normalize, matches: matches, sameWord: sameWord, aliases: ALIASES, isPrefix: isPrefix, alternativeTexts: alternativeTexts, anyMatches: anyMatches, collapseRepeats: collapseRepeats, wordClips: WORD_CLIPS, praiseFile: praiseFile, matchedWords: matchedWords, cleanWordScores: cleanWordScores, chooseSentence: chooseSentence, recentLimit: RECENT_LIMIT, maxLevel: MAX_LEVEL, levelNames: LEVEL_NAMES, passesToLevelUp: PASSES_TO_LEVEL_UP, clampLevel: clampLevel, createFeedbackSession: createFeedbackSession, choosePraise: choosePraise, retryWords: retryWords, mount: mount,
     candidateTexts: candidateTexts, anyPrefix: anyPrefix, matchScore: matchScore, coveredWords: coveredWords, stuckRequired: stuckRequired,
     phoneticKey: phoneticKey, allowedSlips: allowedSlips,
     limits: { stuckTries: STUCK_TRIES, stuckShare: STUCK_SHARE, maxRestarts: MAX_RESTARTS, silenceMs: SILENCE_MS, restartDelayMs: RESTART_DELAY_MS,

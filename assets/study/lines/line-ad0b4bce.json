@@ -1,0 +1,10 @@
+{
+  "text": "Come again another day.",
+  "audio": "lines/line-ad0b4bce.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Come again another day.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "e38e4c243898bbee7d83804a636c05c5dd3d53600faeadaf535f7d7fa24bbf53"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Here is my blue cup.",
+  "audio": "lines/line-2cc35f0b.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Here is my blue cup.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "571716b5b6378dff8ddd57c2504fa161ba2b29104aa24eb3307dae257b4fc31f"
+}

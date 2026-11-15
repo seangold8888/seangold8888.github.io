@@ -1,0 +1,10 @@
+{
+  "text": "Time to go home. Get your backpack. See you tomorrow!",
+  "audio": "lines/line-3047a83f.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Time to go home. Get your backpack. See you tomorrow.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "b251d8a38527b417ffd56122dc5c4a74fd861b6b5ad640c2743dbf2567c7436a"
+}

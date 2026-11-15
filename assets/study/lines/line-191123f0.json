@@ -1,0 +1,10 @@
+{
+  "text": "My favorite color is blue.",
+  "audio": "lines/line-191123f0.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "My favorite color is blue.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "c3a1e000ac064ecabbfb6ee9f62b0b4e37ccccd3fe4ce8bb258bea0038daa030"
+}

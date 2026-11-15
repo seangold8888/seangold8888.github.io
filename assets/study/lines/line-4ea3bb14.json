@@ -1,0 +1,10 @@
+{
+  "text": "Use your words. Tell me how you feel.",
+  "audio": "lines/line-4ea3bb14.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Use your words. Tell me how you feel.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "047fd8b7b6bb2b4483206ccc1b43a382dbd809e482427dfe77967f8d5e465c97"
+}

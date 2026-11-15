@@ -1,0 +1,10 @@
+{
+  "text": "Today is Monday.",
+  "audio": "lines/line-8f0bfe7c.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Today is Monday.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "f59e70232e6b382994a12926367a9e085e8d471bb8eadeaced18aa2c168668ba"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Let's read a book together. Which one? The one about the bear. I love that one!",
+  "audio": "lines/line-bb4d910c.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Let's read a book together. Which one? The one about the bear. I love that one.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "dfa713e4bda39c8af74b287a1b16841c3058988e1f089385719da9bf60edf91c"
+}

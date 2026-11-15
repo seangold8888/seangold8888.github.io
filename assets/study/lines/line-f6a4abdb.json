@@ -1,0 +1,10 @@
+{
+  "text": "Yes, sir, yes, sir, three bags full.",
+  "audio": "lines/line-f6a4abdb.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Yes, sir. Yes, sir. Three bags full.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "b60851f4a5909d9e09a7864f3c5e4fe496368015df195c4db2fdf289c3795c5c"
+}

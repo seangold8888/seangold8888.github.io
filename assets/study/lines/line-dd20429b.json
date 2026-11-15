@@ -1,0 +1,10 @@
+{
+  "text": "Who is that?",
+  "audio": "lines/line-dd20429b.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Who is that?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "5b9ecaca2ddd76a3f23947f2987761c239849afc6639c0e4e924f41356fe5534"
+}

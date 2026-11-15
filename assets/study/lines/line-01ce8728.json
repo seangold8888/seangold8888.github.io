@@ -1,0 +1,10 @@
+{
+  "text": "I feel sick.",
+  "audio": "lines/line-01ce8728.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I feel sick.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "328afd2f0160505dea06824a9b923a1a1ff7021fcb74fbcb59e9e02881652bd2"
+}

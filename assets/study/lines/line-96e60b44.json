@@ -1,0 +1,10 @@
+{
+  "text": "May I have more crackers? Yes, you may. Thank you!",
+  "audio": "lines/line-96e60b44.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "May I have more crackers? Yes, you may. Thank you.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "f249d1f99e29e74e083a536803c2806eb92f1fac3b0161247929242d5a4fc0e3"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Yes, please.",
+  "audio": "lines/line-e739b8c4.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Yes, please.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "32ed7baf0f2b83e97a9e7ec7ddfdf391ab43d2f7349fe9139ce8e56d1a23d929"
+}

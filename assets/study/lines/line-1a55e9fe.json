@@ -1,0 +1,10 @@
+{
+  "text": "I want apple juice, please.",
+  "audio": "lines/line-1a55e9fe.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I want apple juice, please.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "ad780af37b5ba8f7aa49234b6f54fe83a2d9efeb4ca3b915d03619ecaa007063"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Walking feet, please. No running inside.",
+  "audio": "lines/line-d5f6d36a.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Walking feet, please. No running inside.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "ce584083a79b5ec461366d4da2fffb98ca65d5f77b4481db469d3cbd3ebdf7cc"
+}

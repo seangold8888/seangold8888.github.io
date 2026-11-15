@@ -1,0 +1,10 @@
+{
+  "text": "The fish can swim fast.",
+  "audio": "lines/line-425367ec.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "The fish can swim fast.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "76b394ac327d21eed9b67eda44001c3bd5db19b2e5e8372b2004557a4d793682"
+}

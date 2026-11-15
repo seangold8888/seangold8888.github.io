@@ -1,0 +1,10 @@
+{
+  "text": "Really?",
+  "audio": "lines/line-43f2a563.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Really?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "f165aa7812be8c9d1a7a6b3429072b3f3bf3cbc825f29644819c7da3fa52d66c"
+}

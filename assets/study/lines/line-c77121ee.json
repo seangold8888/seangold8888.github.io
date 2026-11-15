@@ -1,0 +1,10 @@
+{
+  "text": "Can we play outside after snack time?",
+  "audio": "lines/line-c77121ee.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Can we play outside after snack time?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "960fc260d3c8e48cd2171fb340c94517c76c16630725e63b3ccd0e967d7e4e0e"
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Is it lunch?",
+  "audio": "lines/line-62206b0b.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Is it lunch?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "0f3832f7232e09c1ec2b2ef27266d53a1e81f245e28296bd5ceb41a2ef2ceb13"
+}

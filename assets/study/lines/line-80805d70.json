@@ -1,0 +1,10 @@
+{
+  "text": "I'm scared of the big dog.",
+  "audio": "lines/line-80805d70.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I'm scared of the big dog.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "7ab4cf47765609af258a800afb9f04fde7fa1973e8ed271be92cb3fd7cf4027f"
+}

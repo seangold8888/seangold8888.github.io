@@ -1,0 +1,10 @@
+{
+  "text": "It's sunny and warm today.",
+  "audio": "lines/line-df1ed7ce.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "It's sunny and warm today.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "35138de5ea3ec04f91e66892838f19ad2f5b5ea8b7f185d667558e54f5d96c68"
+}

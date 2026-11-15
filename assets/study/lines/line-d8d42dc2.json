@@ -1,0 +1,10 @@
+{
+  "text": "Go, go, go!",
+  "audio": "lines/line-d8d42dc2.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Go. Go. Go.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "35e1bcf4f2b3bddc909428596258b45ba5c6b72455b9b4ee14f8616ab853b36c"
+}

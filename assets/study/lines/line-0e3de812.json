@@ -1,0 +1,10 @@
+{
+  "text": "Can you see me?",
+  "audio": "lines/line-0e3de812.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Can you see me?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "6dea1460824d86c2abddb3a4da27e4b4b5c5c3745426f3ef174bc9699de8f9b4"
+}

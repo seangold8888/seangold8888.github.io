@@ -11,7 +11,7 @@ function fn(name) {
 function setup() {
   const stored = new Map();
   const ctx = {
-    window: {EnglishReading: reading}, readingLevel: {level:1,passes:0}, recordReadingPass: () => false, readingFallback: false, lastReadingIndex: -1, readingRecent: [], rememberReading() {},
+    window: {EnglishReading: reading}, readingLevel: {level:1,passes:0}, readingFocus: reading.cleanFocus(null), saveReadingFocus() {}, recordReadingPass: () => false, readingFallback: false, lastReadingIndex: -1, readingRecent: [], rememberReading() {},
     sinceReview: 0, lastReviewKey: "", REVIEW_GAP: 2, BOOK_MAX: 24,
     SET: 15, DAILY: 100, BANK_SIZES: {reading:16}, SKILL_INFO: {reading:{name:"영어"}},
     todayKey: () => "2026-9-6", dayNum: () => 100, MASTER_AT:9,
@@ -123,7 +123,7 @@ test("fallback still permits non-reading reviews, and parent or ticket states ca
 test("recent sentences are skipped in order and under word weighting; the hub remembers 12 on this device only",()=>{
   const pool=reading.sentences.map((s,i)=>s.level===1?i:-1).filter(i=>i>=0);
   const n=pool.length;
-  assert.equal(n,63);
+  assert.equal(n,84);
   assert.equal(reading.chooseSentence({},0,-1,()=>0,[pool[0],pool[1],pool[2]]),pool[3]);
   assert.equal(reading.chooseSentence({},n-1,-1,()=>0,[pool[n-1],pool[0]]),pool[1]);
   for(let k=0;k<200;k++){

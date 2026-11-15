@@ -1,0 +1,10 @@
+{
+  "text": "Catch the ball!",
+  "audio": "lines/line-6496634f.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Catch the ball.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "89f877cc634316cab7ab037aee9ab1fa7d95aeb2437496c6f3f9af9b268bba09"
+}

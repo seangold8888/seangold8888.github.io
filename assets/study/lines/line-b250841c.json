@@ -1,0 +1,10 @@
+{
+  "text": "Can I go outside?",
+  "audio": "lines/line-b250841c.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Can I go outside?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "34d71daf14c863c6e55cfc9963b59138104ff41352f9bc80d4d13809ba8bc6b6"
+}

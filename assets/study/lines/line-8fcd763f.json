@@ -1,0 +1,10 @@
+{
+  "text": "Why are you crying? He took my toy. Let's go talk to him.",
+  "audio": "lines/line-8fcd763f.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Why are you crying? He took my toy. Let's go talk to him.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "2bcc7f5182a93b363d9cbc6990340044aed9dbbb11853edf180e933dd46d0040"
+}

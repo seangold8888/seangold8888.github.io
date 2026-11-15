@@ -1,0 +1,10 @@
+{
+  "text": "I'm still hungry.",
+  "audio": "lines/line-48008263.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "I'm still hungry.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "85838cb182f145ff27e200631c7e66c87c9758c9349e4e80e971bd0ec4237e4a"
+}

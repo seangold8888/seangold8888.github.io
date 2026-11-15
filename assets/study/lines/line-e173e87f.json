@@ -1,0 +1,10 @@
+{
+  "text": "Who's next?",
+  "audio": "lines/line-e173e87f.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Who's next?",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "0d14bcac459520c0ab1ffe4cbd532573286b6eb4d2521fa03e78034e900d4a9a"
+}

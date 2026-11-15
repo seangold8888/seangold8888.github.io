@@ -1,0 +1,10 @@
+{
+  "text": "This is yummy!",
+  "audio": "lines/line-3980301f.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "This is yummy.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "1b8cbd37fd71913c43a809884842d7feddf6351d71326056445d008000d165f4"
+}

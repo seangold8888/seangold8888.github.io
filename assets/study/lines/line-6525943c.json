@@ -1,0 +1,10 @@
+{
+  "text": "Look, it's snowing! Can we go outside? Put on your boots first. Yay, let's go!",
+  "audio": "lines/line-6525943c.mp3",
+  "model": "gemini-2.5-flash-tts",
+  "voice": "Leda",
+  "transcript": "Look, it's snowing. Can we go outside? Put on your boots first. Yay, let's go.",
+  "transcript_verified": true,
+  "verification_version": 2,
+  "sha256": "dd841ee0499e17e55d1b04dce7227ad9158e1a2c1b2c067b3a0c0493d50e6296"
+}
