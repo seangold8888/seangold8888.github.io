@@ -210,14 +210,15 @@ test("a stale result from the previous recognizer cannot score, and the next que
 
 test("misread words play once each, in order, 400ms apart; interrupting stops the sound before the mic", () => {
   const s = setup(), v = s.mount({ text: "I see a red flower.", meaning: "꽃" });
-  v.mic.fire("click"); s.result("I hear"); s.recognizers[0].end();
+  // 2 of 5 words heard: she may still be reading, so the take listens on quietly (restart + silence) before judging.
+  v.mic.fire("click"); s.result("I hear"); s.recognizers[0].end(); s.tick(150); s.tick(2500);
   const plays = () => s.events.filter(e => e.startsWith("play:")).map(e => e.split("/").pop());
   assert.deepEqual(plays(), ["see.mp3"]);
   s.audios[0].onended(); s.tick(399); assert.deepEqual(plays(), ["see.mp3"]);
   s.tick(1); assert.deepEqual(plays(), ["see.mp3", "a.mp3"]);
   assert.equal(v.status.textContent, "이렇게 읽어요 👂 a");
   v.stop.fire("click");
-  assert.equal(s.recognizers.length, 2);
+  assert.equal(s.recognizers.length, 3);
   assert.ok(s.events.lastIndexOf("pause") < s.events.lastIndexOf("start"));
   assert.equal(s.contexts.filter(c => !c.closed).length, 1, "the interrupted sound closes before one fresh silent context is primed");
   s.tick(5000); assert.deepEqual(plays(), ["see.mp3", "a.mp3"]);
@@ -466,10 +467,10 @@ test("recognizer alternatives can pass; display uses the first guess; session sh
 
 test("the hub clears stale permanent silence and the worker precaches every clip", () => {
   const sw = require("../../sw.js"), html = fs.readFileSync(path.join(__dirname, "../../game/index.html"), "utf8");
-  assert.equal(sw.CACHE_VERSION, "v263");
-  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=25"));
+  assert.equal(sw.CACHE_VERSION, "v264");
+  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=26"));
   assert.ok(sw.CORE_SHELL.includes("./assets/study/praise/perfect-v2.wav"));
-  assert.match(html, /english-reading\.js\?v=25/);
+  assert.match(html, /english-reading\.js\?v=26/);
   assert.match(html, /removeItem\('hub2_reading_silent'\)/);
   assert.doesNotMatch(html, /setItem\('hub2_reading_silent'/);
   assert.match(html, /silent: readingSilent/);
@@ -623,4 +624,51 @@ test("no speech synthesis anywhere in the reading module or its pages",()=>{
   const source=fs.readFileSync(path.join(__dirname,rel),"utf8");
   assert.doesNotMatch(source,/speechSynthesis\.speak|new SpeechSynthesisUtterance/,rel);
  }
+});
+// 2026-11-15 현장 보고: '먼저 듣기' 뒤 첫 읽기가 잘 안 된다. 듣기 소리가 장치를 놓은 뒤에만 마이크를 켠다.
+test("iPad: mic tap after the listen clip rearms the microphone before recognition, once",async()=>{
+ const saved={};const store={getItem:k=>k in saved?saved[k]:null,setItem:(k,v)=>{saved[k]=String(v);}};
+ const s=setup();Object.assign(s.env.navigator,{platform:'MacIntel',maxTouchPoints:5});let requested=0,released=0;
+ s.env.navigator.mediaDevices={getUserMedia:()=>{requested++;return Promise.resolve({getTracks:()=>[{stop(){released++;}}]});}};
+ const v=s.mount(undefined,{diagnostics:store});
+ const listenCtx={state:'running'};reading.noteListen(s.env,{phase:'start',ctx:listenCtx});listenCtx.state='closed';reading.noteListen(s.env,{phase:'end',ctx:listenCtx});
+ v.mic.fire('click');assert.equal(requested,1,'getUserMedia is asked inside the tap');assert.equal(s.recognizers.length,0,'no recognition before the rearm');
+ await Promise.resolve();await Promise.resolve();assert.equal(released,1,'rearm stream closed at once');s.tick(350);
+ assert.equal(s.recognizers.length,1);s.result('I like bananas');s.recognizers[0].end();s.tick(5000);
+ v.mic.fire('click');await Promise.resolve();s.tick(350);assert.equal(requested,1,'only the first tap after listening rearms');assert.equal(s.recognizers.length,2);
+ s.result('I like apples');s.recognizers[1].end();s.tick(3000);assert.equal(s.passes(),1);
+ const lines=JSON.parse(saved.hub2_reading_diag);assert.ok(lines.some(l=>/listen-mic ctx closed end \d+ms ios/.test(l)));assert.ok(lines.some(l=>/recovery-tap/.test(l)));
+ v.view.destroy();
+});
+test("desktop: mic tap right after the listen clip waits for its context to close, then starts",async()=>{
+ const s=setup(),v=s.mount();let finish;const ctx={state:'running'};
+ reading.noteListen(s.env,{phase:'start',ctx});reading.noteListen(s.env,{phase:'end',ctx,closing:{then(fn){finish=()=>{ctx.state='closed';fn();};}}});
+ v.mic.fire('click');assert.equal(s.recognizers.length,0,'not while the clip context is still open');assert.equal(v.mic.disabled,true,'double tap is ignored while settling');
+ v.mic.fire('click');await Promise.resolve();finish();for(let i=0;i<6;i++)await Promise.resolve();s.tick(reading.listenSettle.ms+60);assert.equal(s.recognizers.length,1,'starts after close + settle');
+ s.result('I like apples');s.recognizers[0].end();s.audios.at(-1).onended();assert.equal(s.passes(),1);v.view.destroy();
+});
+test("desktop: a close that never resolves still starts the mic within the settle cap; leaving cancels it",()=>{
+ const s=setup(),v=s.mount();const ctx={state:'running'};
+ reading.noteListen(s.env,{phase:'end',ctx,closing:{then(){}}});v.mic.fire('click');s.tick(reading.listenSettle.maxMs);assert.equal(s.recognizers.length,1);v.view.destroy();
+ const t=setup(),w=t.mount();reading.noteListen(t.env,{phase:'end',ctx:{state:'running'},closing:{then(){}}});w.mic.fire('click');w.view.stop();t.tick(2000);
+ assert.equal(t.recognizers.length,0,'listen tapped again (view.stop) cancels the pending start');assert.equal(w.mic.disabled,false);w.view.destroy();
+});
+test("desktop: a mic tap long after the clip closed starts at once (no extra wait)",()=>{
+ const s=setup(),v=s.mount();const ctx={state:'closed'};reading.noteListen(s.env,{phase:'end',ctx});
+ const realNow=Date.now;Date.now=()=>realNow()+5000;try{v.mic.fire('click');}finally{Date.now=realNow;}assert.equal(s.recognizers.length,1);v.view.destroy();
+});
+test("a whole-sentence interim result that stays unchanged is finished like 다 읽었어요; a partial one keeps listening",()=>{
+ const s=setup(),v=s.mount();v.mic.fire('click');s.interim('I like apples');s.tick(1400);assert.equal(s.recognizers[0].stopped,undefined,'still listening before the settle time');
+ s.tick(200);assert.equal(s.recognizers[0].stopped,true,'asks the recognizer for its final words');s.tick(2600);s.tick(3000);assert.equal(s.passes(),1,'judged as a pass');
+ v.view.destroy();
+ const t=setup(),w=t.mount();w.mic.fire('click');t.interim('I like');t.tick(5000);assert.equal(t.recognizers[0].stopped,undefined,'a partial interim never ends the take');w.view.destroy();
+ const u=setup(),x=u.mount();x.mic.fire('click');u.interim('I like apples');u.tick(1000);u.interim('I like apples and');u.tick(1000);assert.equal(u.recognizers[0].stopped,undefined,'new words restart the wait');x.view.destroy();
+});
+test("a short non-prefix final (first word missed by the recognizer) keeps listening instead of judging mid-sentence",()=>{
+ const s=setup(),v=s.mount({text:"Five, six, pick up sticks.",meaning:"막대"});v.mic.fire('click');
+ s.result('six');assert.equal(s.retries.length,0,'not judged while fewer words than the sentence were heard');
+ s.recognizers[0].end();s.tick(150);assert.equal(s.recognizers.length,2,'quiet restart');
+ s.result('pick up sticks');s.recognizers[1].end();s.tick(150);s.tick(2500);s.tick(6000);assert.equal(s.retries.length,0,'never told wrong mid-sentence');assert.equal(s.passes(),1,'the dropped first word is forgiven once the rest arrives');
+ v.view.destroy();
+ const t=setup(),w=t.mount();w.mic.fire('click');t.result('I like bananas');assert.equal(t.retries.length,1,'a full-length wrong reading is still judged at once');w.view.destroy();
 });

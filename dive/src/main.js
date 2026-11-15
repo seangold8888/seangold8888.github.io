@@ -490,7 +490,7 @@ function openRescue() {
   mode = "quiz"; clearInput(); say("잠수정이 지쳤어요", true);
   if (!GameQuiz) { E.revive(world); mode = "play"; say("다시 출발!", true); return; }
   GameQuiz.ask({
-    kid: L.PILOTS[pilot].kid, title: "잠수정이 지쳤어요 · 맞히면 하트 " + (world.gifts.includes("rescue3") ? 3 : 2) + "개로 다시 출발!", theme: QUIZ_THEME,
+    kid: L.PILOTS[pilot].kid, title: "잠수정이 지쳤어요 · 맞히면 하트 " + (world.gifts.includes("rescue3") ? 3 : 2) + "개로 다시 출발!", theme: QUIZ_THEME, pace: "quick",
     onWrong: () => sfx.no(),
     onCorrect: r => { E.recordQuiz(world, r.firstTry); sfx.up(); return "다시 출발!"; },
     onDone: () => { if (mode !== "quiz") return; E.revive(world); hudKey = ""; hud(); mode = "play"; clearInput(); last = performance.now(); say("다시 출발!", true); },

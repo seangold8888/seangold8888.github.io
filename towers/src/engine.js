@@ -23,7 +23,7 @@ export function createWorld({ kid = 1, map = "field", rng = Math.random, badges 
     wave: 1, phase: "prep", prepT: L.PREP_TIME, waveT: 0, queue: [], spawnedAll: false, midOwl: false, owl: null, owlsShown: 0,
     haste: 0,          // 이 파도 번호까지 빠른 주문
     sparkCd: 0,
-    sent: 0, dex: {}, solved: 0, firstTries: 0, streak: 0, blasts: 0, blastSent: 0, cards: 0, stolen: 0, rescueUsed: false,
+    sent: 0, dex: {}, solved: 0, firstTries: 0, streak: 0, blasts: 0, blastSent: 0, cards: 0, stolen: 0, rescueUsed: false, quizTowers: 0,
     towersUsed: new Set(), branchesUsed: new Set(),
     pending: null, over: null, events: [],
   };
@@ -49,6 +49,20 @@ export function build(w, padIdx, kind) {
   const t = placeTower(w, padIdx, kind);
   t.grow = 0.6;
   emit(w, "build", { kind, pad: padIdx });
+  return t;
+}
+/* 문제를 풀고 세우는 탑(빈 받침 → 탑 고르기 → 문제 → 탑).
+   마법 배지 "첫 탑 공짜"처럼 이미 문제로 얻은 탑은 문제 없이(build). 그 밖의 새 탑은 문제를 거친다.
+   수정은 정답을 맞힌 그 순간에만 낸다 — 문제 창을 닫고 그만두면 한 개도 안 나간다.
+   한 번에 맞히면 2단계로 태어나고, 고쳐 맞히면 1단계. 수정을 내고 아무것도 못 받는 일은 없다. */
+export const buildNeedsQuiz = w => !w.freeTower;
+export function buildByQuiz(w, padIdx, kind, firstTry) {
+  const p = w.pads[padIdx], T = L.TOWERS[kind];
+  if (!p || !T || p.tower || w.over) return null;
+  if (w.freeTower) w.freeTower = false; else w.gems -= Math.min(w.gems, T.cost);   // 멈춘 동안 수정이 줄 일은 없지만, 모자라도 탑은 준다
+  const lv = firstTry ? 2 : 1, t = placeTower(w, padIdx, kind, lv);
+  t.grow = 0.6; w.quizTowers++;
+  emit(w, "build", { kind, pad: padIdx, lv, quiz: true, firstTry: !!firstTry });
   return t;
 }
 export function upgradeCost(w, padIdx) { const t = w.pads[padIdx] && w.pads[padIdx].tower; return t && t.lv < L.GEM_MAX_LV ? L.TOWERS[t.kind].up : null; }
@@ -402,7 +416,7 @@ export function stepFx(w, dt) {
   for (const n of fx.nums) n.t += dt; fx.nums = fx.nums.filter(n => n.t < (n.small ? 0.8 : 1.6));
   for (const s of fx.steals) s.t += dt; fx.steals = fx.steals.filter(s => s.t < 1.4);
   for (const s of fx.sparks) s.t += dt; fx.sparks = fx.sparks.filter(s => s.t < 0.5);
-  for (const g of fx.grow) g.t += dt; fx.grow = fx.grow.filter(g => g.t < 1.2);
+  for (const g of fx.grow) g.t += dt; fx.grow = fx.grow.filter(g => g.t < (g.big ? 1.8 : 1.2));
   if (fx.storm) { fx.storm.t += dt; if (fx.storm.t > fx.storm.T) fx.storm = null; }
 }
 
@@ -454,6 +468,6 @@ export function giveUp(w) { finish(w, "lose"); }
 export function runRecord(w) {
   const pilot = L.PILOTS[w.kid] || L.PILOTS[1];
   return { kid: pilot.kid, map: w.map.id, result: w.over ? w.over.result : "quit", wave: w.over && w.over.result === "win" ? L.WAVES : Math.max(0, w.wave - 1),
-    cake: w.cake, cakeMax: w.cakeMax, solved: w.solved, firstTries: w.firstTries, blasts: w.blasts, blastSent: w.blastSent, cards: w.cards,
+    cake: w.cake, cakeMax: w.cakeMax, solved: w.solved, firstTries: w.firstTries, blasts: w.blasts, blastSent: w.blastSent, cards: w.cards, quizTowers: w.quizTowers,
     sent: w.sent, stolen: w.stolen, dex: Object.assign({}, w.dex), towersUsed: [...w.towersUsed], branchesUsed: [...w.branchesUsed] };
 }

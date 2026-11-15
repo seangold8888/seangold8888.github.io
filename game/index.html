@@ -1680,7 +1680,7 @@
 <script src="math/store.js?v=34"></script>
 <script src="assets/study/math-bridge.js?v=3"></script>
 <script src="assets/study/math-credits.js?v=2"></script>
-<script src="assets/study/english-reading.js?v=25"></script>
+<script src="assets/study/english-reading.js?v=26"></script>
 <script src="assets/bgm/bgm-player.js?v=66"></script>
 <script src="assets/study/play-timer.js?v=4" data-mode="hub"></script>
 <script>
@@ -2130,9 +2130,12 @@
   function stopListenClip() {
     var old = listenAudio; listenAudio = null;
     if (old) {
+      var closing = null;
       if (old.node) { try { old.node.onended = null; old.node.stop(0); } catch (_) {} }
-      if (old.ctx && old.ctx.close) { try { old.ctx.close(); } catch (_) {} }
+      if (old.ctx && old.ctx.close) { try { closing = old.ctx.close(); } catch (_) {} }
       if (old.button) old.button.classList.remove('is-playing');
+      /* 듣기가 끝난 시각·컨텍스트를 읽기 모듈에 알린다. 다음 🎤 는 아이패드에서 마이크를 새로 받고, 다른 기기는 소리가 다 닫힌 뒤 켠다. */
+      if (window.EnglishReading.noteListen) window.EnglishReading.noteListen(window, { phase: 'end', ctx: old.ctx, closing: closing });
     }
   }
   function playReadingClip(target, button) {
@@ -2145,6 +2148,7 @@
     var ctx;
     try { ctx = new AC(); } catch (_) { return; }
     var mine = listenAudio = { ctx: ctx, node: null, button: button };
+    if (window.EnglishReading.noteListen) window.EnglishReading.noteListen(window, { phase: 'start', ctx: ctx });
     if (ctx.resume) { var ready = ctx.resume(); if (ready && ready.catch) ready.catch(function () {}); }
     button.classList.add('is-playing');
     new Promise(function (resolve) { setTimeout(resolve, micBusy ? 350 : 0); }).then(function () {
@@ -2779,6 +2783,11 @@
       var firstTry = !current.missed && !current.gentle;
       var readingPromoted = !!(current.reading && firstTry && recordReadingPass(current.reading));
       var focusLearned = !!(current.reading && firstTry && typeof noteFocus === 'function' && noteFocus(current.seed.idx));
+      /* 세 번 읽고 넘어간 문장이 두 번째면 배우는 중 묶음과 오답 노트에서 뺀다(인식기가 못 알아듣는 문장이 계속 나오지 않게). */
+      if (current.reading && current.gentle && window.EnglishReading.recordGentle && window.EnglishReading.recordGentle(readingFocus, current.seed.idx)) {
+        for (var gi = state.wrong.length - 1; gi >= 0; gi--) { if (bookKey(state.wrong[gi]) === bookKey(current.seed)) state.wrong.splice(gi, 1); }
+      }
+      if (current.reading && current.gentle && typeof saveReadingFocus === 'function') saveReadingFocus();
       if (current.reading && typeof markPrivacyKnown === 'function') markPrivacyKnown();
       if (current.reading && firstTry && state.readingWords) {
         window.EnglishReading.normalize(current.answer).split(' ').forEach(function (word) {

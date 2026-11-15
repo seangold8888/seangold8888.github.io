@@ -178,6 +178,42 @@ test("엔진: 탑 세우기·수정 강화는 2단계까지, 카드로 3단계(�
   assert.ok(E.recommendKind(w, 3) || true);
 });
 
+test("탑 문제: 한 번에 맞히면 2단계·고쳐 맞히면 1단계, 수정은 맞힌 순간에만 한 번", () => {
+  const w = E.createWorld({ kid: 1, rng: seeded(11) });
+  assert.ok(E.buildNeedsQuiz(w), "보통은 새 탑마다 문제");
+  const g0 = w.gems, a = E.buildByQuiz(w, 0, "fire", true);
+  assert.equal(a.lv, 2, "한 번에 → 2단계"); assert.equal(w.gems, g0 - L.TOWERS.fire.cost); assert.equal(w.quizTowers, 1);
+  assert.ok(w.events.some(e => e.type === "build" && e.quiz && e.firstTry && e.lv === 2));
+  assert.equal(E.upgradeCost(w, 0), null, "2단계로 태어나면 수정 강화 끝(3단계부터 카드)");
+  w.gems = 200; const b = E.buildByQuiz(w, 1, "ice", false);
+  assert.equal(b.lv, 1, "고쳐 맞힘 → 1단계"); assert.equal(w.gems, 200 - L.TOWERS.ice.cost); assert.equal(w.quizTowers, 2);
+  // 두 번 눌러도: 같은 자리는 한 번만, 수정도 한 번만
+  const g1 = w.gems; assert.equal(E.buildByQuiz(w, 1, "ice", true), null); assert.equal(w.gems, g1);
+  // 수정을 내고 아무것도 못 받는 일은 없다: 모자라도 탑은 생기고 수정은 0 아래로 안 간다
+  w.gems = 10; const c = E.buildByQuiz(w, 2, "light", true); assert.ok(c); assert.equal(w.gems, 0);
+  assert.equal(E.runRecord(w).quizTowers, 3);
+});
+
+test("탑 문제: 창이 떠 있는 동안 파도·괴물 정지, 그만두면 수정 그대로 / 배지·카드 탑은 문제 없음", () => {
+  const w = E.createWorld({ kid: 1, rng: seeded(12) });
+  // 첫 탑을 고르는 사이 첫 파도가 다가와도 시간이 안 간다
+  w.prepT = 0.05; w.pending = "build";
+  for (let i = 0; i < 200; i++) E.stepWorld(w, 0.05);
+  assert.equal(w.phase, "prep"); assert.equal(w.t, 0); assert.equal(w.prepT, 0.05);
+  w.phase = "wave"; const e = E.spawnMonster(w, "imp"); const s0 = e.s;
+  for (let i = 0; i < 100; i++) E.stepWorld(w, 0.05);
+  assert.equal(e.s, s0, "괴물도 멈춤"); assert.equal(w.cake, w.cakeMax);
+  // 그만둠: 아무것도 안 부르고 재개 → 수정·탑 그대로
+  const g = w.gems; E.resumeAfter(w); assert.equal(w.gems, g); assert.equal(w.towers.length, 0); assert.equal(w.pending, null);
+  // 마법 배지 "첫 탑 공짜": 문제 없이 공짜로, 다음 탑부터 문제
+  const f = E.createWorld({ kid: 1, badges: ["freeTower"] });
+  assert.equal(E.buildNeedsQuiz(f), false); assert.ok(E.build(f, 0, "light")); assert.equal(f.gems, L.START_GEMS); assert.ok(E.buildNeedsQuiz(f));
+  assert.equal(f.quizTowers, 0);
+  // 카드의 새 탑: 이미 부엉이 문제로 얻은 것 → 수정·문제 없음
+  const g2 = f.gems; E.applyCard(f, { type: "new", kind: "bolt" });
+  assert.equal(f.towers.length, 2); assert.equal(f.gems, g2); assert.equal(f.quizTowers, 0);
+});
+
 test("엔진: 정지 중엔 시간이 안 가고, 괴물 상한 50, 탄 상한, 구조 문제는 한 번만", () => {
   const w = E.createWorld({ kid: 1, rng: seeded(5) });
   E.stepWorld(w, 1); const t = w.t;
@@ -250,6 +286,21 @@ test("균형: 세 맵 × 아이 × (안 풂 / 절반 / 다 맞힘 / 느슨), 12�
     const tn = S(map, 3, "none"); assert.ok(tn.success <= 0.15 && tn.wave >= 6 && tn.wave <= 7.5, tag("태오 안 풂", tn));
     for (const kid of [1, 2]) { const r = S(map, kid, "half"); assert.ok(r.success >= 0.85 && r.cakeAll >= 4.5 && r.time <= 290, tag("절반 " + kid, r)); }
     const th = S(map, 3, "half"); assert.ok(th.success >= 0.9 && th.cakeAll >= 8, tag("태오 절반", th));
-    assert.ok(all.time >= 200 && all.time <= 290, tag("다 맞힘 시간", all));
+    // 탑이 2단계로 태어나 파도가 빨리 비지만, 문제 시간까지 더한 한 판 길이는 6분 남짓(8파도 그대로)
+    assert.ok(all.time >= 170 && all.time <= 290 && all.play <= 420, tag("다 맞힘 시간", all) + " play " + all.play);
+    // 새 탑 문제: 받침 수만큼(8~10) 이하, 한 판 16개를 넘지 않는다
+    assert.ok(all.buildQuizzes >= 4 && Math.max(...all.runs.map(r => r.buildQuizzes)) <= 16, tag("탑 문제 수 " + all.buildQuizzes, all));
+  }
+});
+
+test("균형: 세 아이(부엉이 절반만) — 꼼꼼(한 번에)·60%·덤벙(늘 고쳐서): 모두 끝까지 가고, 덤벙은 가끔 이기되 꼼꼼보다 확실히 덜", { timeout: 600000 }, () => {
+  for (const map of L.MAP_IDS) {
+    const S = rate => summary({ map, kid: 1, policy: "loose", firstTryRate: rate }, 24);
+    const careful = S(1), mid = S(0.6), careless = S(0);
+    const tag = JSON.stringify({ map, careful: [careful.success, careful.cakeAll, careful.play], mid: [mid.success, mid.cakeAll], careless: [careless.success, careless.cakeAll, careless.play] });
+    for (const r of [careful, mid, careless]) assert.ok(r.wave >= 7.5 && r.play <= 420, "끝까지·한 판 길이 " + tag);
+    assert.ok(careful.success >= 0.85, "꼼꼼 " + tag);
+    assert.ok(careless.success >= 0.25 && careless.success <= careful.success - 0.12, "덤벙은 가끔·확실히 덜 " + tag);
+    assert.ok(careful.cakeAll > mid.cakeAll && mid.cakeAll > careless.cakeAll, "케이크: 꼼꼼 > 60% > 덤벙 " + tag);
   }
 });

@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Spell Towers · PLAYGROUND</title>
 <link rel="preload" href="../sanguo/fonts/pretendard/PretendardVariable.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=3">
+<link rel="stylesheet" href="style.css?v=4">
 <script src="../assets/study/play-timer.js?v=4"></script>
 <script src="../assets/touch-guard.js?v=1"></script>
 <script src="../math/curriculum.js?v=21"></script>
@@ -15,7 +15,7 @@
 <script src="../math/store.js?v=34"></script>
 <script src="../assets/study/math-bridge.js?v=3"></script>
 <script src="../assets/study/kid-voices.js?v=1"></script>
-<script src="../assets/study/game-quiz.js?v=3"></script>
+<script src="../assets/study/game-quiz.js?v=4"></script>
 </head>
 <body>
 <canvas id="map" aria-label="스펠 타워. 빈 받침을 누르면 마법 탑을 세워요. 괴물을 누르면 반짝 가루, ? 부엉이를 누르면 문제가 나와요."></canvas>
@@ -33,10 +33,11 @@
   <button class="chip icon" id="sound" type="button" aria-pressed="true" aria-label="소리">♪</button>
 </div>
 <p class="tip" id="tip" hidden></p>
+<button class="chip qback" id="quizBack" type="button" hidden>← 다른 탑</button>
 
 <section class="panel" id="start">
   <h1>Spell Towers</h1>
-  <p class="lead">괴물들이 생일 케이크를 노려요! 받침에 <b>마법 탑</b>을 세우고, <b>? 부엉이</b> 문제를 맞혀 대마법을 터뜨려요.</p>
+  <p class="lead">괴물들이 생일 케이크를 노려요! 문제를 맞혀 받침에 <b>마법 탑</b>을 세우고, <b>? 부엉이</b> 문제로 대마법을 터뜨려요.</p>
   <p class="pick">누가 마법사가 될까요?</p>
   <div class="pilots" id="pilots"></div>
   <p class="pick">어디를 지킬까요?</p>
@@ -100,6 +101,6 @@
   <a class="home" href="../game/">← PLAYGROUND</a>
 </section>
 
-<script type="module" src="src/main.js?v=5"></script>
+<script type="module" src="src/main.js?v=6"></script>
 </body>
 </html>

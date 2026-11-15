@@ -24,7 +24,7 @@ test("family picture-book names are Jay and Teo without changing progress or ass
   // 그림책은 듣기 전용(책 도우미만), 허브는 회화 읽기(읽기 모듈만)를 불러온다.
   const hub = fs.readFileSync(path.join(root, "game/index.html"), "utf8"), story = fs.readFileSync(path.join(root, "story/english/index.html"), "utf8");
   assert.match(story, /books\.js\?v=7/); assert.doesNotMatch(story, /english-reading\.js/);
-  assert.match(hub, /english-reading\.js\?v=25/); assert.doesNotMatch(hub, /story\/english\/books\.js/);
+  assert.match(hub, /english-reading\.js\?v=26/); assert.doesNotMatch(hub, /story\/english\/books\.js/);
 });
 function target() {
   const listeners = {};
@@ -347,8 +347,8 @@ test("a reading success advances progress once and earns the fifteenth-answer ti
 });
 test("reading support is cached and its script loads before the study controller", () => {
   const sw = require("../../sw.js");
-  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=25"));
-  assert.ok(html.indexOf('src="assets/study/english-reading.js?v=25"') < html.indexOf("var BANK_SIZES"));
+  assert.ok(sw.CORE_SHELL.includes("./assets/study/english-reading.js?v=26"));
+  assert.ok(html.indexOf('src="assets/study/english-reading.js?v=26"') < html.indexOf("var BANK_SIZES"));
   assert.match(html, /\.reading-word\.retry\s*\{[^}]*text-decoration:underline wavy/);
   assert.match(html, /if \(current !== target \|\| isFree\(\) \|\| hasTicket\(\) \|\| target\.answered\) return/);
   assert.match(html, /function stopReading\(\)[\s\S]*?clearTimeout\(answerTimer\)/);
@@ -398,7 +398,9 @@ test("missing a/an/the is forgiven in 5+ word sentences; short lines and extra o
   assert.equal(reading.matches("I have a blue bag and a pen.", "I have blue bag and pen"), true);
   assert.equal(reading.matches("I see a big dog.", "I see big dog"), true, "5 words");
   assert.equal(reading.matches("I see a cat.", "I see cat"), false, "4 words stay exact");
-  assert.equal(reading.matches("The dog is big.", "dog is big"), false);
+  // 2026-11-15: a dropped FIRST word of a 4+ word line is forgiven (measured recognizer drop); mid-line words still count.
+  assert.equal(reading.matches("The dog is big.", "dog is big"), true);
+  assert.equal(reading.matches("The dog is big.", "the is big"), false);
   assert.equal(reading.matches("The little cat is on the bed.", "the little cat is on a bed"), false, "the→a is a different word");
   assert.equal(reading.matches("The little cat is on the bed.", "the little cat is on the the bed"), false, "extra words still count");
   assert.equal(reading.matches("The little cat is on the bed.", "little cat on bed"), false, "a missing content word still counts");
@@ -445,14 +447,57 @@ test("a gentle stuck pass moves on but never counts as a first-try pass", () => 
     state: { solved: 3, credit: 0, streak: 0, level: 1, readingWords: {} }, setCorrect: 3, SET: 15, DAILY: 100,
     CHEERS: ["잘했어요"], BANK_SIZES: { reading: 16 }, MASTER_AT: 9, cheerEl: {},
     skillOf: () => skill, dayNum: () => 100, drawSetStars() {}, drawDaily() {}, saveState() {},
-    setTimeout: () => 1, applyState() {}, renderProblem() {}, celebrateRound() {} };
+    setTimeout: () => 1, applyState() {}, renderProblem() {}, celebrateRound() {},
+    readingFocus: reading.cleanFocus(null), bookKey: seed => seed.type + ":i" + seed.idx, saveReadingFocus() { ctx.focusSaved = (ctx.focusSaved || 0) + 1; } };
+  ctx.state.wrong = [{ type: "reading", idx: 0, miss: 3 }];
   ctx.window = { EnglishReading: reading };
   vm.runInNewContext(fn("pick"), ctx);
   ctx.pick("I like apples.", null);
   assert.equal(ctx.state.solved, 4, "the question still moves on");
+  assert.equal(ctx.readingFocus.s[0].g, 1, "the gentle pass is remembered");
+  assert.equal(ctx.state.wrong.length, 1, "first gentle pass keeps the review note");
+  assert.ok(ctx.focusSaved >= 1);
+  ctx.current.answered = false; ctx.pick("I like apples.", null);
+  assert.equal(ctx.readingFocus.s[0].x, 1, "second gentle pass retires the sentence");
+  assert.equal(ctx.state.wrong.length, 0, "and removes it from the review note");
   assert.equal(recorded, 0, "no level-up credit");
   assert.equal(skill.s, 0, "no first-try skill point");
   assert.match(html, /if \(info && info\.gentle\) target\.gentle = true/);
   assert.match(html, /diagnostics: \(function \(\) \{ try \{ return window\.localStorage/);
   assert.match(html, /focusLearned = !!\(current\.reading && firstTry && /, "a gentle pass never counts toward a learned sentence");
+});
+// 2026-11-15 인식 검수: 맞게 읽어도 인식기가 다르게 적는 모양.
+test("recognizer spellings of a correct reading are accepted (OK, who's/whose, you're/your, it's/its, baa, joined digits)", () => {
+  const ok = [["Are you okay?", "are you OK"], ["It's okay.", "it's ok"], ["That's okay.", "that's O.K."], ["Are you okay? Yes, I'm okay.", "are you OK yes I'm OK"],
+    ["Who's next?", "whose next"], ["Whose turn is it? It's my turn.", "who's turn is it it's my turn"], ["You're it!", "your it"], ["You're welcome.", "your welcome"],
+    ["Your turn!", "you're turn"], ["Its fleece was white as snow.", "it's fleece was white as snow"], ["Baa, baa, black sheep, have you any wool?", "bah bah black sheep have you any wool"],
+    ["Let's count the apples. One, two, three. There are three apples!", "let's count the apples 123 there are three apples"], ["One, two, buckle my shoe.", "12 buckle my shoe"],
+    ["Three, four, shut the door.", "34 shut the door"], ["Five, six, pick up sticks.", "56 pick up sticks"], ["Let's count to ten together.", "let's count to 10 together"], ["Yummy!", "yum me"], ["Baa, baa, black sheep, have you any wool?", "baba black sheep have you any wool"], ["Out came the sun.", "ouch came the Sun"]];
+  for (const [text, heard] of ok) assert.equal(reading.matches(text, heard), true, text + " <= " + heard);
+  const no = [["Are you okay?", "are you"], ["I can hop.", "I can hope"], ["My turn!", "mighty"], ["One, two, buckle my shoe.", "13 buckle my shoe"], ["Let's count to ten together.", "let's count to 11 together"],
+    ["Whose turn is it? It's my turn.", "who turn is it it's my turn"], ["You're welcome.", "you welcome"]];
+  for (const [text, heard] of no) assert.equal(reading.matches(text, heard), false, text + " <= " + heard);
+  assert.equal(reading.isPrefix("Let's count the apples. One, two, three. There are three apples!", "let's count the apples 123"), true);
+});
+test("a sentence passed gently twice leaves the learning set and survives a reload as retired", () => {
+  const focus = reading.cleanFocus(null);
+  reading.chooseFocus(focus, 1, {}, 0, -1, () => 0.9, []);
+  const idx = focus.open[0];
+  assert.equal(reading.recordGentle(focus, idx), false, "one gentle pass keeps it");
+  assert.ok(focus.open.includes(idx));
+  assert.equal(reading.recordGentle(focus, idx), true, "second gentle pass retires it");
+  assert.ok(!focus.open.includes(idx));
+  const again = reading.cleanFocus(JSON.parse(JSON.stringify(focus)));
+  for (let i = 0; i < 300; i++) assert.notEqual(reading.chooseFocus(again, 1, {}, i, -1, Math.random, []), idx, "retired sentence is not served again");
+  assert.equal(again.open.length, reading.openSize);
+  const reset = reading.cleanFocus(null);
+  reading.recordGentle(reset, 5); reading.recordFocus(reset, 5, "2026-11-15");
+  assert.equal(reading.recordGentle(reset, 5), false, "a first-try pass in between resets the gentle count");
+  assert.deepEqual(reading.cleanFocus({ s: { 3: { n: "x", g: 99, x: "yes" } }, open: [3, 3, "a"] }).open, [3], "corrupt values are clamped, not trusted");
+});
+test("a dropped first word (measured on word-by-word reading) is forgiven on 4+ word sentences only", () => {
+  for (const [text, heard] of [["This is my dad.", "is my dad"], ["Five, six, pick up sticks.", "six pick up Sticks"], ["Its fleece was white as snow.", "fleece was white as snow"], ["Are you okay? Yes, I'm okay.", "you okay yes I am okay"]])
+    assert.equal(reading.matches(text, heard), true, heard);
+  for (const [text, heard] of [["I like apples.", "like apples"], ["This is my dad.", "my dad"], ["This is my dad.", "is dad"], ["This is my dad.", "is my"], ["This is my dad.", "that is my dad"], ["The bird can fly.", "bird can fly the"]])
+    assert.equal(reading.matches(text, heard), false, heard);
 });

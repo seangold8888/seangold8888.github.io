@@ -1,6 +1,7 @@
 // Spell Towers 균형 시뮬레이션: 진짜 엔진(engine.js)을 화면 없이 돌리고, 탑을 합리적으로 놓는 꼬마 로봇이 한다.
 // policy: none(문제를 하나도 안 풂 — 부엉이를 안 누름) | all(부엉이마다 한 번에 맞힘) | half(절반은 한 번에, 절반은 고쳐 맞힘)
 //         loose(가장 느슨한 아이: 부엉이를 절반만 누르고, 그중 절반만 한 번에)
+// 새 탑은 문제를 거친다(buildQuiz, 기본 켬): 탑 고르기+풀이 5~10초 정지, 한 번에 맞히면 2단계로 태어남. 배지 공짜 탑·카드 탑은 문제 없음.
 // 아이처럼: 부엉이를 보고 누르기까지 1~3초, 문제 풀이 4~8초(게임은 정지 — 판 길이에만 더한다), 준비 시간은 4초 쓴다.
 // 로봇: 수정이 모이면 "효율(초당 피해 × 길이 닿는 길이 ÷ 값)"이 가장 좋은 일(새 탑 / 2단계 강화)을 한다.
 //       카드는 가장 낮은 단계 탑 강화를 먼저, 갈림길은 셈이 더 센 쪽.
@@ -17,7 +18,8 @@ function value(w, kind, lv, padIdx) {
   if (w.wave >= 3 && s.air && !w.towers.some(t => L.TOWERS[t.kind].air)) v *= 2;
   return v;
 }
-export function botAct(w) {
+// quizBuild(pad, kind): 새 탑을 문제로 세운다(없으면 옛 방식 — 수정만 내고 바로)
+export function botAct(w, quizBuild = null) {
   for (let guard = 0; guard < 4; guard++) {
     let best = null, bv = 0;
     for (const p of w.pads) {
@@ -34,7 +36,9 @@ export function botAct(w) {
       }
     }
     if (!best || w.gems < best.cost) return;   // 가장 좋은 일을 위해 모은다
-    if (best.up != null) E.upgradeWithGems(w, best.up); else E.build(w, best.pad, best.kind);
+    if (best.up != null) E.upgradeWithGems(w, best.up);
+    else if (quizBuild && E.buildNeedsQuiz(w)) quizBuild(best.pad, best.kind);
+    else E.build(w, best.pad, best.kind);
   }
 }
 export function botCard(w, cards) {
@@ -45,11 +49,19 @@ export function botCard(w, cards) {
   return { pick, branch };
 }
 
-export function runSim({ kid = 1, policy = "all", seed = 1, map = "field", dt = 1 / 20, firstTryRate = null } = {}) {
-  const rng = seeded(seed), qrng = seeded(seed * 7 + 3);
-  const w = E.createWorld({ kid, map, rng });
+// buildQuiz: 새 탑마다 문제(지금 규칙). false 면 옛 규칙(수정만)으로 비교용.
+// buildRate: 탑 문제를 한 번에 맞히는 비율(없으면 부엉이와 같은 rate)
+export function runSim({ kid = 1, policy = "all", seed = 1, map = "field", dt = 1 / 20, firstTryRate = null, buildQuiz = true, buildRate = null, badges = [] } = {}) {
+  const rng = seeded(seed), qrng = seeded(seed * 7 + 3), brng = seeded(seed * 13 + 5);
+  const w = E.createWorld({ kid, map, rng, badges });
   const rate = firstTryRate != null ? firstTryRate : policy === "all" ? 1 : policy === "half" || policy === "loose" ? 0.5 : 0;
-  let quizzes = 0, firstSteal = null, maxMon = 0, act = 0, quizTime = 0, owlSeen = null, owlWait = 0, owlTap = false;
+  const bRate = buildRate != null ? buildRate : rate;
+  let quizzes = 0, buildQuizzes = 0, firstSteal = null, maxMon = 0, act = 0, quizTime = 0, owlSeen = null, owlWait = 0, owlTap = false;
+  // 탑 문제: 탑 고르기 1~2초 + 풀이 4~8초(게임 정지), 한 번에 맞히면 2단계
+  const quizBuild = buildQuiz ? (pad, kind) => {
+    buildQuizzes++; quizTime += 5 + brng() * 5;
+    const first = brng() < bRate; E.recordQuiz(w, first); E.buildByQuiz(w, pad, kind, first);
+  } : null;
   while (!w.over) {
     if (w.pending === "quiz") {
       quizzes++; quizTime += 4 + qrng() * 4;
@@ -65,7 +77,7 @@ export function runSim({ kid = 1, policy = "all", seed = 1, map = "field", dt = 
     }
     if (w.owl && w.owl !== owlSeen) { owlSeen = w.owl; owlWait = 1 + qrng() * 2; owlTap = policy !== "none" && (policy !== "loose" || qrng() < 0.5); }
     if (owlTap && w.owl && w.owl.t >= owlWait) E.tapOwl(w);
-    act -= dt; if (act <= 0) { botAct(w); act = 0.5; }
+    act -= dt; if (act <= 0) { botAct(w, quizBuild); act = 0.5; }
     if (w.phase === "prep" && w.prepT < L.PREP_TIME - 4) E.startWaveNow(w);   // 준비 시간은 4초 쓴다(나머지는 바로 시작)
     const st = w.stolen;
     E.stepWorld(w, dt);
@@ -74,7 +86,7 @@ export function runSim({ kid = 1, policy = "all", seed = 1, map = "field", dt = 
     if (w.t > 1500) break;
   }
   const res = w.over ? w.over.result : "?";
-  return { result: res, success: res === "win", wave: res === "win" ? L.WAVES : w.wave, cake: w.cake, cakeMax: w.cakeMax, time: Math.round(w.t), play: Math.round(w.t + quizTime), quizzes, firstSteal, rescueUsed: w.rescueUsed, towers: w.towers.length, lv: w.towers.map(t => t.lv).join(""), maxMon, gems: w.gems };
+  return { result: res, success: res === "win", wave: res === "win" ? L.WAVES : w.wave, cake: w.cake, cakeMax: w.cakeMax, time: Math.round(w.t), play: Math.round(w.t + quizTime), quizzes, buildQuizzes, problems: w.solved, firstSteal, rescueUsed: w.rescueUsed, towers: w.towers.length, lv: w.towers.map(t => t.lv).join(""), maxMon, gems: w.gems };
 }
 
 export function summary(opts, seeds = 12) {
@@ -86,7 +98,7 @@ export function summary(opts, seeds = 12) {
   return {
     success: +(wins.length / runs.length).toFixed(2), wave: +avg("wave").toFixed(1),
     cakeWin: wins.length ? +(wins.reduce((a, r) => a + r.cake, 0) / wins.length).toFixed(1) : null,
-    cakeAll: +avg("cake").toFixed(1), time: Math.round(avg("time")), play: Math.round(avg("play")), quizzes: +avg("quizzes").toFixed(1), firstStealMedian: fs.length ? fs[Math.floor(fs.length / 2)] : null,
+    cakeAll: +avg("cake").toFixed(1), time: Math.round(avg("time")), play: Math.round(avg("play")), quizzes: +avg("quizzes").toFixed(1), buildQuizzes: +avg("buildQuizzes").toFixed(1), problems: +avg("problems").toFixed(1), maxProblems: Math.max(...runs.map(r => r.problems)), firstStealMedian: fs.length ? fs[Math.floor(fs.length / 2)] : null,
     rescue: +(runs.filter(r => r.rescueUsed).length / runs.length).toFixed(2), maxMon: Math.max(...runs.map(r => r.maxMon)), runs,
   };
 }

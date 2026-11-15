@@ -29,10 +29,10 @@ test('아이 넷 프로필과 나이별 단계 범위(10세는 10세 이상 칸:
   assert.deepEqual([GQ.bandForAge(5).start, GQ.bandForAge(5).cap], [1, 2]);
 });
 
-test('아이 넷 각각 200문제: 오류 없음, 보기 3개에 정답 포함, 단계는 AGE_BANDS 범위 안(승급해도 cap 을 넘지 않는다)', () => {
+test('아이 넷 각각 200문제: 오류 없음, 보기 3개에 정답 포함, 단계는 게임 범위 안(승급해도 cap 을 넘지 않는다)', () => {
   const st = memory();
   for (const k of GQ.KIDS) {
-    const band = GQ.bandForAge(k.age), r = rng(11 + k.age);
+    const band = GQ.rangeFor(k), r = rng(11 + k.age);
     for (let i = 0; i < 200; i++) {
       const q = GQ.forKid(k.id, { storage: st, rng: r, now: DAYS[i % DAYS.length] + 'T10:00:00' });
       const p = q.next();
@@ -41,13 +41,15 @@ test('아이 넷 각각 200문제: 오류 없음, 보기 3개에 정답 포함, 
       assert.equal(p.choices.length, 3); assert.equal(new Set(p.choices).size, 3);
       assert.ok(p.choices.includes(p.answer), k.name + ' ' + p.text);
       assert.ok(p.raw, '수학 모듈 문제여야 한다(예비 문제 아님)');
-      assert.ok(p.level >= band.start && p.level <= band.cap, k.name + ' level ' + p.level);
+      assert.ok(p.level >= 1 && p.level <= band.cap, k.name + ' level ' + p.level);
       const g = q.record(p, true);
-      assert.ok(g && g.level >= band.start && g.level <= band.cap);
+      assert.ok(g && g.level >= 1 && g.level <= band.cap);
     }
   }
-  // 태오는 200문제를 다 맞혀도 2단계가 끝(받아올림 같은 것은 나오지 않는다)
-  assert.equal(JSON.parse(st.getItem(GQ.stateKey('taeo'))).level, 2);
+  // 게임 범위: 허브 나이 칸 cap 보다 태오 4(10 만들기까지, 받아올림 없음)·윤건 12, 재이·윤찬 19
+  assert.deepEqual(GQ.KIDS.map(k => GQ.rangeFor(k).cap), [19, 19, 12, 4]);
+  // 태오는 200문제를 다 맞혀도 4단계가 끝(받아올림 같은 것은 나오지 않는다)
+  assert.equal(JSON.parse(st.getItem(GQ.stateKey('taeo'))).level, 4);
 });
 
 test('아이별 기록이 서로 섞이지 않는다 — 각자 자기 키에, 각자 자기 속도로', () => {
@@ -59,7 +61,7 @@ test('아이별 기록이 서로 섞이지 않는다 — 각자 자기 키에, �
   const p = jaei.next(); jaei.record(p, false);
   const t = JSON.parse(st.getItem(GQ.stateKey('taeo'))), j = JSON.parse(st.getItem(GQ.stateKey('jaei')));
   assert.equal(t.solved, 30); assert.equal(j.solved, 1);
-  assert.ok(Object.keys(t.skills).every(key => /^[12]:/.test(key)), '태오 기록엔 1·2단계만');
+  assert.ok(Object.keys(t.skills).every(key => /^[1-4]:/.test(key)), '태오 기록엔 1~4단계만');
   assert.ok(Object.keys(j.skills).every(key => !/^[12]:/.test(key)), '재이 기록엔 태오 단계가 없다');
   assert.equal(j.wrong.length, 1); assert.equal(t.wrong.length, 0);
   assert.deepEqual(new Set(st.writes), new Set([GQ.stateKey('taeo'), GQ.stateKey('jaei')]));
@@ -168,13 +170,13 @@ test('옛 윤찬 기록(5단계·12단계)은 한 번만 13으로 올라가고 �
   assert.equal(GQ.forKid('yunchan', { storage: hub }).level, 13);
 });
 
-test('재이(8세)는 12단계를 마치면 13단계로 올라간다', () => {
+test('재이(8세)는 12단계를 마치면 13단계 이상으로 올라간다(옛 v1 기록은 자리 찾기로 3문제 연속이면 2단계 위)', () => {
   const st = memory({ gq_kid_jaei_v1: JSON.stringify({ v: 1, level: 12, skills: {}, wrong: [], solved: 0, firstTries: 0, seeded: '' }) });
   const q = GQ.forKid('jaei', { storage: st, rng: rng(8), now: '2026-11-13T09:00:00' });
   assert.equal(q.level, 12);
   for (let i = 0; i < 12 && q.level === 12; i++) { const p = q.next(); assert.equal(p.level, 12); q.record(p, true); }
-  assert.equal(q.level, 13);
-  assert.equal(q.next().level, 13);
+  assert.equal(q.level, 14);
+  assert.equal(q.next().level, 14);
 });
 
 test('놀이 시간 돌려주기: 패널이 20초 열려 있으면 만료가 20초 밀린다', () => {

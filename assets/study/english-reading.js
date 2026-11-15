@@ -561,7 +561,19 @@
     here: ["hear", "hair", "her", "he", "hia"],
     seven: ["seventh", "sever", "sebben", "7", "heaven"],
     birthday: ["birth day", "bursday", "birthdays", "birthday's", "bird day"],
-    soon: ["sun", "soo", "son", "spoon", "sune"]
+    soon: ["sun", "soo", "son", "spoon", "sune"],
+    // 2026-11-15 검수: 인식기가 맞게 읽은 말을 다른 글자로 적는 경우(구글 인식은 okay 를 "OK" 로 적는다).
+    // "whois"·"youare"·"itis" 는 who's·you're·it's 가 풀어 쓰인 뒤 두 토큰을 이어 붙인 모양이다.
+    okay: ["ok"],
+    whose: ["whois"],
+    your: ["youare"],
+    its: ["itis"],
+    baa: ["bah", "ba", "baah", "baaa"],
+    // 두 단어 "baa baa" 를 인식기가 한 단어로 붙여 적은 모양(실측 "baba black sheep").
+    baabaa: ["baba", "bahbah"],
+    // 실측(높인 목소리 합성): "Out came the sun" → "ouch came the sun".
+    out: ["ouch"],
+    yummy: ["yumme", "yummie"]
   };
   function heardTokens(heard) {
     let text = normalize(heard);
@@ -598,6 +610,7 @@
   // 문장이 다섯 단어 이상이면 빠뜨린 a/an/the 는 실수로 세지 않는다 (빠짐만, 바꿔 읽기·추가는 그대로 센다).
   const FREE_MISSING = { a: true, an: true, the: true };
   const FREE_MISSING_MIN_WORDS = 5;
+  const LEAD_FREE_MIN_WORDS = 4, LEAD_COST = 0.001, COST_EPS = 0.01;
   // 아이가 생각하며 내는 소리. 인식기가 글자로 적어도 추가 단어로 세지 않는다.
   const FILLERS = { um: true, umm: true, uh: true, uhm: true, hmm: true, erm: true, mm: true };
   // 소리 비슷한 단어 허용(phonetic fallback)은 내용어에만 쓴다. 짧은 기능어끼리 섞이면 문장이 달라진다.
@@ -668,6 +681,7 @@
     if (second === "is" && got === first + "s") return true;
     if (second === "not" && got === first + "nt") return true;
     if (second === "are" && got === first + "re") return true;
+    if ((first === "who" && second === "is" && got === "whose") || (first === "you" && second === "are" && got === "your")) return true;
     if (second === "will" && got === first + "ll" && first !== "i") return true;
     if (second === "have" && got === first + "ve") return true;
     return (first === "i" && second === "am" && got === "im") || (first === "let" && second === "us" && got === "lets");
@@ -695,6 +709,11 @@
         const here = cost[i][j];
         if (here >= INF) continue;
         const at = [i, j];
+        // 2026-11-15 실측(구글 인식, 단어마다 쉬며 읽기): 같은 녹음을 넣어도 첫 단어만 가끔 통째로 빠진다
+        // ("This is my dad." → "is my dad", "Five, six, pick up sticks." → "six pick up sticks").
+        // 네 단어 이상 문장은 맨 앞 한 단어가 빠진 것을 실수로 세지 않는다(빠짐만; 바꿔 읽기는 그대로 센다).
+        // 비용 LEAD_COST(아주 작음): 다른 맞춤과 동점이면 원래 맞춤을 고른다(틀린 단어 표시가 바뀌지 않게).
+        if (i === 0 && j === 0 && n >= LEAD_FREE_MIN_WORDS) relax(1, 0, here + LEAD_COST, at, "skip");
         if (i < n && j < m) { const same = sameWord(words[i], got[j]); relax(i + 1, j + 1, here + (same ? 0 : 1), at, same ? "ok" : "sub"); }
         if (i < n && j + 1 < m && listedSame(words[i], got[j] + got[j + 1])) relax(i + 1, j + 2, here, at, "ok");
         if (i + 1 < n && j < m && splitSame(words[i], words[i + 1], got[j])) relax(i + 2, j + 1, here, at, "ok2");
@@ -722,19 +741,35 @@
     const text = normalize(expected);
     return text ? text.split(" ") : [];
   }
-  function matches(expected, heard) {
+  // 인식기는 "one, two, three" 를 "123", "three, four" 를 "34" 처럼 붙여 적기도 한다.
+  // 두 자리 이상 숫자는 한 자리씩 읽은 것으로도 맞춰 본다(원래 읽기도 그대로 맞춰 본다).
+  function digitSplit(heard) {
+    const text = String(heard || "");
+    return /\d{2,}/.test(text) ? text.replace(/\d{2,}/g, function (digits) { return digits.split("").join(" "); }) : null;
+  }
+  function matchesOne(expected, heard) {
     const words = expectedWords(expected), got = heardTokens(heard);
     if (!words.length || !got.length) return false;
-    return align(words, got).cost[words.length][got.length] <= allowedSlips(words.length);
+    return align(words, got).cost[words.length][got.length] <= allowedSlips(words.length) + COST_EPS;
+  }
+  function matches(expected, heard) {
+    if (matchesOne(expected, heard)) return true;
+    const split = digitSplit(heard);
+    return split !== null && matchesOne(expected, split);
   }
   // True while the heard words are still a valid beginning of the sentence.
   // `limit` overrides the slip budget (0 = only exact/equivalent words).
   function isPrefix(expected, heard, limit) {
+    if (isPrefixOne(expected, heard, limit)) return true;
+    const split = digitSplit(heard);
+    return split !== null && isPrefixOne(expected, split, limit);
+  }
+  function isPrefixOne(expected, heard, limit) {
     const words = expectedWords(expected), got = heardTokens(heard);
     if (!got.length) return true;
     const slips = typeof limit === "number" ? limit : allowedSlips(words.length);
     const table = align(words, got);
-    for (let i = 0; i <= words.length; i++) { if (table.cost[i][got.length] <= slips) return true; }
+    for (let i = 0; i <= words.length; i++) { if (table.cost[i][got.length] <= slips + COST_EPS) return true; }
     return false;
   }
   // Ordered alignment is feedback, never a partial-credit scoring rule.
@@ -745,6 +780,10 @@
   }
   // How many sentence words one heard text covers (forgiven a/the count). Stuck protection only.
   function coveredWords(expected, heard) {
+    const split = digitSplit(heard);
+    return Math.max(coveredOne(expected, heard), split === null ? 0 : coveredOne(expected, split));
+  }
+  function coveredOne(expected, heard) {
     const words = expectedWords(expected), got = heardTokens(heard);
     if (!got.length) return 0;
     return alignFlags(align(words, got)).forgiven.filter(Boolean).length;
@@ -889,7 +928,7 @@
   // 서로 다른 날 한 번에 맞힌 날이 MASTER_DAYS 번 쌓이면 '익힘'으로 바꾸고 새 문장을 연다.
   // 출제 = 배우는 중 약 70% + 익힌 문장 복습 약 30%(REVIEW_SHARE). 최근 12문장 회피·못 읽은 단어 가중은 그대로.
   // 저장은 부르는 쪽(허브)이 한다. 이 파일은 저장소 API 를 쓰지 않는다.
-  const OPEN_SIZE = 15, MASTER_DAYS = 2, REVIEW_SHARE = 0.3;
+  const OPEN_SIZE = 15, MASTER_DAYS = 2, REVIEW_SHARE = 0.3, GENTLE_RETIRE = 2;
   function validIndex(idx) { return Number.isInteger(idx) && idx >= 0 && idx < sentences.length; }
   function cleanFocus(raw) {
     const out = { s: {}, open: [] };
@@ -900,19 +939,41 @@
       if (!validIndex(idx) || !entry || typeof entry !== "object") return;
       const n = Math.max(0, Math.min(MASTER_DAYS, parseInt(entry.n, 10) || 0));
       const d = typeof entry.d === "string" && entry.d.length <= 12 ? entry.d : "";
-      if (n || d) out.s[idx] = { n: n, d: d };
+      const g = Math.max(0, Math.min(GENTLE_RETIRE, parseInt(entry.g, 10) || 0));
+      const x = entry.x === 1 || entry.x === true;
+      if (n || d || g || x) {
+        out.s[idx] = { n: n, d: d };
+        if (g) out.s[idx].g = g;
+        if (x) out.s[idx].x = 1;
+      }
     });
     if (Array.isArray(raw.open)) raw.open.forEach(function (idx) {
-      if (validIndex(idx) && out.open.indexOf(idx) < 0 && out.open.length < OPEN_SIZE) out.open.push(idx);
+      if (validIndex(idx) && out.open.indexOf(idx) < 0 && out.open.length < OPEN_SIZE && !(out.s[idx] && out.s[idx].x)) out.open.push(idx);
     });
     return out;
   }
   function isMastered(focus, idx) { const entry = focus.s[idx]; return !!entry && entry.n >= MASTER_DAYS; }
+  // 쉬어 가는 문장: 세 번 읽고 넘어간 '부드러운 통과'가 GENTLE_RETIRE 번 쌓인 문장(2026-11-15 검수).
+  // 인식기가 끝내 못 알아듣는 문장이 배우는 중 묶음에 남아 계속 다시 나오지 않게 묶음에서 뺀다.
+  function isRetired(focus, idx) { const entry = focus.s[idx]; return !!entry && !!entry.x; }
+  // 부드러운 통과 때 부른다. 이번에 쉬어 가는 문장이 됐으면 true (부르는 쪽은 오답 노트에서도 지운다).
+  function recordGentle(focus, idx) {
+    if (!validIndex(idx)) return false;
+    const entry = focus.s[idx] || { n: 0, d: "" };
+    focus.s[idx] = entry;
+    if (entry.x || entry.n >= MASTER_DAYS) return false;
+    entry.g = Math.min(GENTLE_RETIRE, (entry.g || 0) + 1);
+    if (entry.g < GENTLE_RETIRE) return false;
+    entry.x = 1;
+    focus.open = focus.open.filter(function (i) { return i !== idx; });
+    return true;
+  }
   // 한 번에 맞혔을 때만 부른다. 같은 날 여러 번은 한 번으로 친다. 이번에 익혔으면 true.
   function recordFocus(focus, idx, day) {
     if (!validIndex(idx) || !day) return false;
     const entry = focus.s[idx] || { n: 0, d: "" };
     focus.s[idx] = entry;
+    if (entry.g) delete entry.g;
     if (entry.n >= MASTER_DAYS || entry.d === day) return false;
     entry.n += 1; entry.d = day;
     if (entry.n < MASTER_DAYS) return false;
@@ -922,10 +983,10 @@
   // 배우는 중 묶음을 채운다: 지금 단계의 안 익힌 문장부터 차례로, 모자라면 아래 단계의 안 익힌 문장.
   function refillOpen(focus, level) {
     const top = clampLevel(level);
-    focus.open = focus.open.filter(function (idx) { return validIndex(idx) && sentences[idx].level <= top && !isMastered(focus, idx); });
+    focus.open = focus.open.filter(function (idx) { return validIndex(idx) && sentences[idx].level <= top && !isMastered(focus, idx) && !isRetired(focus, idx); });
     for (let lv = top; lv >= 1 && focus.open.length < OPEN_SIZE; lv--) {
       for (let idx = 0; idx < sentences.length && focus.open.length < OPEN_SIZE; idx++) {
-        if (sentences[idx].level === lv && !isMastered(focus, idx) && focus.open.indexOf(idx) < 0) focus.open.push(idx);
+        if (sentences[idx].level === lv && !isMastered(focus, idx) && !isRetired(focus, idx) && focus.open.indexOf(idx) < 0) focus.open.push(idx);
       }
     }
     return focus.open;
@@ -992,6 +1053,21 @@
   const permissionGuided = new WeakSet();
   const sessions = new WeakMap();
   const completionPlayed = new WeakSet();
+  // 바깥 소리(허브 듣기 버튼의 문장 녹음). 2026-11-15 현장 보고: 듣기 뒤 첫 읽기가 잘 안 된다.
+  // 아이패드는 Web Audio 재생 뒤 음성 인식 마이크가 약해지거나 죽는다(열 문제 축하 소리 뒤와 같은 문제).
+  // 그래서 듣기 뒤 첫 🎤 는 축하 뒤처럼 마이크 연결을 새로 받은 다음(getUserMedia → 즉시 닫기) 인식을 켠다.
+  // 다른 기기는 듣기 컨텍스트가 닫힐 때까지(최대 LISTEN_SETTLE_MAX_MS) 기다렸다가 켠다.
+  const outsideAudio = new WeakMap();
+  const LISTEN_SETTLE_MS = 250, LISTEN_SETTLE_MAX_MS = 700, INTERIM_SETTLE_MS = 1500;
+  function noteListen(env, info) {
+    env = env || root;
+    info = info || {};
+    const prev = outsideAudio.get(env) || {};
+    const entry = { ctx: info.ctx || prev.ctx || null, startedAt: prev.startedAt || 0, endedAt: 0, closing: null };
+    if (info.phase === "end") { entry.endedAt = Date.now(); entry.closing = info.closing && info.closing.then ? info.closing : null; }
+    else entry.startedAt = Date.now();
+    outsideAudio.set(env, entry);
+  }
   function mountCelebration(container, env) {
     env = env || root;
     const button = env.document.createElement('p');button.setAttribute('role','status');button.textContent='🌟 열 문제 성공!';container.appendChild(button);
@@ -1089,6 +1165,7 @@
     let silenceTimer = null, tailInterim = null, segmentHeard = false, autoRead = false, pressPending = false;
     // Stuck protection for this sentence (see STUCK_TRIES): presses that ended without a pass.
     let tries = 0, deviceTries = 0, bestCovered = 0, heardEver = false, permanentBlock = false, gentle = false;
+    let settling = false, settleTimer = null, interimTimer = null;
     const wordCount = expectedWords(sentence.text).length;
     const diagStore = callbacks.diagnostics && typeof callbacks.diagnostics.getItem === "function" ? callbacks.diagnostics : null;
     if (diagStore && !session.log.length) loadDiagnostics(diagStore).forEach(function (entry) { session.log.push(entry); });
@@ -1141,10 +1218,10 @@
       if (diagStore) saveDiagnostics(diagStore, session.log);
       if (logNode && !disposed) logNode.textContent = session.log.join("\n");
     }
-    log("mount-v25 w" + wordCount + (touchIOS ? " ios-quiet-round" : ""));
+    log("mount-v26 w" + wordCount + (touchIOS ? " ios-quiet-round" : ""));
 
     function controls() {
-      nodes.mic.disabled = disposed || awarded || recovering || !!active || restarting || soundActive || !Recognition || env.isSecureContext === false || nav.onLine === false;
+      nodes.mic.disabled = disposed || awarded || recovering || settling || !!active || restarting || soundActive || !Recognition || env.isSecureContext === false || nav.onLine === false;
       if (recoveryButton) recoveryButton.disabled = disposed || awarded || recovering || !!active || soundActive || !Recognition || env.isSecureContext === false || nav.onLine === false;
       nodes.stop.disabled = disposed || awarded || finishing || !!stopping || (!active && !soundActive && !restarting);
       nodes.stop.textContent = soundActive && !awarded ? "안내 멈추고 읽기" : "다 읽었어요";
@@ -1178,6 +1255,7 @@
       env.clearTimeout(retryTimer); retryTimer = null;
       Array.from(actions.children).forEach(function (node) { if (node.className === 'reading-word-listen') node.hidden = true; });
       recovering = false;
+      settling = false; env.clearTimeout(settleTimer); settleTimer = null;
       env.clearTimeout(healthTimer); healthTimer = null;
       env.clearTimeout(timer); timer = null;
       env.clearTimeout(stopTimer); stopTimer = null;
@@ -1212,6 +1290,7 @@
     }
     function resetFlow() { retried = true; session.streak = 0; }
     function clearTake() {
+      env.clearTimeout(interimTimer); interimTimer = null;
       env.clearTimeout(windowTimer); windowTimer = null;
       env.clearTimeout(restartTimer); restartTimer = null;
       env.clearTimeout(silenceTimer); silenceTimer = null;
@@ -1520,7 +1599,13 @@
     }
     function canRestart() {
       if (!windowOpen || restarts >= MAX_RESTARTS || doc.hidden || nav.onLine === false) return false;
-      return !finalText || anyPrefix(sentence.text, lastFinals);
+      return !finalText || anyPrefix(sentence.text, lastFinals) || mayStillBeReading();
+    }
+    // 2026-11-15 실측(구글 인식, 단어마다 쉬며 읽기): 첫 단어를 인식기가 놓치면("Five, six…" → "six")
+    // 들은 말이 문장 첫머리가 아니어서 아이가 아직 읽는 중인데 바로 '틀렸어요'로 끝났다.
+    // 들은 단어 수가 문장 단어 수보다 적으면 아직 읽는 중으로 보고 조용히 계속 듣는다(채점 규칙은 그대로).
+    function mayStillBeReading() {
+      return !!finalText && heardTokens(finalText).length < wordCount;
     }
     // Same 🎤 press: keep the words heard so far and open a fresh recognizer quietly.
     function restartListening(reason, recognizer) {
@@ -1629,6 +1714,7 @@
       stop();
       session.silent = true;
       releasePrimedAudio();
+      outsideAudio.delete(env);
       log("recovery-tap");
       const devices = nav.mediaDevices;
       if (!devices || !devices.getUserMedia) { read(); return; }
@@ -1665,7 +1751,40 @@
     function maxWindowMs() { return Math.min(WINDOW_MAX_MS, WINDOW_BASE_MS + wordCount * WINDOW_PER_WORD_MS); }
     function read(rearmed) {
       if (nodes.mic.disabled) return;
-      if (touchIOS && completionPlayed.has(env) && rearmed !== true && env.navigator.mediaDevices && env.navigator.mediaDevices.getUserMedia) { recoverMicrophone(); return; }
+      const outside = rearmed === true || rearmed === "settled" ? null : outsideAudio.get(env);
+      if (outside) {
+        const since = outside.endedAt ? Date.now() - outside.endedAt : -1;
+        const ctxState = outside.ctx && typeof outside.ctx.state === "string" ? outside.ctx.state : "none";
+        log("listen-mic ctx " + ctxState + " " + (since < 0 ? "playing" : "end " + since + "ms") + (touchIOS ? " ios" : ""));
+      }
+      const canRearm = !!(nav.mediaDevices && nav.mediaDevices.getUserMedia);
+      if (touchIOS && canRearm && rearmed !== true && (completionPlayed.has(env) || outside)) { recoverMicrophone(); return; }
+      if (outside) {
+        // 듣기 소리가 장치를 다 놓을 때까지 잠깐 기다린다(같은 🎤 누름으로 이어서 켠다).
+        outsideAudio.delete(env);
+        const since = outside.endedAt ? Date.now() - outside.endedAt : 0;
+        const open = outside.ctx && outside.ctx.state && outside.ctx.state !== "closed";
+        if (open || since < LISTEN_SETTLE_MS) {
+          stop();
+          settling = true; controls();
+          nodes.status.textContent = "마이크를 준비하고 있어요…";
+          const id = serial, began = Date.now();
+          let done = false;
+          const go = function () {
+            if (done) return; done = true;
+            env.clearTimeout(settleTimer); settleTimer = null;
+            if (disposed || awarded || id !== serial || doc.hidden) return;
+            settling = false; controls();
+            log("listen-settled " + (Date.now() - began) + "ms");
+            read("settled");
+          };
+          const wait = Math.max(0, LISTEN_SETTLE_MS - since);
+          settleTimer = env.setTimeout(go, LISTEN_SETTLE_MAX_MS);
+          const closing = outside.closing || (outside.ctx && open && outside.ctx.close ? (function () { try { return outside.ctx.close(); } catch (_) { return null; } })() : null);
+          Promise.resolve(closing).then(function () { env.clearTimeout(settleTimer); settleTimer = env.setTimeout(go, Math.max(wait - (Date.now() - began), 0) + 50); }, go);
+          return;
+        }
+      }
       const automatic = autoRead; autoRead = false;
       stop();
       if (!automatic) pressPending = true;
@@ -1749,9 +1868,21 @@
         feedback(collapseRepeats(shown).map(function (alts) { return alts[0]; }).join(" "));
         if (finals.length) log("result " + lastFinals.length + "/" + results.length);
         if (restarts && heardNow) armSilence(recognizer);
+        env.clearTimeout(interimTimer); interimTimer = null;
         if (lastFinals.length && anyMatches(sentence.text, lastFinals)) {
           award();
-        } else if (finalText && !anyPrefix(sentence.text, lastFinals) && Array.from(results).every(function (result) { return result.isFinal; })) {
+          return;
+        }
+        // 2026-11-15 실측(데스크톱 Chrome·실제 구글 인식): 말이 끝난 뒤 입력이 아주 조용하면 문장 전체가
+        // 중간 결과로만 12초 넘게 머물러 '응답 없음'으로 처리되고 맞게 읽은 문장을 잃었다. 중간 결과가 이미
+        // 문장 전체와 맞고 INTERIM_SETTLE_MS 동안 새 결과가 없으면 '다 읽었어요'와 같이 마무리한다(stop → 최종 결과로 채점).
+        if (tail.length && !finishing && anyMatches(sentence.text, collapseRepeats(lastFinals.concat([tailInterim || [""]])))) {
+          interimTimer = env.setTimeout(function () {
+            interimTimer = null;
+            if (valid() && !finishing) { log("interim-settle"); finishListening(); }
+          }, INTERIM_SETTLE_MS);
+        }
+        if (finalText && !anyPrefix(sentence.text, lastFinals) && !mayStillBeReading() && Array.from(results).every(function (result) { return result.isFinal; })) {
           finishAttempt();
         } else {
           nodes.status.textContent = "듣고 있어요… 문장을 끝까지 읽어 주세요.";
@@ -1847,6 +1978,10 @@
     limits: { stuckTries: STUCK_TRIES, stuckShare: STUCK_SHARE, maxRestarts: MAX_RESTARTS, silenceMs: SILENCE_MS, restartDelayMs: RESTART_DELAY_MS,
       restartStartMs: RESTART_START_MS, windowBaseMs: WINDOW_BASE_MS, windowPerWordMs: WINDOW_PER_WORD_MS, windowMaxMs: WINDOW_MAX_MS, freeMissingMinWords: FREE_MISSING_MIN_WORDS, diagKeep: DIAG_KEEP } };
   api.mountCelebration = mountCelebration;
+  api.noteListen = noteListen;
+  api.recordGentle = recordGentle;
+  api.gentleRetire = GENTLE_RETIRE;
+  api.listenSettle = { ms: LISTEN_SETTLE_MS, maxMs: LISTEN_SETTLE_MAX_MS };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.EnglishReading = api;
 })(typeof window !== "undefined" ? window : globalThis);

@@ -3,7 +3,7 @@
 // 규칙 표는 logic.js, 한 걸음은 engine.js, 여기서는 그리기·입력·화면·저장.
 // 그림은 art/ 의 그림 파일을 쓰고, 못 읽으면 캔버스 도형으로 대신 그린다. shadowBlur 와 매 프레임 그라데이션은 쓰지 않는다.
 import * as L from "./logic.js?v=1";
-import * as E from "./engine.js?v=1";
+import * as E from "./engine.js?v=2";
 
 const $ = id => document.getElementById(id);
 const canvas = $("map"), ctx = canvas.getContext("2d", { alpha: false });
@@ -409,7 +409,7 @@ function iconFor(c, w = 96, h = 112) {
 }
 
 /* ---------- 상태 ---------- */
-let mode = "start";      // start | play | build | info | quiz | reward | cards | resume | paused | over
+let mode = "start";      // start | play | build | buildquiz | info | quiz | reward | cards | resume | paused | over
 let world = null, clock = 0, banner = "", bannerT = 0, bannerBig = false, flash = 0, flashCol = "255,255,255";
 let speed = 1, resumeT = 0, runSaved = false, saidOwl = false, saidPad = false, wandT = 0, focusPad = -1;
 const PILOT_COLOR = L.PILOTS.map(p => p.color);
@@ -455,7 +455,7 @@ function armChoices(panel, buttons, onPick) {
 }
 function disarm() { if (guard) guard.panel.classList.remove("locked"); guard = null; }
 addEventListener("keydown", e => {
-  if (e.key === "Escape" || e.key === "p") { if (mode === "play") pause(); else if (mode === "paused") unpause(); else if (mode === "build" || mode === "info") closeDock(); }
+  if (e.key === "Escape" || e.key === "p") { if (mode === "play") pause(); else if (mode === "paused") unpause(); else if (mode === "build" || mode === "info") closeDock(); else if (mode === "buildquiz") cancelBuildQuiz(); }
   if (e.repeat || !guard || performance.now() < guard.armAt) return;
   freshKeyAt = performance.now();
   const n = parseInt(e.key, 10);
@@ -492,7 +492,8 @@ document.addEventListener("visibilitychange", () => { if (document.hidden && mod
 function openBuild(padIdx) {
   mode = "build"; focusPad = padIdx;
   const rec = E.recommendKind(world, padIdx);
-  $("buildKicker").textContent = world.freeTower ? "마법 배지: 첫 탑은 공짜!" : "수정 " + world.gems + "개 있어요";
+  const quiz = !!GameQuiz && E.buildNeedsQuiz(world);
+  $("buildKicker").textContent = world.freeTower ? "마법 배지: 첫 탑은 공짜!" : "수정 " + world.gems + "개 있어요" + (quiz ? " · 고르면 문제가 나와요" : "");
   const row = $("buildRow"); row.innerHTML = "";
   const kinds = L.TOWER_IDS;
   const buttons = kinds.map(kind => {
@@ -508,7 +509,12 @@ function openBuild(padIdx) {
   placeDock($("build"), padIdx);
   $("build").hidden = false; $("info").hidden = true;
   armChoices($("build"), buttons, (b, i) => {
-    const kind = kinds[i], t = E.build(world, padIdx, kind);
+    if (mode !== "build" || focusPad !== padIdx) return;     // 두 번 눌러도 한 번만
+    const kind = kinds[i];
+    if (!E.canBuild(world, padIdx, kind)) return;
+    // 문제로 세우는 탑: 수정은 정답을 맞힌 순간에 낸다(창을 닫고 그만두면 그대로)
+    if (GameQuiz && E.buildNeedsQuiz(world)) { disarm(); b.classList.add("ok"); sfx.tap(); openBuildQuiz(padIdx, kind); return; }
+    const t = E.build(world, padIdx, kind);
     if (!t) return;
     disarm(); b.classList.add("ok"); sfx.build();
     say(L.TOWERS[kind].name + "을 세웠어요!", false);
@@ -552,6 +558,74 @@ function closeDock() {
 $("buildClose").addEventListener("click", closeDock);
 $("infoClose").addEventListener("click", closeDock);
 
+/* ---------- 새 탑 → 문제 → 탑이 태어난다 ----------
+   탑을 고르면 게임이 멈추고(world.pending = "build") 공통 문제 창이 뜬다.
+   한 번에 맞히면 2단계 탑 + 큰 탄생 효과, 고쳐 맞히면 1단계 탑(틀린 보기는 흐려질 뿐 벌 없음).
+   수정은 맞힌 순간에만 나간다. 틀리기 전에는 "← 다른 탑" 으로 그만둘 수 있다(수정 그대로, 탑 없음). */
+let buildAsk = null;           // { pad, kind, wrong, done, t }
+const backBtn = $("quizBack");
+let backArmAt = 0, backDown = null;
+function showBack(on) {
+  backBtn.hidden = !on;
+  if (on) { backArmAt = performance.now() + LOCK_MS; backBtn.classList.add("locked"); setTimeout(() => backBtn.classList.remove("locked"), LOCK_MS); }
+}
+backBtn.addEventListener("pointerdown", e => { e.stopPropagation(); backDown = performance.now() >= backArmAt ? e.pointerId : null; });
+backBtn.addEventListener("pointerup", e => { const d = backDown; backDown = null; if (d === null || d !== e.pointerId || performance.now() < backArmAt) return; cancelBuildQuiz(); });
+backBtn.addEventListener("pointercancel", () => { backDown = null; });
+backBtn.addEventListener("click", e => { if (e.detail === 0 && performance.now() >= backArmAt) cancelBuildQuiz(); });
+function openBuildQuiz(padIdx, kind) {
+  const T = L.TOWERS[kind], cost = E.buildCost(world, kind);
+  $("build").hidden = true; mode = "buildquiz"; focusPad = padIdx;   // 받침 강조는 그대로(어디에 생길지 보이게)
+  world.pending = "build";                                            // 파도 시계·괴물·탑 모두 멈춤
+  const ba = buildAsk = { pad: padIdx, kind, wrong: false, done: false, t: null };
+  showBack(true);
+  GameQuiz.ask({
+    kid: L.PILOTS[pilot].kid, voice: soundOn, title: "한 번에 맞히면 2단계 탑!", pace: "quick",
+    hint: T.name + " · 수정 " + cost + " · 고쳐 맞혀도 탑이 생겨요", theme: QUIZ_THEME, closeDelay: 520,
+    onWrong: () => { sfx.no(); if (buildAsk === ba) { ba.wrong = true; showBack(false); } },
+    onCorrect: r => {
+      if (buildAsk !== ba || !world) return "";
+      showBack(false);
+      E.recordQuiz(world, r.firstTry);
+      const t = E.buildByQuiz(world, padIdx, kind, r.firstTry);
+      ba.done = true; ba.t = t; ba.firstTry = r.firstTry;
+      handleEvents();
+      if (r.firstTry) sfx.up(); else sfx.build();
+      hudKey = ""; hud();
+      return t ? (r.firstTry ? "2단계 " + T.name + "!" : T.name + " 완성!") : "";
+    },
+    onDone: () => { if (buildAsk !== ba) return; buildAsk = null; if (mode !== "buildquiz" || !world) return; towerBorn(ba); },
+  });
+}
+// 문제 창이 닫힌 바로 그때 탄생 효과(창에 가리지 않게). 2단계는 훨씬 크게.
+function towerBorn(ba) {
+  const t = ba.t, T = L.TOWERS[ba.kind];
+  if (t) { birthFx(t, !!ba.firstTry); say(ba.firstTry ? "한 번에 맞혔어요! 2단계 " + T.name + "!" : T.name + "을 세웠어요!", !!ba.firstTry); }
+  startResume();
+}
+function birthFx(t, big) {
+  t.grow = 1; t.bigGrow = big; t.flash = big ? 1.6 : 1;
+  world.fx.grow.push({ x: t.x, y: t.y, t: 0, lv: t.lv, big }); if (world.fx.grow.length > 8) world.fx.grow.shift();
+  if (big) {
+    addFx("mega", t.x, t.y, 300 * VS, { dur: 0.8, oy: -40 * VS });
+    lightAt(t.x, t.y, 200, -60 * VS);
+    flash = 0.22; flashCol = "255,236,150"; shakeT = 0.18; wandT = 1.2;
+    setTimeout(() => [784, 988, 1175, 1568, 2093].forEach((f, i) => setTimeout(() => beep(f, 0.12, "triangle", 0.08), i * 60)), 80);
+  } else { padFx(t.pad); flash = 0.1; flashCol = "255,255,255"; }
+}
+// 틀리기 전 "← 다른 탑": 수정 그대로, 탑 없음, 다시 탑 고르기로
+function cancelBuildQuiz() {
+  const ba = buildAsk;
+  if (!ba || ba.done || ba.wrong || mode !== "buildquiz") return false;
+  buildAsk = null; showBack(false);
+  if (GameQuiz) GameQuiz.close();
+  E.resumeAfter(world); mode = "play"; last = performance.now();
+  sfx.tap(); openBuild(ba.pad);
+  return true;
+}
+// 판이 끝나거나 처음 화면으로 갈 때: 열린 탑 문제는 그냥 버린다(수정·탑 변화 없음)
+function dropBuildQuiz() { buildAsk = null; showBack(false); }
+
 /* ---------- ? 부엉이 → 문제 → 대마법 → 카드 ---------- */
 let cardsShown = null;
 const QUIZ_THEME = { top: 60, bg: "rgba(34,20,78,.97)", accent: "#ffe27a" };
@@ -560,7 +634,7 @@ function openQuiz() {
   if (!GameQuiz) { rewardBlast(false); afterReward(false, true); return; }
   const n = world.tune.cards;
   GameQuiz.ask({
-    kid: L.PILOTS[pilot].kid, voice: soundOn, title: "맞히면 대마법 + 탑 강화!",
+    kid: L.PILOTS[pilot].kid, voice: soundOn, title: "맞히면 대마법 + 탑 강화!", pace: "challenge",
     hint: "한 번에 맞히면 길 위 괴물이 모두 방울에 실려 가요 · 수정 +" + L.BLAST_GEMS + " · 카드 " + n + "장 중 하나", theme: QUIZ_THEME,
     onWrong: () => sfx.no(),
     onCorrect: r => { E.recordQuiz(world, r.firstTry); return rewardBlast(r.firstTry); },
@@ -634,7 +708,7 @@ function openRescue() {
   const done = () => { E.rescue(world); handleEvents(); megaFx(1.4, 0.8); shakeT = 0.25; sfx.blast(true); flash = 0.2; flashCol = "230,200,255"; wandT = 1.8; hudKey = ""; hud(); say("구조 마법! 케이크 " + L.RESCUE_CAKE + "조각 + 괴물 모두 방울로", true); startResume(); };
   if (!GameQuiz) { done(); return; }
   GameQuiz.ask({
-    kid: L.PILOTS[pilot].kid, voice: soundOn, title: "케이크를 다 가져갔어요 · 맞히면 케이크 " + L.RESCUE_CAKE + "조각!", hint: "맞히면 화면의 괴물도 모두 방울에 실려 가요", theme: QUIZ_THEME,
+    kid: L.PILOTS[pilot].kid, voice: soundOn, title: "케이크를 다 가져갔어요 · 맞히면 케이크 " + L.RESCUE_CAKE + "조각!", hint: "맞히면 화면의 괴물도 모두 방울에 실려 가요", theme: QUIZ_THEME, pace: "quick",
     onWrong: () => sfx.no(),
     onCorrect: r => { E.recordQuiz(world, r.firstTry); return "구조 마법!"; },
     onDone: () => { if (mode !== "quiz") return; done(); },
@@ -643,14 +717,14 @@ function openRescue() {
 
 /* ---------- 판 시작·끝 ---------- */
 function begin(opts = {}) {
-  disarm(); if (GameQuiz) { GameQuiz.close(); GameQuiz.setKid(L.PILOTS[pilot].kid); }
+  disarm(); dropBuildQuiz(); if (GameQuiz) { GameQuiz.close(); GameQuiz.setKid(L.PILOTS[pilot].kid); }
   if (opts.kid != null) pilot = opts.kid;
   if (opts.map) mapId = opts.map;
   if (!L.openMaps(save.wins).includes(mapId)) mapId = "field";
   world = E.createWorld({ kid: pilot, map: mapId, badges: L.openBadges(save.solved) });
   ["start", "over", "cards", "pause", "dex", "build", "info"].forEach(id => { $(id).hidden = true; });
   $("hud").hidden = false; $("ctrl").hidden = false; hudKey = ""; hud();
-  runSaved = false; banner = ""; bannerT = 0; speed = 1; paintFast(); saidOwl = false; saidPad = false;
+  runSaved = false; banner = ""; bannerT = 0; speed = 1; fxList = []; shakeT = 0; flash = 0; paintFast(); saidOwl = false; saidPad = false;
   audio(); last = performance.now(); mode = "play"; layoutCtrl();
   $("tip").textContent = "";
   say(world.map.name + "을 지켜요! 빈 받침을 눌러 탑을 세워요", true);
@@ -665,7 +739,7 @@ function endRun(quit) {
   return { rec, r };
 }
 function showOver() {
-  mode = "over"; disarm(); if (GameQuiz) GameQuiz.close();
+  mode = "over"; disarm(); dropBuildQuiz(); if (GameQuiz) GameQuiz.close();
   closePanels(); $("pause").hidden = true; $("ctrl").hidden = true; layoutCtrl();
   const out = endRun(false); if (!out) return;
   const { rec, r } = out, win = rec.result === "win";
@@ -673,7 +747,7 @@ function showOver() {
   $("overTitle").textContent = win ? "케이크를 지켰어요! 파도 " + L.WAVES + "개 성공" : "괴물들이 케이크를 다 가져갔어요. 파도 " + rec.wave + "개를 막았어요!";
   // 문제를 맞혀서 얻은 것: 맨 위에 크게
   const quizBox = rec.solved
-    ? '<div class="quizwin"><p class="qw-title">문제를 맞혀서 얻은 것</p><div class="qw-row"><span><b>' + rec.solved + '</b>문제</span><span><b>' + rec.blasts + '</b>대마법</span><span><b>' + rec.cards + '</b>카드</span><span><b>' + rec.blastSent + "</b>마리 방울</span></div>" + (rec.blastSent ? '<p class="qw-sub">대마법으로 괴물 ' + rec.blastSent + "마리를 한꺼번에 돌려보냈어요</p>" : "") + "</div>"
+    ? '<div class="quizwin"><p class="qw-title">문제를 맞혀서 얻은 것</p><div class="qw-row"><span><b>' + rec.solved + '</b>문제</span><span><b>' + (rec.quizTowers || 0) + '</b>탑</span><span><b>' + rec.blasts + '</b>대마법</span><span><b>' + rec.cards + '</b>카드</span><span><b>' + rec.blastSent + "</b>마리 방울</span></div>" + (rec.blastSent ? '<p class="qw-sub">대마법으로 괴물 ' + rec.blastSent + "마리를 한꺼번에 돌려보냈어요</p>" : "") + "</div>"
     : '<div class="quizwin dim"><p class="qw-title">다음엔 ? 부엉이를 눌러 봐요</p><p class="qw-sub">문제를 맞히면 대마법이 터지고 탑이 3·4·5단계로 커져요</p></div>';
   const lines = [quizBox,
     win ? '<p class="stars">' + "★".repeat(r.stars) + "☆".repeat(3 - r.stars) + "</p>" : "",
@@ -695,7 +769,7 @@ function pause() {
 function unpause() { if (mode !== "paused") return; $("pause").hidden = true; mode = "play"; last = performance.now(); }
 function toMenu() {
   if (world && mode !== "over" && mode !== "start") endRun(true);
-  disarm(); if (GameQuiz) GameQuiz.close();
+  disarm(); dropBuildQuiz(); if (GameQuiz) GameQuiz.close();
   mode = "start"; world = null;
   ["over", "cards", "pause", "dex", "build", "info"].forEach(id => { $(id).hidden = true; });
   $("hud").hidden = true; $("ctrl").hidden = true; layoutCtrl(); paintStart(); $("start").hidden = false; bgKey = "";
@@ -896,6 +970,7 @@ function render() {
   ctx.globalAlpha = 1;
   // 탑이 커지는 순간
   for (const g of fx.grow) {
+    if (g.big) { drawBigBirth(g); continue; }
     const kk = g.t / 1.2, R = (30 + kk * 90) * VS, gx = SX(g.x, g.y), gy = SY(g.x, g.y) - 40 * VS;
     ctx.globalAlpha = (1 - kk); ctx.drawImage(LV_GLOW[g.lv - 1], gx - R, gy - 10 - R, R * 2, R * 2);
     ctx.strokeStyle = L.LV_COLORS[g.lv - 1]; ctx.lineWidth = 8 * (1 - kk) + 2; ctx.beginPath(); ctx.arc(gx, gy, R * 0.8, 0, TAU); ctx.stroke();
@@ -932,6 +1007,24 @@ function render() {
     ctx.fillStyle = bannerBig ? "#ffe27a" : "#ffffff"; ctx.fillText(banner, vw / 2, by); ctx.globalAlpha = 1;
   }
 }
+// 한 번에 맞혀 2단계로 태어나는 탑: 하늘로 솟는 빛기둥 + 겹고리 두 개 + 별 16개가 크게 퍼진다(1.8초)
+function drawBigBirth(g) {
+  const kk = Math.min(1, g.t / 1.8), gx = SX(g.x, g.y), gy = SY(g.x, g.y) - 40 * VS, a = kk < 0.1 ? kk / 0.1 : 1 - (kk - 0.1) / 0.9;
+  // 빛기둥(처음 0.6초에 가장 밝다)
+  const pa = Math.max(0, 1 - kk * 1.6), pw = (46 + Math.sin(clock * 30) * 4) * VS;
+  if (pa > 0) { ctx.globalAlpha = pa; ctx.drawImage(GLOW.gold, gx - pw, gy - 420 * VS, pw * 2, 520 * VS); ctx.drawImage(GLOW.white, gx - pw * 0.45, gy - 380 * VS, pw * 0.9, 460 * VS); }
+  const R = (40 + kk * 170) * VS;
+  ctx.globalAlpha = Math.max(0, a); ctx.drawImage(LV_GLOW[1], gx - R * 1.1, gy - R * 1.1, R * 2.2, R * 2.2);
+  ctx.strokeStyle = "#ffe27a"; ctx.lineWidth = 14 * (1 - kk) + 3; ctx.beginPath(); ctx.arc(gx, gy, R, 0, TAU); ctx.stroke();
+  const R2 = (20 + Math.max(0, kk - 0.15) * 200) * VS;
+  ctx.strokeStyle = L.LV_COLORS[1]; ctx.lineWidth = 10 * (1 - kk) + 2; ctx.beginPath(); ctx.arc(gx, gy, R2, 0, TAU); ctx.stroke();
+  for (let i = 0; i < 16; i++) { const an = i * TAU / 16 + kk * 3, rr = (24 + kk * 150) * VS * (i % 2 ? 0.75 : 1), sz = (i % 2 ? 22 : 34) * VS * (1 - kk * 0.4); ctx.drawImage(STAR_LIST[i % 4], gx + Math.cos(an) * rr - sz / 2, gy + Math.sin(an) * rr - sz / 2, sz, sz); }
+  // 단계 숫자 "2" 가 솟아오른다
+  const ny = gy - 60 * VS - kk * 50 * VS, ns = Math.round(44 * VS * (kk < 0.12 ? 0.5 + kk * 4.2 : 1));
+  ctx.font = "900 " + ns + "px " + FONT; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.lineJoin = "round";
+  ctx.lineWidth = 7; ctx.strokeStyle = "rgba(40,20,80,.95)"; ctx.strokeText("2단계!", gx, ny); ctx.fillStyle = "#ffe27a"; ctx.fillText("2단계!", gx, ny);
+  ctx.globalAlpha = 1;
+}
 function cakeIconCtx(x, y, s) { cakeIcon(ctx, x, y, s); }
 function gemIconCtx(x, y, s) { gemIcon(ctx, x, y, s); }
 // 괴물이 화면에서 가는 쪽(세로면 월드와 축이 달라서 화면 x 변화로 정한다)
@@ -949,7 +1042,8 @@ function drawTower(t, x, y) {
   // 단계 색 후광(3단계부터, 미리 그린 그림)
   if (lv >= 3) { const R = (34 + lv * 8 + Math.sin(clock * 3 + t.id) * 4) * VS; ctx.globalAlpha = 0.55; ctx.drawImage(LV_GLOW[lv - 1], x - R, y - 30 * VS - R, R * 2, R * 2); ctx.globalAlpha = 1; }
   if (world && E.hasteOn(world)) { ctx.globalAlpha = 0.3 + Math.sin(clock * 10) * 0.15; ctx.drawImage(GLOW.gold, x - 40 * VS, y - 60 * VS, 80 * VS, 80 * VS); ctx.globalAlpha = 1; }
-  const g = t.grow > 0 ? 1 + Math.sin(t.grow * Math.PI) * 0.35 : 1;
+  if (t.grow <= 0) t.bigGrow = false;
+  const g = t.grow > 0 ? 1 + Math.sin(t.grow * Math.PI) * (t.bigGrow ? 0.6 : 0.35) : 1;
   if (g !== 1) { ctx.save(); ctx.translate(x, y); ctx.scale(g, g); ctx.drawImage(sp.c, sp.ox, sp.oy, sp.w, sp.h); ctx.restore(); }
   else ctx.drawImage(sp.c, x + sp.ox, y + sp.oy, sp.w, sp.h);
   // 보석 칸 ●●●○○: 탑 위. HUD 칩에 가리는 자리면 받침 아래로
@@ -1152,7 +1246,7 @@ if (QA) {
     padScreen: i => (world ? toScreen(world.pads[i].x, world.pads[i].y) : null), focusPad: () => focusPad,
     tick: (dt = 1 / 60, n = 1) => { for (let i = 0; i < n && mode === "play"; i++) update(dt); },
     step: (dt = 1 / 60, n = 1) => { for (let i = 0; i < n; i++) { ui(dt); if (mode === "play") update(dt); render(); } },
-    get s() { return world ? { mode, t: +world.t.toFixed(2), wave: world.wave, phase: world.phase, cake: world.cake, gems: world.gems, monsters: world.monsters.length, shots: world.shots.length, towers: world.towers.map(t => t.kind + t.lv + (t.branch || "") + "@" + t.pad), owl: !!world.owl, sent: world.sent, solved: world.solved, streak: world.streak, blasts: world.blasts, cards: world.cards, pending: world.pending, over: world.over, rescueUsed: world.rescueUsed, pilot, map: mapId, speed, haste: E.hasteOn(world) } : { mode, pilot, map: mapId }; },
+    get s() { return world ? { mode, t: +world.t.toFixed(2), wave: world.wave, phase: world.phase, cake: world.cake, gems: world.gems, monsters: world.monsters.length, shots: world.shots.length, towers: world.towers.map(t => t.kind + t.lv + (t.branch || "") + "@" + t.pad), owl: !!world.owl, sent: world.sent, solved: world.solved, streak: world.streak, blasts: world.blasts, cards: world.cards, quizTowers: world.quizTowers, prepT: +world.prepT.toFixed(2), waveT: +world.waveT.toFixed(2), pending: world.pending, over: world.over, rescueUsed: world.rescueUsed, pilot, map: mapId, speed, haste: E.hasteOn(world) } : { mode, pilot, map: mapId }; },
     get save() { return save; },
     world: () => world, E, L,
     build: (pad, kind) => { const t = world && E.build(world, pad, kind); hudKey = ""; hud(); return !!t; },
@@ -1168,6 +1262,11 @@ if (QA) {
     guard: () => { if (guard) return { panel: guard.panel.id, armIn: Math.round(guard.armAt - performance.now()) }; const q = GameQuiz && GameQuiz.peek(); return q ? { panel: "quiz", armIn: q.armIn } : null; },
     pick: i => { if (!guard) return false; const b = guard.buttons[i]; if (!b || b.disabled) return false; guard.onPick(b, i); return true; },
     noQuiz: () => { GameQuiz = null; },
+    hasQuiz: () => !!GameQuiz,
+    buildAsk: () => (buildAsk ? { pad: buildAsk.pad, kind: buildAsk.kind, wrong: buildAsk.wrong, done: buildAsk.done, back: !backBtn.hidden } : null),
+    cancelBuild: () => cancelBuildQuiz(),
+    freeTower: (on = true) => { if (world) world.freeTower = on; },
+    grow: () => (world ? world.fx.grow.map(g => ({ lv: g.lv, big: !!g.big, t: +g.t.toFixed(2) })) : []),
     openCards: (firstTry = true) => { if (world && mode === "play") openCards({ firstTry }); return cardsShown; },
     freeze: (on = true) => { frozen = on; },
     blast: (firstTry = true) => (world ? rewardBlast(firstTry) : null),

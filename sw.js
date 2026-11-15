@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v263";
+const CACHE_VERSION = "v264";
 const CACHE_PREFIX = "adventure-box-";
 // 큰 그림과 소리(삼국지 배경 200MB+, 저장한 이야기 오디오)는 배포 번호와 따로 둔다.
 // 배포마다 이 캐시를 버리면 기기가 236MB를 다시 받고, "여행 전에 이야기 저장"도 지워졌다.
@@ -525,7 +525,7 @@ const CORE_SHELL = [
   "./math/store.js?v=34",
   "./assets/study/math-bridge.js?v=3",
   "./assets/study/math-credits.js?v=2",
-  "./assets/study/english-reading.js?v=25",
+  "./assets/study/english-reading.js?v=26",
   "./assets/study/praise/excellent.mp3",
   "./assets/study/praise/perfect-v2.wav",
   "./assets/study/praise/awesome.mp3",
@@ -1058,7 +1058,7 @@ const CORE_SHELL = [
   "./assets/bgm/bgm-player.js?v=67",
   "./assets/study/play-timer.js?v=4",
   "./assets/study/kid-voices.js?v=1",
-  "./assets/study/game-quiz.js?v=3",
+  "./assets/study/game-quiz.js?v=4",
   "./assets/touch-guard.js?v=1",
   "./cards/js/engine.js?v=70",
   "./cards/js/audio.js?v=71",
@@ -1311,7 +1311,7 @@ const OPTIONAL_SHELL = [
   "./dive/index.html",
   "./dive/style.css?v=4",
   "./dive/cover.webp",
-  "./dive/src/main.js?v=3",
+  "./dive/src/main.js?v=4",
   "./dive/src/logic.js?v=3",
   "./dive/src/engine.js?v=3",
   "./dive/src/sfx.js?v=2",
@@ -1351,11 +1351,11 @@ const OPTIONAL_SHELL = [
   "./dive/art/fx_mega.webp?v=1",
   "./towers/",
   "./towers/index.html",
-  "./towers/style.css?v=3",
+  "./towers/style.css?v=4",
   "./towers/cover.webp",
-  "./towers/src/main.js?v=5",
+  "./towers/src/main.js?v=6",
   "./towers/src/logic.js?v=1",
-  "./towers/src/engine.js?v=1",
+  "./towers/src/engine.js?v=2",
   "./towers/art/bat.webp?v=1",
   "./towers/art/boss.webp?v=1",
   "./towers/art/bubble.webp?v=1",
@@ -1455,7 +1455,7 @@ const OPTIONAL_SHELL = [
   "./slime/vendor/THREE-LICENSE.txt",
   "./assets/effects/quality.js?v=visual-1",
   "./assets/covers/cover_slime.svg",
-  "./kart3d/src/game.js?v=quiz-2",
+  "./kart3d/src/game.js?v=quiz-3",
   "./kart3d/src/quizbox.js?v=quiz-2",
   "./kart3d/src/difficulty.js?v=easy-1",
   "./kart3d/menu.css?v=snow-2",

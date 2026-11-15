@@ -95,11 +95,21 @@ html, body { height: 100%; margin: 0; overflow: hidden; background: #2c1f5c; col
 .card.ok, .tbtn.ok { border-color: #7dffb0; background: rgba(125,255,176,.25); }
 .panel.locked .card, .panel.locked .tbtn:not(:disabled), .panel.locked #upBtn { opacity: .35; filter: grayscale(.5); }
 
+/* 탑 문제 창이 떠 있을 때 아래 가운데 "← 다른 탑"(문제 창 레이어보다 위, 틀리기 전까지만. 왼쪽 아래는 놀이 시간 칩 자리) */
+.chip.qback { position: fixed; z-index: 2147483001; left: 50%; transform: translateX(-50%); bottom: calc(10px + env(safe-area-inset-bottom)); min-height: 52px; padding: 0 20px; background: rgba(36,22,80,.92); font-size: 18px; transition: opacity .2s; }
+.chip.qback[hidden] { display: none; }
+.chip.qback.locked { opacity: .35; }
+/* 세로 화면은 오른쪽 아래에 바로 시작·빨리 감기 줄이 있어 그 위로 */
+@media (orientation: portrait) { .chip.qback { bottom: calc(76px + env(safe-area-inset-bottom)); } }
+@media (max-width: 499px), (max-height: 499px) { .chip.qback { min-height: 48px; font-size: 17px; } }
+@media (max-width: 499px) and (orientation: portrait) { .chip.qback { bottom: calc(62px + env(safe-area-inset-bottom)); } }
+@media (max-height: 499px) and (orientation: landscape) { .chip.qback { bottom: calc(6px + env(safe-area-inset-bottom)); } }
+
 #overText p { margin: 4px 0; }
 .quizwin { margin: 4px 0 10px; padding: 12px 10px; border: 3px solid #ffd24a; border-radius: 20px; background: rgba(255,210,74,.18); }
 .quizwin.dim { border-color: rgba(255,255,255,.2); background: rgba(255,255,255,.06); }
 .qw-title { margin: 0 0 6px !important; font-size: 22px !important; font-weight: 900; color: #ffe27a !important; }
-.qw-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.qw-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
 .qw-row span { display: flex; flex-direction: column; align-items: center; font-size: 16px; font-weight: 800; color: #fff3c4; word-break: keep-all; }
 .qw-row b { font-size: clamp(28px, 7.5vw, 46px); line-height: 1.1; color: #fff !important; }
 .qw-sub { margin: 6px 0 0 !important; font-size: 14px !important; color: #fff3c4 !important; }

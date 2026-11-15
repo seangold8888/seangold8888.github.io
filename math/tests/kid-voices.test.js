@@ -73,13 +73,15 @@ test('GameQuiz: 처음 맞힘에만, 정답 터치 처리 안에서 외친다. v
   assert.match(fs.readFileSync(path.join(root, 'plane/src/main.js'), 'utf8'), /GameQuiz\.ask\(\{\s*kid: PILOTS\[pilot\]\.kid, title, voice: false/);
 });
 
-test('GameQuiz 를 쓰는 모든 페이지가 kid-voices 를 game-quiz?v=3 바로 앞에 불러온다', () => {
+test('GameQuiz 를 쓰는 모든 페이지가 kid-voices 를 game-quiz?v=4 바로 앞에 불러온다', () => {
   const pages = ['hogwarts', 'odyssey', 'multiverse', 'kedehun', 'kart3d', 'towers', 'sanguo', 'plane', 'dive'];
   for (const p of pages) {
     const html = fs.readFileSync(path.join(root, p, 'index.html'), 'utf8');
-    const order = ['math/curriculum.js', 'math/learning.js', 'math/store.js', 'assets/study/math-bridge.js', 'assets/study/kid-voices.js?v=1', 'assets/study/game-quiz.js?v=3'].map(s => html.indexOf(s));
+    const gq = 'assets/study/game-quiz.js?v=4';
+    const order = ['math/curriculum.js', 'math/learning.js', 'math/store.js', 'assets/study/math-bridge.js', 'assets/study/kid-voices.js?v=1', gq].map(s => html.indexOf(s));
     assert.ok(order.every(i => i >= 0), p + ' ' + order);
     assert.deepEqual([...order].sort((x, y) => x - y), order, p);
     assert.ok(!html.includes('game-quiz.js?v=2'), p);
+    assert.ok(!html.includes('game-quiz.js?v=3'), p + ' 옛 v=3');
   }
 });
