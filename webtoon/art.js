@@ -636,6 +636,19 @@
       const gems = ["#ff4d4d", "#ffd34d", "#4c7fd0", "#6cc27a", "#ff9f1c", "#b99ad9"].map((c, i) => i < 4 ? `<circle cx="${-11 + i * 7.3}" cy="-24" r="2.8" fill="${c}" stroke="${INK}" stroke-width=".8"/>` : "").join("");
       return `<g transform="translate(${x} ${y}) rotate(${o.rot || 0}) scale(${o.s || 1})"><path d="M-14 16 L-14 -6 L-16 -22 Q-16 -26 -12 -26 Q-9 -26 -9 -22 L-8 -12 L-7 -28 Q-7 -32 -3 -32 Q1 -32 1 -28 L1 -12 L3 -28 Q3 -32 7 -32 Q11 -32 11 -28 L10 -10 L13 -20 Q14 -24 18 -22 Q20 -20 19 -16 L14 6 L14 16Z" fill="#f2c14e" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><path d="M-12 -4 Q0 -8 12 -4" stroke="#c9962a" stroke-width="1.6" fill="none"/><rect x="-16" y="14" width="32" height="10" rx="3" fill="#e0ad3a" stroke="${INK}" stroke-width="2"/>${gems}<circle cx="-1" cy="4" r="4.5" fill="#6cc27a" stroke="${INK}" stroke-width="1"/><circle cx="-12" cy="-6" r="2.6" fill="#ff9f1c" stroke="${INK}" stroke-width=".8"/></g>`;
     },
+    // 인형 상자: 투명 창 너머로 복슬복슬한 뒷모습만 보이고, 이름표(t)가 삐죽 나온다. 캐릭터 얼굴은 그리지 않는다.
+    dollbox(x, y, o) {
+      const c = o.c || "#ffd6e7";
+      let fuzz = "";
+      for (let i = 0; i < 10; i++) fuzz += `<circle cx="${-14 + (i % 4) * 9}" cy="${-44 + Math.floor(i / 4) * 10}" r="7" fill="${o.fur || "#fff5e6"}" stroke="#d8c3a8" stroke-width="1"/>`;
+      return `<g transform="translate(${x} ${y}) rotate(${o.rot || 0}) scale(${o.s || 1})"><rect x="-34" y="-86" width="68" height="86" rx="6" fill="${c}" stroke="${INK}" stroke-width="2.4"/><rect x="-24" y="-74" width="48" height="56" rx="4" fill="#eaf6ff" stroke="${INK}" stroke-width="1.6"/>${fuzz}<circle cx="-12" cy="-58" r="6" fill="${o.fur || "#fff5e6"}" stroke="#d8c3a8"/><circle cx="12" cy="-58" r="6" fill="${o.fur || "#fff5e6"}" stroke="#d8c3a8"/><path d="M30 -10 L52 4" stroke="${INK}" stroke-width="1.4"/><rect x="44" y="0" width="${(o.t || "").length * 13 + 14}" height="22" rx="4" fill="#fff" stroke="${INK}" stroke-width="1.8"/><text x="${51 + (o.t || "").length * 6.5}" y="16" text-anchor="middle" font-size="13" font-family="Jua, sans-serif" fill="${INK}">${o.t || ""}</text></g>`;
+    },
+    // 이름표 하나만.
+    tag(x, y, o) {
+      const t = o.t || "";
+      const w = t.length * 14 + 16;
+      return `<g transform="translate(${x} ${y}) rotate(${o.rot || -8}) scale(${o.s || 1})"><circle cx="${-w / 2 + 7}" cy="0" r="3" fill="none" stroke="${INK}" stroke-width="1.4"/><rect x="${-w / 2}" y="-12" width="${w}" height="24" rx="5" fill="#fff" stroke="${INK}" stroke-width="2"/><text x="4" y="5" text-anchor="middle" font-size="14" font-family="Jua, sans-serif" fill="${INK}">${t}</text></g>`;
+    },
     // 놀이터 철봉: 기둥 두 개와 손잡이 달린 가로대. y = 가로대 높이, w = 너비.
     bar(x, y, o) {
       const w = o.w || 200, gy = o.gy || y + 230;
