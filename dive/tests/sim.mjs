@@ -28,6 +28,7 @@ export function botMove(w, policy) {
   // 끌리는 것: ? 진주(푸는 아이만), 황금 물고기·보물 조개(누구나), 빛 방울
   const want = (tx, ty, k) => { const dx = tx - p.x, dy = ty - p.y, d = Math.hypot(dx, dy) || 1; fx += dx / d * k; fy += dy / d * k; };
   if (policy !== "none" && w.qpearls.length) { const q = w.qpearls[0]; want(q.x, q.y, mag < 0.6 ? 0.9 : 0.3); }
+  if (policy !== "none" && w.bigs && w.bigs.length) { const q = w.bigs[0]; want(q.x, q.y, mag < 0.6 ? 1.0 : 0.35); }
   for (const e of w.enemies) if (e.kind === "gold" || e.kind === "clam") { want(e.x, e.y, mag < 0.6 ? 0.7 : 0.2); break; }
   let best = null, bd = 260 * 260; for (const o of w.orbs) { const d = (o.x - p.x) ** 2 + (o.y - p.y) ** 2; if (d < bd) { bd = d; best = o; } }
   if (best) want(best.x, best.y, mag < 0.4 ? 0.5 : 0.15);
@@ -54,11 +55,14 @@ export function botDash(w, mv, rng, react = 0.5) {
   return false;
 }
 
-export function runSim({ kid = 1, policy = "all", seed = 1, zone = "coral", dt = 1 / 20, firstTryRate = null, react = 0.5, noDash = false } = {}) {
-  const rng = seeded(seed), qrng = seeded(seed * 7 + 3), drng = seeded(seed * 13 + 5);
-  const w = E.createWorld({ kid, zone, rng, view: { w: 720, h: 540 } });
+// 큰 진주(어려운 문제): 같은 아이라도 한 번에 맞히는 비율이 낮다고 본다 — 다 맞힘 0.6 · 절반 0.3 · 안 풂 0(먹어도 안 풂).
+export const CHALLENGE_RATE = { all: 0.6, half: 0.3, none: 0 };
+export function runSim({ kid = 1, policy = "all", seed = 1, zone = "coral", dt = 1 / 20, firstTryRate = null, react = 0.5, noDash = false, big = true, challengeRate = null } = {}) {
+  const rng = seeded(seed), qrng = seeded(seed * 7 + 3), drng = seeded(seed * 13 + 5), crng = seeded(seed * 17 + 11);
+  const w = E.createWorld({ kid, zone, rng, view: { w: 720, h: 540 }, bigPearl: big });
   const rate = firstTryRate != null ? firstTryRate : policy === "all" ? 1 : policy === "half" ? 0.5 : 0;
-  let quizzes = 0, quiz60 = 0, firstHurt = null, overloadT = null, frames = 0;
+  const chRate = challengeRate != null ? challengeRate : CHALLENGE_RATE[policy] || 0;
+  let bigBoss = 0, quizzes = 0, quiz60 = 0, firstHurt = null, overloadT = null, frames = 0;
   const screen = [], washBins = [];
   let lastRescued = 0, nextBin = 30;
   const pickCard = cards => { let pick = cards[0]; for (const c of cards) if (c.recommend || L.cardScore(c, w.load, w.hearts, w.maxHearts) > L.cardScore(pick, w.load, w.hearts, w.maxHearts)) { pick = c; if (c.recommend) break; } return pick; };
@@ -66,12 +70,16 @@ export function runSim({ kid = 1, policy = "all", seed = 1, zone = "coral", dt =
     if (w.pending === "quiz") {
       if (policy === "none") { w.pending = null; continue; }
       quizzes++; if (w.t <= 60) quiz60++;
-      const first = qrng() < rate; E.recordQuiz(w, first); E.quizBlast(w, first); w.quizGear++;
+      const first = qrng() < rate; E.recordQuiz(w, first); E.quizBlast(w, first ? "wave" : "near"); w.quizGear++;
       const cards = L.drawCards(w.load, { count: first ? w.tune.cards : 2, low: !first, rare: first && w.streak > 0 && w.streak % 3 === 0, recommend: w.tune.cards === 2, rng, hearts: w.hearts, maxHearts: w.maxHearts });
       const pick = pickCard(cards);
       E.setLoadout(w, L.applyCard(w.load, pick), pick);
       E.resumeAfter(w);
       continue;
+    }
+    if (w.pending === "big") { // 큰 진주: 어려운 문제 → 한 번에 필살기 / 고쳐서 중간 물결(카드 없음). 안 푸는 아이는 그냥 지나감.
+      if (policy === "none") { w.pending = null; continue; }
+      const first = crng() < chRate; E.recordChallenge(w, first); E.quizBlast(w, first ? "full" : "mid"); E.resumeAfter(w); continue;
     }
     if (w.pending === "chest") { // 보물 조개: 문제 없이 2장 중 1장(희귀도 낮은 쪽)
       const cards = L.drawCards(w.load, { count: 2, low: true, rng, hearts: w.hearts, maxHearts: w.maxHearts });
@@ -81,9 +89,10 @@ export function runSim({ kid = 1, policy = "all", seed = 1, zone = "coral", dt =
       if (policy === "none") { w.over = { result: "tired", time: w.t }; break; }
       E.recordQuiz(w, qrng() < rate); E.revive(w); continue;
     }
-    const h = w.hurts, mv = botMove(w, policy);
+    const h = w.hurts, mv = botMove(w, policy), bn = w.bigN;
     if (!noDash) botDash(w, mv, drng, react);
     E.stepWorld(w, dt, mv); frames++;
+    if (w.bigN > bn && w.t >= L.BOSS_AT) bigBoss++;
     if (w.hurts > h && firstHurt == null) firstHurt = w.t;
     if (overloadT == null && w.enemies.length >= 45) overloadT = w.t;
     // 화면(720x540) 안의 친구 수: 1초마다
@@ -99,7 +108,7 @@ export function runSim({ kid = 1, policy = "all", seed = 1, zone = "coral", dt =
     rescueUsed: w.rescueUsed, blastWashed: w.blastWashed, dps: Math.round(L.loadoutDps(w.load)), load: w.load,
     firstPearl: w.firstPearlT, fevers: w.fevers, bestCombo: w.bestCombo, dashes: w.dashes, autoDashes: w.autoDashes, chained: w.chained,
     screenMed: after20.length ? after20[Math.floor(after20.length / 2)] : 0, screen20: at(20), screen60: at(60), screen120: at(120),
-    washPerMin: Math.round(w.rescued / Math.max(1, w.t) * 60), washBins, kings: w.kingsWashed, golds: w.goldCaught, clams: w.clamsOpened,
+    washPerMin: Math.round(w.rescued / Math.max(1, w.t) * 60), washBins, kings: w.kingsWashed, golds: w.goldCaught, clams: w.clamsOpened, bigs: w.bigN, challenges: w.challenges, problems: w.solved, ults: w.challengeFirst, bigBoss,
   };
 }
 
@@ -115,7 +124,7 @@ export function summary(opts, seeds = 12) {
     firstHurtMedian: fh.length ? fh[Math.floor(fh.length / 2)] : null, rescueUsed: +(runs.filter(r => r.rescueUsed).length / runs.length).toFixed(2), blastWashed: Math.round(avg("blastWashed")), dps: Math.round(avg("dps")),
     firstPearl: +(med("firstPearl") || 0).toFixed(1), firstPearlMax: +Math.max(...runs.map(r => r.firstPearl || 99)).toFixed(1), fevers: +avg("fevers").toFixed(1), fevMin: Math.min(...runs.map(r => r.fevers)), fevMax: Math.max(...runs.map(r => r.fevers)),
     bestCombo: med("bestCombo"), dashes: Math.round(avg("dashes")), screenMed: med("screenMed"), screen20: med("screen20"), screen60: med("screen60"), screen120: med("screen120"), washPerMin: med("washPerMin"), chained: Math.round(avg("chained")),
-    kings: +avg("kings").toFixed(1), golds: +avg("golds").toFixed(1), clams: +avg("clams").toFixed(1), runs,
+    kings: +avg("kings").toFixed(1), golds: +avg("golds").toFixed(1), clams: +avg("clams").toFixed(1), bigs: +avg("bigs").toFixed(1), bigMin: Math.min(...runs.map(r => r.bigs)), bigMax: Math.max(...runs.map(r => r.bigs)), challenges: +avg("challenges").toFixed(1), ults: +avg("ults").toFixed(1), bigBoss: +(runs.filter(r => r.bigBoss > 0).length / runs.length).toFixed(2), problems: +avg("problems").toFixed(1), runs,
   };
 }
 

@@ -12,6 +12,11 @@ html, body { height: 100%; margin: 0; overflow: hidden; background: #2c1f5c; col
 .ic { display: inline-block; width: 32px; height: 32px; background: center / contain no-repeat; border-radius: 6px; }
 .ic-cake { background-image: url("art/cake.webp?v=1"), radial-gradient(circle, #ffd1e0 55%, transparent 58%); }
 .ic-gem { background-image: url("art/crystal.webp?v=1"), radial-gradient(circle, #c99bff 50%, transparent 53%); }
+/* 수정 입자가 닿으면 칩이 통 튄다 · 고른 카드는 몸에서 떨어져 탑으로 날아간다 */
+.chip.bump { animation: chipBump .22s cubic-bezier(.3,1.8,.5,1); }
+@keyframes chipBump { 0% { transform: scale(1); } 40% { transform: scale(1.18); border-color: #ffe27a; } 100% { transform: scale(1); } }
+.card.fly { position: fixed; z-index: 2147483002; margin: 0; pointer-events: none; transform-origin: 50% 50%; box-shadow: 0 0 0 3px #ffe27a, 0 0 28px 6px rgba(255,226,122,.7); }
+@media (prefers-reduced-motion: reduce) { .chip.bump { animation: none; } }
 #wave.prep { color: #ffe27a; }
 #wave.haste { border-color: #ffe27a; }
 .ctrl { position: fixed; z-index: 3; right: calc(8px + env(safe-area-inset-right)); top: calc(8px + env(safe-area-inset-top)); display: flex; gap: 8px; }

@@ -200,7 +200,7 @@ function fireTower(w, t, s) {
   const e = firstTarget(w, t, s); if (!e) return false;
   t.aim = Math.atan2(e.y - t.y, e.x - t.x);
   if (w.shots.length < L.MAX_SHOTS) w.shots.push({ x: t.x, y: t.y - s.w * 0.55, target: e, tx: e.x, ty: e.y, sp: 460, dmg: s.dmg, splash: s.splash || 0, size: s.size, lv: s.lv, br: s.branch });
-  emit(w, "shot", { kind: "fire" });
+  emit(w, "shot", { kind: "fire", x: t.x, y: t.y, lv: s.lv, br: s.branch, pad: t.pad });
   return true;
 }
 function iceTower(w, t, s) {
@@ -217,7 +217,7 @@ function iceTower(w, t, s) {
   }
   if (w.fx.rings.length < 24) w.fx.rings.push({ x: t.x, y: t.y, t: 0, T: 0.5, R: s.range, color: freeze ? "#ffffff" : s.color, k: "ice", lv: s.lv });
   hitFx(w, "ice", t.x, t.y, s.lv, s.branch, s.range);
-  emit(w, "shot", { kind: "ice" });
+  emit(w, "shot", { kind: "ice", x: t.x, y: t.y, lv: s.lv, br: s.branch, pad: t.pad });
   return true;
 }
 function boltTower(w, t, s) {
@@ -232,7 +232,7 @@ function boltTower(w, t, s) {
   for (const e of hit) { pts.push([e.x, e.y]); hitFx(w, "bolt", e.x, e.y, s.lv, s.branch); damage(w, e, s.dmg); }
   if (w.fx.bolts.length >= 14) w.fx.bolts.shift();
   w.fx.bolts.push({ pts, t: 0.25, lv: s.lv, size: s.size, seed: w.rng() * 100 });
-  emit(w, "shot", { kind: "bolt" });
+  emit(w, "shot", { kind: "bolt", x: t.x, y: t.y, lv: s.lv, br: s.branch, pad: t.pad });
   return true;
 }
 function windTower(w, t, s) {
@@ -246,7 +246,7 @@ function windTower(w, t, s) {
     e.s = Math.max(0, e.s - s.push * resist); posOf(e);
     damage(w, e, s.dmg);
   }
-  emit(w, "shot", { kind: "wind" });
+  emit(w, "shot", { kind: "wind", x: t.x, y: t.y, lv: s.lv, br: s.branch, pad: t.pad });
   return true;
 }
 function lightTower(w, t, s) {
@@ -263,7 +263,7 @@ function lightTower(w, t, s) {
     }
     if (w.fx.beams.length < 18) w.fx.beams.push({ x0: ox, y0: oy, x1, y1, t: 0, T: 0.32, size: s.size, lv: s.lv });
   }
-  emit(w, "shot", { kind: "light" });
+  emit(w, "shot", { kind: "light", x: t.x, y: t.y, lv: s.lv, br: s.branch, pad: t.pad });
   return true;
 }
 function towersStep(w, dt) {

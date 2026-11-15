@@ -121,11 +121,82 @@ const R = {
   // 맞힘: 아주 작은 톡
   hit(c, o, t) { tone(c, o, t, { type: "triangle", f: 1500 + Math.random() * 200, f2: 900, dur: 0.03, vol: 0.045 }); return 0.04; },
   // 적이 터짐: 뽁
-  pop(c, o, t) {
+  // 단계가 오르면 아래 쿵이 붙어 더 묵직하게
+  pop(c, o, t, lv = 1) {
     const k = 0.9 + Math.random() * 0.2;
     tone(c, o, t, { f: 420 * k, f2: 1000 * k, dur: 0.07, vol: 0.09 });
     hiss(c, o, t, { type: "highpass", f: 2200, dur: 0.05, vol: 0.04 });
-    return 0.08;
+    if (lv >= 3) tone(c, o, t, { type: "sine", f: 160, f2: 60, dur: 0.12, vol: 0.06 + Math.min(8, lv) * 0.008 });
+    if (lv >= 6) hiss(c, o, t, { f: 1600, f2: 300, dur: 0.12, vol: 0.04 });
+    return 0.12;
+  },
+  // 큰 적(우박 구름 등)이 터짐: 쿵 + 뽁 + 반짝 꼬리
+  bigPop(c, o, t, lv) {
+    tone(c, o, t, { type: "sine", f: 130, f2: 45, dur: 0.22, vol: 0.16 });
+    hiss(c, o, t, { f: 2600, f2: 300, dur: 0.24, vol: 0.09 });
+    tone(c, o, t, { f: 520, f2: 1300, dur: 0.08, vol: 0.08 });
+    tone(c, o, t + 0.06, { type: "triangle", f: 2400, f2: 3200, dur: 0.1, vol: 0.03 });
+    return 0.28;
+  },
+  // 무기 강화 장면: 아래 쿵(서브) + 위로 쓸어 오르는 바람 + 반짝 꼬리
+  levelBlast(c, o, t, lv) {
+    tone(c, o, t, { type: "sine", f: 90, f2: 38, dur: 0.5, vol: 0.26 });
+    tone(c, o, t, { type: "triangle", f: 220, f2: 70, dur: 0.3, vol: 0.12 });
+    hiss(c, o, t, { type: "bandpass", f: 400, f2: 5200, dur: 0.45, vol: 0.12, q: 0.9, attack: 0.02 });
+    for (let i = 0; i < 5 + Math.min(8, lv); i++) tone(c, o, t + 0.12 + i * 0.035, { type: "triangle", f: NOTE(84 + (i * 5) % 24), dur: 0.12, vol: 0.025 });
+    return 0.62;
+  },
+  // 필살기 시작: 낮은 쿵 + 올라가는 화음 징글(조종사마다 음 높이가 조금 다르다)
+  ultStart(c, o, t, p) {
+    const base = [60, 65, 62, 67][p | 0] || 60;
+    tone(c, o, t, { type: "sine", f: 70, f2: 32, dur: 0.8, vol: 0.28 });
+    hiss(c, o, t, { type: "bandpass", f: 300, f2: 4000, dur: 0.6, vol: 0.12, q: 0.8, attack: 0.05 });
+    [0, 4, 7, 12].forEach((n, i) => { tone(c, o, t + 0.08 + i * 0.07, { type: "square", f: NOTE(base + 12 + n), dur: 0.16, vol: 0.04 }); tone(c, o, t + 0.08 + i * 0.07, { type: "triangle", f: NOTE(base + 12 + n), dur: 0.2, vol: 0.07 }); });
+    for (const n of [0, 4, 7, 12]) tone(c, o, t + 0.42, { type: "triangle", f: NOTE(base + 24 + n), dur: 0.7, vol: 0.045, attack: 0.02 });
+    hiss(c, o, t + 0.42, { type: "highpass", f: 6500, dur: 0.6, vol: 0.04, attack: 0.03 });
+    return 1.15;
+  },
+  // 필살기가 적을 터뜨림: 조종사마다 다른 결(찌직 번개 / 반짝 하트 / 불꽃 쾅 / 쿵 발소리)
+  ultHit(c, o, t, p) {
+    p = p | 0;
+    if (p === 0) { for (let i = 0; i < 5; i++) hiss(c, o, t + Math.random() * 0.08, { type: "highpass", f: 2800 + Math.random() * 2000, dur: 0.025, vol: 0.09, attack: 0.001 }); tone(c, o, t, { type: "sine", f: 110, f2: 50, dur: 0.2, vol: 0.14 }); }
+    else if (p === 1) { tone(c, o, t, { type: "triangle", f: NOTE(84 + ((Math.random() * 4) | 0) * 3), dur: 0.16, vol: 0.07 }); tone(c, o, t, { f: 500, f2: 1400, dur: 0.1, vol: 0.06 }); }
+    else if (p === 2) { tone(c, o, t, { type: "sine", f: 140, f2: 40, dur: 0.24, vol: 0.16 }); hiss(c, o, t, { f: 2000, f2: 200, dur: 0.25, vol: 0.09 }); }
+    else { tone(c, o, t, { type: "sine", f: 80, f2: 35, dur: 0.3, vol: 0.22 }); hiss(c, o, t, { f: 700, f2: 120, dur: 0.22, vol: 0.1 }); }
+    return 0.3;
+  },
+  // 필살기 별이 나옴: 반짝이는 올라가는 종소리(보통 별 '딩-동'과 다르게 길고 화려하게)
+  ultStar(c, o, t) {
+    [79, 83, 86, 91, 95].forEach((n, i) => { tone(c, o, t + i * 0.08, { type: "triangle", f: NOTE(n), dur: 0.35, vol: 0.07 }); tone(c, o, t + i * 0.08, { f: NOTE(n + 12), dur: 0.2, vol: 0.025 }); });
+    hiss(c, o, t + 0.2, { type: "highpass", f: 6500, dur: 0.6, vol: 0.035, attack: 0.05 });
+    return 0.9;
+  },
+  // 필살기 별을 잡음: 쿵 + 올라가는 휘익
+  ultStarGet(c, o, t) {
+    tone(c, o, t, { type: "sine", f: 90, f2: 45, dur: 0.3, vol: 0.18 });
+    tone(c, o, t, { f: 500, f2: 2200, dur: 0.3, vol: 0.07 });
+    tone(c, o, t + 0.1, { type: "triangle", f: NOTE(91), dur: 0.35, vol: 0.07 });
+    return 0.45;
+  },
+  // 대장 등장: 낮게 우르릉
+  bossRumble(c, o, t) {
+    hiss(c, o, t, { f: 260, f2: 90, dur: 1.4, vol: 0.14, attack: 0.25, lfo: 7, lfoDepth: 60 });
+    tone(c, o, t, { type: "sine", f: 55, f2: 42, dur: 1.4, vol: 0.18, attack: 0.25, lfo: 6, lfoDepth: 4 });
+    return 1.5;
+  },
+  // 대장 고비(체력 2/3, 1/3)
+  bossPhase(c, o, t) {
+    tone(c, o, t, { type: "sine", f: 110, f2: 40, dur: 0.4, vol: 0.22 });
+    hiss(c, o, t, { f: 3000, f2: 200, dur: 0.35, vol: 0.1 });
+    tone(c, o, t + 0.05, { type: "triangle", f: NOTE(79), dur: 0.12, vol: 0.06 }); tone(c, o, t + 0.15, { type: "triangle", f: NOTE(84), dur: 0.25, vol: 0.06 });
+    return 0.5;
+  },
+  // 대장 물리침 연쇄 폭발(차례로 펑펑펑)
+  chainBoom(c, o, t) {
+    for (let i = 0; i < 8; i++) { const s = t + i * 0.13; tone(c, o, s, { type: "sine", f: 140 - i * 6, f2: 40, dur: 0.22, vol: 0.12 }); hiss(c, o, s, { f: 2400, f2: 250, dur: 0.2, vol: 0.06 }); }
+    tone(c, o, t + 1.15, { type: "sine", f: 70, f2: 28, dur: 1.0, vol: 0.26 }); hiss(c, o, t + 1.15, { f: 3000, f2: 90, dur: 1.0, vol: 0.12 });
+    for (let i = 0; i < 10; i++) tone(c, o, t + 1.3 + i * 0.05, { type: "triangle", f: NOTE(88 + (i * 7) % 15), dur: 0.15, vol: 0.025 });
+    return 2.3;
   },
   bossHit(c, o, t) {
     tone(c, o, t, { type: "square", f: 190, f2: 120, dur: 0.09, vol: 0.06 });
@@ -190,11 +261,11 @@ const R = {
   tap(c, o, t) { tone(c, o, t, { type: "triangle", f: 1200, f2: 1500, dur: 0.06, vol: 0.06 }); return 0.07; },
 };
 // 소리마다 최소 간격(ms). 바탕 탄은 1초에 8번까지.
-const GAP = { shot: 120, laser: 180, missile: 200, missileHit: 90, bolt: 120, orb: 140, bombDrop: 300, bomb: 150, boom: 250, hit: 70, pop: 45, bossHit: 200, bossDown: 0, playerHit: 200, shieldOn: 300, shieldBreak: 200, star: 80, levelup: 300, correct: 300, fork: 200, bossWarn: 1000, warn: 400, wrong: 300, tap: 80 };
+const GAP = { shot: 120, laser: 180, missile: 200, missileHit: 90, bolt: 120, orb: 140, bombDrop: 300, bomb: 150, boom: 250, hit: 70, pop: 45, bossHit: 200, bossDown: 0, playerHit: 200, shieldOn: 300, shieldBreak: 200, star: 80, levelup: 300, correct: 300, fork: 200, bossWarn: 1000, warn: 400, wrong: 300, tap: 80, bigPop: 90, levelBlast: 300, ultStart: 800, ultHit: 70, bossRumble: 1200, bossPhase: 300, chainBoom: 1000, ultStar: 800, ultStarGet: 500 };
 // 꽉 찼을 때 오래된 소리를 밀어내고라도 꼭 나는 소리
-const PRIO = new Set(["levelup", "correct", "fork", "bossDown", "playerHit", "shieldBreak", "shieldOn", "bossWarn", "bomb", "star"]);
+const PRIO = new Set(["levelup", "correct", "fork", "bossDown", "playerHit", "shieldBreak", "shieldOn", "bossWarn", "bomb", "star", "levelBlast", "ultStart", "bossPhase", "chainBoom", "bossRumble", "ultStar", "ultStarGet"]);
 // 문제 화면이 떠 있을 때도 나는 소리(정답 축하)
-const GATE_OK = new Set(["levelup", "correct", "fork"]);
+const GATE_OK = new Set(["levelup", "correct", "fork", "levelBlast", "ultStarGet"]);
 
 /* ---------- 엔진 ---------- */
 let ac = null, comp = null, master = null, sfxBus = null, voiceBus = null;
@@ -268,7 +339,7 @@ export function play(name, lv = 1) {
   record(e);
   return true;
 }
-const DUR = { shot: 0.1, laser: 0.17, missile: 0.42, missileHit: 0.32, bolt: 0.42, orb: 0.28, bombDrop: 0.2, bomb: 0.85, boom: 0.72, hit: 0.04, pop: 0.08, bossHit: 0.1, bossDown: 1.65, playerHit: 0.38, shieldOn: 0.46, shieldBreak: 0.32, star: 0.38, levelup: 0.98, correct: 0.6, fork: 0.42, bossWarn: 1.0, warn: 0.36, wrong: 0.22, tap: 0.07 };
+const DUR = { shot: 0.1, laser: 0.17, missile: 0.42, missileHit: 0.32, bolt: 0.42, orb: 0.28, bombDrop: 0.2, bomb: 0.85, boom: 0.72, hit: 0.04, pop: 0.08, bossHit: 0.1, bossDown: 1.65, playerHit: 0.38, shieldOn: 0.46, shieldBreak: 0.32, star: 0.38, levelup: 0.98, correct: 0.6, fork: 0.42, bossWarn: 1.0, warn: 0.36, wrong: 0.22, tap: 0.07, bigPop: 0.28, levelBlast: 0.62, ultStart: 1.15, ultHit: 0.3, bossRumble: 1.5, bossPhase: 0.5, chainBoom: 2.3, ultStar: 0.9, ultStarGet: 0.45 };
 
 /* ---------- 조종사 외침: 공통 표 assets/study/kid-voices.js(window.KidVoices.list)를 쓴다 ----------
    새 대사가 그 표에 들어가면 여기서도 바로 나온다. 표를 못 읽었을 때만 아래 옛 목록(plane/ 페이지 기준 경로)을 쓴다.

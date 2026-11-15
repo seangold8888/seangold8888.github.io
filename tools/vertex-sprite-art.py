@@ -1,5 +1,7 @@
 # 멀티버스 게임 그림(영웅 포즈·적·배경)을 구글 클라우드 Vertex AI(크레딧 프로젝트)로 그린다.
-# 인증은 gcloud ADC. API 키는 쓰지 않는다(조직 정책).
+# 인증은 오직 gcp_auth.py(무료 크레딧 계정)로만 한다. ADC·하드코딩 프로젝트·API 키는 쓰지 않는다.
+#   GCP_PROFILE 환경변수를 반드시 지정한다(예: GCP_PROFILE=allin8). gcp_auth 를 못 불러오면 멈춘다.
+#   gcp_auth 위치: GCP_AUTH_DIR 환경변수, 없으면 C:\Users\김시현\Videos\유튜브\쇼츠\tools
 # 사용법: python tools/vertex-sprite-art.py <jobs.json> <원본저장폴더> [키...]
 #   jobs.json: [{"key","prompt","aspect","refs":[카드id 또는 원본폴더의 키]}]
 #   키를 주면 그 작업만 다시 그린다. 원본(PNG)은 저장소 밖에 두고, 다듬은 webp만 올린다.
@@ -8,9 +10,15 @@ from google import genai
 from google.genai import types
 
 SITE = pathlib.Path(__file__).resolve().parents[1]
-PROJECT = os.environ.get("GOOGLE_CLOUD_PROJECT", "project-b6386b67-b505-47c8-9ac")
 MODEL = os.environ.get("VERTEX_IMAGE_MODEL", "gemini-3-pro-image")
 LOCATION = os.environ.get("VERTEX_IMAGE_LOCATION", "global")
+if not os.environ.get("GCP_PROFILE"):
+    raise SystemExit("GCP_PROFILE 를 지정하세요(예: GCP_PROFILE=allin8). 다른 인증으로 넘어가지 않습니다.")
+sys.path.insert(0, os.environ.get("GCP_AUTH_DIR", r"C:\Users\김시현\Videos\유튜브\쇼츠\tools"))
+try:
+    import gcp_auth
+except Exception as error:  # 절대 ADC 로 넘어가지 않는다.
+    raise SystemExit("gcp_auth 를 불러오지 못해 멈춥니다: " + str(error))
 
 
 def ref_part(ref, raw_dir):
@@ -50,7 +58,7 @@ def main():
     raw_dir.mkdir(parents=True, exist_ok=True)
     only = set(sys.argv[3:])
     todo = [j for j in jobs if not only or j["key"] in only]
-    client = genai.Client(vertexai=True, project=PROJECT, location=LOCATION)
+    client = genai.Client(vertexai=True, project=gcp_auth.PROJECT, location=LOCATION, credentials=gcp_auth.creds())
     with cf.ThreadPoolExecutor(max_workers=2) as pool:
         done = sum(pool.map(lambda j: draw(client, j, raw_dir), todo))
     print(f"그림 {done}/{len(todo)}장", flush=True)

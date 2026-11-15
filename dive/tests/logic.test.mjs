@@ -49,14 +49,41 @@ test("문제를 맞힌 순간의 보상: 한 번에 → 화면 안 친구 전부
     const boss = E.spawnEnemy(w, "boss", { x: w.p.x + 200, y: w.p.y - 100 });
     w.hearts = 1; return { w, boss };
   };
-  const A = make(), ra = E.quizBlast(A.w, true);
+  // 필살기(큰 진주 어려운 문제를 한 번에): 화면 전체
+  const A = make(), ra = E.quizBlast(A.w, "full");
   assert.equal(ra.n, 4, "화면 안(720x540) 친구 넷"); assert.equal(ra.healed, true); assert.equal(A.w.hearts, 2);
   assert.ok(A.boss.hp > 0 && Math.abs(A.boss.hp - A.boss.max * 0.85) < 1, "대왕은 15%만");
   assert.ok(A.w.orbs.length >= 4, "씻긴 친구는 빛 방울을 남긴다");
-  const B = make(), rb = E.quizBlast(B.w, false);
+  // 보통 ? 진주를 고쳐 맞힘: 가까운 친구만
+  const B = make(), rb = E.quizBlast(B.w, "near");
   assert.equal(rb.n, 2, "가까운 친구 둘"); assert.equal(rb.healed, false); assert.equal(B.w.hearts, 1);
   assert.equal(B.w.blasts, 1); assert.equal(B.w.blastWashed, 2);
-  const full = make(); full.w.hearts = full.w.maxHearts; assert.equal(E.quizBlast(full.w, true).healed, false, "하트가 가득이면 회복 없음");
+  // 보통 ? 진주를 한 번에: 작은 물결 + 하트(화면 전체는 아니다)
+  const C = make(), rc = E.quizBlast(C.w, "wave");
+  assert.ok(rc.n >= rb.n && rc.n < ra.n, "작은 물결은 고친 것보다 같거나 크고 필살기보다 작다 " + rc.n); assert.equal(rc.healed, true);
+  // 큰 진주를 고쳐 맞힘: 중간 물결(하트 없음)
+  const D = make(), rd = E.quizBlast(D.w, "mid");
+  assert.ok(rd.n >= rc.n && rd.n < ra.n, "중간 물결 " + rd.n); assert.equal(rd.healed, false);
+  assert.ok(L.BIG.blast.near.r < L.BIG.blast.wave.r && L.BIG.blast.wave.r < L.BIG.blast.mid.r, "near < wave < mid");
+  const full = make(); full.w.hearts = full.w.maxHearts; assert.equal(E.quizBlast(full.w, "full").healed, false, "하트가 가득이면 회복 없음");
+});
+
+test("큰 진주: 게이지가 차면 하나 떠오르고(문제 모듈이 있을 때만), 먹으면 어려운 문제 대기, 답 없이 닫히면 돌아온다", () => {
+  const w = E.createWorld({ kid: 1, rng: seeded(4), view: { w: 720, h: 540 }, bigPearl: true }); w.enemies = []; w.spawnAcc = -1e9; w.evIdx = 99; w.eelT = 1e9;
+  w.t = L.BIG.firstAt - 1; w.bigG = 1; E.stepWorld(w, 1 / 30);
+  assert.equal(w.bigs.length, 0, "판 초반에는 아직");
+  w.t = L.BIG.firstAt + 1; E.stepWorld(w, 1 / 30);
+  assert.equal(w.bigs.length, 1, "가득 차면 하나"); assert.equal(w.bigG, 0);
+  w.bigG = 1; E.stepWorld(w, 1 / 30); assert.equal(w.bigs.length, 1, "한 번에 하나");
+  const b = w.bigs[0]; w.p.x = b.x; w.p.y = b.y; E.stepWorld(w, 1 / 30);
+  assert.equal(w.pending, "big", "큰 진주는 어려운 문제로(보통 ? 진주와 다른 길)"); assert.equal(w.bigs.length, 0);
+  E.returnBig(w); assert.equal(w.pending, null); assert.equal(w.bigs.length, 1, "답 없이 닫히면 돌아온다");
+  E.recordChallenge(w, true); assert.equal(w.challenges, 1); assert.equal(w.solved, 1);
+  // 보통 ? 진주는 언제나 "quiz"(필살기가 아니다)
+  w.qpearls.push({ x: w.p.x, y: w.p.y, t: 0 }); w.bigs.length = 0; w.p.inv = 0; E.stepWorld(w, 1 / 30); assert.equal(w.pending, "quiz");
+  // 문제 모듈이 없으면(bigPearl 꺼짐) 큰 진주는 없다
+  const off = E.createWorld({ kid: 1, rng: seeded(4), view: { w: 720, h: 540 } }); off.enemies = []; off.spawnAcc = -1e9; off.evIdx = 99; off.t = 100; off.bigG = 1; E.stepWorld(off, 1 / 30);
+  assert.equal(off.bigs.length, 0);
 });
 
 test("보조 장비는 단조롭게 세지고, 한계가 있다", () => {

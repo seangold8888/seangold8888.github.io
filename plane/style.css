@@ -49,6 +49,15 @@ html, body { height: 100%; margin: 0; overflow: hidden; background: #101a47; col
 @media (max-width: 520px) { .pips { display: none; } .chip { padding: 0 11px; font-size: 15px; } }
 
 .pick span { margin-left: 6px; color: #fff; }
+/* 필살기 게이지: HUD 바로 아래 왼쪽(위치는 main.js 가 놀이판 왼쪽 끝에 맞춘다). 손가락을 막지 않게 눌리지 않는다. */
+.ultbar { position: fixed; z-index: 2; top: 60px; left: 8px; display: flex; align-items: center; gap: 6px; height: 26px; padding: 0 9px 0 8px; border-radius: 999px; background: rgba(10,16,52,.6); border: 1px solid rgba(255,217,90,.35); pointer-events: none; }
+.ultbar[hidden] { display: none; }
+.ultbar b { font-size: 13px; font-weight: 900; color: #ffd95a; white-space: nowrap; }
+.ultbar-track { position: relative; width: 70px; height: 10px; border-radius: 6px; background: rgba(255,255,255,.18); overflow: hidden; }
+.ultbar-track i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 6px; background: linear-gradient(90deg, #ffb24a, #ffe45c); }
+.ultbar.full { border-color: #ffe45c; background: rgba(70,44,6,.85); box-shadow: 0 0 0 3px rgba(255,217,90,.35); }
+.ultbar.full b { color: #fff6a8; }
+@media (max-height: 420px) { .ultbar { height: 22px; } .ultbar-track { width: 54px; } }
 .trails { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-top: 6px; }
 .trail { min-height: 54px; padding: 4px 0; border: 2px solid transparent; border-radius: 14px; background: rgba(255,255,255,.10); color: #fff; font: inherit; font-weight: 800; font-size: 12px; line-height: 1.2; }
 .trail i { display: block; font-style: normal; font-size: 20px; }

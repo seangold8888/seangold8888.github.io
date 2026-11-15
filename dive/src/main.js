@@ -1,9 +1,10 @@
 // 딥 다이브 — 꼬마 잠수정 자동 공격 생존 게임. 먹물에 물든 바다 친구를 씻어 주고, ? 진주 문제를 맞히면 장비를 골라 세진다.
 // 규칙 표는 logic.js, 바다 속 한 걸음은 engine.js, 여기서는 그리기·입력·화면·저장.
 // 그림은 art/ 의 그림 파일을 쓰고, 못 읽으면 캔버스 도형으로 대신 그린다. shadowBlur 는 쓰지 않는다(아이패드에서 가장 느리다).
-import * as L from "./logic.js?v=3";
-import * as E from "./engine.js?v=3";
-import * as S from "./sfx.js?v=2";
+import * as L from "./logic.js?v=4";
+import * as E from "./engine.js?v=4";
+import * as S from "./sfx.js?v=5";
+import * as F from "./fx.js?v=4";
 
 const $ = id => document.getElementById(id);
 const canvas = $("sea"), ctx = canvas.getContext("2d", { alpha: false });
@@ -36,7 +37,7 @@ function whiten(im) {
 }
 for (const n of ART_NAMES) {
   const im = new Image();
-  im.onload = () => { ART[n] = im; if (INKY.has(n)) WHITE[n] = whiten(im); if (n === "floor") floorPat = null; if (n === "zapjelly" || n === "bubble" || n === "shell" || n === "star") iconCache.clear(); };
+  im.onload = () => { ART[n] = im; if (INKY.has(n) || n.endsWith("_ok")) WHITE[n] = whiten(im); if (n === "floor") floorPat = null; if (n === "zapjelly" || n === "bubble" || n === "shell" || n === "star") iconCache.clear(); };
   im.src = "art/" + n + ".webp?v=1";
 }
 // 가운데 (x, y), 너비 w 로(높이는 그림 비율대로) 그린다. 그림이 없으면 false.
@@ -59,7 +60,7 @@ function bubbleTex(rgb, rim = "rgba(255,255,255,.95)") {
   });
 }
 // 물방울 탄: 단계마다 색이 다르고 테두리가 진하다(빛 방울은 금색 빛무리 — 서로 헷갈리지 않게)
-const BUB = { 1: bubbleTex("150,235,255", "#ffffff"), 2: bubbleTex("90,190,255", "#d8f2ff"), 3: bubbleTex("40,220,200", "#d6fff6"), 4: bubbleTex("170,130,255", "#efe6ff") };
+const BUB = { 1: bubbleTex("150,235,255", "#ffffff"), 2: bubbleTex("90,190,255", "#d8f2ff"), 3: bubbleTex("255,205,70", "#fff6d0"), 4: bubbleTex("255,150,50", "#ffe8c8") };
 // 방울 단계 색(꼬리·섬광): 1 하늘 · 2 파랑 · 3 청록 · 4 보라 · 5 무지개
 const BUB_COL = ["#9fefff", "#5cc0ff", "#3fe6c8", "#b48cff", "#ffd75a"];
 const RAINBOW = ["255,122,156", "255,178,74", "255,228,92", "125,255,176", "111,211,255", "185,162,255"].map(c => bubbleTex(c, "#ffffff"));   // map 의 둘째 인자(번호)가 테두리 색으로 들어가 검게 그려지던 것 고침
@@ -161,6 +162,7 @@ FX_NAMES.forEach((n, i) => {
 let fxList = [];
 // 월드 좌표(논리 칸) 위의 효과. size 는 논리 칸, dur 초 동안 8컷.
 function addFx(name, x, y, size, { dur = 0.4, rot = 0, alpha = 1, keep = false } = {}) {
+  size *= AREA;
   if (!FX[name]) return null;
   if (fxList.length >= FX_MAX) { const i = fxList.findIndex(f => !f.keep); fxList.splice(i >= 0 ? i : 0, 1); }   // 큰 충격파는 남기고 오래된 것부터
   const f = { name, x, y, size, t: 0, dur, rot, alpha, keep };
@@ -196,19 +198,37 @@ function burst(x, y, n, spd, col, r = 3, life = 0.5) {
 // 퍼지는 고리(가벼운 선 하나)
 let ringsM = [];
 const ring = (x, y, R, color = "#ffffff", T = 0.35, w = 6) => { if (ringsM.length >= 40) ringsM.shift(); ringsM.push({ x, y, R, color, T, w, t: 0 }); };
+let recoil = null;
 let lastMulti0 = -9, hitBudget = 8, muzzle = null, multiBan = null, comboPop = 0, edgeFlash = 0, feverBeat = 0, beatN = 0;
 function floatText(x, y, text, color = "#ffffff", size = 16, life = 0.8) {
   if (floats.length >= FLOAT_MAX) floats.shift();
   floats.push({ x, y, text, color, size, t: 0, life });
 }
-const shake = (amp, t) => { shakeA = Math.max(shakeA, Math.min(4, amp)); shakeT = Math.max(shakeT, t); };   // 최대 4px
-const stopFor = ms => { hitStop = Math.max(hitStop, Math.min(40, ms) / 1000); };                         // 최대 40ms
+/* 카메라 손맛: 흔들림은 '충격량(trauma 0~1)'의 제곱만큼(크게 맞을수록 확 커지고 빨리 잦아든다), 화면 px 최대 14.
+   움직임 줄이기(prefers-reduced-motion)를 켠 기기는 흔들림·번쩍임·확대를 크게 줄인다. */
+let AREA = 1;
+const RM = (() => { try { return matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (_) { return false; } })();
+let trauma = 0, zoomK = 0, flashCol = "255,255,255", lastFullFlash = -9, cine = 0, slowK = 1, slowT = 0, dimA = 0, dimTo = 0, lbox = 0, lboxTo = 0, speedA = 0, speedCol = "#ffffff";
+const shake = (amp, t) => { trauma = Math.min(1, Math.max(trauma, amp / 6 + t * 0.4)); shakeT = Math.max(shakeT, t); };
+const stopFor = ms => { hitStop = Math.max(hitStop, Math.min(60, ms) / 1000); };                         // 최대 60ms(약 4프레임)
+const punch = z => { if (!RM) zoomK = Math.max(zoomK, Math.min(0.1, z)); };                              // 화면 확 당기기
+// 화면 전체 번쩍임: 1초에 3번을 넘지 않게(0.34초 안의 두 번째는 건너뜀), 흰색은 반투명으로 짧게
+function setFlash(a, rgb = "255,255,255") {
+  if (clock - lastFullFlash < 0.34) return;
+  lastFullFlash = clock; flashCol = rgb; flash = Math.max(flash, (RM ? 0.35 : 1) * Math.min(0.4, a));
+}
+// 잠깐 느리게(꾸밈 시계만 — 게임 시간은 cine 동안 멈춰 있거나 그대로 흐른다)
+const slowmo = (k, t) => { if (RM) return; slowK = Math.min(slowK, k); slowT = Math.max(slowT, t); };
+// 시뮬레이션을 잠깐 통째로 세운다(멈춘 동안 게임 시간이 흐르지 않으니 결과는 그대로)
+const cinema = t => { cine = Math.max(cine, t); };
 
 /* ---------- 화면 크기: 짧은 변이 논리 540 ---------- */
-let vw = 1, vh = 1, dpr = 1, scale = 1, view = { w: 720, h: 540 }, floorPat = null, floorKey = "";
+let vw = 1, vh = 1, dpr = 1, scale = 1, view = { w: 720, h: 540 }, floorPat = null, floorKey = "", causticPat = null;
 function resize() {
   vw = Math.max(1, innerWidth); vh = Math.max(1, innerHeight);
   dpr = Math.min(devicePixelRatio || 1, 1.5);
+  // 폰(짧은 변 500px 미만)에서는 넓게 퍼지는 꾸밈을 0.72배로(규칙과 무관)
+  AREA = Math.min(vw, vh) < 500 ? 0.72 : 1; F.setArea(AREA);
   canvas.width = Math.round(vw * dpr); canvas.height = Math.round(vh * dpr);
   scale = Math.min(vw, vh) / 540;
   view = { w: vw / scale, h: vh / scale };
@@ -248,7 +268,7 @@ function makeDecor(zone) {
 function josaRo(word) { const c = word.charCodeAt(word.length - 1) - 0xac00; if (c < 0 || c > 11171) return "로"; const jong = c % 28; return jong === 0 || jong === 8 ? "로" : "으로"; }
 // big: 노란 큰 글자, sub: 아래 작은 줄, huge: 문제 보상·이벤트처럼 아주 크게(튀어나오듯)
 let bannerSub = "", bannerHuge = false, bannerT0 = 0;
-function say(text, big, sub = "", huge = false) { banner = text; bannerT = huge ? 2.6 : big ? 2.4 : 1.7; bannerT0 = bannerT; bannerBig = !!big; bannerSub = sub; bannerHuge = huge; }
+function say(text, big, sub = "", huge = false) { banner = text; bannerT = huge ? 1.8 : big ? 1.6 : 1.4; bannerT0 = bannerT; bannerBig = !!big; bannerSub = sub; bannerHuge = huge; }
 
 /* ---------- HUD ---------- */
 const hudEls = { hearts: $("hearts"), xp: $("xpfill"), q: $("qcount"), clock: $("clock") };
@@ -407,29 +427,171 @@ function iconCanvas(c, size = 84) {
 /* ---------- 문제 → 장비 고르기 ---------- */
 let cardsShown = null;   // 검증용: 지금 떠 있는 카드
 const QUIZ_THEME = { top: 60, bg: "rgba(6,34,66,.96)", accent: "#ffe27a" };
+const QUIZ_THEME_BIG = { top: 60, bg: "rgba(40,20,90,.96)", accent: "#ffd0ff" };
 function openQuiz() {
   mode = "quiz"; clearInput();
   if (!GameQuiz) { openCards({ firstTry: false, noQuiz: true }); return; }
   GameQuiz.ask({
-    kid: L.PILOTS[pilot].kid, title: "맞히면 물결 파동 + 새 장비!", hint: "한 번에 맞히면 화면의 친구를 모두 씻어 주고 하트도 채워요", theme: QUIZ_THEME,
+    kid: L.PILOTS[pilot].kid, title: "맞히면 물결 + 새 장비!", hint: "한 번에 맞히면 물결이 친구들을 씻어 주고 하트도 채워요", theme: QUIZ_THEME,
     onWrong: () => sfx.no(),
-    onCorrect: r => { E.recordQuiz(world, r.firstTry); return rewardBlast(r.firstTry); },
+    closeDelay: 520,
+    // 한 번에 맞히면: 문제 창이 닫힌 뒤 화면 가득 필살기(깨끗깨끗 대파도)를 보여 주고 카드. 고쳐 맞히면 작은 물결을 바로.
+    // 보통 ? 진주: 한 번에 → 물결 파도(작은 물결 + 하트), 고쳐서 → 작은 물결. 필살기는 큰 진주(어려운 문제)에서만.
+    onCorrect: r => { E.recordQuiz(world, r.firstTry); return rewardBlast(r.firstTry ? "wave" : "near"); },
     onDone: r => { if (mode !== "quiz") return; openCards({ firstTry: r.firstTry }); },
   });
 }
-// 문제를 맞힌 그 순간의 보상(카드 고르기 전): 물결 파동이 퍼지며 친구를 씻겨 주고, 한 번에 맞히면 하트 1 회복
-function rewardBlast(firstTry) {
-  const r = E.quizBlast(world, firstTry);
-  handleEvents();
+/* ---------- 필살기: 깨끗깨끗 대파도 (한 번에 맞힌 보상, 약 2.1초) ----------
+   0.00 화면이 어두워지고 위아래 띠 · 조종사 그림이 옆에서 쓱 들어오며 기술 이름
+   0.25~0.9 빛이 잠수정으로 빨려 들어가며 모인다(낮은 소리가 올라간다)
+   0.95 펑! 여기서 E.quizBlast(예전과 같은 규칙·같은 순서 — 게임 시간은 이 동안 멈춰 있다) · 물결이 퍼지는 순서대로 친구가 하나씩 씻긴다
+   1.9~2.1 잔광이 남고 원래 화면으로 → 카드 고르기 */
+const ULT_NAME = "깨끗깨끗 대파도";
+const ULT_T = 2.1, ULT_HIT = 0.72, ULT_WAVE = 0.7;
+let ult = null, ultV = 1, ultO = null;
+// 늦게 터뜨릴 꾸밈(필살기 물결이 닿는 순서·대왕 끝 장면 단계). 한 번에 몰아 만들지 않게 시각순으로 꺼낸다.
+let later = [];
+const LATER_MAX = 200;
+function afterFx(delay, kind, x, y, a = 0) { if (later.length < LATER_MAX) later.push({ at: clock + delay, kind, x, y, a }); }
+// 큰 진주 → 어려운 문제(공통 문제 모듈이 고른 한 단계 위 문제). 한 번에 → 필살기, 고쳐서 → 큰 물결. 장비 카드는 없다.
+function resumePlay() { if (!world) return; E.resumeAfter(world); hudKey = ""; hud(); mode = "play"; clearInput(); last = performance.now(); releaseWave(); }
+function openChallenge() {
+  mode = "quiz"; clearInput();
+  if (!GameQuiz) { E.returnBig(world); mode = "play"; return; }
+  try {
+    GameQuiz.ask({
+      kid: L.PILOTS[pilot].kid, pace: "challenge", title: "어려운 문제! 맞히면 필살기!", hint: "한 번에 맞히면 " + ULT_NAME + "! 고쳐서 맞혀도 큰 물결", theme: QUIZ_THEME_BIG,
+      onWrong: () => sfx.no(),
+      onCorrect: r => { E.recordChallenge(world, r.firstTry); if (r.firstTry) return ULT_NAME + " 준비!"; return rewardBlast("mid"); },
+      onDone: r => { if (mode !== "quiz") return; if (r.firstTry) startUlt(resumePlay); else resumePlay(); },
+    });
+  } catch (_) { E.returnBig(world); mode = "play"; }
+}
+function startUlt(next) {
+  mode = "ult"; clearInput();
+  ult = { t: 0, next, fired: false, n: 0, healed: false, shown: 0, maxD: 1 };
+  dimTo = 0.68; lboxTo = 1; sfx.ultCharge();
+  slowmo(0.6, 0.6);
+}
+function ultFire() {
   const p = world.p;
-  // 무지개 충격파(fx_mega)가 잠수정에서 퍼진다 + 팡파르 + 흔들림·멈칫
-  addFx("mega", p.x, p.y, firstTry ? Math.max(view.w, view.h) * 1.15 : BLAST_FX_NEAR, { dur: firstTry ? 0.85 : 0.6, keep: true });
-  if (firstTry) addFx("light", p.x, p.y, 260, { dur: 0.6, keep: true });
-  sfx.fanfare(firstTry); flash = firstTry ? 0.35 : 0.15; shake(firstTry ? 4 : 2.5, 0.3); stopFor(40); hudKey = ""; hud();
-  const msg = (firstTry ? "물결 파동! " : "작은 물결! ") + (r.n ? "친구 " + r.n + "마리 씻김" : "바다가 깨끗해졌어요") + (r.healed ? " · 하트 +1" : "");
-  say(msg, true, "장비를 골라요!", true);
-  floatText(p.x, p.y - 120, r.n ? "+" + r.n : "반짝!", "#ffe27a", 30, 1.2);
-  return msg + " · 장비 " + (firstTry ? world.tune.cards : 2) + "장 중 골라요";
+  const r = E.quizBlast(world, true);
+  ult.fired = true; ult.n = r.n; ult.healed = r.healed;
+  // 씻긴 친구들은 물결 앞머리가 닿는 순서대로 나타난다(꾸밈만 늦춘다: 시작 시각을 거꾸로 당겨 둔다)
+  const fr = world.fx.freed; let maxD = 1;
+  for (const f of fr) if (f.t === 0) maxD = Math.max(maxD, Math.hypot(f.x - p.x, f.y - p.y));
+  ult.maxD = maxD; ultV = maxD / ULT_WAVE; ultO = { x: p.x, y: p.y };
+  for (const f of fr) { if (f.t !== 0) continue; const lag = Math.hypot(f.x - p.x, f.y - p.y) / ultV; f.t = -lag; f.x -= f.vx * lag; f.y -= f.vy * lag; f.ult = true; }
+  handleEvents();
+  ultO = null;
+  sfx.ultBlast(); sfx.fanfare(true);
+  const R = Math.max(view.w, view.h);
+  bigBurst(p.x, p.y, R, 1);
+  setFlash(0.22, "190,245,255"); shake(10, 0.5); punch(0.08); slowmo(0.3, 0.25); dimTo = 0.55;
+  F.ambientPush(view.w / 2, view.h / 2, Math.max(view.w, view.h), 900);
+  hudKey = ""; hud();
+}
+function ultStep(dt) {
+  const u = ult; u.t += dt;
+  const p = world.p;
+  if (!u.fired && u.t > 0.18 && u.t < ULT_HIT - 0.05) {
+    // 모으기: 빛 줄과 물방울이 소용돌이치며 잠수정으로 빨려 든다
+    F.implode(p.x, p.y, 3, 260, -1, 1, 0.42, 3); F.implode(p.x, p.y, 1, 200, 1, 4, 0.4, 4);
+    if (Math.random() < 0.6) { const a = Math.random() * TAU, r = 180, v = r / 0.5; F.spark(p.x + Math.cos(a) * r, p.y + Math.sin(a) * r, -Math.cos(a) * v - Math.sin(a) * v * 0.5, -Math.sin(a) * v + Math.cos(a) * v * 0.5, 0.5, 4 + Math.random() * 4, 0, 3, 0, 0); }
+  }
+  // 펑 뒤: 무지개 반짝이가 천천히 내려앉는 잔광
+  if (u.fired && u.t < 1.9 && Math.random() < 0.8) F.spark(p.x + (Math.random() - 0.5) * view.w, p.y + (Math.random() - 0.5) * view.h, (Math.random() - 0.5) * 30, 40 + Math.random() * 40, 1.0, 5 + Math.random() * 4, -1, 2, 0, 0.5);
+  if (!u.fired && u.t >= ULT_HIT) ultFire();
+  if (u.fired) {
+    // 씻긴 수가 물결을 따라 올라간다
+    const k = Math.min(1, (u.t - ULT_HIT) / ULT_WAVE); u.shown = Math.round(u.n * k);
+    if (u.t > 1.55) { dimTo = 0; lboxTo = 0; }
+  }
+  if (u.t >= ULT_T) {
+    const n = u.next; ult = null; dimTo = 0; lboxTo = 0;
+    const msg = (u.n ? "친구 " + u.n + "마리 씻김" : "바다가 깨끗해졌어요") + (u.healed ? " · 하트 +1" : "");
+    say(ULT_NAME + "!", true, msg, true);
+    n();
+  }
+}
+// 필살기 화면 위 그림: 조종사 띠(그림 + 기술 이름) · 씻긴 수
+function drawUltOverlay(k) {
+  const u = ult; if (!u) return;
+  ctx.setTransform(k, 0, 0, k, 0, 0);
+  const W = view.w, H = view.h, t = u.t;
+  // 들어옴 0~0.22 · 머묾 · 나감 0.82~1.0
+  const inK = Math.min(1, t / 0.18), outK = Math.max(0, Math.min(1, (t - 0.56) / 0.16));
+  if (outK < 1) {
+    const ease = 1 - Math.pow(1 - inK, 3), slide = (1 - ease) * -W + outK * outK * W * 1.1;
+    const bandH = Math.min(150, H * 0.3), by = H * 0.34;
+    ctx.save(); ctx.translate(slide, 0);
+    // 비스듬한 띠
+    ctx.fillStyle = "rgba(10,30,80,.88)";
+    ctx.beginPath(); ctx.moveTo(-40, by - bandH / 2 + 26); ctx.lineTo(W + 40, by - bandH / 2 - 26); ctx.lineTo(W + 40, by + bandH / 2 - 26); ctx.lineTo(-40, by + bandH / 2 + 26); ctx.closePath(); ctx.fill();
+    ctx.save(); ctx.clip();
+    // 띠 안의 흐르는 속도선(조종사 색)
+    ctx.strokeStyle = PILOT_COLOR[world.kid]; ctx.globalAlpha = 0.55; ctx.lineWidth = 5; ctx.lineCap = "round"; ctx.beginPath();
+    for (let i = 0; i < 16; i++) { const yy = by - bandH / 2 + ((i * 37) % bandH) - 20, xx = ((i * 211 - t * 2400) % (W + 300) + W + 300) % (W + 300) - 150; ctx.moveTo(xx, yy); ctx.lineTo(xx + 90 + (i % 3) * 40, yy - 8); }
+    ctx.stroke(); ctx.globalAlpha = 1;
+    // 빛줄 테두리
+    ctx.restore();
+    ctx.strokeStyle = "#ffe27a"; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(-40, by - bandH / 2 + 26); ctx.lineTo(W + 40, by - bandH / 2 - 26); ctx.moveTo(-40, by + bandH / 2 + 26); ctx.lineTo(W + 40, by + bandH / 2 - 26); ctx.stroke();
+    // 조종사(잠수정 그림) 크게
+    const art = L.PILOTS[world.kid].art, sw = Math.min(190, bandH * 1.35), bob = Math.sin(t * 9) * 4;
+    ctx.drawImage(GLOW_Q, W * 0.2 - sw * 0.75, by - sw * 0.75 + bob, sw * 1.5, sw * 1.5);
+    if (!sprite(art, W * 0.2, by + bob, sw, false, -0.25)) { ctx.fillStyle = PILOT_COLOR[world.kid]; ctx.beginPath(); ctx.arc(W * 0.2, by, sw * 0.35, 0, TAU); ctx.fill(); }
+    // 기술 이름
+    const fs = Math.min(54, W * 0.075), tx = W * 0.62;
+    ctx.font = "900 " + Math.round(fs) + "px " + FONT; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.lineJoin = "round";
+    ctx.lineWidth = 10; ctx.strokeStyle = "rgba(6,20,60,.95)"; ctx.strokeText(ULT_NAME + "!", tx, by - 8);
+    ctx.fillStyle = RAINBOW_COL[Math.floor(t * 14) % 6]; ctx.fillText(ULT_NAME + "!", tx, by - 8);
+    ctx.font = "800 " + Math.round(fs * 0.4) + "px " + FONT; ctx.lineWidth = 6; ctx.strokeText(L.PILOTS[world.kid].name + " · 한 번에 맞혔어요!", tx, by + fs * 0.62);
+    ctx.fillStyle = "#ffffff"; ctx.fillText(L.PILOTS[world.kid].name + " · 한 번에 맞혔어요!", tx, by + fs * 0.62);
+    ctx.restore();
+  }
+  // 씻긴 수가 크게 올라간다
+  if (u.fired && u.n) {
+    const age = u.t - ULT_HIT, pop = age < 0.15 ? 0.5 + age / 0.15 * 0.8 : age < 0.3 ? 1.3 - (age - 0.15) / 0.15 * 0.3 : 1;
+    ctx.globalAlpha = Math.min(1, (ULT_T - u.t) / 0.25);
+    ctx.font = "900 " + Math.round(Math.min(64, W * 0.09) * pop) + "px " + FONT; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.lineJoin = "round";
+    ctx.lineWidth = 10; ctx.strokeStyle = "rgba(6,20,60,.92)"; ctx.strokeText("친구 " + u.shown + "마리 깨끗!", W / 2, H * 0.68);
+    ctx.fillStyle = "#ffe27a"; ctx.fillText("친구 " + u.shown + "마리 깨끗!", W / 2, H * 0.68);
+    ctx.globalAlpha = 1;
+  }
+}
+/* 문제를 맞힌 그 순간의 보상: 규칙(E.quizBlast)은 맞힌 순간 그대로 적용하고(카드 뽑기가 하트 수를 보므로 순서 그대로),
+   화면 꾸밈은 문제·카드 창이 닫혀 바다가 보일 때 터뜨린다(물결이 퍼지는 순서대로 친구가 하나씩 씻김).
+   mode: "wave" 보통 문제 한 번에(작은 물결 + 하트) · "near" 보통 문제 고쳐서(더 작은 물결) · "mid" 어려운 문제 고쳐서(중간 물결) */
+let heldWave = null, holdO = null;
+const WAVE_NAME = { wave: "물결 파도", near: "작은 물결", mid: "큰 물결" };
+function rewardBlast(mode) {
+  const p = world.p;
+  holdO = { x: p.x, y: p.y, list: [] };
+  const r = E.quizBlast(world, mode);
+  for (const f of world.fx.freed) if (f.t === 0) { f.t = -999; f.hx = f.x; f.hy = f.y; }
+  handleEvents();
+  heldWave = { mode, n: r.n, healed: r.healed, list: holdO.list };
+  holdO = null;
+  hudKey = ""; hud();
+  const msg = WAVE_NAME[mode] + "! " + (r.n ? "친구 " + r.n + "마리 씻김" : "바다가 깨끗해졌어요") + (r.healed ? " · 하트 +1" : "");
+  return mode === "mid" ? msg : msg + " · 장비 " + (mode === "wave" ? world.tune.cards : 2) + "장 중 골라요";
+}
+// 다시 헤엄칠 때 붙잡아 둔 물결을 터뜨린다
+function releaseWave() {
+  const h = heldWave; heldWave = null; if (!h || !world) return;
+  const p = world.p, R = L.BIG.blast[h.mode].r * AREA, big = h.mode === "mid", V = R / (big ? 0.55 : 0.45);
+  for (const f of world.fx.freed) if (f.t < -500) { const d = Math.hypot(f.hx - p.x, f.hy - p.y), lag = Math.min(0.9, d / V); f.t = -lag; f.x = f.hx - f.vx * lag; f.y = f.hy - f.vy * lag; }
+  for (const q of h.list) afterFx(Math.min(0.9, Math.hypot(q.x - p.x, q.y - p.y) / V), q.king ? "uking" : "uwash", q.x, q.y);
+  // 물결: 하얀 앞머리의 날카로운 고리 둘 + 부드러운 물빛 고리 + 가장자리 물방울 마루 + 반짝이
+  F.shock(p.x, p.y, R, big ? 0.6 : 0.5, 1, big ? 34 : 24, 1);
+  F.shock(p.x, p.y, R * 1.02, big ? 0.5 : 0.42, 0, 7, 0, 0.03);
+  F.shock(p.x, p.y, R * 0.75, 0.45, 2, 5, 0, 0.1);
+  F.ringOut(p.x, p.y, big ? 40 : 26, 30, R / 0.6, 1, 4, 0.55, 4.5);
+  F.ringOut(p.x, p.y, big ? 20 : 12, 30, R / 0.7, 0, 2, 0.7, 6);
+  F.spark(p.x, p.y, 0, 0, 0.3, big ? 34 : 24, 1, 0);
+  sfx.fanfare(big); shake(big ? 6 : 4, 0.25); punch(big ? 0.05 : 0.03); setFlash(big ? 0.16 : 0.1, "190,245,255");
+  if (big) { dimTo = 0.3; setTimeout(() => { if (!ult && mode === "play") dimTo = 0; }, 700); }
+  say(WAVE_NAME[h.mode] + "!", true, h.n ? "친구 " + h.n + "마리 깨끗" + (h.healed ? " · 하트 +1" : "") : "바다가 깨끗해졌어요");
 }
 const BLAST_FX_NEAR = E.BLAST_NEAR * 2.3;
 let equipFx = null;
@@ -472,18 +634,16 @@ function openCards({ firstTry, noQuiz = false, gift = null, onDone = null, chest
     const c = cards[i];
     E.setLoadout(world, L.applyCard(world.load, c), c);
     if (!gift && !noQuiz && !chest) world.quizGear++;
-    say(L.gainText(c), true, chest ? "보물 조개 선물" : gift ? "출발 선물" : noQuiz ? "" : "문제를 맞혀서 얻었어요!", true); bannerT = 2.8;
+    say(L.gainText(c), true, chest ? "보물 조개 선물" : gift ? "출발 선물" : noQuiz ? "" : "문제를 맞혀서 얻었어요!", true); bannerT = bannerT0 = 2.8;
     equipFx = { img: iconCanvas(c, 96), t: 0 };
-    world.fx.rings.push({ x: world.p.x, y: world.p.y, t: 0, T: 0.7, R: 110, color: "#ffe27a" });
-    addFx("light", world.p.x, world.p.y, 150, { dur: 0.5 });
-    flash = 0.25;
-    setTimeout(() => { $("cards").hidden = true; cardsShown = null; finishCards(onDone); }, 360);
+    setTimeout(() => { $("cards").hidden = true; cardsShown = null; transformBurst(c); finishCards(onDone); }, 360);
   });
 }
 function finishCards(onDone) {
   if (onDone) { onDone(); return; }
   E.resumeAfter(world); hudKey = ""; hud();
   mode = "play"; clearInput(); last = performance.now();
+  releaseWave();
 }
 // 하트 0: 한 판에 한 번 구조 문제
 function openRescue() {
@@ -504,13 +664,14 @@ function begin(opts = {}) {
   if (opts.zone) zoneId = opts.zone;
   if (!save.zones.includes(zoneId)) zoneId = "coral";
   const zone = L.zoneOf(zoneId);
-  world = E.createWorld({ kid: pilot, zone: zoneId, view, gifts: save.gifts });
+  world = E.createWorld({ kid: pilot, zone: zoneId, view, gifts: save.gifts, bigPearl: !!GameQuiz });
   makeDecor(zone);
   ["start", "over", "cards", "pause", "dex"].forEach(id => { $(id).hidden = true; });
   $("hud").hidden = false; hudKey = ""; hud();
   firstPearlSaid = false; runSaved = false; banner = ""; bannerT = 0;
   fxList = []; floats = []; trail = []; shakeT = 0; hitStop = 0; S.setPitch(1); dashKey = feverKey = "";
   for (const q of PARTS) q.on = false; ringsM = []; muzzle = null; multiBan = null; comboPop = 0; edgeFlash = 0;
+  resetJuice();
   $("dashBtn").hidden = false; $("fever").hidden = false;
   clearInput(); audio(); last = performance.now();
   say(zone.name + josaRo(zone.name) + " 잠수!", true);
@@ -520,6 +681,10 @@ function begin(opts = {}) {
   if (!opts.noGift && save.gifts.includes("weapon")) gifts.push("weapon");
   const next = () => { const g = gifts.shift(); if (!g) { E.resumeAfter(world); mode = "play"; clearInput(); last = performance.now(); hudKey = ""; hud(); return; } openCards({ gift: g, onDone: next }); };
   if (gifts.length) next(); else mode = "play";
+}
+function resetJuice() {
+  F.clearAll(); later.length = 0; ult = null; finale = null; finaleAt = null; trauma = 0; zoomK = 0; dimA = dimTo = 0; lbox = lboxTo = 0; cine = 0; slowK = 1; slowT = 0;
+  speedA = 0; subGlow = 0; ringWarn = 0; godRays = 0; heldWave = null; bigSaid = false; recoil = null; bossIntroT = 0; feverIntro = 0; feverOutro = 0; currentFx = 0; ghostT = 0; for (const g of ghosts) g.age = 9;
 }
 function endRun(quit) {
   if (runSaved || !world) return;
@@ -565,7 +730,7 @@ function unpause() { if (mode !== "paused") return; $("pause").hidden = true; mo
 function toMenu() {
   if (world && mode !== "over" && mode !== "start") endRun(true);
   disarm(); if (GameQuiz) GameQuiz.close();
-  mode = "start"; world = null; clearInput(); S.setPitch(1);
+  mode = "start"; world = null; clearInput(); S.setPitch(1); resetJuice();
   ["over", "cards", "pause", "dex", "dashBtn", "fever"].forEach(id => { $(id).hidden = true; });
   $("hud").hidden = true; paintStart(); $("start").hidden = false;
 }
@@ -581,57 +746,221 @@ function handleEvents() {
         // 맞는 순간 = 물보라: 무기마다 다른 효과 시트, 단계가 높을수록 크게(한 프레임에 몇 개까지만)
         if (hitBudget <= 0) break;
         hitBudget--;
-        const lv = e.lv || 1, sz = 46 + lv * 14 + (e.r || 16);
-        const name = e.src === "zap" ? "bolt" : e.src === "whirl" || e.src === "dash" ? "wind" : e.src === "light" ? "light" : "ice";
-        addFx(name, e.x + (Math.random() - 0.5) * 10, e.y + (Math.random() - 0.5) * 10, sz * (e.src === "light" ? 1.2 : 1), { dur: 0.32, rot: Math.random() * TAU, alpha: 0.95 });
-        burst(e.x, e.y, 3 + Math.min(3, lv), 150 + lv * 25, e.src === "zap" ? 3 : e.src === "light" ? 3 : 1, 3 + lv * 0.5, 0.35);
+        hitSplash(e);
         break;
       }
       case "wash": {
+        if (e.kind === "boss") { lastBossX = e.x; lastBossY = e.y; }
+        // 필살기 물결: 물결 앞머리가 닿을 때 터지도록 늦춘다
+        if (holdO) { if (holdO.list.length < 90) holdO.list.push({ x: e.x, y: e.y, king: e.king }); break; }
+        if (ultO) { afterFx(Math.hypot(e.x - ultO.x, e.y - ultO.y) / ultV, e.king ? "uking" : "uwash", e.x, e.y); break; }
         sfx.wash(e.combo);
-        // 씻기는 순간: 방울 8~12개가 사방으로 + 고리 하나 + 반짝이
-        burst(e.x, e.y, e.chain ? 7 : 10, 260, 1, 5, 0.5); burst(e.x, e.y, 3, 180, 3, 3.5, 0.6);
-        ring(e.x, e.y, e.chain ? 40 : 52, e.chain ? "#bff3ff" : "#ffffff", 0.32, 6);
-        if (e.elite || e.king) { addFx(e.king ? "mega" : "light", e.x, e.y, e.king ? 260 : 120, { dur: 0.5 }); shake(e.king ? 4 : 2, 0.15); if (e.king) { stopFor(40); sfx.fanfare(false); } }
-        else if (!e.chain && Math.random() < 0.25) addFx("light", e.x, e.y, 56, { dur: 0.35, alpha: 0.8 });
+        washPop(e.x, e.y, e.chain, e.elite, e.combo);
+        if (e.elite || e.king) { addFx("light", e.x, e.y, e.king ? 240 : 140, { dur: 0.5, alpha: 0.7 }); F.shock(e.x, e.y, e.king ? 240 : 120, 0.55, 3, e.king ? 26 : 16, e.king ? 2 : 1); F.radial(e.x, e.y, e.king ? 40 : 18, 520, -1, 2, 0.8, 6); shake(e.king ? 8 : 4, 0.2); punch(e.king ? 0.06 : 0.02); if (e.king) { stopFor(60); sfx.fanfare(false); setFlash(0.2, "255,240,180"); } }
+        else if (!e.chain && Math.random() < 0.25) addFx("light", e.x, e.y, 64, { dur: 0.35, alpha: 0.8 });
         // 떠오르는 숫자: 콤보 고비마다 크게, 그 밖에는 가끔 +1(개수 상한 있음)
-        if (e.combo >= 5 && COMBO_SHOW.includes(e.combo) && e.combo !== lastComboFloat) { lastComboFloat = e.combo; floatText(world.p.x, world.p.y - 46, "콤보 ×" + e.combo, e.combo >= 50 ? "#ff9ee0" : "#ffe27a", e.combo >= 50 ? 26 : 21, 1.0); }
-        else if (floats.length < 10 && Math.random() < 0.35) floatText(e.x, e.y - 10, "+1", e.chain ? "#bff3ff" : "#ffffff", 14, 0.6);
+        if (e.combo >= 5 && COMBO_SHOW.includes(e.combo) && e.combo !== lastComboFloat) { lastComboFloat = e.combo; comboPop = 0.8; }
         break;
       }
-      case "burst": if (e.big) { addFx("mega", e.x, e.y, 230, { dur: 0.5 }); burst(e.x, e.y, 18, 340, -1, 5, 0.6); sfx.pop(world.combo); shake(2, 0.12); } else if (Math.random() < 0.5) sfx.chain(world.combo); break;
+      case "burst": if (e.big) { addFx("light", e.x, e.y, 160, { dur: 0.45, alpha: 0.6 }); F.shock(e.x, e.y, 170, 0.5, 3, 18, 5); F.radial(e.x, e.y, 26, 480, -1, 1, 0.6, 3.5); F.radial(e.x, e.y, 12, 300, -1, 2, 0.7, 6); burst(e.x, e.y, 18, 340, -1, 5, 0.6); sfx.pop(world.combo); shake(4, 0.14); }
+        else { F.shock(e.x, e.y, L.CHAIN.r * 0.9, 0.3, 1, 7, 1); if (Math.random() < 0.5) sfx.chain(world.combo); } break;
       case "orb": sfx.orb(e.n); break;
-      case "shot": sfx.shot(); if (e.a != null) muzzle = { a: e.a, t: 0, lv: e.lv || 1 }; break;
+      case "shot": sfx.shot(e.lv || 1); if (e.a != null) { muzzle = { a: e.a, t: 0, lv: e.lv || 1 }; recoil = { a: e.a, t: 0 }; const p = world.p, lv = e.lv || 1; F.cone(p.x + Math.cos(e.a) * 28, p.y + Math.sin(e.a) * 28, e.a, 0.8, 5 + lv * 1.5, 280 + lv * 50, world.fever > 0 ? -1 : lvCol(lv), 4, 0.26, 3 + lv * 0.4); F.cone(p.x + Math.cos(e.a) * 28, p.y + Math.sin(e.a) * 28, e.a, 0.5, 2 + lv, 420, 0, 1, 0.16, 3); } break;
       case "multi": {
         // 그 자리에서 무지개 폭발. 5마리 알림은 자주 나오니 큰 글자·쿵은 4초에 한 번만(10·20마리는 늘)
-        addFx("mega", e.x, e.y, 170 + e.tier * 90, { dur: 0.55 }); burst(e.x, e.y, 14 + e.tier * 8, 420, -1, 6, 0.7); ring(e.x, e.y, 120 + e.tier * 60, "#fff6c8", 0.45, 12);
-        if (e.tier === 0 && clock - lastMulti0 < 4) { shake(1.5, 0.1); break; }
+        addFx("light", e.x, e.y, 100 + e.tier * 40, { dur: 0.45, alpha: 0.55 });
+        F.shock(e.x, e.y, 110 + e.tier * 60, 0.5, 0, 14 + e.tier * 4, 5); F.radial(e.x, e.y, 20 + e.tier * 14, 560, -1, 1, 0.6, 3.5); F.ringOut(e.x, e.y, 12 + e.tier * 6, 50, 380, -1, 2, 0.7, 7);
+        if (e.tier === 0 && clock - lastMulti0 < 4) { shake(3, 0.1); break; }
         if (e.tier === 0) lastMulti0 = clock;
         multiBan = { text: L.MULTI.say[e.tier], t: 0, tier: e.tier };
-        sfx.thud(e.tier); stopFor(e.tier ? 40 : 25); shake(2.5 + e.tier * 0.75, 0.25); edgeFlash = 0.2 + e.tier * 0.1;
+        sfx.thud(e.tier); stopFor(e.tier ? 50 : 30); shake(4 + e.tier * 2, 0.25); punch(0.03 + e.tier * 0.025); edgeFlash = 0.2 + e.tier * 0.1;
         break;
       }
-      case "combo-tier": { const T = L.COMBO_TIERS[e.tier]; comboPop = 0.45; floatText(world.p.x, world.p.y - 60, T.name, T.color === "rainbow" ? "#ffe27a" : T.color, 30, 1.1); sfx.tier(e.tier); break; }
-      case "qpearl-up": sfx.pearl(); if (e.sure) floatText(e.x, e.y - 30, "? 진주!", "#ffe27a", 22, 1.4); if (!firstPearlSaid) { firstPearlSaid = true; say("? 진주가 떠올랐어요! 먹어 봐요", true, "문제를 맞히면 물결 파동 + 새 장비"); } break;
-      case "hurt": sfx.hurt(); flash = 0.15; shake(3, 0.2); break;
-      case "boss": sfx.boss(); say("먹물 대왕 등장!", true, "씻겨 주면 오늘의 대성공", true); shake(3, 0.4); break;
-      case "bosshit": sfx.bossHit(); if (Math.random() < 0.18) { addFx("light", e.x + (Math.random() - 0.5) * 60, e.y + (Math.random() - 0.5) * 60, 90, { dur: 0.35 }); stopFor(25); shake(1.5, 0.08); } break;
+      case "combo-tier": { const T = L.COMBO_TIERS[e.tier], p = world.p; comboPop = 0.8; sfx.tier(e.tier); F.shock(p.x, p.y, 140 + e.tier * 40, 0.5, e.tier >= 3 ? 3 : [5, 2, 6][e.tier], 18, e.tier >= 3 ? 5 : 4); F.ringOut(p.x, p.y, 14 + e.tier * 4, 40, 340, e.tier >= 3 ? -1 : [5, 2, 6][e.tier], 2, 0.6, 6); punch(0.03); break; }
+      case "qpearl-up": sfx.pearl(); F.shock(e.x, e.y, 90, 0.6, 3, 12, 1); F.ringOut(e.x, e.y, 12, 20, 200, 3, 2, 0.7, 6); if (e.sure) floatText(e.x, e.y - 30, "? 진주!", "#ffe27a", 22, 1.4); if (!firstPearlSaid) { firstPearlSaid = true; say("? 진주가 떠올랐어요! 먹어 봐요", true, "문제를 맞히면 물결 파동 + 새 장비"); } break;
+      case "big-up": sfx.bigPearl(); F.shock(e.x, e.y, 150, 0.8, 3, 20, 5); F.ringOut(e.x, e.y, 18, 30, 220, -1, 2, 0.9, 7); floatText(e.x, e.y - 60, "큰 진주!", "#ffe27a", 22, 1.4); if (!bigSaid) { bigSaid = true; say("큰 진주가 나왔어요!", true, "먹으면 어려운 문제 · 맞히면 필살기"); } break;
+      case "bigpearl": { sfx.bigPearl(); const p = world.p; F.shock(p.x, p.y, 160, 0.5, 3, 20, 5); F.radial(p.x, p.y, 30, 380, -1, 2, 0.7, 7); punch(0.05); break; }
+      case "qpearl": { const p = world.p; F.shock(p.x, p.y, 120, 0.45, 3, 18, 1); F.radial(p.x, p.y, 20, 360, 3, 2, 0.6, 6); punch(0.05); break; }
+      case "hurt": sfx.hurt(); setFlash(0.15, "255,150,180"); shake(6, 0.22); break;
+      case "boss": bossIntro(); break;
+      case "bosshit": sfx.bossHit(); if (Math.random() < 0.18) { addFx("light", e.x + (Math.random() - 0.5) * 60, e.y + (Math.random() - 0.5) * 60, 100, { dur: 0.35 }); F.radial(e.x, e.y, 8, 300, 4, 4, 0.5, 5, 200); stopFor(25); shake(2.5, 0.08); } break;
       case "warn": sfx.warn(); break;
-      case "zap": sfx.zap(); if (e.x != null && Math.random() < 0.5) addFx("bolt", e.x, e.y, 90, { dur: 0.3 }); break;
-      case "light": sfx.light(); break;
-      case "dash": sfx.dash(); addFx("wind", e.x + Math.cos(e.a) * 60, e.y + Math.sin(e.a) * 60, 170, { dur: 0.35, rot: e.a + Math.PI / 2 }); if (e.auto) floatText(e.x, e.y - 36, "슈웅!", "#bff3ff", 18, 0.6); break;
-      case "fever": sfx.fever(); S.setPitch(1.25); stopFor(40); shake(3, 0.3); addFx("mega", e.x, e.y, 420, { dur: 0.7, keep: true }); say("무지개 터보!", true, "더 빨리 · 더 크게 · 빛 방울이 다 날아와요", true); break;
-      case "fever-end": S.setPitch(1); sfx.feverEnd(); break;
-      case "event": sfx.event(); say(e.name, true, e.sub, true); shake(2, 0.25); break;
-      case "gold": sfx.gold(); addFx("light", e.x, e.y, 200, { dur: 0.6 }); floatText(e.x, e.y - 30, "빛 방울 비!", "#ffe27a", 24, 1.2); break;
+      case "zap": sfx.zap(zapLv()); if (e.x != null) { addFx("bolt", e.x, e.y, 80 + zapLv() * 14, { dur: 0.3 }); F.radial(e.x, e.y, 4 + zapLv() * 2, 380, 10, 1, 0.3, 3); } break;
+      case "light": lightBurst(e); break;
+      case "dash": dashFx(e); break;
+      case "fever": feverIn(e); break;
+      case "fever-end": feverOut(); break;
+      case "event": eventBeat(e); break;
+      case "gold": sfx.gold(); addFx("light", e.x, e.y, 220, { dur: 0.6 }); F.shock(e.x, e.y, 200, 0.6, 3, 22, 2); F.radial(e.x, e.y, 40, 420, 3, 4, 1.0, 5, 380); F.radial(e.x, e.y, 18, 300, 10, 2, 0.9, 7); punch(0.05); shake(4, 0.15); floatText(e.x, e.y - 30, "빛 방울 비!", "#ffe27a", 26, 1.2); break;
       case "gold-bye": floatText(e.x, e.y - 20, "황금 물고기가 숨었어요", "#fff3c4", 16, 1.2); break;
-      case "clam": sfx.gold(); addFx("mega", e.x, e.y, 220, { dur: 0.6 }); break;
+      case "clam": sfx.gold(); addFx("light", e.x, e.y, 220, { dur: 0.6, alpha: 0.7 }); F.shock(e.x, e.y, 220, 0.6, 3, 24, 5); F.radial(e.x, e.y, 36, 360, 3, 4, 1.0, 5, 300); F.radial(e.x, e.y, 16, 260, -1, 2, 0.9, 7); punch(0.06); shake(5, 0.2); break;
       case "clam-bye": floatText(e.x, e.y - 20, "조개가 닫혔어요", "#fff3c4", 16, 1.2); break;
-      case "ink": break;
+      case "ink": if (world.boss) { const b = world.boss; F.radial(b.x, b.y, 10, 240, 4, 3, 0.6, 6); F.shock(b.x, b.y, 110, 0.4, 4, 10, 1); } break;
+      case "over": if (e.result === "boss" && world.over) finaleAt = { x: lastBossX, y: lastBossY }; break;
     }
   }
   ev.length = 0;
 }
+/* ---------- 무기마다의 빛깔·맞는 자리 효과 ---------- */
+// 무기 색(F.COL 번호): [본색, 덧색]
+const WCOL = { bubble: [2, 1], whirl: [1, 0], zap: [4, 10], shell: [7, 3], light: [3, 10], star: [6, 7] };
+// 단계 색: 1 하늘 · 2 파랑 · 3 진파랑 · 4 보라 · 5 금
+// 1 하늘 · 2 파랑 · 3 금 · 4 주황금 · 5 무지개(돌아가며) — 낮은 단계는 차갑고 하얗게, 높을수록 따뜻하고 화려하게
+const LV4 = [1, 2, 3, 7], LVH = ["#bff3ff", "#5fd2ff", "#ffd75a", "#ffa53c"];
+const lvCol = lv => (lv >= 5 ? F.RAINBOW_IDX[((clock * 8) | 0) % 6] : LV4[Math.max(0, lv - 1)]);
+const lvHex = lv => (lv >= 5 ? RAINBOW_COL[((clock * 10) | 0) % 6] : LVH[Math.max(0, lv - 1)]);
+const RGBC = F.COL.map(h => { const n = parseInt(h.slice(1), 16); return ((n >> 16) & 255) + "," + ((n >> 8) & 255) + "," + (n & 255); });
+const zapLv = () => (world && world.load.weapons.zap) || 1;
+let boltEcho = [];
+let subGlow = 0, lastBossX = 0, lastBossY = 0, finaleAt = null;
+// 맞는 순간: 무기마다 다른 물보라. 단계가 오를수록 크고 많게(한 프레임 hitBudget 개까지)
+function hitSplash(e) {
+  const lv = e.lv || 1, x = e.x, y = e.y, r = e.r || 16, src = e.src;
+  if (src === "b") {
+    const rain = world.fever > 0 || lv >= 5, col = rain ? -1 : lvCol(lv);
+    F.radial(x, y, 7 + lv * 1.5, 250 + lv * 45, col, 4, 0.45, 3.4 + lv * 0.8, 160); F.spark(x, y, 0, 0, 0.12, 8 + lv * 3, 0, 0); F.radial(x, y, 2 + (lv >> 1), 200, col, 2, 0.4, 4 + lv);
+    F.radial(x, y, 2 + lv, 300, 0, 1, 0.25, 2.5);
+    F.shock(x, y, 24 + lv * 10 + r * 0.6, 0.22, 0, 5, 0); F.shock(x, y, 18 + lv * 8 + r * 0.5, 0.3, rain ? 1 : lvCol(lv), 4, 0, 0.05);
+    if (lv >= 3 && Math.random() < 0.35) addFx("ice", x, y, 40 + lv * 12 + r, { dur: 0.3, rot: Math.random() * TAU, alpha: 0.8 });
+    if (rain && Math.random() < 0.5) F.radial(x, y, 4, 200, -1, 2, 0.5, 5);
+  } else if (src === "s") {
+    F.radial(x, y, 3 + lv, 260 + lv * 30, lv >= 5 ? -1 : 6, 2, 0.4, 4 + lv * 0.6);
+    F.radial(x, y, 3 + lv, 220, 7, 4, 0.35, 2.6);
+    F.shock(x, y, 26 + lv * 6, 0.25, lv >= 5 ? 3 : 6, 5, 0);
+  } else if (src === "zap") {
+    addFx("bolt", x, y, 50 + lv * 12 + r, { dur: 0.28, rot: Math.random() * TAU, alpha: 0.95 });
+    F.radial(x, y, 3 + lv, 340, 10, 1, 0.22, 3);
+    F.spark(x, y, 0, 0, 0.2, 9 + lv * 2, 4, 0);
+  } else if (src === "whirl") {
+    const a = Math.atan2(y - world.p.y, x - world.p.x) + Math.PI / 2;
+    F.cone(x, y, a, 1.0, 4 + lv, 300 + lv * 30, world.load.evo.whirl ? 11 : lvCol(lv), 5, 0.3, 3);
+    F.radial(x, y, 2 + lv, 160, 0, 3, 0.4, 3 + lv * 0.6);
+    if (Math.random() < 0.4) addFx("wind", x, y, 50 + lv * 12, { dur: 0.3, rot: a, alpha: 0.85 });
+  } else if (src === "shell") {
+    F.radial(x, y, 4 + lv, 300, 7, 1, 0.3, 3.2); F.radial(x, y, 2 + lv, 200, 3, 2, 0.45, 5);
+    F.shock(x, y, 30 + lv * 8, 0.3, 3, 7, 0);
+    addFx("light", x, y, 50 + lv * 10, { dur: 0.28, alpha: 0.8 });
+  } else if (src === "light") {
+    F.radial(x, y, 3 + lv, 240, 3, 2, 0.45, 4 + lv * 0.5);
+    F.spark(x, y, 0, 0, 0.25, 10 + lv * 2, 10, 0);
+  } else if (src === "dash") {
+    F.radial(x, y, 10, 360, 1, 4, 0.4, 4); F.radial(x, y, 6, 420, 0, 1, 0.3, 3); F.shock(x, y, 50, 0.3, 0, 10, 1);
+    addFx("wind", x, y, 70 + r, { dur: 0.3, rot: Math.random() * TAU });
+  }
+  if (e.src !== "zap" && Math.random() < 0.3) burst(x, y, 2, 150, 1, 3, 0.3);
+}
+// 씻기는 순간: 물방울 왕관 + 흰 섬광 + 반짝 별 + 고리 + 거품
+function washPop(x, y, chain, elite, combo) {
+  // 짧고 빽빽한 반짝 폭발(약 16~30개, 0.3~0.9초): 흰 심 → 물방울(눈물 모양) → 네 갈래 반짝 → 빛 줄 → 비누 거품
+  const big = elite ? 1.5 : 1, k = chain ? 0.7 : 1;
+  F.spark(x, y, 0, 0, 0.12, 15 * big, 0, 0);
+  F.radial(x, y, 8 * k * big, 330, 1, 4, 0.55, 4.2, 140); F.radial(x, y, 4 * k * big, 300, 5, 4, 0.5, 3.8, 140);
+  F.radial(x, y, 5 * k * big, 360, combo >= 30 ? -1 : 3, 2, 0.7, 5.5);
+  F.radial(x, y, 5 * k * big, 480, 0, 1, 0.3, 3);
+  F.radial(x, y, 3, 110, 0, 3, 0.8, 5, -30);
+  F.radial(x, y, 6 * k, 120, 0, 6, 0.6, 5, -160, 3);
+  F.shock(x, y, (chain ? 34 : 46) * big, 0.28, 1, 5, 1);
+  if (Math.random() < 0.3) F.ambientPush((x - cam.x), (y - cam.y), 160, 160);
+}
+/* 큰 폭발(필살기·대왕 끝 장면): 어두워진 바다 위에서 가장 밝게.
+   뜨거운 흰 심 → 옅은 하늘 → 진한 물빛·무지개 테두리. 두꺼운 부드러운 물결 + 하얀 앞머리 + 물방울 마루, 길이가 제각각인 빛살,
+   물방울 수백 개(크기 섞기), 비누 거품 나선, 천천히 도는 빛살 쐐기, 오래 남는 무지개 잔광. */
+let godRays = 0, godX = 0, godY = 0, godR = 400;
+function bigBurst(x, y, R, s = 1) {
+  F.spark(x, y, 0, 0, 0.18, 40 * s, 0, 0); F.spark(x, y, 0, 0, 0.45, 40 * s, 1, 0); F.spark(x, y, 0, 0, 0.8, 30 * s, 2, 0);
+  F.shock(x, y, R * 0.95 * s, 0.8, 1, 60, 4); F.shock(x, y, R * 0.82 * s, 0.65, 2, 30, 4, 0.03); F.shock(x, y, R * 0.75 * s, 1.3, 0, 40, 6, 0.18); F.shock(x, y, R * 0.42 * s, 0.5, 10, 24, 3, 0.02);
+  F.ringOut(x, y, 60, 40, 900 * s, 1, 4, 0.8, 5); F.ringOut(x, y, 24, 40, 760 * s, 0, 2, 0.8, 8);
+  F.radial(x, y, 140, 1100 * s, 1, 4, 0.9, 5, 200); F.radial(x, y, 40, 900 * s, 2, 4, 0.8, 4, 200); F.radial(x, y, 90, 1400 * s, -1, 1, 0.6, 4); F.radial(x, y, 50, 600 * s, -1, 2, 1.1, 8);
+  const n = F.qn(40);
+  for (let i = 0; i < n; i++) { const a = i * 0.55, v = 160 + i * 14; F.spark(x, y, Math.cos(a) * v - Math.sin(a) * v * 0.7, Math.sin(a) * v + Math.cos(a) * v * 0.7, 1.3, 4 + Math.random() * 6, 0, 3, -40, 1.1); }
+  godRays = 1.5; godX = x; godY = y; godR = R * 0.9 * s;
+  F.ambientPush(x - cam.x, y - cam.y, Math.max(view.w, view.h), 900);
+}
+// 카드를 고른 순간: 잠수정이 장비 색으로 변신하듯 번쩍
+function transformBurst(c) {
+  if (!world) return;
+  const p = world.p, evo = c.kind === "combo", wid = c.kind === "weapon" ? c.id : evo ? L.COMBOS[c.id].weapon : null;
+  const lv = evo ? 5 : c.lv || 1, col = wid ? WCOL[wid][0] : c.kind === "heal" || c.id === "heart" ? 9 : 5, acc = wid ? WCOL[wid][1] : 0, big = evo || (wid && lv >= 5);
+  F.shock(p.x, p.y, 120 + lv * 24, 0.55, col, 24, 1); F.shock(p.x, p.y, 90 + lv * 16, 0.5, acc, 12, 0, 0.1); F.shock(p.x, p.y, 70 + lv * 20, 0.6, col, 12, 3, 0.05);
+  if (big) { F.shock(p.x, p.y, 300, 0.8, 0, 28, 2, 0.05); F.shock(p.x, p.y, 380, 0.9, 3, 16, 0, 0.15); }
+  F.radial(p.x, p.y, 18 + lv * 6, 380 + lv * 40, evo ? -1 : col, 1, 0.55, 3.5); F.radial(p.x, p.y, 10 + lv * 3, 260, evo ? -1 : acc, 2, 0.8, 6);
+  const n = F.qn(14 + lv * 3);
+  for (let i = 0; i < n; i++) { const a = i * 0.9; F.spark(p.x + Math.cos(a) * 24, p.y + Math.sin(a) * 24, Math.cos(a) * 70, -150 - i * 10, 0.9, 4.5, evo ? -1 : i % 2 ? col : acc, 0, 0, 1.2); }
+  addFx(big ? "mega" : "light", p.x, p.y, big ? 300 : 180, { dur: 0.6, alpha: big ? 0.5 : 0.8 });
+  setFlash(big ? 0.28 : 0.14, RGBC[col]); punch(big ? 0.07 : 0.04); shake(big ? 7 : 4, 0.2); subGlow = big ? 1.2 : 0.8;
+  sfx.equip(lv, !!big);
+  if (big) slowmo(0.4, 0.45);
+}
+// 등대 빛: 가운데 섬광 + 두꺼운 빛 물결 + 빛살 + 가장자리 반짝이(단계가 오를수록 겹이 늘고 5단계는 무지개)
+function lightBurst(e) {
+  const lv = (world.load.weapons.light) || 1, x = e.x, y = e.y, R = e.R;
+  sfx.light(lv);
+  F.spark(x, y, 0, 0, 0.3, 22 + lv * 4, 10, 0);
+  F.shock(x, y, R * 1.05, 0.5, 3, 18 + lv * 4, 1);
+  F.shock(x, y, R * 1.15, 0.55, 10, 10 + lv * 3, 3, 0.04);
+  if (lv >= 3) F.shock(x, y, R * 0.8, 0.45, 0, 8, 0, 0.08);
+  if (lv >= 5) F.shock(x, y, R * 1.3, 0.65, 0, 16, 2, 0.1);
+  F.ringOut(x, y, 10 + lv * 4, R * 0.9, 160 + lv * 20, lv >= 5 ? -1 : 3, 2, 0.6, 5 + lv * 0.6);
+  addFx("light", x, y, R * 1.6, { dur: 0.45, alpha: 0.85 });
+  if (lv >= 4) { shake(2 + lv * 0.5, 0.12); punch(0.02); }
+}
+// 슈웅!: 잔상 + 뒤로 뿜는 물줄기 + 앞쪽 빛 줄 + 물결 고리 + 화면 속도선
+const ghosts = Array.from({ length: 8 }, () => ({ x: 0, y: 0, rot: 0, age: 9 }));
+let ghostT = 0, ghostHead = 0, ghostAcc = 0;
+function stepGhosts(dt) {
+  for (const g of ghosts) g.age += dt;
+  if (!world || !(world.p.dashT > 0 || ghostT > 0.1)) return;
+  ghostAcc += dt; if (ghostAcc < 0.028) return; ghostAcc = 0;
+  const g = ghosts[ghostHead]; ghostHead = (ghostHead + 1) % ghosts.length;
+  g.x = world.p.x; g.y = world.p.y; g.rot = world.p.face + Math.PI / 2; g.age = 0;
+}
+function dashFx(e) {
+  sfx.dash();
+  const a = e.a, x = e.x, y = e.y;
+  addFx("wind", x + Math.cos(a) * 60, y + Math.sin(a) * 60, 200, { dur: 0.35, rot: a + Math.PI / 2 });
+  F.cone(x, y, a + Math.PI, 0.9, 26, 520, 1, 5, 0.4, 4); F.cone(x, y, a + Math.PI, 0.5, 14, 380, 0, 3, 0.6, 4);
+  F.cone(x, y, a, 0.35, 14, 900, 0, 1, 0.25, 3);
+  F.shock(x, y, 110, 0.4, 1, 18, 1); F.shock(x, y, 70, 0.3, 0, 10, 0, 0.05);
+  speedA = Math.max(speedA, 0.5); speedCol = "#e6fbff"; punch(0.04); shake(3, 0.1);
+  floatText(x, y - 40, "슈웅!", "#bff3ff", e.auto ? 20 : 24, 0.6);
+  ghostT = 0.32;
+}
+// 무지개 터보 들어감: 잠깐 멈칫 → 무지개 고리 여섯 겹이 차례로 → 속도선 → 높아진 음악
+function feverIn(e) {
+  sfx.fever(); S.setPitch(1.25); stopFor(60); cinema(0.22); slowmo(0.35, 0.45); shake(7, 0.3); punch(0.07);
+  F.shock(e.x, e.y, 360, 0.7, 0, 30, 6);
+  for (let i = 0; i < 6; i++) F.shock(e.x, e.y, 180 + i * 50, 0.65, F.RAINBOW_IDX[i], 10, 0, i * 0.06, 0.5);
+  F.shock(e.x, e.y, 520, 0.8, 0, 26, 2, 0.1);
+  F.radial(e.x, e.y, 60, 800, -1, 1, 0.6, 4); F.radial(e.x, e.y, 30, 500, -1, 2, 0.8, 7);
+  setFlash(0.22, "255,240,200"); speedA = 1; feverIntro = 1;
+  say("무지개 터보!", true, "더 빨리 · 더 크게 · 빛 방울이 다 날아와요", true);
+}
+let feverIntro = 0, feverOutro = 0;
+function feverOut() {
+  S.setPitch(1); sfx.feverEnd();
+  if (!world) return;
+  const p = world.p;
+  F.shock(p.x, p.y, 200, 0.5, 0, 14, 2); F.radial(p.x, p.y, 24, 300, -1, 2, 0.7, 5);
+  floatText(p.x, p.y - 56, "터보 끝! 또 모아요", "#ffffff", 20, 1.0); feverOutro = 0.5;
+}
+// 대왕 등장: 게임을 0.9초 멈추고(게임 시간도 멈춤) 어두워지며 위아래 띠, 쿠르릉, 대왕 쪽에서 물결
+let bossIntroT = 0;
+function bossIntro() {
+  sfx.boss(); say("먹물 대왕 등장!", true, "씻겨 주면 오늘의 대성공", true);
+  cinema(0.9); dimTo = 0.55; lboxTo = 1; bossIntroT = 1.3; shake(4.6, 0.5); punch(0.06);
+  const b = world.boss; if (b) { F.shock(b.x, b.y, 260, 0.8, 4, 28, 1); F.shock(b.x, b.y, 200, 0.7, 11, 14, 0, 0.2); F.radial(b.x, b.y, 30, 380, 4, 4, 0.9, 6); }
+}
+// 이벤트 한가운데 순간
+function eventBeat(e) {
+  sfx.event(); say(e.name, true, e.sub, true); shake(4, 0.25); punch(0.04);
+  const p = world.p;
+  if (e.id === "ring") { ringWarn = 1.6; F.shock(p.x, p.y, Math.min(view.w, view.h) * 0.6, 0.9, 4, 18, 1); }
+  else if (e.id === "king") { const k = world.enemies.find(x => x.king); if (k) { F.shock(k.x, k.y, 200, 0.7, 3, 24, 2); F.ringOut(k.x, k.y, 20, 40, 300, 3, 2, 0.8, 7); } }
+  else if (e.id === "current") { currentFx = 1; }
+  else if (e.id === "whale") { F.shock(p.x, p.y, 300, 0.7, 1, 22, 1); }
+  else { F.shock(p.x, p.y, 200, 0.6, 3, 18, 1); }
+}
+let ringWarn = 0, currentFx = 0;
 function update(dt) {
   // 큰 dt 는 나눠서(탄이 친구를 건너뛰지 않게)
   const n = dt > 0.034 ? 2 : 1;
@@ -640,12 +969,39 @@ function update(dt) {
     E.stepWorld(world, dt / n, moveVector());
     if (!whaleBefore && world.whale) sfx.whale();
     handleEvents();
-    if (world.over) { showOver(); return; }
+    if (world.over) { if (world.over.result === "boss") startFinale(); else showOver(); return; }
     if (world.pending === "quiz") { openQuiz(); return; }
     if (world.pending === "rescue") { openRescue(); return; }
     if (world.pending === "chest") { openCards({ chest: true }); return; }
+    if (world.pending === "big") { openChallenge(); return; }
   }
   hud(); hudFast();
+}
+/* ---------- 대왕을 씻긴 끝 장면(약 2.6초) ----------
+   게임은 이미 끝났다(world.over). 느리게 → 세 번에 걸친 무지개 폭발 → 진주 비가 잠수정으로 쏟아짐 → 결과 화면. 결과·저장은 그대로. */
+let finale = null;
+function startFinale() {
+  mode = "finale"; clearInput(); S.setPitch(1); bossIntroT = 0;
+  const at = finaleAt || { x: lastBossX || world.p.x, y: lastBossY || world.p.y };
+  finale = { t: 0, x: at.x, y: at.y, stage: 0, rain: 0 };
+  sfx.victory(); slowmo(0.35, 0.8); stopFor(60); dimTo = 0.62; lboxTo = 1;
+  say("먹물 대왕을 씻어 줬어요!", true, "오늘의 대성공!", true); bannerT = 2.8; bannerT0 = 2.8;
+}
+function finaleStep(dt) {
+  const f = finale; f.t += dt;
+  const stages = [0, 0.45, 0.9];
+  while (f.stage < 3 && f.t >= stages[f.stage]) {
+    const s = f.stage++, x = f.x + (s === 1 ? -60 : s === 2 ? 60 : 0), y = f.y + (s === 1 ? 30 : s === 2 ? -30 : 0);
+    const R = Math.max(view.w, view.h);
+    if (s === 2) bigBurst(x, y, R * 0.9, 1);
+    else { F.shock(x, y, R * (s ? 0.45 : 0.35), 0.7, s ? 3 : 1, 34, 4); F.shock(x, y, R * 0.3, 0.5, 0, 6, 0, 0.04); F.radial(x, y, 50, 800, s ? 3 : 1, 4, 0.9, 5, 200); F.radial(x, y, 24, 600, -1, 2, 1.0, 7); F.radial(x, y, 14, 300, 0, 6, 0.9, 6, -80); }
+    if (s !== 1) setFlash(0.2, s === 2 ? "255,240,190" : "190,245,255"); shake(10 - s * 2, 0.4); punch(0.08 - s * 0.02); sfx.thud(Math.min(2, s));
+    F.ambientPush(x - cam.x, y - cam.y, 700, 700);
+  }
+  // 진주 비: 위에서 쏟아져 잠수정으로 빨려 든다
+  if (f.t > 0.9 && f.t < 2.3) { f.rain += dt * 40; while (f.rain >= 1) { f.rain--; const p = world.p, sx = cam.x + Math.random() * view.w; F.spark(sx, cam.y - 10, (p.x - sx) * 0.6, 420 + Math.random() * 200, 1.3, 5, Math.random() < 0.7 ? 3 : -1, 0, 0, 0.3); } }
+  if (f.t > 2.2) { dimTo = 0; lboxTo = 0; }
+  if (f.t >= 2.6) { finale = null; dimTo = 0; lboxTo = 0; showOver(); }
 }
 
 /* ---------- 그리기 ---------- */
@@ -690,6 +1046,10 @@ function drawEnemy(e) {
   // 맞으면 살짝 찌그러졌다 돌아온다
   if (hit) w *= 1.08;
   if (e.elite) { ctx.drawImage(GLOW_Q, e.x - w * 0.8, e.y - w * 0.8, w * 1.6, w * 1.6); }
+  if (e.kind === "boss") {
+    ctx.drawImage(BOSS_SHADOW, e.x - w * 1.1, e.y - w * 0.55, w * 2.2, w * 1.6);
+    ctx.globalAlpha = 0.55; ctx.save(); ctx.translate(e.x, e.y); ctx.rotate(-clock * 0.7); ctx.drawImage(INK_SWIRL, -w * 0.95, -w * 0.95, w * 1.9, w * 1.9); ctx.restore(); ctx.globalAlpha = 1;
+  }
   if (e.kind === "gold") { ctx.drawImage(GLOW_PEARL, e.x - w, e.y - w, w * 2, w * 2); }
   const flip = ART[art] ? flipFor(e.kind, e.face) : e.face < 0, rot = e.kind === "eel" ? Math.atan2(e.vy, Math.abs(e.vx)) * (flip ? -1 : 1) : 0;
   if (e.kind === "gold" || e.kind === "clam") {
@@ -698,20 +1058,42 @@ function drawEnemy(e) {
     if (e.kind === "clam") hpBar(e.x, e.y - w * 0.7, 60, ink, "#ffe27a");
     return;
   }
+  const sq = hit && !RM;
+  if (sq) { ctx.save(); ctx.translate(e.x, e.y + bob); ctx.scale(1.18, 0.86); ctx.translate(-e.x, -e.y - bob); }
   if (ART[art]) {
     // 씻긴 모습을 밑에 두고, 먹물 모습을 남은 체력만큼 덮는다 → 맞을수록 원래 색이 비친다
     if (ART[OK_ART[e.kind]] && ink < 0.98) sprite(OK_ART[e.kind], e.x, e.y + bob, w, false, rot, flip);
     ctx.globalAlpha = 0.3 + ink * 0.7;
     sprite(art, e.x, e.y + bob, w, false, rot, flip);
-    if (hit && WHITE[art]) { ctx.globalAlpha = 0.55; sprite(art, e.x, e.y + bob, w, true, rot, flip); }
+    if (hit && WHITE[art]) { ctx.globalAlpha = 0.75; sprite(art, e.x, e.y + bob, w, true, rot, flip); }
     ctx.globalAlpha = 1;
   } else friendShape(ctx, SHAPE_OF[e.kind] || e.kind, e.x, e.y + bob, e.r * (e.puff > 0 ? 1.35 : 1), ink, hit, e.face, e.t);
+  if (sq) ctx.restore();
   if (e.kind === "boss") hpBar(e.x, e.y - 100, 120, ink, "#8ff0ff");
   else if (e.king) { crown(e.x, e.y - w * 0.45, 14); hpBar(e.x, e.y - w * 0.62, 80, ink, "#ffe27a"); }
 }
+const JPTS = [[0, 0], [0, 0]];
+const SUB_HALO = canvasOf(128, 128, (x, w) => {
+  const g = x.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2);
+  g.addColorStop(0, "rgba(255,255,255,.3)"); g.addColorStop(0.3, "rgba(210,248,255,.18)"); g.addColorStop(0.5, "rgba(210,248,255,0)");
+  g.addColorStop(0.62, "rgba(4,24,60,0)"); g.addColorStop(0.78, "rgba(4,24,60,.18)"); g.addColorStop(1, "rgba(4,24,60,0)");
+  x.fillStyle = g; x.fillRect(0, 0, w, w);
+});
+// 대왕 아래: 땅 그림자 같은 짙은 보랏빛 + 천천히 도는 먹물 소용돌이(무섭지 않게 연보라)
+const BOSS_SHADOW = canvasOf(128, 128, (x, w) => { const g = x.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2); g.addColorStop(0, "rgba(30,12,70,.55)"); g.addColorStop(0.6, "rgba(30,12,70,.3)"); g.addColorStop(1, "rgba(30,12,70,0)"); x.fillStyle = g; x.fillRect(0, 0, w, w); });
+const INK_SWIRL = canvasOf(256, 256, (x, w) => {
+  const m = w / 2; x.lineCap = "round";
+  for (let arm = 0; arm < 3; arm++) for (let i = 0; i < 36; i++) { const t0 = i / 36, a = arm * TAU / 3 + t0 * 3.6, r = 30 + t0 * (m - 34); x.strokeStyle = "rgba(" + (arm % 2 ? "120,70,200" : "190,150,255") + "," + (0.75 * (1 - t0)).toFixed(3) + ")"; x.lineWidth = 3 + (1 - t0) * 9; x.beginPath(); x.arc(m, m, r, a, a + 0.25); x.stroke(); }
+});
 function drawSub(p, t) {
   if (p.inv > 0 && p.dashT <= 0 && mode === "play" && Math.floor(p.inv * 12) % 2) ctx.globalAlpha = 0.45;
   const rot = p.face + Math.PI / 2;
+  // 잠수정은 늘 가장 잘 보이게: 바깥은 옅은 그림자 고리, 안은 밝은 빛(미리 그린 그림)
+  // 발사 반동만큼 선체가 잠깐 뒤로(그리기만)
+  if (recoil && recoil.t < 0.12) { const rk = (1 - recoil.t / 0.12) * 5; p = { x: p.x - Math.cos(recoil.a) * rk, y: p.y - Math.sin(recoil.a) * rk, face: p.face, inv: p.inv, dashT: p.dashT }; }
+  // 아래에서 숨 쉬듯 맥동하는 부드러운 빛(lighter) + 바깥 옅은 그림자 고리
+  { const pg = 92 + Math.sin(t * 3.2) * 12; ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = 0.28; ctx.drawImage(F.glowTex(2), p.x - pg / 2, p.y - pg / 2, pg, pg); ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over"; }
+  ctx.drawImage(SUB_HALO, p.x - 70, p.y - 70, 140, 140);
   const gs = p.dashT > 0 ? 150 : world.fever > 0 ? 125 + Math.sin(t * 12) * 10 : 100;
   ctx.drawImage(world.fever > 0 ? GLOW_Q : GLOW_SUB, p.x - gs / 2, p.y - gs / 2, gs, gs);
   const art = L.PILOTS[world.kid].art;
@@ -725,7 +1107,10 @@ function drawSub(p, t) {
   }
   ctx.globalAlpha = 1;
   // 전기 해파리 친구가 곁에서 둥실
-  if (world.load.weapons.zap) { const zx = p.x + Math.cos(t * 1.3) * 40, zy = p.y - 34 + Math.sin(t * 2.6) * 5, zw = 24 + world.load.weapons.zap * 3; if (!sprite("zapjelly", zx, zy, zw)) { ctx.fillStyle = "#b9a2ff"; ctx.beginPath(); ctx.arc(zx, zy, zw * 0.35, Math.PI, 0); ctx.fill(); ctx.fillRect(zx - zw * 0.3, zy, zw * 0.08, 8); ctx.fillRect(zx + zw * 0.2, zy, zw * 0.08, 8); } }
+  if (world.load.weapons.zap) { const zl = world.load.weapons.zap, zx = p.x + Math.cos(t * 1.3) * 40, zy = p.y - 34 + Math.sin(t * 2.6) * 5, zw = 28 + zl * 5, charge = 1 - Math.min(1, (world.cd.zap || 0) / 1.0);
+    ctx.globalCompositeOperation = "lighter"; const zg = zw * (1.8 + charge * 1.2 + Math.sin(t * 20) * 0.1); ctx.globalAlpha = 0.45 + charge * 0.4; ctx.drawImage(F.glowTex(zl >= 5 ? 10 : 4), zx - zg / 2, zy - zg / 2, zg, zg); ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
+    ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = 0.7; ctx.drawImage(F.softRing(1), zx - zw * 0.85, zy - zw * 0.85, zw * 1.7, zw * 1.7); ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
+    if (zl >= 3 && charge > 0.6) { JPTS[0][0] = zx - zw * 0.4; JPTS[0][1] = zy; JPTS[1][0] = zx + zw * 0.4; JPTS[1][1] = zy + 4; F.drawLightning(ctx, JPTS, 1, 0.7, (t * 30) | 0, "#fff6a0"); } if (!sprite("zapjelly", zx, zy, zw)) { ctx.fillStyle = "#b9a2ff"; ctx.beginPath(); ctx.arc(zx, zy, zw * 0.35, Math.PI, 0); ctx.fill(); ctx.fillRect(zx - zw * 0.3, zy, zw * 0.08, 8); ctx.fillRect(zx + zw * 0.2, zy, zw * 0.08, 8); } }
 }
 function render() {
   const k = scale * dpr;
@@ -742,15 +1127,31 @@ function render() {
   // 카메라: 잠수정을 따라가되 바다 밖은 안 보이게
   cam.x = view.w >= L.WORLD.w ? (L.WORLD.w - view.w) / 2 : clamp(p.x - view.w / 2, 0, L.WORLD.w - view.w);
   cam.y = view.h >= L.WORLD.h ? (L.WORLD.h - view.h) / 2 : clamp(p.y - view.h / 2, 0, L.WORLD.h - view.h);
-  // 흔들림: 화면 px 로 최대 4
-  if (shakeT > 0 && mode === "play") { cam.x += (Math.random() - 0.5) * 2 * shakeA / scale; cam.y += (Math.random() - 0.5) * 2 * shakeA / scale; }
+  // 흔들림: 충격량의 제곱 × 최대 14 화면 px(움직임 줄이기면 30%), 부드러운 흔들림(사인 섞기)
+  if (trauma > 0.01 && mode !== "over") {
+    const amp = trauma * trauma * (RM ? 4 : 12) / scale;
+    cam.x += (Math.sin(clock * 61.3) * 0.6 + (Math.random() - 0.5) * 0.8) * amp; cam.y += (Math.cos(clock * 53.7) * 0.6 + (Math.random() - 0.5) * 0.8) * amp;
+  }
   ctx.fillStyle = "#0a2a48"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // 확대(punch): 화면 가운데를 기준으로 1 + zoomK 배. 확대만 하므로 바다 밖이 보이지 않는다.
+  const zm = 1 + zoomK, wk = k * zm, ox = canvas.width / 2 - (cam.x + view.w / 2) * wk, oy = canvas.height / 2 - (cam.y + view.h / 2) * wk;
   // 바닥(패턴은 월드 원점에 붙는다)
-  ctx.setTransform(1, 0, 0, 1, -cam.x * k, -cam.y * k);
+  ctx.setTransform(zm, 0, 0, zm, ox, oy);
   ctx.fillStyle = floorPattern();
   ctx.fillRect(Math.max(0, cam.x) * k, Math.max(0, cam.y) * k, Math.min(view.w, L.WORLD.w) * k, Math.min(view.h, L.WORLD.h) * k);
-  ctx.setTransform(k, 0, 0, k, -cam.x * k, -cam.y * k);
+  ctx.setTransform(wk, 0, 0, wk, ox, oy);
   if (zone.tint) { ctx.fillStyle = zone.tint; ctx.fillRect(cam.x, cam.y, view.w, view.h); }
+  // 물결 빛무늬(코스틱) 두 겹이 서로 다르게 흐른다
+  if (!causticPat) causticPat = ctx.createPattern(F.CAUSTIC, "repeat");
+  ctx.globalCompositeOperation = "lighter"; ctx.fillStyle = causticPat;
+  for (let i = 0, nL = F.getQuality() > 0.8 ? 2 : F.getQuality() > 0.5 ? 1 : 0; i < nL; i++) {
+    const s = i ? 1.6 : 1.1, dx = clock * (i ? -9 : 14), dy = clock * (i ? 6 : 4);
+    ctx.globalAlpha = i ? 0.07 : 0.1; ctx.save(); ctx.translate(dx, dy); ctx.scale(s, s);
+    ctx.fillRect((cam.x - dx) / s, (cam.y - dy) / s, view.w / s + 2, view.h / s + 2); ctx.restore();
+  }
+  ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
+  // 바탕 거품(화면 기준 — 시차로 천천히 흐른다)
+  ctx.save(); ctx.translate(cam.x, cam.y); F.ambientDraw(ctx); ctx.restore();
   const x0 = cam.x - 100, y0 = cam.y - 100, x1 = cam.x + view.w + 100, y1 = cam.y + view.h + 100;
   const vis = (x, y) => x > x0 && x < x1 && y > y0 && y < y1;
   // 장식
@@ -792,6 +1193,18 @@ function render() {
       ctx.fillStyle = "#c27bd8"; ctx.font = "900 " + Math.round(s * 0.5) + "px " + FONT; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("?", q.x, q.y + 1);
     }
   }
+  // 큰 진주: 크고, 무지개빛이 돌고, 사라지지 않는다(먹으면 어려운 문제 → 필살기)
+  for (const b of world.bigs) {
+    const s = 78 * (1 + Math.sin(b.t * 3.5) * 0.07), yb = b.y + Math.sin(b.t * 2) * 4;
+    ctx.globalCompositeOperation = "lighter";
+    for (let i = 0; i < 6; i++) { const a = b.t * 1.6 + i * TAU / 6, gx = b.x + Math.cos(a) * s * 0.42, gy = yb + Math.sin(a) * s * 0.42, g = s * 0.9; ctx.globalAlpha = 0.45; ctx.drawImage(F.glowTex(F.RAINBOW_IDX[i]), gx - g / 2, gy - g / 2, g, g); }
+    const rr = s * (1.05 + ((b.t * 0.8) % 1) * 0.6); ctx.globalAlpha = 0.7 * (1 - ((b.t * 0.8) % 1)); ctx.drawImage(F.softRing(3), b.x - rr, yb - rr, rr * 2, rr * 2);
+    ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
+    ctx.drawImage(GLOW_Q, b.x - s * 1.2, yb - s * 1.2, s * 2.4, s * 2.4);
+    if (!sprite("qpearl", b.x, yb, s)) { ctx.fillStyle = "#fff6e8"; ctx.beginPath(); ctx.arc(b.x, yb, s * 0.42, 0, TAU); ctx.fill(); }
+    ctx.font = "900 17px " + FONT; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.lineJoin = "round"; ctx.lineWidth = 5; ctx.strokeStyle = "rgba(40,20,90,.9)";
+    ctx.strokeText("큰 진주", b.x, yb + s * 0.62); ctx.fillStyle = RAINBOW_COL[Math.floor(clock * 6) % 6]; ctx.fillText("큰 진주", b.x, yb + s * 0.62);
+  }
   // 곰치 경고
   for (const a of world.warns) {
     if (Math.floor(a.t * 8) % 2) continue;
@@ -805,14 +1218,17 @@ function render() {
   }
   // 씻긴 친구: 원래 색으로 웃으며 헤엄쳐 간다
   for (const f of world.fx.freed) {
+    // 필살기 물결이 아직 안 닿은 친구: 먹물 모습 그대로 그 자리에서 떨고 있다
+    if (f.t < 0) { const x = f.x - f.vx * f.t, y = f.y - f.vy * f.t; if (!vis(x, y)) continue; const art = ART_OF[f.kind] || f.kind, w = EW[f.kind] * (f.elite ? L.ELITE.r : 1); if (!sprite(art, x + Math.sin(clock * 40 + x) * 1.5, y, w, false, 0, false)) friendShape(ctx, SHAPE_OF[f.kind] || f.kind, x, y, L.ENEMIES[f.kind].r, 1, false, 1, clock); continue; }
     if (!vis(f.x, f.y)) continue;
     const a = f.t < 1 ? 1 : 1 - (f.t - 1) / 0.4;
     ctx.globalAlpha = Math.max(0, a);
     // 씻기는 순간 '뽁' 하고 커졌다가(찌그러짐) 웃으며 헤엄쳐 간다
     const pop = f.t < 0.2 ? 1 + Math.sin(f.t / 0.2 * Math.PI) * 0.4 : 1;
     const w = EW[f.kind] * (f.kind === "boss" ? 1 : 0.95) * (f.elite ? L.ELITE.r : 1) * pop, wig = Math.sin(f.t * 14) * 0.12;
-    if (f.t < 0.12) { ctx.globalAlpha = 0.8 * (1 - f.t / 0.12); ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(f.x, f.y, w * 0.55 * (1 + f.t * 4), 0, TAU); ctx.fill(); ctx.globalAlpha = Math.max(0, a); }
     if (!sprite(OK_ART[f.kind], f.x, f.y, w, false, wig, flipFor(f.kind, f.face))) friendShape(ctx, SHAPE_OF[f.kind] || f.kind, f.x, f.y, L.ENEMIES[f.kind].r * pop, 0, false, f.face, f.t);
+    // 씻기는 순간 그 친구 모양 그대로 하얗게 번쩍(과녁 같은 원판 대신)
+    if (f.t < 0.1 && WHITE[OK_ART[f.kind]]) { ctx.globalAlpha = 0.9 * (1 - f.t / 0.1); sprite(OK_ART[f.kind], f.x, f.y, w * 1.04, true, wig, flipFor(f.kind, f.face)); ctx.globalAlpha = Math.max(0, a); }
     if (f.t < 0.6) { ctx.fillStyle = "#ffffff"; for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(f.x + Math.cos(i * 2.1 + f.t * 3) * (12 + f.t * 40), f.y + Math.sin(i * 2.1 + f.t * 3) * (12 + f.t * 40), 3.5, 0, TAU); ctx.fill(); } }
     ctx.globalAlpha = 1;
   }
@@ -826,6 +1242,7 @@ function render() {
     }
     ctx.stroke(); ctx.globalAlpha = 1;
   }
+  drawUnderFx(p);
   // 친구들
   for (const e of world.enemies) if (vis(e.x, e.y)) drawEnemy(e);
   // 고래 친구: 지나가는 줄을 씻어 준다
@@ -838,8 +1255,14 @@ function render() {
   // 대왕 먹물 방울
   ctx.fillStyle = "#2b2550";
   for (const ink of world.inks) { if (!vis(ink.x, ink.y)) continue; ctx.beginPath(); ctx.arc(ink.x, ink.y, 10, 0, TAU); ctx.fill(); }
+  // 먹물 방울은 피해야 하는 것: 분홍빨강 고리가 콩닥(씻어 줄 친구와 한눈에 구별)
+  ctx.strokeStyle = "#ff4f7a"; ctx.lineWidth = 3; ctx.globalAlpha = 0.65 + Math.sin(clock * 14) * 0.3; ctx.beginPath();
+  for (const ink of world.inks) { if (!vis(ink.x, ink.y)) continue; const rr = 15 + Math.sin(clock * 14) * 2; ctx.moveTo(ink.x + rr, ink.y); ctx.arc(ink.x, ink.y, rr, 0, TAU); }
+  ctx.stroke(); ctx.globalAlpha = 1; ctx.fillStyle = "#2b2550";
   ctx.fillStyle = "rgba(255,255,255,.5)";
   for (const ink of world.inks) { if (!vis(ink.x, ink.y)) continue; ctx.beginPath(); ctx.arc(ink.x - 3, ink.y - 3, 3, 0, TAU); ctx.fill(); }
+  // 장면 어둡게(필살기·대왕·터보): 짙은 남청색을 곱해서 바다만 가라앉힌다. 이 아래(바다·친구)는 어두워지고, 이 위(효과·잠수정)는 그대로 밝다.
+  if (dimA > 0.01) { ctx.globalCompositeOperation = "multiply"; ctx.globalAlpha = Math.min(1, dimA * 1.15); ctx.fillStyle = "#3a5f8c"; ctx.fillRect(cam.x - 20, cam.y - 20, view.w + 40, view.h + 40); ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1; }
   // 등대 빛 파동
   for (const q of world.fx.pulses) {
     const kk = q.t / 0.45, R = q.R * (0.3 + kk * 0.7);
@@ -853,7 +1276,7 @@ function render() {
   const ld = world.load;
   if (ld.weapons.whirl) {
     const s = L.weaponStats("whirl", ld.weapons.whirl, !!ld.evo.whirl, world.m), tex = s.evo ? SWIRL[5] : SWIRL[s.lv - 1];
-    const wc = s.evo ? "#c58cff" : L.LV_COLORS[s.lv - 1];
+    const wc = s.evo ? "#c58cff" : lvHex(s.lv);
     ctx.globalAlpha = 0.28; ctx.strokeStyle = wc; ctx.lineWidth = s.size * 1.6; ctx.beginPath(); ctx.arc(p.x, p.y, s.r, 0, TAU); ctx.stroke();
     // 물살 꼬리: 각 물살 뒤로 굵은 호 + 가는 흰 호
     ctx.lineCap = "round";
@@ -863,12 +1286,37 @@ function render() {
       ctx.globalAlpha = 0.9; ctx.strokeStyle = "#ffffff"; ctx.lineWidth = s.size * 0.35; ctx.beginPath(); ctx.arc(p.x, p.y, s.r, a - 0.7, a); ctx.stroke();
     }
     ctx.globalAlpha = 1;
+    // 물살 머리 뒤의 빛무리(lighter) — 단계가 오를수록 크고 진하게
+    ctx.globalCompositeOperation = "lighter";
+    const wci = s.evo ? 11 : lvCol(s.lv);
     for (let i = 0; i < s.n; i++) {
-      const a = world.whirlAng + i * TAU / s.n, ox = p.x + Math.cos(a) * s.r, oy = p.y + Math.sin(a) * s.r, sz = s.size * 2.6;
+      const a = world.whirlAng + i * TAU / s.n, ox = p.x + Math.cos(a) * s.r, oy = p.y + Math.sin(a) * s.r, g = s.size * (3 + s.lv * 0.95);
+      ctx.globalAlpha = 0.55 + s.lv * 0.07; ctx.drawImage(F.glowTex(wci), ox - g / 2, oy - g / 2, g, g);
+    }
+    ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
+    for (let i = 0; i < s.n; i++) {
+      const a = world.whirlAng + i * TAU / s.n, ox = p.x + Math.cos(a) * s.r, oy = p.y + Math.sin(a) * s.r, sz = s.size * (2.2 + s.lv * 0.38);
       ctx.save(); ctx.translate(ox, oy); ctx.rotate(-world.t * 9); ctx.drawImage(tex, -sz / 2, -sz / 2, sz, sz); ctx.restore();
     }
   }
   // 소라 부메랑
+  // 소라 빛 리본: 지나온 길(같은 식으로 거꾸로 계산)을 굵게→가늘게, 단계 색 + 흰 심
+  ctx.lineCap = "round"; ctx.lineJoin = "round";
+  for (const sh of world.shells) {
+    const segs = 6 + sh.lv * 2, ux = Math.cos(sh.a), uy = Math.sin(sh.a), col = lvHex(sh.lv);
+    for (let pass = 0; pass < 2; pass++) {
+      let px0 = sh.x, py0 = sh.y;
+      if (pass === 0) ctx.globalCompositeOperation = "lighter";
+      for (let i = 1; i <= segs; i++) {
+        const tt = sh.t - i * 0.022; if (tt <= 0) break;
+        const kq = tt / sh.T, out = Math.sin(Math.PI * kq) * sh.dist, side = Math.sin(TAU * kq) * 34 * sh.k, gx = p.x + ux * out - uy * side, gy = p.y + uy * out + ux * side, f = 1 - i / segs;
+        ctx.globalAlpha = pass ? f * 0.9 : f * 0.75; ctx.strokeStyle = pass ? "#ffffff" : col; ctx.lineWidth = (pass ? 0.35 : 1.1) * sh.r * (0.3 + f);
+        ctx.beginPath(); ctx.moveTo(px0, py0); ctx.lineTo(gx, gy); ctx.stroke(); px0 = gx; py0 = gy;
+      }
+      ctx.globalCompositeOperation = "source-over";
+    }
+  }
+  ctx.globalAlpha = 1;
   for (const sh of world.shells) for (let gI = 3; gI >= 1; gI--) { // 회전 잔상
     const tt = sh.t - gI * 0.04; if (tt <= 0) continue;
     const kq = tt / sh.T, out = Math.sin(Math.PI * kq) * sh.dist, side = Math.sin(TAU * kq) * 34 * sh.k, ux = Math.cos(sh.a), uy = Math.sin(sh.a);
@@ -876,48 +1324,63 @@ function render() {
     if (!sprite("shell", gx, gy, sh.r * 2.3, false, tt * 14 * sh.k)) shellShape(ctx, gx, gy, sh.r, tt * 14 * sh.k);
   }
   ctx.globalAlpha = 1;
-  for (const sh of world.shells) { const rot = sh.t * 14 * sh.k, g = sh.r * 3.2; ctx.drawImage(LV_GLOW[sh.lv - 1], sh.x - g / 2, sh.y - g / 2, g, g); if (!sprite("shell", sh.x, sh.y, sh.r * 2.3, false, rot)) shellShape(ctx, sh.x, sh.y, sh.r, rot); }
+  for (const sh of world.shells) { const rot = sh.t * 14 * sh.k, g = sh.r * (2.6 + sh.lv * 0.7); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = 0.5 + sh.lv * 0.1; ctx.drawImage(F.glowTex(lvCol(sh.lv)), sh.x - g / 2, sh.y - g / 2, g, g); ctx.globalAlpha = 0.8; ctx.drawImage(F.softRing(1), sh.x - sh.r * 1.8, sh.y - sh.r * 1.8, sh.r * 3.6, sh.r * 3.6); ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1; if (!sprite("shell", sh.x, sh.y, sh.r * (1.9 + sh.lv * 0.2), false, rot)) shellShape(ctx, sh.x, sh.y, sh.r, rot); }
   // 탄: 방울·불가사리
   let ri = 0;
   // 꼬리: 방울은 뒤로 길게 남는 물줄기(단계 색), 불가사리는 빛나는 꼬리
   ctx.lineCap = "round";
   for (let pass = 0; pass < 2; pass++) for (const s of world.shots) {
     if (!vis(s.x, s.y)) continue;
-    const tl = s.k === "b" ? 0.075 : 0.06, col = s.k === "b" ? (s.rainbow ? RAINBOW_COL[(s.x | 0) % 6] : BUB_COL[Math.min(4, s.lv - 1)]) : "#ffd27a";
-    ctx.globalAlpha = pass ? 0.9 : 0.4; ctx.strokeStyle = pass ? "#ffffff" : col; ctx.lineWidth = pass ? s.r * 0.45 : s.r * 1.5;
+    const tl = s.k === "b" ? 0.08 + s.lv * 0.045 : 0.07 + s.lv * 0.035, col = s.k === "b" ? (s.rainbow ? RAINBOW_COL[(s.x | 0) % 6] : BUB_COL[Math.min(4, s.lv - 1)]) : "#ffd27a";
+    ctx.globalAlpha = pass ? 0.9 : 0.4; ctx.strokeStyle = pass ? "#ffffff" : col; ctx.lineWidth = pass ? s.r * 0.45 : s.r * (1.1 + s.lv * 0.18);
     ctx.beginPath(); ctx.moveTo(s.x - s.vx * tl * (pass ? 0.6 : 1), s.y - s.vy * tl * (pass ? 0.6 : 1)); ctx.lineTo(s.x, s.y); ctx.stroke();
   }
-  ctx.globalAlpha = 0.55;
-  for (const s of world.shots) { if (s.k !== "b" || !vis(s.x, s.y)) continue; const g = s.r * 4.2; ctx.drawImage(GLOW_BUB, s.x - g / 2, s.y - g / 2, g, g); }
-  ctx.globalAlpha = 1;
+  // 탄 빛무리: lighter 로 겹쳐 진짜 빛나 보이게(단계 색, 무지개면 돌아가며)
+  ctx.globalCompositeOperation = "lighter";
+  for (const s of world.shots) {
+    if (!vis(s.x, s.y)) continue;
+    const ci = s.k === "b" ? (s.rainbow ? F.RAINBOW_IDX[((s.x | 0) % 6 + 6) % 6] : lvCol(s.lv)) : s.lv >= 5 ? 6 : 7, g = s.r * (s.k === "b" ? 3.2 + s.lv * 0.5 : 3.2 + s.lv * 0.4);
+    ctx.globalAlpha = s.k === "b" ? 0.55 + s.lv * 0.09 : 0.6 + s.lv * 0.08; ctx.drawImage(F.glowTex(ci), s.x - g / 2, s.y - g / 2, g, g);
+    if (s.k === "b") for (let j = 1; j <= 3; j++) { const gj = g * (0.7 - j * 0.14); ctx.globalAlpha = 0.42 - j * 0.11; ctx.drawImage(F.glowTex(ci), s.x - s.vx * 0.022 * j - gj / 2, s.y - s.vy * 0.022 * j - gj / 2, gj, gj); }
+    // 내 것 표시: 불가사리 표창은 하늘빛 고리
+    else { ctx.globalAlpha = 0.8; ctx.drawImage(F.softRing(1), s.x - s.r * 1.9, s.y - s.r * 1.9, s.r * 3.8, s.r * 3.8); }
+  }
+  ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
   for (const s of world.shots) {
     if (!vis(s.x, s.y)) continue;
     if (s.k === "b") {
-      const sz = s.r * 2.6;
+      const sz = s.r * (2.3 + s.lv * 0.22) * (1 + Math.sin(clock * 30 + s.x) * 0.06);
+      // 4단계부터 잔상 방울이 뒤따른다(5단계는 둘)
+      if (s.lv >= 4) for (let gI = s.lv >= 5 ? 2 : 1; gI >= 1; gI--) { const tex = s.rainbow ? RAINBOW[(ri + gI) % 6] : BUB[Math.min(4, s.lv)], gs = sz * (1 - gI * 0.18), gx = s.x - s.vx * 0.035 * gI, gy = s.y - s.vy * 0.035 * gI; ctx.globalAlpha = 0.45 - gI * 0.15; ctx.drawImage(tex, gx - gs / 2, gy - gs / 2, gs, gs); }
+      ctx.globalAlpha = 1;
       if (s.rainbow) ctx.drawImage(RAINBOW[ri++ % 6], s.x - sz / 2, s.y - sz / 2, sz, sz);
       else ctx.drawImage(BUB[Math.min(4, s.lv)], s.x - sz / 2, s.y - sz / 2, sz, sz);
     } else {
-      const sz = s.r * 2.6;
-      ctx.drawImage(LV_GLOW[s.lv - 1], s.x - sz * 0.8, s.y - sz * 0.8, sz * 1.6, sz * 1.6);
+      const sz = s.r * (2.1 + s.lv * 0.32);
+      if (s.lv >= 4) for (let gI = s.lv >= 5 ? 2 : 1; gI >= 1; gI--) { ctx.globalAlpha = 0.4 - gI * 0.12; sprite("star", s.x - s.vx * 0.035 * gI, s.y - s.vy * 0.035 * gI, sz * (1 - gI * 0.15), false, s.spin - gI * 0.5); }
+      ctx.globalAlpha = 1;
       if (!sprite("star", s.x, s.y, sz, false, s.spin)) { ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(s.spin); star5(ctx, 0, 0, s.r * 1.2, s.lv >= 5 ? "#ff6fae" : s.lv >= 3 ? "#ff8a4a" : "#ffad5a"); ctx.restore(); }
     }
   }
   // 전기: 굵은 띠 + 가는 흰 줄(지그재그는 seed 로 고정)
   ctx.lineJoin = "round"; ctx.lineCap = "round";
+  // 번개는 곁의 전기 해파리에게서 나간다. 두 프레임마다 모양이 바뀌어 지지직 떨린다. 단계가 오를수록 굵고 곁가지가 많다.
+  // 잔번개: 엔진 번개가 사라진 뒤에도 0.45초 동안 두세 번 다시 번쩍(꾸밈만). 새 번개는 한 번만 베껴 둔다.
+  for (const z of world.fx.zaps) if (!z.seen) { z.seen = true; if (boltEcho.length >= 6) boltEcho.shift(); boltEcho.push({ pts: z.pts.map(q => [q[0], q[1]]), lv: z.lv, t: 0, seed: (z.seed * 1000) | 0 }); }
+  for (const b of boltEcho) {
+    if (b.t < 0.2 || b.t > 0.45) continue;
+    const fl = (Math.floor(b.t * 30) % 3 === 0 ? 1 : 0.35) * (1 - (b.t - 0.2) / 0.25);
+    b.pts[0][0] = p.x + Math.cos(clock * 1.3) * 40; b.pts[0][1] = p.y - 34 + Math.sin(clock * 2.6) * 5;
+    F.drawLightning(ctx, b.pts, Math.max(1, b.lv - 1), fl * 0.8, b.seed + ((clock * 20) | 0), lvHex(b.lv));
+  }
   for (const z of world.fx.zaps) {
-    ctx.globalAlpha = Math.min(1, z.t / 0.12);
-    ctx.beginPath();
-    for (let i = 0; i < z.pts.length; i++) {
-      const [x, y] = z.pts[i];
-      if (!i) { ctx.moveTo(x, y); continue; }
-      const [px, py] = z.pts[i - 1], dx = x - px, dy = y - py, len = Math.hypot(dx, dy) || 1, nx = -dy / len, ny = dx / len;
-      for (let s = 1; s <= 3; s++) { const j = Math.sin(z.seed + i * 7 + s * 3.1 + clock * 30) * 10; ctx.lineTo(px + dx * s / 4 + nx * j, py + dy * s / 4 + ny * j); }
-      ctx.lineTo(x, y);
-    }
-    const za = Math.min(1, z.t / 0.12);
-    ctx.globalAlpha = za * 0.25; ctx.strokeStyle = "#fff6a0"; ctx.lineWidth = 26 + z.lv * 5; ctx.stroke();
-    ctx.globalAlpha = za * 0.85; ctx.strokeStyle = L.LV_COLORS[z.lv - 1]; ctx.lineWidth = 11 + z.lv * 2.5; ctx.stroke();
-    ctx.globalAlpha = za; ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 3 + z.lv * 0.7; ctx.stroke();
+    const za = Math.min(1, z.t / 0.12), pts = z.pts;
+    if (pts.length > 1) { pts[0][0] = p.x + Math.cos(clock * 1.3) * 40; pts[0][1] = p.y - 34 + Math.sin(clock * 2.6) * 5; }
+    F.drawLightning(ctx, pts, z.lv, za, ((z.seed * 100) | 0) + ((clock * 30) | 0), lvHex(z.lv));
+    // 맞은 자리마다 빛 꽃
+    ctx.globalCompositeOperation = "lighter";
+    for (let i = 1; i < pts.length; i++) { const g = 40 + z.lv * 10; ctx.globalAlpha = za * 0.9; ctx.drawImage(F.glowTex(10), pts[i][0] - g / 2, pts[i][1] - g / 2, g, g); }
+    ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
   }
   ctx.globalAlpha = 1;
   // 맞을 때 터지는 작은 방울
@@ -935,7 +1398,7 @@ function render() {
   ctx.globalAlpha = 1;
   // 발사 섬광: 잠수정 앞
   if (muzzle && muzzle.t < 0.08) {
-    const mk = 1 - muzzle.t / 0.08, mx = p.x + Math.cos(muzzle.a) * 30, my = p.y + Math.sin(muzzle.a) * 30, ms = (44 + muzzle.lv * 10) * (0.7 + mk * 0.5);
+    const mk = 1 - muzzle.t / 0.08, mx = p.x + Math.cos(muzzle.a) * 30, my = p.y + Math.sin(muzzle.a) * 30, ms = (60 + muzzle.lv * 14) * (0.7 + mk * 0.5);
     ctx.globalAlpha = mk; ctx.drawImage(GLOW_SUB, mx - ms / 2, my - ms / 2, ms, ms);
     ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.ellipse(mx, my, ms * 0.28, ms * 0.14, muzzle.a, 0, TAU); ctx.fill(); ctx.globalAlpha = 1;
   }
@@ -949,9 +1412,37 @@ function render() {
     ctx.beginPath(); ctx.arc(q.x, q.y, r, 0, TAU); ctx.fill();
   }
   ctx.globalAlpha = 1;
-  drawSub(p, clock);
+  // 충격파
+  F.drawShocks(ctx);
+  // 슈웅! 잔상: 지나온 자리에 잠수정 그림이 옅게(밝게 겹쳐) 남는다
+  if (ghosts.length) {
+    const art = L.PILOTS[world.kid].art;
+    for (let i = 0; i < ghosts.length; i++) { const g = ghosts[i], a = (1 - g.age / 0.3) * 0.55; if (a <= 0) continue; ctx.globalAlpha = a; sprite(art, g.x, g.y, 50, false, g.rot); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = a * 0.6; sprite(art, g.x, g.y, 52, false, g.rot); ctx.globalCompositeOperation = "source-over"; }
+    ctx.globalAlpha = 1;
+  }
+  // 잠수정 뒤 빛: 카드로 변신한 직후·무지개 터보면 크게
+  if (subGlow > 0 || fever) {
+    ctx.globalCompositeOperation = "lighter";
+    const sg2 = Math.max(0, subGlow), gs = 120 + sg2 * 160 + (fever ? 50 + Math.sin(clock * 14) * 14 : 0);
+    ctx.globalAlpha = Math.min(0.7, 0.22 + sg2 * 0.5); ctx.drawImage(F.glowTex(fever ? F.RAINBOW_IDX[Math.floor(clock * 10) % 6] : 0), p.x - gs / 2, p.y - gs / 2, gs, gs);
+    ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
+  }
+  // 무지개 터보: 잠수정을 감싸는 무지개 고리가 돈다
+  if (fever) { for (let i = 0; i < 3; i++) { ctx.globalAlpha = 0.75; ctx.strokeStyle = RAINBOW_COL[(i * 2 + Math.floor(clock * 12)) % 6]; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(p.x, p.y, 40 + i * 6 + Math.sin(clock * 9 + i) * 3, clock * 6 + i, clock * 6 + i + 4.2); ctx.stroke(); } ctx.globalAlpha = 1; }
   // 효과 그림(fx_*.webp)
   for (const f of fxList) drawFxItem(f);
+  // 반짝 입자(물방울·빛 줄·별)
+  F.drawSparks(ctx, cam.x - 60, cam.y - 60, cam.x + view.w + 60, cam.y + view.h + 60);
+  // 큰 폭발 뒤 천천히 도는 빛살 쐐기 · 필살기 모으는 동안 커지는 빛
+  if (godRays > 0 || (ult && !ult.fired)) {
+    ctx.globalCompositeOperation = "lighter";
+    if (godRays > 0) { const a = Math.min(1, godRays / 0.6) * 0.18; for (let i = 0; i < 7; i++) { const an = clock * 0.35 + i * TAU / 7, len = godR * (0.8 + (i % 3) * 0.15), bw = len * 0.2; ctx.globalAlpha = a; ctx.save(); ctx.translate(godX, godY); ctx.rotate(an); ctx.drawImage(F.RAYTEX, 0, -bw / 2, len, bw); ctx.restore(); } }
+    if (ult && !ult.fired) { const k2 = Math.min(1, ult.t / ULT_HIT), g = 50 + k2 * k2 * 150 + Math.sin(clock * 30) * 6; ctx.globalAlpha = 0.35 + k2 * 0.35; ctx.drawImage(F.glowTex(1), p.x - g / 2, p.y - g / 2, g, g); }
+    ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
+  }
+  // 잠수정은 모든 공격 효과보다 위에(아이가 자기 잠수정을 놓치지 않게)
+  drawSub(p, clock);
+  if (finale) drawFinaleFriend();
   // 떠오르는 글자
   ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.lineJoin = "round";
   for (const f of floats) {
@@ -970,28 +1461,65 @@ function render() {
   // 화면 위 꾸밈
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   rays(k);
-  if (fever) { ctx.globalAlpha = 0.55 + Math.sin(clock * 10) * 0.25; ctx.drawImage(FEVER_EDGE, 0, 0, canvas.width, canvas.height); ctx.globalAlpha = 1; }
-  if (edgeFlash > 0) { ctx.globalAlpha = Math.min(0.75, edgeFlash * 2.5); ctx.drawImage(EDGE_FLASH, 0, 0, canvas.width, canvas.height); ctx.globalAlpha = 1; }
-  if (flash > 0) { ctx.fillStyle = "rgba(255,255,255," + Math.min(0.45, flash * 1.8).toFixed(2) + ")"; ctx.fillRect(0, 0, canvas.width, canvas.height); }
-  // 한 번에 여러 마리: 가운데 큰 글자가 튀어 오른다
-  if (multiBan && mode === "play") {
+  const CW = canvas.width, CH = canvas.height;
+  // 속도선: 슈웅!·무지개 터보·필살기 때 가운데(잠수정)에서 바깥으로
+  if (speedA > 0.01 && !RM) {
+    const sx2 = ox + p.x * wk, sy2 = oy + p.y * wk, seed = Math.floor(clock * 20);
+    if (fever) { for (let i = 0; i < 3; i++) F.speedLines(ctx, sx2, sy2, CW, CH, F.getQuality() > 0.6 ? 14 : 8, speedA * 0.5, seed + i * 31, RAINBOW_COL[(i * 2 + seed) % 6], 0.3, 3 * dpr); }
+    else F.speedLines(ctx, sx2, sy2, CW, CH, 26, speedA * 0.55, seed, speedCol, 0.3, 3 * dpr);
+  }
+  // 무지개 터보 들어갈 때: 화면 가장자리에서 무지개 띠가 쓸고 지나간다
+  if (feverIntro > 0) { const fi = Math.max(0, feverIntro); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = fi * 0.5; for (let i = 0; i < 6; i++) { ctx.fillStyle = RAINBOW_COL[i]; const hgt = CH / 6, yy = i * hgt, xs = (1 - fi) * CW * 1.4 - CW * 0.4; ctx.fillRect(xs - CW * 0.25, yy, CW * 0.25, hgt); } ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over"; }
+  // 어둡게(필살기·대왕 등장·끝 장면): 가장자리 그림자 + 옅은 전체
+  if (dimA > 0.01) { ctx.globalAlpha = Math.min(0.85, dimA * 1.1); ctx.drawImage(F.VIGNETTE, 0, 0, CW, CH); ctx.globalAlpha = 1; }
+  if (fever) { ctx.globalAlpha = 0.55 + Math.sin(clock * 10) * 0.25; ctx.drawImage(FEVER_EDGE, 0, 0, CW, CH); ctx.globalAlpha = 1; }
+  if (edgeFlash > 0) { ctx.globalAlpha = Math.min(0.75, edgeFlash * 2.5); ctx.drawImage(EDGE_FLASH, 0, 0, CW, CH); ctx.globalAlpha = 1; }
+  if (flash > 0) { ctx.fillStyle = "rgba(" + flashCol + "," + Math.min(0.42, flash * 1.8).toFixed(2) + ")"; ctx.fillRect(0, 0, CW, CH); }
+  // 위아래 영화 띠
+  if (lbox > 0.01) { const bh = CH * 0.085 * lbox; ctx.fillStyle = "rgba(2,8,24,.9)"; ctx.fillRect(0, 0, CW, bh); ctx.fillRect(0, CH - bh, CW, bh); }
+  // 대왕이 화면 밖이면 가장자리에 대왕 쪽을 가리키는 표시
+  if (world.boss && mode === "play") {
+    const b = world.boss, bx = ox + b.x * wk, by2 = oy + b.y * wk, pad = 46 * dpr;
+    if (bx < 0 || bx > CW || by2 < 0 || by2 > CH) {
+      const cx2 = CW / 2, cy2 = CH / 2, dx = bx - cx2, dy = by2 - cy2, kx = (CW / 2 - pad) / Math.max(1, Math.abs(dx)), ky = (CH / 2 - pad) / Math.max(1, Math.abs(dy)), kk = Math.min(kx, ky), ax = cx2 + dx * kk, ay = cy2 + dy * kk, an = Math.atan2(dy, dx), rr = 20 * dpr * (1 + Math.sin(clock * 8) * 0.08);
+      ctx.fillStyle = "#7a4fd8"; ctx.beginPath(); ctx.moveTo(ax + Math.cos(an) * rr * 1.9, ay + Math.sin(an) * rr * 1.9); ctx.lineTo(ax + Math.cos(an + 0.6) * rr, ay + Math.sin(an + 0.6) * rr); ctx.lineTo(ax + Math.cos(an - 0.6) * rr, ay + Math.sin(an - 0.6) * rr); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.arc(ax, ay, rr, 0, TAU); ctx.fill(); ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 3 * dpr; ctx.stroke();
+      ctx.fillStyle = "#ffe27a"; ctx.font = "900 " + Math.round(18 * dpr) + "px " + FONT; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("대왕", ax, ay + 1);
+    }
+  }
+  // 대왕 등장 글씨 띠
+  if (bossIntroT > 0) {
     ctx.setTransform(k, 0, 0, k, 0, 0);
-    const mt = multiBan.t, pop = mt < 0.15 ? 0.5 + mt / 0.15 * 0.75 : mt < 0.3 ? 1.25 - (mt - 0.15) / 0.15 * 0.25 : 1, px = [34, 42, 52][multiBan.tier] * pop;
+    const a = Math.min(1, bossIntroT / 0.3, (1.3 - bossIntroT) / 0.15 + 0.01), yy = view.h * 0.74;
+    ctx.globalAlpha = a * 0.8; ctx.fillStyle = "#2a1650"; ctx.fillRect(0, yy - 26, view.w, 52);
+    ctx.globalAlpha = a; ctx.fillStyle = "#c58cff"; ctx.fillRect(0, yy - 30, view.w, 4); ctx.fillRect(0, yy + 26, view.w, 4);
+    ctx.font = "900 26px " + FONT; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = "#ffffff";
+    const off = (clock * 120) % 260; for (let x = -260 + off; x < view.w + 260; x += 260) ctx.fillText("대왕 등장 · 대왕 등장", x, yy + 1);
+    ctx.globalAlpha = 1; ctx.setTransform(1, 0, 0, 1, 0, 0);
+  }
+  // 한 번에 여러 마리: 가운데 큰 글자가 튀어 오른다
+  if (multiBan && mode === "play" && !(bannerT > 0)) {
+    ctx.setTransform(k, 0, 0, k, 0, 0);
+    const mt = multiBan.t, pop = mt < 0.15 ? 0.5 + mt / 0.15 * 0.75 : mt < 0.3 ? 1.25 - (mt - 0.15) / 0.15 * 0.25 : 1, px = [34, 42, 52][multiBan.tier] * pop * (Math.min(vw, vh) < 500 ? 0.7 : 1);
     ctx.globalAlpha = mt > 0.8 ? Math.max(0, (1.1 - mt) / 0.3) : 1;
-    ctx.font = "900 " + Math.round(px) + "px " + FONT; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.lineJoin = "round"; ctx.lineWidth = 9; ctx.strokeStyle = "rgba(6,30,60,.92)";
-    const my = view.h * 0.7 - mt * 20; ctx.strokeText(multiBan.text, view.w / 2, my);
-    ctx.fillStyle = multiBan.tier === 2 ? RAINBOW_COL[Math.floor(clock * 12) % 6] : multiBan.tier === 1 ? "#ff9ee0" : "#7dffb0"; ctx.fillText(multiBan.text, view.w / 2, my);
+    ctx.font = "900 " + Math.round(px) + "px " + FONT; ctx.textBaseline = "middle"; ctx.lineJoin = "round"; ctx.lineWidth = 9; ctx.strokeStyle = "rgba(6,30,60,.92)";
+    // 잠수정·가운데를 가리지 않게: 넓은 화면은 왼쪽 위, 세로 화면은 HUD 아래 가운데(콤보 숫자 밑)
+    const wide = view.w > view.h * 1.2, mxp = wide ? 18 : view.w / 2, my = topSafe + 28 - mt * 8;
+    ctx.textAlign = wide ? "left" : "center"; ctx.strokeText(multiBan.text, mxp, my);
+    ctx.fillStyle = multiBan.tier === 2 ? RAINBOW_COL[Math.floor(clock * 12) % 6] : multiBan.tier === 1 ? "#ff9ee0" : "#7dffb0"; ctx.fillText(multiBan.text, mxp, my);
     ctx.globalAlpha = 1;
   }
   // 콤보 숫자(오른쪽 위): 단계 이름과 색, 단계가 바뀌면 튀어 오른다
-  if (world.combo >= 3 && mode === "play") {
+  if (world.combo >= 3 && mode === "play" && !(bannerT > 0) && !(multiBan && !(view.w > view.h * 1.2))) {
     ctx.setTransform(k, 0, 0, k, 0, 0);
-    const c = world.combo, sz = Math.min(44, 22 + Math.log2(c) * 4), bump = (world.comboT > L.FEVER.gap - 0.1 ? 1.12 : 1) * (1 + comboPop * 0.9);
-    ctx.textAlign = "right"; ctx.textBaseline = "middle"; ctx.lineJoin = "round";
-    ctx.font = "900 " + Math.round(sz * bump) + "px " + FONT; ctx.lineWidth = 6; ctx.strokeStyle = "rgba(6,30,60,.88)";
-    const cx = view.w - 16, cy = 92;
+    const c = world.combo, sz = Math.min(52, 24 + Math.log2(c) * 5) * (Math.min(vw, vh) < 500 ? 0.62 : 1), bump = (world.comboT > L.FEVER.gap - 0.1 ? 1.15 : 1) * (1 + comboPop * 0.9);
+    const cx = view.w - 16, cy = topSafe + sz * bump * 0.62 + 6;
     ctx.globalAlpha = Math.min(1, world.comboT / 0.4 + 0.3);
     const ti = L.comboTier(c), T = ti >= 0 ? L.COMBO_TIERS[ti] : null;
+    // 콤보가 끊기기까지 남은 시간: 숫자 왼쪽의 작은 고리
+    { ctx.font = "900 " + Math.round(sz * bump) + "px " + FONT; const rx = cx - ctx.measureText(c + " 콤보").width - 24, kk = Math.max(0, world.comboT / L.FEVER.gap); ctx.lineWidth = 6; ctx.strokeStyle = "rgba(6,30,60,.6)"; ctx.beginPath(); ctx.arc(rx, cy, 13, 0, TAU); ctx.stroke(); ctx.strokeStyle = !T ? "#ffe27a" : T.color === "rainbow" ? RAINBOW_COL[Math.floor(clock * 10) % 6] : T.color; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(rx, cy, 13, -Math.PI / 2, -Math.PI / 2 + kk * TAU); ctx.stroke(); }
+    ctx.textAlign = "right"; ctx.textBaseline = "middle"; ctx.lineJoin = "round";
+    ctx.font = "900 " + Math.round(sz * bump) + "px " + FONT; ctx.lineWidth = 7; ctx.strokeStyle = "rgba(6,30,60,.88)";
     ctx.strokeText(c + " 콤보", cx, cy); ctx.fillStyle = !T ? "#ffe27a" : T.color === "rainbow" ? RAINBOW_COL[Math.floor(clock * 10) % 6] : T.color; ctx.fillText(c + " 콤보", cx, cy);
     if (T) { ctx.font = "900 " + Math.round(20 * (1 + comboPop)) + "px " + FONT; ctx.lineWidth = 5; ctx.strokeText(T.name, cx, cy + sz * 0.75); ctx.fillText(T.name, cx, cy + sz * 0.75); }
     ctx.globalAlpha = 1;
@@ -1003,33 +1531,106 @@ function render() {
     ctx.globalAlpha = 0.5; ctx.beginPath(); ctx.arc((stick.ax + dx * m) * dpr, (stick.ay + dy * m) * dpr, 24 * dpr, 0, TAU); ctx.fill();
     ctx.globalAlpha = 1;
   }
-  if (bannerT > 0 && mode !== "over") {
-    const by = mode === "play" || mode === "paused" ? view.h * 0.26 : view.h * 0.74;
+  if (bannerT > 0 && mode !== "over" && !ult) {
+    const by = mode === "play" || mode === "paused" ? topSafe + 24 : view.h * 0.74;
     ctx.setTransform(k, 0, 0, k, 0, 0);
     // 아주 큰 글자는 튀어나오듯 커졌다가 자리 잡는다
     const age = bannerT0 - bannerT, pop = bannerHuge && age < 0.25 ? 0.6 + age / 0.25 * 0.55 : bannerHuge && age < 0.4 ? 1.15 - (age - 0.25) / 0.15 * 0.15 : 1;
-    const maxPx = bannerHuge ? 40 : 26, px = Math.min(maxPx, Math.max(16, Math.floor(view.w * 0.94 / Math.max(1, banner.length)))) * pop;
+    const maxPx = mode === "play" ? (bannerHuge ? 30 : 24) : bannerHuge ? 40 : 26, px = Math.min(maxPx, Math.max(16, Math.floor(view.w * 0.94 / Math.max(1, banner.length)))) * pop;
     ctx.globalAlpha = Math.min(1, bannerT * 2); ctx.font = (bannerBig ? "900 " + Math.round(px) + "px " : "800 21px ") + FONT; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.lineWidth = bannerHuge ? 8 : 6; ctx.lineJoin = "round"; ctx.strokeStyle = "rgba(6,30,60,.9)"; ctx.strokeText(banner, view.w / 2, by);
     ctx.fillStyle = bannerBig ? (world && world.fever > 0 && banner.startsWith("무지개") ? RAINBOW_COL[Math.floor(clock * 10) % 6] : "#ffe27a") : "#ffffff"; ctx.fillText(banner, view.w / 2, by);
     if (bannerSub) { ctx.font = "800 " + Math.min(19, Math.max(13, Math.floor(view.w * 0.9 / Math.max(1, bannerSub.length)))) + "px " + FONT; ctx.lineWidth = 5; ctx.strokeText(bannerSub, view.w / 2, by + px * 0.5 + 18); ctx.fillStyle = "#ffffff"; ctx.fillText(bannerSub, view.w / 2, by + px * 0.5 + 18); }
     ctx.globalAlpha = 1;
   }
+  if (ult) drawUltOverlay(k);
+}
+/* ---------- 친구 아래에 까는 빛: 등대 빛 회전 빛살 · 소용돌이 판 · 보물 조개 빛기둥 · 둘러싸기 경고 ---------- */
+const BEAM = canvasOf(256, 64, (x, w, h) => {
+  const g = x.createLinearGradient(0, 0, w, 0); g.addColorStop(0, "rgba(255,246,190,.95)"); g.addColorStop(0.5, "rgba(255,226,122,.35)"); g.addColorStop(1, "rgba(255,226,122,0)");
+  x.fillStyle = g; x.beginPath(); x.moveTo(0, h / 2 - 4); x.lineTo(w, 0); x.lineTo(w, h); x.lineTo(0, h / 2 + 4); x.closePath(); x.fill();
+});
+const VORTEX = canvasOf(256, 256, (x, w) => {
+  const m = w / 2; x.lineCap = "round";
+  for (let arm = 0; arm < 4; arm++) for (let i = 0; i < 40; i++) {
+    const t0 = i / 40, a = arm * TAU / 4 + t0 * 4.2, r = 18 + t0 * (m - 22);
+    x.strokeStyle = "rgba(255,255,255," + (0.85 * (1 - t0)).toFixed(3) + ")"; x.lineWidth = 2 + (1 - t0) * 7;
+    x.beginPath(); x.arc(m, m, r, a, a + 0.22); x.stroke();
+  }
+});
+const COLUMN = canvasOf(64, 256, (x, w, h) => { const g = x.createLinearGradient(0, h, 0, 0); g.addColorStop(0, "rgba(255,236,150,.9)"); g.addColorStop(1, "rgba(255,236,150,0)"); x.fillStyle = g; x.fillRect(w * 0.2, 0, w * 0.6, h); });
+function drawUnderFx(p) {
+  const ld = world.load;
+  ctx.globalCompositeOperation = "lighter";
+  // 등대 빛: 단계만큼 빛살이 빙글 돈다(2·2·3·3·4), 빛 물결을 쏠 때가 다가오면 밝아진다
+  if (ld.weapons.light) {
+    const lv = ld.weapons.light, s = L.weaponStats("light", lv, false, world.m), n = lv >= 5 ? 4 : lv >= 3 ? 3 : 2, len = s.r * 1.25;
+    const charge = 1 - Math.min(1, (world.cd.light || 0) / s.every), base = 0.08 + charge * 0.14;
+    for (let i = 0; i < n; i++) {
+      const a = clock * (0.9 + lv * 0.1) + i * TAU / n;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(a); ctx.globalAlpha = base; { const bw = len * (0.18 + lv * 0.06); ctx.drawImage(BEAM, 0, -bw / 2, len, bw); } ctx.restore();
+    }
+    ctx.globalAlpha = 0.25 + charge * 0.35; const g = 60 + charge * 50; ctx.drawImage(F.glowTex(3), p.x - g / 2, p.y - g / 2, g, g);
+  }
+  // 회오리: 3단계부터 잠수정 아래 소용돌이 판(합체면 크고 보라·분홍)
+  if (ld.weapons.whirl) {
+    const s = L.weaponStats("whirl", ld.weapons.whirl, !!ld.evo.whirl, world.m);
+    if (s.lv >= 3 || s.evo) { const R = s.r * (s.evo ? 1.7 : 1.3); ctx.globalAlpha = s.evo ? 0.28 : 0.08 + s.lv * 0.025; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(-world.whirlAng * 0.8); ctx.drawImage(VORTEX, -R, -R, R * 2, R * 2); if (s.evo) { ctx.rotate(world.whirlAng * 1.3); ctx.globalAlpha = 0.25; ctx.drawImage(VORTEX, -R * 0.7, -R * 0.7, R * 1.4, R * 1.4); } ctx.restore(); }
+  }
+  // 보물 조개: 위로 솟는 빛기둥
+  for (const e of world.enemies) if (e.kind === "clam") { ctx.globalAlpha = 0.45 + Math.sin(clock * 5) * 0.15; ctx.drawImage(COLUMN, e.x - 40, e.y - 300, 80, 300); }
+  ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
+  // 먹물 떼가 둘러쌀 때: 조여 오는 점선 고리
+  if (ringWarn > 0) {
+    const k2 = 1 - ringWarn / 1.6, R = Math.min(view.w, view.h) * (0.62 - k2 * 0.25);
+    ctx.globalAlpha = Math.min(1, ringWarn) * 0.8; ctx.strokeStyle = "#c58cff"; ctx.lineWidth = 6; ctx.setLineDash([18, 14]); ctx.lineDashOffset = -clock * 60;
+    ctx.beginPath(); ctx.arc(p.x, p.y, R, 0, TAU); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+  }
 }
 // 빛줄기 셋(미리 그린 띠를 비스듬히 늘여 붙인다)
 function rays(k) {
-  ctx.globalAlpha = 0.07;
-  for (let i = 0; i < 3; i++) {
-    const x = ((i * 0.37 + clock * 0.012 * (i + 1)) % 1.3 - 0.15) * canvas.width;
-    ctx.save(); ctx.translate(x, -20); ctx.rotate(0.35); ctx.drawImage(RAY, -90 * k, 0, 180 * k, canvas.height * 1.4); ctx.restore();
+  for (let i = 0; i < 4; i++) {
+    const x = ((i * 0.29 + clock * 0.01 * (i + 1)) % 1.3 - 0.15) * canvas.width, wd = (90 + (i * 37) % 70) * k;
+    ctx.globalAlpha = 0.06 + 0.05 * (0.5 + 0.5 * Math.sin(clock * 0.7 + i * 1.9));
+    ctx.save(); ctx.translate(x, -20); ctx.rotate(0.38); ctx.drawImage(RAY, -wd / 2, 0, wd, canvas.height * 1.5); ctx.restore();
   }
   ctx.globalAlpha = 1;
 }
 
 let last = performance.now(), lastUpdateMs = 0, lastRenderMs = 0;
 // 화면 꾸밈 시계(글자·번쩍임·물결). 게임 시간과는 따로 간다.
-function ui(dt) {
-  clock += dt; if (bannerT > 0) bannerT -= dt; if (flash > 0) flash -= dt;
+// HUD·터보 막대 바로 아래(논리 칸). 큰 글자는 이보다 아래, 가운데·잠수정에서 비켜 둔다. 0.5초마다 다시 잰다.
+let topSafe = 70, topSafeAt = -9;
+function measureTop() { try { const r = feverEl.getBoundingClientRect(), h = $("hud").getBoundingClientRect(); const b = Math.max(r.bottom || 0, h.bottom || 0); if (b > 0) topSafe = b / scale + 6; } catch (_) {} }
+let lastCamX = 0, lastCamY = 0, lastShellCd = 0, lastStarCd = 0, emitAcc = 0;
+function ui(rdt) {
+  // 느리게(slow-mo): 꾸밈 시계만 늦춘다. 흔들림·확대·어둡게는 실제 시간으로 잦아든다.
+  if (slowT > 0) { slowT -= rdt; if (slowT <= 0) slowK = 1; }
+  const dt = rdt * slowK;
+  trauma = Math.max(0, trauma - rdt * 1.7); zoomK *= Math.exp(-rdt * 7); if (zoomK < 0.002) zoomK = 0;
+  // 터보·대왕 싸움 동안은 살짝(가장자리 그림자 + 옅은 남청) — 효과와 잠수정이 바다보다 또렷하게
+  const dimBase = world && mode === "play" && (world.fever > 0 || world.boss) ? (RM ? 0.12 : 0.2) : 0;
+  dimA += (Math.max(dimTo, dimBase) - dimA) * Math.min(1, rdt * 8); lbox += (lboxTo - lbox) * Math.min(1, rdt * 9);
+  if (speedA > 0) speedA = Math.max(world && world.fever > 0 ? 0.28 : 0, speedA - rdt * 2.2);
+  if (subGlow > 0) subGlow -= rdt * 1.6;
+  if (feverIntro > 0) feverIntro -= rdt * 1.4; if (feverOutro > 0) feverOutro -= rdt;
+  if (bossIntroT > 0) { bossIntroT -= rdt; if (bossIntroT <= 0.4 && mode === "play") { dimTo = 0; lboxTo = 0; } }
+  if (ringWarn > 0) ringWarn -= rdt; if (currentFx > 0 && world && !world.current) currentFx = 0;
+  if (clock - topSafeAt > 0.5) { topSafeAt = clock; measureTop(); }
+  if (ghostT > 0) ghostT -= rdt;
+  if (godRays > 0) godRays -= rdt;
+  stepGhosts(dt);
+  for (const b of boltEcho) b.t += dt; while (boltEcho.length && boltEcho[0].t > 0.5) boltEcho.shift();
+  F.stepSparks(dt); F.stepShocks(dt);
+  // 바탕 거품: 카메라 움직임의 일부만 따라온다(시차)
+  F.ambientStep(dt, view.w, view.h, cam.x - lastCamX, cam.y - lastCamY); lastCamX = cam.x; lastCamY = cam.y;
+  // 늦게 터뜨릴 꾸밈
+  if (later.length) {
+    for (let i = 0; i < later.length; i++) { const q = later[i]; if (q.at > clock) continue; laterFx(q); q.at = Infinity; }
+    if (later.every(q => q.at === Infinity)) later.length = 0;
+  }
+  if (world && mode === "play") emitters(dt);
+  clock += dt; if (bannerT > 0) bannerT -= dt; if (flash > 0) flash -= rdt;
   if (shakeT > 0) { shakeT -= dt; if (shakeT <= 0) shakeA = 0; }
   if (equipFx) { equipFx.t += dt; if (equipFx.t > 1.1) equipFx = null; }
   for (const f of fxList) f.t += dt; if (fxList.length) fxList = fxList.filter(f => f.t < f.dur);
@@ -1040,6 +1641,7 @@ function ui(dt) {
   for (const q of PARTS) { if (!q.on) continue; q.t += dt; if (q.t >= q.life) { q.on = false; continue; } q.x += q.vx * dt; q.y += q.vy * dt; q.vx *= drag; q.vy *= drag; partOn++; }
   for (const r of ringsM) r.t += dt; if (ringsM.length) ringsM = ringsM.filter(r => r.t < r.T);
   if (muzzle) { muzzle.t += dt; if (muzzle.t > 0.1) muzzle = null; }
+  if (recoil) { recoil.t += dt; if (recoil.t > 0.2) recoil = null; }
   if (multiBan) { multiBan.t += dt; if (multiBan.t > 1.1) multiBan = null; }
   if (comboPop > 0) comboPop = Math.max(0, comboPop - dt * 1.6);
   if (edgeFlash > 0) edgeFlash -= dt;
@@ -1056,15 +1658,91 @@ function ui(dt) {
     const maxLen = world.fever > 0 ? 22 : dashing ? 18 : 12;
     while (trail.length > maxLen) trail.shift();
   }
-  // 문제·카드 화면 동안에도 물결과 씻긴 친구는 움직인다(게임 시간은 멈춘 채)
-  if (world && (mode === "quiz" || mode === "cards")) E.stepFx(world, dt);
+  // 문제·카드·필살기·끝 장면 동안에도 물결과 씻긴 친구는 움직인다(게임 시간은 멈춘 채)
+  if (world && (mode === "quiz" || mode === "cards" || mode === "ult" || mode === "finale")) E.stepFx(world, dt);
+  if (world && mode === "ult" && ult) ultStep(rdt);
+  if (world && mode === "finale" && finale) finaleStep(rdt);
 }
+// 늦게 터뜨리는 꾸밈 하나
+let tingN = 0, tingAt = -9, bigSaid = false;
+// 대왕 끝 장면: 씻긴 대왕 친구가 효과 위에서 커졌다가 웃으며 둥실(하얗게 날아가지 않게 효과 위에 그림)
+function drawFinaleFriend() {
+  const f = finale; if (!f) return;
+  const k = Math.min(1, f.t / 0.5), s = 150 * (0.8 + k * 0.3 + Math.sin(f.t * 5) * 0.03), y = f.y - f.t * 12;
+  ctx.globalAlpha = Math.min(1, f.t * 4) * (f.t > 2.3 ? Math.max(0, (2.6 - f.t) / 0.3) : 1);
+  if (!sprite("boss_ok", f.x, y, s, false, Math.sin(f.t * 3) * 0.08)) friendShape(ctx, "boss", f.x, y, 60, 0, false, 1, f.t);
+  if (f.t < 0.12 && WHITE.boss_ok) { ctx.globalAlpha = 0.8 * (1 - f.t / 0.12); sprite("boss_ok", f.x, y, s * 1.03, true); }
+  ctx.globalAlpha = 1;
+}
+function laterFx(q) {
+  if (q.kind === "uwash" || q.kind === "uking") {
+    const big = q.kind === "uking";
+    washPop(q.x, q.y, false, big, 40);
+    F.radial(q.x, q.y, big ? 20 : 5, 360, -1, 2, 0.7, 6);
+    if (big) addFx("light", q.x, q.y, 160, { dur: 0.45 });
+    sfx.wash(10 + ((q.x + q.y) | 0) % 20);
+    // 빛 알갱이가 잠수정으로 쪼르르(도착할 때 딩 — 음이 한 칸씩 올라간다)
+    { const p = world.p, life = 0.45 + Math.random() * 0.25; F.spark(q.x, q.y, (p.x - q.x) / life, (p.y - q.y) / life, life, 6, 3, 0, 0, 0); afterFx(life, "ting", p.x, p.y); }
+  } else if (q.kind === "ting") {
+    tingN = clock - tingAt > 0.6 ? 1 : tingN + 1; tingAt = clock; sfx.orb(tingN);
+    F.spark(q.x, q.y, 0, 0, 0.15, 9, 3, 0);
+    floatText(q.x, q.y - 14, "깨끗!", RAINBOW_COL[(((q.x | 0) >> 3) % 6 + 6) % 6], 16, 0.7);
+  }
+}
+/* ---------- 장비가 늘 내는 반짝임(프레임마다 조금씩, 품질에 맞춰) ---------- */
+function emitters(dt) {
+  const w = world, p = w.p, ld = w.load, q = F.getQuality();
+  emitAcc += dt * 60;
+  const ticks = emitAcc >= 1 ? 1 : 0; if (!ticks) return; emitAcc = Math.min(2, emitAcc - 1);
+  // 물방울·불가사리 꼬리 입자
+  let budget = Math.round(14 * q);
+  for (const s of w.shots) {
+    if (budget <= 0) break;
+    if (s.k === "b") { if (Math.random() < 0.18 + s.lv * 0.05) { budget--; F.spark(s.x, s.y, -s.vx * 0.1 + (Math.random() - 0.5) * 40, -s.vy * 0.1 + (Math.random() - 0.5) * 40, 0.35, 2 + s.lv * 0.6, s.rainbow ? -1 : s.lv >= 3 ? lvCol(s.lv) : 0, s.lv >= 3 ? 0 : 3, 0, 3); } }
+    else if (Math.random() < 0.25 + s.lv * 0.06) { budget--; F.spark(s.x, s.y, (Math.random() - 0.5) * 50, (Math.random() - 0.5) * 50, 0.4, 3 + s.lv * 0.5, s.lv >= 5 ? -1 : s.lv >= 3 ? 3 : 7, 2, 0, 3); }
+  }
+  // 회오리 거품·빛, 합체 소용돌이는 바깥에서 빨려 든다
+  if (ld.weapons.whirl) {
+    const s = L.weaponStats("whirl", ld.weapons.whirl, !!ld.evo.whirl, w.m);
+    for (let i = 0; i < s.n; i++) if (Math.random() < 0.35 * q + s.lv * 0.05) { const a = w.whirlAng + i * TAU / s.n, ox = p.x + Math.cos(a) * s.r, oy = p.y + Math.sin(a) * s.r; F.spark(ox, oy, -Math.sin(a) * 120, Math.cos(a) * 120, 0.4, 2.5 + s.lv * 0.5, s.evo ? 11 : s.lv >= 4 ? lvCol(s.lv) : 0, s.lv >= 3 ? 0 : 3, 0, 3); }
+    if (s.evo && Math.random() < q) F.implode(p.x, p.y, 1, s.r * 1.9, Math.random() < 0.5 ? 11 : 6, 1, 0.5, 3);
+  }
+  // 소라: 던지는 순간 바람 소리·물결, 돌아오는 길 반짝
+  if (ld.weapons.shell) {
+    const cdS = w.cd.shell || 0; if (cdS > lastShellCd + 0.2) { const lv = ld.weapons.shell; sfx.shellThrow(lv); F.shock(p.x, p.y, 60 + lv * 10, 0.3, 7, 8, 1); } lastShellCd = cdS;
+    for (const sh of w.shells) if (Math.random() < 0.3 + sh.lv * 0.08) F.spark(sh.x, sh.y, (Math.random() - 0.5) * 60, (Math.random() - 0.5) * 60, 0.45, 3 + sh.lv * 0.6, sh.lv >= 5 ? 3 : 7, sh.lv >= 3 ? 2 : 0, 0, 3);
+  }
+  if (ld.weapons.star) { const cdT = w.cd.star || 0; if (cdT > lastStarCd + 0.2) { const lv = ld.weapons.star; sfx.star(lv); F.radial(p.x, p.y, 4 + lv, 220, lv >= 5 ? -1 : 6, 2, 0.35, 4); } lastStarCd = cdT; }
+  // 전기 해파리: 다시 쏠 때가 다가오면 찌릿찌릿 모인다
+  if (ld.weapons.zap && (w.cd.zap || 0) < 0.3 && Math.random() < 0.6 * q) { const zx = p.x + Math.cos(clock * 1.3) * 40, zy = p.y - 34 + Math.sin(clock * 2.6) * 5; F.implode(zx, zy, 1, 30, 10, 1, 0.18, 2); }
+  // 무지개 터보: 잠수정 뒤로 무지개 빛 가루
+  if (w.fever > 0) { F.spark(p.x + (Math.random() - 0.5) * 20, p.y + (Math.random() - 0.5) * 20, -p.vx * 0.3 + (Math.random() - 0.5) * 80, -p.vy * 0.3 + (Math.random() - 0.5) * 80, 0.6, 5, -1, Math.random() < 0.5 ? 0 : 2, 0, 2); }
+  // 슈웅! 동안 뒤로 물보라
+  if (p.dashT > 0) { const a = Math.atan2(p.dvy, p.dvx) + Math.PI; F.cone(p.x, p.y, a, 0.8, 3, 380, 1, 5, 0.35, 3.5); }
+  // 잠수정 프로펠러 거품(움직일 때)
+  if (Math.random() < (p.moving ? 0.5 : 0.3)) { const a = p.face + Math.PI; F.spark(p.x + Math.cos(a) * 26, p.y + Math.sin(a) * 26, Math.cos(a) * 60 + (Math.random() - 0.5) * 30, Math.sin(a) * 60 + (Math.random() - 0.5) * 30, 0.6, 2.5 + Math.random() * 2, 0, 3, -40, 2); }
+  // 황금 물고기 반짝 꼬리 · 왕관 반짝 · 보물 조개 빛기둥 반짝
+  for (const e of w.enemies) {
+    if (e.kind === "gold" && Math.random() < 0.7) F.spark(e.x, e.y, (Math.random() - 0.5) * 40, (Math.random() - 0.5) * 40, 0.6, 5, Math.random() < 0.5 ? 3 : 10, 2, 0, 2);
+    else if (e.king && Math.random() < 0.25) F.spark(e.x + (Math.random() - 0.5) * 50, e.y - 40, 0, -40, 0.6, 5, 3, 2, 0, 1);
+    else if (e.kind === "clam" && Math.random() < 0.4) F.spark(e.x + (Math.random() - 0.5) * 40, e.y, 0, -120, 0.9, 4, 3, 2, 0, 0.5);
+    else if (e.kind === "boss" && Math.random() < 0.3 * q) F.spark(e.x + (Math.random() - 0.5) * 120, e.y + (Math.random() - 0.5) * 100, 0, -50, 1.0, 6, Math.random() < 0.5 ? 4 : 11, 3, -20, 1);
+  }
+  // 고래: 머리 앞 물보라와 뒤로 거품 길
+  if (w.whale) { const h = w.whale, dir = Math.sign(h.vx); F.cone(h.x + dir * 140, h.y, dir > 0 ? 0 : Math.PI, 1.6, 3, 300, 1, 5, 0.4, 4); F.spark(h.x - dir * 150, h.y + (Math.random() - 0.5) * 60, -dir * 40, -30, 0.9, 4 + Math.random() * 4, 0, 3, -30, 1); }
+  // 센 물살: 화면을 가로지르는 거품과 물줄
+  if (w.current) { const dir = w.current.vx > 0 ? 1 : -1; for (let i = 0; i < 2; i++) { const yy = cam.y + Math.random() * view.h, xx = dir > 0 ? cam.x - 10 : cam.x + view.w + 10; F.spark(xx, yy, dir * (500 + Math.random() * 300), 0, 1.4, 2 + Math.random() * 3, 0, Math.random() < 0.5 ? 3 : 1, 0, 0); } }
+}
+// 화질 자동 조절: 프레임 사이 시간이 20ms 를 오래 넘으면 입자 수를 줄이고, 여유가 생기면 천천히 되돌린다.
+let frameEma = 1 / 60, qualityT = 0;
 function frame(now) {
-  const dt = Math.min(0.05, Math.max(0, (now - last) / 1000)); last = now;
+  const raw = Math.max(0, (now - last) / 1000), dt = Math.min(0.05, raw); last = now;
+  if (raw < 0.1) { frameEma += (raw - frameEma) * 0.06; qualityT += raw; if (qualityT > 0.5) { qualityT = 0; const q = F.getQuality(); if (frameEma > 0.02) F.setQuality(q - 0.15); else if (frameEma < 0.0175) F.setQuality(q + 0.05); } }
   ui(dt);
   const t0 = performance.now();
-  // 멈칫(hit-stop): 아주 잠깐 게임 시간을 세운다(최대 40ms)
+  // 멈칫(hit-stop): 아주 잠깐 게임 시간을 세운다(최대 60ms). 큰 장면(cine)은 조금 더 길게 세운다 — 세우는 동안 게임 시간도 안 흐르니 결과는 같다.
   if (hitStop > 0) hitStop -= dt;
+  else if (cine > 0) cine -= dt;
   else if (mode === "play" && world && !document.hidden) update(dt);
   const t1 = performance.now();
   render();
@@ -1160,7 +1838,11 @@ if (QA) {
   window.__dive = {
     begin, toMenu, pause, unpause,
     tick: (dt = 1 / 60, n = 1) => { for (let i = 0; i < n && mode === "play"; i++) update(dt); },
-    step: (dt = 1 / 60, n = 1) => { for (let i = 0; i < n; i++) { ui(dt); if (mode === "play") update(dt); render(); } },
+    step: (dt = 1 / 60, n = 1) => { for (let i = 0; i < n; i++) { ui(dt); if (hitStop > 0) hitStop -= dt; else if (cine > 0) cine -= dt; else if (mode === "play") update(dt); render(); } },
+    ult: () => { if (world && mode === "play") { E.recordChallenge(world, true); startUlt(resumePlay); } return mode; },
+    wave: (m = "wave") => { if (world && mode === "play") { rewardBlast(m); releaseWave(); } return mode; },
+    bigHere: () => { if (world) { world.bigOn = true; E.spawnBigQA(world); const b = world.bigs[world.bigs.length - 1]; b.x = world.p.x + 120; b.y = world.p.y; } },
+    sparks: () => F.sparkCount(), quality: q => { if (q != null) F.setQuality(q); return F.getQuality(); },
     get s() { return world ? { mode, t: +world.t.toFixed(2), hearts: world.hearts, maxHearts: world.maxHearts, xp: world.xp, goal: E.xpGoal(world), qpearls: world.qpearls.length, pearlN: world.pearlN, enemies: world.enemies.length, vis: world.vis, shots: world.shots.length, orbs: world.orbs.length, rescued: world.rescued, solved: world.solved, streak: world.streak, load: world.load, boss: !!world.boss, pending: world.pending, over: world.over, rescueUsed: world.rescueUsed, pilot, zone: zoneId, p: { x: Math.round(world.p.x), y: Math.round(world.p.y) }, stick: !!stick,
       combo: world.combo, bestCombo: world.bestCombo, gauge: +world.gauge.toFixed(3), fever: +world.fever.toFixed(2), fevers: world.fevers, dashCd: +Math.max(0, world.dashCd).toFixed(2), dashes: world.dashes, autoDashes: world.autoDashes, events: world.eventsSeen.slice(), whale: !!world.whale, current: !!world.current, firstPearlT: world.firstPearlT, fx: fxList.length, floats: floats.length, parts: partOn, multis: world.multis.slice(), banner, sound: S.stats() } : { mode, pilot, zone: zoneId }; },
     // 슈웅!·무지개 터보·이벤트를 바로 일으키기, 끌기 대신 움직임 정하기
@@ -1168,7 +1850,7 @@ if (QA) {
     fever: () => { if (world) { E.startFever(world); handleEvents(); } },
     event: (id, kind) => { if (world) { E.startEventQA(world, { id, kind }); handleEvents(); } },
     move: (x, y) => { qaMove = x == null ? null : { x, y }; },
-    blast: (firstTry = true) => world && rewardBlast(firstTry),
+    blast: (m = "wave") => { if (!world) return null; const r = rewardBlast(m === true ? "wave" : m === false ? "near" : m); releaseWave(); return r; },
     hitStop: () => hitStop,
     get save() { return save; },
     world: () => world,
@@ -1181,7 +1863,7 @@ if (QA) {
     answer: () => { const q = GameQuiz && GameQuiz.peek(); return q && q.kind === "ask" ? q.answer : null; },
     guard: () => { if (guard) return { panel: guard.panel.id, armIn: Math.round(guard.armAt - performance.now()) }; const q = GameQuiz && GameQuiz.peek(); return q ? { panel: "quiz", armIn: q.armIn } : null; },
     timing: () => ({ update: lastUpdateMs, render: lastRenderMs }),
-    bench: (n = 60) => { const t0 = performance.now(); let up = 0, rd = 0, worst = 0; for (let i = 0; i < n; i++) { const a = performance.now(); ui(1 / 60); if (mode === "play") update(1 / 60); const b = performance.now(); render(); const c = performance.now(); up += b - a; rd += c - b; worst = Math.max(worst, c - a); } return { frames: n, updateMs: +(up / n).toFixed(2), renderMs: +(rd / n).toFixed(2), totalMs: +((performance.now() - t0) / n).toFixed(2), worstMs: +worst.toFixed(2), enemies: world ? world.enemies.length : 0, fx: fxList.length }; },
+    bench: (n = 60) => { const t0 = performance.now(); let up = 0, rd = 0, worst = 0; for (let i = 0; i < n; i++) { const a = performance.now(); ui(1 / 60); if (mode === "play") update(1 / 60); const b = performance.now(); render(); const c = performance.now(); up += b - a; rd += c - b; worst = Math.max(worst, c - a); } return { frames: n, updateMs: +(up / n).toFixed(2), renderMs: +(rd / n).toFixed(2), totalMs: +((performance.now() - t0) / n).toFixed(2), worstMs: +worst.toFixed(2), enemies: world ? world.enemies.length : 0, fx: fxList.length, sparks: F.sparkCount(), parts: partOn, quality: F.getQuality() }; },
     art: () => Object.keys(ART), view: () => ({ view, scale, dpr }),
   };
 }

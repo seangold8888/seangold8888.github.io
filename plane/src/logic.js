@@ -93,9 +93,10 @@ export function dps(level, path) {
 export const allPaths = () => MAIN_IDS.flatMap(main => SIDE_IDS.map(side => ({ main, side })));
 
 // 비행기가 오르내릴 수 있는 세로 범위(놀이판 높이 fh 기준). 너무 위로 가면 적과 바로 부딪혀 불리하니 화면 아래쪽 55%만.
+// 처음 자리(home)는 바닥에서 20% 위(예전: 바닥에서 92칸) — 손가락에 비행기·엔진이 가리지 않게. 아래 끝(max)은 예전 그대로라 손가락으로 끌어 내릴 수 있다.
 export function playerYRange(fh) {
   const max = Math.round(fh - 56), min = Math.min(max - 60, Math.max(140, Math.round(fh * 0.45)));
-  return { min, max, home: Math.min(max, Math.max(min, Math.round(fh - 92))) };
+  return { min, max, home: Math.min(max, Math.max(min, Math.round(fh * 0.8))) };
 }
 
 // 파도가 갈수록 단단해진다. 무기를 안 올리면 4~5번째 파도부터 화면이 막히기 시작하는 정도.

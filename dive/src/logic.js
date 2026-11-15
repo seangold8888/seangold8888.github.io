@@ -163,6 +163,14 @@ export const COMBO_TIERS = [
 export const comboTier = c => { let k = -1; for (let i = 0; i < COMBO_TIERS.length; i++) if (c >= COMBO_TIERS[i].at) k = i; return k; };
 // 한 번에 여러 마리: MULTI.win 초 안에 씻긴 수가 이 고비를 넘으면 큰 글자
 export const MULTI = { win: 0.6, steps: [5, 10, 20], say: ["한 번에 5마리!", "우와 10마리!", "대박 20마리!"] };
+/* ---------- 큰 진주 → 어려운 문제 → 필살기 ----------
+   씻길 때마다 필살기 게이지가 찬다(washes 마리면 가득). 가득 차고, 판이 firstAt 초를 넘고, 지난 큰 진주에서 gap 초가 지났으면
+   잠수정 가까이(dist) 큰 진주가 하나 떠오른다(사라지지 않음, 한 번에 하나). 대왕이 나오면 게이지가 bossBoost 만큼 확 차고, 그 뒤로는 bossGap 초 간격이면 된다(대왕 싸움 때 하나는 거의 꼭 나온다).
+   큰 진주를 먹으면 어려운 문제(GameQuiz pace "challenge"): 한 번에 → 필살기(화면 전체), 고쳐서 → 중간 물결(mid 반경), 장비 카드는 없음.
+   보통 ? 진주: 한 번에 → 작은 물결(wave 반경 + 하트 1), 고쳐서 → 더 작은 물결(near 반경). 문제 모듈이 없으면 큰 진주도 없다.
+   물결 boss 값: 대왕 체력 중 깎는 비율. */
+export const BIG = { washes: 650, firstAt: 45, gap: 50, bossGap: 12, bossBoost: 1, dist: 150, pickR: 40,
+  blast: { full: { boss: 0.15, king: 0.6 }, mid: { r: 340, boss: 0.1, king: 0.45 }, wave: { r: 310, boss: 0.1, king: 0.4, heal: true }, near: { r: 220, boss: 0.05, king: 0.3 } } };
 export const feverMods = m => Object.assign({}, m, { cool: m.cool * FEVER.cool, area: m.area * FEVER.area });
 
 // 무기 한 벌의 실제 수치(단계·합체·보조 반영)

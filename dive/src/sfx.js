@@ -2,7 +2,7 @@
 // AudioContext 는 첫 손가락/키 입력 때 하나만 만들고 깨운다. 모든 소리는 master → compressor → 스피커.
 // 동시에 울리는 소리는 VOICE_MAX 개까지, 같은 종류는 간격을 둔다. Node·자동 검증 브라우저(navigator.webdriver)에서는 아무것도 안 한다.
 const OK = typeof window !== "undefined" && !(typeof navigator !== "undefined" && navigator.webdriver);
-const VOICE_MAX = 18;
+const VOICE_MAX = 26;
 let ac = null, master = null, on = true, pitch = 1, voices = 0;
 const last = {};
 export function setOn(v) { on = !!v; if (master) master.gain.value = on ? 0.55 : 0; }
@@ -41,7 +41,7 @@ function noise(dur, vol = 0.1, from = 800, to = 3000, at = 0) {
   const a = ready(); if (!a || voices >= VOICE_MAX) return;
   if (!noiseBuf) { noiseBuf = a.createBuffer(1, a.sampleRate * 0.6, a.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
   const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(), t = a.currentTime + at;
-  s.buffer = noiseBuf; f.type = "bandpass"; f.Q.value = 1.2;
+  s.buffer = noiseBuf; s.loop = true; f.type = "bandpass"; f.Q.value = 1.2;
   f.frequency.setValueAtTime(from * pitch, t); f.frequency.exponentialRampToValueAtTime(to * pitch, t + dur);
   g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vol, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
   s.connect(f); f.connect(g); g.connect(master); s.start(t); s.stop(t + dur + 0.03);
@@ -49,10 +49,35 @@ function noise(dur, vol = 0.1, from = 800, to = 3000, at = 0) {
 }
 const NOTES = [523, 587, 659, 784, 880, 1047, 1175, 1319, 1568, 1760];
 export const sfx = {
-  // 두두두: 높은 틱 + 낮은 퉁(층 두 개)
-  shot: () => { if (gap("shot", 95)) { tone(1300 + Math.random() * 200, 0.035, "sine", 0.03, 800); tone(190, 0.07, "triangle", 0.045, 110); } },
+  // 두두두: 낮은 퉁(몸) + 물 '뽁'(미끄러지는 사인) + 높은 반짝(3단계부터) + 화음 꼬리(5단계). 단계가 오를수록 층이 는다.
+  shot: (lv = 1) => {
+    if (!gap("shot", 95)) return;
+    const j = 0.94 + Math.random() * 0.12; tone((150 + lv * 8) * j, 0.08, "sine", 0.06 + lv * 0.006, 70);
+    tone((700 + Math.random() * 120) * j, 0.05, "sine", 0.03 + lv * 0.004, 1500);
+    if (lv >= 3) tone(2200 + Math.random() * 300, 0.04, "triangle", 0.014, 3200, 0.02);
+    if (lv >= 5) { tone(1568, 0.08, "sine", 0.016, 0, 0.03); tone(2093, 0.08, "sine", 0.012, 0, 0.05); }
+  },
+  // 소라 던지기: 바람 휘익(단계가 높을수록 길게) + 낮은 퉁
+  shellThrow: (lv = 1) => { if (gap("shell", 200)) { noise(0.18 + lv * 0.03, 0.05 + lv * 0.01, 600, 2400); tone(220, 0.12, "triangle", 0.05, 140); if (lv >= 4) tone(988, 0.1, "sine", 0.02, 1319, 0.05); } },
+  // 불가사리 표창: 짧은 쉭쉭 + 반짝
+  star: (lv = 1) => { if (gap("star", 160)) { noise(0.09, 0.05, 2500, 6000); tone(1175 + lv * 60, 0.06, "square", 0.018, 1760); if (lv >= 5) tone(2349, 0.07, "sine", 0.015, 0, 0.04); } },
+  // 카드로 장비를 얻은 순간: 쑥 올라가는 음 + 반짝 화음(5단계·합체는 더 길고 크게)
+  equip: (lv = 1, big = false) => {
+    tone(196, 0.35, "sine", 0.12, 784); noise(0.3, 0.05, 500, 5000);
+    const ch = big ? [523, 659, 784, 1047, 1319, 1568] : [523, 659, 784, 1047].slice(0, 2 + Math.min(2, Math.ceil(lv / 2)));
+    ch.forEach((f, i) => tone(f, big ? 0.3 : 0.2, "triangle", 0.07, 0, 0.06 + i * 0.06));
+    if (big) { tone(98, 0.6, "sine", 0.16, 49); noise(0.7, 0.07, 3000, 8000, 0.2); }
+  },
+  // 큰 진주: 반짝반짝 무지개 아르페지오(위로 두 번) + 맑은 종
+  bigPearl: () => { if (gap("big", 400)) { [784, 988, 1175, 1568, 1976, 2349].forEach((f, i) => tone(f, 0.22, "sine", 0.05, 0, i * 0.05)); tone(523, 0.6, "triangle", 0.06, 1047); noise(0.4, 0.03, 5000, 9000, 0.1); } },
+  // 필살기 모으기: 낮은 소리가 위로 끌려 올라간다 + 쉬이익
+  ultCharge: () => { tone(110, 0.9, "sawtooth", 0.05, 440); tone(165, 0.9, "sine", 0.08, 660); noise(0.9, 0.06, 300, 4000); [523, 659, 784].forEach((f, i) => tone(f, 0.12, "triangle", 0.04, 0, 0.3 + i * 0.15)); },
+  // 필살기 펑: 깊은 쿵 + 큰 물보라 + 높은 반짝 화음
+  ultBlast: () => { tone(80, 0.8, "sine", 0.28, 32); tone(160, 0.5, "triangle", 0.12, 60); noise(0.9, 0.14, 2000, 200); [1047, 1319, 1568, 2093].forEach((f, i) => tone(f, 0.35, "sine", 0.05, 0, 0.1 + i * 0.07)); },
+  // 대왕을 씻긴 끝 장면: 쿵 + 승리 화음 길게
+  victory: () => { tone(98, 0.9, "sine", 0.24, 40); noise(0.8, 0.1, 1500, 300); [523, 659, 784, 1047, 1319, 1568, 2093].forEach((f, i) => tone(f, 0.4, "triangle", 0.08, 0, 0.25 + i * 0.12)); },
   // 씻김 '뽁': 콤보가 이어질수록 음이 올라간다(10칸 뒤 처음으로)
-  wash: combo => { if (gap("wash", 50)) { const n = NOTES[Math.min(NOTES.length - 1, Math.floor((combo || 1) / 3) % NOTES.length)]; tone(n, 0.08, "triangle", 0.06, n * 1.5); } },
+  wash: combo => { if (gap("wash", 50)) { const n = NOTES[Math.min(NOTES.length - 1, Math.floor((combo || 1) / 3) % NOTES.length)] * (0.95 + Math.random() * 0.1); tone(n, 0.08, "triangle", 0.06, n * 1.5); } },
   pop: () => { if (gap("pop", 140)) { tone(300, 0.14, "sine", 0.1, 900); noise(0.12, 0.05, 1200, 400); } },
   // 연쇄 뽁: 콤보가 클수록 높게
   chain: combo => { if (gap("chain", 70)) { const f = 500 + Math.min(30, (combo || 0) % 40) * 40; tone(f, 0.06, "sine", 0.045, f * 1.6); } },
@@ -63,9 +88,11 @@ export const sfx = {
   tier: t => [659, 880, 1175, 1568].slice(0, t + 2).forEach((f, i) => tone(f, 0.1, "square", 0.04, 0, i * 0.05)),
   // 터보 중 베이스 리듬(쿵·짝·쿵쿵)
   bass: i => { const k = i % 4; if (k === 1 || k === 3) noise(0.05, 0.04, 4000, 6000); tone(k === 2 ? 98 : 73, 0.16, "triangle", 0.11, 55); },
-  dash: () => { noise(0.28, 0.16, 500, 3500); tone(220, 0.22, "sawtooth", 0.035, 660); },
-  fever: () => { [523, 659, 784, 1047, 1319, 1568].forEach((f, i) => tone(f, 0.16, "square", 0.045, 0, i * 0.06)); noise(0.5, 0.06, 2000, 6000, 0.1); },
-  feverEnd: () => tone(880, 0.25, "triangle", 0.05, 440),
+  // 슈웅!: 아래 쿵 + 물살 쉬익(위로 쓸림) + 미끄러지는 톱니
+  dash: () => { tone(90, 0.18, "sine", 0.14, 50); noise(0.28, 0.16, 500, 3500); tone(220, 0.22, "sawtooth", 0.035, 660); tone(1320, 0.1, "sine", 0.02, 1760, 0.08); },
+  // 무지개 터보: 쿵 + 올라가는 아르페지오 두 겹 + 쉬이익
+  fever: () => { tone(82, 0.5, "sine", 0.2, 41); [523, 659, 784, 1047, 1319, 1568].forEach((f, i) => { tone(f, 0.16, "square", 0.045, 0, i * 0.06); tone(f * 1.5, 0.12, "triangle", 0.025, 0, 0.03 + i * 0.06); }); noise(0.6, 0.08, 2000, 7000, 0.1); },
+  feverEnd: () => { tone(880, 0.3, "triangle", 0.05, 440); noise(0.3, 0.04, 4000, 800); },
   event: () => { tone(392, 0.14, "square", 0.06); tone(523, 0.14, "square", 0.06, 0, 0.12); tone(784, 0.3, "square", 0.06, 0, 0.24); },
   bossHit: () => { if (gap("bosshit", 120)) { tone(110, 0.14, "square", 0.07, 70); noise(0.08, 0.05, 300, 200); } },
   fanfare: big => { tone(big ? 196 : 262, 0.45, "sine", 0.12, big ? 880 : 660); [784, 988, 1175, 1568].forEach((f, i) => tone(f, 0.18, "triangle", 0.09, 0, 0.12 + i * 0.08)); if (big) noise(0.6, 0.08, 400, 5000, 0.05); },
@@ -73,9 +100,12 @@ export const sfx = {
   up: () => [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.15, "triangle", 0.1, 0, i * 0.085)),
   no: () => tone(220, 0.18, "sine", 0.09, 160),
   hurt: () => tone(180, 0.3, "sawtooth", 0.09, 70),
-  boss: () => { tone(110, 0.6, "square", 0.07, 70); tone(98, 0.6, "square", 0.06, 60, 0.3); },
-  zap: () => { if (gap("zap", 120)) tone(1500, 0.05, "square", 0.02, 700); },
-  light: () => { if (gap("light", 300)) tone(660, 0.25, "sine", 0.04, 990); },
+  // 대왕 등장: 낮게 쿠르릉(소음 두 번) + 무거운 두 음
+  boss: () => { noise(1.2, 0.12, 120, 60); tone(55, 1.2, "sine", 0.2, 45); tone(110, 0.6, "square", 0.07, 70); tone(98, 0.6, "square", 0.06, 60, 0.3); noise(0.8, 0.08, 200, 80, 0.5); },
+  // 찌릿: 지지직 소음 + 높은 사각파(단계가 높을수록 길고 진하게)
+  zap: (lv = 1) => { if (gap("zap", 120)) { noise(0.06 + lv * 0.02, 0.04 + lv * 0.008, 3000, 1200); tone(1500, 0.05, "square", 0.02 + lv * 0.004, 700); if (lv >= 4) tone(2400, 0.04, "square", 0.012, 900, 0.03); } },
+  // 등대 빛: 낮은 둥 + 반짝 화음(단계만큼 음이 늘어난다)
+  light: (lv = 1) => { if (gap("light", 300)) { tone(130, 0.3, "sine", 0.1, 90); tone(660, 0.25, "sine", 0.04, 990); [784, 988, 1175, 1568, 1976].slice(0, lv).forEach((f, i) => tone(f, 0.2, "triangle", 0.03, 0, 0.04 + i * 0.04)); } },
   warn: () => { tone(700, 0.1, "square", 0.05); tone(700, 0.1, "square", 0.05, 0, 0.2); },
   gold: () => [1047, 1319, 1568, 2093].forEach((f, i) => tone(f, 0.12, "sine", 0.07, 0, i * 0.05)),
   whale: () => { tone(160, 0.9, "sine", 0.09, 120); tone(240, 0.7, "sine", 0.05, 200, 0.3); },

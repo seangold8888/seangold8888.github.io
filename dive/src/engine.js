@@ -1,7 +1,7 @@
 // 딥 다이브 — 바다 속 한 걸음(화면·소리와 무관). main.js 가 그리고, Node 시뮬레이션이 그대로 돌려 본다.
 // 게임 시간은 stepWorld 에 넘긴 dt 를 더한 값(w.t)뿐이다. 문제·카드·일시정지 동안에는 부르지 않는다.
 // 소리·흔들림·글자는 여기서 정하지 않고 w.events 로 알린다(main 이 받아서 꾸민다).
-import * as L from "./logic.js?v=3";
+import * as L from "./logic.js?v=4";
 
 const TAU = Math.PI * 2;
 const d2 = (ax, ay, bx, by) => (ax - bx) * (ax - bx) + (ay - by) * (ay - by);
@@ -9,7 +9,7 @@ const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const cap = (arr, n) => { if (arr.length > n) arr.splice(0, arr.length - n); };
 const REGULAR = new Set(["inkfish", "crab", "jelly", "puffer", "eel"]);
 
-export function createWorld({ kid = 1, zone = "coral", rng = Math.random, view = { w: 720, h: 540 }, load = null, gifts = [] } = {}) {
+export function createWorld({ kid = 1, zone = "coral", rng = Math.random, view = { w: 720, h: 540 }, load = null, gifts = [], bigPearl = false } = {}) {
   const tune = L.tuning(kid), z = L.zoneOf(zone), ld = load || L.newLoadout();
   const m = L.mods(ld.supports);
   const w = {
@@ -28,6 +28,8 @@ export function createWorld({ kid = 1, zone = "coral", rng = Math.random, view =
     // 이벤트
     evIdx: 0, eventsSeen: [], current: null, whale: null, kingsWashed: 0, clamsOpened: 0, goldCaught: 0,
     firstPearlT: null, vis: 0, washRate: 0, rescuedSeen: 0, multiQ: [], multiTier: -1, multis: [0, 0, 0], orbChain: 0, orbT: 0,
+    // 큰 진주(어려운 문제 → 필살기). bigOn 은 문제 모듈이 있을 때만 켠다.
+    bigOn: !!bigPearl, bigG: 0, bigs: [], bigLast: -99, bigN: 0, challenges: 0, challengeFirst: 0,
     pending: null, over: null, events: [],
   };
   openingCrowd(w);
@@ -196,6 +198,7 @@ function wash(w, e, depth = -1) {
   w.fx.freed.push({ kind: e.kind, x: e.x, y: e.y, vx: Math.cos(a) * 90, vy: Math.sin(a) * 90 - 20, t: 0, face: Math.cos(a) < 0 ? -1 : 1, elite: e.elite });
   if (e.kind !== "boss") { const before = L.comboTier(w.combo); bumpCombo(w, !w._blasting); const after = L.comboTier(w.combo); if (after > before) emit(w, "combo-tier", { tier: after, combo: w.combo }); }
   multiKill(w, e.x, e.y);
+  if (w.bigOn && e.kind !== "boss" && !w._blasting) w.bigG = Math.min(1, w.bigG + 1 / L.BIG.washes);
   emit(w, "wash", { kind: e.kind, x: e.x, y: e.y, combo: w.combo, elite: e.elite, chain: depth >= 0, king: !!L.KINGS.includes(e.kind) });
   if (e.kind === "boss") { w.boss = null; finish(w, "boss"); return; }
   const isKing = L.KINGS.includes(e.kind);
@@ -509,7 +512,9 @@ export function stepWorld(w, dt, mv = { x: 0, y: 0 }) {
     if (a.t <= 0) { a.dead = true; const e = spawnEnemy(w, "eel", { x: a.x1, y: a.y1 }); if (e) { e.vx = a.ux * e.sp; e.vy = a.uy * e.sp; e.life = 3.2; } }
   }
   w.warns = w.warns.filter(a => !a.dead);
-  if (!w.bossSpawned && w.t >= L.BOSS_AT) { w.bossSpawned = true; w.boss = spawnEnemy(w, "boss", spawnPoint(w, 20)); emit(w, "boss"); }
+  if (!w.bossSpawned && w.t >= L.BOSS_AT) { w.bossSpawned = true; w.boss = spawnEnemy(w, "boss", spawnPoint(w, 20)); emit(w, "boss"); if (w.bigOn) w.bigG = Math.min(1, w.bigG + L.BIG.bossBoost); }
+  // 큰 진주가 떠오른다(가득 찬 게이지 · 판 초반이 지남 · 지난 것에서 gap 초 · 한 번에 하나)
+  if (w.bigOn && w.bigG >= 1 && !w.bigs.length && w.t >= L.BIG.firstAt && w.t - w.bigLast >= (w.bossSpawned ? L.BIG.bossGap : L.BIG.gap)) spawnBig(w);
   // 친구 움직임
   const es = w.enemies;
   for (const e of es) {
@@ -616,6 +621,13 @@ export function stepWorld(w, dt, mv = { x: 0, y: 0 }) {
     if (!w.pending && !w.over && d2(q.x, q.y, p.x, p.y) < (p.r + 24) * (p.r + 24)) { q.dead = true; w.pending = "quiz"; emit(w, "qpearl"); }
   }
   w.qpearls = w.qpearls.filter(q => !q.dead);
+  // 큰 진주: 크게 집히고(pickR) 사라지지 않는다
+  for (const b of w.bigs) {
+    b.t += dt;
+    const rr = p.r + L.BIG.pickR;
+    if (!w.pending && !w.over && d2(b.x, b.y, p.x, p.y) < rr * rr) { b.dead = true; w.pending = "big"; emit(w, "bigpearl", { x: b.x, y: b.y }); }
+  }
+  if (w.bigs.length) w.bigs = w.bigs.filter(b => !b.dead);
   stepFx(w, dt);
   // 끝
   if (!w.over && w.t >= L.RUN_TIME) finish(w, w.boss ? "escape" : "boss");
@@ -632,41 +644,57 @@ export function stepFx(w, dt) {
   for (const r of fx.rings) r.t += dt; fx.rings = fx.rings.filter(r => r.t < (r.T || 0.6)); cap(fx.rings, 24);
 }
 
-/* ---------- 문제를 맞힌 그 순간의 보상: 물결 파동 ----------
-   한 번에 맞히면: 화면 안의 먹물 친구를 한꺼번에 씻겨 주고(대왕은 체력의 15%만), 하트가 깎여 있으면 1 회복.
-   고쳐 맞히면: 가까운(반경 220) 친구만 씻겨 주는 작은 파동(대왕은 5%). 씻긴 친구는 콤보로 세지만 게이지는 안 채운다. */
-export const BLAST_NEAR = 220;
-export function quizBlast(w, firstTry) {
-  const p = w.p, hw = w.view.w / 2 + 20, hh = w.view.h / 2 + 20;
+/* ---------- 문제를 맞힌 그 순간의 보상: 물결 ----------
+   mode "full": 화면 안 먹물 친구를 한꺼번에(큰 진주 어려운 문제를 한 번에 — 필살기). 하트가 깎여 있으면 1 회복.
+   mode "mid" : 큰 진주 문제를 고쳐 맞힘 — 가까운(BIG.blast.mid.r) 친구만.
+   mode "wave": 보통 ? 진주를 한 번에 — 작은 물결(wave.r) + 하트 1.
+   mode "near": 보통 ? 진주를 고쳐 맞힘 — 더 작은 물결(near.r).
+   true/false 는 예전 이름("full"/"near")으로 받는다. 대왕·왕 친구는 체력 일부만. 씻긴 친구는 콤보로 세지만 게이지는 안 채운다. */
+export const BLAST_NEAR = L.BIG.blast.near.r;
+export function quizBlast(w, mode) {
+  if (mode === true) mode = "full"; else if (!L.BIG.blast[mode]) mode = "near";
+  const B = L.BIG.blast[mode], whole = mode === "full";
+  const p = w.p, hw = w.view.w / 2 + 20, hh = w.view.h / 2 + 20, R0 = whole ? 0 : B.r;
   let n = 0, healed = false;
   w._blasting = true;
   for (const e of w.enemies) {
     if (e.dead) continue;
-    const hit = firstTry ? Math.abs(e.x - p.x) < hw && Math.abs(e.y - p.y) < hh : d2(e.x, e.y, p.x, p.y) < (BLAST_NEAR + e.r) * (BLAST_NEAR + e.r);
+    const hit = whole ? Math.abs(e.x - p.x) < hw && Math.abs(e.y - p.y) < hh : d2(e.x, e.y, p.x, p.y) < (R0 + e.r) * (R0 + e.r);
     if (!hit) continue;
-    if (e.kind === "boss") damage(w, e, e.max * (firstTry ? 0.15 : 0.05));
-    else if (L.KINGS.includes(e.kind)) damage(w, e, e.max * (firstTry ? 0.6 : 0.3));
+    if (e.kind === "boss") damage(w, e, e.max * B.boss);
+    else if (L.KINGS.includes(e.kind)) damage(w, e, e.max * B.king);
     else if (e.kind === "clam") damage(w, e, e.max * 0.5);
     else { damage(w, e, e.hp + 1); n++; }
   }
-  w.bursts.length = 0;   // 파동이 이미 다 씻겼다(연쇄는 따로 안 돌린다)
+  w.bursts.length = 0;   // 물결이 이미 다 씻겼다(연쇄는 따로 안 돌린다)
   w._blasting = false;
   w.enemies = w.enemies.filter(e => !e.dead);
-  const R = firstTry ? Math.hypot(hw, hh) : BLAST_NEAR;
-  for (const k of w.inks) if (firstTry || d2(k.x, k.y, p.x, p.y) < R * R) k.dead = true;
+  const R = whole ? Math.hypot(hw, hh) : R0;
+  for (const k of w.inks) if (whole || d2(k.x, k.y, p.x, p.y) < R * R) k.dead = true;
   w.inks = w.inks.filter(k => !k.dead);
-  if (firstTry && w.hearts < w.maxHearts) { w.hearts++; healed = true; }
-  w.fx.rings.push({ x: p.x, y: p.y, t: 0, T: firstTry ? 0.9 : 0.6, R, color: firstTry ? "#8ff0ff" : "#bff3ff", big: firstTry });
-  if (firstTry) w.fx.rings.push({ x: p.x, y: p.y, t: -0.15, T: 0.9, R: R * 0.8, color: "#ffffff", big: true });
+  if ((whole || B.heal) && w.hearts < w.maxHearts) { w.hearts++; healed = true; }
+  w.fx.rings.push({ x: p.x, y: p.y, t: 0, T: whole ? 0.9 : 0.6, R, color: whole ? "#8ff0ff" : "#bff3ff", big: whole });
+  if (whole) w.fx.rings.push({ x: p.x, y: p.y, t: -0.15, T: 0.9, R: R * 0.8, color: "#ffffff", big: true });
   w.blasts++; w.blastWashed += n;
-  emit(w, "blast", { n, firstTry, healed, x: p.x, y: p.y });
-  return { n, healed };
+  emit(w, "blast", { n, mode, firstTry: whole || mode === "wave", healed, x: p.x, y: p.y });
+  return { n, healed, mode };
 }
-
+/* 큰 진주 */
+function spawnBig(w) {
+  const a = w.t * 1.7 + w.bigN * 2.4, D = L.BIG.dist;   // w.rng 를 쓰지 않는다(큰 진주가 나와도 다른 무작위 흐름이 그대로)
+  const x = clamp(w.p.x + Math.cos(a) * D, 70, L.WORLD.w - 70), y = clamp(w.p.y + Math.sin(a) * D * 0.8, 70, L.WORLD.h - 70);
+  w.bigs.push({ x, y, t: 0 }); w.bigG = 0; w.bigLast = w.t; w.bigN++;
+  emit(w, "big-up", { x, y });
+}
+// 큰 진주 문제를 풀었을 때 기록(어려운 문제도 문제 수에 센다)
+export function recordChallenge(w, firstTry) { w.challenges++; if (firstTry) w.challengeFirst++; recordQuiz(w, firstTry); }
+// 문제 창이 답 없이 닫혔다: 큰 진주를 그 자리(잠수정 곁)에 돌려 둔다 — 잃는 것 없음
+export function returnBig(w) { if (w.pending === "big") w.pending = null; if (!w.bigs.length) w.bigs.push({ x: clamp(w.p.x + 90, 70, L.WORLD.w - 70), y: clamp(w.p.y, 70, L.WORLD.h - 70), t: 0 }); w.p.inv = Math.max(w.p.inv, 1); }
+export const spawnBigQA = w => spawnBig(w);
 // 판이 끝났을 때 저장에 넘길 기록
 export function runRecord(w) {
   const pilot = L.PILOTS[w.kid] || L.PILOTS[1];
-  return { kid: pilot.kid, time: Math.floor(Math.min(L.RUN_TIME, w.t)), solved: w.solved, firstTries: w.firstTries, rescued: w.rescued, dex: Object.assign({}, w.dex), result: w.over ? w.over.result : "tired", gems: w.gems, blasts: w.blasts, blastWashed: w.blastWashed, quizGear: w.quizGear, bestCombo: w.bestCombo, fevers: w.fevers, dashes: w.dashes };
+  return { kid: pilot.kid, time: Math.floor(Math.min(L.RUN_TIME, w.t)), solved: w.solved, firstTries: w.firstTries, rescued: w.rescued, dex: Object.assign({}, w.dex), result: w.over ? w.over.result : "tired", gems: w.gems, blasts: w.blasts, blastWashed: w.blastWashed, quizGear: w.quizGear, bestCombo: w.bestCombo, fevers: w.fevers, dashes: w.dashes, bigs: w.bigN, challenges: w.challenges };
 }
 // 검증용: 이벤트를 지금 바로 일으킨다(?qa=1 훅에서만 쓴다)
 export const startEventQA = (w, ev) => startEvent(w, ev);
