@@ -4499,6 +4499,97 @@
         },
       ],
     },
+    // ───────────────────────── 44화 ─────────────────────────
+    {
+      id: 44,
+      title: "나도 수능 칠래!",
+      summary: "엄마는 3박 4일 출장, 태오는 엄마 보고 싶어 엉엉. 비 오는 길, “모든 수험생 화이팅” 현수막 앞에서 아빠의 수능 설명이 시작됐다. “와 재밌겠다! 빨리 치고 싶어~!”",
+      lesson: "엄마가 없는 날도, 우산 하나 같이 쓰면 괜찮아요. 그리고 수능은… 천천히 쳐도 돼요.",
+      talk: "엄마나 아빠가 집에 없을 때 어떤 마음이 들어요? 그럴 때 우리 가족은 무엇을 하면 좋을까요?",
+      cover: 7,
+      motion: true,
+      panels: [
+        {
+          h: 420, bg: "living",
+          chars: [C("harabeoji", 60, "worried", "stand", { s: 0.75, m: "pop" }), C("halmeoni", 145, "worried", "hug", { s: 0.75, m: "pop" }), C("taeo", 300, "cry", "lick", { m: "shake" })],
+          fp: [["phone", 205, 395, { m: "wave" }]],
+          n: "화요일. 엄마는 회사 행사로 3박 4일 호텔에.",
+          b: [B("태오야, 금요일에 갈게~ 울지 마!", 205, 330, "", { k: "whisper", w: 160 }), B("으아앙! 엄마 보고 싶어! 지금 호텔 갈 거야!", 300, 130, "b", { k: "shout", w: 180 })],
+        },
+        {
+          h: 400, bg: "entrance",
+          chars: [C("jaei", 110, "angry", "point", { m: "pop" }), C("taeo", 300, "cry", "lick", { m: "bob" })],
+          b: [B("아빠! 오늘 화요일이라 나 ‘뛰어노는 논술’ 가는 날이야!", 130, 110, "b", { k: "shout", w: 200 }), B("히끅… 엄마도 없는데… 맛있는 거 죠…", 300, 190, "b", { k: "whisper", w: 160 })],
+        },
+        {
+          h: 380, bg: "split:dfeaf5:fff4c7",
+          chars: [bust("appa", 95, 240, 1.05, "smile", "point", { o: "work", m: "bob" }), bust("taeo", 305, 240, 1.15, "surprised", "up", { m: "hop" })],
+          b: [B("누나 학원 데려다주고, 옆 문구점에서 장난감 하나 살까?", 100, 70, "b", { w: 170 }), B("진짜?! 또봇 살래, 또봇!", 300, 70, "b", { k: "shout", w: 150 })],
+          sfx: [FX("뚝", 330, 330, { rot: 8, c: "#3b6fd6" })],
+        },
+        {
+          h: 420, bg: "rain",
+          chars: [C("appa", 260, "smile", "hold", { o: "work", s: 0.6, m: "bob" }), C("taeo", 320, "happy", "lick", { s: 0.55, m: "bob" })],
+          bp: [["umbrella", 248, 262, { c: "#4c9fe0", s: 0.7 }], ["umbrella", 330, 305, { c: "#ffd34d", s: 0.55 }]],
+          fp: [["sign", 150, 90, { t: "모든 수험생 화이팅!", w: 240, fs: 19, c: "#fff", m: "drop" }]],
+          n: "비가 추적추적 오는 길, 횡단보도 앞 현수막.",
+          b: [B("모… 모든 수박 화이팅! 맞지? 수박 맞지!", 120, 250, "br", { k: "shout", w: 180 })],
+        },
+        {
+          h: 360, bg: "rain",
+          chars: [bust("appa", 95, 240, 1.0, "laugh", "stand", { o: "work", m: "bob" }), bust("taeo", 305, 245, 1.1, "proud", "up", { m: "hop" })],
+          b: [B("수박이 아니라 수험생. 이번 주에 수능 시험을 쳐~", 105, 70, "b", { w: 170 }), B("나 알아! 목요일에 누나 학교 10시까지 가!", 300, 70, "b", { k: "shout", w: 170 })],
+        },
+        {
+          h: 340, bg: "rain",
+          chars: [bust("appa", 200, 220, 1.4, "smile", "hold", { o: "work", m: "bob" })],
+          b: [B("전국에 모든 고3 언니 오빠들이 시험을 치는 날이야. 잘 치면 가고 싶은 대학교를 가고, 못 치면 못 가.", 200, 60, "", { w: 320 })],
+        },
+        {
+          h: 360, bg: "split:dfeaf5:e9f6ff",
+          chars: [bust("taeo", 95, 245, 1.1, "worried", "think", { m: "bob" }), bust("appa", 305, 240, 1.0, "smile", "point", { o: "work", m: "bob" })],
+          b: [B("수학만 치는 거야?", 100, 70, "b", { w: 140 }), B("아니, 국어, 영어, 수학, 과학, 사회.", 300, 70, "b", { w: 170 })],
+        },
+        {
+          h: 420, bg: "rain",
+          sh: true,
+          chars: [C("taeo", 140, "laugh", "cheer", { m: "stomp" }), C("appa", 310, "shock", "stand", { o: "work", m: "shake" })],
+          bp: [["umbrella", 335, 250, { c: "#4c9fe0", s: 0.75 }]],
+          b: [B("와 재밌겠다! 빨리 치고 싶어~!", 140, 110, "b", { k: "shout", w: 190 }), B("어… 어?!", 250, 60, "b", { w: 100 })],
+          sfx: [FX("폴짝!", 140, 390, { rot: -8, c: "#3b6fd6" })],
+        },
+        {
+          h: 130, bg: "gloom",
+          chars: [bust("appa", 200, 62, 2.5, "blank", "stand", { o: "work", m: "shake" })],
+          b: [B("(…아직 숫자도 잘 모르면서?)", 110, 100, "", { k: "think", w: 200 })],
+        },
+        {
+          h: 440, bg: "living-night",
+          chars: [C("harabeoji", 60, "laugh", "stand", { s: 0.75, m: "bob" }), C("halmeoni", 145, "happy", "hands", { s: 0.75, m: "pop" }), C("taeo", 300, "proud", "hold", { m: "hop" })],
+          fp: [["tobot", 345, 420, { s: 0.8, m: "pop" }]],
+          n: "그날 저녁, 새 또봇을 안고.",
+          b: [B("나 빨리 시험 다섯 개 다 쳐서 대학교 갈 거야!", 290, 130, "b", { k: "shout", w: 180 }), B("허허, 수능 빨리 치고 싶다는 사람은 우리 태오밖에 없겠구나.", 110, 220, "b", { w: 180 })],
+        },
+        {
+          h: 360, bg: "split:ffe8f0:fff4c7",
+          chars: [bust("jaei", 95, 245, 1.05, "sly", "point", { m: "pop" }), bust("taeo", 305, 245, 1.15, "shock", "stand", { m: "shake" })],
+          b: [B("아니야! 너 아직 숫자도 잘 모르잖아. 그리고 대학생은 또봇 안 사 준대!", 105, 70, "b", { w: 175 }), B("…그럼 시험 안 칠래!", 300, 70, "b", { k: "shout", w: 150 })],
+        },
+        {
+          h: 420, bg: "plain:fff0d6",
+          chars: [bust("eomma", 200, 210, 1.3, "smile", "wave", { m: "bob" })],
+          fp: [["phoneframe", 0, 0, {}]],
+          n: "밤, 엄마와 영상통화.",
+          b: [B("태오야~ 엄마 보고 싶어서 아직도 울어?", 200, 330, "b", { w: 220 })],
+        },
+        {
+          h: 440, bg: "living-night",
+          chars: [C("taeo", 130, "laugh", "hold", { m: "wiggle" }), C("appa", 310, "blank", "stand", { o: "work", m: "pop" })],
+          fp: [["tobot", 170, 420, { s: 0.75 }]],
+          b: [B("엄마 천천히 와도 돼~ 아빠가 내일도 문구점 간대!", 130, 150, "b", { k: "shout", w: 210 }), B("…그런 말 한 적 없는데?", 315, 70, "b", { k: "whisper", w: 150 })],
+        },
+      ],
+    },
   ];
 
   root.WebtoonData = { CHARACTERS, EPISODES };

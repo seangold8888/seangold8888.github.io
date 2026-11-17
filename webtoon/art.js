@@ -636,6 +636,11 @@
       const gems = ["#ff4d4d", "#ffd34d", "#4c7fd0", "#6cc27a", "#ff9f1c", "#b99ad9"].map((c, i) => i < 4 ? `<circle cx="${-11 + i * 7.3}" cy="-24" r="2.8" fill="${c}" stroke="${INK}" stroke-width=".8"/>` : "").join("");
       return `<g transform="translate(${x} ${y}) rotate(${o.rot || 0}) scale(${o.s || 1})"><path d="M-14 16 L-14 -6 L-16 -22 Q-16 -26 -12 -26 Q-9 -26 -9 -22 L-8 -12 L-7 -28 Q-7 -32 -3 -32 Q1 -32 1 -28 L1 -12 L3 -28 Q3 -32 7 -32 Q11 -32 11 -28 L10 -10 L13 -20 Q14 -24 18 -22 Q20 -20 19 -16 L14 6 L14 16Z" fill="#f2c14e" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><path d="M-12 -4 Q0 -8 12 -4" stroke="#c9962a" stroke-width="1.6" fill="none"/><rect x="-16" y="14" width="32" height="10" rx="3" fill="#e0ad3a" stroke="${INK}" stroke-width="2"/>${gems}<circle cx="-1" cy="4" r="4.5" fill="#6cc27a" stroke="${INK}" stroke-width="1"/><circle cx="-12" cy="-6" r="2.6" fill="#ff9f1c" stroke="${INK}" stroke-width=".8"/></g>`;
     },
+    // 우산 (손잡이 끝이 x,y).
+    umbrella(x, y, o) {
+      const c = o.c || "#ffd34d", r = 70 * (o.s || 1);
+      return `<g transform="translate(${x} ${y}) rotate(${o.rot || 0})"><path d="M0 0 V${-r * 1.15}" stroke="${INK}" stroke-width="3"/><path d="M0 0 q0 10 -9 10" stroke="${INK}" stroke-width="3" fill="none"/><path d="M${-r} ${-r * 1.1} Q0 ${-r * 2.1} ${r} ${-r * 1.1} Q${r * 0.5} ${-r * 1.28} 0 ${-r * 1.1} Q${-r * 0.5} ${-r * 1.28} ${-r} ${-r * 1.1}Z" fill="${c}" stroke="${INK}" stroke-width="2.6"/></g>`;
+    },
     // 인형 상자: 투명 창 너머로 복슬복슬한 뒷모습만 보이고, 이름표(t)가 삐죽 나온다. 캐릭터 얼굴은 그리지 않는다.
     dollbox(x, y, o) {
       const c = o.c || "#ffd6e7";
@@ -930,6 +935,13 @@
       // 그림 파일 배경: "img:이름" → webtoon/bg/이름.webp 를 컷에 꽉 채운다(인물·소품은 그 위에 그린다).
       case "img":
         return `<rect width="${W}" height="${H}" fill="#f3ead8"/><image href="bg/${arg}.webp" width="${W}" height="${H}" preserveAspectRatio="xMidYMid slice"/>`;
+      // 비 오는 길: 흐린 하늘, 인도와 횡단보도, 빗줄기.
+      case "rain": {
+        let s = `<rect width="${W}" height="${H}" fill="#c9d3dc"/><rect y="${gy - 70}" width="${W}" height="${H}" fill="#9aa5ae"/><rect y="${gy + 10}" width="${W}" height="${H}" fill="#7f8a93"/>`;
+        for (let x = 10; x < W; x += 46) s += `<rect x="${x}" y="${gy + 16}" width="28" height="30" fill="#e8ecef" opacity=".85"/>`;
+        for (let i = 0; i < 70; i++) s += `<path d="M${(i * 53) % W} ${(i * 37) % H} l-6 16" stroke="#ffffff" stroke-width="1.6" opacity=".7" stroke-linecap="round"/>`;
+        return s;
+      }
       // 위에서 내려다본 마룻바닥. "tabletop" 은 그 위에 둥근 식탁까지.
       case "floortop":
       case "tabletop": {
