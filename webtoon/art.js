@@ -636,6 +636,24 @@
       const gems = ["#ff4d4d", "#ffd34d", "#4c7fd0", "#6cc27a", "#ff9f1c", "#b99ad9"].map((c, i) => i < 4 ? `<circle cx="${-11 + i * 7.3}" cy="-24" r="2.8" fill="${c}" stroke="${INK}" stroke-width=".8"/>` : "").join("");
       return `<g transform="translate(${x} ${y}) rotate(${o.rot || 0}) scale(${o.s || 1})"><path d="M-14 16 L-14 -6 L-16 -22 Q-16 -26 -12 -26 Q-9 -26 -9 -22 L-8 -12 L-7 -28 Q-7 -32 -3 -32 Q1 -32 1 -28 L1 -12 L3 -28 Q3 -32 7 -32 Q11 -32 11 -28 L10 -10 L13 -20 Q14 -24 18 -22 Q20 -20 19 -16 L14 6 L14 16Z" fill="#f2c14e" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><path d="M-12 -4 Q0 -8 12 -4" stroke="#c9962a" stroke-width="1.6" fill="none"/><rect x="-16" y="14" width="32" height="10" rx="3" fill="#e0ad3a" stroke="${INK}" stroke-width="2"/>${gems}<circle cx="-1" cy="4" r="4.5" fill="#6cc27a" stroke="${INK}" stroke-width="1"/><circle cx="-12" cy="-6" r="2.6" fill="#ff9f1c" stroke="${INK}" stroke-width=".8"/></g>`;
     },
+    // 수영장 물결(인물 앞에 덮어 물에 잠긴 것처럼). y = 수면 높이.
+    water(x, y, o, W, H) {
+      let s = `<path d="M0 ${y} ${Array.from({ length: 14 }, (_, i) => `Q${i * 30 + 15} ${y - 7} ${i * 30 + 30} ${y}`).join(" ")} V${H} H0Z" fill="#5fb7e0" opacity=".88"/>`;
+      for (let i = 0; i < 6; i++) s += `<path d="M${(i * 71) % W} ${y + 16 + (i % 3) * 14} q15 -6 30 0 t30 0" stroke="#bfe8f7" stroke-width="2.4" fill="none"/>`;
+      return s;
+    },
+    // 튜브(허리에 끼운 동그란 튜브).
+    tube(x, y, o) {
+      const s = o.s || 1;
+      let stripes = "";
+      for (let i = 0; i < 6; i++) stripes += `<path d="M${-40 + i * 16} -12 v24" stroke="#fff" stroke-width="7" opacity=".9"/>`;
+      return `<g transform="translate(${x} ${y}) scale(${s})"><ellipse rx="52" ry="20" fill="${o.c || "#ff6b6b"}" stroke="${INK}" stroke-width="2.6"/><g clip-path="none">${stripes}</g><ellipse rx="28" ry="8" fill="none" stroke="${INK}" stroke-width="1.6" opacity=".6"/></g>`;
+    },
+    // 모기(배가 통통한).
+    mosquito(x, y, o) {
+      const s = o.s || 1;
+      return `<g transform="translate(${x} ${y}) scale(${s})"><ellipse cx="-10" cy="-8" rx="9" ry="5" fill="#eaf6ff" stroke="${INK}" stroke-width="1.2" transform="rotate(-25 -10 -8)"/><ellipse cx="6" cy="-9" rx="9" ry="5" fill="#eaf6ff" stroke="${INK}" stroke-width="1.2" transform="rotate(25 6 -9)"/><ellipse cx="0" cy="0" rx="7" ry="5" fill="#c0392b" stroke="${INK}" stroke-width="1.4"/><circle cx="-8" cy="-1" r="3" fill="${INK}"/><path d="M-11 0 l-10 2 M-3 4 l-6 9 M2 4 l4 9 M6 3 l10 6" stroke="${INK}" stroke-width="1.2"/></g>`;
+    },
     // 우산 (손잡이 끝이 x,y).
     umbrella(x, y, o) {
       const c = o.c || "#ffd34d", r = 70 * (o.s || 1);
@@ -935,6 +953,14 @@
       // 그림 파일 배경: "img:이름" → webtoon/bg/이름.webp 를 컷에 꽉 채운다(인물·소품은 그 위에 그린다).
       case "img":
         return `<rect width="${W}" height="${H}" fill="#f3ead8"/><image href="bg/${arg}.webp" width="${W}" height="${H}" preserveAspectRatio="xMidYMid slice"/>`;
+      // 실내 수영장: 타일 벽, 출렁이는 물(인물은 물에 잠긴 듯 아래쪽이 가려진다 — 물결은 fp 의 "water" 로 덮는다).
+      case "pool": {
+        let s = `<rect width="${W}" height="${H}" fill="#e8f4f8"/>`;
+        for (let y = 0; y < gy - 40; y += 22) for (let x = (y / 22) % 2 ? -11 : 0; x < W; x += 22) s += `<rect x="${x + 1}" y="${y + 1}" width="20" height="20" fill="#d8edf3" stroke="#c4e0e8" stroke-width="1"/>`;
+        s += `<rect y="${gy - 40}" width="${W}" height="${H}" fill="#5fb7e0"/>`;
+        for (let i = 0; i < 9; i++) s += `<path d="M${(i * 61) % W} ${gy - 20 + (i % 3) * 18} q15 -6 30 0 t30 0" stroke="#bfe8f7" stroke-width="2.4" fill="none"/>`;
+        return s;
+      }
       // 비 오는 길: 흐린 하늘, 인도와 횡단보도, 빗줄기.
       case "rain": {
         let s = `<rect width="${W}" height="${H}" fill="#c9d3dc"/><rect y="${gy - 70}" width="${W}" height="${H}" fill="#9aa5ae"/><rect y="${gy + 10}" width="${W}" height="${H}" fill="#7f8a93"/>`;
