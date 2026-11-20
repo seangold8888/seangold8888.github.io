@@ -777,6 +777,24 @@
       for (const k of [-10, 0, 10]) g += `<path d="M${x} ${y} Q${x + dx / 2} ${y + dy / 2 + k} ${x + dx} ${y + dy}" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>`;
       return `<g>${g}</g>`;
     },
+    // 젤리 봉지. kind: "grape"(포도) | "worm"(지렁이), empty: 빈 봉지(납작), t: 글씨
+    jellybag(x, y, o) {
+      const worm = o.kind === "worm";
+      const fill = o.c || (worm ? "#ffe066" : "#b57be0");
+      const sy = o.empty ? 0.62 : 1;
+      let inside = "";
+      if (!o.empty) {
+        if (worm) {
+          const wc = ["#ff5c7c", "#4caf50", "#3b9cff", "#ff9f1c"];
+          wc.forEach((c, i) => { inside += `<path d="M-20 ${-46 + i * 9} q6 -7 12 0 t12 0 t12 0" stroke="${c}" stroke-width="4.5" fill="none" stroke-linecap="round"/>`; });
+        } else {
+          [[-9, -44], [7, -44], [-1, -32], [-14, -31], [13, -31], [-6, -20], [8, -20]].forEach(([dx, dy]) => { inside += `<circle cx="${dx}" cy="${dy}" r="6.5" fill="#6a2c91" stroke="${INK}" stroke-width="1.3"/><circle cx="${dx - 2}" cy="${dy - 2}" r="1.6" fill="#fff" opacity=".7"/>`; });
+          inside += `<path d="M-1 -51 q3 -7 9 -8" stroke="#4caf50" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+        }
+      }
+      const label = o.t ? `<text x="0" y="-4" text-anchor="middle" font-size="9" font-family="Jua, sans-serif" fill="${INK}">${o.t}</text>` : "";
+      return `<g transform="translate(${x} ${y}) rotate(${o.rot || (o.empty ? -14 : 0)}) scale(${o.s || 1} ${(o.s || 1) * sy})"><path d="M-28 -62 L28 -62 L26 -56 L30 -50 L28 0 Q0 6 -28 0 L-30 -50 L-26 -56 Z" fill="${fill}" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round"/><path d="M-28 -56 H28" stroke="${INK}" stroke-width="1.4" stroke-dasharray="3 3"/><rect x="-22" y="-52" width="44" height="40" rx="8" fill="#fff" opacity=".55"/>${inside}${label}</g>`;
+    },
     // 또봇 Y (작은 로봇 장난감)
     tobot(x, y, o) {
       const s = o.s || 1;
