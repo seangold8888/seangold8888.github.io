@@ -76,6 +76,13 @@ test("엔진: 판 사이에서 멈추고 보너스 보상(무지개 줄)이 다�
   s.combo = 7; s.phase = "play";
   s.theta = Math.PI - 0.001; R.step(s, 1 / 60);           // 안 뛰고 발밑 통과
   assert.equal(s.combo, 7); assert.equal(s.shield, 1); assert.equal(s.stats.saves, 1);
+  assert.equal(s.rainbow, true, "봐주기가 남았으면 아직 무지개 줄");
+  // 마지막 봐주기를 쓰면 줄이 원래 색으로 돌아온다(계속 무지개면 아이가 아직 보호받는 줄 안다)
+  s.theta = Math.PI - 0.001; R.step(s, 1 / 60);
+  assert.equal(s.shield, 0); assert.equal(s.rainbow, false, "봐주기 끝 = 무지개 끝");
+  assert.equal(s.phase, "play", "마지막 봐주기도 넘어지지 않음");
+  s.theta = Math.PI - 0.001; R.step(s, 1 / 60);
+  assert.equal(s.phase, "trip", "그다음 실수는 진짜로 걸린다");
   const retry = R.quizReward(false);
   assert.ok(retry.mult > 1 && retry.shield >= 1 && retry.bonus > 0, "고쳐 맞혀도 손에 잡히는 보상");
   assert.ok(rw.mult > retry.mult && rw.shield > retry.shield, "한 번에 맞히면 더 크게");

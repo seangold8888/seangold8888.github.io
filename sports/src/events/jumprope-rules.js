@@ -184,7 +184,9 @@ function crossing(s) {
 
 function miss(s) {
   if (s.shield > 0) {                                 // 무지개 줄: 한 번 봐줌(콤보 유지, 넘어지지 않음)
-    s.shield--; s.stats.saves++; emit(s, "save", { left: s.shield });
+    s.shield--; s.stats.saves++;
+    if (s.shield <= 0) s.rainbow = false;             // 봐주기를 다 쓰면 줄도 원래 색으로(계속 무지개면 아직 지켜 주는 줄 안다)
+    emit(s, "save", { left: s.shield });
     return;
   }
   s.stats.miss++; s.combo = 0; s.trainRun = 0;
@@ -239,7 +241,7 @@ export function nextRound(s, reward) {
   return s;
 }
 
-// 보너스 문제 보상(한 번에 맞힘 / 고쳐서 맞힘). 다음 판 내내 이어진다.
+// 보너스 문제 보상(한 번에 맞힘 / 고쳐서 맞힘). 점수 배수는 다음 판 내내, 무지개 줄은 봐주기(shield)가 남아 있는 동안만.
 export function quizReward(firstTry) {
   return firstTry ? { mult: 1.5, shield: 2, rainbow: true, bonus: 100 } : { mult: 1.25, shield: 1, rainbow: true, bonus: 50 };
 }

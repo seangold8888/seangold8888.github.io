@@ -197,7 +197,7 @@ export function createView({ root, kid, cast = [], demo = false, frame = null, s
         case "ok": if (ev.grade === "perfect") { st.punch(0.035); st.burst(kidX, -20, { n: 14, speed: 420, spread: 1.2 }); } if (ev.combo % 10 === 0) st.cheerUp(1); break;
         case "double": cheerT = 0.9; st.punch(0.1); st.shake(0.6); st.cheerUp(1.3); st.burst(kidX, -H * 0.6, { n: 40, speed: 700, colors: ["#ffd23f", "#fff7a8", "#ffffff", "#ff9a1f"] }); break;
         case "miss": sadT = 0.7; st.shake(1); break;
-        case "save": st.burst(kidX, -10, { n: 30, colors: ["#ff4d6d", "#ffd23f", "#3ec1ff", "#7cff6b", "#b98bff"], speed: 500 }); break;
+        case "save": st.burst(kidX, -10, { n: ev.left > 0 ? 30 : 60, colors: ["#ff4d6d", "#ffd23f", "#3ec1ff", "#7cff6b", "#b98bff"], speed: ev.left > 0 ? 500 : 800 }); if (!(ev.left > 0)) st.shake(0.5); break;
         case "rainbow": rainbowT = 1; st.cheerUp(1.2); st.burst(0, -H * 0.5, { n: 60, speed: 900, colors: ["#ff4d6d", "#ffd23f", "#3ec1ff", "#7cff6b", "#b98bff"] }); break;
         case "enter": entering = 1; st.cheerUp(0.6); break;
         case "join": st.cheerUp(1); st.punch(0.05); break;

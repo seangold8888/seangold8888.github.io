@@ -4,7 +4,7 @@
 
 export const SLOTS = [
   { id: "jumprope", name: "줄넘기", icon: "🪢",
-    load: () => import("./jumprope.js?v=1") },
+    load: () => import("./jumprope.js?v=2") },
 
   { id: "baseball", name: "야구", icon: "⚾",
     load: () => import("./baseball.js?v=1") },

@@ -1,11 +1,11 @@
 // 종목 1: 줄넘기. 규칙은 jumprope-rules.js(엔진), 그림은 view(바꿔 끼우는 겉모습), 여기는 입력·진행·문제·소리·점수판.
 // 판: 1 줄넘기 → 보너스 문제(무지개 줄) → 2 빨라져요(재이는 2단 뛰기 기회) → 보너스 문제 → 3 슈퍼 스피드. 한 사람 약 75초.
 // (꼬마 기차 판은 엔진에 있고 그림이 생기면 rounds 에 넣는다 — jumprope-rules.js 머리말)
-import * as R from "./jumprope-rules.js?v=1";
+import * as R from "./jumprope-rules.js?v=2";
 
 // 겉모습(view) 목록. 그림 방식을 바꾸면 여기에 새 view 를 넣고 main.js 의 VIEW_KIND 를 바꾼다.
 const VIEWS = {
-  stage: () => import("../views/jumprope-stage.js?v=1"),
+  stage: () => import("../views/jumprope-stage.js?v=2"),
 };
 
 export default {
@@ -104,7 +104,11 @@ async function start(ctx) {
         case "double": sfx.double(); juice.flash("#fff3b0"); juice.announce("2단 뛰기 성공!", { voice: "double", cls: "gold", pri: 2 }); replay.mark(s.t, 100 + ev.combo, "2단 뛰기"); break;
         case "dblwarn": juice.pop("금빛 줄! 두 번 톡톡!", { y: 0.24, cls: "gold small", ms: 1200 }); break;
         case "miss": sfx.miss(); juice.pop("앗!", { y: 0.44, cls: "oops" }); juice.shake(ctx.root, 1.2); if (ev.scatter) juice.pop("기차가 흩어졌어요", { y: 0.46, cls: "small" }); break;
-        case "save": sfx.save(); juice.pop("무지개가 지켜 줬어요!", { y: 0.34, cls: "rainbow small", ms: 1100 }); break;
+        case "save":
+          sfx.save();
+          if (ev.left > 0) juice.pop(`무지개가 지켜 줬어요! 🌈 ${ev.left}번 남았어요`, { y: 0.34, cls: "rainbow small", ms: 1300 });
+          else { juice.pop("무지개가 지켜 줬어요!", { y: 0.34, cls: "rainbow small", ms: 1100 }); juice.announce("무지개 끝!", { sub: "이제 걸리면 넘어져요 · 줄이 발에 오면 톡!", pri: 2 }); }
+          break;
         case "enter": sfx.enter(); juice.pop("쏙!", { y: 0.44 }); juice.announce("기차 출발!", { sub: "이제 줄을 넘어요", voice: "enter" }); break;
         case "bonk": sfx.bonk(); juice.pop("아직! 줄이 올라갈 때", { y: 0.36, cls: "small" }); break;
         case "join": sfx.join(); sfx.crowd(0.8); juice.announce("칙칙폭폭!", { sub: `${ev.n}칸 기차 · 점수 ×${R.trainMult(ev.n)}` }); replay.mark(s.t, 40 + ev.n * 10, "꼬마 기차"); break;
@@ -114,7 +118,7 @@ async function start(ctx) {
     if (!ctx.demo) {
       if (s.score !== lastShownScore) { lastShownScore = s.score; hud.set({ score: s.score }); }
       hud.set({ combo: s.combo, shield: s.shield, mult: s.mult * (s.rounds[s.round] === "train" ? R.trainMult(s.jumpers) : 1) });
-      hud.buff("rainbow", s.rainbow ? "🌈 무지개 줄" : null, { cls: "rainbow" });
+      hud.buff("rainbow", s.rainbow && s.shield > 0 ? `🌈 무지개 줄 · ${s.shield}번 봐줘요` : null, { cls: "rainbow" });
     }
     s.events.length = 0;
   }
