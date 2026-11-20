@@ -466,12 +466,12 @@ function genTarget2(c, age) {
   const mulDiv = () => { for (let t = 0; t < 60; t++) { const o = randOp(c, age); if (o && (o.op === "×" || o.op === "÷")) return o; } return null; };
   for (let t = 0; t < 300; t++) {
     const s1 = mulDiv(); if (!s1) return null;
-    const c1 = applyOp(s1, c); if (c1 < 4 || c1 > M) continue;
+    const c1 = applyOp(s1, c); if (c1 < 4 || c1 > M || c1 % 10) continue;   // 둘째 단계 수가 둥글게
     const T = Math.round((c * rand(1.15, 1.9)) / unit) * unit;   // 무리가 늘어나는 둥근 목표
     if (T < unit || T > M || Math.abs(T - c1) < 10) continue;
     const s2 = T > c1 ? op("+", T - c1) : op("−", c1 - T);
     const s1b = mulDiv(); if (!s1b || (s1b.op === s1.op && s1b.v === s1.v)) continue;
-    const c1b = applyOp(s1b, c); if (c1b < 4 || c1b > M) continue;
+    const c1b = applyOp(s1b, c); if (c1b < 4 || c1b > M || c1b % 10) continue;
     const B0 = T * (1 + (Math.random() < 0.5 ? -1 : 1) * rand(0.1, 0.3)), B = c1b + Math.round((B0 - c1b) / 10) * 10;   // 둘째 단계도 10 단위로
     if (B === T || B < 1 || B > M || Math.abs(B - c1b) < 10) continue;
     const s2b = B > c1b ? op("+", B - c1b) : op("−", c1b - B);

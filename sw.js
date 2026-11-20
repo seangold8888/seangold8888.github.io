@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v276";
+const CACHE_VERSION = "v277";
 const CACHE_PREFIX = "adventure-box-";
 // 큰 그림과 소리(삼국지 배경 200MB+, 저장한 이야기 오디오)는 배포 번호와 따로 둔다.
 // 배포마다 이 캐시를 버리면 기기가 236MB를 다시 받고, "여행 전에 이야기 저장"도 지워졌다.
@@ -1360,9 +1360,9 @@ const OPTIONAL_SHELL = [
   "./dive/art/fx_mega.webp?v=1",
   "./towers/",
   "./topping/",
-  "./topping/game.js?v=5",
-  "./topping/edition-hub.js?v=5",
-  "./topping/cover.webp",
+  "./topping/game.js?v=6",
+  "./topping/edition-hub.js?v=6",
+  "./topping/cover.webp?v=2",
   "./sports/",
   "./sports/index.html",
   "./sports/style.css?v=1",

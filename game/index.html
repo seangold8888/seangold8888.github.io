@@ -761,7 +761,7 @@
   .card.plane { --cover:url('plane/cover.webp'); --cover-pos:50% 60%; }
   .card.dive { --cover:url('dive/cover.webp'); --cover-pos:50% 50%; }
   .card.towers { --cover:url('towers/cover.webp'); --cover-pos:50% 50%; }
-  .card.topping { --cover:url('topping/cover.webp'); --cover-pos:50% 60%; }
+  .card.topping { --cover:url('topping/cover.webp?v=2'); --cover-pos:50% 60%; }
   .card.sports { --cover:url('sports/cover.webp'); --cover-pos:50% 45%; }
   .card.stage { --cover: url('assets/covers/cover-kedehun-team-v1.webp'); --cover-pos: 50% 24%; }
   .card.gem { --cover: url('assets/covers/cover-ribbon-room-v1.webp'); --cover-pos: 55% 42%; }
@@ -1326,6 +1326,9 @@
   }
   .card:active, .shop:active { box-shadow: 0 2px 6px rgba(40,80,140,.12); }
   @media (max-width: 599px) { .lobby-shell .games .card { min-height: 150px; } }
+  /* 카드 그림은 위쪽 3:2 칸에만 — 이름 띠에 가려 잘리지 않게(11-20 "게임사진이 다 잘려있어") */
+  .lobby-shell .games .card { min-height: 0; padding-top: 66.667%; justify-content: flex-end; }
+  .lobby-shell .games .card::before { inset: 0 0 auto 0; aspect-ratio: 3 / 2; height: auto; }
   /* 좁은 폭: 워드마크 칸은 글자 폭 아래로 줄지 않고, 티켓 글이 길면(영어 문구) 칩 안에서 줄을 바꾼다 */
   @media (max-width: 600px) {
     .topbar { grid-template-columns: auto max-content minmax(0, 1fr); }
