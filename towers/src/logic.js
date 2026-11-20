@@ -4,7 +4,7 @@
 export const MAP_W = 960, MAP_H = 600;
 export const WAVES = 8, PREP_TIME = 5, OWL_LIFE = 12, OWL_Y = 100, OWL_HIT_R = 56;
 export const MAX_MONSTERS = 50, MAX_SHOTS = 120;
-export const START_GEMS = 120, WAVE_GEMS = 20, MAX_LV = 5, GEM_MAX_LV = 2;
+export const START_GEMS = 150, WAVE_GEMS = 20, MAX_LV = 5, GEM_MAX_LV = 2;
 export const BLAST_GEMS = 30, SMALL_GEMS = 20, SMALL_MIN = 6, BOSS_BLAST = 0.2, BOSS_SMALL = 0.08;
 // 고쳐 맞힘 작은 마법: 길 위 괴물 절반(최소 6마리, 그보다 적으면 전부)
 export const smallCount = alive => Math.min(alive, Math.max(SMALL_MIN, Math.ceil(alive / 2)));
@@ -194,15 +194,15 @@ export function coverage(path, x, y, r, step = 8) {
   return n * step;
 }
 
-/* ---------- 맵 3개 ---------- */
+/* ---------- 맵 6개 ---------- */
 // paths: 괴물이 걷는 길(여럿이면 괴물마다 하나를 무작위로). 끝점이 성문. 박쥐는 첫 길 시작점에서 성문까지 곧게 난다.
 export const MAPS = [
   { id: "field", name: "들판 길", need: 0, hp: 1, bal: 0.88, span: 1.12, tint: null, ground: "#8fcf6a", dirt: "#e2c48c", edge: "#a8834f",
     paths: [[[-40, 470], [180, 470], [180, 170], [420, 170], [420, 450], [660, 450], [660, 200], [850, 200]]],
     castle: { x: 892, y: 196 },
     pads: [[110, 395], [300, 300], [540, 330], [540, 540], [770, 320], [300, 95], [245, 548], [760, 105]],
-    decor: [["tree", 40, 120, 70], ["tree", 92, 190, 60], ["rock", 360, 540, 46], ["tree", 680, 560, 66], ["rock", 880, 400, 50], ["tree", 860, 540, 72], ["tree", 560, 80, 56], ["rock", 605, 370, 40], ["tree", 40, 560, 60], ["rock", 470, 70, 38]] },
-  { id: "forest", name: "버섯 숲길", need: 1, hp: 1, bal: 0.95, span: 1.55, tint: "rgba(40,90,60,.18)", ground: "#6fae5c", dirt: "#d8b47e", edge: "#8f6a3c",
+    decor: [["tree", 40, 120, 70], ["tree", 92, 190, 60], ["rock", 360, 540, 46], ["tree", 680, 560, 66], ["rock", 880, 400, 50], ["tree", 860, 540, 72], ["tree", 560, 80, 56], ["rock", 605, 370, 40], ["tree", 40, 560, 60], ["rock", 470, 70, 38], ["flowerbush", 530, 235, 50], ["flowerbush", 50, 300, 46], ["flowerbush", 900, 300, 44]] },
+  { id: "forest", name: "버섯 숲길", need: 1, hp: 1.21, bal: 0.95, span: 1.55, tint: "rgba(40,90,60,.18)", ground: "#6fae5c", dirt: "#d8b47e", edge: "#8f6a3c",
     paths: [
       [[-40, 300], [140, 300], [140, 120], [560, 120], [560, 300], [860, 300]],
       [[-40, 300], [140, 300], [140, 480], [560, 480], [560, 300], [860, 300]],
@@ -210,11 +210,29 @@ export const MAPS = [
     castle: { x: 900, y: 296 },
     pads: [[60, 220], [60, 380], [250, 210], [250, 390], [420, 205], [420, 395], [650, 210], [650, 390], [780, 385]],
     decor: [["mushroom", 350, 300, 70], ["mushroom", 300, 250, 44], ["tree", 30, 80, 66], ["mushroom", 40, 540, 56], ["tree", 760, 90, 70], ["mushroom", 860, 470, 58], ["tree", 880, 120, 60], ["rock", 460, 300, 40], ["mushroom", 700, 560, 48], ["tree", 250, 560, 62]] },
-  { id: "snow", name: "눈 다리", need: 3, hp: 1.3, bal: 1.0, span: 0.95, tint: "rgba(232,244,255,.55)", ground: "#dfeef6", dirt: "#b9a07e", edge: "#7e6a52",
+  { id: "snow", name: "눈 다리", need: 2, hp: 1.3, bal: 1.0, span: 0.95, tint: "rgba(232,244,255,.55)", ground: "#dfeef6", dirt: "#b9a07e", edge: "#7e6a52",
     paths: [[[-40, 150], [620, 150], [620, 470], [380, 470], [380, 300], [860, 300]]],
     castle: { x: 900, y: 296 },
     pads: [[100, 235], [320, 235], [470, 225], [700, 225], [820, 220], [500, 385], [300, 390], [700, 390], [820, 385], [540, 545]],
     decor: [["snowpine", 40, 60, 60], ["snowpine", 250, 60, 54], ["snowpine", 820, 90, 66], ["rock", 160, 400, 46], ["snowpine", 120, 520, 64], ["snowpine", 880, 520, 60], ["rock", 760, 560, 44], ["snowpine", 460, 60, 50], ["rock", 240, 480, 40], ["snowpine", 940, 160, 50]] },
+  { id: "desert", name: "모래 사막", need: 3, hp: 1.15, bal: 1.0, span: 1.0, tint: "rgba(255,200,120,.12)", ground: "#f0d08a", dirt: "#e8d2a6", edge: "#b88a4e",
+    paths: [[[-40, 120], [300, 120], [300, 480], [600, 480], [600, 150], [860, 150]]],
+    castle: { x: 900, y: 146 },
+    pads: [[150, 200], [380, 190], [380, 300], [520, 300], [450, 400], [220, 400], [680, 320], [760, 240], [760, 70], [450, 560]],
+    decor: [["cactus", 60, 300, 60], ["palm", 90, 540, 70], ["rock", 450, 200, 44], ["cactus", 820, 420, 66], ["rock", 700, 560, 46], ["cactus", 450, 50, 50], ["palm", 880, 540, 64], ["cactus", 220, 280, 48]] },
+  { id: "candy", name: "사탕 마을", need: 4, hp: 0.9, bal: 1.0, span: 1.5, tint: "rgba(255,170,220,.12)", ground: "#f8c8e0", dirt: "#e9b77a", edge: "#b07a45",
+    paths: [
+      [[-40, 460], [200, 460], [200, 120], [700, 120], [700, 300], [860, 300]],
+      [[-40, 460], [200, 460], [200, 540], [700, 540], [700, 300], [860, 300]],
+    ],
+    castle: { x: 900, y: 296 },
+    pads: [[100, 380], [100, 545], [300, 200], [450, 200], [600, 200], [300, 380], [600, 380], [790, 220], [790, 390], [450, 460]],
+    decor: [["lolli", 450, 330, 56], ["candycane", 60, 200, 60], ["lolli", 100, 580, 54], ["candycane", 860, 120, 60], ["lolli", 860, 520, 60], ["mushroom", 600, 40, 48], ["candycane", 880, 420, 50], ["lolli", 60, 60, 50]] },
+  { id: "lava", name: "용암 동굴", need: 5, hp: 1.3, bal: 1.0, span: 1.05, tint: "rgba(60,10,0,.18)", artTint: "rgba(25,8,10,.42)", ground: "#4a3a3a", dirt: "#6b5b55", edge: "#2b1e1c",
+    paths: [[[-40, 100], [560, 100], [560, 300], [240, 300], [240, 480], [860, 480]]],
+    castle: { x: 900, y: 476 },
+    pads: [[150, 180], [300, 190], [400, 180], [650, 200], [400, 390], [140, 390], [650, 390], [770, 380], [760, 560], [480, 560]],
+    decor: [["lavarock", 60, 300, 56], ["lavarock", 880, 300, 50], ["rock", 360, 560, 40], ["lavarock", 60, 520, 50], ["lavarock", 880, 560, 48], ["rock", 820, 180, 40], ["lavarock", 60, 40, 46], ["lavarock", 930, 40, 40]] },
 ];
 export const MAP_IDS = MAPS.map(m => m.id);
 export const mapOf = id => MAPS.find(m => m.id === id) || MAPS[0];

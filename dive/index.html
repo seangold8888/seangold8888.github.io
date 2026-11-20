@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Deep Dive · PLAYGROUND</title>
 <link rel="preload" href="../sanguo/fonts/pretendard/PretendardVariable.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=4">
+<link rel="stylesheet" href="style.css?v=5">
 <script src="../assets/study/play-timer.js?v=4"></script>
 <script src="../assets/touch-guard.js?v=1"></script>
 <script src="../math/curriculum.js?v=21"></script>
@@ -33,18 +33,33 @@
 
 <section class="panel" id="start">
   <h1>Deep Dive</h1>
-  <p class="lead">먹물에 물든 바다 친구들을 씻어 주고, <b>? 진주</b> 문제를 맞혀 잠수정을 키워요!</p>
-  <p class="pick">누가 잠수할까요?</p>
-  <div class="pilots" id="pilots"></div>
-  <p class="pick">어디로 갈까요?</p>
-  <div class="zones" id="zones"></div>
-  <div class="row">
-    <button class="ghost" id="dexBtn" type="button">바다 친구 도감</button>
-    <span class="chest" id="chest">가족 진주함 0</span>
+  <p class="lead">바다 친구를 씻어 주러 가요!</p>
+  <div class="pilots" id="pilots" role="group" aria-label="누가 잠수할까요?"></div>
+  <!-- 목표는 늘 보이게, 자세한 것은 작은 칩 뒤로 -->
+  <div class="goals" id="goals">
+    <button class="gchip zonechip" id="zoneChip" type="button" aria-expanded="false" aria-controls="zoneSheet" aria-label="바다 고르기">
+      <span class="gname" id="zoneName">산호 숲</span><span class="zdots" id="zoneDots" aria-hidden="true"></span>
+    </button>
+    <button class="gchip pearlchip" id="pearlChip" type="button" aria-expanded="false" aria-controls="zoneSheet" aria-label="가족 진주함">
+      <i class="gpearl" aria-hidden="true"></i><span class="gbar"><i id="pearlFill"></i></span><b id="pearlNum">0</b>
+    </button>
+    <button class="gchip" id="dexBtn" type="button" aria-label="바다 친구 도감">
+      <span aria-hidden="true">📖</span><b id="dexNum">0</b>
+    </button>
+    <button class="gchip icon" id="giftChip" type="button" aria-expanded="false" aria-controls="giftSheet" aria-label="출발 선물과 기록">
+      <span aria-hidden="true">🎁</span>
+    </button>
   </div>
-  <p class="small" id="giftLine"></p>
+  <div class="sheet" id="zoneSheet" hidden>
+    <div class="zones" id="zones"></div>
+    <p class="small" id="nextSea"></p>
+  </div>
+  <div class="sheet" id="giftSheet" hidden>
+    <p class="small" id="chest">가족 진주함 0</p>
+    <p class="small" id="giftLine"></p>
+    <p class="small" id="bestLine"></p>
+  </div>
   <button class="go" id="startBtn" type="button">출발!</button>
-  <p class="small" id="bestLine"></p>
 </section>
 
 <section class="panel" id="dex" hidden>
@@ -74,6 +89,6 @@
   <a class="home" href="../game/">← PLAYGROUND</a>
 </section>
 
-<script type="module" src="src/main.js?v=8"></script>
+<script type="module" src="src/main.js?v=9"></script>
 </body>
 </html>

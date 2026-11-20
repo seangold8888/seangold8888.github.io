@@ -2,8 +2,8 @@
 // ? 부엉이 문제를 맞히면 대마법이 터지고 탑 강화 카드를 고른다.
 // 규칙 표는 logic.js, 한 걸음은 engine.js, 여기서는 그리기·입력·화면·저장.
 // 그림은 art/ 의 그림 파일을 쓰고, 못 읽으면 캔버스 도형으로 대신 그린다. shadowBlur 와 매 프레임 그라데이션은 쓰지 않는다.
-import * as L from "./logic.js?v=1";
-import * as E from "./engine.js?v=3";
+import * as L from "./logic.js?v=3";
+import * as E from "./engine.js?v=5";
 import { createParticles, createSynth, P_GLOW, P_STREAK, P_SPIN, P_RING, P_GEM } from "./juice.js?v=2";
 
 const $ = id => document.getElementById(id);
@@ -28,7 +28,9 @@ let mapId = save.map || "field";
 const ART = {}, WHITE = {}, TINT = {};   // TINT: 상태 색(불꽃 주황·얼음 하늘·번개 노랑) 실루엣
 const MON_ART = L.MONSTER_IDS;
 const ART_NAMES = ["wiz0", "wiz1", "wiz2", "wiz3", ...L.TOWER_IDS.map(k => "tower_" + k), ...L.TOWER_IDS.map(k => "tower_" + k + "_big"), ...MON_ART,
-  "castle", "cake", "crystal", "owl", "pad", "bubble", "tree", "mushroom", "rock", "snowpine", "ground"];
+  "castle", "cake", "crystal", "owl", "pad", "bubble", "tree", "mushroom", "rock", "snowpine", "ground",
+  "cactus", "palm", "lolli", "candycane", "lavarock", "flowerbush",
+  ...L.MAP_IDS.map(id => "ground_" + id), ...L.MAP_IDS.map(id => "path_" + id)];
 function whiten(im, col = "#fff") {
   // 실루엣은 작게(최대 128px) 만든다 — 덧칠용이라 크게 둘 필요가 없고 메모리를 아낀다
   const sc = Math.min(1, 128 / Math.max(im.width, im.height)), c = document.createElement("canvas"); c.width = Math.max(1, Math.round(im.width * sc)); c.height = Math.max(1, Math.round(im.height * sc));
@@ -228,10 +230,10 @@ function callout(text, { size = 34, col = "#ffe27a", x = null, y = null, wx = nu
 }
 
 /* ---------- 소리: Web Audio 비프(음성 합성 금지) ---------- */
-let ac = null, soundOn = true;
+let ac = null, soundOn = true, quiet = false;   // quiet: 처음 화면 시연이 내는 소리는 끈다
 try { soundOn = localStorage.getItem(L.SOUND_KEY) !== "0"; } catch (_) {}
 function audio() {
-  if (!soundOn) return null;
+  if (!soundOn || quiet) return null;
   if (!ac) { const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null; try { ac = new AC(); } catch (_) { return null; } }
   if (ac.state === "suspended") ac.resume().catch(() => {});
   return ac;
@@ -281,6 +283,7 @@ const SX = (x, y) => (ROT ? L.MAP_H - y : x), SY = (x, y) => (ROT ? x : y);
 const SCR_W = () => (ROT ? L.MAP_H : L.MAP_W), SCR_H = () => (ROT ? L.MAP_W : L.MAP_H);
 // 캔버스에 월드 좌표 그대로 선·원을 그릴 때의 변환(돌려도 모양이 같은 것만: 길·사거리 원·빛줄기·번개·탄)
 function setWorldTf(k, ox, oy) { if (ROT) ctx.setTransform(0, k, -k, 0, ox + L.MAP_H * k, oy); else ctx.setTransform(k, 0, 0, k, ox, oy); }
+function safeTop() { try { const d = document.createElement("div"); d.style.cssText = "position:fixed;top:0;height:env(safe-area-inset-top);visibility:hidden"; document.body.appendChild(d); const h = d.offsetHeight; d.remove(); return h || 0; } catch (e) { return 0; } }
 function resize() {
   const vv = window.visualViewport;
   vw = Math.max(1, Math.round(vv && vv.width ? vv.width : innerWidth)); vh = Math.max(1, Math.round(vv && vv.height ? vv.height : innerHeight));
@@ -289,7 +292,9 @@ function resize() {
   canvas.style.width = vw + "px"; canvas.style.height = vh + "px";
   portrait = ROT = vh > vw * 1.1;
   const S = ROT ? SAFE_R : SAFE_L, sw = S.x1 - S.x0, sh = S.y1 - S.y0;
-  mapS = Math.min(vw / sw, vh / sh); mapX = vw / 2 - (S.x0 + S.x1) / 2 * mapS; mapY = vh / 2 - (S.y0 + S.y1) / 2 * mapS;
+  // 위 HUD 줄(케이크·수정·파도)과 세로 화면 아래 버튼 줄만큼 비우고 그 사이에 맵을 맞춘다(첫 탑·성이 칩에 가리지 않게)
+  const small = Math.min(vw, vh) < 500, padT = (small ? 60 : 72) + safeTop(), padB = ROT ? (small ? 66 : 80) : 0, ah = Math.max(200, vh - padT - padB);
+  mapS = Math.min(vw / sw, ah / sh); mapX = vw / 2 - (S.x0 + S.x1) / 2 * mapS; mapY = padT + ah / 2 - (S.y0 + S.y1) / 2 * mapS;
   // 그림 배율: 세로(회전) 1.35, 폰 가로처럼 낮은 화면 1.4, 그 밖 가로 1.25
   VS = ROT ? 1.35 : vh < 500 ? 1.4 : 1.25;
   PHONE = Math.min(vw, vh) < 500;
@@ -316,6 +321,12 @@ const toScreen = (x, y) => ({ x: mapX + SX(x, y) * mapS, y: mapY + SY(x, y) * ma
 /* ---------- 미리 그려 두기: 배경(바탕 + 길 + 장식 + 받침 + 성) ---------- */
 let bgCanvas = null, bgKey = "";
 function decorShape(x, kind, cx, cy, w) {
+  if (kind === "cactus") { x.fillStyle = "#4caf50"; x.beginPath(); x.roundRect(cx - w * 0.12, cy - w * 0.45, w * 0.24, w * 0.75, w * 0.12); x.fill(); x.beginPath(); x.roundRect(cx - w * 0.36, cy - w * 0.2, w * 0.14, w * 0.3, w * 0.07); x.roundRect(cx + w * 0.22, cy - w * 0.3, w * 0.14, w * 0.3, w * 0.07); x.fill(); x.fillStyle = "#ff7ab0"; x.beginPath(); x.arc(cx, cy - w * 0.47, w * 0.07, 0, TAU); x.fill(); return; }
+  if (kind === "palm") { x.strokeStyle = "#a0703e"; x.lineWidth = w * 0.1; x.beginPath(); x.moveTo(cx, cy + w * 0.3); x.quadraticCurveTo(cx + w * 0.15, cy, cx, cy - w * 0.35); x.stroke(); x.fillStyle = "#3fae54"; for (let i = 0; i < 5; i++) { const a = -Math.PI / 2 + (i - 2) * 0.6; x.beginPath(); x.ellipse(cx + Math.cos(a) * w * 0.25, cy - w * 0.35 + Math.sin(a) * w * 0.12, w * 0.25, w * 0.08, a, 0, TAU); x.fill(); } return; }
+  if (kind === "lolli") { x.fillStyle = "#fff"; x.fillRect(cx - w * 0.04, cy - w * 0.1, w * 0.08, w * 0.42); const cols = ["#ff6b9a", "#ffd23c", "#5fd894", "#5fc8ff"]; for (let i = 4; i > 0; i--) { x.fillStyle = cols[i % 4]; x.beginPath(); x.arc(cx, cy - w * 0.3, w * 0.07 * i, 0, TAU); x.fill(); } return; }
+  if (kind === "candycane") { x.lineCap = "round"; x.lineWidth = w * 0.14; x.strokeStyle = "#fff"; x.beginPath(); x.moveTo(cx, cy + w * 0.35); x.lineTo(cx, cy - w * 0.2); x.arc(cx + w * 0.14, cy - w * 0.2, w * 0.14, Math.PI, 0); x.stroke(); x.strokeStyle = "#e8333c"; x.setLineDash([w * 0.08, w * 0.1]); x.stroke(); x.setLineDash([]); return; }
+  if (kind === "lavarock") { x.fillStyle = "#3a2c2a"; x.beginPath(); x.ellipse(cx, cy, w * 0.45, w * 0.32, 0, 0, TAU); x.fill(); x.strokeStyle = "#ff8a2a"; x.lineWidth = 3; x.beginPath(); x.moveTo(cx - w * 0.2, cy - w * 0.05); x.lineTo(cx, cy + w * 0.05); x.lineTo(cx + w * 0.18, cy - w * 0.1); x.stroke(); return; }
+  if (kind === "flowerbush") { x.fillStyle = "#4f9a4a"; x.beginPath(); x.arc(cx, cy, w * 0.35, 0, TAU); x.fill(); for (let i = 0; i < 6; i++) { x.fillStyle = i % 2 ? "#ff8fc0" : "#ffd23c"; x.beginPath(); x.arc(cx + Math.cos(i) * w * 0.2, cy + Math.sin(i * 1.7) * w * 0.18, w * 0.06, 0, TAU); x.fill(); } return; }
   if (kind === "rock") { x.fillStyle = "#9a97a8"; x.beginPath(); x.ellipse(cx, cy, w * 0.45, w * 0.3, 0, 0, TAU); x.fill(); x.fillStyle = "rgba(255,255,255,.35)"; x.beginPath(); x.ellipse(cx - w * 0.12, cy - w * 0.1, w * 0.15, w * 0.08, 0, 0, TAU); x.fill(); return; }
   if (kind === "mushroom") { x.fillStyle = "#f4ead8"; x.fillRect(cx - w * 0.12, cy - w * 0.1, w * 0.24, w * 0.4); x.fillStyle = "#e8505a"; x.beginPath(); x.ellipse(cx, cy - w * 0.12, w * 0.45, w * 0.3, 0, Math.PI, 0); x.fill(); x.fillStyle = "#fff"; for (const [a, b] of [[-0.2, -0.25], [0.15, -0.3], [0.05, -0.18]]) { x.beginPath(); x.arc(cx + a * w, cy + b * w, w * 0.05, 0, TAU); x.fill(); } return; }
   const snow = kind === "snowpine";
@@ -344,19 +355,23 @@ function buildBg() {
   bgCanvas = canvasOf(W0 * k, H0 * k, (x) => {
     x.setTransform(k, 0, 0, k, 0, 0);
     // 바탕 타일(맵별 색조)
-    const src = ART.ground || GRASS, tile = 320;
+    const gArt = ART["ground_" + map.id] || ART.ground, src = gArt || GRASS, tile = 320;
     const pat = x.createPattern(canvasOf(tile * k, tile * k * (src.height / src.width), (y, w, h) => y.drawImage(src, 0, 0, w, h)), "repeat");
     x.save(); x.setTransform(1, 0, 0, 1, 0, 0); x.fillStyle = pat; x.fillRect(0, 0, W0 * k, H0 * k); x.restore();
-    if (!ART.ground) { x.fillStyle = map.ground; x.globalAlpha = 0.45; x.fillRect(0, 0, W0, H0); x.globalAlpha = 1; }
-    if (map.tint) { x.fillStyle = map.tint; x.fillRect(0, 0, W0, H0); }
+    if (!gArt) { x.fillStyle = map.ground; x.globalAlpha = 0.45; x.fillRect(0, 0, W0, H0); x.globalAlpha = 1; }
+    if (map.tint && !ART["ground_" + map.id]) { x.fillStyle = map.tint; x.fillRect(0, 0, W0, H0); }
+    if (map.artTint && ART["ground_" + map.id]) { x.fillStyle = map.artTint; x.fillRect(0, 0, W0, H0); }
     // 길·다리·동굴은 월드 좌표 그대로(세로면 돌린 변환으로)
     if (ROT) x.setTransform(0, k, -k, 0, L.MAP_H * k, 0);
     // 길: 가장자리 → 흙길 → 가운데 밝은 줄
     x.lineJoin = "round"; x.lineCap = "round";
     const stroke = (pts, wdt, col) => { x.strokeStyle = col; x.lineWidth = wdt; x.beginPath(); pts.forEach(([px, py], i) => (i ? x.lineTo(px, py) : x.moveTo(px, py))); x.stroke(); };
-    for (const p of map.paths) stroke(p, 58, map.edge);
-    for (const p of map.paths) stroke(p, 46, map.dirt);
-    for (const p of map.paths) { x.setLineDash([6, 18]); stroke(p, 4, "rgba(255,255,255,.35)"); x.setLineDash([]); }
+    x.save(); x.shadowColor = "rgba(0,0,0,.35)"; x.shadowBlur = 14 * k; x.shadowOffsetY = 4 * k;
+    for (const p of map.paths) stroke(p, 60, map.edge);
+    x.restore();
+    const pArt = ART["path_" + map.id];
+    if (pArt) { const pat = x.createPattern(canvasOf(160, 160 * pArt.height / pArt.width, (y, w, h) => y.drawImage(pArt, 0, 0, w, h)), "repeat"); pat.setTransform && pat.setTransform(new DOMMatrix().scale(0.6)); for (const p of map.paths) stroke(p, 48, pat); }
+    else { for (const p of map.paths) stroke(p, 48, map.dirt); for (const p of map.paths) { x.setLineDash([6, 18]); stroke(p, 4, "rgba(255,255,255,.35)"); x.setLineDash([]); } }
     // 눈 다리: 첫 구간에 다리 널빤지
     if (map.id === "snow") {
       const [a, b] = [map.paths[0][0], map.paths[0][1]];
@@ -556,6 +571,9 @@ let mode = "start";      // start | play | build | buildquiz | info | quiz | rew
 let world = null, clock = 0, banner = "", bannerT = 0, bannerBig = false, flash = 0, flashCol = "255,255,255";
 let speed = 1, resumeT = 0, runSaved = false, saidOwl = false, saidPad = false, wandT = 0, focusPad = -1;
 const PILOT_COLOR = L.PILOTS.map(p => p.color);
+// DEMO: 처음 화면 뒤에서 저절로 도는 시연 판(world 가 시연용). 소리·문제·저장·안내 글 없음.
+// guide: 판의 첫 탑을 세울 때까지 길 시작에 가장 가까운 빈 받침을 큰 화살표로 가리킨다 { pad, t, wait }
+let DEMO = false, guide = null;
 function say(text, big) { banner = text; bannerT = big ? 2.6 : 1.8; bannerBig = !!big; }
 
 /* ---------- HUD ---------- */
@@ -637,7 +655,11 @@ function openBuild(padIdx) {
   mode = "build"; focusPad = padIdx;
   const rec = E.recommendKind(world, padIdx);
   const quiz = !!GameQuiz && E.buildNeedsQuiz(world);
-  $("buildKicker").textContent = world.freeTower ? "마법 배지: 첫 탑은 공짜!" : "수정 " + world.gems + "개 있어요" + (quiz ? " · 고르면 문제가 나와요" : "");
+  const first = !!guide && !world.towers.length && !!rec;   // 판의 첫 탑: 추천 하나만 크게(한 번 누르면 문제)
+  // 판의 첫 탑은 고르는 창 없이 바로 문제(받침 누르기 → 문제 → 탑, 3단계를 1단계로)
+  if (first && quiz && E.canBuild(world, padIdx, rec)) { sfx.tap(); openBuildQuiz(padIdx, rec); return; }
+  $("build").classList.toggle("first", first);
+  $("buildKicker").textContent = first ? (quiz ? "반짝이는 탑을 눌러요 · 문제를 맞히면 탑이 생겨요" : "반짝이는 탑을 눌러요!") : world.freeTower ? "마법 배지: 첫 탑은 공짜!" : "수정 " + world.gems + "개 있어요" + (quiz ? " · 고르면 문제가 나와요" : "");
   const row = $("buildRow"); row.innerHTML = "";
   const kinds = L.TOWER_IDS;
   const buttons = kinds.map(kind => {
@@ -876,6 +898,7 @@ function openRescue() {
 
 /* ---------- 판 시작·끝 ---------- */
 function begin(opts = {}) {
+  DEMO = false;
   disarm(); dropBuildQuiz(); if (GameQuiz) { GameQuiz.close(); GameQuiz.setKid(L.PILOTS[pilot].kid); }
   if (opts.kid != null) pilot = opts.kid;
   if (opts.map) mapId = opts.map;
@@ -887,10 +910,56 @@ function begin(opts = {}) {
   resetJuice();
   audio(); last = performance.now(); mode = "play"; layoutCtrl(); measureHud();
   $("tip").textContent = "";
-  say(world.map.name + "을 지켜요! 빈 받침을 눌러 탑을 세워요", true);
+  // 첫 탑 안내: 처음 하는 아이는 바로, 해 본 아이는 4초 동안 안 세우면 화살표
+  const b = save.best[L.PILOTS[pilot].kid], veteran = !!(b && b.runs);
+  guide = { pad: guidePad(), t: 0, wait: veteran ? 4 : 0 };
+  if (guide.pad < 0) guide = null;
+  if (!guide || veteran) say(world.map.name + "을 지켜요! 빈 받침을 눌러 탑을 세워요", true);
+}
+// 괴물이 들어오는 길 시작에 가장 가까운 빈 받침
+function guidePad() {
+  const s = world.paths[0].pts[0]; let best = -1, bd = Infinity;
+  for (const p of world.pads) { if (p.tower) continue; const d = (p.x - s[0]) ** 2 + (p.y - s[1]) ** 2; if (d < bd) { bd = d; best = p.i; } }
+  return best;
+}
+/* ---------- 처음 화면 시연: 진짜 엔진·그리기를 그대로, 소리 끔·문제 없음·저장 없음 ---------- */
+function startDemo() {
+  DEMO = true; guide = null;
+  resetJuice(); fxList = []; flash = 0; bannerT = 0; banner = ""; speed = 1; focusPad = -1; wandT = 0;
+  world = E.createWorld({ kid: pilot, map: mapId });
+  world.owl = null; world.gems = 0; world.events.length = 0;
+  for (const [k, lv] of [["fire", 2], ["bolt", 1]]) { const i = E.bestPad(world, k); if (i >= 0) E.placeTower(world, i, k, lv); }
+  // 파도는 시연이 직접 낸다: 끝나지 않는 파도(먼 뒤 가짜 줄 하나로 파도 끝·부엉이를 막음), 괴물은 아래 demoStep 이 조금씩
+  world.wave = 2; world.phase = "wave"; world.queue = [{ at: 1e9, kind: "slime" }]; world.midOwl = true;
+  demoSpawnT = 0.2;
+}
+const DEMO_KINDS = ["slime", "slime", "imp", "shell", "bat", "imp", "slime", "ghost"];
+let demoSpawnT = 0, demoSpawnN = 0;
+function demoStep(dt) {
+  const w = world, n = Math.max(1, Math.ceil(dt / 0.034));
+  quiet = true;
+  try {
+    for (let i = 0; i < n && world === w; i++) {
+      demoSpawnT -= dt / n;
+      if (demoSpawnT <= 0) {           // 길 위에 괴물 3~6마리쯤 걸어 다니게(시연에서만 조금 더 튼튼하게)
+        demoSpawnT = w.monsters.length < 3 ? 0.55 : 1.1;
+        if (w.monsters.length < 6) { const e = E.spawnMonster(w, DEMO_KINDS[demoSpawnN++ % DEMO_KINDS.length]); if (e) { e.hp = e.max = e.max * 2.2; } }
+      }
+      w.waveT = 0;
+      E.stepWorld(w, dt / n);
+      for (const e of w.events) {
+        if (e.type === "hit") hitEffect(e);
+        else if (e.type === "shot") onShot(e);
+        else if (e.type === "home" && e.via !== "storm") killFx(e.x, e.y, e.kind);
+      }
+      w.events.length = 0;
+      w.pending = null; w.cake = w.cakeMax; w.owl = null; w.gems = 0;   // 끝나지 않는 시연
+    }
+  } finally { quiet = false; }
+  if (w.over || w.phase !== "wave") startDemo();   // 혹시 끝나면 처음부터
 }
 function endRun(quit) {
-  if (runSaved || !world) return null;
+  if (DEMO || runSaved || !world) return null;
   runSaved = true;
   const rec = E.runRecord(world);
   if (quit) rec.result = "quit";
@@ -933,6 +1002,7 @@ function toMenu() {
   mode = "start"; world = null; resetJuice();
   ["over", "cards", "pause", "dex", "build", "info"].forEach(id => { $(id).hidden = true; });
   $("hud").hidden = true; $("ctrl").hidden = true; layoutCtrl(); paintStart(); $("start").hidden = false; bgKey = "";
+  startDemo();
 }
 
 /* ---------- 이벤트 → 소리·글자 ---------- */
@@ -1121,13 +1191,13 @@ function comboStep(x, y) {
 }
 function killFx(x, y, kind) {
   const sx = SX(x, y), sy = SY(x, y) - 14 * VS, M = L.MONSTERS[kind];
-  comboStep(x, y);
+  if (!DEMO) comboStep(x, y);
   addFx("burst", x, y, 118 * VS, { oy: -14 * VS, dur: 0.42, f0: 3 });   // 방울은 이미 그려지니 별 폭죽 칸(4~8)만
   glowAt(sx, sy, TX.gWhite, 20, 74 * VS, 0.18);
   ringAt(sx, sy, TX.cWhite, 8, 48 * VS, 0.35, 5);
   confetti(sx, sy, QN(6));
   spinBurst(sx, sy, QN(3), TX.star, 210, 16, 0.6, 300, 60);
-  gemsToHud(sx, sy, M.gem > 4 ? 3 : M.gem > 2 ? 2 : 1);
+  if (!DEMO) gemsToHud(sx, sy, M.gem > 4 ? 3 : M.gem > 2 ? 2 : 1);
   sfx.home(combo);
 }
 let bossFinU = -9;   // 대장 마무리 장면이 끝나는 화면 시각(그동안 안내 글·수정 숫자 숨김)
@@ -1423,7 +1493,7 @@ function handleEvents() {
     else if (e.type === "build" || e.type === "upgrade") padFx(e.pad);
     else if (e.type === "card") { if (e.pad >= 0 && !cardFlying) padFx(e.pad); }
     else if (e.type === "shot") onShot(e);
-    else if (e.type === "owl") { sfx.owl(); if (!saidOwl) { saidOwl = true; say("? 부엉이가 왔어요! 눌러 보세요", true); } }
+    else if (e.type === "owl") { sfx.owl(); if (!saidOwl && !guide) { saidOwl = true; say("? 부엉이가 왔어요! 눌러 보세요", true); } }
     else if (e.type === "steal") { sfx.steal(); flashFx(0.12, "255,150,170"); say(L.MONSTERS[e.kind].name + "이 케이크를 " + e.n + "조각 가져갔어요", false); }
     else if (e.type === "wave") { if (e.boss) { sfx.boss(); megaFx(1.0, 0.8); shake(0.35); say("파도 " + e.n + " · 케이크 대왕이 와요!", true); } else { sfx.wave(); say("파도 " + e.n + " 시작!", false); } }
     else if (e.type === "wave-clear") { if (e.n < L.WAVES) say("파도 " + e.n + " 막았어요! 수정 +" + L.WAVE_GEMS, false); }
@@ -1444,21 +1514,30 @@ function update(dt) {
     if (world.pending === "rescue") { openRescue(); return; }
   }
   checkBoss();
-  if (!saidPad && world.t > 9 && !world.towers.length) { saidPad = true; say("빈 받침(동그란 돌)을 눌러 탑을 세워요!", true); }
+  if (guide) {
+    if (world.towers.length) { guide = null; if (world.owl && world.owl.life - world.owl.t > 4 && !saidOwl) { saidOwl = true; say("? 부엉이가 왔어요! 눌러 보세요", true); } }
+    else {
+      guide.t += dt;
+      // 첫 탑을 세울 때까지 첫 파도는 기다린다(준비 시계 멈춤). "바로 시작"을 누르면 그대로 시작.
+      if (world.phase === "prep" && world.wave === 1) world.prepT = Math.max(world.prepT, L.PREP_TIME);
+    }
+  }
+  if (!saidPad && !guide && world.t > 9 && !world.towers.length) { saidPad = true; say("빈 받침(동그란 돌)을 눌러 탑을 세워요!", true); }
   hud();
 }
 
 // 맵 바깥(화면 가장자리)도 같은 잔디로 이어 칠한다(무늬는 맵 원점에 맞춰 이음매 없이). 패턴은 크기가 바뀔 때만 다시 만든다.
 let groundPat = null, groundKey = "";
 function fillGround(ox, oy, k) {
-  const map = world ? world.map : L.mapOf(mapId), key = map.id + ":" + k.toFixed(3) + (ART.ground ? "a" : "g");
+  const map = world ? world.map : L.mapOf(mapId), gArt = ART["ground_" + map.id] || ART.ground, key = map.id + ":" + k.toFixed(3) + (gArt ? "a" : "g") + (ART["ground_" + map.id] ? "m" : "");
   if (!groundPat || groundKey !== key) {
-    const src = ART.ground || GRASS, tile = 320;
+    const src = gArt || GRASS, tile = 320;
     groundPat = ctx.createPattern(canvasOf(tile * k, tile * k * (src.height / src.width), (y, w, h) => y.drawImage(src, 0, 0, w, h)), "repeat"); groundKey = key;
   }
   ctx.save(); ctx.translate(ox, oy); ctx.fillStyle = groundPat; ctx.fillRect(-ox, -oy, canvas.width, canvas.height);
-  if (!ART.ground) { ctx.globalAlpha = 0.45; ctx.fillStyle = map.ground; ctx.fillRect(-ox, -oy, canvas.width, canvas.height); ctx.globalAlpha = 1; }
-  if (map.tint) { ctx.fillStyle = map.tint; ctx.fillRect(-ox, -oy, canvas.width, canvas.height); }
+  if (!gArt) { ctx.globalAlpha = 0.45; ctx.fillStyle = map.ground; ctx.fillRect(-ox, -oy, canvas.width, canvas.height); ctx.globalAlpha = 1; }
+  if (map.tint && !ART["ground_" + map.id]) { ctx.fillStyle = map.tint; ctx.fillRect(-ox, -oy, canvas.width, canvas.height); }
+  if (map.artTint && ART["ground_" + map.id]) { ctx.fillStyle = map.artTint; ctx.fillRect(-ox, -oy, canvas.width, canvas.height); }
   ctx.restore();
 }
 /* ---------- 그리기 ---------- */
@@ -1564,7 +1643,7 @@ function render() {
   ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx.lineJoin = "round";
   const quietTxt = textQuiet();
   for (const n of fx.nums) {
-    if (n.small || quietTxt) continue;     // 작은 +2 는 HUD 로 날아가는 수정이 대신 보여 준다 · 대마법·대장 마무리 중엔 숫자 숨김
+    if (n.small || quietTxt || DEMO) continue;     // 작은 +2 는 HUD 로 날아가는 수정이 대신 보여 준다 · 대마법·대장 마무리 중엔 숫자 숨김
     const dur = n.small ? 0.8 : 1.6, kk = n.t / dur, nx = SX(n.x, n.y), y = SY(n.x, n.y) - (n.small ? 26 : 50) * Math.min(1, kk * 1.6), a = kk < 0.7 ? 1 : (1 - kk) / 0.3, s = (n.small ? 16 : 30 * (kk < 0.15 ? 0.6 + kk * 2.7 : 1)) * (VS > 1.3 ? 1.15 : 1);
     ctx.globalAlpha = Math.max(0, a);
     if (n.icon === "cake") cakeIconCtx(nx - s * 0.5, y, s * 1.2); else gemIconCtx(nx - s * 0.5, y, s * 1.1);
@@ -1574,12 +1653,14 @@ function render() {
   ctx.globalAlpha = 1;
   // 화면 전체(대마법·번쩍임·글자)
   ctx.setTransform(1, 0, 0, 1, 0, 0);
+  if (DEMO) { ctx.fillStyle = "rgba(28,16,64,.24)"; ctx.fillRect(0, 0, canvas.width, canvas.height); }   // 시연은 살짝 어둡게(창 글씨가 잘 읽히게)
   if (fx.storm) drawStorm(fx.storm);
   if (!SKIP.screenfx) for (const f of fxList) if (f.screen) drawFxItem(f);
   if (!SKIP.cut) drawCutIn();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   if (flash > 0) { ctx.fillStyle = "rgba(" + flashCol + "," + Math.min(0.42, flash * 1.6).toFixed(2) + ")"; ctx.fillRect(0, 0, canvas.width, canvas.height); }
   drawCallouts();
+  drawGuide();
   if (bannerT > 0 && mode !== "over" && !(quietTxt && mode !== "cards")) {   // 대마법·대장 마무리 중에는 숨김
     // 안내 글은 싸움터 한가운데가 아니라 HUD 바로 아래 한 줄(카드·문제 화면에서는 아래쪽)
     const by = mode === "cards" || mode === "quiz" ? vh * 0.86 : topRow();
@@ -1772,6 +1853,41 @@ function outlined(text, x, y, px, fill, align, scale, weight, lw) {
   const left = align === "left" ? x - c._ox * scale : x - w / 2;
   ctx.drawImage(c, left, y - h / 2, w, h);
   return c._tw * scale;
+}
+/* ---------- 첫 탑 안내: 받침 둘레 고리 + 통통 튀는 큰 화살표 + 한 줄 ----------
+   화살표는 받침 위에서 아래로(받침이 화면 위쪽 HUD 가까이면 아래에서 위로). 문제·탑 고르기 창이 떠 있을 땐 숨김. */
+function pillPath(x, y, w, h) { const r = h / 2; ctx.beginPath(); ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.arc(x + w - r, y + r, r, -Math.PI / 2, Math.PI / 2); ctx.lineTo(x + r, y + h); ctx.arc(x + r, y + r, r, Math.PI / 2, Math.PI * 1.5); ctx.closePath(); }
+function drawArrow(x, y, dir, k) {   // y: 화살촉 끝, dir 1 = 아래를 가리킴
+  const hl = 34 * k, hw = 30 * k, sw = 12 * k, len = 80 * k;
+  ctx.drawImage(GLOW.gold, x - 70 * k, y - dir * len * 0.5 - 70 * k, 140 * k, 140 * k);
+  ctx.beginPath(); ctx.moveTo(x, y);
+  ctx.lineTo(x + hw, y - dir * hl); ctx.lineTo(x + sw, y - dir * hl); ctx.lineTo(x + sw, y - dir * len);
+  ctx.lineTo(x - sw, y - dir * len); ctx.lineTo(x - sw, y - dir * hl); ctx.lineTo(x - hw, y - dir * hl); ctx.closePath();
+  ctx.lineJoin = "round"; ctx.lineWidth = 7 * k; ctx.strokeStyle = "#3a2500"; ctx.stroke();
+  ctx.fillStyle = "#ffe27a"; ctx.fill();
+  ctx.lineWidth = 2.5 * k; ctx.strokeStyle = "#fff8d0"; ctx.beginPath(); ctx.moveTo(x - sw * 0.35, y - dir * (len - 8 * k)); ctx.lineTo(x - sw * 0.35, y - dir * (hl + 4 * k)); ctx.stroke();
+}
+const GUIDE_TEXT = "여기를 눌러 탑을 세워요!";
+function guideOn() { return !!(guide && mode === "play" && world && !world.towers.length && guide.t >= guide.wait && world.pads[guide.pad] && !world.pads[guide.pad].tower); }
+function drawGuide() {
+  if (!guideOn()) return;
+  const p = world.pads[guide.pad], c = toScreen(p.x, p.y), k = PHONE ? 0.78 : 1, a = Math.min(1, (guide.t - guide.wait) / 0.35);
+  const r = Math.max(36, (PAD_R + 10) * mapS), pul = 1 + Math.sin(clock * 6) * 0.08, q = (clock * 0.9) % 1;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.globalAlpha = a; ctx.lineWidth = 5; ctx.strokeStyle = "#ffe27a";
+  ctx.beginPath(); ctx.ellipse(c.x, c.y, r * pul, r * 0.62 * pul, 0, 0, TAU); ctx.stroke();
+  ctx.globalAlpha = a * (1 - q); ctx.lineWidth = 3; ctx.strokeStyle = "#ffffff";
+  ctx.beginPath(); ctx.ellipse(c.x, c.y, r * (1 + q), r * 0.62 * (1 + q), 0, 0, TAU); ctx.stroke();
+  ctx.globalAlpha = a;
+  const fs = Math.round(22 * k); ctx.font = "900 " + fs + "px " + FONT;
+  const tw = ctx.measureText(GUIDE_TEXT).width + 30 * k, th = fs + 20 * k, gap = r * 0.7 + 4, len = 80 * k, bob = Math.abs(Math.sin(clock * 5)) * 16 * k;
+  const reach = gap + len + 16 * k + 10 + th;              // 받침에서 글 끝까지
+  const dir = c.y - reach > HUD_SAFE + 6 ? 1 : -1;          // 위에 자리가 있으면 위에서 아래로
+  drawArrow(c.x, c.y - dir * (gap + bob), dir, k);
+  const cy = c.y - dir * (gap + len + 16 * k + 10 + th / 2), cx = Math.max(tw / 2 + 8, Math.min(vw - tw / 2 - 8, c.x));
+  pillPath(cx - tw / 2, cy - th / 2, tw, th); ctx.fillStyle = "rgba(34,20,78,.94)"; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = "#ffe27a"; ctx.stroke();
+  ctx.fillStyle = "#ffffff"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(GUIDE_TEXT, cx, cy + 1);
+  ctx.globalAlpha = 1;
 }
 function drawCallouts() {
   bannerShown = bannerT > 0 && mode !== "over" && mode !== "cards" && mode !== "quiz" && !textQuiet();
@@ -2005,7 +2121,7 @@ function ui(dt) {
   }
   if (mode === "reward" && rewardNext && world && (!spell || !spell.on || spell.t >= spell.T)) { const r = rewardNext; rewardNext = null; openCards(r); }
   if (fxList.length) { for (const f of fxList) f.t += dt; fxList = fxList.filter(f => f.t < f.dur); }
-  if (world && mode !== "play" && mode !== "paused" && mode !== "over") {
+  if (world && mode !== "play" && mode !== "paused" && mode !== "over" && mode !== "start") {
     E.stepFx(world, dt);
     for (const t of world.towers) { if (t.grow > 0) t.grow -= dt * 1.6; if (t.flash > 0) t.flash -= dt; }
   }
@@ -2033,6 +2149,7 @@ function frame(now) {
   ui(dt);
   const t0 = performance.now();
   if (mode === "play" && world && !document.hidden && !frozen) update(dt);
+  else if (mode === "start" && DEMO && world && !document.hidden && !frozen) demoStep(dt);
   const t1 = performance.now();
   render();
   lastUpdateMs = t1 - t0; lastRenderMs = performance.now() - t1;
@@ -2046,6 +2163,7 @@ function pickPilot(i) {
   pilot = i; try { localStorage.setItem(L.WIZ_KEY, String(i)); } catch (_) {}
   if (GameQuiz) GameQuiz.setKid(L.PILOTS[i].kid);
   [...pilotBox.children].forEach((c, k) => c.setAttribute("aria-pressed", String(k === i)));
+  if (DEMO && world) world.kid = i;     // 시연 판의 성 위 마법사도 바로 바뀐다
   paintBest();
 }
 L.PILOTS.forEach((p, i) => {
@@ -2065,19 +2183,49 @@ function paintMaps() {
     const st = save.maps[m.id].stars;
     const b = document.createElement("button"); b.type = "button"; b.className = "zone"; b.setAttribute("aria-pressed", String(m.id === mapId));
     b.innerHTML = m.name + "<small>" + "★".repeat(st) + "☆".repeat(3 - st) + "</small>";
-    b.addEventListener("click", () => { mapId = m.id; save.map = m.id; writeSave(); paintMaps(); sfx.tap(); bgKey = ""; });
+    b.addEventListener("click", () => {
+      const changed = mapId !== m.id;
+      mapId = m.id; save.map = m.id; writeSave(); paintMaps(); paintChips(); sfx.tap(); bgKey = "";
+      if (changed && mode === "start") startDemo();   // 시연도 고른 길로
+    });
     mapBox.appendChild(b);
   }
-  const next = L.MAPS.find(m => !open.includes(m.id));
-  if (next) { const s = document.createElement("span"); s.className = "small"; s.style.alignSelf = "center"; s.textContent = "다음 맵 ‘" + next.name + "’: 성공 " + (next.need - save.wins) + "번 더"; mapBox.appendChild(s); }
+  const next = L.MAPS.find(m => !open.includes(m.id)), stars = L.MAPS.reduce((n, m) => n + save.maps[m.id].stars, 0);
+  $("nextMap").textContent = "별 " + stars + "/" + L.MAPS.length * 3 + " · 열린 길 " + open.length + "/" + L.MAPS.length + (next ? " · 다음 길 ‘" + next.name + "’: 성공 " + (next.need - save.wins) + "번 더" : "");
 }
 function paintBest() {
   const b = save.best[L.PILOTS[pilot].kid];
   $("bestLine").textContent = b && b.runs ? L.PILOTS[pilot].name + " 기록 · 가장 멀리 막은 파도 " + b.wave + " · 한 판에 맞힌 문제 " + b.solved + "개" : "";
 }
+// 처음 화면 칩: 고른 길(별) · 도감 모은 수 · 다음 배지까지 남은 문제 — 목표는 늘 보이고, 자세한 글은 눌렀을 때만
+const mapChip = $("mapChip"), goalChip = $("goalChip"), dexChip = $("dexBtn");
+function dexCount() {
+  let n = 0, all = 0;
+  for (const k of L.MONSTER_IDS) { all++; if (save.monsters[k]) n++; }
+  for (const k of L.TOWER_IDS) { all += 3; if (save.towers[k]) n++; if (save.branches[k + ":a"]) n++; if (save.branches[k + ":b"]) n++; }
+  return { n, all };
+}
+function paintChips() {
+  const m = L.mapOf(mapId), st = save.maps[mapId].stars, d = dexCount();
+  mapChip.innerHTML = "<span>" + m.name + '</span><span class="st">' + "★".repeat(st) + '<i class="st0">' + "☆".repeat(3 - st) + '</i></span><span class="cv">▼</span>';
+  mapChip.setAttribute("aria-label", "지킬 길 " + m.name + " 별 " + st + "개 · 눌러서 다른 길");
+  dexChip.innerHTML = "도감 <b>" + d.n + "/" + d.all + "</b>";
+  const next = L.BADGES.find(g => save.solved < g.need), got = L.BADGES.filter(g => save.solved >= g.need).length;
+  goalChip.innerHTML = '<i class="ic ic-gem"></i>' + (next ? "배지까지 " + (next.need - save.solved) + "문제" : "배지 " + got + "/" + L.BADGES.length);
+  goalChip.setAttribute("aria-label", "마법 배지 " + got + "개" + (next ? " · 문제 " + (next.need - save.solved) + "개 더 맞히면 " + next.name : ""));
+}
+function toggleDrawer(chip, id) {
+  const el = $(id), open = el.hidden;
+  ["mapDrawer", "goalDrawer"].forEach(k => { $(k).hidden = true; });
+  [mapChip, goalChip].forEach(c => c.setAttribute("aria-expanded", "false"));
+  el.hidden = !open; chip.setAttribute("aria-expanded", String(open));
+  sfx.tap();
+}
+mapChip.addEventListener("click", () => toggleDrawer(mapChip, "mapDrawer"));
+goalChip.addEventListener("click", () => toggleDrawer(goalChip, "goalDrawer"));
 function paintStart() {
   if (!L.openMaps(save.wins).includes(mapId)) mapId = "field";
-  paintMaps(); paintBest();
+  paintMaps(); paintBest(); paintChips();
   const open = L.BADGES.filter(g => save.solved >= g.need), next = L.BADGES.find(g => save.solved < g.need);
   $("badgeLine").textContent = (open.length ? "마법 배지: " + open.map(g => g.name).join(" · ") : "") + (next ? (open.length ? " / " : "") + "문제 " + (next.need - save.solved) + "개 더 맞히면 ‘" + next.name + "’" : "");
 }
@@ -2126,6 +2274,7 @@ addEventListener("resize", resize);
 addEventListener("orientationchange", () => setTimeout(resize, 150));
 if (window.visualViewport) visualViewport.addEventListener("resize", resize);
 resize();
+startDemo();
 
 /* ---------- 검증 훅(?qa=1 일 때만) ---------- */
 if (QA) {
@@ -2137,7 +2286,7 @@ if (QA) {
     padScreen: i => (world ? toScreen(world.pads[i].x, world.pads[i].y) : null), focusPad: () => focusPad,
     tick: (dt = 1 / 60, n = 1) => { for (let i = 0; i < n && mode === "play"; i++) update(dt); },
     step: (dt = 1 / 60, n = 1) => { for (let i = 0; i < n; i++) { ui(dt); if (mode === "play") update(dt); render(); } },
-    get s() { return world ? { mode, t: +world.t.toFixed(2), wave: world.wave, phase: world.phase, cake: world.cake, gems: world.gems, monsters: world.monsters.length, shots: world.shots.length, towers: world.towers.map(t => t.kind + t.lv + (t.branch || "") + "@" + t.pad), owl: !!world.owl, sent: world.sent, solved: world.solved, streak: world.streak, blasts: world.blasts, cards: world.cards, quizTowers: world.quizTowers, prepT: +world.prepT.toFixed(2), waveT: +world.waveT.toFixed(2), pending: world.pending, over: world.over, rescueUsed: world.rescueUsed, pilot, map: mapId, speed, haste: E.hasteOn(world) } : { mode, pilot, map: mapId }; },
+    get s() { if (DEMO) return { mode, pilot, map: mapId, demo: true, monsters: world ? world.monsters.length : 0, towers: world ? world.towers.map(t => t.kind + t.lv + "@" + t.pad) : [] }; return world ? { mode, t: +world.t.toFixed(2), wave: world.wave, phase: world.phase, cake: world.cake, gems: world.gems, monsters: world.monsters.length, shots: world.shots.length, towers: world.towers.map(t => t.kind + t.lv + (t.branch || "") + "@" + t.pad), owl: !!world.owl, sent: world.sent, solved: world.solved, streak: world.streak, blasts: world.blasts, cards: world.cards, quizTowers: world.quizTowers, prepT: +world.prepT.toFixed(2), waveT: +world.waveT.toFixed(2), pending: world.pending, over: world.over, rescueUsed: world.rescueUsed, pilot, map: mapId, speed, haste: E.hasteOn(world) } : { mode, pilot, map: mapId }; },
     get save() { return save; },
     world: () => world, E, L,
     build: (pad, kind) => { const t = world && E.build(world, pad, kind); hudKey = ""; hud(); return !!t; },
@@ -2168,6 +2317,9 @@ if (QA) {
     setQuality: q => { quality = q; pcap = Math.round((PHONE ? PCAP_PHONE : PCAP_DESK) * quality); },
     skipSpell: () => skipSpell(), skip: (k, on = true) => { SKIP[k] = on; return SKIP; }, fxList: () => fxList.map(f => f.name + ":" + Math.round(f.size)),
     snap: (scale = 1) => { const c = document.createElement("canvas"); c.width = Math.round(canvas.width * scale); c.height = Math.round(canvas.height * scale); c.getContext("2d").drawImage(canvas, 0, 0, c.width, c.height); return c.toDataURL("image/jpeg", 0.85); },
+    demo: () => DEMO, startDemo,
+    guide: () => (guide ? { pad: guide.pad, t: +guide.t.toFixed(2), wait: guide.wait, on: guideOn() } : null),
+    buildFirst: () => $("build").classList.contains("first"),
     art: () => Object.keys(ART), view: () => ({ vw, vh, mapS, mapX, mapY, dpr, portrait }),
   };
 }

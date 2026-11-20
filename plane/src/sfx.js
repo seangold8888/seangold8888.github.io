@@ -2,6 +2,7 @@
 // 지킬 것: speechSynthesis 금지(아이패드 마이크가 죽는다). AudioContext 는 손가락이 닿을 때(사용자 동작 안에서)만 만들고 깨운다.
 // 연사 안전: 소리마다 최소 간격, 동시에 울리는 소리 12개까지, 압축기로 찢어지지 않게. 문제 화면이 떠 있는 동안은 정답 축하음만.
 // Node·자동화 브라우저(navigator.webdriver)에서는 소리를 내지 않는다(기록만 남는다).
+import { EDITION } from "./edition.js?v=1";
 
 const W = typeof window !== "undefined" ? window : null;
 const SILENT = !W || !!(W.navigator && W.navigator.webdriver) || !(W.AudioContext || W.webkitAudioContext);
@@ -341,24 +342,14 @@ export function play(name, lv = 1) {
 }
 const DUR = { shot: 0.1, laser: 0.17, missile: 0.42, missileHit: 0.32, bolt: 0.42, orb: 0.28, bombDrop: 0.2, bomb: 0.85, boom: 0.72, hit: 0.04, pop: 0.08, bossHit: 0.1, bossDown: 1.65, playerHit: 0.38, shieldOn: 0.46, shieldBreak: 0.32, star: 0.38, levelup: 0.98, correct: 0.6, fork: 0.42, bossWarn: 1.0, warn: 0.36, wrong: 0.22, tap: 0.07, bigPop: 0.28, levelBlast: 0.62, ultStart: 1.15, ultHit: 0.3, bossRumble: 1.5, bossPhase: 0.5, chainBoom: 2.3, ultStar: 0.9, ultStarGet: 0.45 };
 
-/* ---------- 조종사 외침: 공통 표 assets/study/kid-voices.js(window.KidVoices.list)를 쓴다 ----------
-   새 대사가 그 표에 들어가면 여기서도 바로 나온다. 표를 못 읽었을 때만 아래 옛 목록(plane/ 페이지 기준 경로)을 쓴다.
-   재생은 이 파일의 AudioContext 로 한다(효과음과 같은 압축기·덕킹). 그 아이 목소리가 아닌 클립은 넣지 않는다. */
-const VOICE_FALLBACK = {
-  yunchan: [["../sanguo/audio/hero-callouts-eleven-v2/yunchan-callout-v2.wav", "마마보이!"], ["../cards/audio/attack-voices-v1/chanppul.mp3", "번개맨 천둥쇼!"]],
-  jaei: [["../sanguo/audio/hero-callouts-eleven-v2/jaei-callout-v2.wav", "김태오!"], ["../sanguo/audio/family-skills-v1/jaei-special-eleven-no-v1.mp3", "아니야!"],
-    ["../sanguo/audio/family-skills-v1/jaei-special-eleven-wait-v1.mp3", "기다려!"], ["../sanguo/audio/family-skills-v1/jaei-special-eleven-sireo-v1.mp3", "시러!"],
-    ["../cards/audio/attack-voices-v1/jaewing.mp3", "바이킹 그네 밀기!"]],
-  yungeon: [["../sanguo/audio/hero-callouts-eleven-v2/yungeon-callout-v2.wav", "너무 쉽잖아!"], ["../cards/audio/attack-voices-v1/geonppul.mp3", "헐크 박치기!"]],
-  taeo: [["../sanguo/audio/family-skills-v1/taeo-special-eleven-sseugumi-only-v1.mp3", "쓰구미!"], ["../sanguo/audio/family-skills-v1/taeo-special-eleven-fight-v1.mp3", "싸우자!"],
-    ["../sanguo/audio/family-skills-v1/taeo-special-eleven-kiap-v1.mp3", "치앗! 촤! 치앗! 촤!"], ["../sanguo/audio/family-skills-v1/taeo-special-eleven-meganaptor-v1.mp3", "메가냅터킥!"],
-    ["../sanguo/audio/family-skills-v1/taeo-special-eleven-yummy-v1.mp3", "맛있는 거죠!"]],
-};
+/* ---------- 조종사 외침: 표는 판 설정(edition.js voices)에 있다 ----------
+   가족판: 공통 표(edition voices.lookup)를 먼저, 못 읽으면 edition voices.table 의 옛 목록. shouts=false 인 판은 외침이 없다(합성 효과음만).
+   재생은 이 파일의 AudioContext 로 한다(효과음과 같은 압축기·덕킹). */
 const VOICE = {};
-for (const id of Object.keys(VOICE_FALLBACK)) {
+if (EDITION.shouts && EDITION.voices && EDITION.voices.table) for (const id of Object.keys(EDITION.voices.table)) {
   let l = null;
-  try { const KV = W && W.KidVoices; l = KV && KV.list ? KV.list(id) : null; } catch (_) { l = null; }
-  VOICE[id] = l && l.length ? l : VOICE_FALLBACK[id];
+  try { l = EDITION.voices.lookup ? EDITION.voices.lookup(id) : null; } catch (_) { l = null; }
+  VOICE[id] = l && l.length ? l : EDITION.voices.table[id];
 }
 const lastPick = {};
 export function setPilot(id) {

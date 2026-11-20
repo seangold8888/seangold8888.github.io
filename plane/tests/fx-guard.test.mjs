@@ -63,7 +63,7 @@ test("src 파일이 ES 모듈로 문법 오류 없이 읽힌다(브라우저는 
   const { tmpdir } = await import("node:os");
   const { join } = await import("node:path");
   const dir = mkdtempSync(join(tmpdir(), "plane-mod-"));
-  for (const f of ["main.js", "fx.js", "sfx.js", "logic.js"]) {
+  for (const f of ["main.js", "fx.js", "sfx.js", "logic.js", "edition.js"]) {
     const p = join(dir, f.replace(/\.js$/, ".mjs")); writeFileSync(p, readFileSync(here("../src/" + f), "utf8"));
     execFileSync(process.execPath, ["--check", p]);     // 오류면 던진다
   }

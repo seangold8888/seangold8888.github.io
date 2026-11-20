@@ -41,7 +41,7 @@ html, body { height: 100%; margin: 0; overflow: hidden; background: #101a47; col
 .quiz-kicker { font-size: 14px !important; font-weight: 800; color: #ffd95a !important; }
 
 .pick { font-size: 15px !important; font-weight: 800; color: #ffd95a !important; margin-top: 12px !important; }
-.pilots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 6px; }
+.pilots { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 8px; margin-top: 6px; }
 .pilot { padding: 8px 2px 6px; border: 3px solid transparent; border-radius: 18px; background: rgba(255,255,255,.10); color: #fff; font: inherit; font-weight: 800; font-size: 16px; }
 .pilot img { display: block; width: 100%; max-width: 78px; height: auto; margin: 0 auto 2px; pointer-events: none; }
 .pilot[aria-pressed="true"] { border-color: #ffd95a; background: rgba(255,217,90,.22); }
@@ -67,20 +67,39 @@ html, body { height: 100%; margin: 0; overflow: hidden; background: #101a47; col
 /* 폰 보정: 소리 버튼 44폭, 꼬리 버튼 6개가 360px에서도 44px 이상 */
 @media (max-width: 520px), (max-height: 500px) { #sound { min-width: 44px; justify-content: center; padding: 0; } }
 @media (max-width: 400px) { .trails { gap: 3px; } .trail { font-size: 12px; } }
+/* 시작 화면: 아래쪽에 낮고 반투명하게 깐다 — 뒤에서 미리보기 비행(main.js startDemo)이 보이게. 글은 제목 + 한 줄만. */
+body.attract #hearts, body.attract .chip.grow, body.attract #dist { visibility: hidden; }
+#start { top: auto; bottom: calc(12px + env(safe-area-inset-bottom)); transform: translateX(-50%); padding: 12px 16px 14px; background: rgba(12,18,58,.58); border-color: rgba(255,255,255,.3); box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+#start h1 { margin: 0; text-shadow: 0 2px 0 rgba(10,16,52,.75); }
+#start .tag { margin: 0 0 10px; font-size: 16px; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 3px rgba(0,0,0,.7); color: #fff; }
+#start .pilot { background: rgba(10,16,52,.55); }
+#start .pilot img { width: auto; max-width: 100%; height: clamp(50px, 8.5vh, 76px); object-fit: contain; }
+.goals { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 10px; }
+.goal { min-height: 44px; display: inline-flex; align-items: center; gap: 6px; padding: 0 12px; border: 1px solid rgba(255,255,255,.22); border-radius: 999px; background: rgba(10,16,52,.62); color: #fff; font: inherit; font-weight: 800; font-size: 15px; white-space: nowrap; }
+.goal[hidden] { display: none; }
+.goal.deco { border-color: rgba(255,217,90,.6); }
+.goal.deco[aria-expanded="true"] { background: rgba(255,217,90,.24); }
+.goal.deco:active { transform: translateY(2px); }
+.meter { position: relative; display: inline-block; width: 44px; height: 8px; border-radius: 5px; background: rgba(255,255,255,.22); overflow: hidden; }
+.meter i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 5px; background: linear-gradient(90deg, #ffb24a, #ffe45c); }
+.trails[hidden] { display: none; }
+#start .trails { margin-top: 8px; }
+#start .go { margin-top: 12px; min-height: 64px; font-size: 24px; }
+@media (max-width: 400px) { .goal { padding: 0 10px; font-size: 14px; gap: 5px; } .meter { width: 34px; } #start { padding: 10px 12px 12px; } }
 /* 폰 가로(키 낮음): 왼쪽=고르기, 오른쪽=큰 출발 버튼이 항상 보이게 2단 */
 @media (max-height: 500px) {
-  #start:not([hidden]) { width: min(94vw, 760px); padding: 12px 16px; border-radius: 20px;
+  #start:not([hidden]) { top: 50%; bottom: auto; transform: translate(-50%, -50%); width: min(94vw, 760px); padding: 10px 14px; border-radius: 20px; background: rgba(12,18,58,.5);
     display: grid; grid-template-columns: minmax(0, 1fr) clamp(150px, 26vw, 220px); column-gap: 16px; text-align: center; align-content: center; }
   #start > * { grid-column: 1; }
-  #start h1 { font-size: 26px; margin: 0 0 2px; }
-  #start p { margin: 2px 0; font-size: 14px; line-height: 1.35; }
-  #start .pick { margin-top: 6px !important; font-size: 14px !important; }
+  #start h1 { font-size: 24px; margin: 0; }
+  #start .tag { margin: 0 0 4px; font-size: 14px; }
   #start .pilots { gap: 6px; margin-top: 2px; }
   #start .pilot { padding: 4px 2px 3px; border-radius: 14px; font-size: 14px; }
-  #start .pilot img { max-width: 44px; margin-bottom: 0; }
-  #start .trails { margin-top: 2px; }
+  #start .pilot img { height: 44px; margin-bottom: 0; }
+  #start .goals { margin-top: 6px; }
+  #start .goal { min-height: 40px; font-size: 13px; padding: 0 10px; }
+  #start .trails { margin-top: 4px; }
   #start .trail { min-height: 46px; padding: 2px 0; }
   #start .trail i { font-size: 18px; }
-  #start .go { grid-column: 2; grid-row: 1 / span 6; align-self: center; margin: 0; min-height: 110px; height: 60%; font-size: 26px; }
-  #start .best { grid-column: 2; grid-row: 7; align-self: start; }
+  #start .go { grid-column: 2; grid-row: 1 / span 5; align-self: center; margin: 0; min-height: 110px; height: 60%; font-size: 24px; }
 }

@@ -40,12 +40,31 @@
   // cap: 게임 문제의 최고 단계(없으면 나이 칸 cap). 허브 AGE_BANDS 는 그대로 두고 게임 쪽만 한 칸 넓힌다:
   //   태오 2 → 4(9까지 덧셈·뺄셈, 10 만들기. 받아올림 없음), 윤건 10 → 12(두 자리 받아올림·받아내림).
   //   다 맞히는 아이가 상한에 묶여 같은 문제만 푸는 것을 막는다. 올라가는 것은 아래 승급 규칙(증거)으로만.
-  var KIDS = Object.freeze([
-    Object.freeze({ id: "yunchan", name: "윤찬", age: 10, start: 13 }),   // start: 새 기록의 시작 단계(13 = 2학년 2학기 곱셈구구). 옛 기록은 boost 로 한 번만 올린다
-    Object.freeze({ id: "jaei", name: "재이", age: 8 }),
-    Object.freeze({ id: "yungeon", name: "윤건", age: 7, cap: 12 }),
-    Object.freeze({ id: "taeo", name: "태오", age: 5, cap: 4 })
-  ]);
+  // 기본 목록(가족판). @family:begin~end 사이는 공개판 빌드가 null 로 바꾼다(공개판은 아래 덮어쓰기 목록만 쓴다).
+  var FAMILY_KIDS = /* @family:begin */[
+    { id: "yunchan", name: "윤찬", age: 10, start: 13 },   // start: 새 기록의 시작 단계(13 = 2학년 2학기 곱셈구구). 옛 기록은 boost 로 한 번만 올린다
+    { id: "jaei", name: "재이", age: 8 },
+    { id: "yungeon", name: "윤건", age: 7, cap: 12 },
+    { id: "taeo", name: "태오", age: 5, cap: 4 }
+  ]/* @family:end */;
+  // 아이 목록 덮어쓰기(선택): 이 파일보다 먼저 window.GAMEQUIZ_PROFILES = [{ id, name, age, start?, cap? }, ...] 를 두거나,
+  // 읽은 뒤 GameQuiz.configure({ profiles }) 를 부른다. 둘 다 없으면 기본 목록 그대로(가족판 동작은 바뀌지 않는다).
+  function freezeKids(list) {
+    if (!Array.isArray(list) || !list.length) return null;
+    var out = [];
+    for (var i = 0; i < list.length; i++) {
+      var k = list[i];
+      if (!k || typeof k.id !== "string" || !k.id) continue;
+      var o = { id: k.id, name: String(k.name || k.id), age: parseInt(k.age, 10) || 8 };
+      if (k.start) o.start = parseInt(k.start, 10) || 0;
+      if (k.cap) o.cap = parseInt(k.cap, 10) || 0;
+      out.push(Object.freeze(o));
+    }
+    return out.length ? Object.freeze(out) : null;
+  }
+  var KIDS = freezeKids(root.GAMEQUIZ_PROFILES) || freezeKids(FAMILY_KIDS) || Object.freeze([]);
+  // 아이를 모를 때 쓰는 기본 아이: 기본 목록에서는 두 번째(재이), 하나뿐인 목록이면 그 하나.
+  function defaultKid() { return KIDS[1] || KIDS[0] || null; }
 
   /* ---------- 난이도 조절 규칙(기록 형식 v2, game-quiz ?v=4) ----------
      목표: 처음 고른 답이 맞는 비율 75~85%. 너무 쉬우면 금방 올리고, 막히면 바로 쉬운 문제로 받쳐 준다.
@@ -278,7 +297,7 @@
      info.ms: 잠금이 풀린 뒤 처음 고르기까지 걸린 시간(ask 가 잰다). */
   function forKid(kidId, opts) {
     opts = opts || {};
-    var kid = kidById(kidId) || kidById(currentKid(opts.storage)) || KIDS[1];
+    var kid = kidById(kidId) || kidById(currentKid(opts.storage)) || defaultKid();
     var storage = opts.storage !== undefined ? opts.storage : defaultStorage();
     var rng = opts.rng || Math.random;
     var band = rangeFor(kid);
@@ -678,9 +697,9 @@
     p.until -= back;
     writePass(lend.storage, p);
   }
-  var lend = null, lendHooked = false;
+  var lend = null, lendHooked = false, lendOn = true;   // lendOn: configure({ playPass: false }) 면 놀이 시간을 건드리지 않는다
   function openLend() {
-    settlePlayTime(lend); lend = lendPlayTime();
+    settlePlayTime(lend); lend = lendOn ? lendPlayTime() : null;
     if (!lendHooked && hasDom) { lendHooked = true; window.addEventListener("pagehide", function () { settlePlayTime(lend); lend = null; }); }
   }
   function closeLend() { settlePlayTime(lend); lend = null; }
@@ -701,7 +720,7 @@
     opts = opts || {};
     ensureDom();
     close();
-    var kidId = kidById(opts.kid) ? opts.kid : (currentKid() || KIDS[1].id);
+    var kidId = kidById(opts.kid) ? opts.kid : (currentKid() || defaultKid().id);
     var q = opts.quiz || quizFor(kidId);
     var problem = q.next({ pace: opts.pace });
     var resolveFn;
@@ -731,10 +750,11 @@
       b.classList.add("gq-ok");
       buttons.forEach(function (x) { x.disabled = true; });
       // 처음 맞힘 = 그 자리(손가락 처리 안)에서 아이 외침. iOS 가 소리를 허락하는 유일한 순간이라 미루지 않는다.
-      if (s.firstTry && opts.voice !== false && api.voiceEnabled !== false) {
+      // @family:begin~end 사이는 공개판 빌드가 지운다(공개판은 녹음 외침이 없다).
+      /* @family:begin */if (s.firstTry && opts.voice !== false && api.voiceEnabled !== false) {
         var KV = root.KidVoices;
         if (KV && typeof KV.shout === "function") { try { KV.shout(kidId, { force: true, reason: "quiz", ctx: opts.voiceCtx, out: opts.voiceOut }); } catch (_) {} }
-      }
+      }/* @family:end */
       var growth = q.record(problem, s.firstTry, { ms: s.firstMs });
       var result = { firstTry: s.firstTry, correct: true, problem: problem, growth: growth, kid: kidId };
       var msg = "";
@@ -798,13 +818,25 @@
   }
   function panelElement() { return panel; }
 
+  /* configure(opts) — 판(에디션)마다 다른 설정. 부르지 않으면 기본(가족판) 그대로.
+     opts.profiles: 아이 목록 [{ id, name, age, start?, cap? }] (기록·지금 하는 아이는 id 로 따로 쌓인다)
+     opts.voice: false 면 정답 외침 끔(= voiceEnabled false). opts.playPass: false 면 놀이 시간 돌려주기 안 함. */
+  function configure(opts) {
+    opts = opts || {};
+    var list = freezeKids(opts.profiles);
+    if (list) { KIDS = list; api.KIDS = KIDS; quizCache = {}; }
+    if (opts.voice === false) api.voiceEnabled = false;
+    if (opts.playPass === false) { lendOn = false; closeLend(); }
+    return api;
+  }
+
   var api = {
     KIDS: KIDS, CURRENT_KEY: CURRENT_KEY, HUB_KEY: HUB_KEY, LOCK_MS: LOCK_MS,
     stateKey: stateKey, kidById: kidById, bandForAge: bandForAge, rangeFor: rangeFor, fallbackProblem: fallbackProblem,
     TUNE: TUNE, ADAPT_V: ADAPT_V, buildChoices: buildChoices, cleanState: cleanState,
     PASS_KEY: PASS_KEY, PASS_LEND_MS: PASS_LEND_MS, lendPlayTime: lendPlayTime, settlePlayTime: settlePlayTime,
     forKid: forKid, currentKid: currentKid, setKid: setKid, levels: levels, setLevel: setLevel,
-    ask: ask, pickKid: pickKid, isOpen: isOpen, close: close, peek: peek, panel: panelElement,
+    ask: ask, pickKid: pickKid, isOpen: isOpen, close: close, peek: peek, panel: panelElement, configure: configure,
     voiceEnabled: true
   };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
