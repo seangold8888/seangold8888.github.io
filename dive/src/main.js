@@ -233,6 +233,7 @@ function resize() {
   scale = Math.min(vw, vh) / 540;
   view = { w: vw / scale, h: vh / scale };
   if (world) world.view = view;
+  if (demo) demo.view = view;
   floorPat = null;
 }
 // 바닥 무늬: 그림(또는 대신 만든 모래)을 화면 화소 크기 타일로 한 번만 만들어 패턴으로 붙인다.
@@ -250,6 +251,10 @@ function floorPattern() {
 let mode = "start";      // start | play | quiz | cards | paused | over
 let world = null, cam = { x: 0, y: 0 }, decor = [], wallWeeds = [], clock = 0, banner = "", bannerT = 0, bannerBig = false, flash = 0;
 let firstPearlSaid = false, runSaved = false;
+// 시작 화면 뒤에서 저절로 헤엄치는 보기 판(소리·문제·저장·다침 없음). 끄기: ?qa=1&nodemo=1
+let demo = null, demoGoal = null, demoGoalT = 0;
+const DEMO_ON = !(QA && QS.get("nodemo") === "1");
+let camBiasX = 0, camBiasY = 0;
 const PILOT_COLOR = L.PILOTS.map(p => p.color);
 function makeDecor(zone) {
   let s = 1234 + zone.id.length * 77; const r = () => (s = s * 16807 % 2147483647) / 2147483647;
@@ -730,7 +735,7 @@ function unpause() { if (mode !== "paused") return; $("pause").hidden = true; mo
 function toMenu() {
   if (world && mode !== "over" && mode !== "start") endRun(true);
   disarm(); if (GameQuiz) GameQuiz.close();
-  mode = "start"; world = null; clearInput(); S.setPitch(1); resetJuice();
+  mode = "start"; world = null; demo = null; clearInput(); S.setPitch(1); resetJuice();
   ["over", "cards", "pause", "dex", "dashBtn", "fever"].forEach(id => { $(id).hidden = true; });
   $("hud").hidden = true; paintStart(); $("start").hidden = false;
 }
@@ -1116,7 +1121,16 @@ function render() {
   const k = scale * dpr;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   const zone = world ? world.zone : L.zoneOf(zoneId);
-  if (!world) { // 시작 화면 뒤: 천천히 흐르는 바다
+  // 시작 화면 뒤: 보기 판을 진짜 게임 그림으로 그린다(잠수정은 판에 가리지 않게 한쪽으로 비켜 보인다)
+  if (!world && demo && mode === "start") {
+    const land = view.w > view.h * 1.15;
+    camBiasX = land ? view.w * 0.2 : 0; camBiasY = land ? 0 : view.h * 0.16;
+    world = demo;
+    try { render(); } finally { world = null; camBiasX = camBiasY = 0; }
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = "rgba(8,40,80," + (0.18 + demoFade * 0.7).toFixed(3) + ")"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    return;
+  }
+  if (!world) { // 보기 판이 없을 때: 천천히 흐르는 바다
     ctx.fillStyle = zone.deep; ctx.fillRect(0, 0, canvas.width, canvas.height);
     const pat = floorPattern(), ox = (clock * 12) % (TILE * k);
     ctx.globalAlpha = 0.55; ctx.setTransform(1, 0, 0, 1, -ox, 0); ctx.fillStyle = pat; ctx.fillRect(ox, 0, canvas.width, canvas.height); ctx.globalAlpha = 1;
@@ -1125,8 +1139,8 @@ function render() {
   }
   const p = world.p;
   // 카메라: 잠수정을 따라가되 바다 밖은 안 보이게
-  cam.x = view.w >= L.WORLD.w ? (L.WORLD.w - view.w) / 2 : clamp(p.x - view.w / 2, 0, L.WORLD.w - view.w);
-  cam.y = view.h >= L.WORLD.h ? (L.WORLD.h - view.h) / 2 : clamp(p.y - view.h / 2, 0, L.WORLD.h - view.h);
+  cam.x = view.w >= L.WORLD.w ? (L.WORLD.w - view.w) / 2 : clamp(p.x - view.w / 2 + camBiasX, 0, L.WORLD.w - view.w);
+  cam.y = view.h >= L.WORLD.h ? (L.WORLD.h - view.h) / 2 : clamp(p.y - view.h / 2 + camBiasY, 0, L.WORLD.h - view.h);
   // 흔들림: 충격량의 제곱 × 최대 14 화면 px(움직임 줄이기면 30%), 부드러운 흔들림(사인 섞기)
   if (trauma > 0.01 && mode !== "over") {
     const amp = trauma * trauma * (RM ? 4 : 12) / scale;
@@ -1733,6 +1747,62 @@ function emitters(dt) {
   // 센 물살: 화면을 가로지르는 거품과 물줄
   if (w.current) { const dir = w.current.vx > 0 ? 1 : -1; for (let i = 0; i < 2; i++) { const yy = cam.y + Math.random() * view.h, xx = dir > 0 ? cam.x - 10 : cam.x + view.w + 10; F.spark(xx, yy, dir * (500 + Math.random() * 300), 0, 1.4, 2 + Math.random() * 3, 0, Math.random() < 0.5 ? 3 : 1, 0, 0); } }
 }
+/* ---------- 시작 화면 뒤 보기 판(attract demo) ----------
+   진짜 엔진·그림을 그대로 쓰되: 소리 없음(사건은 그림 효과만), 문제·상자·구조 없음(? 진주를 지우고 pending 을 비움),
+   저장 없음(endRun 을 안 부름), 다침 없음(늘 무적). 약 70초마다 새로 시작한다. */
+let demoFade = 0;
+function makeDemo() {
+  const w = E.createWorld({ kid: pilot, zone: zoneId, view, gifts: [], bigPearl: false });
+  let ld = w.load;
+  ld = L.applyCard(ld, { kind: "weapon", id: "bubble", lv: 3 });
+  ld = L.applyCard(ld, { kind: "weapon", id: "whirl", lv: 2 });
+  E.setLoadout(w, ld); w.events.length = 0;
+  w.demo = true; demoGoal = null; demoGoalT = 0; demoFade = 1;
+  makeDecor(w.zone);
+  return w;
+}
+function demoMove(w) {
+  const p = w.p; let fx = 0, fy = 0;
+  // 가장 가까운 먹물 친구 둘레를 빙 돌며 물방울로 씻는다
+  let best = null, bd = Infinity;
+  for (const e of w.enemies) { if (L.harmless(e.kind) || e.kind === "eel") continue; const d = (e.x - p.x) ** 2 + (e.y - p.y) ** 2; if (d < bd) { bd = d; best = e; } }
+  if (best) {
+    const dx = best.x - p.x, dy = best.y - p.y, d = Math.sqrt(bd) || 1, want = d > 190 ? 1 : d < 120 ? -1.2 : 0.1;
+    fx += dx / d * want - dy / d * 0.7; fy += dy / d * want + dx / d * 0.7;
+  } else {
+    demoGoalT -= 1 / 60;
+    if (!demoGoal || demoGoalT <= 0) { demoGoal = { x: 300 + Math.random() * (L.WORLD.w - 600), y: 300 + Math.random() * (L.WORLD.h - 600) }; demoGoalT = 4; }
+    const dx = demoGoal.x - p.x, dy = demoGoal.y - p.y, d = Math.hypot(dx, dy) || 1; fx += dx / d; fy += dy / d;
+  }
+  // 가까운 빛 방울은 줍는다
+  for (const o of w.orbs) { const dx = o.x - p.x, dy = o.y - p.y, d = Math.hypot(dx, dy); if (d < 160 && d > 1) { fx += dx / d * 0.5; fy += dy / d * 0.5; break; } }
+  // 벽에 몰리지 않게
+  const M = 260;
+  if (p.x < M) fx += (M - p.x) / M * 2; if (p.x > L.WORLD.w - M) fx -= (p.x - (L.WORLD.w - M)) / M * 2;
+  if (p.y < M) fy += (M - p.y) / M * 2; if (p.y > L.WORLD.h - M) fy -= (p.y - (L.WORLD.h - M)) / M * 2;
+  const n = Math.hypot(fx, fy);
+  return n < 0.05 ? { x: 0, y: 0 } : { x: fx / n * 0.8, y: fy / n * 0.8 };
+}
+function demoStep(dt) {
+  if (!DEMO_ON) return;
+  if (!demo || demo.over || demo.t > 70) demo = makeDemo();
+  if (demoFade > 0) demoFade = Math.max(0, demoFade - dt * 1.5);
+  const w = demo, n = dt > 0.034 ? 2 : 1;
+  world = w;   // 그림 효과 함수들이 world 를 본다 — 끝나면 꼭 되돌린다
+  try {
+    for (let i = 0; i < n; i++) {
+      w.p.inv = Math.max(w.p.inv, 1); w.hearts = w.maxHearts;
+      E.stepWorld(w, dt / n, demoMove(w));
+      w.pending = null; w.chestOwed = 0; w.qpearls.length = 0; w.bigs.length = 0;
+      for (const e of w.events) {
+        if (e.type === "wash") washPop(e.x, e.y, e.chain, e.elite, e.combo);
+        else if (e.type === "hit" && hitBudget > 0) { hitBudget--; hitSplash(e); }
+      }
+      w.events.length = 0;
+    }
+    emitters(dt);
+  } finally { world = null; }
+}
 // 화질 자동 조절: 프레임 사이 시간이 20ms 를 오래 넘으면 입자 수를 줄이고, 여유가 생기면 천천히 되돌린다.
 let frameEma = 1 / 60, qualityT = 0;
 function frame(now) {
@@ -1744,6 +1814,7 @@ function frame(now) {
   if (hitStop > 0) hitStop -= dt;
   else if (cine > 0) cine -= dt;
   else if (mode === "play" && world && !document.hidden) update(dt);
+  if (mode === "start" && !world && !document.hidden) demoStep(dt);
   const t1 = performance.now();
   render();
   lastUpdateMs = t1 - t0; lastRenderMs = performance.now() - t1;
@@ -1757,6 +1828,7 @@ function pickPilot(i) {
   pilot = i; try { localStorage.setItem(L.PILOT_KEY, String(i)); } catch (_) {}
   if (GameQuiz) GameQuiz.setKid(L.PILOTS[i].kid);
   [...pilotBox.children].forEach((c, k) => c.setAttribute("aria-pressed", String(k === i)));
+  if (demo) demo.kid = i;   // 뒤에서 헤엄치는 잠수정도 바로 바뀐다
   paintBest();
 }
 L.PILOTS.forEach((p, i) => {
@@ -1768,16 +1840,38 @@ L.PILOTS.forEach((p, i) => {
   b.addEventListener("click", () => { pickPilot(i); sfx.pearl(); });
   pilotBox.appendChild(b);
 });
+// 바다 고르기·선물 안내는 작은 칩 뒤의 판으로(한 번에 하나만 열린다)
+const SHEETS = { zoneSheet: ["zoneChip", "pearlChip"], giftSheet: ["giftChip"] };
+function openSheet(id) {
+  for (const k in SHEETS) {
+    const on = k === id && $(k).hidden;
+    $(k).hidden = !on; for (const c of SHEETS[k]) $(c).setAttribute("aria-expanded", String(on));
+  }
+}
+function closeSheets() { openSheet(null); }
 function paintZones() {
   zoneBox.innerHTML = "";
   for (const z of L.ZONES) {
-    if (!save.zones.includes(z.id)) continue;
-    const b = document.createElement("button"); b.type = "button"; b.className = "zone"; b.textContent = z.name; b.setAttribute("aria-pressed", String(z.id === zoneId));
-    b.addEventListener("click", () => { zoneId = z.id; save.zone = z.id; writeSave(); paintZones(); sfx.pearl(); floorPat = null; });
+    const open = save.zones.includes(z.id);
+    const b = document.createElement("button"); b.type = "button"; b.className = "zone" + (open ? "" : " locked");
+    b.textContent = open ? z.name : "🔒 진주 " + z.need; b.setAttribute("aria-pressed", String(z.id === zoneId));
+    if (open) b.addEventListener("click", () => { zoneId = z.id; save.zone = z.id; writeSave(); paintStart(); closeSheets(); sfx.pearl(); floorPat = null; demo = null; });
+    else { b.disabled = true; b.setAttribute("aria-label", z.name + " · 진주 " + z.need + "개면 열려요"); }
     zoneBox.appendChild(b);
   }
   const next = L.ZONES.find(z => !save.zones.includes(z.id));
-  if (next) { const s = document.createElement("span"); s.className = "small"; s.style.alignSelf = "center"; s.textContent = "다음 바다: 진주 " + next.need; zoneBox.appendChild(s); }
+  $("nextSea").textContent = next ? "‘" + next.name + "’까지 진주 " + Math.max(0, next.need - save.pearls) + "개 더" : "바다를 모두 열었어요!";
+  // 칩: 지금 바다 이름 + 열린 바다 점
+  $("zoneName").textContent = L.zoneOf(zoneId).name;
+  $("zoneDots").innerHTML = L.ZONES.map(z => '<i class="' + (save.zones.includes(z.id) ? "on" : "") + '"></i>').join("");
+  $("zoneChip").setAttribute("aria-label", "바다 고르기 · 지금 " + L.zoneOf(zoneId).name + " · 열린 바다 " + save.zones.length + "/" + L.ZONES.length);
+}
+// 진주 막대: 다음 바다까지(바다를 다 열었으면 다음 출발 선물까지)
+function pearlGoal() {
+  const z = L.ZONES.find(q => !save.zones.includes(q.id));
+  if (z) return { need: z.need, label: z.name };
+  const g = L.GIFTS.find(q => !save.gifts.includes(q.id));
+  return g ? { need: g.need, label: g.name } : null;
 }
 function paintBest() {
   const b = save.best[L.PILOTS[pilot].kid];
@@ -1789,6 +1883,14 @@ function paintStart() {
   $("chest").textContent = "가족 진주함 " + save.pearls;
   const open = L.GIFTS.filter(g => save.gifts.includes(g.id)), next = L.GIFTS.find(g => !save.gifts.includes(g.id));
   $("giftLine").textContent = (open.length ? "출발 선물: " + open.map(g => g.name).join(" · ") : "") + (next ? (open.length ? " / " : "") + "진주 " + next.need + "개면 ‘" + next.name + "’" : "");
+  const goal = pearlGoal(), chip = $("pearlChip");
+  $("pearlFill").style.width = (goal ? Math.min(100, save.pearls / goal.need * 100) : 100).toFixed(1) + "%";
+  $("pearlNum").textContent = goal ? save.pearls + "/" + goal.need : String(save.pearls);
+  chip.classList.toggle("done", !goal);
+  chip.setAttribute("aria-label", "가족 진주함 " + save.pearls + (goal ? " · ‘" + goal.label + "’까지 " + goal.need : ""));
+  const seen = L.DEX_IDS.filter(k => (save.dex[k] || 0) > 0 || (k === "boss" && save.bossRescued)).length;
+  $("dexNum").textContent = seen + "/" + L.DEX_IDS.length;
+  $("dexBtn").setAttribute("aria-label", "바다 친구 도감 · 만난 친구 " + seen + "/" + L.DEX_IDS.length);
 }
 function paintDex() {
   const grid = $("dexGrid"); grid.innerHTML = "";
@@ -1808,9 +1910,12 @@ function paintDex() {
 }
 // 도감 그림이 없을 때: 도형 친구를 작은 캔버스에 그린다
 function drawFriendIcon(x, kind) { friendShape(x, SHAPE_OF[kind] || kind, 48, 50, kind === "boss" ? 30 : kind === "eel" ? 16 : 24, 0, false, 1, 0); }
-$("dexBtn").addEventListener("click", () => { paintDex(); $("start").hidden = true; $("dex").hidden = false; });
+$("dexBtn").addEventListener("click", () => { closeSheets(); paintDex(); $("start").hidden = true; $("dex").hidden = false; });
+$("zoneChip").addEventListener("click", () => openSheet("zoneSheet"));
+$("pearlChip").addEventListener("click", () => openSheet("zoneSheet"));
+$("giftChip").addEventListener("click", () => openSheet("giftSheet"));
 $("dexClose").addEventListener("click", () => { $("dex").hidden = true; $("start").hidden = false; });
-$("startBtn").addEventListener("click", () => begin());
+$("startBtn").addEventListener("click", () => { closeSheets(); begin(); });
 $("againBtn").addEventListener("click", () => begin());
 $("menuBtn").addEventListener("click", toMenu);
 $("pauseBtn").addEventListener("click", () => { if (mode === "play") pause(); else if (mode === "paused") unpause(); });
@@ -1865,6 +1970,9 @@ if (QA) {
     timing: () => ({ update: lastUpdateMs, render: lastRenderMs }),
     bench: (n = 60) => { const t0 = performance.now(); let up = 0, rd = 0, worst = 0; for (let i = 0; i < n; i++) { const a = performance.now(); ui(1 / 60); if (mode === "play") update(1 / 60); const b = performance.now(); render(); const c = performance.now(); up += b - a; rd += c - b; worst = Math.max(worst, c - a); } return { frames: n, updateMs: +(up / n).toFixed(2), renderMs: +(rd / n).toFixed(2), totalMs: +((performance.now() - t0) / n).toFixed(2), worstMs: +worst.toFixed(2), enemies: world ? world.enemies.length : 0, fx: fxList.length, sparks: F.sparkCount(), parts: partOn, quality: F.getQuality() }; },
     art: () => Object.keys(ART), view: () => ({ view, scale, dpr }),
+    // 시작 화면 뒤 보기 판: 상태 보기·몇 프레임 돌리기
+    demo: () => (demo ? { t: +demo.t.toFixed(2), kid: demo.kid, zone: demo.zone.id, enemies: demo.enemies.length, rescued: demo.rescued, hearts: demo.hearts, pending: demo.pending, qpearls: demo.qpearls.length, p: { x: Math.round(demo.p.x), y: Math.round(demo.p.y) } } : null),
+    demoStep: (dt = 1 / 60, n = 1) => { for (let i = 0; i < n && mode === "start" && !world; i++) { ui(dt); demoStep(dt); render(); } return !!demo; },
   };
 }
 requestAnimationFrame(frame);

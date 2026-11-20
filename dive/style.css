@@ -111,20 +111,62 @@ html, body { height: 100%; margin: 0; overflow: hidden; background: #0d3b66; col
   .go { min-height: 50px; margin-top: 8px; }
   .lead { display: none; }
 }
-/* 폰 가로(키 낮음): 왼쪽=고르기, 오른쪽=큰 출발 버튼이 항상 보이게 2단 */
-@media (max-height: 500px) {
-  #start:not([hidden]) { width: min(calc(100vw - 32px), 760px); padding: 10px 16px; border-radius: 20px;
-    display: grid; grid-template-columns: minmax(0, 1fr) clamp(150px, 26vw, 220px); column-gap: 16px; align-content: center; }
-  #start > * { grid-column: 1; }
-  #start h1 { font-size: 26px; margin: 0; }
-  #start p { margin: 2px 0; font-size: 14px; line-height: 1.3; }
-  #start .pick { margin-top: 4px !important; }
-  #start .pilots { gap: 6px; margin-top: 2px; }
-  #start .pilot { padding: 3px 2px; border-radius: 14px; font-size: 14px; }
-  #start .pilot .face { max-width: 44px; margin-bottom: 0; }
-  #start .pilot .dot { width: 34px; height: 34px; margin: 4px auto; }
-  #start .zone { min-height: 44px; padding: 2px 6px; }
-  #start .row { margin-top: 6px; gap: 10px; }
-  #start .go { grid-column: 2; grid-row: 1 / span 7; align-self: center; margin: 0; min-height: 110px; height: 60%; font-size: 26px; }
-  #start #bestLine { grid-column: 2; grid-row: 8; align-self: start; }
+
+/* ---------- 시작 화면: 뒤에서 게임이 저절로 움직이고, 판은 작고 반투명하게 ----------
+   세로: 아래쪽에 붙인다(잠수정은 위쪽에 보이게). 가로: 오른쪽에 붙인다(잠수정은 왼쪽에). */
+#start { top: auto; bottom: calc(14px + env(safe-area-inset-bottom)); transform: translateX(-50%);
+  width: min(calc(100vw - 32px), 500px); max-height: calc(100dvh - 28px); padding: 14px 16px 16px; border-radius: 24px;
+  background: rgba(6,34,66,.72); box-shadow: 0 10px 40px rgba(0,20,50,.35); }
+#start h1 { margin: 0; font-size: clamp(30px, 7vw, 40px); line-height: 1.1; text-shadow: 0 2px 0 rgba(0,30,70,.5); }
+#start .lead { margin: 2px 0 10px; font-size: 15px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#start .pilots { margin-top: 0; }
+#start .pilot { padding: 4px 2px; background: rgba(255,255,255,.08); }
+#start .pilot .face { max-width: 60px; }
+#start .pilot:not([aria-pressed="true"]) { opacity: .78; }
+#start .go { margin-top: 12px; min-height: 64px; font-size: 26px; box-shadow: 0 4px 0 #c98e12; animation: gopulse 1.6s ease-in-out infinite; }
+@keyframes gopulse { 50% { box-shadow: 0 4px 0 #c98e12, 0 0 0 8px rgba(255,226,122,.22); } }
+
+/* 목표 칩: 바다(열린 바다 점) · 진주 막대 · 도감 수 · 선물 */
+.goals { display: flex; gap: 8px; margin-top: 10px; }
+.gchip { min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 12px; border: 2px solid rgba(255,255,255,.22); border-radius: 999px; background: rgba(255,255,255,.08); color: #fff; font: inherit; font-weight: 800; font-size: 15px; white-space: nowrap; }
+.gchip:active { transform: translateY(2px); }
+.gchip[aria-expanded="true"] { border-color: #8ff0ff; background: rgba(143,240,255,.18); }
+.gchip.icon { padding: 0; width: 44px; flex: 0 0 auto; font-size: 20px; }
+.gchip b { color: #ffe27a; font-size: 15px; }
+.zonechip { flex: 0 0 auto; min-width: 0; }
+.zonechip .gname { overflow: hidden; text-overflow: ellipsis; }
+.zdots { display: inline-flex; gap: 3px; }
+.zdots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.25); }
+.zdots i.on { background: #8ff0ff; }
+.pearlchip { flex: 1 1 auto; min-width: 0; padding: 0 10px; }
+.gpearl { flex: 0 0 auto; width: 18px; height: 18px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff 0 18%, #ffeec2 30%, #ffd75a 70%, #d9a323 100%); }
+.gbar { position: relative; flex: 1 1 auto; min-width: 30px; height: 10px; border-radius: 99px; background: rgba(255,255,255,.18); overflow: hidden; }
+.gbar i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 99px; background: linear-gradient(90deg, #ffe58a, #ffc93c); }
+.pearlchip.done .gbar i { background: linear-gradient(90deg, #8ff0ff, #fff3a6); }
+
+/* 칩 뒤의 작은 판 */
+.sheet { margin-top: 8px; padding: 8px; border-radius: 16px; background: rgba(0,20,45,.45); }
+.sheet[hidden] { display: none; }
+.sheet .zones { margin-top: 0; }
+.sheet p { margin: 4px 0 0 !important; }
+.sheet p:empty { display: none; }
+.zone.locked { opacity: .45; }
+
+/* 가로 화면: 오른쪽에 붙인다 */
+@media (min-aspect-ratio: 23/20) {
+  #start { left: auto; right: calc(16px + env(safe-area-inset-right)); top: 50%; bottom: auto; transform: translateY(-50%); width: min(44vw, 420px); }
 }
+/* 키가 낮은 화면(폰 가로 등): 더 촘촘하게 */
+@media (max-height: 560px) {
+  #start { padding: 10px 12px 12px; }
+  #start h1 { font-size: 26px; }
+  #start .lead { display: block; margin: 0 0 6px; font-size: 13px !important; }
+  #start .pilot .face { max-width: 40px; }
+  #start .pilot { font-size: 13px; padding: 2px; border-radius: 14px; }
+  #start .goals { margin-top: 6px; gap: 6px; }
+  #start .go { min-height: 52px; margin-top: 8px; font-size: 22px; }
+}
+@media (max-height: 400px) { #start .lead { display: none; } }
+@media (min-aspect-ratio: 23/20) and (max-height: 560px) { #start { width: min(50vw, 400px); } }
+@media (max-width: 400px) { .gchip { padding: 0 9px; gap: 4px; font-size: 14px; } .gchip b { font-size: 14px; } .zonechip .gname { max-width: 6.6em; } .gpearl { display: none; } .goals { gap: 6px; } }
+@media (prefers-reduced-motion: reduce) { #start .go { animation: none; } }

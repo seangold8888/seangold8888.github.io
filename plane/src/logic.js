@@ -113,7 +113,8 @@ export const BOSS_STAY = 26;
 export const isBossWave = wave => wave > 0 && wave % 6 === 0;
 // 대장은 셋이 번갈아 나온다: 먹구름 대장(비) → 눈보라 대왕(흔들리는 눈송이) → 태풍 대장(회오리 부하).
 export const BOSSES = [{ id: "boss", name: "먹구름 대장" }, { id: "snowking", name: "눈보라 대왕" }, { id: "typhoon", name: "태풍 대장" }];
-export const bossOf = wave => BOSSES[(Math.max(1, Math.round(wave / 6)) - 1) % BOSSES.length];
+// list: 판(edition)이 대장 목록을 따로 줄 때만(없으면 위 셋).
+export const bossOf = (wave, list = BOSSES) => list[(Math.max(1, Math.round(wave / 6)) - 1) % list.length];
 // 조종사(윤찬·재이·윤건·태오 순)마다 난이도가 다르다. speed: 적 속도, hp: 적 체력, meteorFrom: 별똥별 시작 파도, hearts: 하트 수, magnet: 별이 끌려오는 거리.
 export const PILOT_TUNING = [
   { speed: 1.15, hp: 1.3, meteorFrom: 3, hearts: 3, magnet: 90 },
@@ -137,8 +138,8 @@ export const hasGift = wave => wave === 1 || wave % 2 === 0;
 
 const COLS = 5;
 // 한 파도의 적 배치. x 는 0~1(가로 비율), delay 는 등장까지 초.
-export function formation(wave, rng = Math.random, tune = PILOT_TUNING[1]) {
-  if (isBossWave(wave)) return [{ kind: "boss", who: bossOf(wave).id, x: 0.5, delay: 0 }];
+export function formation(wave, rng = Math.random, tune = PILOT_TUNING[1], bosses = BOSSES) {
+  if (isBossWave(wave)) return [{ kind: "boss", who: bossOf(wave, bosses).id, x: 0.5, delay: 0 }];
   // 가로 한 줄이 절반쯤 — 줄지어 내려오는 적을 쓸어 내는 맛.
   const out = [], roll = rng(), pick = roll < 0.5 ? 0 : roll < 0.67 ? 1 : roll < 0.84 ? 2 : 3, col = i => (i + 0.5) / COLS;
   if (pick === 0) {

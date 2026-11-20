@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Spell Towers · PLAYGROUND</title>
 <link rel="preload" href="../sanguo/fonts/pretendard/PretendardVariable.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="style.css?v=6">
 <script src="../assets/study/play-timer.js?v=4"></script>
 <script src="../assets/touch-guard.js?v=1"></script>
 <script src="../math/curriculum.js?v=21"></script>
@@ -35,19 +35,25 @@
 <p class="tip" id="tip" hidden></p>
 <button class="chip qback" id="quizBack" type="button" hidden>← 다른 탑</button>
 
-<section class="panel" id="start">
+<!-- 처음 화면: 뒤에서 게임이 저절로 돌아가고(소리·문제·저장 없음), 창은 아래에 작게. 고른 아이·길은 기억해 두어 출발! 한 번이면 시작 -->
+<section class="panel startp" id="start">
   <h1>Spell Towers</h1>
-  <p class="lead">괴물들이 생일 케이크를 노려요! 문제를 맞혀 받침에 <b>마법 탑</b>을 세우고, <b>? 부엉이</b> 문제로 대마법을 터뜨려요.</p>
-  <p class="pick">누가 마법사가 될까요?</p>
-  <div class="pilots" id="pilots"></div>
-  <p class="pick">어디를 지킬까요?</p>
-  <div class="zones" id="maps"></div>
-  <div class="row">
-    <button class="ghost" id="dexBtn" type="button">마법 도감</button>
-    <span class="chest" id="badgeLine"></span>
+  <p class="lead">괴물을 막고 생일 케이크를 지켜요!</p>
+  <div class="pilots" id="pilots" role="group" aria-label="누가 마법사가 될까요?"></div>
+  <div class="mchips">
+    <button class="mchip" id="mapChip" type="button" aria-expanded="false" aria-controls="mapDrawer"></button>
+    <button class="mchip" id="dexBtn" type="button" aria-label="마법 도감"></button>
+    <button class="mchip" id="goalChip" type="button" aria-expanded="false" aria-controls="goalDrawer"></button>
+  </div>
+  <div class="drawer" id="mapDrawer" hidden>
+    <div class="zones" id="maps"></div>
+    <p class="small" id="nextMap"></p>
+  </div>
+  <div class="drawer" id="goalDrawer" hidden>
+    <p class="chest" id="badgeLine"></p>
+    <p class="small" id="bestLine"></p>
   </div>
   <button class="go" id="startBtn" type="button">출발!</button>
-  <p class="small" id="bestLine"></p>
 </section>
 
 <section class="panel" id="dex" hidden>
@@ -101,6 +107,6 @@
   <a class="home" href="../game/">← PLAYGROUND</a>
 </section>
 
-<script type="module" src="src/main.js?v=8"></script>
+<script type="module" src="src/main.js?v=9"></script>
 </body>
 </html>

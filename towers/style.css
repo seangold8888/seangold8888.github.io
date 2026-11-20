@@ -194,3 +194,60 @@ html, body { height: 100%; margin: 0; overflow: hidden; background: #2c1f5c; col
   .card canvas { width: 50px; height: 58px; }
   .lead { display: none; }
 }
+/* ---------- 처음 화면: 뒤에서 게임이 돌아가고(시연), 창은 아래에 작고 반투명 ----------
+   글은 제목 + 한 줄. 길·도감·배지는 작은 칩 뒤에. 고른 아이·길은 기억해 두어 출발! 한 번이면 시작 */
+.panel.startp { top: auto; bottom: calc(14px + env(safe-area-inset-bottom)); transform: translateX(-50%); width: min(calc(100vw - 24px), 520px); max-height: calc(100dvh - 20px); padding: 12px 16px 14px; background: rgba(34,20,78,.70); border-color: rgba(255,255,255,.22); box-shadow: 0 10px 40px rgba(20,10,50,.35); }
+.startp h1 { margin: 0; font-size: clamp(28px, 7vw, 40px); line-height: 1.1; text-shadow: 0 3px 0 rgba(60,30,120,.6); }
+.startp .lead { margin: 2px 0 8px !important; font-size: 16px !important; font-weight: 700; color: #f1eaff !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.startp .pilots { gap: 6px; margin-top: 0; }
+.startp .pilot { padding: 4px 2px 3px; font-size: 15px; background: rgba(255,255,255,.12); }
+.startp .pilot .face { max-width: 60px; }
+.startp .pilot .hat { width: 44px; height: 44px; margin: 6px auto 4px; }
+.startp .pilot[aria-pressed="true"] { background: rgba(255,226,122,.28); box-shadow: 0 0 0 3px rgba(255,226,122,.25); }
+.mchips { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
+.mchip { display: inline-flex; align-items: center; gap: 5px; min-height: 40px; padding: 0 12px; border: 1px solid rgba(255,255,255,.28); border-radius: 999px; background: rgba(255,255,255,.10); color: #fff; font: inherit; font-weight: 800; font-size: 15px; white-space: nowrap; }
+.mchip:active { transform: translateY(2px); }
+.mchip .st { color: #ffd24a; letter-spacing: 1px; }
+.mchip .st0 { font-style: normal; opacity: .45; }
+.mchip .ic { width: 20px; height: 20px; }
+.mchip .cv { font-size: 11px; opacity: .8; }
+.mchip[aria-expanded="true"] { border-color: #ffe27a; background: rgba(255,226,122,.22); }
+.drawer { margin-top: 8px; padding: 8px; border-radius: 16px; background: rgba(20,10,55,.55); }
+.drawer[hidden] { display: none; }
+.drawer .zones { margin-top: 0; }
+.drawer p { margin: 4px 0 0 !important; }
+.drawer .chest { display: block; }
+.startp .go { margin-top: 10px; min-height: 64px; font-size: 26px; box-shadow: 0 5px 0 #c98a00; animation: goPulse 1.6s ease-in-out infinite; }
+.startp .go:active { box-shadow: 0 2px 0 #c98a00; }
+@keyframes goPulse { 50% { transform: scale(1.03); } }
+@media (prefers-reduced-motion: reduce) { .startp .go { animation: none; } }
+@media (max-width: 499px) {
+  .panel.startp { width: calc(100vw - 16px); padding: 10px 10px 12px; bottom: calc(8px + env(safe-area-inset-bottom)); }
+  .startp .lead { font-size: 15px !important; }
+  .startp .pilot .face { max-width: 54px; }
+  .mchips { gap: 4px; }
+  .mchip { min-height: 38px; padding: 0 8px; font-size: 13.5px; gap: 3px; }
+  .mchip .cv { display: none; }
+  .mchip .ic { width: 18px; height: 18px; }
+}
+/* 폰 세로: 왼쪽 아래 놀이 시간 칩과 겹치지 않게 조금 띄운다 */
+@media (max-width: 499px) and (orientation: portrait) { .panel.startp { bottom: calc(40px + env(safe-area-inset-bottom)); } }
+/* 폰 가로(낮은 화면): 한 줄 설명은 숨기고 더 납작하게 */
+@media (max-height: 499px) {
+  .panel.startp { width: min(calc(100vw - 16px), 560px); padding: 8px 12px 10px; bottom: calc(6px + env(safe-area-inset-bottom)); }
+  .startp h1 { font-size: 26px; }
+  .startp .lead { display: none; }
+  .startp .pilot { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 2px; }
+  .startp .pilot .face { max-width: 38px; margin: 0; }
+  .startp .pilot .hat { width: 30px; height: 30px; margin: 0; }
+  .mchips { margin-top: 6px; }
+  .mchip { min-height: 36px; font-size: 14px; }
+  .startp .go { min-height: 50px; font-size: 22px; margin-top: 8px; }
+}
+
+/* ---------- 처음 세우는 탑: 추천 하나만 크게(한 번 누르면 문제 → 탑) ---------- */
+#build.first .tbtn:not(.rec) { opacity: .5; filter: saturate(.6); }
+#build.first .tbtn.rec { transform: scale(1.06); border-color: #ffe27a; background: rgba(255,226,122,.24); z-index: 1; animation: twinkle .8s ease-in-out infinite; }
+#build.first .tbtn.rec::after { content: "이거 눌러요!"; top: -16px; padding: 3px 12px; font-size: 15px; white-space: nowrap; animation: recBob .7s ease-in-out infinite alternate; }
+@keyframes recBob { from { transform: translate(-50%, 0); } to { transform: translate(-50%, -6px); } }
+@media (prefers-reduced-motion: reduce) { #build.first .tbtn.rec, #build.first .tbtn.rec::after { animation: none; } }

@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>스카이 샷 · PLAYGROUND</title>
 <link rel="preload" href="../sanguo/fonts/pretendard/PretendardVariable.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=10">
+<link rel="stylesheet" href="style.css?v=11">
 <script src="../assets/study/play-timer.js?v=4"></script>
 <script src="../assets/touch-guard.js?v=1"></script>
 <script src="../math/curriculum.js?v=21"></script>
@@ -31,13 +31,15 @@
 
 <section class="panel" id="start">
   <h1>스카이 샷</h1>
-  <p><b>⭐ 별</b>을 먹고 문제를 맞히면 무기가 세져요!</p>
-  <p class="pick">누가 조종할까요?</p>
-  <div class="pilots" id="pilots"></div>
-  <p class="pick">꼬리 꾸미기 <span id="starCount">⭐ 0</span></p>
-  <div class="trails" id="trails"></div>
+  <p class="tag"><b>⭐ 별</b> 먹고 문제 맞히면 무기가 세져요!</p>
+  <div class="pilots" id="pilots" role="group" aria-label="누가 조종할까요?"></div>
+  <div class="goals" id="goals">
+    <span class="goal" id="goalBest" hidden></span>
+    <span class="goal" id="goalLv" hidden></span>
+    <button class="goal deco" id="decoBtn" type="button" aria-expanded="false" aria-controls="trails">✨ 꾸미기 <span id="starCount">⭐ 0</span><i class="meter" aria-hidden="true"><i id="decoFill"></i></i></button>
+  </div>
+  <div class="trails" id="trails" hidden></div>
   <button class="go" id="startBtn" type="button">출발!</button>
-  <p class="best" id="bestStart"></p>
 </section>
 
 <section class="panel" id="fork" hidden aria-live="polite">
@@ -53,6 +55,6 @@
   <a class="home" href="../game/">PLAYGROUND로</a>
 </section>
 
-<script type="module" src="src/main.js?v=10"></script>
+<script type="module" src="src/main.js?v=11"></script>
 </body>
 </html>

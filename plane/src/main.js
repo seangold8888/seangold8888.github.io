@@ -1,8 +1,9 @@
 // 스카이 샷 — 세로로 나는 비행기 슈팅. 별을 먹고 수학 문제를 맞히면 무기가 한 단계씩 세진다.
 // 그림은 art/ 의 그림책풍 그림 파일을 쓴다(못 읽으면 캔버스 도형으로 대신 그린다). shadowBlur 는 쓰지 않는다 — 아이패드에서 가장 느리다.
-import { weapon, weaponLabel, forkAt, MAINS, SIDES, MAIN_IDS, SIDE_IDS, playerYRange, MAX_WEAPON, enemyHp, bossHp, enemySpeed, formation, isBossWave, BOSS_STAY, SHIELD_LEVELS, bossOf, tuning, TRAILS, unlockedTrails } from "./logic.js?v=5";
-import * as S from "./sfx.js?v=4";
+import { weapon, weaponLabel, forkAt, MAINS, SIDES, MAIN_IDS, SIDE_IDS, playerYRange, MAX_WEAPON, enemyHp, bossHp, enemySpeed, formation, isBossWave, BOSS_STAY, SHIELD_LEVELS, bossOf, tuning, TRAILS, unlockedTrails } from "./logic.js?v=6";
+import * as S from "./sfx.js?v=5";
 import * as FX from "./fx.js?v=3";
+import { EDITION } from "./edition.js?v=1";   // 판마다 다른 값(조종사·제목·돌아가기 링크·수학 아이 목록·외침)
 
 const $ = id => document.getElementById(id);
 const canvas = $("sky"), ctx = canvas.getContext("2d", { alpha: false });
@@ -11,15 +12,29 @@ FX.init(ctx); FX.loadSheets("art/", 1);
 (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(() => FX.prewarm(["#ffb627", "#ff5aa8", "#2fbfff", "#ff9ec4", "#ff7a9c", "#ffd95a", "#7dffb0", "#6fd3ff", "#fff6c8", "#fff2c0", "#ffb24a", "#ffcf5a", "#9fe8ff", "#8fe8ff", "#7fe8ff", "#ff9b3d", "#ffd23a", "#ff60aa", "#46d7ff", "#ffc83c", "#6fdcff", "#4fd0ff", "#ff7ab8", "#ffcc00", "#ff6a00", "#ffffff", "#ffe45c"], Object.values(SHOT_LOOK).map(l => [l.c, l.tl]).concat(RAINBOW4.map(c => [c, 92])))).catch(() => {});
 const FW = 360;                       // 놀이판 논리 너비. 높이는 화면 비율에 맞춘다.
 let FH = 640, scale = 1, offX = 0, vw = 0, vh = 0, dpr = 1, bg = null, dprCap = 1.5;   // 계속 무거우면 dprCap 을 1 로 낮춰 칠할 화소를 줄인다
-const BEST_KEY = "plane_best_v1", SOUND_KEY = "plane_sound_v1", PILOT_KEY = "plane_pilot_v1", STAR_KEY = "plane_stars_v1", TRAIL_KEY = "plane_trail_v1";
-// 조종사: 아이 넷. 고른 아이의 비행기로 난다.
+const BEST_KEY = "plane_best_v1", SOUND_KEY = "plane_sound_v1", PILOT_KEY = "plane_pilot_v1", STAR_KEY = "plane_stars_v1", TRAIL_KEY = "plane_trail_v1", BEST_LV_KEY = "plane_bestlv_v1";
+// 조종사 넷(edition.js). 고른 조종사의 비행기로 난다.
 // kid: 공통 수학 모듈(GameQuiz)의 아이 id. 고른 조종사는 GameQuiz 의 "지금 하는 아이"(gq_kid_v1)와 같이 쓴다.
-const PILOTS = [{ name: "윤찬", art: "p0", kid: "yunchan" }, { name: "재이", art: "p1", kid: "jaei" }, { name: "윤건", art: "p2", kid: "yungeon" }, { name: "태오", art: "p3", kid: "taeo" }];
-let pilot = 1;
+// 판이 자기 수학 아이 목록을 주면(quizProfiles) GameQuiz 를 그 목록으로 먼저 바꾼다. 가족판은 null(기본 목록 그대로).
+if (EDITION.quizProfiles && window.GameQuiz && window.GameQuiz.configure) window.GameQuiz.configure({ profiles: EDITION.quizProfiles, voice: EDITION.shouts !== false, playPass: EDITION.playTimer !== false });
+const PILOTS = EDITION.pilots;
+const PILOT_ART = new Set(PILOTS.map(p => p.art));
+// 대장 목록: 판이 bosses 를 주면 그 목록({ id, name, art?, act?, size? }), 없으면 logic.js 의 셋(가족판).
+// art: 그림 이름(없으면 id), act: 움직임(boss 비·snowking 눈송이·typhoon 회오리 부하·squirrel 도토리 부채, 없으면 id), size: 그릴 너비,
+// shot: 그 대장이 던지는 탄 그림(squirrel 의 도토리), spill: 이기면 쏟아지는 간식 그림들. squirrel 은 판 설정 대장으로만 나온다(가족판 셋에는 없다).
+const BOSS_LIST = EDITION.bosses || undefined;
+const bossInfo = who => (BOSS_LIST && BOSS_LIST.find(b => b.id === who)) || {};
+const bossArt = who => bossInfo(who).art || who, bossAct = who => bossInfo(who).act || who;
+const BOSS_EXTRA_ART = (BOSS_LIST || []).flatMap(b => [bossArt(b.id), ...(b.shot ? [b.shot] : []), ...(b.spill || [])]);
+// 조종사의 난이도 칸(logic.js PILOT_TUNING)·필살기 칸(fx.js ULTS). 판이 tune/ult 를 주지 않으면 순서 번호 그대로(가족판).
+const tuneOf = i => (PILOTS[i] && PILOTS[i].tune != null ? PILOTS[i].tune : i);
+const ultOf = i => (PILOTS[i] && PILOTS[i].ult != null ? PILOTS[i].ult : i);
+let pilot = EDITION.defaultPilot != null ? EDITION.defaultPilot : 1;
 try { const saved = parseInt(localStorage.getItem(PILOT_KEY), 10); if (saved >= 0 && saved < PILOTS.length) pilot = saved; } catch (_) {}
-try { const k = window.GameQuiz && window.GameQuiz.currentKid(); const i = PILOTS.findIndex(p => p.kid === k); if (i >= 0) pilot = i; } catch (_) {}
+// 저장된 조종사가 이미 그 아이면 그대로 둔다(조종사 여럿이 수학 아이 하나를 같이 쓰는 판에서 늘 첫 조종사로 돌아가지 않게).
+try { const k = window.GameQuiz && window.GameQuiz.currentKid(); const i = PILOTS.findIndex(p => p.kid === k); if (i >= 0 && !(PILOTS[pilot] && PILOTS[pilot].kid === k)) pilot = i; } catch (_) {}
 // 모은 별(맞힌 문제 수)과 고른 꼬리 모양. 판이 끝나도 남는다.
-let stars = 0, trail = 0, tune = tuning(pilot), runStars = 0, starsAtStart = 0;
+let stars = 0, trail = 0, tune = tuning(tuneOf(pilot)), runStars = 0, starsAtStart = 0;
 try { stars = Math.max(0, parseInt(localStorage.getItem(STAR_KEY) || "0", 10) || 0); const t = parseInt(localStorage.getItem(TRAIL_KEY), 10); if (t >= 0 && t < unlockedTrails(stars)) trail = t; } catch (_) {}
 
 /* ---------- 그림 ---------- */
@@ -33,11 +48,11 @@ function whiten(im) {
 // 조종사 비행기의 짙은 남색 그림자(조금 크게 깔아 테두리처럼 보이게)
 const DARK = {};
 function darken(im) { const c = whiten(im), x = c.getContext("2d"); x.globalCompositeOperation = "source-in"; x.fillStyle = "rgba(16,14,60,.78)"; x.fillRect(0, 0, c.width, c.height); return c; }
-const FLASHY = new Set(["p0", "p1", "p2", "p3", "cloud", "zig", "bolt", "gift", "boss", "tornado", "hail", "baby", "snowking", "typhoon"]);
-for (const n of ["p0", "p1", "p2", "p3", "cloud", "zig", "bolt", "gift", "boss", "star", "drop", "sky", "gun", "helper", "pellet", "candy", "comet", "rainbow", "pop", "meteor", "tornado", "hail", "baby", "flake", "snowking", "typhoon", "heart"]) {
+const FLASHY = new Set([...PILOT_ART, "cloud", "zig", "bolt", "gift", "boss", "tornado", "hail", "baby", "snowking", "typhoon", ...BOSS_EXTRA_ART]);
+for (const n of new Set([...PILOT_ART, "cloud", "zig", "bolt", "gift", "boss", "star", "drop", "sky", "gun", "helper", "pellet", "candy", "comet", "rainbow", "pop", "meteor", "tornado", "hail", "baby", "flake", "snowking", "typhoon", "heart", ...BOSS_EXTRA_ART])) {
   const im = new Image();
-  im.onload = () => { ART[n] = im; if (n === "sky") skyTile = null; else if (FLASHY.has(n)) WHITE[n] = whiten(im); if (/^p\d$/.test(n)) DARK[n] = darken(im); };
-  im.src = "art/" + n + ".webp?v=" + (/^p\d$/.test(n) ? 2 : 1);
+  im.onload = () => { ART[n] = im; if (n === "sky") skyTile = null; else if (FLASHY.has(n)) WHITE[n] = whiten(im); if (PILOT_ART.has(n)) DARK[n] = darken(im); };
+  im.src = "art/" + n + ".webp?v=" + (PILOT_ART.has(n) ? EDITION.pilotArtV : 1);
 }
 // 가운데 (x, y), 너비 w 로 그린다. 그림이 아직 없으면 false.
 function sprite(n, x, y, w, hit) {
@@ -152,9 +167,12 @@ const GameQuiz = window.GameQuiz;
 
 /* ---------- 상태 ---------- */
 let mode = "start";                  // start | play | quiz | over
+// 미리보기 비행(시작 화면 뒤): 진짜 엔진을 그대로 돌리지만 소리·문제·하트·필살기·기록은 없다. demoY = 비행기가 나는 높이(시작 패널 바로 위).
+let demo = false, demoY = 0, demoT = 0, demoAimT = 0;
 let player, bullets, enemies, drops, rain, sparks, clouds, pops, rings, warns, smoke, zaps, bombs, booms;
 let level, hearts, dist, wave, queue, waveGap, fireT, solved, firstTries, shield, shake, banner, bannerT, halfStep, flash = 0, trailT = 0, clock = 0, bannerBig = false;
 let path = {}, missileT = 0, boltT = 0, bombT = 0, boomT = 0, boomSide = 1, orbAng = 0, yr = null;
+let spill = [];                       // 다람쥐 두목을 이기면 쏟아지는 간식 그림(그림만, 줍는 것 아님)
 const rnd = (a, b) => a + Math.random() * (b - a);
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 // 지금 무기(단계·갈래가 바뀔 때만 새로 만든다)
@@ -164,8 +182,8 @@ function W() { if (level !== wLv || path.main !== wMain || path.side !== wSide) 
 
 function reset() {
   player = { x: FW / 2, y: yr.home, tx: FW / 2, ty: yr.home, inv: 0, tilt: 0 };
-  bullets = []; enemies = []; drops = []; rain = []; sparks = []; pops = []; rings = []; warns = []; smoke = []; zaps = []; bombs = []; booms = []; flash = 0;
-  tune = tuning(pilot); runStars = 0; starsAtStart = stars;
+  bullets = []; enemies = []; drops = []; rain = []; sparks = []; pops = []; rings = []; warns = []; smoke = []; zaps = []; bombs = []; booms = []; spill = []; flash = 0;
+  tune = tuning(tuneOf(pilot)); runStars = 0; starsAtStart = stars;
   level = 1; hearts = tune.hearts; dist = 0; wave = 0; queue = []; waveGap = 1.2; fireT = 0;
   path = {}; missileT = 0; boltT = 0; bombT = 1; boomT = 0.5; ultAt = -1; ultMini = false; gauge = 0; ultStar = null; ultQueued = false; ultTries = 0; ultEarned = 0; FX.reset();
   solved = 0; firstTries = 0; shield = 0; shake = 0; banner = ""; bannerT = 0; halfStep = 0;
@@ -264,9 +282,10 @@ function disarm() { if (guard) guard.panel.classList.remove("locked"); guard = n
 
 /* ---------- 파도 ---------- */
 function startWave() {
+  if (demo && wave >= DEMO_LAST_WAVE) { wave = 1; demoWeapon(); }   // 미리보기는 대장 없이 2~4번째 파도만 돈다
   wave++;
-  queue = formation(wave, Math.random, tune).map(f => Object.assign({}, f));
-  if (isBossWave(wave)) { FX.bossIntro(bossOf(wave).name); sfx.boss(); S.play("bossRumble"); setTimeout(() => S.shout("boss"), 1100); addGauge(ULT_RULES.gaugeBossIntro); }
+  queue = formation(wave, Math.random, tune, BOSS_LIST).map(f => Object.assign({}, f));
+  if (isBossWave(wave)) { FX.bossIntro(bossOf(wave, BOSS_LIST).name); sfx.boss(); S.play("bossRumble"); setTimeout(() => S.shout("boss"), 1100); addGauge(ULT_RULES.gaugeBossIntro); }
 }
 function spawn(f) {
   const x = 26 + f.x * (FW - 52), hp = Math.max(1, Math.round(enemyHp(wave) * tune.hp)), speed = enemySpeed(wave) * tune.speed;
@@ -281,6 +300,57 @@ function spawn(f) {
 }
 function burst(x, y, color, n = 8) {
   for (let i = 0; i < n && sparks.length < 90; i++) sparks.push({ x, y, vx: rnd(-120, 120), vy: rnd(-140, 80), life: rnd(0.25, 0.55), color });
+}
+
+/* ---------- 다람쥐 두목(act "squirrel" — 판 설정 bosses 로만 나온다) ---------- */
+// 도토리 부채: 쏠 때마다 0.55초 몸을 흔들며 도토리를 들어 올린 뒤(예고) 3개(두 바퀴째부터 5개)를 비행기 쪽으로 부채꼴로 던진다. 천천히, 빙글빙글.
+// 세 번째마다 큰 도토리: 곧장 떨어지다 화면 가운데쯤에서 멈춰 0.75초 번쩍이며 갈라질 세 방향을 점선으로 보여 주고, 작은 도토리 셋으로 갈라진다.
+// 간격은 다른 대장과 같은 식(파도·조종사 빠르기)에 every 를 곱한다. 빠르기는 비(118)·거품(92) 사이.
+const SQ = { wind: 0.55, every: 1.8, fanV: 100, spread: 0.3, aimMax: 0.6, bigV: 85, bigWarn: 0.75, splitV: 105, splitA: 0.55 };
+const sqLater = () => wave > 6 * ((BOSS_LIST && BOSS_LIST.length) || 3);
+function squirrelThrow(e) {
+  const art = bossInfo(e.who).shot || "acorn", x0 = e.x, y0 = e.y + 40;
+  e.throwN = (e.throwN || 0) + 1;
+  FX.ring(x0, y0, 70, "#ffd36b", 0.35, 6); S.play("pop");
+  if (e.throwN % 3 === 0) { if (rain.length < 30) rain.push({ x: x0, y: y0, vx: 0, vy: SQ.bigV * tune.speed, art, big: true, rot: 0, spin: 3, burstY: Math.max(y0 + 90, FH * 0.42) }); return; }
+  const n = sqLater() ? 5 : 3, sp = n === 5 ? SQ.spread * 0.8 : SQ.spread, v = SQ.fanV * tune.speed;
+  const a = Math.PI / 2 + clamp(Math.atan2(player.y - y0, player.x - x0) - Math.PI / 2, -SQ.aimMax, SQ.aimMax);   // 비행기 쪽, 너무 옆으로는 안 던진다
+  for (let i = 0; i < n && rain.length < 30; i++) { const ai = a + (i - (n - 1) / 2) * sp; rain.push({ x: x0, y: y0, vx: Math.cos(ai) * v, vy: Math.sin(ai) * v, art, rot: rnd(0, 6), spin: (Math.random() < 0.5 ? -1 : 1) * rnd(5, 8) }); }
+}
+function acornSplit(r) {
+  r.dead = true; S.play("bigPop"); FX.ring(r.x, r.y, 90, "#ffb24a", 0.4, 7); FX.sparkleBurst(r.x, r.y, 10, ["#ffd36b", "#c98a4a", "#ffffff"]);
+  for (const k of [-1, 0, 1]) if (rain.length < 30) { const a = Math.PI / 2 + k * SQ.splitA, v = SQ.splitV * tune.speed; rain.push({ x: r.x, y: r.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, art: r.art, rot: rnd(0, 6), spin: k * 7 || 6 }); }
+}
+// 이기면 훔쳐 간 간식이 쏟아진다(그림만, 줍는 것 아님) + 진짜 별 2개 더(대장 별까지 3개. 별 하나 = 문제 하나 규칙 그대로).
+// 간식은 대장 폭발이 한창일 때를 피해 조금 늦게(세계 시간 0.45~1초, 느린 화면이라 실제로는 1.5초쯤 뒤부터) 대장 가운데서 나와
+// 낮게 튀어 오르고(화면 위로 나가지 않게), 양옆 벽에 튕기며 화면 가운데 아래까지 떨어져 한 번 통 튄 뒤 사라진다.
+function squirrelSpill(who, x, y) {
+  const arts = bossInfo(who).spill || ["gift"], y0 = Math.max(y, hudBottom + 90);
+  for (let i = 0; i < 20; i++) spill.push({ x: x + rnd(-24, 24), y: y0 + rnd(-8, 12), vx: rnd(-150, 150), vy: rnd(-230, -90), rot: rnd(0, 6), spin: rnd(-5, 5), w: rnd(28, 38), t: 0, life: rnd(2.6, 3.2), delay: 0.45 + i * 0.028, art: arts[i % arts.length], fx: i === 0 });
+  for (const k of [-1, 1]) drops.push({ x: clamp(x + k * 50, 30, FW - 30), y: y + 10, vy: 70, t: 0 });
+}
+function updSpill(dt) {
+  for (const s of spill) {
+    if (s.delay > 0) { if ((s.delay -= dt) > 0) continue; if (s.fx) { FX.sparkleBurst(s.x, s.y, 24); FX.ring(s.x, s.y, 200, "#ffd95a", 0.6, 10); FX.callout("간식을 되찾았어요!", 5, "#ffe45c", 1.8); S.play("pop"); } }
+    s.t += dt; s.x += s.vx * dt; s.y += s.vy * dt; s.vy += 480 * dt; s.rot += s.spin * dt;
+    if (s.x < 18 || s.x > FW - 18) { s.x = clamp(s.x, 18, FW - 18); s.vx = -s.vx * 0.8; }
+    if (!s.hop && s.vy > 0 && s.y > FH * 0.58) { s.hop = true; s.vy = -s.vy * 0.42; s.spin = -s.spin; }    // 한 번 통 튄다
+  }
+  spill = spill.filter(s => s.t < s.life && s.y < FH + 40);
+}
+function drawAcorn(r) {
+  const w = r.big ? 40 : 24, warn = r.warn > 0, blink = warn && Math.floor(r.warn * 10) % 2 === 1;
+  if (warn) {                                           // 갈라질 세 방향(점선) + 오므라드는 고리
+    const k = 1 - r.warn / SQ.bigWarn;
+    ctx.save(); ctx.strokeStyle = "rgba(255,90,90,.8)"; ctx.lineWidth = 3; ctx.lineCap = "round"; ctx.setLineDash([6, 7]); ctx.beginPath();
+    for (const s of [-1, 0, 1]) { const a = Math.PI / 2 + s * SQ.splitA; ctx.moveTo(r.x + Math.cos(a) * 28, r.y + Math.sin(a) * 28); ctx.lineTo(r.x + Math.cos(a) * 96, r.y + Math.sin(a) * 96); }
+    ctx.stroke(); ctx.setLineDash([]);
+    ctx.strokeStyle = "rgba(255,244,190," + (0.95 - k * 0.5).toFixed(2) + ")"; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(r.x, r.y, 52 - k * 26, 0, 7); ctx.stroke(); ctx.restore();
+  }
+  ctx.save(); ctx.translate(r.x, r.y); ctx.rotate(warn ? Math.sin(r.warn * 40) * 0.35 : r.rot || 0);
+  if (warn) { const s = 1 + (1 - r.warn / SQ.bigWarn) * 0.25; ctx.scale(s, s); }
+  if (!sprite(r.art, 0, 0, w, blink)) { ctx.fillStyle = blink ? "#ffffff" : "#b8783a"; ctx.beginPath(); ctx.ellipse(0, 0, w * 0.4, w * 0.5, 0, 0, 7); ctx.fill(); }
+  ctx.restore();
 }
 
 /* ---------- 문제 ---------- */
@@ -397,7 +467,7 @@ const ULT_RULES = {
 let playT = 0, gauge = 0, ultStar = null, ultQueued = false, ultAt = -1, ultMini = false, levelUpAt = -9, ultTries = 0, ultEarned = 0, gaugeShown = -1;
 const ultOn = () => !!GameQuiz;
 function addGauge(n) {
-  if (!ultOn() || ultStar || FX.ultActive() || ultAt >= 0 || gauge >= ULT_RULES.gaugeMax) return;
+  if (demo || !ultOn() || ultStar || FX.ultActive() || ultAt >= 0 || gauge >= ULT_RULES.gaugeMax) return;
   gauge = Math.min(ULT_RULES.gaugeMax, gauge + n);
 }
 function paintGauge() {
@@ -413,6 +483,7 @@ function paintGauge() {
 }
 // 매 프레임(놀이 중): 게이지가 차면 별을 내보내고, 별을 움직이고, 잡으면 어려운 문제
 function updUlt(dt, rdt) {
+  if (demo) return;                    // 미리보기 비행에는 필살기 별이 없다
   playT += rdt;
   if (!ultOn()) return;
   addGauge(ULT_RULES.gaugePerSec * dt);
@@ -466,23 +537,23 @@ function openUltQuiz() {
 }
 // 큰 필살기: 조종사마다 다른 큰 공격(2.2초). 작은 필살기: 주변만 1초.
 function startUlt(mini) {
-  const R = ULT_RULES;
-  const killOne = e => { if (!e.dead) { damage(e, e.hp + 1); S.play("ultHit", pilot); } };
+  const R = ULT_RULES, u = ultOf(pilot);
+  const killOne = e => { if (!e.dead) { damage(e, e.hp + 1); S.play("ultHit", u); } };
   if (mini) {
     player.inv = Math.max(player.inv, R.miniInvuln);
-    S.play("ultHit", pilot); S.shout("ult", true);
+    S.play("ultHit", u); S.shout("ult", true);
     const api = { player: () => player };
-    FX.miniUltimate(pilot, api, R.miniRadius);
+    FX.miniUltimate(u, api, R.miniRadius);
     clearShots();
     for (const e of enemies) if (targetable(e) && e.kind !== "boss" && e.kind !== "gift" && (e.x - player.x) ** 2 + (e.y - player.y) ** 2 < R.miniRadius * R.miniRadius) killOne(e);
     return;
   }
   if (R.invuln) player.inv = Math.max(player.inv, 2.8);
-  S.play("ultStart", pilot); S.shout("ult", true);
-  FX.ultimate(pilot, ART[PILOTS[pilot].art], {
+  S.play("ultStart", u); S.shout("ult", true);
+  FX.ultimate(u, ART[PILOTS[pilot].art], {
     targets: () => (R.popEnemies ? enemies.filter(e => targetable(e) && e.kind !== "boss" && e.kind !== "gift") : []),
     kill: killOne,
-    bossHit: () => { const b = enemies.find(e => e.kind === "boss" && !e.dead); if (b && R.bossDamagePct > 0) damage(b, b.max * R.bossDamagePct / 100); S.play("ultHit", pilot); },
+    bossHit: () => { const b = enemies.find(e => e.kind === "boss" && !e.dead); if (b && R.bossDamagePct > 0) damage(b, b.max * R.bossDamagePct / 100); S.play("ultHit", u); },
     clearShots: () => { if (R.clearShots) clearShots(); },
     player: () => player,
   });
@@ -538,7 +609,7 @@ function solve(firstTry, growth) {
 
 /* ---------- 진행 ---------- */
 function hurt() {
-  if (player.inv > 0) return;
+  if (demo || player.inv > 0) return;
   if (shield > 0) { shield--; player.inv = 1.2; say("보호막이 막아 줬어요"); S.play("shieldBreak"); return; }
   hearts--; player.inv = 1.8; shake = 0.35; FX.shake(0.45); sfx.hit(); hud();
   if (hearts <= 0) gameOver();
@@ -548,11 +619,12 @@ function gameOver() {
   let best = 0; try { best = parseInt(localStorage.getItem(BEST_KEY) || "0", 10) || 0; } catch (_) {}
   const d = Math.floor(dist), record = d > best;
   if (record) { try { localStorage.setItem(BEST_KEY, String(d)); } catch (_) {} }
+  try { if (level > (parseInt(localStorage.getItem(BEST_LV_KEY) || "0", 10) || 0)) localStorage.setItem(BEST_LV_KEY, String(level)); } catch (_) {}   // 시작 화면 목표 칸: 가장 높이 올린 무기 단계
   $("overText").innerHTML = "<b>" + d + "m</b> 날았어요" + (record ? " · 새 기록!" : " · 최고 " + best + "m") +
     "<br>문제 " + solved + "개 풀고, 그중 " + firstTries + "개를 한 번에 맞혔어요.<br>마지막 무기: <b>" + W().name + (W().sideName ? " + " + W().sideName : "") + "</b>" +
     "<br>⭐ 별 <b>+" + runStars + "</b> · 모은 별 " + stars + "개" +
     (unlockedTrails(stars) > unlockedTrails(starsAtStart) ? "<br><b>새 꼬리 ‘" + TRAILS[unlockedTrails(stars) - 1].name + "’가 열렸어요!</b>" : "");
-  paintTrails();
+  paintTrails(); paintGoals();
   $("overTitle").textContent = PILOTS[pilot].name + " 조종사, 잘 날았어요!";
   $("over").hidden = false;
 }
@@ -676,11 +748,11 @@ function damage(e, amount) {
   if (e.hp > 0) return;
   e.dead = true;
   if (e.kind === "boss") { S.play("bossDown"); setTimeout(() => S.shout("bossDown", true), 900); FX.bossDefeat(e.x, e.y, 170); S.play("chainBoom"); }
-  else { sfx.kill(e.r >= 26); if (!FX.ultActive()) addGauge(ULT_RULES.gaugePerKill + (FX.comboNow() >= 10 ? ULT_RULES.gaugeComboBonus : 0)); FX.kill(e.x, e.y, e.r, { color: e.kind === "gift" ? "#ffd95a" : e.kind === "zig" ? "#c3a8ff" : e.kind === "tornado" ? "#9fe8ff" : "#ffb347" }); }
+  else { sfx.kill(e.r >= 26); if (!FX.ultActive()) addGauge(ULT_RULES.gaugePerKill + (FX.comboNow() >= 10 ? ULT_RULES.gaugeComboBonus : 0)); FX.kill(e.x, e.y, e.r, { silentCombo: demo, color: e.kind === "gift" ? "#ffd95a" : e.kind === "zig" ? "#c3a8ff" : e.kind === "tornado" ? "#9fe8ff" : "#ffb347" }); }
   if (e.kind === "gift") burst(e.x, e.y, "#ffd95a", 8);
   if (e.kind === "gift") drops.push({ x: e.x, y: e.y, vy: 70, t: 0 });
   if (e.kind === "hail") for (const k of [-1, 1]) { const bh = Math.max(1, Math.ceil(e.max * 0.15)); enemies.push({ kind: "baby", x: e.x + k * 14, y: e.y, r: 13, hp: bh, max: bh, vy: e.vy * 1.9, vx: k * 70, t: 0 }); }
-  if (e.kind === "boss") { drops.push({ x: e.x, y: e.y, vy: 70, t: 0 }); const name = bossOf(wave).name; if (hearts < tune.hearts) { hearts++; pops.push({ x: e.x, y: e.y - 20, t: -0.5, w: 60, art: "heart" }); say(name + "을 물리쳤어요! 하트 +1", true); } else say(name + "을 물리쳤어요!", true); rain = []; for (const m of enemies) if (m.kind === "tornado") m.hp = 0, m.dead = true; hud(); }
+  if (e.kind === "boss") { drops.push({ x: e.x, y: e.y, vy: 70, t: 0 }); if (bossAct(e.who) === "squirrel") squirrelSpill(e.who, e.x, e.y); const name = bossOf(wave, BOSS_LIST).name; if (hearts < tune.hearts) { hearts++; pops.push({ x: e.x, y: e.y - 20, t: -0.5, w: 60, art: "heart" }); say(name + "을 물리쳤어요! 하트 +1", true); } else say(name + "을 물리쳤어요!", true); rain = []; for (const m of enemies) if (m.kind === "tornado") m.hp = 0, m.dead = true; hud(); }
 }
 // dt: 세계 시간(잠깐 멈춤·느린 화면이면 작아진다). rdt: 실제 시간 — 비행기는 늘 손가락을 그대로 따라간다.
 function update(dt, rdt = dt) {
@@ -690,7 +762,7 @@ function update(dt, rdt = dt) {
   const ky = (keys.ArrowDown || keys.s || keys.S ? 1 : 0) - (keys.ArrowUp || keys.w || keys.W ? 1 : 0);
   if (kx) player.tx = clamp(player.tx + kx * 300 * rdt, 20, FW - 20);
   if (ky) player.ty = clamp(player.ty + ky * 260 * rdt, yr.min, yr.max);
-  player.ty = clamp(player.ty, yr.min, yr.max);
+  if (!demo) player.ty = clamp(player.ty, yr.min, yr.max);
   const dx = player.tx - player.x; player.x += dx * Math.min(1, rdt * 18); player.tilt += (Math.max(-1, Math.min(1, dx / 30)) - player.tilt) * Math.min(1, rdt * 10);
   player.y += (player.ty - player.y) * Math.min(1, rdt * 18);
   if (player.inv > 0) player.inv -= dt;
@@ -732,15 +804,17 @@ function update(dt, rdt = dt) {
     e.t += dt; e.age = (e.age || 0) + dt; e.flash = (e.flash || 0) - dt; if (e.cdOrb > 0) e.cdOrb -= dt; if (e.cdBoom > 0) e.cdBoom -= dt;
     if (e.kind === "boss") {
       if (e.t > BOSS_STAY) { e.y -= 90 * dt; if (e.y < -90) { e.dead = true; rain = []; say("대장이 도망갔어요"); } }
-      else if (e.y < bossHoverY()) e.y += e.vy * dt; else e.x = FW / 2 + Math.sin(e.t * (e.who === "typhoon" ? 1.5 : 0.9)) * (FW / 2 - 70);
+      else if (e.y < bossHoverY()) e.y += e.vy * dt; else e.x = FW / 2 + Math.sin(e.t * (bossAct(e.who) === "typhoon" ? 1.5 : 0.9)) * (FW / 2 - 70);
       e.shot -= dt;
       // 비는 두 줄기만, 천천히. 가운데는 늘 비워 둔다.
       if (e.shot <= 0 && e.y >= bossHoverY() - 1 && e.t <= BOSS_STAY) {
         e.shot = Math.max(1.1, 1.8 - wave * 0.02) / Math.max(0.75, tune.speed);
-        if (e.who === "snowking") { for (const k of [-1, 0, 1]) if (rain.length < 30) rain.push({ x: e.x + k * 44, y: e.y + 44, vx: 0, vy: 92 * tune.speed, art: "flake", sway: rnd(0, 6), bx: e.x + k * 44 }); e.shot *= 1.25; }      // 눈송이는 느리지만 좌우로 흔들린다
-        else if (e.who === "typhoon") { if (enemies.filter(m => m.kind === "tornado").length < 3) { const mh = Math.max(1, Math.round(enemyHp(wave) * tune.hp * 0.6)); enemies.push({ kind: "tornado", x: e.x, y: e.y + 40, r: 19, hp: mh, max: mh, vy: 70 * tune.speed, vx: (Math.random() < 0.5 ? -1 : 1) * 105 * tune.speed, t: 0 }); } e.shot *= 1.5; }   // 회오리 부하를 내보낸다
+        if (bossAct(e.who) === "snowking") { for (const k of [-1, 0, 1]) if (rain.length < 30) rain.push({ x: e.x + k * 44, y: e.y + 44, vx: 0, vy: 92 * tune.speed, art: "flake", sway: rnd(0, 6), bx: e.x + k * 44 }); e.shot *= 1.25; }      // 눈송이는 느리지만 좌우로 흔들린다
+        else if (bossAct(e.who) === "squirrel") { e.wind = SQ.wind; e.shot *= SQ.every; }     // 몸을 흔드는 예고 뒤에 던진다(아래)
+        else if (bossAct(e.who) === "typhoon") { if (enemies.filter(m => m.kind === "tornado").length < 3) { const mh = Math.max(1, Math.round(enemyHp(wave) * tune.hp * 0.6)); enemies.push({ kind: "tornado", x: e.x, y: e.y + 40, r: 19, hp: mh, max: mh, vy: 70 * tune.speed, vx: (Math.random() < 0.5 ? -1 : 1) * 105 * tune.speed, t: 0 }); } e.shot *= 1.5; }   // 회오리 부하를 내보낸다
         else for (const k of [-1, 1]) if (rain.length < 30) rain.push({ x: e.x + k * 34, y: e.y + 40, vx: k * 22, vy: 118 * tune.speed });
       }
+      if (e.wind > 0 && (e.wind -= dt) <= 0 && e.t <= BOSS_STAY) squirrelThrow(e);
     } else {
       e.y += e.vy * dt;
       if (e.kind === "zig") e.x = Math.min(FW - 24, Math.max(24, e.bx + Math.sin(e.t * 2.6) * 70));
@@ -763,7 +837,17 @@ function update(dt, rdt = dt) {
     if (!e.dead && e.kind !== "gift" && (player.x - e.x) ** 2 + (player.y - e.y) ** 2 < (e.r + 12) ** 2) { hurt(); if (e.kind !== "boss") { e.dead = true; FX.kill(e.x, e.y, e.r, { silentCombo: true }); } }
   }
   arms(dt, W());
-  for (const r of rain) { if (r.dead) continue; r.x += r.vx * dt; r.y += r.vy * dt; if (r.art === "flake") r.x = r.bx + Math.sin(r.y * 0.035 + r.sway) * 26; if (r.y > FH + 20) r.dead = true; else if ((player.x - r.x) ** 2 + (player.y - r.y) ** 2 < 15 * 15) { r.dead = true; hurt(); } }
+  for (const r of rain) {
+    if (r.dead) continue;
+    if (r.warn > 0) { if ((r.warn -= dt) <= 0) { acornSplit(r); continue; } }      // 큰 도토리: 멈춰 번쩍이다 갈라진다
+    else { r.x += r.vx * dt; r.y += r.vy * dt; }
+    if (r.art === "flake") r.x = r.bx + Math.sin(r.y * 0.035 + r.sway) * 26;
+    if (r.spin) r.rot += r.spin * dt;
+    if (r.big && r.vy && r.y >= r.burstY) { r.vy = 0; r.warn = SQ.bigWarn; S.play("warn"); }
+    const hr = r.big ? 20 : r.spin ? 13 : 15;
+    if (r.y > FH + 20) r.dead = true; else if ((player.x - r.x) ** 2 + (player.y - r.y) ** 2 < hr * hr) { r.dead = true; hurt(); }
+  }
+  if (spill.length) updSpill(dt);
   // 별: 가까이 오면 빨려 온다
   for (const d of drops) {
     d.t += dt; d.y += d.vy * dt;
@@ -786,7 +870,7 @@ function update(dt, rdt = dt) {
   bullets = bullets.filter(b => !b.dead); enemies = enemies.filter(e => !e.dead); drops = drops.filter(d => !d.dead);
   rain = rain.filter(r => !r.dead); sparks = sparks.filter(s => s.life > 0);
   if (shake > 0) shake -= dt; if (bannerT > 0) bannerT -= dt;
-  $("dist").textContent = Math.floor(dist) + "m";
+  if (!demo) $("dist").textContent = Math.floor(dist) + "m";
 }
 
 /* ---------- 그리기 ---------- */
@@ -846,7 +930,13 @@ function render() {
     const hit = e.flash > 0;
     ctx.globalAlpha = (e.age || 0) < 0.3 ? Math.max(0, (e.age || 0) / 0.3) : 1;   // 막 나온 적은 0.3초 동안 스르르 나타난다(HUD 바로 아래에서 툭 튀어나오지 않게)
     const bob = Math.sin(e.t * 3) * 1.5;                 // 살짝 둥실거린다
-    if (e.kind === "boss") { if (!sprite(e.who || "boss", e.x, e.y + bob, e.who === "boss" || !e.who ? 176 : 160, hit)) puff(e.x, e.y, e.r, hit ? "#ffffff" : "#4a4f7c", "grump"); ctx.fillStyle = "rgba(0,0,0,.4)"; ctx.fillRect(e.x - 50, e.y + 84, 100, 8); ctx.fillStyle = "#ff7a9c"; ctx.fillRect(e.x - 50, e.y + 84, 100 * Math.max(0, e.hp / e.max), 8); }
+    if (e.kind === "boss" && e.wind > 0) {               // 다람쥐 두목 예고: 몸을 흔들고 도토리를 들어 올린다(빛 + 점점 커짐)
+      const k = 1 - e.wind / SQ.wind, wx = e.x + Math.sin(e.wind * 60) * 5, art = bossInfo(e.who).shot || "acorn";
+      if (!sprite(bossArt(e.who), wx, e.y + bob, bossInfo(e.who).size || 160, hit)) puff(wx, e.y, e.r, "#8a5a3a", "grump");
+      ctx.drawImage(FX.glow("#ffd36b"), e.x - 30, e.y + 10, 60, 60); sprite(art, e.x, e.y + 40 - k * 6, 12 + k * 14);
+      ctx.fillStyle = "rgba(0,0,0,.4)"; ctx.fillRect(e.x - 50, e.y + 84, 100, 8); ctx.fillStyle = "#ff7a9c"; ctx.fillRect(e.x - 50, e.y + 84, 100 * Math.max(0, e.hp / e.max), 8);
+    }
+    else if (e.kind === "boss") { if (!sprite(bossArt(e.who || "boss"), e.x, e.y + bob, bossInfo(e.who).size || (e.who === "boss" || !e.who ? 176 : 160), hit)) puff(e.x, e.y, e.r, hit ? "#ffffff" : "#4a4f7c", "grump"); ctx.fillStyle = "rgba(0,0,0,.4)"; ctx.fillRect(e.x - 50, e.y + 84, 100, 8); ctx.fillStyle = "#ff7a9c"; ctx.fillRect(e.x - 50, e.y + 84, 100 * Math.max(0, e.hp / e.max), 8); }
     else if (e.kind === "tornado" && sprite("tornado", e.x + Math.sin(e.t * 14) * 1.5, e.y, 46, hit)) {}
     else if (e.kind === "hail" && sprite("hail", e.x, e.y + bob, 76, hit)) {}
     else if (e.kind === "baby" && sprite("baby", e.x, e.y, 36, hit)) {}
@@ -864,7 +954,7 @@ function render() {
   // 미사일 연기 꼬리
   if (smoke.length) { ctx.fillStyle = "#eef2ff"; for (const s of smoke) { const k = s.t / 0.5; ctx.globalAlpha = (1 - k) * 0.6; ctx.beginPath(); ctx.arc(s.x, s.y, 3.5 + k * 11, 0, 7); ctx.fill(); } ctx.globalAlpha = 1; }
   // 레이저 줄기(미리 그려 둔 띠를 늘여 붙인다) — 바깥 번짐 + 속 줄기 + 줄기를 타고 오르는 빛 고리 + 총구 빛
-  const wNow = mode !== "start" ? W() : null;
+  const wNow = mode !== "start" || demo ? W() : null;
   const hiQ = FX.qualityNow() >= 0.6, topQ = FX.qualityNow() >= 0.9;
   if (wNow && wNow.laser) {
     const L = wNow.laser, tex = BEAM[L.color] || BEAM.pink, flick = 0.82 + Math.sin(clock * 40) * 0.12, hx = beamHex[L.color] || "#ff60aa";
@@ -931,13 +1021,14 @@ function render() {
   } ctx.globalAlpha = 1;
   for (const p of pops) { if (p.art) { const k = (p.t + 0.5) / 0.8; ctx.globalAlpha = Math.min(1, (1 - k) * 2.5); sprite(p.art, p.x, p.y - k * 50, p.w); continue; } const k = p.t / 0.3; ctx.globalAlpha = 1 - k * k; sprite("pop", p.x, p.y, p.w * (0.45 + k * 0.75)); } ctx.globalAlpha = 1;
   FX.drawWorld();                                       // 폭발·불꽃·고리·필살기(적 탄과 비행기 아래)
+  for (const s of spill) { if (s.delay > 0) continue; ctx.globalAlpha = Math.min(1, (s.life - s.t) * 2.5, s.t * 8); ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(s.rot); sprite(s.art, 0, 0, s.w); ctx.restore(); } ctx.globalAlpha = 1;   // 쏟아지는 간식(대장 폭발 위)
   for (const w of warns) {
     if (Math.floor(w.t * 8) % 2) continue;
     ctx.fillStyle = "rgba(255,90,90,.16)"; ctx.fillRect(w.x - 18, 0, 36, FH);
     ctx.fillStyle = "#ff5a5a"; ctx.beginPath(); ctx.arc(w.x, hudBottom + 34, 15, 0, 7); ctx.fill();
     ctx.fillStyle = "#ffffff"; ctx.font = "900 22px 'Pretendard Variable', system-ui, sans-serif"; ctx.textAlign = "center"; ctx.fillText("!", w.x, hudBottom + 42);
   }
-  if (mode !== "start") drawPlane();
+  if (mode !== "start" || demo) drawPlane();
   if (wNow && wNow.orb) {
     ctx.lineCap = "round";
     for (let i = 0; i < wNow.orb.n; i++) {
@@ -951,7 +1042,7 @@ function render() {
   for (const r of rings) { const k = r.t / 0.6; ctx.globalAlpha = 1 - k; ctx.strokeStyle = r.color || "#ffe45c"; ctx.lineWidth = 7 * (1 - k) + 1; ctx.beginPath(); ctx.arc(r.x, r.y, 20 + k * (r.max || 330), 0, 7); ctx.stroke(); } ctx.globalAlpha = 1;
   drawUltStar();
   // 적 탄·별똥별은 맨 위(비행기·모든 아군 효과 위): 빨강 ↔ 짙은 색으로 깜빡이는 위험 고리(아군 효과는 이 모양·색을 쓰지 않는다)
-  for (const r of rain) { FX.drawDanger(r.x, r.y, 14); if (r.art === "flake" ? sprite("flake", r.x, r.y, 22) : sprite("drop", r.x, r.y, 15)) continue; ctx.fillStyle = "#9fe2ff"; ctx.beginPath(); ctx.ellipse(r.x, r.y, 5, 8, 0, 0, 7); ctx.fill(); }
+  for (const r of rain) { FX.drawDanger(r.x, r.y, r.big ? 24 : 14); if (r.spin) { drawAcorn(r); continue; } if (r.art === "flake" ? sprite("flake", r.x, r.y, 22) : sprite("drop", r.x, r.y, 15)) continue; ctx.fillStyle = "#9fe2ff"; ctx.beginPath(); ctx.ellipse(r.x, r.y, 5, 8, 0, 0, 7); ctx.fill(); }
   for (const e of enemies) if (e.kind === "meteor") { FX.drawDanger(e.x, e.y - 6, 24); if (!sprite("meteor", e.x, e.y - 12, 36)) { ctx.fillStyle = "#c9762f"; ctx.beginPath(); ctx.arc(e.x, e.y, 15, 0, 7); ctx.fill(); } }
   FX.drawTop();                                         // 가장자리 빛·번쩍임·조종사 띠·강화 띠·콤보·칭찬 한 칸
   // 짧은 알림(보호막·대장 물리침 등): 화면 가운데 아래쪽(위에서 오는 적을 가리지 않게)
@@ -963,14 +1054,18 @@ let last = performance.now(), lastRdt = 0, lastFrameAt = 0;
 // 한 걸음: 실제 시간 rdt → 효과 엔진이 정한 세계 빠르기(잠깐 멈춤·느린 화면)를 곱해 세계를 움직인다. 비행기는 rdt 로.
 function advance(rdt) {
   lastRdt = rdt;
-  const playing = mode === "play" && !document.hidden;
+  const playing = (mode === "play" || demo) && !document.hidden;
   const ts = playing ? FX.timeScale() : 0, dt = rdt * ts;
-  if (playing) {
+  if (playing && demo) {
+    // 미리보기: 효과음·외침을 문제 화면처럼 막아 둔 채 한 걸음(막아도 통과하는 정답 축하음은 미리보기에서 나올 일이 없다)
+    demoPilot(rdt); S.gate(true);
+    try { update(dt, rdt); } finally { S.gate(false); }
+  } else if (playing) {
     if (!FX.ultActive()) FX.speedLines(level >= 8 ? 0.6 : level >= 5 ? 0.3 : 0);
     FX.edgeGlow(weaponColor(), level >= 8 ? 1 : level >= 7 ? 0.5 : 0);
     update(dt, rdt);
   } else if (mode !== "play") { skyY += rdt * 42; for (const c of clouds) { c.y += c.v * rdt; if (c.y - c.r > FH) { c.y = -c.r; c.x = rnd(0, FW); } } }
-  FX.update(mode === "quiz" ? 0 : dt || (mode === "play" ? 0 : rdt), rdt);
+  FX.update(mode === "quiz" ? 0 : dt || (mode === "play" || demo ? 0 : rdt), rdt);
   paintGauge();
 }
 function frame(now) {
@@ -986,13 +1081,21 @@ function frame(now) {
 let workMs = 0;
 
 /* ---------- 시작 ---------- */
-function begin() { disarm(); if (GameQuiz) { GameQuiz.close(); GameQuiz.setKid(PILOTS[pilot].kid); } quiz = null; $("start").hidden = true; $("over").hidden = true; $("fork").hidden = true; reset(); mode = "play"; last = performance.now(); S.gate(false); S.setPilot(PILOTS[pilot].kid); audio(); }
+function begin() { demo = false; document.body.classList.remove("attract"); disarm(); if (GameQuiz) { GameQuiz.close(); GameQuiz.setKid(PILOTS[pilot].kid); } quiz = null; $("start").hidden = true; $("over").hidden = true; $("fork").hidden = true; reset(); mode = "play"; last = performance.now(); S.gate(false); S.setPilot(PILOTS[pilot].kid); audio(); }
 $("startBtn").addEventListener("click", begin);
 $("againBtn").addEventListener("click", begin);
 const soundBtn = $("sound");
 function paintSound() { soundBtn.setAttribute("aria-pressed", String(soundOn)); soundBtn.textContent = soundOn ? "♪" : "♪×"; }
 soundBtn.addEventListener("click", () => { soundOn = !soundOn; try { localStorage.setItem(SOUND_KEY, soundOn ? "1" : "0"); } catch (_) {} S.setEnabled(soundOn, true); paintSound(); if (soundOn) S.play("tap"); });
 paintSound();
+// 판 이름·돌아가기 링크(edition.js). 가족판 값은 index.html 에 적힌 것과 같다. home 이 null 인 판은 링크를 뺀다.
+if (EDITION.title) document.title = EDITION.title;
+{ const h = document.querySelector("#start h1"); if (h && EDITION.heading) h.textContent = EDITION.heading; }
+for (const a of document.querySelectorAll("a.back, a.home")) {
+  if (!EDITION.home) { a.remove(); continue; }
+  a.setAttribute("href", EDITION.home.href);
+  if (a.classList.contains("back")) a.setAttribute("aria-label", EDITION.home.aria); else a.textContent = EDITION.home.label;
+}
 const pilotBox = $("pilots");
 // 조종사를 고르면 공통 수학 모듈의 "지금 하는 아이"도 같이 바뀐다(문제 수준·기록이 그 아이 것으로).
 function pickPilot(i) {
@@ -1001,17 +1104,24 @@ function pickPilot(i) {
   if (GameQuiz) GameQuiz.setKid(PILOTS[i].kid);
   S.setPilot(PILOTS[i].kid);
   [...pilotBox.children].forEach((c, k) => c.setAttribute("aria-pressed", String(k === i)));
+  paintGo();
 }
+// 큰 출발 버튼에 고른 조종사 이름(지난번 조종사가 미리 골라져 있어 한 번만 누르면 바로 난다)
+function paintGo() { $("startBtn").textContent = PILOTS[pilot].name + " 출발!"; }
 PILOTS.forEach((p, i) => {
   const b = document.createElement("button"); b.type = "button"; b.className = "pilot"; b.setAttribute("aria-pressed", String(i === pilot));
-  b.innerHTML = '<img src="art/' + p.art + '.webp?v=2" alt="" draggable="false"><span>' + p.name + "</span>";
+  b.innerHTML = '<img src="art/' + p.art + '.webp?v=' + EDITION.pilotArtV + '" alt="" draggable="false"><span>' + p.name + "</span>";
   b.addEventListener("click", () => { pickPilot(i); sfx.star(); });
   pilotBox.appendChild(b);
 });
 // 꼬리 꾸미기: 모은 별만큼 열린다.
 function paintTrails() {
   const box = $("trails"), open = unlockedTrails(stars);
-  $("starCount").textContent = "⭐ " + stars;
+  // 꾸미기 칩: 모은 별 / 다음 꼬리까지(막대). 다 열었으면 별 수만.
+  const next = TRAILS[open], prevNeed = TRAILS[open - 1] ? TRAILS[open - 1].need : 0;
+  $("starCount").textContent = "⭐ " + stars + (next ? "/" + next.need : "");
+  $("decoFill").style.width = (next ? Math.round(100 * (stars - prevNeed) / Math.max(1, next.need - prevNeed)) : 100) + "%";
+  $("decoBtn").setAttribute("aria-label", "꼬리 꾸미기, 별 " + stars + "개" + (next ? ", 다음 꼬리 " + next.name + "까지 " + (next.need - stars) + "개" : ", 꼬리를 다 열었어요"));
   box.innerHTML = "";
   TRAILS.forEach((t, i) => {
     const b = document.createElement("button"); b.type = "button"; b.className = "trail"; b.disabled = i >= open; b.setAttribute("aria-pressed", String(i === trail));
@@ -1022,10 +1132,48 @@ function paintTrails() {
   });
 }
 paintTrails();
+// 꾸미기 줄은 작은 칩 뒤에 접어 둔다(시작 화면 글·줄을 줄인다). 누르면 펼친다.
+$("decoBtn").addEventListener("click", () => {
+  const box = $("trails"), open = box.hidden; box.hidden = !open; $("decoBtn").setAttribute("aria-expanded", String(open)); sfx.star();
+  if (demo) measureDemo();
+});
+// 목표 칸: 최고 거리·가장 높이 올린 무기 단계(아직 없으면 숨김). 별·꼬리는 꾸미기 칩이 보여 준다.
+function paintGoals() {
+  let best = 0, lv = 0;
+  try { best = parseInt(localStorage.getItem(BEST_KEY) || "0", 10) || 0; lv = parseInt(localStorage.getItem(BEST_LV_KEY) || "0", 10) || 0; } catch (_) {}
+  const b = $("goalBest"), l = $("goalLv");
+  b.hidden = !best; b.textContent = "🏆 " + best + "m"; b.setAttribute("aria-label", "최고 기록 " + best + "미터");
+  l.hidden = !lv; l.textContent = "⚡ " + Math.min(lv, MAX_WEAPON) + "단계"; l.setAttribute("aria-label", "가장 센 무기 " + Math.min(lv, MAX_WEAPON) + "단계");
+}
+paintGoals(); paintGo();
 S.setPilot(PILOTS[pilot].kid);           // 함성 클립은 첫 터치(소리 깨우기) 뒤에 이 조종사 것만 받는다
-try { const best = parseInt(localStorage.getItem(BEST_KEY) || "0", 10) || 0; if (best) $("bestStart").textContent = "최고 기록 " + best + "m"; } catch (_) {}
-addEventListener("resize", resize);
-resize(); reset();
+
+/* ---------- 미리보기 비행(시작 화면 뒤) ---------- */
+const DEMO_LAST_WAVE = 4;
+function demoWeapon() { level = 4 + (Math.random() < 0.5 ? 1 : 0); path = { main: MAIN_IDS[Math.floor(Math.random() * MAIN_IDS.length)] }; }
+// 비행기는 시작 패널 바로 위에서 난다(패널에 가리지 않게). 화면 크기·패널 높이가 바뀌면 다시 잰다.
+function measureDemo() {
+  let top = vh;
+  try { const r = $("start").getBoundingClientRect(); if (r.height) top = r.top; } catch (_) {}
+  demoY = clamp(top / scale - 78, Math.min(yr.home, hudBottom + 150), yr.home);
+}
+function startDemo() {
+  reset(); demo = true; demoT = 0; demoAimT = 0; demoWeapon(); wave = 1; waveGap = 0.3;
+  measureDemo(); player.y = player.ty = demoY;
+  document.body.classList.add("attract");
+}
+// 자동 조종: 가장 가까운 위쪽 적 밑으로 천천히 옮겨 가며 쏜다. 적이 없으면 좌우로 느리게 흔든다.
+function demoPilot(rdt) {
+  demoT += rdt;
+  if ((demoAimT -= rdt) <= 0) { demoAimT = 0.5; measureDemo(); }
+  let best = null, bd = 1e9;
+  for (const e of enemies) { if (!targetable(e) || e.y > player.y - 40) continue; const d = Math.abs(e.x - player.x) + (player.y - e.y) * 0.3; if (d < bd) { bd = d; best = e; } }
+  const want = best ? best.x : FW / 2 + Math.sin(demoT * 0.7) * FW * 0.3, gap = want - player.tx;
+  player.tx = clamp(player.tx + Math.sign(gap) * Math.min(Math.abs(gap), 170 * rdt), 24, FW - 24);
+  player.ty = demoY + Math.sin(demoT * 1.3) * 10;
+}
+addEventListener("resize", () => { resize(); if (demo) measureDemo(); });
+resize(); startDemo();
 // 미리보기·테스트가 프레임 없이도 한 걸음씩 돌려 볼 수 있게 내놓는다(주소에 ?qa=1 일 때만).
-if (new URLSearchParams(location.search).get("qa") === "1") window.__plane = { begin, step: dt => { advance(dt); render(); }, tick: dt => { advance(dt); }, render, fx: () => Object.assign(FX.qa(), { workMs: +workMs.toFixed(2) }), ult: () => startUlt(false), miniUlt: () => startUlt(true), fxApi: FX, ultRules: ULT_RULES, ultState: () => ({ gauge, star: ultStar ? { x: ultStar.x, y: ultStar.y } : null, queued: ultQueued, at: ultAt, tries: ultTries, earned: ultEarned, on: ultOn() }), fillGauge: v => { gauge = v; }, catchUltStar: () => { if (ultStar) { ultStar.x = player.x; ultStar.y = player.y; ultStar.held = true; } }, kill: e => damage(e, e.hp + 1), get s() { return { mode, level, hearts, wave, dist, solved, enemies: enemies.length, bullets: bullets.length, drops: drops.length, shield, pilot, stars, trail }; }, set: o => { if (o.level) level = o.level; if (o.main || o.side) path = Object.assign({}, path, o.main ? { main: o.main } : {}, o.side ? { side: o.side } : {}); if (o.shield != null) shield = o.shield; if (o.wave) wave = o.wave; if (o.stars != null) { stars = o.stars; paintTrails(); } if (o.trail != null) trail = o.trail; hud(); }, spawn, player: () => player, answer: () => { const q = GameQuiz && GameQuiz.peek(); return q && q.kind === "ask" ? q.answer : null; }, quiz: () => (GameQuiz ? GameQuiz.peek() : null), setPilot: i => pickPilot(i), world: () => ({ enemies, drops, rain }), drop: () => drops.push({ x: player.x, y: player.y - 60, vy: 70, t: 0 }), hurt, path: () => path, yr: () => yr, openQuiz, openFork: kind => openFork(kind, () => resume(weaponLabel(level, path) + "!", true)), guard: () => { if (guard) return { panel: guard.panel.id, armIn: Math.round(guard.armAt - performance.now()) }; const q = GameQuiz && GameQuiz.peek(); return q ? { panel: "quiz", armIn: q.armIn } : null; }, extra: () => ({ smoke: smoke.length, zaps: zaps.length, bombs: bombs.length, booms: booms.length }), sfxLog: () => S.qa.log(), sfx: S.qa, solve: firstTry => { const r = solve(firstTry !== false, null); return r; } };
+if (new URLSearchParams(location.search).get("qa") === "1") window.__plane = { begin, step: dt => { advance(dt); render(); }, tick: dt => { advance(dt); }, render, fx: () => Object.assign(FX.qa(), { workMs: +workMs.toFixed(2) }), ult: () => startUlt(false), miniUlt: () => startUlt(true), fxApi: FX, ultRules: ULT_RULES, ultState: () => ({ gauge, star: ultStar ? { x: ultStar.x, y: ultStar.y } : null, queued: ultQueued, at: ultAt, tries: ultTries, earned: ultEarned, on: ultOn() }), fillGauge: v => { gauge = v; }, catchUltStar: () => { if (ultStar) { ultStar.x = player.x; ultStar.y = player.y; ultStar.held = true; } }, kill: e => damage(e, e.hp + 1), demo: () => ({ on: demo, y: demoY, top: yr.min, wave, level, path, enemies: enemies.length, hearts }), get s() { return { mode, demo, level, hearts, wave, dist, solved, enemies: enemies.length, bullets: bullets.length, drops: drops.length, shield, pilot, stars, trail }; }, set: o => { if (o.level) level = o.level; if (o.main || o.side) path = Object.assign({}, path, o.main ? { main: o.main } : {}, o.side ? { side: o.side } : {}); if (o.shield != null) shield = o.shield; if (o.wave) wave = o.wave; if (o.stars != null) { stars = o.stars; paintTrails(); } if (o.trail != null) trail = o.trail; hud(); }, spawn, player: () => player, answer: () => { const q = GameQuiz && GameQuiz.peek(); return q && q.kind === "ask" ? q.answer : null; }, quiz: () => (GameQuiz ? GameQuiz.peek() : null), setPilot: i => pickPilot(i), world: () => ({ enemies, drops, rain }), drop: () => drops.push({ x: player.x, y: player.y - 60, vy: 70, t: 0 }), hurt, path: () => path, yr: () => yr, openQuiz, openFork: kind => openFork(kind, () => resume(weaponLabel(level, path) + "!", true)), guard: () => { if (guard) return { panel: guard.panel.id, armIn: Math.round(guard.armAt - performance.now()) }; const q = GameQuiz && GameQuiz.peek(); return q ? { panel: "quiz", armIn: q.armIn } : null; }, extra: () => ({ smoke: smoke.length, zaps: zaps.length, bombs: bombs.length, booms: booms.length }), sfxLog: () => S.qa.log(), sfx: S.qa, solve: firstTry => { const r = solve(firstTry !== false, null); return r; } };
 requestAnimationFrame(frame);
