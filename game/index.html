@@ -762,6 +762,7 @@
   .card.dive { --cover:url('dive/cover.webp'); --cover-pos:50% 50%; }
   .card.towers { --cover:url('towers/cover.webp'); --cover-pos:50% 50%; }
   .card.topping { --cover:url('topping/cover.webp'); --cover-pos:50% 60%; }
+  .card.sports { --cover:url('sports/cover.webp'); --cover-pos:50% 45%; }
   .card.stage { --cover: url('assets/covers/cover-kedehun-team-v1.webp'); --cover-pos: 50% 24%; }
   .card.gem { --cover: url('assets/covers/cover-ribbon-room-v1.webp'); --cover-pos: 55% 42%; }
   .card.princess { --cover-size: 78%; --cover-pos: 50% 22%; background: linear-gradient(150deg, #f7b8dc, #7e58c8); }
@@ -1386,7 +1387,7 @@
             <button class="book-open parent-entry" id="bookOpen" type="button" aria-label="Open parent progress report">View Progress Report →</button>
           </div>
           <p class="daily" id="daily"></p>
-          <p class="reading-label" id="studyModeNote">English Storybooks · 5th is Jaei's Math Playground</p>
+          <p class="reading-label" id="studyModeNote">English Storybooks · 5th is Jay's Math Playground</p>
         </div>
       </details>
     </div>
@@ -1418,7 +1419,7 @@
   <a class="math-launch" id="mathPlaygroundLaunch" href="math/?from=hub">
     <span class="math-launch-copy">
       <small>No ticket needed · Counts toward today's study</small>
-      <strong>Jaei's Math Playground</strong>
+      <strong>Jay's Math Playground</strong>
       <span>One problem, one step! Cross the playground with friends.</span>
       <b class="math-launch-cta" id="mathLaunchAction">Choose problems and start →</b>
     </span>
@@ -1438,7 +1439,7 @@
       <span class="meta">
         <span class="name">Heroes</span>
         <span class="tags"><span class="genre">🦸 90s Hero Mission</span></span>
-        <span class="desc">Jaei and Teo as heroes! Rescue, treasure and boss missions.</span>
+        <span class="desc">Jay and Teo as heroes! Rescue, treasure and boss missions.</span>
         <span class="go">Save the Day ▶</span>
       </span>
     </a>
@@ -1500,6 +1501,16 @@
         <span class="tags"><span class="genre">🏀 Number Runner</span></span>
         <span class="desc">Pick the bigger door, then bounce balls at the boss.</span>
         <span class="go">Run ▶</span>
+      </span>
+    </a>
+    <a class="card sports" href="sports/">
+      <span class="padlock">🔒</span>
+      <span class="badge">🏅</span>
+      <span class="meta">
+        <span class="name">Sports Day</span>
+        <span class="tags"><span class="genre">🏅 Team Sports</span></span>
+        <span class="desc">Blue vs White team games on one iPad.</span>
+        <span class="go">Play ▶</span>
       </span>
     </a>
     <a class="card onecard" href="onecard/">
@@ -1635,7 +1646,7 @@
 
   <a class="party-launch" id="partyAdventure" href="math/party/">
     <div><small>Invitation for you · Play now, no ticket needed</small><h2>Let's Throw a Family Birthday Party!</h2><p>Lights, cookies, and balloons!<br>Let's party together with the family.</p><strong>Create my party →</strong></div>
-    <img src="math/assets/jaei-family-v4.webp" width="1024" height="683" alt="Dad, Teo, Jaei and Mom waiting at the birthday party" loading="lazy">
+    <img src="math/assets/jaei-family-v4.webp" width="1024" height="683" alt="Dad, Teo, Jay and Mom waiting at the birthday party" loading="lazy">
   </a>
 
   <footer>
@@ -2435,7 +2446,7 @@
       f.textContent = entry.text;
       var tname = document.createElement('span');
       tname.className = 'tname';
-      tname.textContent = '🛝 Jaei\'s Math Playground · Level ' + entry.level;
+      tname.textContent = '🛝 Jay\'s Math Playground · Level ' + entry.level;
       var meta = document.createElement('span');
       meta.className = 'meta2';
       meta.textContent = 'Correct ' + entry.problem.answer + ' · Next review ' + entry.due;
@@ -2950,7 +2961,7 @@
     function paintQuiet() {
       var on = quietToday();
       var note = document.getElementById('studyModeNote');
-      if (note) note.textContent = on ? '🤫 Quiet Mode · Math only' : "English Storybooks · 5th is Jaei's Math Playground";
+      if (note) note.textContent = on ? '🤫 Quiet Mode · Math only' : "English Storybooks · 5th is Jay's Math Playground";
       quietBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
       quietBtn.title = on ? 'Quiet Mode on · Math only today (tap again to turn off)' : 'Quiet Mode (Travel)';
     }
