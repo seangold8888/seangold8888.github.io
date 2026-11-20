@@ -24,17 +24,62 @@ const FONT = '"Jua","Apple SD Gothic Neo","Malgun Gothic",sans-serif';
 const BIG = '"Black Han Sans","Jua","Apple SD Gothic Neo",sans-serif';
 if (document.fonts) { document.fonts.load('40px "Jua"'); document.fonts.load('40px "Black Han Sans"'); }
 // 게임식 글자: 그림자 + 굵은 남색 테두리 + 위아래 그라데이션 + 위쪽 하이라이트
+// 게임 글씨(그림자+남색 테두리+그라데이션). 굵은 둥근 테두리는 처음 그릴 때 매우 느려서(한 번에 수십 ms),
+// 글씨마다 정해진 크기 칸(bucket)으로 한 번 그려 두고 늘려 붙인다. 크기가 매 프레임 바뀌어도 다시 그리지 않음.
+(function warmFonts() {
+  try {
+    const me = document.currentScript && document.currentScript.src; if (!me || !document.fonts) return;
+    fetch(me).then(r => r.text()).then(t => {
+      const ko = [...new Set((t + ED.cast.map(c => c.name).join("")).match(/[가-힣]/g) || [])].join("") + "0123456789!?×÷+−";
+      document.fonts.load(`40px ${BIG}`, ko); document.fonts.load(`40px ${FONT}`, ko);
+    }).catch(() => {});
+  } catch (e) {}
+})();
+const GT_BUCKETS = [20, 28, 36, 48, 64, 84, 110, 140];
+const gtCache = new Map();
+function gtSprite(str, bucket, font, c1, c2, c3, st) {
+  const key = str + "|" + bucket + "|" + font + "|" + c1 + c2 + c3 + st;
+  let e = gtCache.get(key);
+  if (e) { gtCache.delete(key); gtCache.set(key, e); return e; }
+  const R = Math.min(2, Math.max(1, scale * dpr)), size = bucket * R, mc = document.createElement("canvas").getContext("2d");
+  mc.font = `${size}px ${font}`; const tw = Math.ceil(mc.measureText(str).width), pad = Math.ceil(size * 0.3);
+  const mk2 = () => { const c = document.createElement("canvas"); c.width = Math.max(1, tw + pad * 2); c.height = Math.ceil(size * 1.7); const x = c.getContext("2d"); x.font = mc.font; x.textAlign = "center"; x.textBaseline = "middle"; x.lineJoin = "round"; return [c, x]; };
+  const [c, x] = mk2(), [f, y] = mk2(), cx = c.width / 2, cy = c.height / 2;
+  // 테두리 = 글자를 둥글게 여러 번 찍기(굵은 strokeText 보다 훨씬 빠름)
+  const ring = (r, col, dy) => { x.fillStyle = col; const n = Math.max(12, Math.min(32, Math.round(r * 0.9))); for (let i = 0; i < n; i++) { const a = i / n * 6.2832; x.fillText(str, cx + Math.cos(a) * r, cy + dy + Math.sin(a) * r); } x.fillText(str, cx, cy + dy); };
+  x.globalAlpha = 0.45; ring(Math.max(1.5, size * 0.13), "#000", size * 0.09); x.globalAlpha = 1;
+  ring(Math.max(1.5, size * 0.11), st, 0);
+  const g = y.createLinearGradient(0, cy - size * 0.5, 0, cy + size * 0.45); g.addColorStop(0, c1); g.addColorStop(0.55, c2); g.addColorStop(1, c3);
+  y.fillStyle = g; y.fillText(str, cx, cy);
+  y.globalAlpha = 0.35; y.lineWidth = Math.max(1, size * 0.04); y.strokeStyle = "#fff"; y.strokeText(str, cx, cy - size * 0.03);
+  e = { c, f, tw: tw / R, w: c.width / R, h: c.height / R };
+  gtCache.set(key, e);
+  if (gtCache.size > 400) gtCache.delete(gtCache.keys().next().value);
+  return e;
+}
+// 자주 쓰는 숫자·기호·짧은 말은 한가할 때 미리 만들어 둔다(게임 중 첫 등장 때 멈칫 없게)
+function warmGlyphs() {
+  const jobs = [], bs = [48, 64, 84];
+  const toks = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "+", "−", "×", "÷"];
+  const ST = [[BIG, "#ffffff", "#ffe066", "#ffe066", "#2a1050"], [BIG, "#ffffff", "#c8f7ff", "#5ad1ff", "#2a1050"], [BIG, "#ffffff", "#ffd1dc", "#ff6b8b", "#2a1050"], [BIG, "#fff8d6", "#ffd23f", "#ff9f1c", "#2a1050"],
+    [FONT, "#ffffff", "#ffe066", "#ffb703", "#2a1050"], [FONT, "#ffffff", "#ffffff", "#cfe8ff", "#2a1050"]];
+  for (const st of ST) for (const b of (st[0] === BIG ? bs : [36, 48])) for (const t of toks) if (st[0] === BIG || /^[0-9]$/.test(t)) jobs.push([t, b, st]);
+  const step = () => { const t0 = performance.now(); while (jobs.length && performance.now() - t0 < 6) { const [t, b, st] = jobs.shift(); gtSprite(t, b, ...st); } if (jobs.length) setTimeout(step, 40); };
+  step();
+}
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => setTimeout(warmGlyphs, 300)); else setTimeout(warmGlyphs, 1500);
 function gtext(str, x, y, size, o = {}) {
+  str = String(str); if (!str || size < 1) return;
   const c1 = o.c1 || "#ffffff", c2 = o.c2 || "#ffe066", st = o.stroke || "#2a1050", font = o.font || BIG;
-  ctx.save();
-  ctx.font = `${Math.round(size)}px ${font}`; ctx.textAlign = o.align || "center"; ctx.textBaseline = "middle"; ctx.lineJoin = "round";
-  if (o.max) { const w = ctx.measureText(str).width; if (w > o.max) { ctx.translate(x, y); ctx.scale(o.max / w, o.max / w); ctx.translate(-x, -y); } }
-  ctx.lineWidth = Math.max(3, size * 0.26); ctx.strokeStyle = "rgba(0,0,0,.45)"; ctx.strokeText(str, x, y + size * 0.09);
-  ctx.lineWidth = Math.max(3, size * 0.22); ctx.strokeStyle = st; ctx.strokeText(str, x, y);
-  const g = ctx.createLinearGradient(0, y - size * 0.5, 0, y + size * 0.45); g.addColorStop(0, c1); g.addColorStop(0.55, c2); g.addColorStop(1, o.c3 || c2);
-  ctx.fillStyle = g; ctx.fillText(str, x, y);
-  ctx.globalAlpha *= 0.35; ctx.lineWidth = Math.max(1, size * 0.04); ctx.strokeStyle = "#fff"; ctx.strokeText(str, x, y - size * 0.03);
-  ctx.restore();
+  const bucket = GT_BUCKETS.find(b => b >= size) || GT_BUCKETS[GT_BUCKETS.length - 1];
+  // 숫자는 한 자씩(점수·콤보·마리 수가 바뀌어도 새로 그리지 않게), 글자 덩어리는 통째로
+  const parts = (str.match(/[0-9]|[^0-9]+/g) || []).map(t => gtSprite(t, bucket, font, c1, c2, o.c3 || c2, st));
+  const tw = parts.reduce((a, e) => a + e.tw, 0);
+  let k = size / bucket; if (o.max && tw * k > o.max) k = o.max / tw;
+  const al = o.align || "center";
+  let cx = al === "left" ? x : al === "right" ? x - tw * k : x - tw * k / 2;
+  const xs = parts.map(e => { const v = cx - (e.w - e.tw) / 2 * k; cx += e.tw * k; return v; });
+  for (const layer of ["c", "f"]) parts.forEach((e, i) => ctx.drawImage(e[layer], xs[i], y - e.h * k / 2, e.w * k, e.h * k));
 }
 // 게임 UI 판: 남색 그라데이션 + 금테 + 위쪽 광택
 function panel(x, y, w, h, r, o = {}) {
@@ -258,10 +303,15 @@ for (const st of STAGES) if (st.emo) FB[st.id] = { foe: st.emo.slice(0, 3).map(e
 function foeImg(k) { const st = STG(); return st.id === "table" ? VEG[k] : (ART[`foe_${st.id}_${k + 1}`] || FB[st.id].foe[k]); }
 function goodImg(k) { const st = STG(); return st.id === "table" ? DISH[k] : (ART[`good_${st.id}`] || FB[st.id].good); }
 function goodList() { const st = STG(); return st.id === "table" ? DISH : [goodImg(0)]; }
-const TREATS = [1, 2, 3, 4].map(i => { const im = new Image(); im.src = `art/treat${i}.webp`; return im; });
+const TREATS = [1, 2, 3, 4].map(i => { const im = new Image(); im.onload = () => im.decode && im.decode().catch(() => {}); im.src = `art/treat${i}.webp`; return im; });
 // 그록 그림이 있으면 바꿔 끼움 (없으면 위의 손그림 유지)
 const ART = {};
-function loadArt(name, cb) { const im = new Image(); im.onload = () => { ART[name] = im; cb && cb(im); }; im.src = `art/g/${name}.webp`; }
+// 그림은 미리 풀어 둔 뒤(decode, 다른 스레드) 쓴다 — 처음 그릴 때 화면이 멈추지 않게
+function loadArt(name, cb) {
+  const im = new Image(), ok = () => { if (ART[name]) return; ART[name] = im; cb && cb(im); };
+  im.onload = () => { if (im.decode) { im.decode().then(ok, ok); setTimeout(ok, 800); } else ok(); };   // decode 가 늦으면 0.8초 뒤엔 그냥 씀
+  im.src = `art/g/${name}.webp`;
+}
 ED.cast.forEach((c, b) => [1, 2].forEach(f => loadArt(`back_${c.id}_${f}`, im => { DOG[b][f - 1] = im; })));
 // 구조·필살기 그림: 앱판은 도우, 허브판은 아이마다
 (ED.id === "hub" ? ED.cast.flatMap(c => [`${c.id}_run_front`, `${c.id}_cheer`]) : [ED.heroFront, ED.heroUlt]).forEach(n => loadArt(n));
@@ -1367,6 +1417,9 @@ function frame(now) {
 }
 requestAnimationFrame(frame);
 if (Q.get("age")) start(+Q.get("age")); else toTitle();
+// 점검용 구간 시간 재기(?qa=1 일 때만)
+if (QA) { window.__PROF = {}; const W_ = (n, f) => function (...a) { const t = performance.now(); try { return f.apply(this, a); } finally { const d = performance.now() - t; const o = __PROF[n] || (__PROF[n] = { n: 0, max: 0, sum: 0, arg: "" }); o.n++; o.sum += d; if (d > o.max) { o.max = d; o.arg = String(a[0]).slice(0, 30); } } };
+  render = W_("render", render); drawParts = W_("drawParts", drawParts); drawHUD = W_("drawHUD", drawHUD); drawDogs = W_("drawDogs", drawDogs); drawGate = W_("drawGate", drawGate); drawTable = W_("drawTable", drawTable); drawBG = W_("drawBG", drawBG); drawSwarm = W_("drawSwarm", drawSwarm); drawBoss = W_("drawBoss", drawBoss); drawRescue = W_("drawRescue", drawRescue); drawTutorial = W_("drawTutorial", drawTutorial); gtSprite = W_("gtSprite", gtSprite); drawFit = W_("drawFit", drawFit); panel = W_("panel", panel); update = W_("update", update); }
 if (QA) window.__TP_API = {
   get music() { return { ac: AC ? AC.state : "none", name: trackName, loopEnd: trackSrc ? trackSrc.loopEnd : null, tracks: Object.keys(TRACK) }; },
   start, get S() { return S; }, fireUlt, STAGES, ups, coins, unlocked, renderMap, genPair, genTarget, applyOp, rescue,

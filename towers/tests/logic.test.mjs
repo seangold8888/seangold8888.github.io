@@ -91,9 +91,9 @@ test("길 함수: 점 목록 → 길이 매개변수로 위치(끝은 붙는다)
   assert.ok(Math.abs(L.coverage(p, 50, 0, 20) - 40) <= 8);
 });
 
-test("맵 3개: 받침은 길 밖·맵 안, 모든 받침에 길이 닿고, 장식은 길을 막지 않는다", () => {
-  assert.deepEqual(L.MAPS.map(m => m.pads.length), [8, 9, 10]);
-  assert.deepEqual(L.MAPS.map(m => m.need), [0, 1, 3]);
+test("맵 6개: 받침은 길 밖·맵 안, 모든 받침에 길이 닿고, 장식은 길을 막지 않는다", () => {
+  assert.deepEqual(L.MAPS.map(m => m.pads.length), [8, 9, 10, 10, 10, 10]);
+  assert.deepEqual(L.MAPS.map(m => m.need), [0, 1, 2, 3, 4, 5]);
   assert.equal(L.mapOf("snow").hp, 1.3);
   for (const m of L.MAPS) {
     const { paths, fly } = L.mapPaths(m);
@@ -144,7 +144,7 @@ test("카드 뽑기: 중복 없음, 강화 카드 하나는 꼭, 태오 2장+추
 
 test("저장: 깨진 값은 기본값으로, 판 결과로 별·맵·배지·도감이 늘어난다", () => {
   for (const bad of [null, "", "{", "[]", 42, { wins: -3, solved: "x", maps: 5 }]) assert.deepEqual(L.normalizeSave(bad), L.defaultSave());
-  const s = L.normalizeSave({ wins: 2.7, solved: 12, map: "snow", maps: { field: { stars: 9, wins: 2 } }, monsters: { slime: -1, imp: 4 }, best: { taeo: { wave: 99 } }, junk: 1 });
+  const s = L.normalizeSave({ wins: 2.7, solved: 12, map: "desert", maps: { field: { stars: 9, wins: 2 } }, monsters: { slime: -1, imp: 4 }, best: { taeo: { wave: 99 } }, junk: 1 });
   assert.equal(s.wins, 2); assert.equal(s.map, "field", "아직 안 열린 맵"); assert.equal(s.maps.field.stars, 3); assert.equal(s.monsters.slime, 0); assert.equal(s.monsters.imp, 4); assert.equal(s.best.taeo.wave, L.WAVES); assert.ok(!("junk" in s));
   assert.equal(L.starsFor("win", 10, 10), 3); assert.equal(L.starsFor("win", 5, 10), 2); assert.equal(L.starsFor("win", 1, 10), 1); assert.equal(L.starsFor("lose", 9, 10), 0);
   const run = { kid: "jaei", map: "field", result: "win", wave: 8, cake: 9, cakeMax: 10, solved: 12, dex: { slime: 30, bat: 2 }, towersUsed: ["fire", "light"], branchesUsed: ["fire:a"] };
@@ -154,7 +154,7 @@ test("저장: 깨진 값은 기본값으로, 판 결과로 별·맵·배지·도
   assert.equal(r.save.best.jaei.wave, 8); assert.equal(r.save.best.jaei.wins, 1);
   const r2 = L.applyRun(r.save, Object.assign({}, run, { result: "lose", cake: 0, wave: 4 }));
   assert.equal(r2.save.maps.field.stars, 3, "별은 최고 기록 유지"); assert.equal(r2.save.wins, 1); assert.deepEqual(r2.newBranches, []);
-  assert.deepEqual(L.openMaps(3), ["field", "forest", "snow"]);
+  assert.deepEqual(L.openMaps(2), ["field", "forest", "snow"]);
   assert.equal(L.SAVE_KEY, "towers_save_v1"); assert.equal(L.WIZ_KEY, "towers_wizard_v1"); assert.equal(L.SOUND_KEY, "towers_sound_v1");
 });
 

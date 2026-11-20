@@ -2,8 +2,8 @@
 // ? 부엉이 문제를 맞히면 대마법이 터지고 탑 강화 카드를 고른다.
 // 규칙 표는 logic.js, 한 걸음은 engine.js, 여기서는 그리기·입력·화면·저장.
 // 그림은 art/ 의 그림 파일을 쓰고, 못 읽으면 캔버스 도형으로 대신 그린다. shadowBlur 와 매 프레임 그라데이션은 쓰지 않는다.
-import * as L from "./logic.js?v=1";
-import * as E from "./engine.js?v=3";
+import * as L from "./logic.js?v=2";
+import * as E from "./engine.js?v=4";
 import { createParticles, createSynth, P_GLOW, P_STREAK, P_SPIN, P_RING, P_GEM } from "./juice.js?v=2";
 
 const $ = id => document.getElementById(id);
@@ -28,7 +28,9 @@ let mapId = save.map || "field";
 const ART = {}, WHITE = {}, TINT = {};   // TINT: 상태 색(불꽃 주황·얼음 하늘·번개 노랑) 실루엣
 const MON_ART = L.MONSTER_IDS;
 const ART_NAMES = ["wiz0", "wiz1", "wiz2", "wiz3", ...L.TOWER_IDS.map(k => "tower_" + k), ...L.TOWER_IDS.map(k => "tower_" + k + "_big"), ...MON_ART,
-  "castle", "cake", "crystal", "owl", "pad", "bubble", "tree", "mushroom", "rock", "snowpine", "ground"];
+  "castle", "cake", "crystal", "owl", "pad", "bubble", "tree", "mushroom", "rock", "snowpine", "ground",
+  "cactus", "palm", "lolli", "candycane", "lavarock", "flowerbush",
+  ...L.MAP_IDS.map(id => "ground_" + id), ...L.MAP_IDS.map(id => "path_" + id)];
 function whiten(im, col = "#fff") {
   // 실루엣은 작게(최대 128px) 만든다 — 덧칠용이라 크게 둘 필요가 없고 메모리를 아낀다
   const sc = Math.min(1, 128 / Math.max(im.width, im.height)), c = document.createElement("canvas"); c.width = Math.max(1, Math.round(im.width * sc)); c.height = Math.max(1, Math.round(im.height * sc));
@@ -281,6 +283,7 @@ const SX = (x, y) => (ROT ? L.MAP_H - y : x), SY = (x, y) => (ROT ? x : y);
 const SCR_W = () => (ROT ? L.MAP_H : L.MAP_W), SCR_H = () => (ROT ? L.MAP_W : L.MAP_H);
 // 캔버스에 월드 좌표 그대로 선·원을 그릴 때의 변환(돌려도 모양이 같은 것만: 길·사거리 원·빛줄기·번개·탄)
 function setWorldTf(k, ox, oy) { if (ROT) ctx.setTransform(0, k, -k, 0, ox + L.MAP_H * k, oy); else ctx.setTransform(k, 0, 0, k, ox, oy); }
+function safeTop() { try { const d = document.createElement("div"); d.style.cssText = "position:fixed;top:0;height:env(safe-area-inset-top);visibility:hidden"; document.body.appendChild(d); const h = d.offsetHeight; d.remove(); return h || 0; } catch (e) { return 0; } }
 function resize() {
   const vv = window.visualViewport;
   vw = Math.max(1, Math.round(vv && vv.width ? vv.width : innerWidth)); vh = Math.max(1, Math.round(vv && vv.height ? vv.height : innerHeight));
@@ -289,7 +292,9 @@ function resize() {
   canvas.style.width = vw + "px"; canvas.style.height = vh + "px";
   portrait = ROT = vh > vw * 1.1;
   const S = ROT ? SAFE_R : SAFE_L, sw = S.x1 - S.x0, sh = S.y1 - S.y0;
-  mapS = Math.min(vw / sw, vh / sh); mapX = vw / 2 - (S.x0 + S.x1) / 2 * mapS; mapY = vh / 2 - (S.y0 + S.y1) / 2 * mapS;
+  // 위 HUD 줄(케이크·수정·파도)과 세로 화면 아래 버튼 줄만큼 비우고 그 사이에 맵을 맞춘다(첫 탑·성이 칩에 가리지 않게)
+  const small = Math.min(vw, vh) < 500, padT = (small ? 60 : 72) + safeTop(), padB = ROT ? (small ? 66 : 80) : 0, ah = Math.max(200, vh - padT - padB);
+  mapS = Math.min(vw / sw, ah / sh); mapX = vw / 2 - (S.x0 + S.x1) / 2 * mapS; mapY = padT + ah / 2 - (S.y0 + S.y1) / 2 * mapS;
   // 그림 배율: 세로(회전) 1.35, 폰 가로처럼 낮은 화면 1.4, 그 밖 가로 1.25
   VS = ROT ? 1.35 : vh < 500 ? 1.4 : 1.25;
   PHONE = Math.min(vw, vh) < 500;
@@ -316,6 +321,12 @@ const toScreen = (x, y) => ({ x: mapX + SX(x, y) * mapS, y: mapY + SY(x, y) * ma
 /* ---------- 미리 그려 두기: 배경(바탕 + 길 + 장식 + 받침 + 성) ---------- */
 let bgCanvas = null, bgKey = "";
 function decorShape(x, kind, cx, cy, w) {
+  if (kind === "cactus") { x.fillStyle = "#4caf50"; x.beginPath(); x.roundRect(cx - w * 0.12, cy - w * 0.45, w * 0.24, w * 0.75, w * 0.12); x.fill(); x.beginPath(); x.roundRect(cx - w * 0.36, cy - w * 0.2, w * 0.14, w * 0.3, w * 0.07); x.roundRect(cx + w * 0.22, cy - w * 0.3, w * 0.14, w * 0.3, w * 0.07); x.fill(); x.fillStyle = "#ff7ab0"; x.beginPath(); x.arc(cx, cy - w * 0.47, w * 0.07, 0, TAU); x.fill(); return; }
+  if (kind === "palm") { x.strokeStyle = "#a0703e"; x.lineWidth = w * 0.1; x.beginPath(); x.moveTo(cx, cy + w * 0.3); x.quadraticCurveTo(cx + w * 0.15, cy, cx, cy - w * 0.35); x.stroke(); x.fillStyle = "#3fae54"; for (let i = 0; i < 5; i++) { const a = -Math.PI / 2 + (i - 2) * 0.6; x.beginPath(); x.ellipse(cx + Math.cos(a) * w * 0.25, cy - w * 0.35 + Math.sin(a) * w * 0.12, w * 0.25, w * 0.08, a, 0, TAU); x.fill(); } return; }
+  if (kind === "lolli") { x.fillStyle = "#fff"; x.fillRect(cx - w * 0.04, cy - w * 0.1, w * 0.08, w * 0.42); const cols = ["#ff6b9a", "#ffd23c", "#5fd894", "#5fc8ff"]; for (let i = 4; i > 0; i--) { x.fillStyle = cols[i % 4]; x.beginPath(); x.arc(cx, cy - w * 0.3, w * 0.07 * i, 0, TAU); x.fill(); } return; }
+  if (kind === "candycane") { x.lineCap = "round"; x.lineWidth = w * 0.14; x.strokeStyle = "#fff"; x.beginPath(); x.moveTo(cx, cy + w * 0.35); x.lineTo(cx, cy - w * 0.2); x.arc(cx + w * 0.14, cy - w * 0.2, w * 0.14, Math.PI, 0); x.stroke(); x.strokeStyle = "#e8333c"; x.setLineDash([w * 0.08, w * 0.1]); x.stroke(); x.setLineDash([]); return; }
+  if (kind === "lavarock") { x.fillStyle = "#3a2c2a"; x.beginPath(); x.ellipse(cx, cy, w * 0.45, w * 0.32, 0, 0, TAU); x.fill(); x.strokeStyle = "#ff8a2a"; x.lineWidth = 3; x.beginPath(); x.moveTo(cx - w * 0.2, cy - w * 0.05); x.lineTo(cx, cy + w * 0.05); x.lineTo(cx + w * 0.18, cy - w * 0.1); x.stroke(); return; }
+  if (kind === "flowerbush") { x.fillStyle = "#4f9a4a"; x.beginPath(); x.arc(cx, cy, w * 0.35, 0, TAU); x.fill(); for (let i = 0; i < 6; i++) { x.fillStyle = i % 2 ? "#ff8fc0" : "#ffd23c"; x.beginPath(); x.arc(cx + Math.cos(i) * w * 0.2, cy + Math.sin(i * 1.7) * w * 0.18, w * 0.06, 0, TAU); x.fill(); } return; }
   if (kind === "rock") { x.fillStyle = "#9a97a8"; x.beginPath(); x.ellipse(cx, cy, w * 0.45, w * 0.3, 0, 0, TAU); x.fill(); x.fillStyle = "rgba(255,255,255,.35)"; x.beginPath(); x.ellipse(cx - w * 0.12, cy - w * 0.1, w * 0.15, w * 0.08, 0, 0, TAU); x.fill(); return; }
   if (kind === "mushroom") { x.fillStyle = "#f4ead8"; x.fillRect(cx - w * 0.12, cy - w * 0.1, w * 0.24, w * 0.4); x.fillStyle = "#e8505a"; x.beginPath(); x.ellipse(cx, cy - w * 0.12, w * 0.45, w * 0.3, 0, Math.PI, 0); x.fill(); x.fillStyle = "#fff"; for (const [a, b] of [[-0.2, -0.25], [0.15, -0.3], [0.05, -0.18]]) { x.beginPath(); x.arc(cx + a * w, cy + b * w, w * 0.05, 0, TAU); x.fill(); } return; }
   const snow = kind === "snowpine";
@@ -344,19 +355,23 @@ function buildBg() {
   bgCanvas = canvasOf(W0 * k, H0 * k, (x) => {
     x.setTransform(k, 0, 0, k, 0, 0);
     // 바탕 타일(맵별 색조)
-    const src = ART.ground || GRASS, tile = 320;
+    const gArt = ART["ground_" + map.id] || ART.ground, src = gArt || GRASS, tile = 320;
     const pat = x.createPattern(canvasOf(tile * k, tile * k * (src.height / src.width), (y, w, h) => y.drawImage(src, 0, 0, w, h)), "repeat");
     x.save(); x.setTransform(1, 0, 0, 1, 0, 0); x.fillStyle = pat; x.fillRect(0, 0, W0 * k, H0 * k); x.restore();
-    if (!ART.ground) { x.fillStyle = map.ground; x.globalAlpha = 0.45; x.fillRect(0, 0, W0, H0); x.globalAlpha = 1; }
-    if (map.tint) { x.fillStyle = map.tint; x.fillRect(0, 0, W0, H0); }
+    if (!gArt) { x.fillStyle = map.ground; x.globalAlpha = 0.45; x.fillRect(0, 0, W0, H0); x.globalAlpha = 1; }
+    if (map.tint && !ART["ground_" + map.id]) { x.fillStyle = map.tint; x.fillRect(0, 0, W0, H0); }
+    if (map.artTint && ART["ground_" + map.id]) { x.fillStyle = map.artTint; x.fillRect(0, 0, W0, H0); }
     // 길·다리·동굴은 월드 좌표 그대로(세로면 돌린 변환으로)
     if (ROT) x.setTransform(0, k, -k, 0, L.MAP_H * k, 0);
     // 길: 가장자리 → 흙길 → 가운데 밝은 줄
     x.lineJoin = "round"; x.lineCap = "round";
     const stroke = (pts, wdt, col) => { x.strokeStyle = col; x.lineWidth = wdt; x.beginPath(); pts.forEach(([px, py], i) => (i ? x.lineTo(px, py) : x.moveTo(px, py))); x.stroke(); };
-    for (const p of map.paths) stroke(p, 58, map.edge);
-    for (const p of map.paths) stroke(p, 46, map.dirt);
-    for (const p of map.paths) { x.setLineDash([6, 18]); stroke(p, 4, "rgba(255,255,255,.35)"); x.setLineDash([]); }
+    x.save(); x.shadowColor = "rgba(0,0,0,.35)"; x.shadowBlur = 14 * k; x.shadowOffsetY = 4 * k;
+    for (const p of map.paths) stroke(p, 60, map.edge);
+    x.restore();
+    const pArt = ART["path_" + map.id];
+    if (pArt) { const pat = x.createPattern(canvasOf(160, 160 * pArt.height / pArt.width, (y, w, h) => y.drawImage(pArt, 0, 0, w, h)), "repeat"); pat.setTransform && pat.setTransform(new DOMMatrix().scale(0.6)); for (const p of map.paths) stroke(p, 48, pat); }
+    else { for (const p of map.paths) stroke(p, 48, map.dirt); for (const p of map.paths) { x.setLineDash([6, 18]); stroke(p, 4, "rgba(255,255,255,.35)"); x.setLineDash([]); } }
     // 눈 다리: 첫 구간에 다리 널빤지
     if (map.id === "snow") {
       const [a, b] = [map.paths[0][0], map.paths[0][1]];
@@ -1512,14 +1527,15 @@ function update(dt) {
 // 맵 바깥(화면 가장자리)도 같은 잔디로 이어 칠한다(무늬는 맵 원점에 맞춰 이음매 없이). 패턴은 크기가 바뀔 때만 다시 만든다.
 let groundPat = null, groundKey = "";
 function fillGround(ox, oy, k) {
-  const map = world ? world.map : L.mapOf(mapId), key = map.id + ":" + k.toFixed(3) + (ART.ground ? "a" : "g");
+  const map = world ? world.map : L.mapOf(mapId), gArt = ART["ground_" + map.id] || ART.ground, key = map.id + ":" + k.toFixed(3) + (gArt ? "a" : "g") + (ART["ground_" + map.id] ? "m" : "");
   if (!groundPat || groundKey !== key) {
-    const src = ART.ground || GRASS, tile = 320;
+    const src = gArt || GRASS, tile = 320;
     groundPat = ctx.createPattern(canvasOf(tile * k, tile * k * (src.height / src.width), (y, w, h) => y.drawImage(src, 0, 0, w, h)), "repeat"); groundKey = key;
   }
   ctx.save(); ctx.translate(ox, oy); ctx.fillStyle = groundPat; ctx.fillRect(-ox, -oy, canvas.width, canvas.height);
-  if (!ART.ground) { ctx.globalAlpha = 0.45; ctx.fillStyle = map.ground; ctx.fillRect(-ox, -oy, canvas.width, canvas.height); ctx.globalAlpha = 1; }
-  if (map.tint) { ctx.fillStyle = map.tint; ctx.fillRect(-ox, -oy, canvas.width, canvas.height); }
+  if (!gArt) { ctx.globalAlpha = 0.45; ctx.fillStyle = map.ground; ctx.fillRect(-ox, -oy, canvas.width, canvas.height); ctx.globalAlpha = 1; }
+  if (map.tint && !ART["ground_" + map.id]) { ctx.fillStyle = map.tint; ctx.fillRect(-ox, -oy, canvas.width, canvas.height); }
+  if (map.artTint && ART["ground_" + map.id]) { ctx.fillStyle = map.artTint; ctx.fillRect(-ox, -oy, canvas.width, canvas.height); }
   ctx.restore();
 }
 /* ---------- 그리기 ---------- */

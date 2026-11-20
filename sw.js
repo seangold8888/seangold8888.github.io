@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v272";
+const CACHE_VERSION = "v273";
 const CACHE_PREFIX = "adventure-box-";
 // 큰 그림과 소리(삼국지 배경 200MB+, 저장한 이야기 오디오)는 배포 번호와 따로 둔다.
 // 배포마다 이 캐시를 버리면 기기가 236MB를 다시 받고, "여행 전에 이야기 저장"도 지워졌다.
@@ -1360,15 +1360,15 @@ const OPTIONAL_SHELL = [
   "./dive/art/fx_mega.webp?v=1",
   "./towers/",
   "./topping/",
-  "./topping/game.js?v=2",
-  "./topping/edition-hub.js?v=2",
+  "./topping/game.js?v=3",
+  "./topping/edition-hub.js?v=3",
   "./topping/cover.webp",
   "./towers/index.html",
   "./towers/style.css?v=6",
   "./towers/cover.webp",
-  "./towers/src/main.js?v=9",
-  "./towers/src/logic.js?v=1",
-  "./towers/src/engine.js?v=3",
+  "./towers/src/main.js?v=10",
+  "./towers/src/logic.js?v=2",
+  "./towers/src/engine.js?v=4",
   "./towers/src/juice.js?v=2",
   "./towers/art/bat.webp?v=1",
   "./towers/art/boss.webp?v=1",
@@ -1408,6 +1408,24 @@ const OPTIONAL_SHELL = [
   "./towers/art/tower_wind.webp?v=1",
   "./towers/art/tower_wind_big.webp?v=1",
   "./towers/art/tree.webp?v=1",
+  "./towers/art/cactus.webp?v=1",
+  "./towers/art/candycane.webp?v=1",
+  "./towers/art/flowerbush.webp?v=1",
+  "./towers/art/lavarock.webp?v=1",
+  "./towers/art/lolli.webp?v=1",
+  "./towers/art/palm.webp?v=1",
+  "./towers/art/ground_field.webp?v=1",
+  "./towers/art/ground_forest.webp?v=1",
+  "./towers/art/ground_snow.webp?v=1",
+  "./towers/art/ground_desert.webp?v=1",
+  "./towers/art/ground_candy.webp?v=1",
+  "./towers/art/ground_lava.webp?v=1",
+  "./towers/art/path_field.webp?v=1",
+  "./towers/art/path_forest.webp?v=1",
+  "./towers/art/path_snow.webp?v=1",
+  "./towers/art/path_desert.webp?v=1",
+  "./towers/art/path_candy.webp?v=1",
+  "./towers/art/path_lava.webp?v=1",
   "./towers/art/troll.webp?v=1",
   "./towers/art/wiz0.webp?v=1",
   "./towers/art/wiz1.webp?v=1",

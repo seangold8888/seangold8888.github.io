@@ -1,6 +1,6 @@
 // Spell Towers — 한 걸음(화면·소리와 무관). main.js 가 그리고, Node 시뮬레이션이 그대로 돌려 본다.
 // 게임 시간은 stepWorld 에 넘긴 dt 를 더한 값(w.t)뿐이다. 문제·카드·일시정지·탑 고르기 동안에는 부르지 않는다.
-import * as L from "./logic.js?v=1";
+import * as L from "./logic.js?v=2";
 
 const TAU = Math.PI * 2;
 const d2 = (ax, ay, bx, by) => (ax - bx) * (ax - bx) + (ay - by) * (ay - by);
