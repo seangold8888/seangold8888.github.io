@@ -186,7 +186,9 @@ function reset() {
   tune = tuning(tuneOf(pilot)); runStars = 0; starsAtStart = stars;
   level = 1; hearts = tune.hearts; dist = 0; wave = 0; queue = []; waveGap = 1.2; fireT = 0;
   path = {}; missileT = 0; boltT = 0; bombT = 1; boomT = 0.5; ultAt = -1; ultMini = false; gauge = 0; ultStar = null; ultQueued = false; ultTries = 0; ultEarned = 0; FX.reset();
-  solved = 0; firstTries = 0; shield = 0; shake = 0; banner = ""; bannerT = 0; halfStep = 0;
+  solved = 0; firstTries = 0; shield = 0; shake = 0; banner = ""; bannerT = 0; halfStep = 0; quizCool = 0;
+  // 첫 별 보장: 출발 3~4초에 비행기 바로 앞으로 내려온다(별을 못 만나 수십 초 동안 문제·보상이 없던 문제)
+  if (!demo) drops.push({ x: FW / 2, y: yr.home - 300, vy: 70, t: 0, first: true });
   hud();
 }
 function hud() {
@@ -355,7 +357,7 @@ function drawAcorn(r) {
 
 /* ---------- 문제 ---------- */
 // 문제 화면은 GameQuiz.ask 가 띄운다(위쪽 패널, 0.7초 잠금, 새로 누른 터치만, 숫자키 1~3, 틀리면 그 보기만 꺼짐).
-let quiz = null;
+let quiz = null, quizCool = 0;   // quizCool: 문제를 막 끝낸 뒤 잠깐(선물 별 2개를 연달아 먹어도 문제가 두 번 뜨지 않게)
 function openQuiz() {
   mode = "quiz"; grab = null; S.gate(true);
   const nextFork = forkAt(level + 1);
@@ -423,6 +425,7 @@ function openFork(kind, onDone) {
 // 문제·갈림길이 끝나고 다시 날기 시작한다.
 function resume(msg, leveled, fork) {
   if (fork && mode === "quiz") { openFork(fork.kind, () => resume(fork.levelMsg(), true)); return; }
+  quizCool = 4;
   player.inv = Math.max(player.inv, 1.2);
   // 무기 강화 순간: 잠깐 멈춤 + 비행기 번쩍 + 퍼지는 고리(가까운 적 탄을 지운다) + 새 무기 이름 띠
   if (leveled) { FX.levelUp(player.x, player.y, msg, weaponColor()); S.play("levelBlast", level); clearShots(player.x, player.y, 150); }
@@ -853,7 +856,11 @@ function update(dt, rdt = dt) {
     d.t += dt; d.y += d.vy * dt;
     const dd = Math.hypot(player.x - d.x, player.y - d.y);
     if (dd < tune.magnet) { d.x += (player.x - d.x) * Math.min(1, dt * 6); d.y += (player.y - d.y) * Math.min(1, dt * 6); }
-    if (dd < 26) { d.dead = true; sfx.star(); if (mode === "play") openQuiz(); }
+    if (dd < 26) {
+      d.dead = true; sfx.star();
+      if (mode === "play" && quizCool <= 0) openQuiz();
+      else if (mode === "play") { addGauge(15); pops.push({ x: d.x, y: d.y - 20, t: -0.5, w: 46, art: "star" }); }   // 연달아 먹은 별 = 필살기 게이지
+    }
     else if (d.y > FH + 30) d.dead = true;
   }
   for (const s of sparks) { s.life -= dt; s.x += s.vx * dt; s.y += s.vy * dt; if (!s.shape) s.vy += 260 * dt; }
@@ -1056,6 +1063,7 @@ function advance(rdt) {
   lastRdt = rdt;
   const playing = (mode === "play" || demo) && !document.hidden;
   const ts = playing ? FX.timeScale() : 0, dt = rdt * ts;
+  if (playing && quizCool > 0) quizCool -= dt;
   if (playing && demo) {
     // 미리보기: 효과음·외침을 문제 화면처럼 막아 둔 채 한 걸음(막아도 통과하는 정답 축하음은 미리보기에서 나올 일이 없다)
     demoPilot(rdt); S.gate(true);

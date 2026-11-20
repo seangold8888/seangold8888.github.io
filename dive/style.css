@@ -154,7 +154,9 @@ html, body { height: 100%; margin: 0; overflow: hidden; background: #0d3b66; col
 
 /* 가로 화면: 오른쪽에 붙인다 */
 @media (min-aspect-ratio: 23/20) {
-  #start { left: auto; right: calc(16px + env(safe-area-inset-right)); top: 50%; bottom: auto; transform: translateY(-50%); width: min(44vw, 420px); }
+  #start { left: auto; right: calc(4vw + env(safe-area-inset-right)); top: 50%; bottom: auto; transform: translateY(-50%); width: min(46vw, 580px); font-size: 1.15em; }
+  #start .pilot .face { max-width: 84px; }
+  #start .go { min-height: 76px; font-size: 32px; }
 }
 /* 키가 낮은 화면(폰 가로 등): 더 촘촘하게 */
 @media (max-height: 560px) {

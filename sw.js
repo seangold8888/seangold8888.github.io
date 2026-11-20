@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v275";
+const CACHE_VERSION = "v276";
 const CACHE_PREFIX = "adventure-box-";
 // 큰 그림과 소리(삼국지 배경 200MB+, 저장한 이야기 오디오)는 배포 번호와 따로 둔다.
 // 배포마다 이 캐시를 버리면 기기가 236MB를 다시 받고, "여행 전에 이야기 저장"도 지워졌다.
@@ -1277,7 +1277,7 @@ const OPTIONAL_SHELL = [
   "./plane/index.html",
   "./plane/style.css?v=11",
   "./plane/cover.webp",
-  "./plane/src/main.js?v=11",
+  "./plane/src/main.js?v=12",
   "./plane/src/sfx.js?v=5",
   "./plane/src/fx.js?v=3",
   "./plane/src/logic.js?v=6",
@@ -1317,11 +1317,11 @@ const OPTIONAL_SHELL = [
   "./plane/art/heart.webp?v=1",
   "./dive/",
   "./dive/index.html",
-  "./dive/style.css?v=5",
+  "./dive/style.css?v=6",
   "./dive/cover.webp",
-  "./dive/src/main.js?v=9",
+  "./dive/src/main.js?v=10",
   "./dive/src/logic.js?v=4",
-  "./dive/src/engine.js?v=4",
+  "./dive/src/engine.js?v=5",
   "./dive/src/sfx.js?v=5",
   "./dive/src/fx.js?v=4",
   "./dive/art/sub0.webp?v=1",
@@ -1360,8 +1360,8 @@ const OPTIONAL_SHELL = [
   "./dive/art/fx_mega.webp?v=1",
   "./towers/",
   "./topping/",
-  "./topping/game.js?v=4",
-  "./topping/edition-hub.js?v=4",
+  "./topping/game.js?v=5",
+  "./topping/edition-hub.js?v=5",
   "./topping/cover.webp",
   "./sports/",
   "./sports/index.html",
@@ -1449,7 +1449,7 @@ const OPTIONAL_SHELL = [
   "./sports/art/taeo/cheer.json?v=1",
   "./sports/art/taeo/cheer.webp?v=1",
   "./towers/index.html",
-  "./towers/style.css?v=6",
+  "./towers/style.css?v=7",
   "./towers/cover.webp",
   "./towers/src/main.js?v=11",
   "./towers/src/logic.js?v=3",
