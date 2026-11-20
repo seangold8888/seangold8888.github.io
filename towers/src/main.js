@@ -2,8 +2,8 @@
 // ? 부엉이 문제를 맞히면 대마법이 터지고 탑 강화 카드를 고른다.
 // 규칙 표는 logic.js, 한 걸음은 engine.js, 여기서는 그리기·입력·화면·저장.
 // 그림은 art/ 의 그림 파일을 쓰고, 못 읽으면 캔버스 도형으로 대신 그린다. shadowBlur 와 매 프레임 그라데이션은 쓰지 않는다.
-import * as L from "./logic.js?v=2";
-import * as E from "./engine.js?v=4";
+import * as L from "./logic.js?v=3";
+import * as E from "./engine.js?v=5";
 import { createParticles, createSynth, P_GLOW, P_STREAK, P_SPIN, P_RING, P_GEM } from "./juice.js?v=2";
 
 const $ = id => document.getElementById(id);
@@ -656,6 +656,8 @@ function openBuild(padIdx) {
   const rec = E.recommendKind(world, padIdx);
   const quiz = !!GameQuiz && E.buildNeedsQuiz(world);
   const first = !!guide && !world.towers.length && !!rec;   // 판의 첫 탑: 추천 하나만 크게(한 번 누르면 문제)
+  // 판의 첫 탑은 고르는 창 없이 바로 문제(받침 누르기 → 문제 → 탑, 3단계를 1단계로)
+  if (first && quiz && E.canBuild(world, padIdx, rec)) { sfx.tap(); openBuildQuiz(padIdx, rec); return; }
   $("build").classList.toggle("first", first);
   $("buildKicker").textContent = first ? (quiz ? "반짝이는 탑을 눌러요 · 문제를 맞히면 탑이 생겨요" : "반짝이는 탑을 눌러요!") : world.freeTower ? "마법 배지: 첫 탑은 공짜!" : "수정 " + world.gems + "개 있어요" + (quiz ? " · 고르면 문제가 나와요" : "");
   const row = $("buildRow"); row.innerHTML = "";

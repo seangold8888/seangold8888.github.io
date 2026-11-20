@@ -4,7 +4,7 @@
 export const MAP_W = 960, MAP_H = 600;
 export const WAVES = 8, PREP_TIME = 5, OWL_LIFE = 12, OWL_Y = 100, OWL_HIT_R = 56;
 export const MAX_MONSTERS = 50, MAX_SHOTS = 120;
-export const START_GEMS = 120, WAVE_GEMS = 20, MAX_LV = 5, GEM_MAX_LV = 2;
+export const START_GEMS = 150, WAVE_GEMS = 20, MAX_LV = 5, GEM_MAX_LV = 2;
 export const BLAST_GEMS = 30, SMALL_GEMS = 20, SMALL_MIN = 6, BOSS_BLAST = 0.2, BOSS_SMALL = 0.08;
 // 고쳐 맞힘 작은 마법: 길 위 괴물 절반(최소 6마리, 그보다 적으면 전부)
 export const smallCount = alive => Math.min(alive, Math.max(SMALL_MIN, Math.ceil(alive / 2)));
@@ -202,7 +202,7 @@ export const MAPS = [
     castle: { x: 892, y: 196 },
     pads: [[110, 395], [300, 300], [540, 330], [540, 540], [770, 320], [300, 95], [245, 548], [760, 105]],
     decor: [["tree", 40, 120, 70], ["tree", 92, 190, 60], ["rock", 360, 540, 46], ["tree", 680, 560, 66], ["rock", 880, 400, 50], ["tree", 860, 540, 72], ["tree", 560, 80, 56], ["rock", 605, 370, 40], ["tree", 40, 560, 60], ["rock", 470, 70, 38], ["flowerbush", 530, 235, 50], ["flowerbush", 50, 300, 46], ["flowerbush", 900, 300, 44]] },
-  { id: "forest", name: "버섯 숲길", need: 1, hp: 1, bal: 0.95, span: 1.55, tint: "rgba(40,90,60,.18)", ground: "#6fae5c", dirt: "#d8b47e", edge: "#8f6a3c",
+  { id: "forest", name: "버섯 숲길", need: 1, hp: 1.21, bal: 0.95, span: 1.55, tint: "rgba(40,90,60,.18)", ground: "#6fae5c", dirt: "#d8b47e", edge: "#8f6a3c",
     paths: [
       [[-40, 300], [140, 300], [140, 120], [560, 120], [560, 300], [860, 300]],
       [[-40, 300], [140, 300], [140, 480], [560, 480], [560, 300], [860, 300]],

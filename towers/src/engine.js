@@ -1,6 +1,6 @@
 // Spell Towers — 한 걸음(화면·소리와 무관). main.js 가 그리고, Node 시뮬레이션이 그대로 돌려 본다.
 // 게임 시간은 stepWorld 에 넘긴 dt 를 더한 값(w.t)뿐이다. 문제·카드·일시정지·탑 고르기 동안에는 부르지 않는다.
-import * as L from "./logic.js?v=2";
+import * as L from "./logic.js?v=3";
 
 const TAU = Math.PI * 2;
 const d2 = (ax, ay, bx, by) => (ax - bx) * (ax - bx) + (ay - by) * (ay - by);
@@ -99,6 +99,7 @@ export function recommendKind(w, padIdx) {
   let best = null, bv = -1;
   for (const kind of L.TOWER_IDS) {
     if (!canBuild(w, padIdx, kind)) continue;
+    if (!w.towers.length && !w.freeTower && L.TOWERS[kind].cost > 80) continue;   // 판의 첫 탑: 싼 탑만 권해 수정이 70 이상 남게(바로 둘째 탑)
     const s = L.towerStats(kind, 1), c = L.padCoverage(w.map, padIdx, s.range);
     let v = L.towerDps(kind, 1) * (c.ground + (s.air ? c.air * 0.6 : 0)) / Math.max(30, buildCost(w, kind));
     if (!owned.has(kind)) v *= 1.35;

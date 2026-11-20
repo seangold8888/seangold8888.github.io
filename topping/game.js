@@ -9,7 +9,7 @@ const wrap = document.getElementById("wrap");
 let scale = 1, dpr = 1;
 function fit() {
   scale = Math.min(innerWidth / W, innerHeight / H);
-  dpr = Math.min(2, window.devicePixelRatio || 1);
+  dpr = Math.min(1.5, window.devicePixelRatio || 1);   // 2배면 폰에서 칠할 픽셀이 너무 많아 버벅임
   wrap.style.width = W * scale + "px"; wrap.style.height = H * scale + "px"; wrap.style.setProperty("--s", scale);
   cv.width = Math.round(W * scale * dpr); cv.height = Math.round(H * scale * dpr);
 }
@@ -144,6 +144,10 @@ const SFX = {
   boom() { if (smp("boom", 0.9)) return; noise(0.9, 0.5, 260, "lowpass"); tone(90, 0.8, "sine", 0.5, 30); },
   ding(i = 0) { tone(1320 * Math.pow(2, i / 12), 0.3, "sine", 0.12); tone(1980 * Math.pow(2, i / 12), 0.25, "sine", 0.05); },
   whoosh() { noise(0.35, 0.18, 900, "bandpass"); },
+  // 탱탱볼: 일레븐랩스 효과음(없으면 합성음). 음높이를 조금씩 바꿔 매번 다르게
+  boing(k = 0) { if (smp(k % 2 ? "ball2" : "ball1", 0.55, rand(0.9, 1.25))) return; const f = 230 + (k % 5) * 30; tone(f, 0.22, "sine", 0.16, f * 2.6); tone(f * 1.5, 0.12, "triangle", 0.05, f * 3.2, 0.01); },
+  ballHit(k = 0) { if (smp("ballhit", 0.6, rand(0.92, 1.18))) return; this.boing(k); },
+  ballBig() { if (smp("ballbig", 0.8, rand(0.95, 1.05))) return; this.boing(3); },
   fanfare() { if (smp("fanfare", 0.6)) return; [0, 4, 7, 12, 7, 12, 16].forEach((s, i) => tone(523 * Math.pow(2, s / 12), 0.22, "square", 0.07, 0, i * 0.11)); },
   slam(i) { tone(140 + i * 40, 0.3, "square", 0.15, 60); noise(0.25, 0.3, 500, "lowpass"); tone(880 * Math.pow(2, i * 4 / 12), 0.4, "sine", 0.1, 0, 0.05); },
 };
@@ -155,7 +159,7 @@ const LEAD = [7, -1, 9, 7, 4, -1, 2, 4, 7, -1, 12, 9, 7, -1, 4, -1];
 const TRACK = { run: null, boss: null }, LP = { f: null };
 let trackSrc = null, trackName = "";
 function loadTracks() {
-  for (const n of ["bark", "shatter", "boom", "fanfare", "pop"]) fetch(`audio/${n}.mp3`).then(r => r.ok ? r.arrayBuffer() : Promise.reject()).then(b => AC.decodeAudioData(b)).then(buf => { SMP[n] = buf; }).catch(() => {});
+  for (const n of ["bark", "shatter", "boom", "fanfare", "pop", "ball1", "ball2", "ballhit", "ballbig"]) fetch(`audio/${n}.mp3`).then(r => r.ok ? r.arrayBuffer() : Promise.reject()).then(b => AC.decodeAudioData(b)).then(buf => { SMP[n] = buf; }).catch(() => {});
   for (const n of ["run", "boss"]) fetch(`audio/${n}.mp3`).then(r => r.ok ? r.arrayBuffer() : Promise.reject()).then(b => AC.decodeAudioData(b)).then(buf => { TRACK[n] = buf; }).catch(() => {});
 }
 // music_v1 곡은 끝 1~3초가 페이드아웃·무음 → 소리가 끝나는 지점에서 되감음 (audio/RECORD.md)
@@ -303,7 +307,9 @@ for (const st of STAGES) if (st.emo) FB[st.id] = { foe: st.emo.slice(0, 3).map(e
 function foeImg(k) { const st = STG(); return st.id === "table" ? VEG[k] : (ART[`foe_${st.id}_${k + 1}`] || FB[st.id].foe[k]); }
 function goodImg(k) { const st = STG(); return st.id === "table" ? DISH[k] : (ART[`good_${st.id}`] || FB[st.id].good); }
 function goodList() { const st = STG(); return st.id === "table" ? DISH : [goodImg(0)]; }
-const TREATS = [1, 2, 3, 4].map(i => { const im = new Image(); im.onload = () => im.decode && im.decode().catch(() => {}); im.src = `art/treat${i}.webp`; return im; });
+// 간식: 앱판=강아지 간식 그림, 허브판=아이 간식(이모지 그림) — 허브판에 뼈다귀·고기가 나오지 않게
+const TREATS = ED.treatEmoji ? ED.treatEmoji.map(e => { const c = emoCanvas(e, 96); c.complete = true; c.naturalWidth = 96; return c; })
+  : [1, 2, 3, 4].map(i => { const im = new Image(); im.onload = () => im.decode && im.decode().catch(() => {}); im.src = `art/treat${i}.webp`; return im; });
 // 그록 그림이 있으면 바꿔 끼움 (없으면 위의 손그림 유지)
 const ART = {};
 // 그림은 미리 풀어 둔 뒤(decode, 다른 스레드) 쓴다 — 처음 그릴 때 화면이 멈추지 않게
@@ -317,6 +323,8 @@ ED.cast.forEach((c, b) => [1, 2].forEach(f => loadArt(`back_${c.id}_${f}`, im =>
 (ED.id === "hub" ? ED.cast.flatMap(c => [`${c.id}_run_front`, `${c.id}_cheer`]) : [ED.heroFront, ED.heroUlt]).forEach(n => loadArt(n));
 ["broccoli", "carrot", "eggplant"].forEach((n, k) => loadArt(`veg_${n}`, im => { VEG[k] = im; }));
 ["broccoli_cheeseball", "carrot_cake", "eggplant_pizza"].forEach((n, k) => loadArt(`dish_${n}`, im => { DISH[k] = im; }));
+const BALL_NAMES = ["ball_red", "ball_blue", "ball_green", "ball_yellow", "ball_purple", "ball_pink", "ball_glitter"];
+[...BALL_NAMES, "ball_big"].forEach(n => loadArt(n));
 for (const st of STAGES) if (st.emo) [`bg_${st.id}`, `foe_${st.id}_1`, `foe_${st.id}_2`, `foe_${st.id}_3`, `good_${st.id}`, `boss_${st.id}`, `boss_${st.id}_hit`, ...st.props.map(p => p[0])].forEach(n => loadArt(n));
 ["boss_pot", "boss_pot_hit", "boss_pizza", "fx_bark_wave", "bg_room", "gate_frame", "prop_candle", "prop_juice", "prop_plate", "prop_salt", "cloth_tile"].forEach(n => loadArt(n));
 function drawFit(im, cx, by, box) { const r = im.width / im.height, w = r >= 1 ? box : box * r, h = r >= 1 ? box / r : box; ctx.drawImage(im, cx - w / 2, by - h, w, h); }
@@ -647,7 +655,7 @@ function rescuer() {
 function rescue() {
   setCount(AGE[S.age].start, S.cx, 300);
   const r = rescuer(); S.rescueImg = r.front;
-  banner(`${josa(r.name, "이가", "가")} 친구들을 데리고 왔어!`, "#93c5fd"); SFX.fanfare(); S.rescueT = 1.6; SFX.bark(0); SFX.bark(0.15);
+  banner(`${josa(r.name, "이가", "가")} 친구들을 데리고 왔어!`, "#93c5fd"); SFX.fanfare(); S.rescueT = 1.6; if (ED.id !== "hub") { SFX.bark(0); SFX.bark(0.15); }
 }
 
 // ---------- 갱신 ----------
@@ -686,7 +694,8 @@ function update(dt) {
   // 입자
   for (const p of S.parts) {
     p.vy += p.g * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.vr * dt; p.life -= dt;
-    if (p.bounce && p.y > H - 60 && p.vy > 0) { p.vy *= -0.45; p.y = H - 60; p.bounce--; }
+    if (p.sqT > 0) p.sqT -= dt;
+    if (p.bounce && p.y > H - 60 && p.vy > 0) { p.vy *= p.kind === "ball" ? -0.62 : -0.45; p.y = H - 60; p.bounce--; if (p.kind === "ball") { p.sqT = 0.18; if (Math.random() < 0.25) SFX.boing(ri(0, 9)); } }
   }
   S.parts = S.parts.filter(p => p.life > 0 && p.y < H + 80);
   for (const t of S.texts) { t.y += t.vy * dt; t.life -= dt; }
@@ -708,11 +717,11 @@ function updateRun(dt) {
     if (e.type === "swarm" && z <= 70 && !S.battle) { S.battle = { e, tick: 0 }; banner("돌격!", "#fb7185"); SFX.whoosh(); }
     if (e.type === "boss" && z <= BOSS_Z) { startBoss(e); return; }
   }
-  if (think) f = S.demo ? 0.7 : AGE[S.age].slow; // 생각 시간: 5살 약 4초, 6살 3.5초, 7살+ 3초
+  if (think) f = S.demo ? 0.7 : Math.min(0.8, AGE[S.age].slow + 0.15); // 생각 시간: 5살 약 4초, 6살 3.5초, 7살+ 3초
   music.duck = think ? 0.55 : 1;
-  if (S.battle) { f = 0.12; battleTick(dt); }
+  if (S.battle) { f = 0.3; battleTick(dt); }
   if (S.stormT > 0 && !think && !S.battle) f *= 1.35; // 폭풍: 생각 구간 밖에서만 빨라짐
-  S.speed += (V * f - S.speed) * Math.min(1, dt * 4);
+  S.speed += (V * f - S.speed) * Math.min(1, dt * 2.2);
   S.d += S.speed * dt;
 }
 // 문은 '다 맞힌다'고 예측한 수로 미리 만든다. 틀려서 실제 수가 달라지면, 아직 먼(생각 구간 전) 문을 실제 수로 다시 만든다.
@@ -787,26 +796,38 @@ function bossPos() { const b = S.boss; return proj(b.x + Math.sin(S.t * 1.3) * 0
 function updateBoss(dt) {
   const b = S.boss; b.t += dt; b.hitT = Math.max(0, b.hitT - dt);
   music.duck = 1;
-  if (b.intro > 0) { b.intro -= dt; if (b.intro <= 0) { b.phase = 1; banner("피하면서 멍멍!", "#fde047"); } return; }
-  // 멍멍 음표 공격
+  if (b.intro > 0) { b.intro -= dt; if (b.intro <= 0) { b.phase = 1; banner(ED.id === "hub" ? "피하면서 공격!" : "피하면서 멍멍!", "#fde047"); } return; }
+  // 무리 일제 사격: 0.3초마다 4~7발 빛 구슬
   if (b.phase === 1 || b.phase === 2) {
     b.noteT -= dt;
     if (b.noteT <= 0 && S.dogs.length) {
-      b.noteT = 0.11;
-      const d = pick(S.dogs), p = proj(S.cx + d.ox, d.oz);
-      S.notes.push({ x: p.x, y: p.y - 30, t: 0, T: 0.55, sx: p.x, sy: p.y - 30 });
-      if (Math.random() < 0.12) SFX.bark();
+      b.noteT = 0.3;
+      const n = Math.min(7, 3 + Math.floor(S.count / 25));
+      for (let i = 0; i < n; i++) { const d = pick(S.dogs), p = proj(S.cx + d.ox, d.oz); S.notes.push({ x: p.x, y: p.y - 30, t: -i * 0.04, T: 0.5, sx: p.x, sy: p.y - 30, hue: [48, 330, 190, 120, 270, 20][Math.floor(Math.random() * 6)], ox: rand(-70, 70), bi: ri(0, BALL_NAMES.length - 1) }); }
+      if (ED.id !== "hub" && Math.random() < 0.3) SFX.bark(); else SFX.whoosh && Math.random() < 0.4 && SFX.whoosh();
     }
   }
   for (const n of S.notes) {
-    n.t += dt; const bp = bossPos(), k = n.t / n.T;
-    n.x = n.sx + (bp.x - n.sx) * k; n.y = n.sy + (bp.y - 120 - n.sy) * k - Math.sin(k * Math.PI) * 80;
+    n.t += dt; if (n.t < 0) continue; const bp = bossPos(), k = Math.min(1, n.t / n.T);
+    n.px = n.x; n.py = n.y;
+    n.x = n.sx + (bp.x + n.ox - n.sx) * k; n.y = n.sy + (bp.y - 150 - n.sy) * k - Math.sin(k * Math.PI) * 170;
     if (k >= 1) {
       n.dead = true;
-      if (b.phase === 2) burst(n.x, n.y, 3, ["#a5f3fc", "#fff"], 2, 0.3);
-      else { b.hp = Math.max(b.phase === 1 ? 0.72 : 0, b.hp - 0.004 * (1 + S.count / 80) * (1 + 0.2 * (S.up.ult || 0))); b.hitT = 0.08; burst(n.x, n.y, 4, ["#fde047", "#fb923c", "#fff"], 3, 0.35); }
+      if (b.phase === 2) { burst(n.x, n.y, 6, ["#a5f3fc", "#fff"], 3, 0.3); b.shieldHit = 0.12; if (S.parts.length < 860) S.parts.push({ kind: "ball", x: n.x, y: n.y, vx: rand(-300, 300), vy: rand(-500, -300), g: 1500, life: 1.1, max: 1.1, r: 15, hue: n.hue, rot: 0, vr: rand(-12, 12), bounce: 2, bi: n.bi, sqT: 0.25 }); if (Math.random() < 0.4) SFX.boing(ri(0, 9)); }
+      else {
+        const dmg = 0.004 * (1 + S.count / 80) * (1 + 0.2 * (S.up.ult || 0));
+        b.hp = Math.max(b.phase === 1 ? 0.72 : 0, b.hp - dmg); b.hitT = 0.18; b.hits = (b.hits || 0) + 1; b.hitPop = 1;
+        burst(n.x, n.y, 8, [`hsl(${n.hue},100%,70%)`, "#fff", "#fde047"], 6, 0.35, "star");
+        ring(n.x, n.y, "#ffffff", 60, 0.2, 5);
+        if (S.parts.length < 860) S.parts.push({ kind: "ball", x: n.x, y: n.y, vx: (n.x - bp.x >= 0 ? 1 : -1) * rand(180, 380), vy: rand(-620, -420), g: 1500, life: 1.3, max: 1.3, r: 15, hue: n.hue, rot: 0, vr: rand(-12, 12), bounce: 2, bi: n.bi, sqT: 0.25 });
+        if (b.hits % 2 === 0) SFX.ballHit(b.hits);
+        S.score += 1;
+        if (b.hits % 6 === 0) { shake(0.12); SFX.pop && SFX.pop(b.hits % 25); text(`-${Math.max(1, Math.round(dmg * 6 * 1000))}`, n.x + rand(-30, 30), n.y + 10, 36, "#fff7ad", 0.55, -110); }
+      }
     }
   }
+  if (b.hitPop > 0) b.hitPop = Math.max(0, b.hitPop - dt * 4);
+  if (b.shieldHit > 0) b.shieldHit -= dt;
   S.notes = S.notes.filter(n => !n.dead);
   if (b.phase === 1) {
     b.throwT -= dt;
@@ -881,7 +902,7 @@ function fireUlt() {
   const b = S.boss; if (b.ultT >= 0) return;
   b.ultT = 0; S.ultBtn = false; S.jump = 1;
   for (const d of S.dogs) d.vy = rand(5, 8);
-  for (let i = 0; i < 8; i++) SFX.bark(i * 0.07);
+  if (ED.id !== "hub") for (let i = 0; i < 8; i++) SFX.bark(i * 0.07); else { SFX.mult(); SFX.fanfare(); }
   banner(ED.id === "hub" ? `${castOf(S.kid).name} 필살기!` : ED.ultName, "#93c5fd");
   if (ED.id === "hub") { // 아이마다 자기 스킬 외침(허브 공용 KidVoices)
     try { const v = castOf(S.kid).voice; if (v && window.KidVoices) KidVoices.shout(v, AC ? { ctx: AC, out: master, force: true, reason: "ult" } : { force: true, reason: "ult" }); } catch (e) {}
@@ -915,7 +936,7 @@ const $ = id => document.getElementById(id);
 const STICKERS = [
   ...ED.cast.map(c => [c.id, c.sticker, c.name]),
   ["cheeseball", "art/g/dish_broccoli_cheeseball.webp", "브로콜리 치즈볼"], ["carrotcake", "art/g/dish_carrot_cake.webp", "당근 케이크"], ["eggpizza", "art/g/dish_eggplant_pizza.webp", "가지 피자"],
-  ["t1", "art/treat1.webp", "간식 1"], ["t2", "art/treat2.webp", "간식 2"], ["t3", "art/treat3.webp", "간식 3"], ["t4", "art/treat4.webp", "간식 4"],
+  ...[0, 1, 2, 3].map(i => ["t" + (i + 1), ED.treatEmoji ? TREATS[i].toDataURL() : `art/treat${i + 1}.webp`, "간식 " + (i + 1)]),
   ["pizza", "art/g/boss_pizza.webp", "대왕 피자"], ["pot", "art/g/boss_pot.webp", "편식 대마왕"],
   ["g_bath", "art/g/good_bath.webp", "반짝 오리"], ["b_bath", "art/g/boss_bath.webp", "거품 대왕"],
   ["g_bed", "art/g/good_bed.webp", "꿈나라 별"], ["b_bed", "art/g/boss_bed.webp", "악몽 구름"],
@@ -1125,7 +1146,11 @@ function drawBoss() {
   const bst = STG(), bkey = bst.id === "table" ? "boss_pot" : `boss_${bst.id}`, bimg = ART[bkey] || (FB[bst.id] && FB[bst.id].boss);
   if (bimg) {
     const im = b.hitT > 0.12 && ART[bkey + "_hit"] ? ART[bkey + "_hit"] : bimg;
-    ctx.save(); ctx.translate(p.x, y0 + wob * 0.3); ctx.scale(grow * (1 + (b.hitT > 0 ? 0.04 : 0)), grow); drawFit(im, 0, 10 * s, 360 * s); ctx.restore();
+    const sq = (b.hitPop || 0) * 0.07;
+    ctx.save(); ctx.translate(p.x + (b.hitPop ? rand(-4, 4) : 0), y0 + wob * 0.3); ctx.scale(grow * (1 + sq), grow * (1 - sq)); drawFit(im, 0, 10 * s, 360 * s);
+    if (b.hitT > 0) { ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = Math.min(0.3, b.hitT * 1.6); drawFit(im, 0, 10 * s, 360 * s); }
+    ctx.restore();
+    if (b.hits > 3 && b.phase === 1 && !b.dead) { const hp = 1 + (b.hitPop || 0) * 0.25; ctx.save(); ctx.translate(W - 130, 172); ctx.rotate(0.1); ctx.scale(hp, hp); gtext(`${b.hits} HIT!`, 0, 0, 44, { c1: "#ffffff", c2: "#ffe066", c3: "#ff8a00", stroke: "#5a1a00", max: 210 }); ctx.restore(); }
   } else {
   ctx.save(); ctx.translate(p.x, y0); ctx.scale(grow, grow);
   // 김
@@ -1172,8 +1197,17 @@ function drawUltBeam() {
   g.addColorStop(0, "rgba(253,224,71,.0)"); g.addColorStop(0.2, "rgba(253,224,71,.7)"); g.addColorStop(1, "rgba(251,146,60,.9)");
   ctx.fillStyle = g; ctx.beginPath();
   const ex = bp.x, ey = bp.y - 120 * k;
-  ctx.moveTo(W / 2 - wdt, CROWD_Y); ctx.lineTo(W / 2 + wdt, CROWD_Y); ctx.lineTo(ex + 40, ey); ctx.lineTo(ex - 40, ey); ctx.fill();
-  if (ART.fx_bark_wave) { for (let i = 0; i < 3; i++) { const t = ((b.ultT * 2.5) + i / 3) % 1, mx = W / 2 + (bp.x - W / 2) * t, my = CROWD_Y - 40 + (bp.y - 120 - CROWD_Y + 40) * t, sz = 200 + 260 * (1 - t); ctx.globalAlpha = 0.9 * (1 - t * 0.6); ctx.drawImage(ART.fx_bark_wave, mx - sz / 2, my - sz / 2, sz, sz); } ctx.globalAlpha = 1; }
+  if (ED.bigBall === false) { ctx.moveTo(W / 2 - wdt, CROWD_Y); ctx.lineTo(W / 2 + wdt, CROWD_Y); ctx.lineTo(ex + 40, ey); ctx.lineTo(ex - 40, ey); ctx.fill(); }
+  if (ED.bigBall !== false) { // 대왕 탱탱볼: 무리에서 날아가 대장 위에서 통통 튐
+    const u = b.ultT - 0.35, fly = Math.min(1, u / 0.35), bx = W / 2 + (bp.x - W / 2) * fly, hop = Math.abs(Math.sin(Math.max(0, u - 0.35) * 9));
+    const by = fly < 1 ? CROWD_Y - 120 + (bp.y - 175 - CROWD_Y + 120) * fly - Math.sin(fly * Math.PI) * 200 : bp.y - 175 - hop * 105;
+    const sq = fly >= 1 ? Math.max(0, 0.3 - hop * 0.6) : 0;
+    ctx.restore(); ctx.fillStyle = "rgba(0,0,0,.22)"; ctx.beginPath(); ctx.ellipse(bx, bp.y - 40, 70 * (1.1 - hop * 0.4), 18, 0, 0, 7); ctx.fill();
+    drawBall(bx, by, 82, (S.t * 120) % 360, u * 6, sq, 99); ctx.save();
+    if (fly >= 1 && hop < 0.12 && !b.lastBounce) { b.lastBounce = true; SFX.ballBig(); shake(0.25); burst(bx, by + 60, 24, ["#fde047", "#fff", "#f472b6"], 8, 0.5, "star"); ring(bx, by + 60, "#fff", 200, 0.3, 12); }
+    if (hop > 0.3) b.lastBounce = false;
+  }
+  if (ART.fx_bark_wave && ED.id !== "hub" && ED.bigBall === false) { for (let i = 0; i < 3; i++) { const t = ((b.ultT * 2.5) + i / 3) % 1, mx = W / 2 + (bp.x - W / 2) * t, my = CROWD_Y - 40 + (bp.y - 120 - CROWD_Y + 40) * t, sz = 200 + 260 * (1 - t); ctx.globalAlpha = 0.9 * (1 - t * 0.6); ctx.drawImage(ART.fx_bark_wave, mx - sz / 2, my - sz / 2, sz, sz); } ctx.globalAlpha = 1; }
   ctx.restore();
   const uim = ART[ED.id === "hub" ? `${S.kid}_cheer` : ED.heroUlt];
   if (uim) { // 주인공이 앞에 서서 필살기 → 파동
@@ -1185,17 +1219,41 @@ function drawUltBeam() {
   }
   gtext(ED.id === "hub" ? "얍!" : ED.ultShout, W / 2, CROWD_Y - 330, 70 + Math.sin(S.t * 30) * 6, { c1: "#ffffff", c2: "#bfdbfe", c3: "#60a5fa", stroke: "#0b2a5a" });
 }
+// 탱탱볼: 반질반질한 고무공(색 줄무늬 + 광택), sq = 찌그러짐(0~0.4)
+function drawBall(x, y, r, hue, rot = 0, sq = 0, bi = -1) {
+  const im = bi === 99 ? ART.ball_big : bi >= 0 ? ART[BALL_NAMES[bi % BALL_NAMES.length]] : null;
+  if (im) { ctx.save(); ctx.translate(x, y); ctx.scale(1 + sq, 1 - sq); ctx.rotate(rot); const d = r * 2.15; ctx.drawImage(im, -d / 2, -d / 2 * im.height / im.width, d, d * im.height / im.width); ctx.restore(); return; }
+  ctx.save(); ctx.translate(x, y); ctx.scale(1 + sq, 1 - sq); ctx.rotate(rot);
+  ctx.fillStyle = "#1e1b4b"; ctx.beginPath(); ctx.arc(0, 0, r + 2.5, 0, 7); ctx.fill();
+  const g = ctx.createRadialGradient(-r * 0.35, -r * 0.4, r * 0.1, 0, 0, r); g.addColorStop(0, `hsl(${hue},100%,78%)`); g.addColorStop(0.6, `hsl(${hue},95%,55%)`); g.addColorStop(1, `hsl(${hue},90%,38%)`);
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, r, 0, 7); ctx.fill();
+  ctx.save(); ctx.beginPath(); ctx.arc(0, 0, r, 0, 7); ctx.clip();
+  ctx.fillStyle = `hsla(${(hue + 160) % 360},100%,70%,.9)`; ctx.fillRect(-r, -r * 0.22, r * 2, r * 0.44); ctx.restore();
+  ctx.rotate(-rot); ctx.fillStyle = "rgba(255,255,255,.85)"; ctx.beginPath(); ctx.ellipse(-r * 0.35, -r * 0.42, r * 0.28, r * 0.17, -0.5, 0, 7); ctx.fill();
+  ctx.restore();
+}
 function drawParts() {
   for (const p of S.parts) {
     const a = clamp(p.life / p.max * 1.5, 0, 1); ctx.globalAlpha = a;
     if (p.kind === "img") { if (!p.img) continue; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.drawImage(p.img, -p.r / 2, -p.r / 2, p.r, p.r); ctx.restore(); }
     else if (p.kind === "shard") { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillStyle = p.col; ctx.beginPath(); ctx.moveTo(0, -p.r); ctx.lineTo(p.r * 0.6, p.r * 0.4); ctx.lineTo(-p.r * 0.5, p.r * 0.6); ctx.fill(); ctx.restore(); }
+    else if (p.kind === "ball") { const sq = p.sqT > 0 ? p.sqT * 1.6 : 0; drawBall(p.x, p.y, p.r, p.hue, p.rot, sq, p.bi); }
     else if (p.kind === "conf") { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillStyle = p.col; ctx.fillRect(-p.r / 2, -p.r / 4, p.r, p.r / 2); ctx.restore(); }
     else if (p.kind === "star") { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillStyle = p.col; ctx.beginPath(); for (let i = 0; i < 10; i++) { const r = i % 2 ? p.r * 0.45 : p.r * 1.3; ctx.lineTo(Math.cos(i * 0.628) * r, Math.sin(i * 0.628) * r); } ctx.fill(); ctx.restore(); }
     else { ctx.fillStyle = p.col; ctx.beginPath(); ctx.arc(p.x, p.y, p.r * (p.kind === "pop" ? 1.4 : 1), 0, 7); ctx.fill(); }
   }
   ctx.globalAlpha = 1;
-  for (const n of S.notes) { ctx.font = `30px ${FONT}`; ctx.fillStyle = "#fde047"; ctx.textAlign = "center"; ctx.fillText("♪", n.x, n.y); }
+  if (S.notes.length) {
+    ctx.save(); ctx.lineCap = "round";
+    for (const n of S.notes) {
+      if (n.t <= 0) continue; const k = Math.min(1, n.t / n.T), r = 19 - k * 6;   // 멀어질수록 작게
+      const gy = n.sy + 30 + (bossPos().y - n.sy - 30) * k, gx = n.sx + (bossPos().x + n.ox - n.sx) * k; // 바닥 그림자
+      ctx.fillStyle = "rgba(0,0,0,.18)"; ctx.beginPath(); ctx.ellipse(gx, gy, r * 0.9, r * 0.3, 0, 0, 7); ctx.fill();
+      const st = k < 0.12 ? (0.12 - k) * 2 : 0;   // 던질 때 살짝 늘어남
+      drawBall(n.x, n.y, r, n.hue, n.t * 14, -st, n.bi);
+    }
+    ctx.restore();
+  }
   for (const r of S.rings) {
     const k = 1 - r.life / r.max; ctx.globalAlpha = 1 - k; ctx.lineWidth = r.w * (1 - k) + 2;
     if (r.col === "rainbow") { const g = ctx.createConicGradient ? ctx.createConicGradient(S.t * 3, r.x, r.y) : null; if (g) { ["#f43f5e", "#facc15", "#22c55e", "#3b82f6", "#a855f7", "#f43f5e"].forEach((c, i) => g.addColorStop(i / 5, c)); ctx.strokeStyle = g; } else ctx.strokeStyle = "#facc15"; }
@@ -1286,7 +1344,7 @@ function drawHUD() {
     if (S.ultBtn) {
       const pz = 1 + Math.sin(S.t * 10) * 0.08; ctx.save(); ctx.translate(x, y); ctx.scale(pz, pz);
       const g = ctx.createRadialGradient(0, -20, 10, 0, 0, r); g.addColorStop(0, "#fef08a"); g.addColorStop(1, "#f97316"); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, r, 0, 7); ctx.fill();
-      ctx.font = `26px ${FONT}`; ctx.textAlign = "center"; ctx.fillStyle = "#7c2d12"; ctx.fillText("멍멍", 0, -12); ctx.fillText("필살기!", 0, 20); ctx.restore();
+      ctx.font = `26px ${FONT}`; ctx.textAlign = "center"; ctx.fillStyle = "#7c2d12"; ctx.fillText(ED.id === "hub" ? "얍!" : "멍멍", 0, -12); ctx.fillText("필살기!", 0, 20); ctx.restore();
       ctx.font = `24px ${FONT}`; ctx.fillStyle = "#fff"; ctx.fillText("눌러!", x, y - r - 30);
     }
   }
@@ -1366,6 +1424,8 @@ if (ED.picker === "kid") { // 허브판: 아이 얼굴 4개 + 큰 출발. 고른
 } else document.querySelectorAll("[data-age]").forEach(b => b.addEventListener("click", () => start(+b.dataset.age)));
 $("again").addEventListener("click", () => start(S.age, S.kid));
 $("next").addEventListener("click", () => { lsSet(KEY("stsel"), String(S.stage + 1)); start(S.age, S.kid); });
+// 판마다 제목(허브판 = 탱탱볼 대작전): 로고 글자를 한 자씩 다시 만든다
+if (ED.title) { const h1 = document.querySelector(".logo h1"); if (h1) h1.innerHTML = [...ED.title].map(ch => ch === " " ? '<span class="sp"></span>' : `<span>${ch}</span>`).join(""); }
 function renderMap() {
   const u = unlocked(), sel = selStage();
   $("map").innerHTML = STAGES.map((st, i) => `${i ? "<b></b>" : ""}<button class="st${i > u ? " lock" : ""}${i === sel ? " now" : ""}" data-st="${i}"><i>${i > u ? "🔒" : st.icon}</i><small>${st.name}</small></button>`).join("");
