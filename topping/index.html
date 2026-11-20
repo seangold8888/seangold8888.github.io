@@ -60,7 +60,29 @@
   .hubback{position:fixed;left:12px;top:12px;z-index:20;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(20,10,40,.7);color:#fff;font-size:24px;text-decoration:none;border:2px solid #f6c544}
   body:not(.title) .hubback{display:none}
   .map{display:flex;align-items:center;margin-top:10px;padding:6px 10px 4px;border-radius:999px;background:rgba(20,6,2,.55);animation:drop .6s .7s cubic-bezier(.2,1.6,.4,1) both}
-  .map .st{display:flex;flex-direction:column;align-items:center;width:58px}
+  .map .st{display:flex;flex-direction:column;align-items:center;width:58px;padding:0;background:none;box-shadow:none;border-radius:0;text-shadow:none;color:#fff}
+  .map .st:active{transform:none}
+  .map .st.shake{animation:nope .4s}
+  @keyframes nope{20%,60%{translate:-6px 0}40%,80%{translate:6px 0}}
+  .row2{display:flex;gap:10px}
+  .shopbtn{background:linear-gradient(#fb923c,#c2410c);box-shadow:0 5px 0 #7c2d12}
+  #shop{background:rgba(40,16,4,.97);gap:14px;z-index:5}
+  #shop h2{margin:0;font-size:44px}
+  .coinbig{font-size:30px;color:#fde047;text-shadow:0 3px 0 #7c2d12}
+  .shoplist{display:flex;flex-direction:column;gap:10px;width:470px}
+  .up{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.1);border-radius:20px;padding:10px 12px;text-align:left}
+  .up i{font-style:normal;font-size:40px;width:52px;text-align:center}
+  .up .ut{flex:1;display:flex;flex-direction:column}
+  .up .ut b{font-size:24px;font-weight:400}
+  .up .ut span{color:#fde047;letter-spacing:2px;font-size:16px}
+  .up .ut small{font-size:14px;opacity:.85}
+  .up button{padding:10px 14px;font-size:20px;border-radius:16px;min-width:96px}
+  .up button:disabled{filter:grayscale(1);opacity:.5}
+  .coingain{font-size:32px;color:#fde047;text-shadow:0 3px 0 #7c2d12;min-height:40px}
+  .coingain small{font-size:16px;color:#fff;opacity:.85}
+  .unlock{font-size:26px;color:#86efac;margin-top:4px;animation:slam .5s 2.6s cubic-bezier(.2,1.8,.4,1) both}
+  .unlock.dim{color:#fde68a;font-size:18px;animation:none}
+  .nextbtn{background:linear-gradient(#60a5fa,#1d4ed8);box-shadow:0 7px 0 #1e3a8a;font-size:30px}
   .map .st i{font-style:normal;font-size:26px;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#fff;box-shadow:0 4px 0 rgba(0,0,0,.35)}
   .map .st small{font-size:12px;font-weight:400;margin-top:3px;text-shadow:0 2px 0 #000a}
   .map .st.lock i{filter:grayscale(1);opacity:.55;background:#d6d3d1}
@@ -105,15 +127,9 @@
   <div id="menu" class="ov">
     <div class="logo">
       <h1><span>토</span><span>핑</span><span class="sp"></span><span>대</span><span>행</span><span>진</span></h1>
-      <div class="ketchup">저녁 식탁 대모험</div>
-      <div class="map">
-        <div class="st lock"><i>🛁</i><small>곧!</small></div><b></b>
-        <div class="st lock"><i>🛏️</i><small>곧!</small></div><b></b>
-        <div class="st lock"><i>🪥</i><small>곧!</small></div><b></b>
-        <div class="st lock"><i>🧸</i><small>곧!</small></div><b></b>
-        <div class="st now"><i>🍽️</i><small>지금!</small></div>
-      </div>
-      <button id="bookBtn" class="bookbtn">📒 스티커북 <span id="bookBtnN">0/13</span></button>
+      <div class="ketchup" id="stTitle">거품 욕실 대모험</div>
+      <div class="map" id="map"></div>
+      <div class="row2"><button id="bookBtn" class="bookbtn">📒 스티커북 <span id="bookBtnN">0/13</span></button><button id="shopBtn" class="bookbtn shopbtn">💪 강해지기 <span id="shopBtnN"></span></button></div>
     </div>
     <div class="bottom">
       <div class="ask">몇 살이에요?</div>
@@ -135,16 +151,25 @@
     <div class="hint">별 1개 = 새 스티커 1장!</div>
     <button id="bookClose">닫기</button>
   </div>
+  <div id="shop" class="ov hide">
+    <h2>💪 강해지기</h2>
+    <div id="shopCoin" class="coinbig"></div>
+    <div id="shopList" class="shoplist"></div>
+    <div class="hint">판을 끝내면 코인을 받아요. 맞힐수록 많이!</div>
+    <button id="shopClose">닫기</button>
+  </div>
   <div id="result" class="ov hide">
     <h2 id="rtitle">야채 피자 잔치!</h2>
     <div class="stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
     <div id="score">0</div>
     <div id="rinfo" class="hint"></div>
+    <div id="coinGain" class="coingain"></div>
     <div id="newStk" class="newstk"></div>
-    <div class="row"><button id="again">한 번 더!</button><button id="toMenu" style="background:linear-gradient(#f59e0b,#b45309);box-shadow:0 7px 0 #78350f">나이 바꾸기</button></div>
+    <button id="next" class="hide nextbtn">다음 ▶</button>
+    <div class="row"><button id="again">한 번 더!</button><button id="toMenu" style="background:linear-gradient(#f59e0b,#b45309);box-shadow:0 7px 0 #78350f">처음 화면</button></div>
   </div>
 </div>
-<script src="edition-hub.js?v=1"></script>
-<script src="game.js?v=1"></script>
+<script src="edition-hub.js?v=2"></script>
+<script src="game.js?v=2"></script>
 </body>
 </html>
