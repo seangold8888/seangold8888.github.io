@@ -4694,6 +4694,92 @@
         },
       ],
     },
+    // ───────────────────────── 46화 ─────────────────────────
+    {
+      id: 46,
+      title: "우리 엄마는 얼음",
+      summary: "올해 들어 처음으로 영하로 내려간 날. 누나를 데려다주고 온 엄마가 “너무 추워서 얼음 될 뻔했어!” 하자 태오가 고개를 갸웃. “엄마는 얼음인데 왜 얼음이 될 뻔했어?”",
+      lesson: "어른도 가끔은 녹아요. 추운 날 따뜻한 집에 오면 더더욱요.",
+      talk: "추운 날 우리 가족은 어떻게 하면 따뜻하게 지낼 수 있을까요? 나는 어른이 되면 무엇을 하고 싶어요?",
+      cover: 4,
+      motion: true,
+      panels: [
+        {
+          h: 420, bg: "living",
+          chars: [C("harabeoji", 335, "smile", "hold", { s: 0.8, m: "bob" }), C("halmeoni", 90, "happy", "hands", { m: "pop" }), C("taeo", 210, "happy", "lick", { m: "hop" })],
+          fp: [["toys", 200, 410, {}], ["cup", 350, 330, { s: 0.8 }]],
+          n: "올해 들어 처음으로 영하로 내려간 날.",
+          b: [B("태오야, 오늘 진짜 춥대. 집에서 따뜻하게 놀자.", 95, 120, "b", { w: 160 }), B("응! 할머니, 나 맛있는 거 죠! 가윌!", 250, 200, "b", { k: "shout", w: 150 })],
+          sfx: [FX("−2℃", 330, 100, { rot: 6, c: "#3b8fd6", size: 1.3 })],
+        },
+        {
+          h: 400, bg: "entrance",
+          chars: [C("jaei", 120, "determined", "point", { m: "pop" }), C("eomma", 300, "smile", "wave", { m: "bob" })],
+          fp: [["shoes", 120, 385, {}]],
+          b: [B("태오야, 운동화 삐뚤게 두면 아니야! 내가 다 맞춰 놨어.", 120, 110, "b", { w: 180 }), B("재이야, 얼른 가자! 지각하겠다!", 300, 70, "b", { w: 150 })],
+        },
+        {
+          h: 420, bg: "entrance",
+          sh: true,
+          bp: [["opendoor", 90, 396, {}]],
+          chars: [C("eomma", 110, "sick", "hug", { m: "shake" }), C("taeo", 300, "happy", "lick", { m: "hop" })],
+          n: "잠시 뒤, 누나를 학교에 데려다주고 온 엄마.",
+          b: [B("으으… 너무 추워서 얼음 될 뻔했어!", 130, 120, "b", { k: "shout", w: 180 })],
+          sfx: [FX("덜컥", 60, 170, { rot: -10, c: "#7a5c3b" }), FX("부들부들", 115, 395, { rot: 4, c: "#3b8fd6" })],
+        },
+        {
+          h: 140, bg: "plain:eaf4ff",
+          chars: [bust("taeo", 200, 70, 2.4, "blank", "stand", { m: "pop" })],
+          sfx: [FX("?", 330, 70, { rot: 12, c: "#3b6fd6", size: 1.6 })],
+          b: [B("……응?", 80, 100, "", { k: "whisper", w: 90 })],
+        },
+        {
+          h: 400, bg: "split:eaf4ff:fff4c7",
+          chars: [bust("taeo", 200, 250, 1.35, "worried", "think", { m: "bob" })],
+          b: [B("엄마는 얼음인데 왜 얼음이 될 뻔했어?", 200, 70, "b", { k: "shout", w: 260 })],
+        },
+        {
+          h: 460, bg: "sparkle:fff8e1",
+          chars: [bust("eomma", 200, 265, 1.2, "surprised", "stand", { m: "shake" })],
+          sfx: [FX("어른 → 얼음", 200, 118, { rot: -4, c: "#e2557f", size: 1.0 })],
+          b: [B("(아… 태오는 ‘어른’을 ‘얼음’이라고 하지!)", 200, 45, "", { k: "think", w: 260 }), B("태오야, 차가운 건 얼음! 엄마는 어·른!", 200, 420, "", { w: 300 })],
+        },
+        {
+          h: 440, bg: "living",
+          chars: [C("harabeoji", 335, "laugh", "stand", { s: 0.8, m: "bob" }), C("halmeoni", 90, "laugh", "hands", { s: 0.85, m: "bob" }), C("taeo", 210, "proud", "up", { m: "stomp" })],
+          b: [B("똑같잖아! 엄마도 얼음, 아빠도 얼음, 할머니 할아버지는 왕 큰 얼음!", 210, 60, "b", { k: "shout", w: 230 }), B("허허, 우리 집이 아주 얼음 창고로구나.", 320, 200, "b", { w: 140 })],
+        },
+        {
+          h: 420, bg: "burst:dfe8ff",
+          chars: [C("appa", 140, "sly", "wave", { o: "work", m: "stomp" }), C("taeo", 320, "love", "cheer", { m: "hop" })],
+          b: [B("크하하! 내가 바로 이 집에서 제일 센 대장 얼음이다!", 140, 70, "b", { k: "shout", w: 200 }), B("우와! 나도 빨리 커서 얼음 할래!", 320, 190, "b", { k: "shout", w: 140 })],
+          sfx: [FX("딱!", 225, 140, { rot: 12, c: "#7b4fd6" })],
+        },
+        {
+          h: 400, bg: "living-night",
+          chars: [C("jaei", 110, "smile", "stand", { m: "pop" }), C("taeo", 290, "proud", "hip", { m: "bob" })],
+          n: "그날 저녁, 학교에서 돌아온 누나.",
+          b: [B("누나! 엄마도 얼음이고, 아빠는 대장 얼음이래! 나도 크면 얼음 될 거야!", 290, 110, "b", { k: "shout", w: 200 })],
+        },
+        {
+          h: 360, bg: "split:ffe8f0:eaf4ff",
+          chars: [bust("jaei", 130, 245, 1.15, "determined", "point", { m: "pop" })],
+          b: [B("아니야! 어른은 멋지고 튼튼한 사람이고, 얼음은 따뜻하면 금방 녹아 버리는 거야!", 260, 80, "bl", { w: 220 })],
+        },
+        {
+          h: 420, bg: "living-night",
+          chars: [C("taeo", 60, "laugh", "point", { s: 0.8, m: "hop" }), C("halmeoni", 160, "smile", "hip", { s: 0.75, m: "pop" }), C("appa", 390, "sleepy", "stand", { o: "work", rot: -90, x: 390, y: 395, s: 0.8, m: "float" })],
+          b: [B("누나, 저기 봐! 대장 얼음 벌써 다 녹았어!", 80, 60, "b", { k: "shout", w: 150 }), B("김서방, 다 녹기 전에 일어나서 저녁 먹어.", 240, 130, "b", { w: 150 }), B("……살려 줘……", 330, 270, "b", { k: "whisper", w: 120 })],
+          sfx: [FX("흐물흐물", 330, 410, { rot: -4, c: "#3b8fd6" })],
+        },
+        {
+          h: 440, bg: "living-night",
+          chars: [C("eomma", 110, "smile", "hold", { m: "bob" }), C("taeo", 290, "shock", "stand", { m: "shake" })],
+          b: [B("태오도 크면 얼음 되는 거야~", 110, 110, "b", { w: 150 }), B("……그럼 나 안 클래! 녹는 거 싫어!", 290, 90, "b", { k: "shout", w: 160 })],
+          sfx: [FX("절대!", 330, 400, { rot: 10, c: "#e2557f" })],
+        },
+      ],
+    },
   ];
 
   root.WebtoonData = { CHARACTERS, EPISODES };
