@@ -63,14 +63,14 @@ export function startGame() {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(64, 16 / 9, 1, 4000);
   const WHITE = new THREE.Color(0xffffff);
-  const hemi = new THREE.HemisphereLight(0xffffff, 0xcdd6c2, 1.0);
+  const hemi = new THREE.HemisphereLight(0xffffff, 0xe6eefc, 1.35);   // 11-21 더 밝게(회색 구름·밋밋함)
   scene.add(hemi);
   const sun = new THREE.DirectionalLight(0xfff6e6, 1.12);
   sun.position.set(200, 500, 180);
   scene.add(sun);
   // 태양은 월드에 고정이라 카메라를 향한 면은 늘 어둡게 뜬다.
   // 카메라에 물린 약한 필 라이트로 어느 방향에서 보든 얼굴이 살아나게 한다.
-  const fill = new THREE.DirectionalLight(0xffffff, 0.5);
+  const fill = new THREE.DirectionalLight(0xffffff, 0.72);
   fill.position.set(0.35, 0.8, 1);
   camera.add(fill);
   scene.add(camera);
@@ -1110,6 +1110,7 @@ export function startGame() {
   }
 
   function renderMenu() {
+    const q = document.getElementById('menu-quick'); if (q) q.style.display = state.menuStep === 0 ? '' : 'none';
     const gp = MODES[state.modeIndex].gp;
     const steps = ['누구로 달릴까요?', '어떤 경주를 할까요?', gp ? '컵을 골라요' : '코스를 골라요'];
     el('menu-title').textContent = steps[state.menuStep];
@@ -1200,6 +1201,14 @@ export function startGame() {
     if (state.menuStep > 0) { state.menuStep--; renderMenu(); }
   });
   el('menu-next').addEventListener('click', nextStep);
+  // 11-21 '바로 출발': 친구만 고르면 아이템 배틀로 곧장(메뉴 3단계 → 1단계). 자세히 고르기는 기존 버튼.
+  const quick = document.createElement('button'); quick.id = 'menu-quick'; quick.type = 'button'; quick.textContent = '⚡ 바로 출발!';
+  el('menu-next').before(quick);
+  quick.addEventListener('click', () => {
+    if (state.menuStep !== 0) return;
+    const bi = MODES.findIndex(m => m.id === 'battle'); state.modeIndex = bi >= 0 ? bi : 2;
+    menu.style.display = 'none'; state.gp = null; startRace();
+  });
 
   function showResult() {
     showHud(false);

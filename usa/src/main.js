@@ -6,8 +6,8 @@ import { loadImage, text, rr } from "./engine.js";
 import * as vegas from "./games/vegas.js";
 import * as park from "./games/park.js?v=3";
 import * as beverly from "./games/beverly.js";
-import * as santamonica from "./games/santamonica.js";
-import * as huntington from "./games/huntington.js";
+import * as santamonica from "./games/santamonica.js?v=2";
+import * as huntington from "./games/huntington.js?v=2";
 import * as erewhon from "./games/erewhon.js";
 
 const GAMES = { vegas, park, beverly, santamonica, huntington, erewhon };
@@ -16,7 +16,7 @@ const $$ = s => Array.from(document.querySelectorAll(s));
 
 const S = Save.load();
 const IMG = {};
-const ART = ["map", "bg-vegas", "bg-park", "bg-beverly", "bg-market",
+const ART = ["map", "bg-vegas", "bg-park", "bg-beverly", "bg-market", "bg-santamonica", "bg-huntington",
   "jaei-travel", "jaei-cheer", "jaei-beach", "jaei-surf", "taeo-travel", "taeo-cheer", "taeo-beach", "taeo-surf"];
 const ready = Promise.all(ART.map(k => loadImage("art/" + k + ".webp").then(im => { IMG[k] = im; })))
   .then(() => (document.fonts && document.fonts.load ? document.fonts.load('900 20px "Pretendard"').catch(() => {}) : null));

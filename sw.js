@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v279";
+const CACHE_VERSION = "v280";
 const CACHE_PREFIX = "adventure-box-";
 // 큰 그림과 소리(삼국지 배경 200MB+, 저장한 이야기 오디오)는 배포 번호와 따로 둔다.
 // 배포마다 이 캐시를 버리면 기기가 236MB를 다시 받고, "여행 전에 이야기 저장"도 지워졌다.
@@ -1239,9 +1239,9 @@ const OPTIONAL_SHELL = [
   "./slime/",
   "./usa/",
   "./usa/index.html",
-  "./usa/style.css?v=2",
+  "./usa/style.css?v=3",
   "./usa/cover.webp",
-  "./usa/src/main.js?v=3",
+  "./usa/src/main.js?v=4",
   "./usa/src/places.js",
   "./usa/src/save.js",
   "./usa/src/sfx.js",
@@ -1256,8 +1256,8 @@ const OPTIONAL_SHELL = [
   "./usa/src/games/parktoy.js",
   "./usa/src/games/parkweb.js",
   "./usa/src/games/beverly.js",
-  "./usa/src/games/santamonica.js",
-  "./usa/src/games/huntington.js",
+  "./usa/src/games/santamonica.js?v=2",
+  "./usa/src/games/huntington.js?v=2",
   "./usa/src/games/erewhon.js",
   "./usa/src/games/beachart.js",
   "./usa/art/map.webp",
@@ -1265,6 +1265,8 @@ const OPTIONAL_SHELL = [
   "./usa/art/bg-park.webp",
   "./usa/art/bg-beverly.webp",
   "./usa/art/bg-market.webp",
+  "./usa/art/bg-santamonica.webp",
+  "./usa/art/bg-huntington.webp",
   "./usa/art/jaei-travel.webp",
   "./usa/art/jaei-cheer.webp",
   "./usa/art/jaei-beach.webp",
@@ -1551,7 +1553,7 @@ const OPTIONAL_SHELL = [
   "./onecard/art/clover-2.webp",
   "./onecard/art/clover-3.webp",
   "./onecard/art/clover-4.webp",
-  "./slime/style.css?v=phone-3",
+  "./slime/style.css?v=game-1",
   "./slime/src/main.js?v=workshop-17",
   "./slime/src/physics.js?v=workshop-17",
   "./slime/src/audio.js?v=workshop-17",
@@ -1577,10 +1579,10 @@ const OPTIONAL_SHELL = [
   "./slime/vendor/THREE-LICENSE.txt",
   "./assets/effects/quality.js?v=visual-1",
   "./assets/covers/cover_slime.svg",
-  "./kart3d/src/game.js?v=quiz-3",
+  "./kart3d/src/game.js?v=quiz-4",
   "./kart3d/src/quizbox.js?v=quiz-2",
   "./kart3d/src/difficulty.js?v=easy-1",
-  "./kart3d/menu.css?v=snow-2",
+  "./kart3d/menu.css?v=snow-3",
   "./kart3d/src/menu-art.js?v=snow-1",
   "./kart3d/src/items.js",
   "./kart3d/src/karts.js?v=snow-1",

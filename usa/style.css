@@ -89,7 +89,11 @@ h1 span { color: var(--coral); }
 .pin-stars { font-size: clamp(12px, 1.8vmin, 16px); letter-spacing: -1px; line-height: 1; min-height: 1em; }
 .pin.locked .pin-badge { filter: grayscale(1); opacity: .75; border-color: #bbb; }
 .pin.locked .pin-label { color: #888; }
-.pin.next .pin-badge { animation: bob 1.1s ease-in-out infinite; }
+.pin.next .pin-badge { animation: bob 1.1s ease-in-out infinite, pinPulse 1.4s ease-out infinite; transform-origin: center; }
+/* 11-21: 다음 갈 곳을 손가락으로 콕 — 지도에서 어디를 눌러야 할지 바로 보이게 */
+.pin.next::after { content: "👆"; position: absolute; top: 46px; left: 50%; font-size: 40px; transform: translateX(-10%); animation: pinTap 1.1s ease-in-out infinite; pointer-events: none; filter: drop-shadow(0 3px 3px rgba(0,0,0,.35)); }
+@keyframes pinPulse { 0% { box-shadow: 0 0 0 0 rgba(255,107,107,.65); } 100% { box-shadow: 0 0 0 22px rgba(255,107,107,0); } }
+@keyframes pinTap { 0%,100% { transform: translate(-10%, 0); } 50% { transform: translate(-10%, -12px) scale(.92); } }
 .pin.next::before { content: "여기!"; position: absolute; top: -30px; background: var(--coral); color: #fff; font-weight: 900; padding: 2px 10px; border-radius: 999px; font-size: 16px; animation: bob 1.1s ease-in-out infinite; }
 .pin .lock { position: absolute; right: -6px; top: -6px; font-size: 22px; }
 .pin .done-stamp { position: absolute; right: -10px; top: -10px; font-size: 24px; }

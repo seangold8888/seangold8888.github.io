@@ -1326,7 +1326,7 @@ render();
 .rb-count{font-family:var(--disp);font-size:1.3rem;color:#c0306a;background:#fff0f6;border:2px solid #ffc9dc;border-radius:99px;padding:.25rem .9rem}
 .room-wrap{position:relative;border-radius:1.5rem;overflow:hidden;border:3px solid #fff;box-shadow:0 .6rem 1.6rem #502e6f40;background:#fde9f2;cursor:pointer}
 .room-wrap svg{display:block;width:100%;height:auto}
-.room-wrap .edit-chip{position:absolute;right:.7rem;bottom:.7rem;background:#fff;color:#7b5cc4;font-family:var(--disp);border-radius:99px;padding:.35rem .9rem;box-shadow:0 .3rem .8rem #4a2c8a33}
+.room-wrap .edit-chip{position:absolute;right:.7rem;top:.7rem;background:#fff;color:#7b5cc4;font-family:var(--disp);border-radius:99px;padding:.35rem .9rem;box-shadow:0 .3rem .8rem #4a2c8a33}
 .room-wrap .friends-chip{position:absolute;left:.7rem;top:.7rem;background:#ffffffd9;color:#7b5cc4;font-weight:900;font-size:.8rem;border-radius:99px;padding:.25rem .7rem}
 .rb-row{display:grid;gap:.8rem;margin-bottom:.9rem}
 @media (min-width:900px){.rb-row{grid-template-columns:1.45fr 1fr;align-items:center}}
@@ -1351,7 +1351,8 @@ render();
 .slot-tabs button.on{background:#ee5f9a;border-color:#ee5f9a;color:#fff}
 .shop{display:grid;grid-template-columns:repeat(auto-fill,minmax(8.5rem,1fr));gap:.55rem}
 .shop button{display:flex;flex-direction:column;align-items:center;gap:.25rem;padding:.55rem;border-radius:1.1rem;background:#fff;border:3px solid #eee3f7;box-shadow:0 .25rem 0 #e0d2ee}
-.shop button svg{width:100%;height:4.2rem}
+.shop button svg,.shop button img.spr{width:100%;height:4.2rem;object-fit:contain}
+.rb-item{filter:drop-shadow(0 10px 8px rgba(70,40,30,.28))}
 .shop button strong{font-size:.9rem;color:#4d3c6d}
 .shop button small{font-weight:900;font-size:.78rem;color:#8c8193}
 .shop button.on{border-color:#ee5f9a}.shop button.on small{color:#ee5f9a}
@@ -1402,7 +1403,7 @@ const ROOM_ITEMS={
   rug:[{id:'none',name:'비워 두기',price:0},{id:'heart',name:'하트 러그',price:10},{id:'rainbow',name:'무지개 러그',price:18}],
   deco:[{id:'none',name:'비워 두기',price:0},{id:'roses',name:'장미 화분',price:10},{id:'bear',name:'곰 인형 선반',price:18},{id:'piano',name:'작은 피아노',price:32}]
 };
-const FRIEND_SPOT={cinnamoroll:[215,330],myMelody:[790,340],helloKitty:[500,392],kuromi:[640,210]};
+const FRIEND_SPOT={cinnamoroll:[200,300],myMelody:[790,300],helloKitty:[505,300],kuromi:[640,150]};
 const FRIEND_LINE={cinnamoroll:'구름 침대 폭신해!',myMelody:'딸기 소파 최고야!',helloKitty:'사과파이 냠냠!',kuromi:'달 조명 멋지잖아!'};
 let RB=rbLoad();
 // 11-21 업그레이드: 처음 오면 키티가 리본 30개 선물 → 바로 가구 2개를 살 수 있다
@@ -1479,6 +1480,19 @@ function friendsHere(eq){
   for(const s of Object.keys(ROOM_ITEMS)){ const it=ROOM_ITEMS[s].find(x=>x.id===eq[s]); if(it&&it.fav) out.push(it.fav); }
   return out;
 }
+// 11-21 비디오게임 그림: 드리미나 Seedream 5.5 로 그린 방·가구(초록 배경 키잉) — 있으면 그림, 없으면 예전 선 그림
+const SPR_V='1';
+const SPR={wall:{stripe:1,hearts:1,stars:1,clouds:1},window:{lace:1,night:1,rainbow:1},bed:{wood:1,ribbon:1,cloud:1},sofa:{pudding:1,strawberry:1},table:{tea:1,applepie:1},lamp:{star:1,moon:1},rug:{heart:1,rainbow:1},deco:{roses:1,bear:1,piano:1}};
+const SPR_BOX={window:[380,58,230,250],bed:[14,225,390,310],rug:[290,448,420,148],table:[420,365,175,170],lamp:[912,160,84,325],sofa:[648,282,290,250],deco:[858,412,138,170]};
+const SPR_BOX_ID={'deco:bear':[640,118,230,150],'deco:roses':[598,392,82,140],'sofa:pudding':[668,352,250,180]};
+const sprSrc=(slot,id)=>`art/${slot==='wall'?'bg':slot}_${id}.webp?v=${SPR_V}`;
+function sprImg(slot,id){
+  if(!SPR[slot]||!SPR[slot][id]) return null;
+  if(slot==='wall') return `<image href="${sprSrc(slot,id)}" x="0" y="0" width="1000" height="600" preserveAspectRatio="xMidYMid slice"/>`;
+  const [x,y,w,h]=SPR_BOX_ID[slot+':'+id]||SPR_BOX[slot];
+  return `<image class="rb-item" href="${sprSrc(slot,id)}" x="${x}" y="${y}" width="${w}" height="${h}" preserveAspectRatio="xMidYMax meet"/>`;
+}
+const slotArt=(slot,id,fallback)=>sprImg(slot,id)??fallback(id);
 function roomSvg(eq,withFriends){
   eq=eq||RB.equip;
   const fr=withFriends?friendsHere(eq):[];
@@ -1488,9 +1502,11 @@ function roomSvg(eq,withFriends){
   const hl=HOST_LINE(), host=fr.includes('helloKitty')?'':`<g class="rb-host" data-r="host"><ellipse cx="600" cy="520" rx="80" ry="16" fill="#00000022" stroke="none"/><g class="rb-hop"><circle cx="600" cy="420" r="86" fill="#fff" stroke="#ffc9dc" stroke-width="8"/>
     <foreignObject x="520" y="340" width="160" height="160"><div xmlns="http://www.w3.org/1999/xhtml" class="portrait helloKitty" style="width:160px;height:160px;margin:0;border-width:0;box-shadow:none"></div></foreignObject></g>
     <g transform="translate(${Math.round(600-(hl.length*26+36)/2)},300)"><rect x="0" y="-34" width="${hl.length*26+36}" height="52" rx="26" fill="#fff" stroke="#ee5f9a" stroke-width="4"/><text x="18" y="2" font-size="27" font-weight="900" fill="#c0306a" font-family="Malgun Gothic,sans-serif">${hl}</text></g></g>`;
-  return `<svg viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg">${svgWall(eq.wall)}${svgFloor()}${svgWindow(eq.window)}${svgLamp(eq.lamp)}${svgRug(eq.rug)}${svgDeco(eq.deco)}${svgBed(eq.bed)}${svgSofa(eq.sofa)}${svgTable(eq.table)}${host}${friendSvg}</svg>`;
+  const wallArt=sprImg('wall',eq.wall);
+  return `<svg viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg">${wallArt||svgWall(eq.wall)+svgFloor()}${slotArt('window',eq.window,svgWindow)}${slotArt('rug',eq.rug,svgRug)}${slotArt('bed',eq.bed,svgBed)}${slotArt('lamp',eq.lamp,svgLamp)}${slotArt('table',eq.table,svgTable)}${slotArt('sofa',eq.sofa,svgSofa)}${slotArt('deco',eq.deco,svgDeco)}${host}${friendSvg}</svg>`;
 }
 function itemSvg(slot,id){
+  if(SPR[slot]&&SPR[slot][id]) return `<img class="spr" src="${sprSrc(slot,id)}" alt="" loading="lazy">`;
   const eq=Object.assign({},RB.equip,{[slot]:id});
   const views={wall:'0 0 1000 430',window:'360 40 280 240',bed:'40 230 360 250',sofa:'640 300 320 180',table:'400 380 200 130',lamp:'680 0 160 210',rug:'180 460 640 140',deco:slot==='deco'&&id==='bear'?'70 90 260 110':'860 340 130 180'};
   const part=slot==='wall'?svgWall(id):slot==='window'?svgWindow(id):slot==='bed'?svgBed(id):slot==='sofa'?svgSofa(id):slot==='table'?svgTable(id):slot==='lamp'?svgLamp(id):slot==='rug'?svgRug(id):svgDeco(id);

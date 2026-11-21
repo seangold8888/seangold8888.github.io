@@ -33,3 +33,20 @@ header{position:fixed;left:0;right:0;top:0;z-index:4;padding:calc(24px + env(saf
 @media(max-width:699px){.brand{min-height:44px}.top-actions .glass{font-size:13px;padding:10px 12px}.hints{flex-wrap:wrap;gap:6px;max-width:96vw;top:calc(68px + env(safe-area-inset-top))}.hints span{font-size:13px;padding:3px 9px 3px 4px}.hints b{font-size:13px;padding:3px 8px}.lead{font-size:13px}.eyebrow,.copy .eyebrow{font-size:13px}.tools{font-size:13px}.tools summary{min-height:44px;display:flex;align-items:center}.tools .play-actions button{font-size:13px}.tools small{font-size:13px}.friend-actions button{font-size:13px;padding:9px 10px;min-width:44px}.flavor{font-size:13px}.flavor-label{font-size:13px}}
 @media(max-height:500px) and (min-width:700px){.brand{min-height:44px}.hints{top:62px}.top-actions .glass{font-size:13px}.hints span{font-size:13px}.hints b{font-size:13px}.friend-actions button{font-size:13px;min-width:44px}.flavor{font-size:13px}.eyebrow,.copy .eyebrow{font-size:13px}}
 @media(max-width:699px),(max-height:500px){#playroom small,#workshop small,#friend-progress,.accessory-color,.room-note,#dex-count,.bowl-empty,.paint span,.mixin span,.dex-name{font-size:13px}}
+/* ===== 11-21 게임 느낌 손질: 아이 손가락·눈에 맞게 크게, 색 있게 (허브 점수 '버튼 글자가 작고 회색') ===== */
+.top-actions .glass{font-size:16px;padding:12px 20px;min-height:52px;font-weight:800}
+.count b{font-size:24px;color:#e2488a}
+.hints span{font-size:15px;padding:7px 14px 7px 7px;background:#fffffff0;box-shadow:0 4px 14px #3040581f;font-weight:700}
+.hints b{font-size:13px;padding:5px 11px;background:#ff5f9e}
+.copy h1{font-size:clamp(22px,2.6vw,34px);opacity:.75}.copy .lead{font-size:15px;font-weight:700;color:#3b4a52}.copy .eyebrow{font-size:15px;margin-bottom:8px}
+.play-actions button,.friend-actions button{font-size:15px;font-weight:800;min-height:52px;padding:11px 16px;background:linear-gradient(180deg,#fff,#eef7ff);box-shadow:0 4px 0 #c9dbe8,0 8px 18px #3040581a;border-color:#fff}
+.play-actions button:nth-child(1){background:linear-gradient(180deg,#ffe9f3,#ffd0e4);box-shadow:0 4px 0 #f0a6c6,0 8px 18px #e2488a26}
+.play-actions button:nth-child(2){background:linear-gradient(180deg,#e7fbff,#c9f0fb);box-shadow:0 4px 0 #94d6e8,0 8px 18px #2a93d026}
+.play-actions button:nth-child(3){background:linear-gradient(180deg,#fff7d9,#ffe99a);box-shadow:0 4px 0 #e8c95c,0 8px 18px #d0a02a26}
+.flavor{width:76px;height:94px;font-size:14px;font-weight:800;color:#3b4a52}.swatch{width:42px;height:42px}
+.friend-actions button[aria-pressed=true]{background:linear-gradient(180deg,#3aa0c4,#2d86a3);color:#fff}
+.friend-actions button:nth-child(1){background:linear-gradient(180deg,#ffe9f3,#ffc9df);box-shadow:0 4px 0 #f0a6c6}
+.friend-actions button:nth-child(2){background:linear-gradient(180deg,#efe6ff,#dccbff);box-shadow:0 4px 0 #b9a2ee}
+.friend-actions button:nth-child(3){background:linear-gradient(180deg,#e7fbff,#c4eefb);box-shadow:0 4px 0 #94d6e8}
+.friend-actions button:nth-child(4){background:linear-gradient(180deg,#fff7d9,#ffe58f);box-shadow:0 4px 0 #e8c95c}
+.friend-actions button:nth-child(5){background:linear-gradient(180deg,#e9ffe9,#c6f3c6);box-shadow:0 4px 0 #8fd68f}
