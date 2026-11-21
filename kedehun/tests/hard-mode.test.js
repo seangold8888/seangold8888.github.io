@@ -150,7 +150,7 @@ test('hype recovers only to the soft cap, waits after a hit, and rewards shrink 
   g.hype = 95; g.rewardHype(6); assert.ok(g.hype - 95 < 1, 'near the top a kill barely helps');
 });
 
-test('rescue arrives after the same hit counts as Hogwarts: 3 back to back, never easier than normal at 8s', async () => {
+test('rescue arrives after the same hit counts as Magic School: 3 back to back, never easier than normal at 8s', async () => {
   async function hitsToRescue(interval) {
     const { g } = await hardGame();
     g.enemies = []; g.projectiles = [];

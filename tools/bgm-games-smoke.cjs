@@ -30,7 +30,7 @@ const GAMES = [
   { url: "/princess/", track: "princess.mp3", name: "공주 옷장" },
   { url: "/bori/", track: "bori.mp3", name: "보리 젬" },
   { url: "/odyssey/", track: "odyssey.mp3", name: "오디세이", starters: ["시작", "모험", "출발"] },
-  { url: "/hogwarts/", track: "hogwarts.mp3", name: "호그와트", starters: ["시작", "입학", "출발"] },
+  { url: "/magic/", track: "magic-school.mp3", name: "꼬마 마법학교", starters: ["시작", "입학", "출발"] },
   { url: "/kedehun/", track: "kedehun.mp3", name: "케데헌", selectors: ["#startBtn"], starters: ["무대 출격", "시작"] },
   { url: "/kart/", track: "kart-candy-parade-v1.mp3", name: "카트", starters: ["시작", "출발", "레이스"] },
   { url: "/kart3d/", track: "kart-candy-parade-v1.mp3", name: "3D 카트", starters: ["시작", "출발", "레이스"] }

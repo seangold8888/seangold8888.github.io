@@ -2,7 +2,7 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.resolve(__dirname,'../..');
 const read=f=>fs.readFileSync(path.join(root,f),'utf8');
-const html=read('hogwarts/index.html'),main=read('kart/src/main.js');
+const html=read('magic/index.html'),main=read('kart/src/main.js');
 const scripts=[...html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)].map(m=>m[1]);
 test('all magic school scripts and kart scripts compile',()=>{
   scripts.forEach(s=>new vm.Script(s));

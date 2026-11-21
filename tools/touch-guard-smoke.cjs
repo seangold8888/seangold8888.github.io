@@ -13,7 +13,7 @@ const server = http.createServer((q, r) => {
   r.writeHead(200, { "Content-Type": types[path.extname(f)] || "application/octet-stream" }); r.end(fs.readFileSync(f));
 });
 const GAMES = [
-  ["/hogwarts/", "[data-action]"],
+  ["/magic/", "[data-action]"],
   ["/kart/", "canvas"],
   ["/kart3d/", "#t-left"],
   ["/odyssey/", "canvas"],

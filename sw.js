@@ -1,7 +1,7 @@
 "use strict";
 
 // Advance this generation whenever a shared shell or optional game's immutable assets change.
-const CACHE_VERSION = "v281";
+const CACHE_VERSION = "v282";
 const CACHE_PREFIX = "adventure-box-";
 // 큰 그림과 소리(삼국지 배경 200MB+, 저장한 이야기 오디오)는 배포 번호와 따로 둔다.
 // 배포마다 이 캐시를 버리면 기기가 236MB를 다시 받고, "여행 전에 이야기 저장"도 지워졌다.
@@ -1224,8 +1224,8 @@ const OPTIONAL_SHELL = [
   "./avengers/icons/multiverse-icon-512.png",
   "./avengers/icons/multiverse-icon.svg",
   "./bori/",
-  "./hogwarts/",
-  "./hogwarts/icon.png",
+  "./magic/",
+  "./magic/icon.png",
   "./kart/",
   "./kart/src/music.js",
   "./kart/src/mode7.js",
@@ -1601,7 +1601,7 @@ const OPTIONAL_SHELL = [
   "./assets/covers/cover_kart.webp",
   "./assets/covers/cover_gem.webp",
   "./assets/covers/cover_stage.webp",
-  "./assets/covers/cover-hogwarts-game-v1.webp",
+  "./assets/covers/cover-magic-school-v1.webp",
   "./assets/covers/cover-kedehun-team-v1.webp",
   "./assets/covers/cover-ribbon-room-v1.webp",
   "./assets/covers/cover-sanrio-kart-team-v1.webp",
@@ -2195,7 +2195,7 @@ const BACKGROUND_WARM_CONCURRENCY = 2;
 const BACKGROUND_RETRY_MS = 5 * 60 * 1000;
 const AUDIO_FETCH_TIMEOUT_MS = 45000;
 const NAVIGATION_ROUTES = [
-  "game", "cards", "story", "multiverse", "avengers", "bori", "hogwarts", "kart", "kart3d",
+  "game", "cards", "story", "multiverse", "avengers", "bori", "magic", "kart", "kart3d",
   "kedehun", "odyssey", "princess", "sanguo", "slime", "math", "webtoon", "plane", "dive", "towers",
 ];
 
