@@ -32,16 +32,16 @@ export const SWAP_EVERY = 5.5;        // 빠르게 천천히 판: 박자가 바�
 //   band    (circle) 빠르기 비율 성공 띠 ±
 //   gain    성공 때 오르는 높이, slip 놓쳤을 때 내려가는 높이, wobble 창 밖 톡(흔들림)
 //   step    덤 후프 하나 얻는 연속 성공 수, extra 덤 후프 최대 수
-export const LEVELS = Object.freeze([
-  Object.freeze({ kid: "taeo", mode: "tap", period: [1.5, 1.3, 1.12], window: 0.3, perfect: 0.1, band: 0, gain: 0.16, slip: 0.36, wobble: 0.08, step: 6, extra: 1 }),
-  Object.freeze({ kid: "", mode: "tap", period: [1.3, 1.12, 0.98], window: 0.24, perfect: 0.08, band: 0, gain: 0.15, slip: 0.36, wobble: 0.1, step: 7, extra: 2 }),
-  Object.freeze({ kid: "jaei", mode: "circle", period: [0.95, 0.8, 0.7], window: 0, perfect: 0.09, band: 0.24, gain: 0.15, slip: 0.36, wobble: 0, step: 8, extra: 2 }),
-  Object.freeze({ kid: "", mode: "circle", period: [0.85, 0.7, 0.6], window: 0, perfect: 0.07, band: 0.19, gain: 0.14, slip: 0.38, wobble: 0, step: 8, extra: 2 }),
+export const LEVELS = Object.freeze([   // 11-22 대표님 "훌라후프는 너무 어렵던데" → 느리게·넓게·덜 처지게
+  Object.freeze({ kid: "taeo", mode: "tap", period: [1.6, 1.45, 1.3], window: 0.38, perfect: 0.13, band: 0, gain: 0.2, slip: 0.26, wobble: 0.04, step: 5, extra: 1 }),
+  Object.freeze({ kid: "", mode: "tap", period: [1.4, 1.25, 1.1], window: 0.3, perfect: 0.1, band: 0, gain: 0.18, slip: 0.3, wobble: 0.06, step: 6, extra: 2 }),
+  Object.freeze({ kid: "jaei", mode: "circle", period: [1.2, 1.05, 0.95], window: 0, perfect: 0.13, band: 0.33, gain: 0.2, slip: 0.26, wobble: 0, step: 6, extra: 2 }),
+  Object.freeze({ kid: "", mode: "circle", period: [1.0, 0.85, 0.75], window: 0, perfect: 0.1, band: 0.28, gain: 0.17, slip: 0.32, wobble: 0, step: 7, extra: 2 }),
 ]);
 // 너무 빨리 돌린 바퀴는 느린 바퀴보다 덜 처진다(신나서 빨리 돌린 것)
 export const FAST_SLIP = 0.6;
 // circle: 손가락이 거의 멈추면(목표의 STALL 배 미만) 후프가 계속 처진다(초당 DRAIN)
-export const STALL = 0.45, DRAIN = 0.5;
+export const STALL = 0.3, DRAIN = 0.4;
 
 // 몸으로 돌리기(카메라): 몸은 손가락보다 느리고 감지가 0.1초쯤 늦다 → 느리게, 창은 가장 빠른 한 바퀴의 windowFrac 만큼 넓게
 export const CAMERA = Object.freeze({ periodMul: 1.3, windowFrac: 0.44, perfectFrac: 0.15 });
@@ -52,17 +52,17 @@ export const MAX_HOOPS = 4;           // 덤 후프 + 요술 후프 덤까지 �
 // 메달 기준 점수(level 별). 보너스 문제(한 번에 맞힘 보상)를 받는 보통 판 기준.
 // tests/hula.test.mjs 가 모의 실험(성공률 85% → 금 근처, 65% → 은, 40% → 동)과 맞는지 검사한다.
 export const MEDALS = Object.freeze([
-  Object.freeze({ gold: 1000, silver: 700, bronze: 450 }),
-  Object.freeze({ gold: 1150, silver: 780, bronze: 500 }),
-  Object.freeze({ gold: 1300, silver: 830, bronze: 540 }),
-  Object.freeze({ gold: 1500, silver: 950, bronze: 620 }),
+  Object.freeze({ gold: 1020, silver: 730, bronze: 510 }),
+  Object.freeze({ gold: 1240, silver: 850, bronze: 550 }),
+  Object.freeze({ gold: 1270, silver: 850, bronze: 590 }),
+  Object.freeze({ gold: 1400, silver: 950, bronze: 640 }),
 ]);
 // 문제 모듈이 없을 때(요술 후프 없음 — 검증 브라우저 등). 요술 후프 몫이 빠지면 점수가 고르게 줄지 않아 표를 따로 둔다(같은 모의 실험).
 export const MEDALS_NOQUIZ = Object.freeze([
-  Object.freeze({ gold: 570, silver: 320, bronze: 145 }),
-  Object.freeze({ gold: 660, silver: 350, bronze: 160 }),
-  Object.freeze({ gold: 800, silver: 400, bronze: 180 }),
-  Object.freeze({ gold: 960, silver: 460, bronze: 205 }),
+  Object.freeze({ gold: 580, silver: 335, bronze: 150 }),
+  Object.freeze({ gold: 700, silver: 375, bronze: 170 }),
+  Object.freeze({ gold: 710, silver: 360, bronze: 150 }),
+  Object.freeze({ gold: 880, silver: 425, bronze: 180 }),
 ]);
 export function medalTable(level, quizOn = true) {
   const i = Math.max(0, Math.min(3, level | 0));

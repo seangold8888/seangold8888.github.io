@@ -7,10 +7,10 @@ export const SLOTS = [
     load: () => import("./jumprope.js?v=2") },
 
   { id: "baseball", name: "야구", icon: "⚾",
-    load: () => import("./baseball.js?v=1") },
+    load: () => import("./baseball.js?v=2") },
 
   { id: "hula", name: "훌라후프", icon: "⭕",
-    load: () => import("./hula.js?v=1") },
+    load: () => import("./hula.js?v=2") },
 
   { id: "soccer", name: "축구", icon: "⚽",
     load: () => import("./soccer.js?v=1") },

@@ -14,9 +14,10 @@ import { SWING_LEAD } from "../events/baseball-rules.js?v=1";
 
 const H = 340;                          // 아이 키(world) — 줄넘기와 같은 배율(그림판 kidH 기준)
 const TAU = Math.PI * 2;
-const ART_V = 1;                        // 야구 그림 주소 ?v= (sw.js 목록과 같이 올린다)
+const ART_V = 2;                        // 야구 그림 주소 ?v= (sw.js 목록과 같이 올린다)
 // 아이별: contact 프레임에서 공이 방망이에 닿는 자리(발 기준, 그린 키 비율). 영상 프레임에서 잰 값.
-const CONTACT = { jaei: { x: 0.25, y: -0.4 }, taeo: { x: 0.35, y: -0.33 } };
+// 11-22 뒷모습 타자(투수를 바라봄, 왼쪽으로 휘두름): 맞는 자리는 아이 왼쪽 앞
+const CONTACT = { jaei: { x: -0.28, y: -0.52 }, taeo: { x: -0.318, y: -0.426 } };
 const GOLD = ["#ffd23f", "#fff7a8", "#ffffff", "#ffb300", "#ff9a1f"];
 const FIRE = [["#ff4d6d", "#ffd23f", "#ffffff"], ["#3ec1ff", "#ffffff", "#b98bff"], ["#7cff6b", "#fff7a8", "#ffffff"], ["#ff9a1f", "#ffd23f", "#ff4d6d"], ["#b98bff", "#ff8ad8", "#ffffff"]];
 
@@ -62,13 +63,14 @@ export function createView({ root, kid, demo = false, frame = null, safe = null 
     if (sa) { const sc = st.H / 1000 * Math.max(0.2, st.cam.tzoom * st.coverZoom()); vw = Math.min(PW, (sa.right - sa.left) / sc * 0.92); }
     // 좁은 세로 화면: 투수를 더 뒤(위)에 작게 → 공이 위에서 아래로 길게 온다. 넓은 화면: 타자 왼쪽·투수 오른쪽.
     const tall = vw < 480;
-    const batX = tall ? -vw * 0.13 : -Math.max(78, Math.min(vw * 0.25, 330)), pitX = tall ? vw * 0.2 : Math.max(70, Math.min(vw * 0.22, 300));
+    // 11-22 타자를 뒤에서 본다(야구 게임 화면처럼): 타자는 앞쪽 가운데 오른편, 홈 플레이트는 타자 왼쪽 앞, 투수는 그 똑바로 뒤(깊이)
+    const batX = tall ? vw * 0.1 : Math.min(vw * 0.14, 190), homeX = batX - 0.34 * KH, pitX = homeX + (tall ? 0 : 6);
     const img = (fx, fy) => ({ x: -PW / 2 + fx * PW, y: -ground * PH + fy * PH });
     return {
-      vw, PH, PW, img, batX, pitX, pitY: tall ? -185 : -128, pitS: tall ? 0.42 : 0.56, tall,
+      vw, PH, PW, img, batX, pitX, pitY: tall ? -195 : -165, pitS: tall ? 0.4 : 0.46, tall,
       horizon: img(0, 0.574).y,
       contact: { x: batX + cp.x * KH, y: cp.y * KH },
-      home: { x: batX + 0.27 * KH, y: 10 },
+      home: { x: homeX, y: 10 },
     };
   }
 

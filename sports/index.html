@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>재이의 운동회 · PLAYGROUND</title>
 <link rel="preload" href="../sanguo/fonts/pretendard/PretendardVariable.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=1">
+<link rel="stylesheet" href="style.css?v=2">
 <script src="../assets/study/play-timer.js?v=4"></script>
 <script src="../assets/touch-guard.js?v=1"></script>
 <script src="../math/curriculum.js?v=21"></script>
@@ -36,7 +36,8 @@
     <h1 class="logo"><span class="b">재이의</span> <span class="w">운동회</span></h1>
     <p class="lead">청군 백군, 누가 이길까?</p>
     <div class="kids" id="kidRow" role="group" aria-label="누가 나갈까요? (둘 다 고르면 청백전)"></div>
-    <div class="board" id="board" aria-label="메달판"></div>
+    <p class="pick-cap">👇 하고 싶은 종목을 눌러요</p>
+    <div class="board" id="board" aria-label="종목 고르기"></div>
     <div class="title-actions">
       <button class="go" id="goBtn" type="button">출발!</button>
     </div>
@@ -155,6 +156,6 @@
 
 <div class="toast" id="toast" hidden></div>
 
-<script type="module" src="src/main.js?v=1"></script>
+<script type="module" src="src/main.js?v=3"></script>
 </body>
 </html>

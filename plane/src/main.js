@@ -170,7 +170,7 @@ let mode = "start";                  // start | play | quiz | over
 // 미리보기 비행(시작 화면 뒤): 진짜 엔진을 그대로 돌리지만 소리·문제·하트·필살기·기록은 없다. demoY = 비행기가 나는 높이(시작 패널 바로 위).
 let demo = false, demoY = 0, demoT = 0, demoAimT = 0;
 let player, bullets, enemies, drops, rain, sparks, clouds, pops, rings, warns, smoke, zaps, bombs, booms;
-let level, hearts, dist, wave, queue, waveGap, fireT, solved, firstTries, shield, shake, banner, bannerT, halfStep, flash = 0, trailT = 0, clock = 0, bannerBig = false;
+let over = 0, level, hearts, dist, wave, queue, waveGap, fireT, solved, firstTries, shield, shake, banner, bannerT, halfStep, flash = 0, trailT = 0, clock = 0, bannerBig = false;
 let path = {}, missileT = 0, boltT = 0, bombT = 0, boomT = 0, boomSide = 1, orbAng = 0, yr = null;
 let spill = [];                       // 다람쥐 두목을 이기면 쏟아지는 간식 그림(그림만, 줍는 것 아님)
 const rnd = (a, b) => a + Math.random() * (b - a);
@@ -186,7 +186,7 @@ function reset() {
   tune = tuning(tuneOf(pilot)); runStars = 0; starsAtStart = stars;
   level = 1; hearts = tune.hearts; dist = 0; wave = 0; queue = []; waveGap = 1.2; fireT = 0;
   path = {}; missileT = 0; boltT = 0; bombT = 1; boomT = 0.5; ultAt = -1; ultMini = false; gauge = 0; ultStar = null; ultQueued = false; ultTries = 0; ultEarned = 0; FX.reset();
-  solved = 0; firstTries = 0; shield = 0; shake = 0; banner = ""; bannerT = 0; halfStep = 0; quizCool = 0;
+  over = 0; solved = 0; firstTries = 0; shield = 0; shake = 0; banner = ""; bannerT = 0; halfStep = 0; quizCool = 0;
   // 첫 별 보장: 출발 3~4초에 비행기 바로 앞으로 내려온다(별을 못 만나 수십 초 동안 문제·보상이 없던 문제)
   if (!demo) drops.push({ x: FW / 2, y: yr.home - 300, vy: 70, t: 0, first: true });
   hud();
@@ -195,7 +195,8 @@ function hud() {
   $("hearts").textContent = "♥".repeat(Math.max(0, hearts)) + "♡".repeat(Math.max(0, tune.hearts - hearts));
   // 좁은 화면(폰 세로)에서는 "8단계 미사일"처럼 짧게(말줄임표로 잘리지 않게). 긴 이름은 접근성 이름으로 남긴다.
   const full = weaponLabel(level, path), w = W();
-  $("weaponName").textContent = innerWidth < 520 ? level + "단계 " + (w.main ? MAINS[w.main].name : w.name) : full;
+  const plus = over ? " ⚡+" + over : "";
+  $("weaponName").textContent = (innerWidth < 520 ? level + "단계 " + (w.main ? MAINS[w.main].name : w.name) : full) + plus;
   $("weaponName").title = full;
   $("pips").innerHTML = Array.from({ length: MAX_WEAPON }, (_, i) => '<i class="' + (i < level ? "on" : "") + '"></i>').join("");
   $("dist").textContent = Math.floor(dist) + "m";
@@ -361,7 +362,7 @@ let quiz = null, quizCool = 0;   // quizCool: 문제를 막 끝낸 뒤 잠깐(�
 function openQuiz() {
   mode = "quiz"; grab = null; S.gate(true);
   const nextFork = forkAt(level + 1);
-  const title = level >= MAX_WEAPON ? "맞히면 보호막이 생겨요"
+  const title = level >= MAX_WEAPON ? (over >= 10 ? "맞히면 별 보너스!" : "맞히면 파워 업! 공격 +15%")
     : nextFork === "main" ? "맞히면 새 무기를 골라요! " + MAIN_IDS.map(id => MAINS[id].name).join(" · ")
     : nextFork === "side" ? "맞히면 곁무기를 골라요! " + SIDE_IDS.map(id => SIDES[id].name).join(" · ")
     : "맞히면 무기가 세져요 → " + weapon(level + 1, path).name;
@@ -601,6 +602,11 @@ function solve(firstTry, growth) {
     if ((now.helpers || 0) > (before.helpers || 0)) gains.push("호위기 +" + now.helpers);
     if (SHIELD_LEVELS.includes(level)) { shield = Math.min(2, shield + 1); gains.push("보호막 +1"); }
   }
+  else if (level >= MAX_WEAPON) {
+    over = Math.min(10, over + 1); S.play("levelup", level); shoutLater("upgrade", 550);
+    if (over % 3 === 0) shield = Math.min(2, shield + 1);
+    msg = over >= 10 ? "파워 최대! 공격 2.5배" : "파워 업! 공격 +" + Math.round(over * 15) + "%" + (over % 3 === 0 ? " · 보호막 +1" : "");
+  }
   else { shield = Math.min(2, shield + 1); msg = quiz.firstTry ? "보호막 +1" : "정답! 보호막 +1 · 한 번 더 맞히면 무기 강화"; S.play("correct"); shoutLater("shield", 450); }
   // 갈림길 단계면 고른 뒤에 이름이 정해지므로 배너 문구는 그때 만든다.
   const fork = leveled ? forkAt(level) : null;
@@ -743,7 +749,10 @@ function fire() {
   }
   if (w.homing) for (let i = 0; i < w.homing && bullets.length < 140; i++) bullets.push({ x: player.x + (i ? 48 : -48), y: player.y + 4, vx: i ? 60 : -60, vy: -380, dmg: w.dmg, home: true, life: 2.2, hist: new Float32Array(16).fill(NaN), hi: 0 });
 }
+// 11-21 최고 단계(8) 뒤에도 계속 강해진다: 맞힐 때마다 파워 +15%(최대 10번 = 2.5배). 예전엔 보호막만 쌓였다.
+const powerMul = () => 1 + 0.15 * over;
 function damage(e, amount) {
+  amount *= powerMul();
   const before = e.hp;
   e.hp -= amount; if (!(e.flash > -0.14)) e.flash = 0.06;      // 연사로 맞아도 계속 하얗게 남지 않도록 번쩍임 사이를 띄운다
   // 대장 고비: 체력 2/3·1/3 을 넘을 때 크게 번쩍(효과만)
@@ -1190,5 +1199,5 @@ function demoPilot(rdt) {
 addEventListener("resize", () => { resize(); if (demo) measureDemo(); });
 resize(); startDemo();
 // 미리보기·테스트가 프레임 없이도 한 걸음씩 돌려 볼 수 있게 내놓는다(주소에 ?qa=1 일 때만).
-if (new URLSearchParams(location.search).get("qa") === "1") window.__plane = { begin, step: dt => { advance(dt); render(); }, tick: dt => { advance(dt); }, render, fx: () => Object.assign(FX.qa(), { workMs: +workMs.toFixed(2) }), ult: () => startUlt(false), miniUlt: () => startUlt(true), fxApi: FX, ultRules: ULT_RULES, ultState: () => ({ gauge, star: ultStar ? { x: ultStar.x, y: ultStar.y } : null, queued: ultQueued, at: ultAt, tries: ultTries, earned: ultEarned, on: ultOn() }), fillGauge: v => { gauge = v; }, catchUltStar: () => { if (ultStar) { ultStar.x = player.x; ultStar.y = player.y; ultStar.held = true; } }, kill: e => damage(e, e.hp + 1), demo: () => ({ on: demo, y: demoY, top: yr.min, wave, level, path, enemies: enemies.length, hearts }), get s() { return { mode, demo, level, hearts, wave, dist, solved, enemies: enemies.length, bullets: bullets.length, drops: drops.length, shield, pilot, stars, trail }; }, set: o => { if (o.level) level = o.level; if (o.main || o.side) path = Object.assign({}, path, o.main ? { main: o.main } : {}, o.side ? { side: o.side } : {}); if (o.shield != null) shield = o.shield; if (o.wave) wave = o.wave; if (o.stars != null) { stars = o.stars; paintTrails(); } if (o.trail != null) trail = o.trail; hud(); }, spawn, player: () => player, answer: () => { const q = GameQuiz && GameQuiz.peek(); return q && q.kind === "ask" ? q.answer : null; }, quiz: () => (GameQuiz ? GameQuiz.peek() : null), setPilot: i => pickPilot(i), world: () => ({ enemies, drops, rain }), drop: () => drops.push({ x: player.x, y: player.y - 60, vy: 70, t: 0 }), hurt, path: () => path, yr: () => yr, openQuiz, openFork: kind => openFork(kind, () => resume(weaponLabel(level, path) + "!", true)), guard: () => { if (guard) return { panel: guard.panel.id, armIn: Math.round(guard.armAt - performance.now()) }; const q = GameQuiz && GameQuiz.peek(); return q ? { panel: "quiz", armIn: q.armIn } : null; }, extra: () => ({ smoke: smoke.length, zaps: zaps.length, bombs: bombs.length, booms: booms.length }), sfxLog: () => S.qa.log(), sfx: S.qa, solve: firstTry => { const r = solve(firstTry !== false, null); return r; } };
+if (new URLSearchParams(location.search).get("qa") === "1") window.__plane = { begin, step: dt => { advance(dt); render(); }, tick: dt => { advance(dt); }, render, fx: () => Object.assign(FX.qa(), { workMs: +workMs.toFixed(2) }), ult: () => startUlt(false), miniUlt: () => startUlt(true), fxApi: FX, ultRules: ULT_RULES, ultState: () => ({ gauge, star: ultStar ? { x: ultStar.x, y: ultStar.y } : null, queued: ultQueued, at: ultAt, tries: ultTries, earned: ultEarned, on: ultOn() }), fillGauge: v => { gauge = v; }, catchUltStar: () => { if (ultStar) { ultStar.x = player.x; ultStar.y = player.y; ultStar.held = true; } }, kill: e => damage(e, e.hp + 1), power: () => ({ over, mul: powerMul(), shield }), solveAt: (lv, first = true) => { level = lv; quiz = { firstTry: first }; return solve(first, null); }, demo: () => ({ on: demo, y: demoY, top: yr.min, wave, level, path, enemies: enemies.length, hearts }), get s() { return { mode, demo, level, hearts, wave, dist, solved, enemies: enemies.length, bullets: bullets.length, drops: drops.length, shield, pilot, stars, trail }; }, set: o => { if (o.level) level = o.level; if (o.main || o.side) path = Object.assign({}, path, o.main ? { main: o.main } : {}, o.side ? { side: o.side } : {}); if (o.shield != null) shield = o.shield; if (o.wave) wave = o.wave; if (o.stars != null) { stars = o.stars; paintTrails(); } if (o.trail != null) trail = o.trail; hud(); }, spawn, player: () => player, answer: () => { const q = GameQuiz && GameQuiz.peek(); return q && q.kind === "ask" ? q.answer : null; }, quiz: () => (GameQuiz ? GameQuiz.peek() : null), setPilot: i => pickPilot(i), world: () => ({ enemies, drops, rain }), drop: () => drops.push({ x: player.x, y: player.y - 60, vy: 70, t: 0 }), hurt, path: () => path, yr: () => yr, openQuiz, openFork: kind => openFork(kind, () => resume(weaponLabel(level, path) + "!", true)), guard: () => { if (guard) return { panel: guard.panel.id, armIn: Math.round(guard.armAt - performance.now()) }; const q = GameQuiz && GameQuiz.peek(); return q ? { panel: "quiz", armIn: q.armIn } : null; }, extra: () => ({ smoke: smoke.length, zaps: zaps.length, bombs: bombs.length, booms: booms.length }), sfxLog: () => S.qa.log(), sfx: S.qa, solve: firstTry => { const r = solve(firstTry !== false, null); return r; } };
 requestAnimationFrame(frame);

@@ -6,7 +6,7 @@ import { sfx, unlock, setOn } from "./sfx.js?v=1";
 import { createQuiz } from "./quiz.js?v=1";
 import { createJuice } from "./juice.js?v=1";
 import { createReplay } from "./replay.js?v=1";
-import { SLOTS, isOpen, loadEvent } from "./events/index.js?v=1";
+import { SLOTS, isOpen, loadEvent } from "./events/index.js?v=3";
 import { medalFor, rankResults, teamPoints, addPoints, winner, cpuScore, MEDAL_LABEL, TEAM_POINT_CAPTION, teamScoreText, podiumGroups } from "./scoring.js?v=1";
 import { safeArea } from "./layout.js?v=1";
 import { poseCanvas, CEREMONY_POSE, CHEER_POSE, CALM_POSE } from "./render/pose-card.js?v=1";
@@ -128,7 +128,8 @@ function paintBoard() {
   const box = $("board"); box.innerHTML = "";
   for (const slot of SLOTS) {
     const open = isOpen(slot);
-    const tile = document.createElement("div"); tile.className = "tile" + (open ? "" : " soon");
+    const tile = document.createElement(open ? "button" : "div"); tile.className = "tile" + (open ? " pick" : " soon");
+    if (open) { tile.type = "button"; tile.setAttribute("aria-label", slot.name + " 하기"); tile.addEventListener("click", () => startPicked(slot.id)); }
     const ic = document.createElement("span"); ic.className = "ic"; ic.textContent = slot.icon;
     const nm = document.createElement("span"); nm.className = "nm"; nm.textContent = slot.name;
     tile.append(ic, nm);
@@ -348,6 +349,12 @@ $("goBtn").addEventListener("click", () => {
   const open = SLOTS.filter(isOpen), next = open.find(s => !session.played[s.id]) || open[0];
   openEventCard(next.id);
 });
+// 첫 화면 메달판 타일 = 그 종목 바로 고르기(11-22 대표님 "처음에 종목을 선택할 수 있게")
+function startPicked(id) {
+  sfx.whistle(); players = makeTeams(selected);
+  stopDemo(); $("demoRoot").hidden = true; if (lobby) { lobby.setPlayers(players); lobby.focus(null); }
+  openEventCard(id);
+}
 $("toTitle").addEventListener("click", () => { sfx.click(); goTitle(); });
 function goTitle() {
   hud.hide(); $("arena").hidden = true; $("demoRoot").hidden = false;

@@ -5,7 +5,7 @@ import * as R from "./baseball-rules.js?v=1";
 import { bb } from "./baseball-sfx.js?v=1";
 
 const VIEWS = {
-  stage: () => import("../views/baseball-stage.js?v=1"),
+  stage: () => import("../views/baseball-stage.js?v=2"),
 };
 
 export default {

@@ -59,6 +59,9 @@ h2 { margin: 0; font-size: clamp(24px, 4vw, 34px); font-weight: 900; letter-spac
 .tile .dots { display: flex; gap: 2px; }
 .tile .md { display: grid; place-items: center; width: 15px; height: 15px; border-radius: 50%; font-size: 11px; font-style: normal; line-height: 1; }
 .tile .md.none { border: 2px solid var(--kc); opacity: .45; }
+button.tile.pick { font: inherit; color: inherit; cursor: pointer; box-shadow: 0 4px 0 #c5d0f0; transition: transform .12s; }
+button.tile.pick:active { transform: translateY(3px); box-shadow: 0 1px 0 #c5d0f0; }
+.pick-cap { margin: 2px 0 -2px; font-size: 14px; font-weight: 850; color: #3b4a8a; text-align: center; }
 .tile.soon { opacity: .6; border-style: dashed; background: #f3f5fb; }
 .tile .soon-tag { font-size: 10.5px; font-weight: 800; color: #7a83a8; white-space: nowrap; }
 .title-actions { display: flex; gap: 8px; align-items: stretch; }

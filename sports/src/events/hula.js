@@ -2,7 +2,7 @@
 // 조작: 재이(level 2~) = 화면에 손가락으로 동그라미(빠르기를 후프에 맞추기) / 태오(level 0~1) = 박자 고리가 겹칠 때 톡.
 //       몸으로 하기 = 엉덩이 돌리기(hipCircle) 한 바퀴가 한 번(두 아이 모두, 넓은 창). 손가락도 늘 같이 된다.
 // 판: 1 빙글빙글 → 보너스 문제(요술 후프) → 2 빨라져요 → 보너스 문제 → 3 빠르게 천천히. 한 사람 약 75초.
-import * as R from "./hula-rules.js?v=1";
+import * as R from "./hula-rules.js?v=2";
 import { context as audioCtx, output as audioOut, isOn as soundOn } from "../sfx.js?v=1";
 
 const VIEWS = {

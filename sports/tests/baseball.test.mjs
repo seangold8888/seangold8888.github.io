@@ -162,10 +162,10 @@ test("그림: 재이·태오 swing(load<contact<finish, 30fps)·batidle 아틀�
   for (const kid of ["jaei", "taeo"]) {
     for (const a of ["swing", "batidle"]) {
       assert.ok(existsSync(here(`../art/${kid}/${a}.webp`)), `${kid}/${a}.webp`);
-      for (const ext of ["webp", "json"]) assert.ok(sw.includes(`"./sports/art/${kid}/${a}.${ext}?v=1"`), `sw ${kid}/${a}.${ext}`);
+      for (const ext of ["webp", "json"]) assert.ok(sw.includes(`"./sports/art/${kid}/${a}.${ext}?v=2"`), `sw ${kid}/${a}.${ext}`);
     }
     const m = JSON.parse(readFileSync(here(`../art/${kid}/swing.json`), "utf8"));
-    assert.equal(m.fps, 30); assert.equal(m.loop, false); assert.ok(m.frames.length >= 16 && m.anchor && m.height > 300);
+    assert.equal(m.fps, 30); assert.equal(m.loop, false); assert.ok(m.frames.length >= 14 && m.anchor && m.height > 300);
     assert.ok(m.events.load < m.events.contact && m.events.contact < m.events.finish && m.events.finish === m.frames.length - 1);
     const idle = JSON.parse(readFileSync(here(`../art/${kid}/batidle.json`), "utf8"));
     assert.equal(idle.loop, true); assert.deepEqual(idle.anchor, m.anchor, "준비 자세와 스윙의 발 자리가 같다"); assert.equal(idle.height, m.height);
