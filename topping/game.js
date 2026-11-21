@@ -1547,6 +1547,45 @@ if (ED.picker === "kid") { // 허브판: 아이 얼굴 4개 + 큰 출발. 고른
     $("ageChg").addEventListener("click", () => { box.classList.toggle("hide"); document.querySelector(".ask").classList.toggle("hide"); });
   }
 }
+// 가로 화면(아이패드): 세로 게임판 양옆을 스테이지 배경 + 정보 패널로 채운다 (11-21 "양옆이 빈칸")
+(function sidePanels() {
+  const css = document.createElement("style");
+  css.textContent = `#tpBg{position:fixed;inset:-40px;background:#1b0f0a center/cover no-repeat;filter:blur(16px) brightness(.5) saturate(1.25);z-index:0;transition:background-image .4s}
+  .tpSide{position:fixed;top:50%;transform:translateY(-50%);display:none;flex-direction:column;align-items:center;gap:14px;color:#fff;text-align:center;font-family:${FONT};pointer-events:none}
+  body.wide .tpSide{display:flex}
+  .tpSide .card{background:rgba(20,10,30,.55);border:2px solid rgba(255,255,255,.18);border-radius:22px;padding:14px 16px;box-shadow:0 10px 30px rgba(0,0,0,.35);backdrop-filter:blur(6px)}
+  .tpSide .big{font-size:58px;line-height:1}.tpSide .nm{font-size:26px;margin-top:4px;text-shadow:0 2px 0 #0008}
+  .tpSide .dots{display:grid;grid-template-columns:repeat(3,auto);gap:8px 12px;font-size:15px}
+  .tpSide .dots div{display:flex;flex-direction:column;align-items:center;gap:2px;opacity:.45}.tpSide .dots div.on{opacity:1}.tpSide .dots div.cur{transform:scale(1.18)}
+  .tpSide .dots i{font-style:normal;font-size:28px}.tpSide .dots s{text-decoration:none;color:#ffd84a;font-size:13px;letter-spacing:-1px}
+  .tpSide img{width:150px;height:150px;object-fit:contain;filter:drop-shadow(0 8px 14px #0009)}
+  .tpSide .stat{font-size:26px;display:flex;gap:8px;align-items:center;justify-content:center}`;
+  document.head.appendChild(css);
+  const bg = document.createElement("div"); bg.id = "tpBg"; document.body.prepend(bg);
+  const L = document.createElement("div"), R = document.createElement("div");
+  L.className = R.className = "tpSide"; document.body.append(L, R);
+  let last = "";
+  function upd() {
+    const side = (innerWidth - W * scale) / 2, wide = side >= 170;
+    document.body.classList.toggle("wide", wide);
+    const st = (S && !S.demo) ? S.stage : selStage(), stg = STAGES[st] || STAGES[0];
+    const bgId = stg.id === "table" ? "bg_room" : "bg_" + stg.id;
+    const kid = ED.picker !== "kid" ? null : (S && S.kid) ? castOf(S.kid) : castOf(lsGet("tp_kid") || ED.cast[1].id);
+    const bs = bestStars(), un = unlocked(), dy = dailyStage();
+    const key = [wide, side | 0, st, bgId, kid && kid.id, coins(), bookGet().length, JSON.stringify(bs), un].join("|");
+    if (key === last) return; last = key;
+    bg.style.backgroundImage = `url(art/g/${bgId}.webp)`;
+    if (!wide) return;
+    const w = Math.min(side - 24, 260) + "px";
+    L.style.left = R.style.right = Math.max(12, (side - parseFloat(w)) / 2) + "px"; L.style.width = R.style.width = w;
+    L.innerHTML = `<div class="card"><div class="big">${stg.icon}</div><div class="nm">${stg.name}</div>${st === dy && !dailyDone() ? `<div style="color:#ffd84a;font-size:18px">🔥 오늘 코인 ×2</div>` : ""}</div>
+      <div class="card dots">${STAGES.map((x, i) => `<div class="${i <= un ? "on" : ""}${i === st ? " cur" : ""}"><i>${i <= un ? x.icon : "🔒"}</i><s>${"★".repeat(bs[i] || 0)}${"☆".repeat(3 - (bs[i] || 0))}</s></div>`).join("")}</div>`;
+    R.innerHTML = `${kid && kid.sticker ? `<div class="card"><img src="${kid.sticker}" alt=""><div class="nm">${kid.name}</div></div>` : ""}
+      <div class="card"><div class="stat">${ED.coin.icon} ${coins()}</div><div class="stat">📒 ${bookGet().length} / ${STICKERS.length}</div></div>`;
+  }
+  addEventListener("resize", () => { last = ""; upd(); });
+  setInterval(upd, 700); setTimeout(upd, 50);
+})();
 $("again").addEventListener("click", () => start(S.age, S.kid));
 $("next").addEventListener("click", () => { lsSet(KEY("stsel"), $("next").dataset.to || String(S.stage + 1)); start(S.age, S.kid); });
 // 판마다 제목(허브판 = 탱탱볼 대작전): 로고 글자를 한 자씩 다시 만든다

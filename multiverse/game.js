@@ -1505,7 +1505,10 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
       for (var k2 = 1; k2 < 5; k2++) { g.beginPath(); g.moveTo(o.x - 60 + k2 * 24 + shakeX, o.y - 150); g.lineTo(o.x - 60 + k2 * 24 + shakeX, o.y); g.stroke(); }
       g.fillStyle = cageLook.top || "#5d6479"; g.fillRect(o.x - 70 + shakeX, o.y - 164, 140, 18);
       bar(g, o.x - 55, o.y - 186, 110, 12, o.hp / o.maxHp, "#58d6ff");
-      g.font = "900 22px system-ui"; g.fillStyle = "#fff"; g.fillText("때려서 열어요!", o.x, o.y - 196);
+      // 안내 글은 주인공에게 가장 가까운 철창 하나에만(겹쳐 두 줄로 보이지 않게, 11-21)
+      var pl = game.player, near = null, nd = 1e9;
+      if (pl) for (var ci = 0; ci < game.cages.length; ci++) { var cg = game.cages[ci]; if (cg.freed) continue; var cd = Math.hypot(cg.x - pl.x, cg.y - pl.y); if (cd < nd) { nd = cd; near = cg; } }
+      if (!pl || near === o) { g.font = "900 22px system-ui"; g.fillStyle = "#fff"; g.fillText("때려서 열어요!", o.x, o.y - 196); }
     } else if (o.kind === "spark") {
       var glow = 0.6 + 0.4 * Math.sin(t * 8 + o.x);
       if (o.z < 30) { g.fillStyle = "rgba(255,230,120,0.25)"; g.beginPath(); g.ellipse(o.x, o.y, 26, 8, 0, 0, Math.PI * 2); g.fill(); }

@@ -1359,6 +1359,13 @@ render();
 .shop button.poor{opacity:.5}
 .shop .fav{font-size:.68rem;color:#7b5cc4;font-weight:900}
 .room-msg{text-align:center;font-weight:900;color:#7a6a94;margin:.6rem 0 0;min-height:1.4rem}
+.rb-friend,.rb-hop{animation:rbHop 2.2s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
+.rb-host{cursor:pointer}
+@keyframes rbHop{0%,100%{transform:translateY(0) scale(1)}45%{transform:translateY(-16px) scale(1.03)}55%{transform:translateY(-16px) scale(1.03)}}
+.earn{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;margin:.7rem 0 .2rem;padding:.55rem .7rem;background:#fff4d8;border:2px solid #ffd98a;border-radius:1rem}
+.earn b{color:#b06a00;font-size:.95rem;margin-right:.2rem}
+.earn button{padding:.45rem .8rem;border-radius:99px;background:#fff;border:2px solid #ffc94d;font-weight:900;color:#8a5a00;font-size:.9rem}
+@media (min-width:900px) and (min-aspect-ratio:4/3){.room-grid{display:grid;grid-template-columns:1.25fr 1fr;gap:1rem;align-items:start}.room-grid .earn{margin-top:0}}
 </style>
 <div id="rb-toast"></div>
 <script>
@@ -1366,10 +1373,10 @@ render();
 /* ---------- 지갑·방 저장 ---------- */
 const RB_KEY='bori:room:v1';
 function rbLoad(){
-  const d={ribbons:0,owned:{},equip:{},missions:{day:'',done:[]},partyDone:false,visits:{}};
+  const d={ribbons:0,owned:{},equip:{},missions:{day:'',done:[]},partyDone:false,visits:{},welcome:false};
   try{const r=JSON.parse(localStorage.getItem(RB_KEY)||'null'); if(r&&typeof r==='object'){
     d.ribbons=Number.isFinite(+r.ribbons)?Math.max(0,Math.min(99999,Math.floor(+r.ribbons))):0;
-    d.partyDone=!!r.partyDone;
+    d.partyDone=!!r.partyDone; d.welcome=!!r.welcome;
     for(const s of Object.keys(ROOM_ITEMS)){
       const ids=ROOM_ITEMS[s].map(x=>x.id);
       d.owned[s]=Array.from(new Set([ROOM_ITEMS[s][0].id].concat(Array.isArray(r.owned&&r.owned[s])?r.owned[s].filter(i=>ids.includes(i)):[])));
@@ -1398,6 +1405,9 @@ const ROOM_ITEMS={
 const FRIEND_SPOT={cinnamoroll:[215,330],myMelody:[790,340],helloKitty:[500,392],kuromi:[640,210]};
 const FRIEND_LINE={cinnamoroll:'구름 침대 폭신해!',myMelody:'딸기 소파 최고야!',helloKitty:'사과파이 냠냠!',kuromi:'달 조명 멋지잖아!'};
 let RB=rbLoad();
+// 11-21 업그레이드: 처음 오면 키티가 리본 30개 선물 → 바로 가구 2개를 살 수 있다
+if(!RB.welcome){ RB.welcome=true; RB.ribbons+=30; rbSave(); setTimeout(()=>rbToast('🎁 키티의 환영 선물! 🎀 +30'),900); }
+const HOST_LINE=()=>RB.ribbons>=10?'리본으로 가구를 사 봐!':'놀이하고 리본을 모아 와!';
 
 const O='#5b3a6e';
 function svgWall(id){
@@ -1472,10 +1482,13 @@ function friendsHere(eq){
 function roomSvg(eq,withFriends){
   eq=eq||RB.equip;
   const fr=withFriends?friendsHere(eq):[];
-  const friendSvg=fr.map((f,i)=>{const [x,y]=FRIEND_SPOT[f];return `<g class="rb-friend"><circle cx="${x}" cy="${y}" r="46" fill="#fff" stroke="#fff" stroke-width="8"/>
+  const friendSvg=fr.map((f,i)=>{const [x,y]=FRIEND_SPOT[f];return `<g class="rb-friend" style="animation-delay:${i*0.35}s"><circle cx="${x}" cy="${y}" r="46" fill="#fff" stroke="#fff" stroke-width="8"/>
     <foreignObject x="${x-42}" y="${y-42}" width="84" height="84"><div xmlns="http://www.w3.org/1999/xhtml" class="portrait ${f}" style="width:84px;height:84px;margin:0;border-width:0;box-shadow:none"></div></foreignObject>
     <g transform="translate(${x+30},${y-70})"><rect x="0" y="-22" width="${FRIEND_LINE[f].length*17+20}" height="34" rx="17" fill="#fff" stroke="#ffc9dc" stroke-width="3"/><text x="10" y="2" font-size="17" font-weight="900" fill="#c0306a" font-family="Malgun Gothic,sans-serif">${FRIEND_LINE[f]}</text></g></g>`;}).join('');
-  return `<svg viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg">${svgWall(eq.wall)}${svgFloor()}${svgWindow(eq.window)}${svgLamp(eq.lamp)}${svgRug(eq.rug)}${svgDeco(eq.deco)}${svgBed(eq.bed)}${svgSofa(eq.sofa)}${svgTable(eq.table)}${friendSvg}</svg>`;
+  const hl=HOST_LINE(), host=fr.includes('helloKitty')?'':`<g class="rb-host" data-r="host"><ellipse cx="600" cy="520" rx="80" ry="16" fill="#00000022" stroke="none"/><g class="rb-hop"><circle cx="600" cy="420" r="86" fill="#fff" stroke="#ffc9dc" stroke-width="8"/>
+    <foreignObject x="520" y="340" width="160" height="160"><div xmlns="http://www.w3.org/1999/xhtml" class="portrait helloKitty" style="width:160px;height:160px;margin:0;border-width:0;box-shadow:none"></div></foreignObject></g>
+    <g transform="translate(${Math.round(600-(hl.length*26+36)/2)},300)"><rect x="0" y="-34" width="${hl.length*26+36}" height="52" rx="26" fill="#fff" stroke="#ee5f9a" stroke-width="4"/><text x="18" y="2" font-size="27" font-weight="900" fill="#c0306a" font-family="Malgun Gothic,sans-serif">${hl}</text></g></g>`;
+  return `<svg viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg">${svgWall(eq.wall)}${svgFloor()}${svgWindow(eq.window)}${svgLamp(eq.lamp)}${svgRug(eq.rug)}${svgDeco(eq.deco)}${svgBed(eq.bed)}${svgSofa(eq.sofa)}${svgTable(eq.table)}${host}${friendSvg}</svg>`;
 }
 function itemSvg(slot,id){
   const eq=Object.assign({},RB.equip,{[slot]:id});
@@ -1546,20 +1559,22 @@ function renderRoom(){
   document.getElementById('app').innerHTML=`<main class="game room-edit"><section class="panel">
     <div class="head"><h2>🛋️ 내 리본방</h2><button class="home" data-g="home">🏠 홈</button></div>
     <div class="rb-bar"><span class="rb-count">🎀 ${RB.ribbons}</span><span style="font-weight:900;color:#7a6a94">놀러 온 친구 ${fr.length}/4 ${fr.length===4?'🎉':''}</span></div>
-    <div class="room-wrap" style="cursor:default">${roomSvg(RB.equip,true)}</div>
+    <div class="room-grid"><div class="room-wrap" style="cursor:default">${roomSvg(RB.equip,true)}</div><div class="room-side">
+    <div class="earn"><b>🎀 리본 벌기</b><button data-g="whack">🔨 쿠로미 잡기</button><button data-g="memory">🎴 같은 그림</button><button data-g="quiz">🎓 퀴즈</button></div>
     <div class="slot-tabs">${ROOM_SLOTS.map(([id,name])=>`<button class="${id===roomSlot?'on':''}" data-r="slot" data-s="${id}">${name}</button>`).join('')}</div>
     <div class="shop">${ROOM_ITEMS[roomSlot].map(it=>{
       const own=RB.owned[roomSlot].includes(it.id), on=RB.equip[roomSlot]===it.id;
       const st=on?'on':own?'own':RB.ribbons>=it.price?'buy':'poor';
       const tag=on?'✓ 놓여 있어요':own?'놓기':'🎀 '+it.price;
       return `<button class="${st}" data-r="item" data-i="${it.id}">${itemSvg(roomSlot,it.id)}<strong>${it.name}</strong><small>${tag}</small>${it.fav?`<span class="fav">💌 ${NAMES[it.fav]}가 좋아해요</span>`:''}</button>`;}).join('')}</div>
-    <p class="room-msg">${roomMsg}</p>
+    <p class="room-msg">${roomMsg}</p></div></div>
   </section></main>`;
 }
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-r]'); if(!b) return;
   const r=b.dataset.r;
   if(r==='open'){ SFX.ok(); roomMsg='친구가 좋아하는 가구를 놓으면 놀러 와요!'; go('room'); }
+  else if(r==='host'){ if(route!=='room'){ SFX.ok(); roomMsg='친구가 좋아하는 가구를 놓으면 놀러 와요!'; go('room'); return; } SFX.ok(); FX.burst(40,.45); rbToast('💖 키티: '+HOST_LINE()); }
   else if(r==='slot'){ SFX.tap(); roomSlot=b.dataset.s; renderRoom(); }
   else if(r==='item'){
     const it=ROOM_ITEMS[roomSlot].find(x=>x.id===b.dataset.i); if(!it) return;

@@ -59,7 +59,7 @@ h2 { margin: 0; font-size: clamp(22px, 4vw, 32px); }
 
 /* 세계 지도 */
 .world-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
-.world { position: relative; overflow: hidden; min-height: 190px; border-radius: 24px; border: 2px solid var(--line);
+.world { position: relative; overflow: hidden; min-height: clamp(190px, calc((100dvh - 150px) / 2), 330px); border-radius: 24px; border: 2px solid var(--line);
   background-size: cover; background-position: center; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; }
 .world::before { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,8,30,0.15), rgba(10,8,30,0.82)); }
 .world > * { position: relative; }

@@ -207,7 +207,7 @@ function resize() {
   vw = Math.max(1, innerWidth); vh = Math.max(1, innerHeight);
   dpr = Math.min(devicePixelRatio || 1, dprCap);
   canvas.width = Math.round(vw * dpr); canvas.height = Math.round(vh * dpr);
-  const fieldPx = Math.min(vw, vh * 0.66);          // 가로 화면에서는 가운데 세로 띠만 놀이판
+  const fieldPx = Math.min(vw, vh * 0.76);          // 가로 화면에서는 가운데 세로 띠가 놀이판(11-21 더 넓게: 0.66 → 0.76), 양옆은 하늘이 이어지고 어둡게
   scale = fieldPx / FW; offX = (vw - fieldPx) / 2; FH = vh / scale;
   // 세로로 움직일 수 있는 구간. 화면 크기가 바뀌면 구간 안에서의 상대 위치를 그대로 옮긴다.
   FX.setField(FW, FH);
@@ -235,7 +235,7 @@ const toField = clientX => (clientX - offX) / scale, toFieldY = clientY => clien
 canvas.addEventListener("pointerdown", e => { audio(); if (mode !== "play") return; grab = { id: e.pointerId, dx: player.tx - toField(e.clientX), dy: player.ty - toFieldY(e.clientY) }; });
 canvas.addEventListener("pointermove", e => {
   if (mode !== "play" || !grab || grab.id !== e.pointerId) return;
-  player.tx = clamp(toField(e.clientX) + grab.dx, 20, FW - 20);
+  player.tx = clamp(toField(e.clientX) + grab.dx, 30, FW - 30);
   player.ty = clamp(toFieldY(e.clientY) + grab.dy, yr.min, yr.max);
 });
 const release = e => { if (grab && (!e || grab.id === e.pointerId)) grab = null; };
@@ -763,7 +763,7 @@ function update(dt, rdt = dt) {
   // 비행기
   const kx = (keys.ArrowRight || keys.d || keys.D ? 1 : 0) - (keys.ArrowLeft || keys.a || keys.A ? 1 : 0);
   const ky = (keys.ArrowDown || keys.s || keys.S ? 1 : 0) - (keys.ArrowUp || keys.w || keys.W ? 1 : 0);
-  if (kx) player.tx = clamp(player.tx + kx * 300 * rdt, 20, FW - 20);
+  if (kx) player.tx = clamp(player.tx + kx * 300 * rdt, 30, FW - 30);
   if (ky) player.ty = clamp(player.ty + ky * 260 * rdt, yr.min, yr.max);
   if (!demo) player.ty = clamp(player.ty, yr.min, yr.max);
   const dx = player.tx - player.x; player.x += dx * Math.min(1, rdt * 18); player.tilt += (Math.max(-1, Math.min(1, dx / 30)) - player.tilt) * Math.min(1, rdt * 10);
@@ -926,6 +926,13 @@ function render() {
   // 카메라: 흔들림(cam.x/y) + 살짝 당겨 보기(cam.z, 놀이판 가운데 기준)
   const k = scale * dpr, cz = FX.cam.z, cx = FW / 2, cy = FH / 2;
   ctx.setTransform(k * cz, 0, 0, k * cz, offX * dpr + k * (cx * (1 - cz) + FX.cam.x), k * (cy * (1 - cz) + FX.cam.y));
+  // 가로 화면 양옆: 같은 하늘이 이어져 흐르고 살짝 어둡게(빈 남색 띠 대신)
+  if (offX > 4) {
+    const side = offX / scale + 30, st = sky(0.4);
+    if (st) { const tw = FW + 24, th = tw * st.height / st.width; for (let y = (skyY % th) - th; y < FH + 12; y += th) for (let x = -tw; x > -side - tw; x -= tw) { ctx.drawImage(st, x, y, tw, th + 0.5); ctx.drawImage(st, FW - x - tw, y, tw, th + 0.5); } }
+    ctx.fillStyle = "rgba(8,12,40,.42)"; ctx.fillRect(-side, 0, side, FH); ctx.fillRect(FW, 0, side, FH);
+    ctx.fillStyle = "rgba(255,255,255,.25)"; ctx.fillRect(-2, 0, 2, FH); ctx.fillRect(FW, 0, 2, FH);
+  }
   ctx.save(); ctx.beginPath(); ctx.rect(0, 0, FW, FH); ctx.clip();
   // 하늘(남색 덧칠을 미리 구운 그림): 보통 0.24 · 7~8단계 0.32 · 대장전 0.36
   const tile = sky(FX.OFF.tint ? 0 : isBossWave(wave) && enemies.length ? 0.36 : level >= 7 ? 0.32 : 0.24);

@@ -10,6 +10,11 @@ const {createServer}=require('../preview-server.cjs');
    const context=await browser.newContext({viewport:{width,height},hasTouch:true}),page=await context.newPage(),errors=[];
    page.on('pageerror',e=>errors.push(e.message));
    await page.goto('http://127.0.0.1:'+server.address().port);
+   // 11-21: 첫 화면은 '바로 출전' 카드 하나 — 자세한 메뉴는 접혀 있다
+   await page.waitForSelector('#menu-quick');
+   assert.ok(await page.locator('#menu-quick').isVisible(),'quick deploy visible');
+   assert.equal(await page.locator('.cm-columns').isVisible(),false,'detail menu folded');
+   await page.locator('#menu-more').click();
    await page.waitForSelector('.cm-hero');
    await page.evaluate(()=>document.fonts.ready);
    await page.evaluate(()=>Promise.all([...document.querySelectorAll('.cm-portrait[style]')].map(el=>{const img=new Image();img.src=el.style.backgroundImage.slice(5,-2);return img.decode().catch(()=>{});})));
