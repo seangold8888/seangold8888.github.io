@@ -103,7 +103,7 @@ export function createQueue(env, opt = {}) {
     const x = r();
     const extra = x < 0.12 ? "balloon" : x < 0.22 ? "popcorn" : x < 0.32 ? "phone" : x < 0.4 ? "icecream" : x < 0.45 ? "sleepy" : "";
     return {
-      s, d: s, kid, h: kid ? 62 : 92 + r() * 14, skin: SKIN[r() * SKIN.length | 0], shirt: SHIRT[r() * SHIRT.length | 0],
+      s, d: s, kid, h: kid ? 62 : 92 + r() * 14, spr: kid ? "q-k" + (1 + (r() * 4 | 0)) : "q-" + (1 + (r() * 8 | 0)), skin: SKIN[r() * SKIN.length | 0], shirt: SHIRT[r() * SHIRT.length | 0],
       pants: PANTS[r() * PANTS.length | 0], hair: HAIR[r() * HAIR.length | 0], long: r() < 0.4, hat: r() < 0.22 ? 1 : r() < 0.18 ? 2 : 0,
       hatC: SHIRT[r() * SHIRT.length | 0], bal: BALLOON[r() * BALLOON.length | 0], extra, ph: r() * 6, lit: false, litT: 0, say: "", sayT: 0, alpha: 1,
     };
@@ -390,7 +390,8 @@ export function createQueue(env, opt = {}) {
         const [x, y] = pointAt(g, p.d);
         if (x < -60 * U || x > W + 60 * U) continue;
         const a = p.d > 1 ? clamp(1 - (p.d - 1) / (gap * 1.2), 0, 1) : 1;
-        items.push({ y, f: () => person(ctx, x, y, p.h * U, p, t, Math.abs(p.s - p.d) > gap * 0.06, a) });
+        const im = env.img && env.img(p.spr);
+        items.push({ y, f: () => im ? personArt(ctx, im, x, y, p.h * U, p, t, Math.abs(p.s - p.d) > gap * 0.06, a) : person(ctx, x, y, p.h * U, p, t, Math.abs(p.s - p.d) > gap * 0.06, a) });
         if (p.sayT >= 0 && p.sayT < 2.2 && p.say) items.push({ y: 1e6, f: () => smallBubble(ctx, x, y - p.h * U - 18 * U, p.say, U, p.lit) });
       }
       const k = kidsAt(g);
@@ -547,6 +548,20 @@ function rope(ctx, x0, x1, y, U) {
   }
 }
 
+// 11-21 드리미나 손님 그림(초록 키잉) — 걸을 땐 통통, 서 있으면 숨쉬기. 번개 모자(라이트닝 패스)는 그대로 그 위에.
+function personArt(ctx, im, x, y, h, v, t, walk, alpha) {
+  const s = h / 100, dh = h * 1.32, dw = dh * im.width / im.height;
+  ctx.save(); ctx.globalAlpha *= alpha; ctx.translate(x, y);
+  ctx.fillStyle = "rgba(70,40,40,.2)"; ctx.beginPath(); ctx.ellipse(0, 0, dw * 0.32, 6 * s, 0, 0, 7); ctx.fill();
+  const bob = walk ? Math.abs(Math.sin(t * 12 + v.ph)) * 5 * s : Math.sin(t * 1.6 + v.ph) * 1.2 * s;
+  const sq = walk ? 1 : 1 + Math.sin(t * 1.6 + v.ph) * 0.012;
+  ctx.save(); ctx.translate(0, -bob); ctx.scale(1 / sq, sq); ctx.drawImage(im, -dw / 2, -dh, dw, dh); ctx.restore();
+  if (v.lit) {
+    const k = clamp(v.litT * 3, 0, 1);
+    if (k > 0) { ctx.save(); ctx.translate(0, -dh - 6 * s - bob); ctx.scale(k, k); ctx.fillStyle = "rgba(255,225,77,.45)"; ctx.beginPath(); ctx.arc(0, 0, 30 * s, 0, 7); ctx.fill(); ctx.restore(); ctx.globalAlpha *= k; emo(ctx, "⚡", 0, -dh - 4 * s - bob, 22 * s); }
+  }
+  ctx.restore();
+}
 function person(ctx, x, y, h, v, t, walk, alpha) {
   const s = h / 100;
   ctx.save();

@@ -3,7 +3,7 @@
 // 놀이기구 이름(레이서스·스타워즈·피터팬·토이스토리·스파이더맨)은 아이들이 부르던 이름표일 뿐, 그림은 모두 이 게임만의 것.
 // 퍼레이드 마스코트도 이 게임만의 구름토끼·별곰.
 import { cover, text, star, sprite, Particles, Floaters, clamp, rr } from "../engine.js";
-import { createQueue } from "./parkqueue.js";
+import { createQueue } from "./parkqueue.js?v=2";
 import { unit, emo } from "./parkkit.js";
 import * as racers from "./parkracers.js";
 import * as space from "./parkspace.js";
