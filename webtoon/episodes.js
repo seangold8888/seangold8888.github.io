@@ -4962,4 +4962,6 @@
   ];
 
   root.WebtoonData = { CHARACTERS, EPISODES };
+  // 공개판(public/adapted.js)에서 같은 방식으로 컷을 쓰도록 꺼내 둔다.
+  root.WebtoonDSL = { C, bust, B, FX };
 })(typeof window !== "undefined" ? window : globalThis);

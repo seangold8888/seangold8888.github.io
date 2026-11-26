@@ -148,3 +148,17 @@ node webtoon/tools/preview.cjs 21 preview   # 21화를 캡처해서 preview/ 에
 새 화 하나를 만들 때마다: `episodes.js`에 대본 추가 → `preview.cjs`로 겹침 확인 → `words.js`에 새 말 추가 →
 `index.html`과 `sw.js`의 `?v=` 숫자와 `CACHE_VERSION`을 올리고(테스트 `cards/tests/pwa.test.js`, `hub-english-feedback.test.js`의 같은 번호도) →
 엑셀 기획표를 다시 만든다.
+
+## 공개판 (네이버 도전만화 등)
+
+가족용 `index.html`은 그대로 두고, 공개용은 `public.html`(공개판)로 따로 본다. 공개판에서는 **친구 실명만 가명으로** 바뀐다. 재이·태오·가족 이름과 얼굴 그림은 그대로다.
+
+- `public/edition.js` — 실명 → 가명 표(`NAMES`). 새 친구 이름이 나오면 한 줄 더한다. 받침이 있는 이름은 받침 있는 가명으로 골라야 “○○이가/○○아”가 맞는다.
+- `public/adapted.js` — 제미나이와 다시 쓴 **각색본**. 여기 넣은 화는 공개판에서 원래 화 대신 보인다. `C`, `bust`, `B`, `FX` 쓰는 법은 `episodes.js`와 같고, 이름은 실명으로 써도 가명으로 바뀐다.
+- `public.html` — `node webtoon/tools/make-public-page.cjs`로 `index.html`에서 자동으로 만든다. 직접 고치지 말고, `index.html`이나 `public/` 파일을 고친 뒤 다시 만든다.
+
+각색 순서:
+1. `node webtoon/tools/episode-script.cjs 1` → 1화 대본과 제미나이 부탁 글이 나온다(친구 이름은 가명, 말한 사람은 가장 가까운 인물로 추정). `… 1-10 폴더`로 여러 화를 파일로 뽑을 수도 있다.
+2. 제미나이 각색본을 받아 오면, 원래 화와 합쳐 `public/adapted.js`에 그 화를 넣는다(실제 대사는 그대로, 마지막 컷은 웃음).
+3. `node webtoon/tools/make-public-page.cjs` 후 `public.html#ep=1`로 확인한다.
+4. `node webtoon/tools/export-naver.cjs 1` → `webtoon-export/001/001_01.jpg …`(가로 690px, 한 장 세로 1600px 이하, 컷 경계에서 자름). 업로드 규격이 다르면 `--width`, `--max`, `--quality`로 맞춘다. 움직임·소리는 빠지고 멈춘 그림으로 나온다.
