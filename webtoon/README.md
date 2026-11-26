@@ -163,3 +163,11 @@ node webtoon/tools/preview.cjs 21 preview   # 21화를 캡처해서 preview/ 에
 2. 제미나이 각색본을 받아 오면, 원래 화와 합쳐 `public/adapted.js`에 그 화를 넣는다(실제 대사는 그대로, 마지막 컷은 웃음).
 3. `node webtoon/tools/make-public-page.cjs` 후 `public.html#ep=1`로 확인한다.
 4. `node webtoon/tools/export-naver.cjs 1` → `webtoon-export/001/001_01.jpg …`(가로 690px, 한 장 세로 1600px 이하, 컷 경계에서 자름). 업로드 규격이 다르면 `--width`, `--max`, `--quality`로 맞춘다. 움직임·소리는 빠지고 멈춘 그림으로 나온다.
+
+### 공개판 로고·대표 이미지·썸네일
+
+`webtoon/brand.html`에 그리고, `node webtoon/tools/make-brand.cjs`로 `webtoon/public/brand/`에 PNG를 뽑는다.
+- `logo.png`, `logo-tagline.png` — 투명 배경 작품명 로고(얼음 글자 + 고드름 + 레몬 조각, 띠: “어른은 얼음, 김서방은 짐방!”)
+- `cover-1000x1000.png`, `cover-860x660.png`, `cover-430x330.png` — 대표 이미지(얼음 속 아빠·엄마, 레몬 든 태오, 손가락질하는 재이). 가로가 넓으면 양옆 배경이 넓어지고 로고는 잘리지 않는다.
+- `ep001-202x120.png`, `ep001-404x240.png` — 회차 썸네일(그 화의 표지 컷). 다른 화는 `node webtoon/tools/make-brand.cjs ep 2 3`.
+업로드 화면 규격이 다르면 `make-brand.cjs`의 `SIZES`를 고친다.

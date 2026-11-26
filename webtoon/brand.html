@@ -1,0 +1,148 @@
+<!doctype html>
+<!-- 공개판 《얼음짐방》 로고·대표 이미지·회차 썸네일. node webtoon/tools/make-brand.cjs 로 PNG 를 뽑는다. -->
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&display=swap">
+<title>얼음짐방 브랜드</title>
+<style>
+  html, body { margin: 0; background: transparent; }
+  body { font-family: Jua, sans-serif; }
+  #stage { position: relative; overflow: hidden; }
+  #stage > svg { display: block; width: 100%; height: 100%; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script src="art.js"></script>
+<script src="words.js"></script>
+<script src="episodes.js"></script>
+<script src="public/adapted.js"></script>
+<script src="public/edition.js"></script>
+<script>
+(function () {
+  "use strict";
+  const A = window.WebtoonArt;
+  const INK = "#3a2a22";
+  const q = new URLSearchParams(location.search);
+  const mode = q.get("m") || "cover";
+  const W = +q.get("w") || 1000, H = +q.get("h") || 1000;
+  const stage = document.getElementById("stage");
+  stage.style.width = W + "px"; stage.style.height = H + "px";
+
+  // ── 로고: 얼음 글자(파란 얼음 + 고드름) + 레몬 조각 ──
+  function lemonSlice(x, y, r, rot) {
+    let segs = "";
+    for (let i = 0; i < 8; i++) {
+      const a0 = (i / 8) * Math.PI * 2 + 0.06, a1 = ((i + 1) / 8) * Math.PI * 2 - 0.06, ri = r * 0.78;
+      segs += `<path d="M0 0 L${Math.cos(a0) * ri} ${Math.sin(a0) * ri} A${ri} ${ri} 0 0 1 ${Math.cos(a1) * ri} ${Math.sin(a1) * ri} Z" fill="#fff27a" stroke="#fffbe0" stroke-width="${r * 0.05}"/>`;
+    }
+    return `<g transform="translate(${x} ${y}) rotate(${rot || 0})"><circle r="${r * 1.06}" fill="${INK}"/><circle r="${r}" fill="#ffd21f"/><circle r="${r * 0.86}" fill="#fffbe0"/>${segs}<circle r="${r * 0.1}" fill="#fffbe0"/></g>`;
+  }
+  function logo(cx, cy, size, tagline) {
+    const t = "얼음짐방";
+    const fs = size;
+    const common = `x="${cx}" y="${cy}" text-anchor="middle" font-family="Jua, sans-serif" font-size="${fs}" letter-spacing="${fs * 0.02}"`;
+    const w = fs * 3.9;
+    // 고드름: 글자 아래로 몇 개(진한 테두리 위, 글자 아래)
+    let ice = "";
+    [[-0.40, 0.34], [-0.29, 0.2], [-0.06, 0.28], [0.18, 0.2], [0.36, 0.32]].forEach(([dx, len]) => {
+      const x = cx + dx * w, y = cy + fs * 0.02, hw = fs * 0.07;
+      ice += `<path d="M${x - hw} ${y} Q${x} ${y - fs * 0.03} ${x + hw} ${y} L${x + hw * 0.15} ${y + fs * len} Q${x} ${y + fs * len + hw * 0.4} ${x - hw * 0.15} ${y + fs * len} Z" fill="#e6f9ff" stroke="${INK}" stroke-width="${fs * 0.04}" stroke-linejoin="round"/><path d="M${x - hw * 0.35} ${y + fs * 0.05} L${x - hw * 0.1} ${y + fs * len * 0.7}" stroke="#fff" stroke-width="${fs * 0.025}" stroke-linecap="round"/>`;
+    });
+    let tag = "";
+    if (tagline) {
+      const ty = cy + fs * 0.62, tw = fs * 3.0, th = fs * 0.42;
+      tag = `<g><rect x="${cx - tw / 2}" y="${ty - th * 0.72}" width="${tw}" height="${th}" rx="${th / 2}" fill="#ffd21f" stroke="${INK}" stroke-width="${fs * 0.035}"/>
+        <text x="${cx}" y="${ty}" text-anchor="middle" font-family="Jua, sans-serif" font-size="${fs * 0.24}" fill="${INK}">어른은 얼음, 김서방은 짐방!</text></g>`;
+    }
+    return `<g>
+      <defs>
+        <linearGradient id="iceG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4fdff"/><stop offset=".45" stop-color="#9fe0ff"/><stop offset="1" stop-color="#3a9fe6"/></linearGradient>
+        <clipPath id="hl"><rect x="0" y="${cy - fs * 0.8}" width="99999" height="${fs * 0.16}"/></clipPath>
+      </defs>
+      <text ${common} fill="none" stroke="${INK}" stroke-width="${fs * 0.2}" stroke-linejoin="round" transform="translate(${fs * 0.05} ${fs * 0.07})">${t}</text>
+      <text ${common} fill="none" stroke="${INK}" stroke-width="${fs * 0.2}" stroke-linejoin="round">${t}</text>
+      ${ice}
+      <text ${common} fill="none" stroke="#fff" stroke-width="${fs * 0.09}" stroke-linejoin="round">${t}</text>
+      <text ${common} fill="url(#iceG)">${t}</text>
+      <text ${common} fill="#fff" opacity=".75" clip-path="url(#hl)">${t}</text>
+      ${tag}
+      ${lemonSlice(cx + w * 0.47, cy - fs * 0.72, fs * 0.3, -18)}
+      ${sparkle(cx - w * 0.56, cy - fs * 0.62, fs * 0.15)}${sparkle(cx - w * 0.02, cy - fs * 0.98, fs * 0.09)}
+    </g>`;
+  }
+  function sparkle(x, y, r) {
+    return `<path transform="translate(${x} ${y})" d="M0 ${-r} Q${r * 0.18} ${-r * 0.18} ${r} 0 Q${r * 0.18} ${r * 0.18} 0 ${r} Q${-r * 0.18} ${r * 0.18} ${-r} 0 Q${-r * 0.18} ${-r * 0.18} 0 ${-r}Z" fill="#fff" stroke="${INK}" stroke-width="${r * 0.12}" stroke-linejoin="round"/>`;
+  }
+  function snow(Wd, Hd, n, seed) {
+    let s = "";
+    for (let i = 0; i < n; i++) {
+      const x = ((i * 137 + seed * 31) % 1000) / 1000 * Wd, y = ((i * 89 + seed * 17) % 1000) / 1000 * Hd, r = 3 + (i % 5) * 2.2;
+      s += `<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" opacity="${0.35 + (i % 3) * 0.2}"/>`;
+    }
+    return s;
+  }
+  // 얼음 상자(어른 = 얼음): 인물 위에 반투명 얼음을 씌운다
+  function iceCube(x, y, w, h, rot) {
+    return `<g transform="translate(${x} ${y}) rotate(${rot || 0})">
+      <rect x="${-w / 2}" y="${-h}" width="${w}" height="${h}" rx="${w * 0.12}" fill="#c9efff" opacity=".42"/>
+      <rect x="${-w / 2}" y="${-h}" width="${w}" height="${h}" rx="${w * 0.12}" fill="none" stroke="#5cb8ec" stroke-width="7"/>
+      <rect x="${-w / 2}" y="${-h}" width="${w}" height="${h}" rx="${w * 0.12}" fill="none" stroke="${INK}" stroke-width="3" opacity=".55"/>
+      <path d="M${-w * 0.36} ${-h * 0.9} q${w * 0.1} ${-h * 0.03} ${w * 0.3} ${-h * 0.02}" stroke="#fff" stroke-width="10" stroke-linecap="round" fill="none" opacity=".9"/>
+      <path d="M${-w * 0.4} ${-h * 0.8} v${h * 0.25}" stroke="#fff" stroke-width="8" stroke-linecap="round" opacity=".8"/>
+      <path d="M${w * 0.42} ${-h * 0.35} v${h * 0.22}" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".6"/>
+    </g>`;
+  }
+  // 한 장면을 0..1000 x 0..1000 좌표에 그린다(가로형은 가운데를 잘라 쓴다).
+  function scene(withLogo) {
+    let s = A.defs();
+    s += `<defs><radialGradient id="bgG" cx=".5" cy=".62" r=".75"><stop offset="0" stop-color="#fffbe0"/><stop offset=".45" stop-color="#d8f3ff"/><stop offset="1" stop-color="#7cc8f2"/></radialGradient></defs>`;
+    s += `<rect x="-600" width="2200" height="1000" fill="url(#bgG)"/>`;
+    // 레몬빛 햇살
+    let rays = "";
+    for (let i = 0; i < 18; i++) { const a = (i / 18) * Math.PI * 2; rays += `<path d="M500 700 L${500 + Math.cos(a) * 900} ${700 + Math.sin(a) * 900} L${500 + Math.cos(a + 0.09) * 900} ${700 + Math.sin(a + 0.09) * 900}Z" fill="#fff6b8" opacity=".55"/>`; }
+    s += rays + `<g transform="translate(-500 0)">${snow(2000, 1000, 90, 3)}</g>`;
+    // 바닥 얼음판
+    s += `<ellipse cx="500" cy="985" rx="1000" ry="120" fill="#eafaff" stroke="#9ad6f5" stroke-width="6"/>`;
+    // 아빠·엄마: 얼음 속(어른 = 얼음)
+    s += A.drawChar({ c: "appa", x: 175, y: 1010, s: 1.9, e: "shock", p: "up", o: "work" });
+    s += iceCube(175, 1030, 330, 590, -4);
+    s += A.drawChar({ c: "eomma", x: 835, y: 1010, s: 1.75, e: "surprised", p: "cover" });
+    s += iceCube(835, 1030, 310, 610, 5);
+    // 재이: 오른쪽 앞에서 손가락질
+    s += A.drawChar({ c: "jaei", x: 700, y: 1040, s: 2.05, e: "sly", p: "point", f: -1 });
+    // 태오: 가운데, 레몬 번쩍
+    s += A.drawChar({ c: "taeo", x: 455, y: 1060, s: 2.75, e: "laugh", p: "up" });
+    s += sparkle(300, 470, 22) + sparkle(640, 430, 16) + sparkle(70, 400, 18) + sparkle(950, 380, 14);
+    if (withLogo) s += logo(500, 190, 175, true);
+    return s;
+  }
+
+  let svg;
+  if (mode === "logo") {
+    svg = `<svg viewBox="0 0 1000 ${q.get("tag") === "1" ? 470 : 400}" xmlns="http://www.w3.org/2000/svg">${logo(500, 250, 190, q.get("tag") === "1")}</svg>`;
+  } else if (mode === "cover") {
+    // 정사각 1000 장면을 W x H 에 맞춘다(가로가 넓으면 위아래를 잘라 가운데).
+    // 가로가 넓으면 장면 전체가 세로에 맞게 들어가고 양옆으로 배경이 넓어진다(로고가 잘리지 않게).
+    const vbW = W >= H ? 1000 * W / H : 1000, vbH = W >= H ? 1000 : 1000 * H / W;
+    svg = `<svg viewBox="${(1000 - vbW) / 2} 0 ${vbW} ${vbH}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">${scene(q.get("logo") !== "0")}</svg>`;
+  } else if (mode === "ep") {
+    // 회차 썸네일: 그 화의 표지 컷 + 왼쪽 아래 작은 회차 표시
+    const data = window.WebtoonData;
+    const id = +q.get("ep") || 1;
+    const ep = data.EPISODES.find((e) => e.id === id);
+    const cover = ep.panels[ep.cover || 0];
+    const inner = A.panelSVG({ ...cover }).replace(/^<svg[^>]*>/, "").replace(/<\/svg>$/, "");
+    const ph = cover.h || 320;
+    const vbH = 400 * H / W;
+    const vbY = Math.max(0, (ph - vbH) / 2);
+    svg = `<svg viewBox="0 ${vbY} 400 ${vbH}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">${inner}</svg>`;
+  }
+  stage.innerHTML = svg;
+  document.fonts.ready.then(() => { document.body.dataset.ready = "1"; });
+})();
+</script>
+</body>
+</html>
