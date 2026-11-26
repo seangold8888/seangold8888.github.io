@@ -14,6 +14,11 @@
     "닌재": "닌우", // 태오가 ‘민재’를 ‘닌재’라고 부른 말
   };
 
+  // 공개판 작품명과 소개(네이버 도전만화 등록용과 같게).
+  const TITLE = "얼음짐방";
+  const INTRO = "어른을 ‘얼음’이라 부르는 반쪽 레몬 집착남 5살 태오, 아빠 ‘김서방’을 ‘짐방’이라 부르던 정리왕 누나 재이, 그리고 놀 때면 우주 악당이 되는 아빠까지—오늘도 조용할 날 없는 우리 집 이야기.";
+  root.SeriesTitle = TITLE;
+
   const pairs = Object.entries(NAMES).sort((a, b) => b[0].length - a[0].length);
   const swap = (s) => pairs.reduce((t, [from, to]) => t.split(from).join(to), s);
   function walk(v) {
@@ -33,5 +38,5 @@
   walk(data.EPISODES);
   ["TaeoWords", "TaeoSayings", "JaeiWords", "JaeiSayings", "JaeiBabyLikes"].forEach((k) => { if (root[k]) walk(root[k]); });
 
-  root.PublicEdition = { NAMES, swap, adaptedIds: adapted.map((e) => e.id) };
+  root.PublicEdition = { TITLE, INTRO, NAMES, swap, adaptedIds: adapted.map((e) => e.id) };
 })(typeof window !== "undefined" ? window : globalThis);

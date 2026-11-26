@@ -11,6 +11,21 @@ html = html
   .replace("<title>오늘도 우리 집</title>", '<meta name="robots" content="noindex">\n<title>오늘도 우리 집 (공개판)</title>')
   .replace(/(<script src="app\.js\?v=\d+"><\/script>)/, '<script src="public/adapted.js?v=' + ver("adapted.js") + '"></script>\n<script src="public/edition.js?v=' + ver("edition.js") + '"></script>\n$1')
   .replace('<link rel="manifest" href="../manifest.json">\n', "");
+// 작품명·소개는 public/edition.js 의 TITLE, INTRO 를 쓴다.
+global.window = globalThis;
+require(path.join(dir, "words.js")); require(path.join(dir, "episodes.js"));
+require(path.join(dir, "public/adapted.js")); require(path.join(dir, "public/edition.js"));
+const { TITLE, INTRO } = window.PublicEdition;
+must(html.includes("<h1>오늘도 우리 집</h1>"), "h1");
+must(/<p class="tagline">[^]*?<\/p>/.test(html), "tagline");
+html = html
+  .replace("<title>오늘도 우리 집 (공개판)</title>", `<title>${TITLE}</title>`)
+  .replace('content="오늘도 우리 집 — 가족 웹툰"', `content="${TITLE} — 가족 웹툰"`)
+  .replace('content="오늘도 우리 집">', `content="${TITLE}">`)
+  .replace('id="topTitle">오늘도 우리 집<', `id="topTitle">${TITLE}<`)
+  .replace("<h1>오늘도 우리 집</h1>", `<h1>${TITLE}</h1>`)
+  .replace(/<p class="tagline">[^]*?<\/p>/, `<p class="tagline">${INTRO}</p>`)
+  .replace(/<meta property="og:description" content="[^"]*">/, `<meta property="og:description" content="${INTRO}">`);
 html = html.replace("<!doctype html>\n", "<!doctype html>\n<!-- 자동으로 만든 파일: node webtoon/tools/make-public-page.cjs (직접 고치지 마세요) -->\n");
 fs.writeFileSync(path.join(dir, "public.html"), html);
 console.log("저장: webtoon/public.html");

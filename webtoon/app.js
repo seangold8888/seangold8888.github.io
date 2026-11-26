@@ -4,6 +4,7 @@
 
   const { panelSVG, drawChar, defs, background } = window.WebtoonArt;
   const { CHARACTERS, EPISODES } = window.WebtoonData;
+  const SERIES = window.SeriesTitle || "오늘도 우리 집"; // 공개판은 public/edition.js 에서 바꾼다
   const TAEO_WORDS = window.TaeoWords || [];
   const TAEO_SAYINGS = window.TaeoSayings || [];
   const JAEI_WORDS = window.JaeiWords || [];
@@ -306,13 +307,13 @@
       $("topTitle").textContent = `${ep.id}화 · ${ep.title}`;
       $("backLink").textContent = "◀ 목록";
       $("backLink").setAttribute("href", "#");
-      document.title = `${ep.id}화 ${ep.title} — 오늘도 우리 집`;
+      document.title = `${ep.id}화 ${ep.title} — ${SERIES}`;
     } else {
       renderHome();
-      $("topTitle").textContent = "오늘도 우리 집";
+      $("topTitle").textContent = SERIES;
       $("backLink").textContent = "◀ PLAYGROUND";
       $("backLink").setAttribute("href", "../game/");
-      document.title = "오늘도 우리 집";
+      document.title = SERIES;
     }
     window.scrollTo(0, 0);
     onScroll();
