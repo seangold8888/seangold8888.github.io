@@ -752,7 +752,7 @@
   .card.hero { --cover-size: 72%; --cover-pos: 50% 27%; background: linear-gradient(155deg, #46235c, #182e61); }
   .card.sea { --cover-pos: 50% 28%; }
   .card.war { --cover-pos: 50% 50%; }
-  .card.castle { --cover: url('assets/covers/cover-hogwarts-game-v1.webp'); --cover-size: cover; --cover-pos: 50% 42%; background: linear-gradient(145deg, #302257, #111832); }
+  .card.castle { --cover: url('assets/covers/cover-magic-school-v1.webp'); --cover-size: cover; --cover-pos: 50% 42%; background: linear-gradient(145deg, #302257, #111832); }
   .card.kart3d { --cover: url('assets/covers/cover-sanrio-kart-team-v1.webp'); --cover-pos: 50% 34%; }
   .card.kart { --cover: linear-gradient(180deg, rgba(20,16,50,.05), rgba(20,16,50,.45)), url('assets/covers/cover_kart.webp'); --cover-pos: 50% 50%; }
   .card.slime { --cover:url('assets/covers/cover_slime.svg'); --cover-pos:50% 30%; }
@@ -761,7 +761,10 @@
   .card.plane { --cover:url('plane/cover.webp'); --cover-pos:50% 60%; }
   .card.dive { --cover:url('dive/cover.webp'); --cover-pos:50% 50%; }
   .card.towers { --cover:url('towers/cover.webp'); --cover-pos:50% 50%; }
-  .card.topping { --cover:url('topping/cover.webp'); --cover-pos:50% 60%; }
+  .card.topping { --cover:url('topping/cover.webp?v=2'); --cover-pos:50% 60%; }
+  /* 11-21 대표님 "저작권 자료는 일단 숨기자" — 헬로키티·산리오 카트·케데헌 카드는 hidden(파일은 그대로) */
+  .card[hidden] { display: none !important; }
+  .card.sports { --cover:url('sports/cover.webp'); --cover-pos:50% 45%; }
   .card.stage { --cover: url('assets/covers/cover-kedehun-team-v1.webp'); --cover-pos: 50% 24%; }
   .card.gem { --cover: url('assets/covers/cover-ribbon-room-v1.webp'); --cover-pos: 55% 42%; }
   .card.princess { --cover-size: 78%; --cover-pos: 50% 22%; background: linear-gradient(150deg, #f7b8dc, #7e58c8); }
@@ -1325,6 +1328,9 @@
   }
   .card:active, .shop:active { box-shadow: 0 2px 6px rgba(40,80,140,.12); }
   @media (max-width: 599px) { .lobby-shell .games .card { min-height: 150px; } }
+  /* 카드 그림은 위쪽 3:2 칸에만 — 이름 띠에 가려 잘리지 않게(11-20 "게임사진이 다 잘려있어") */
+  .lobby-shell .games .card { min-height: 0; padding-top: 66.667%; justify-content: flex-end; }
+  .lobby-shell .games .card::before { inset: 0 0 auto 0; aspect-ratio: 3 / 2; height: auto; }
   /* 좁은 폭: 워드마크 칸은 글자 폭 아래로 줄지 않고, 티켓 글이 길면(영어 문구) 칩 안에서 줄을 바꾼다 */
   @media (max-width: 600px) {
     .topbar { grid-template-columns: auto max-content minmax(0, 1fr); }
@@ -1386,7 +1392,7 @@
             <button class="book-open parent-entry" id="bookOpen" type="button" aria-label="Open parent progress report">View Progress Report →</button>
           </div>
           <p class="daily" id="daily"></p>
-          <p class="reading-label" id="studyModeNote">English Storybooks · 5th is Jaei's Math Playground</p>
+          <p class="reading-label" id="studyModeNote">English Storybooks · 5th is Jay's Math Playground</p>
         </div>
       </details>
     </div>
@@ -1418,7 +1424,7 @@
   <a class="math-launch" id="mathPlaygroundLaunch" href="math/?from=hub">
     <span class="math-launch-copy">
       <small>No ticket needed · Counts toward today's study</small>
-      <strong>Jaei's Math Playground</strong>
+      <strong>Jay's Math Playground</strong>
       <span>One problem, one step! Cross the playground with friends.</span>
       <b class="math-launch-cta" id="mathLaunchAction">Choose problems and start →</b>
     </span>
@@ -1438,7 +1444,7 @@
       <span class="meta">
         <span class="name">Heroes</span>
         <span class="tags"><span class="genre">🦸 90s Hero Mission</span></span>
-        <span class="desc">Jaei and Teo as heroes! Rescue, treasure and boss missions.</span>
+        <span class="desc">Jay and Teo as heroes! Rescue, treasure and boss missions.</span>
         <span class="go">Save the Day ▶</span>
       </span>
     </a>
@@ -1502,6 +1508,16 @@
         <span class="go">Run ▶</span>
       </span>
     </a>
+    <a class="card sports" href="sports/">
+      <span class="padlock">🔒</span>
+      <span class="badge">🏅</span>
+      <span class="meta">
+        <span class="name">Sports Day</span>
+        <span class="tags"><span class="genre">🏅 Team Sports</span></span>
+        <span class="desc">Blue vs White team games on one iPad.</span>
+        <span class="go">Play ▶</span>
+      </span>
+    </a>
     <a class="card onecard" href="onecard/">
       <span class="padlock">🔒</span>
       <span class="badge">♠️</span>
@@ -1530,7 +1546,7 @@
         <span class="go">Meet Slimes ▶</span>
       </span>
     </a>
-    <a class="card kart3d" href="kart3d/">
+    <a class="card kart3d" href="kart3d/" hidden data-hidden-reason="copyright">
       <span class="padlock">🔒</span>
       <span class="badge">🏁</span>
       <span class="meta">
@@ -1550,17 +1566,17 @@
         <span class="go">Start Battle ▶</span>
       </span>
     </a>
-    <a class="card castle" href="hogwarts/">
+    <a class="card castle" href="magic/">
       <span class="padlock">🔒</span>
       <span class="badge">🏰</span>
       <span class="meta">
-        <span class="name">Hogwarts</span>
+        <span class="name">Magic School</span>
         <span class="tags"><span class="genre">✨ Magic Adventure</span></span>
-        <span class="desc">A 7-year magic school adventure.</span>
+        <span class="desc">Help friends with clever magic.</span>
         <span class="go">Start Magic ▶</span>
       </span>
     </a>
-    <a class="card stage" href="kedehun/">
+    <a class="card stage" href="kedehun/" hidden data-hidden-reason="copyright">
       <span class="padlock">🔒</span>
       <span class="badge">🎤</span>
       <span class="meta">
@@ -1570,7 +1586,7 @@
         <span class="go">Start Action ▶</span>
       </span>
     </a>
-    <a class="card gem" href="bori/">
+    <a class="card gem" href="bori/" hidden data-hidden-reason="copyright">
       <span class="padlock">🔒</span>
       <span class="badge">💎</span>
       <span class="meta">
@@ -1635,7 +1651,7 @@
 
   <a class="party-launch" id="partyAdventure" href="math/party/">
     <div><small>Invitation for you · Play now, no ticket needed</small><h2>Let's Throw a Family Birthday Party!</h2><p>Lights, cookies, and balloons!<br>Let's party together with the family.</p><strong>Create my party →</strong></div>
-    <img src="math/assets/jaei-family-v4.webp" width="1024" height="683" alt="Dad, Teo, Jaei and Mom waiting at the birthday party" loading="lazy">
+    <img src="math/assets/jaei-family-v4.webp" width="1024" height="683" alt="Dad, Teo, Jay and Mom waiting at the birthday party" loading="lazy">
   </a>
 
   <footer>
@@ -2435,7 +2451,7 @@
       f.textContent = entry.text;
       var tname = document.createElement('span');
       tname.className = 'tname';
-      tname.textContent = '🛝 Jaei\'s Math Playground · Level ' + entry.level;
+      tname.textContent = '🛝 Jay\'s Math Playground · Level ' + entry.level;
       var meta = document.createElement('span');
       meta.className = 'meta2';
       meta.textContent = 'Correct ' + entry.problem.answer + ' · Next review ' + entry.due;
@@ -2950,7 +2966,7 @@
     function paintQuiet() {
       var on = quietToday();
       var note = document.getElementById('studyModeNote');
-      if (note) note.textContent = on ? '🤫 Quiet Mode · Math only' : "English Storybooks · 5th is Jaei's Math Playground";
+      if (note) note.textContent = on ? '🤫 Quiet Mode · Math only' : "English Storybooks · 5th is Jay's Math Playground";
       quietBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
       quietBtn.title = on ? 'Quiet Mode on · Math only today (tap again to turn off)' : 'Quiet Mode (Travel)';
     }
@@ -3283,6 +3299,92 @@
       })
       .catch(function () { /* 업데이트 줄은 없어도 그만이다 */ });
   })();
+</script>
+
+<!-- 11-21 콘솔식 홈(엑스박스·닌텐도 스위치처럼): 큰 대표 배너 + 가로 게임 타일 줄. 학습이 우선 — 오늘의 공부 아래에 놓인다 -->
+<style id="console-home-css">
+  #consoleHero{position:relative;border-radius:26px;overflow:hidden;min-height:clamp(220px,38vh,380px);display:flex;align-items:flex-end;margin:0 0 16px;
+    background:#1b1f3a;box-shadow:0 18px 40px rgba(30,40,90,.28);isolation:isolate}
+  #consoleHero::before{content:"";position:absolute;inset:0;background:var(--hero-img) center 38%/cover no-repeat;z-index:-2;transform:scale(1.02)}
+  #consoleHero::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(10,12,34,.86) 0%,rgba(10,12,34,.55) 38%,rgba(10,12,34,0) 70%),linear-gradient(0deg,rgba(10,12,34,.55),rgba(10,12,34,0) 45%)}
+  .ch-copy{padding:clamp(18px,3vw,34px);max-width:min(560px,70%);color:#fff}
+  .ch-kicker{display:inline-block;font-size:13px;font-weight:900;letter-spacing:.08em;color:#ffe08a;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:99px;padding:4px 12px;margin-bottom:10px}
+  .ch-title{margin:0;font-size:clamp(32px,5vw,58px);line-height:1;font-weight:900;letter-spacing:-.03em;color:#fff;text-shadow:0 4px 18px rgba(0,0,0,.45)}
+  .ch-desc{margin:10px 0 18px;font-size:clamp(14px,1.6vw,18px);font-weight:700;color:#e4e8ff}
+  .ch-play{display:inline-flex;align-items:center;gap:10px;border:0;border-radius:16px;padding:14px 28px;font-size:20px;font-weight:900;color:#1d1a3a;background:linear-gradient(180deg,#fff27a,#ffc93c);box-shadow:0 6px 0 #c48a12,0 12px 26px rgba(0,0,0,.3);text-decoration:none;cursor:pointer}
+  .ch-play:active{transform:translateY(3px);box-shadow:0 3px 0 #c48a12}
+  body.locked .ch-play{background:linear-gradient(180deg,#e9edf7,#c9d2e8);box-shadow:0 6px 0 #8f9bb8}
+  .ch-dots{position:absolute;right:20px;bottom:18px;display:flex;gap:6px}.ch-dots i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.4)}.ch-dots i.on{background:#fff;width:22px;border-radius:6px}
+  .lobby-shell .world-deck .games.rail{display:flex!important;grid-template-columns:none!important;gap:14px;overflow-x:auto;overflow-y:visible;scroll-snap-type:x mandatory;padding:14px 14px 20px;margin:0 -14px;scroll-padding-left:14px;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+  .lobby-shell .world-deck .games.rail{--cw:clamp(170px,22vw,250px)}
+  .lobby-shell .world-deck .games.rail .card{flex:0 0 var(--cw);width:var(--cw);min-height:0;padding-top:calc(var(--cw) * .667);scroll-snap-align:start;transition:transform .18s ease,box-shadow .18s ease}
+  .games.rail .card.is-focus{transform:translateY(-6px) scale(1.04);outline:4px solid #4fc3ff;outline-offset:2px;box-shadow:0 0 0 7px rgba(79,195,255,.25),0 16px 30px rgba(40,80,140,.28);z-index:2}
+  .rail-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .rail-arrows{display:flex;gap:8px;flex:0 0 auto}
+  .rail-arrows button{width:42px;height:42px;border-radius:50%;border:1px solid #d6e2f2;background:#fff;font-size:22px;font-weight:900;color:#2f4a7a;box-shadow:0 3px 8px rgba(40,80,140,.12);cursor:pointer}
+  @media (max-width:599px){.ch-copy{max-width:88%}.ch-title{font-size:30px}.ch-play{font-size:17px;padding:12px 20px}#consoleHero{min-height:240px}}
+</style>
+<script>
+(function () {
+  var main = document.querySelector('main.lobby-shell'), deck = document.getElementById('adventureWorlds');
+  if (!main || !deck) return;
+  var nav = deck.querySelector('nav.games'), study = document.querySelector('.hero-grid'), math = document.getElementById('mathPlaygroundLaunch');
+  if (!nav) return;
+  nav.classList.add('rail');
+  var hero = document.createElement('section'); hero.id = 'consoleHero'; hero.setAttribute('aria-label', 'Featured game');
+  hero.innerHTML = '<div class="ch-copy"><span class="ch-kicker" id="chKick">FEATURED</span><h2 class="ch-title" id="chTitle"></h2><p class="ch-desc" id="chDesc"></p><a class="ch-play" id="chPlay" href="#">Play ▶</a></div><div class="ch-dots" id="chDots"></div>';
+  deck.insertBefore(hero, deck.firstChild);
+  var head = deck.querySelector('.section-heading');
+  if (head) {
+    var arrows = document.createElement('div'); arrows.className = 'rail-arrows';
+    arrows.innerHTML = '<button type="button" aria-label="Previous games">‹</button><button type="button" aria-label="More games">›</button>';
+    head.classList.add('rail-head'); head.appendChild(arrows);
+    arrows.children[0].onclick = function () { nav.scrollBy({ left: -nav.clientWidth * 0.8, behavior: 'smooth' }); };
+    arrows.children[1].onclick = function () { nav.scrollBy({ left: nav.clientWidth * 0.8, behavior: 'smooth' }); };
+  }
+  function cards() { return Array.prototype.filter.call(nav.querySelectorAll('.card'), function (c) { return !c.hidden; }); }
+  var LAST = 'hub_last_game', cur = null, userT = 0;
+  function coverOf(c) { return (getComputedStyle(c).getPropertyValue('--cover') || '').trim(); }
+  function lastHref() { try { return localStorage.getItem(LAST); } catch (e) { return null; } }
+  function show(c) {
+    if (!c) return; cur = c;
+    cards().forEach(function (x) { x.classList.toggle('is-focus', x === c); });
+    var n = c.querySelector('.name'), d = c.querySelector('.desc');
+    document.getElementById('chTitle').textContent = n ? n.textContent : '';
+    document.getElementById('chDesc').textContent = d ? d.textContent : '';
+    var cv = coverOf(c); if (cv) hero.style.setProperty('--hero-img', cv);
+    document.getElementById('chKick').textContent = lastHref() === c.getAttribute('href') ? '▶ CONTINUE' : '★ FEATURED';
+    var play = document.getElementById('chPlay');
+    play.href = c.getAttribute('href');
+    play.textContent = document.body.classList.contains('locked') ? '🔒 Study first to play' : 'Play ▶';
+    var all = cards(), i = all.indexOf(c);
+    document.getElementById('chDots').innerHTML = all.map(function (_, k) { return '<i class="' + (k === i ? 'on' : '') + '"></i>'; }).join('');
+  }
+  document.getElementById('chPlay').addEventListener('click', function (e) {
+    if (document.body.classList.contains('locked')) { e.preventDefault(); var st = document.getElementById('study'); if (st) st.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+    try { localStorage.setItem(LAST, this.getAttribute('href')); } catch (er) {}
+  });
+  cards().forEach(function (c) {
+    c.addEventListener('mouseenter', function () { userT = Date.now(); show(c); });
+    c.addEventListener('focus', function () { userT = Date.now(); show(c); });
+    c.addEventListener('click', function () { try { localStorage.setItem(LAST, c.getAttribute('href')); } catch (e) {} });
+  });
+  nav.addEventListener('scroll', function () { userT = Date.now(); }, { passive: true });
+  var start = cards().filter(function (c) { return c.getAttribute('href') === lastHref(); })[0];
+  show(start || cards()[0]);
+  setInterval(function () { if (Date.now() - userT < 9000 || document.hidden) return; var all = cards(), i = all.indexOf(cur); show(all[(i + 1) % all.length]); }, 6000);
+  function order() {
+    var locked = document.body.classList.contains('locked'), top = main.querySelector('.topbar');
+    // 11-21 대표님 "학습이 우선이야" — 티켓이 있어도 늘 오늘의 공부가 맨 위, 게임은 그 아래
+    try {
+      var anchor = (math && math.parentNode === main) ? math : study;
+      if (anchor && deck.previousElementSibling !== anchor) main.insertBefore(deck, anchor.nextElementSibling);
+    } catch (e) {}
+    if (cur) show(cur);
+  }
+  order();
+  new MutationObserver(order).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+})();
 </script>
 </body>
 </html>

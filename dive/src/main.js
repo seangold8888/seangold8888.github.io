@@ -2,7 +2,7 @@
 // 규칙 표는 logic.js, 바다 속 한 걸음은 engine.js, 여기서는 그리기·입력·화면·저장.
 // 그림은 art/ 의 그림 파일을 쓰고, 못 읽으면 캔버스 도형으로 대신 그린다. shadowBlur 는 쓰지 않는다(아이패드에서 가장 느리다).
 import * as L from "./logic.js?v=4";
-import * as E from "./engine.js?v=4";
+import * as E from "./engine.js?v=5";
 import * as S from "./sfx.js?v=5";
 import * as F from "./fx.js?v=4";
 
@@ -1519,7 +1519,9 @@ function render() {
     ctx.font = "900 " + Math.round(px) + "px " + FONT; ctx.textBaseline = "middle"; ctx.lineJoin = "round"; ctx.lineWidth = 9; ctx.strokeStyle = "rgba(6,30,60,.92)";
     // 잠수정·가운데를 가리지 않게: 넓은 화면은 왼쪽 위, 세로 화면은 HUD 아래 가운데(콤보 숫자 밑)
     const wide = view.w > view.h * 1.2, mxp = wide ? 18 : view.w / 2, my = topSafe + 28 - mt * 8;
-    ctx.textAlign = wide ? "left" : "center"; ctx.strokeText(multiBan.text, mxp, my);
+    ctx.textAlign = wide ? "left" : "center";
+    { const tw = ctx.measureText(multiBan.text).width, bx = wide ? mxp - 12 : mxp - tw / 2 - 12; ctx.fillStyle = "rgba(6,30,60,.42)"; ctx.beginPath(); ctx.roundRect(bx, my - px * 0.62, tw + 24, px * 1.24, px * 0.6); ctx.fill(); }   // 물고기·폭발 위에서도 읽히게 반투명 받침
+    ctx.strokeText(multiBan.text, mxp, my);
     ctx.fillStyle = multiBan.tier === 2 ? RAINBOW_COL[Math.floor(clock * 12) % 6] : multiBan.tier === 1 ? "#ff9ee0" : "#7dffb0"; ctx.fillText(multiBan.text, mxp, my);
     ctx.globalAlpha = 1;
   }
@@ -1534,6 +1536,7 @@ function render() {
     { ctx.font = "900 " + Math.round(sz * bump) + "px " + FONT; const rx = cx - ctx.measureText(c + " 콤보").width - 24, kk = Math.max(0, world.comboT / L.FEVER.gap); ctx.lineWidth = 6; ctx.strokeStyle = "rgba(6,30,60,.6)"; ctx.beginPath(); ctx.arc(rx, cy, 13, 0, TAU); ctx.stroke(); ctx.strokeStyle = !T ? "#ffe27a" : T.color === "rainbow" ? RAINBOW_COL[Math.floor(clock * 10) % 6] : T.color; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(rx, cy, 13, -Math.PI / 2, -Math.PI / 2 + kk * TAU); ctx.stroke(); }
     ctx.textAlign = "right"; ctx.textBaseline = "middle"; ctx.lineJoin = "round";
     ctx.font = "900 " + Math.round(sz * bump) + "px " + FONT; ctx.lineWidth = 7; ctx.strokeStyle = "rgba(6,30,60,.88)";
+    { ctx.font = "900 " + Math.round(sz * bump) + "px " + FONT; const tw = ctx.measureText(c + " 콤보").width; ctx.fillStyle = "rgba(6,30,60,.42)"; ctx.beginPath(); ctx.roundRect(cx - tw - 10, cy - sz * bump * 0.62, tw + 22, sz * bump * 1.24, sz * 0.6); ctx.fill(); }
     ctx.strokeText(c + " 콤보", cx, cy); ctx.fillStyle = !T ? "#ffe27a" : T.color === "rainbow" ? RAINBOW_COL[Math.floor(clock * 10) % 6] : T.color; ctx.fillText(c + " 콤보", cx, cy);
     if (T) { ctx.font = "900 " + Math.round(20 * (1 + comboPop)) + "px " + FONT; ctx.lineWidth = 5; ctx.strokeText(T.name, cx, cy + sz * 0.75); ctx.fillText(T.name, cx, cy + sz * 0.75); }
     ctx.globalAlpha = 1;

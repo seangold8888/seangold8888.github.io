@@ -23,8 +23,8 @@ async function save(page,selector,name){
   const page=await context.newPage();
   const cardsOnly=process.argv.includes('--cards-only');
   if(!process.argv.includes('--kart-only')&&!cardsOnly) {
-  await page.goto(base+'/hogwarts/');await page.waitForFunction(()=>window.WQ?.Characters?.drawHero);
-  const source=fs.readFileSync(path.join(root,'hogwarts/index.html'),'utf8');
+  await page.goto(base+'/magic/');await page.waitForFunction(()=>window.WQ?.Characters?.drawHero);
+  const source=fs.readFileSync(path.join(root,'magic/index.html'),'utf8');
   const start=source.indexOf('    function drawBackdrop(ctx){',source.indexOf('/* src/stages/castle-defense.js */'));
   const end=source.indexOf('    function drawDoor(ctx){',start);assert(start>0&&end>start);
   await page.evaluate(backdrop=>{
@@ -39,7 +39,7 @@ async function save(page,selector,name){
     ctx.save();ctx.translate(x,y);ctx.scale(s,s);WQ.Characters.drawHero(ctx,WQ.Characters.list.find(d=>d.id===id),{t:0,tool:'wand',aimA:-.7});ctx.restore();
    });
   },source.slice(start,end));
-  await save(page,'#hub-cover-export','cover-hogwarts-game-v1.webp');
+  await save(page,'#hub-cover-export','cover-magic-school-v1.webp');
   await page.goto(base+'/kedehun/');
   await page.evaluate(()=>{
    const el=document.createElement('div');el.id='hub-cover-export';

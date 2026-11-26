@@ -19,6 +19,20 @@ const heroesFor = (work,key) => work === 'sanguo'
   : WORK_STAGES[key]?.heroes || [];
 // Returning from a briefing retains the user's choice without touching saved progression.
 let remembered = {work:'sanguo',stageKey:'hulao',heroId:'guanyu',faction:'all',party:'story'};
+// 11-21 '바로 출전': 지난번 고른 전장·장수를 기기에 기억해 큰 버튼 하나로 바로 나간다. 자세한 메뉴는 접어 둔다.
+const QUICK_KEY='sgz_quick_v1';
+try{const q=JSON.parse(localStorage.getItem(QUICK_KEY)||'null'); if(q&&typeof q==='object'&&typeof q.stageKey==='string'&&typeof q.heroId==='string') remembered={...remembered,...q};}catch(e){}
+let moreOpen=false;
+const QUICK_CSS=`.cm-quick{display:flex;align-items:center;gap:22px;padding:18px 22px;border:2px solid #f0d18e;border-radius:16px;background:linear-gradient(120deg,rgba(239,207,136,.22),rgba(20,36,38,.85) 55%);box-shadow:0 14px 36px rgba(0,0,0,.35)}
+.cm-quick-portrait{flex:0 0 132px;height:132px;border-radius:14px;background-color:#0d1a1c;background-size:200% auto;background-position:left top;background-repeat:no-repeat;border:2px solid #f0d18e66}
+.cm-quick-text{flex:1;min-width:0;color:#efe3bd}.cm-quick-text small{display:block;color:#a9c3c4;font-size:14px;margin-bottom:6px}.cm-quick-text b{display:block;font-size:30px;line-height:1.2}.cm-quick-text span{display:block;margin-top:6px;color:#d9cc9d;font-size:15px}
+.cm-quick-go{flex:0 0 auto;border:0;border-bottom:6px solid #8a6a2c;border-radius:16px;padding:22px 34px;background:linear-gradient(135deg,#ffe08a,#e9b54d);color:#1c2526;font-size:28px;font-weight:900;cursor:pointer;animation:cmQuick 1.6s ease-in-out infinite}
+.cm-quick-go:active{transform:translateY(3px);border-bottom-width:3px}
+@keyframes cmQuick{0%,100%{box-shadow:0 0 0 0 rgba(255,214,110,.55)}50%{box-shadow:0 0 0 14px rgba(255,214,110,0)}}
+.cm-more-toggle{align-self:center;border:1px solid #f0d18e55;border-radius:999px;background:rgba(13,26,28,.7);color:#d9cc9d;font-size:15px;font-weight:800;padding:10px 22px;cursor:pointer}
+.command-menu[data-more=false] .cm-columns,.command-menu[data-more=false] .cm-launchbar{display:none}
+@media(max-width:680px){.cm-quick{flex-wrap:wrap;gap:12px;padding:14px}.cm-quick-portrait{flex-basis:84px;height:84px}.cm-quick-text b{font-size:20px}.cm-quick-go{width:100%;font-size:22px;padding:16px}}`;
+
 
 export function showWorkSelect(root,{onConfirm,onBack}) {
   let {work,stageKey,heroId,faction='all',party='story'} = remembered;
@@ -38,7 +52,10 @@ export function showWorkSelect(root,{onConfirm,onBack}) {
     const visibleHeroes=rosterMode && faction!=='all' ? heroes.filter(id=>factionKey(id)===faction) : heroes;
     if(!visibleHeroes.includes(heroId) || !heroHasArt(heroId)) heroId=visibleHeroes.find(heroHasArt) || '';
     remembered={work,stageKey,heroId,faction,party};
+    try{localStorage.setItem(QUICK_KEY,JSON.stringify({work,stageKey,heroId,party}));}catch(e){}
+    if(!document.getElementById('cm-quick-css')){const st=document.createElement('style');st.id='cm-quick-css';st.textContent=QUICK_CSS;document.head.appendChild(st);}
     const hero=heroId ? infoFor(heroId) : null;
+    if(!hero) moreOpen=true;
     const progress=heroId ? getHeroProgress(heroId) : null;
     const growth=heroId ? getCombatGrowth(heroId) : null;
     const upcoming=heroId ? nextPerk(progress) : null;
@@ -47,12 +64,16 @@ export function showWorkSelect(root,{onConfirm,onBack}) {
     const info=WORK_STAGES[stageKey];
     const mission=selected.mission || info?.scene_intro || '';
     root.innerHTML=`
-      <div class="screen command-menu"><main class="cm-shell">
+      <div class="screen command-menu" data-more="${moreOpen}"><main class="cm-shell">
         <header class="cm-header">
           <div><div class="cm-eyebrow">레전드 워 · 출진 준비</div><h1>${WORKS[work]?.name || '삼국지'}</h1><p>전장을 고르고, 함께할 장수를 선택하세요.</p><a class="cm-voice-link" href="./voices.html">장수 함성 듣기 →</a></div>
           <nav class="cm-worlds" aria-label="고전 선택">${Object.values(WORKS).map(w=>`<button type="button" data-work="${w.id}" aria-pressed="${w.id===work}" ${w.ready?'':'disabled'}>${w.name}${w.ready?'':' · 준비 중'}</button>`).join('')}</nav>
         </header>
 
+        ${hero?`<section class="cm-quick" aria-label="바로 출전"><span class="cm-quick-portrait" style="background-image:url('${portraitFor(heroId)}')" role="img" aria-label="${hero.p.name}"></span>
+          <div class="cm-quick-text"><small>${moreOpen?'고른 전장·장수':'지난번 그대로'}</small><b>${hero.p.name}</b><span>${shortTitle(selected.title)} · ${difficulty.name} 난이도</span></div>
+          <button type="button" class="cm-quick-go" id="menu-quick">⚔️ 바로 출전!</button></section>`:''}
+        <button type="button" class="cm-more-toggle" id="menu-more" aria-expanded="${moreOpen}">${moreOpen?'▲ 접기':'전장 · 장수 · 난이도 바꾸기 ▾'}</button>
         <div class="cm-columns">
           <section class="cm-panel cm-battlefields" aria-labelledby="cm-stage-heading">
             <div class="cm-section-heading"><h2 id="cm-stage-heading"><span>01</span> 전장 선택</h2><small>${readyStages}개 출전 가능</small></div>
@@ -104,6 +125,8 @@ export function showWorkSelect(root,{onConfirm,onBack}) {
     root.querySelectorAll('[data-hero]:not(:disabled)').forEach(b=>b.addEventListener('click',()=>{heroId=b.dataset.hero;render('[data-hero="'+heroId+'"]');}));
     root.querySelectorAll('[data-diff]').forEach(b=>b.addEventListener('click',()=>{setDifficulty(b.dataset.diff);render('[data-diff="'+b.dataset.diff+'"]');}));
     root.querySelector('#menu-deploy').addEventListener('click',()=>{if(heroId&&heroHasArt(heroId))onConfirm(heroId,stageKey);});
+    root.querySelector('#menu-quick')?.addEventListener('click',()=>{if(heroId&&heroHasArt(heroId))onConfirm(heroId,stageKey);});
+    root.querySelector('#menu-more').addEventListener('click',()=>{moreOpen=!moreOpen;render('#menu-more');});
     root.querySelector('#btn-back')?.addEventListener('click',()=>onBack?.());
   }
   render();

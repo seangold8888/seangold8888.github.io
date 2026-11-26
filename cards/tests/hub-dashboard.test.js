@@ -76,7 +76,7 @@ test("검수된 게임 대표 원화가 월드 타일에 실제 이미지로 연
     "cards/art/odysseus.webp",
     "sanguo/art/side-scroller/hulao-arcade-bg-v3.png",
     "multiverse/art/cover.webp",
-    "assets/covers/cover-hogwarts-game-v1.webp",
+    "assets/covers/cover-magic-school-v1.webp",
     "assets/covers/cover-kedehun-team-v1.webp",
     "assets/covers/cover-ribbon-room-v1.webp",
     "assets/covers/cover-sanrio-kart-team-v1.webp"
@@ -103,7 +103,7 @@ test("로비 공유 카드는 로컬 이미지와 절대 URL 메타데이터를 
 test("기존 게임 링크·티켓 게임과 상시 개방 구분을 보존한다", () => {
   const ticketRoutes = [
     "multiverse/", "cards/", "odyssey/", "kart3d/",
-    "sanguo/", "hogwarts/", "kedehun/", "bori/", "princess/", "slime/", "usa/", "onecard/", "plane/", "dive/", "towers/", "topping/"
+    "sanguo/", "magic/", "kedehun/", "bori/", "princess/", "slime/", "usa/", "onecard/", "plane/", "dive/", "towers/", "topping/", "sports/"
   ];
   ticketRoutes.forEach((route) => {
     const query=route==='princess/'?'\\?heads=natural&amp;v=picnic-1':'';
@@ -139,14 +139,14 @@ test('카트는 3D 하나로 정리하고 간단판 원본과 기록은 호환�
   assert.doesNotMatch(html,/removeItem\(['"]sanrio-kart/);
 });
 
-test('호그와트·케데헌·리본방·산리오카트 표지는 실제 게임 주인공이며 오프라인 셸에도 보존한다',()=>{
+test('마법학교·케데헌·리본방·산리오카트 표지는 실제 게임 주인공이며 오프라인 셸에도 보존한다',()=>{
   const worker=fs.readFileSync(path.join(root,'sw.js'),'utf8');
-  for(const file of ['cover-hogwarts-game-v1.webp','cover-kedehun-team-v1.webp','cover-ribbon-room-v1.webp','cover-sanrio-kart-team-v1.webp','cover-jaei-taeo-card-battle-v1.webp']){
+  for(const file of ['cover-magic-school-v1.webp','cover-kedehun-team-v1.webp','cover-ribbon-room-v1.webp','cover-sanrio-kart-team-v1.webp','cover-jaei-taeo-card-battle-v1.webp']){
     assert(html.includes('assets/covers/'+file));
     assert(worker.includes('./assets/covers/'+file));
     assert(fs.statSync(path.join(root,'assets/covers',file)).size>3000);
   }
-  assert.doesNotMatch(html,/href="hogwarts\/" style="--cover:url\('hogwarts\/icon.png'\)/);
+  assert.doesNotMatch(html,/href="magic\/" style="--cover:url\('magic\/icon.png'\)/);
 });
 
 test("퀘스트 HUD는 새로고침 진행 복원·친절한 잠금 안내·오프라인 상태를 제공한다", () => {

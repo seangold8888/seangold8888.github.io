@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#2f6bff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>재이의 운동회 · PLAYGROUND</title>
+<link rel="preload" href="../sanguo/fonts/pretendard/PretendardVariable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css?v=2">
+<script src="../assets/study/play-timer.js?v=4"></script>
+<script src="../assets/touch-guard.js?v=1"></script>
+<script src="../math/curriculum.js?v=21"></script>
+<script src="../math/learning.js?v=30"></script>
+<script src="../math/store.js?v=34"></script>
+<script src="../assets/study/math-bridge.js?v=3"></script>
+<script src="../assets/study/kid-voices.js?v=1"></script>
+<script src="../assets/study/game-quiz.js?v=4"></script>
+</head>
+<body>
+<!-- 시연·경기 그림이 들어가는 자리(종목 view 가 채운다) -->
+<div class="stage" id="demoRoot" aria-hidden="true"></div>
+<div class="stage" id="lobbyRoot" aria-hidden="true" hidden></div>
+<div class="stage" id="arena" hidden></div>
+<div class="fx-layer" id="fx"></div>
+
+<header class="topbar" id="topbar">
+  <a class="round-btn back" href="../game/" aria-label="PLAYGROUND로 돌아가기">←</a>
+  <span class="grow"></span>
+  <button class="round-btn" id="soundBtn" type="button" aria-pressed="true" aria-label="소리">♪</button>
+</header>
+
+<!-- 첫 화면: 한 번 탭 출발 · 글 한 줄 · 뒤에서 줄넘기 시연 · 메달판 -->
+<section class="screen" id="title">
+  <div class="title-card">
+    <h1 class="logo"><span class="b">재이의</span> <span class="w">운동회</span></h1>
+    <p class="lead">청군 백군, 누가 이길까?</p>
+    <div class="kids" id="kidRow" role="group" aria-label="누가 나갈까요? (둘 다 고르면 청백전)"></div>
+    <p class="pick-cap">👇 하고 싶은 종목을 눌러요</p>
+    <div class="board" id="board" aria-label="종목 고르기"></div>
+    <div class="title-actions">
+      <button class="go" id="goBtn" type="button">출발!</button>
+    </div>
+  </div>
+</section>
+
+
+<!-- 경기장: 종목 고르기 -->
+<section class="screen" id="lobby" hidden>
+  <div class="scoreboard" id="scoreboard"></div>
+  <p class="pts-cap" id="lobbyCap"></p>
+  <div class="events" id="eventGrid"></div>
+  <div class="lobby-actions">
+    <button class="small-btn" id="toTitle" type="button">처음 화면</button>
+    <button class="small-btn gold" id="finalBtn" type="button" disabled>🏆 폐회식</button>
+  </div>
+</section>
+
+<!-- 종목 시작 카드 -->
+<section class="screen" id="eventCard" hidden>
+  <div class="card">
+    <div class="ev-icon" id="evIcon"></div>
+    <h2 id="evName"></h2>
+    <p class="lead" id="evHow"></p>
+    <button class="cam-toggle" id="camToggle" type="button" aria-pressed="false" hidden>
+      <span class="mover" aria-hidden="true"><img id="camKid" alt=""><i class="cam-ic">📷</i></span>
+      <span class="cam-text"><b id="camLabel">진짜로 뛰기</b><small id="camState">카메라로 몸을 움직여요</small></span>
+      <span class="switch" aria-hidden="true"></span>
+    </button>
+    <p class="privacy" id="camPrivacy" hidden></p>
+    <button class="go" id="evStart" type="button">시작!</button>
+    <button class="small-btn" id="evBack" type="button">← 다른 종목</button>
+  </div>
+</section>
+
+<!-- 차례 넘기기 -->
+<section class="screen" id="turn" hidden>
+  <div class="card turn-card" id="turnCard">
+    <p class="kicker" id="turnTeam"></p>
+    <img class="turn-face" id="turnFace" alt="">
+    <h2 id="turnText"></h2>
+    <p class="small" id="turnSub"></p>
+    <button class="go" id="turnGo" type="button">준비됐어요!</button>
+  </div>
+</section>
+
+<!-- 카메라 맞추기 -->
+<section class="screen" id="calib" hidden>
+  <div class="card calib-card">
+    <div class="calib-video" id="calibVideo"></div>
+    <h2 id="calibText">가만히 서 있어요</h2>
+    <div class="bar"><i id="calibFill"></i></div>
+    <p class="privacy" id="calibPrivacy"></p>
+    <button class="small-btn" id="calibSkip" type="button">손가락으로 할래요</button>
+  </div>
+</section>
+
+<!-- 경기 중 점수판(모든 종목 공용) -->
+<div class="hud" id="hud" hidden>
+  <button class="round-btn" id="pauseBtn" type="button" aria-label="잠깐 멈춤">⏸</button>
+  <div class="chip who" id="hudWho"><img id="hudFace" alt=""><b id="hudName"></b></div>
+  <div class="chip round"><b id="hudRound"></b><span class="tbar"><i id="hudTime"></i></span><span class="hdots" id="hudDots"></span></div>
+  <div class="chip score"><b id="hudScore">0</b></div>
+  <div class="hud-sub"><span class="combo" id="hudCombo"></span><span class="badges" id="hudBadges"></span><span class="buffs" id="hudBuffs"></span></div>
+</div>
+<button class="tap-btn" id="tapBtn" type="button" hidden aria-label="톡! 뛰기">톡!</button>
+<div class="cam-pip" id="camPip" hidden></div>
+
+<section class="screen" id="cpuTurn" hidden>
+  <div class="card turn-card">
+    <p class="kicker" id="cpuTeam"></p>
+    <img class="turn-face" id="cpuFace" alt="">
+    <h2 id="cpuText"></h2>
+    <p class="big-score" id="cpuScore">…</p>
+  </div>
+</section>
+
+<section class="screen" id="result" hidden>
+  <div class="card result-card">
+    <div class="medal-big" id="resMedal"></div>
+    <h2 id="resText"></h2>
+    <p class="big-score" id="resScore"></p>
+    <p class="small" id="resSub"></p>
+    <button class="go" id="resNext" type="button">다음</button>
+  </div>
+</section>
+
+<!-- 시상식 -->
+<section class="screen" id="ceremony" hidden>
+  <h2 class="cer-title" id="cerTitle"></h2>
+  <div class="podium" id="podium"></div>
+  <div class="team-gain" id="teamGain"></div>
+  <p class="pts-cap" id="cerCap"></p>
+  <div class="cer-actions">
+    <button class="go" id="cerAgain" type="button">다시 하기</button>
+    <button class="small-btn" id="cerOther" type="button">다른 종목</button>
+  </div>
+</section>
+
+<section class="screen" id="final" hidden>
+  <h2 class="cer-title" id="finalTitle"></h2>
+  <div class="final-teams" id="finalTeams"></div>
+  <p class="pts-cap" id="finalCap"></p>
+  <div class="cer-actions">
+    <button class="go" id="finalHome" type="button">처음 화면</button>
+  </div>
+</section>
+
+<section class="sheet" id="pause" hidden>
+  <div class="sheet-card">
+    <h2>잠깐 쉬어요</h2>
+    <button class="go" id="resumeBtn" type="button">계속하기</button>
+    <button class="small-btn" id="quitBtn" type="button">그만하고 경기장으로</button>
+  </div>
+</section>
+
+<div class="toast" id="toast" hidden></div>
+
+<script type="module" src="src/main.js?v=3"></script>
+</body>
+</html>

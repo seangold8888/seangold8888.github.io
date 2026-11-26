@@ -618,6 +618,11 @@ export function stepWorld(w, dt, mv = { x: 0, y: 0 }) {
   // ? 진주
   for (const q of w.qpearls) {
     q.t += dt;
+    // 1.5초 뒤(또는 가까우면) 잠수정 쪽으로 빨려 온다 — 조작이 서툴러도 한 판에 문제가 꼭 나오게(11-21 3심 공통 오류)
+    if (!w.pending && !w.over && (q.t > 1.5 || d2(q.x, q.y, p.x, p.y) < L.MAGNET_R * L.MAGNET_R * 1.7)) {
+      const dx = p.x - q.x, dy = p.y - q.y, d = Math.hypot(dx, dy) || 1, v = 160 + q.t * 80;
+      q.x += dx / d * Math.min(d, v * dt); q.y += dy / d * Math.min(d, v * dt);
+    }
     if (!w.pending && !w.over && d2(q.x, q.y, p.x, p.y) < (p.r + 24) * (p.r + 24)) { q.dead = true; w.pending = "quiz"; emit(w, "qpearl"); }
   }
   w.qpearls = w.qpearls.filter(q => !q.dead);

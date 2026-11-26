@@ -98,7 +98,9 @@ html, body { height: 100%; margin: 0; overflow: hidden; background: #2c1f5c; col
 .card.rec::after { content: "추천!"; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); padding: 2px 10px; border-radius: 99px; background: #ffc93c; color: #3a2500; font-size: 12px; font-weight: 900; pointer-events: none; }
 @keyframes twinkle { 50% { box-shadow: 0 0 0 6px rgba(255,243,166,.35); } }
 .card.ok, .tbtn.ok { border-color: #7dffb0; background: rgba(125,255,176,.25); }
-.panel.locked .card, .panel.locked .tbtn:not(:disabled), .panel.locked #upBtn { opacity: .35; filter: grayscale(.5); }
+/* 실수 방지 0.7초: 흐리게(눌러도 되는지 헷갈림) 대신 또렷하게 튀어 들어오는 동안만 잠금 */
+.panel.locked .card, .panel.locked .tbtn:not(:disabled), .panel.locked #upBtn { transform: scale(.9); pointer-events: none; }
+.panel .card, .panel .tbtn, .panel #upBtn { transition: transform .25s cubic-bezier(.2,1.6,.4,1); }
 
 /* 탑 문제 창이 떠 있을 때 아래 가운데 "← 다른 탑"(문제 창 레이어보다 위, 틀리기 전까지만. 왼쪽 아래는 놀이 시간 칩 자리) */
 .chip.qback { position: fixed; z-index: 2147483001; left: 50%; transform: translateX(-50%); bottom: calc(10px + env(safe-area-inset-bottom)); min-height: 52px; padding: 0 20px; background: rgba(36,22,80,.92); font-size: 18px; transition: opacity .2s; }

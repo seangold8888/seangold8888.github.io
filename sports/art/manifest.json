@@ -1,0 +1,27 @@
+{
+  "version": 3,
+  "kids": {
+    "jaei": [
+      "jump"
+    ],
+    "taeo": [
+      "jump"
+    ]
+  },
+  "plates": {
+    "field": {
+      "file": "bg/field.webp",
+      "ground": 0.93,
+      "kidH": 0.45
+    }
+  },
+  "backgrounds": {
+    "jumprope": {
+      "plate": "field"
+    },
+    "lobby": {
+      "plate": "field"
+    }
+  },
+  "crowd": false
+}

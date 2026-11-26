@@ -132,14 +132,23 @@ export function create(env) {
     },
     draw(ctx) {
       const g = geo(), { W, H, horizon } = g;
+      const bgi = env.img && env.img("bg-huntington");
+      if (bgi) {   // 11-21 드리미나 해안 그림: 그림의 바다선(77%)을 수평선에 맞추고 천천히 옆으로 흐른다(좌우 반전 이어 붙이기)
+        const bh = horizon / 0.77 + 2, bw = bh * bgi.width / bgi.height, off = (scroll * 0.08) % (bw * 2);
+        for (let x = -off, k = 0; x < W; x += bw, k++) {
+          if (k % 2) { ctx.save(); ctx.translate(x + bw, 0); ctx.scale(-1, 1); ctx.drawImage(bgi, 0, 0, bw, bh); ctx.restore(); }
+          else ctx.drawImage(bgi, x, 0, bw, bh);
+        }
+      } else {
       sky(ctx, W, H, horizon, t, 0.86);
       hills(ctx, W, horizon);
       palm(ctx, W * 0.08, horizon + 2, H * 0.1, 0.1, t);
       palm(ctx, W * 0.16, horizon + 2, H * 0.08, -0.1, t);
+      }
       const sea = ctx.createLinearGradient(0, horizon, 0, H);
       sea.addColorStop(0, "#1f6fb5"); sea.addColorStop(0.5, "#2a9cd4"); sea.addColorStop(1, "#38bfe0");
       ctx.fillStyle = sea; ctx.fillRect(0, horizon, W, H - horizon);
-      htPier(ctx, W, H, horizon, scroll);
+      if (!bgi) htPier(ctx, W, H, horizon, scroll);
       // 너울 줄
       ctx.strokeStyle = "rgba(255,255,255,.4)"; ctx.lineWidth = 2;
       for (let i = 0; i < 8; i++) {

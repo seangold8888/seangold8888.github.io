@@ -25,7 +25,7 @@ const GAMES = [
   { id: "kart3d", text: "블렌더로 만든 3D 카트 소품" },
   { id: "kart", text: "숲속 주문과 새 도전 과제" },
   { id: "sanguo", text: "서유기 여덟 전장과 새 장수 원화" },
-  { id: "hogwarts", text: "새 도전 과제와 공부 시계" },
+  { id: "magic", text: "새 도전 과제와 공부 시계" },
   { id: "kedehun", text: "검 공격 동작을 새로 그렸어요" },
   { id: "bori", text: "리본방 미스터리 퍼즐" },
   { id: "princess", text: "새 공주들의 기본 코디" },

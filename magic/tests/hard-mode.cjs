@@ -1,9 +1,9 @@
-// 호그와트 「어려운 학년」 검사.
+// 꼬마 마법학교 「어려운 학년」 검사.
 // 1) 일반 모드 동일성: 이전 커밋의 index.html 과 현재 파일로 여섯 학년을 같은 난수·같은 입력으로
 //    돌려, 60프레임마다 캔버스 픽셀 해시가 전부 같아야 한다.
 // 2) 어려운 학년 동작: 별빛 게이지 연성 상한, 금빛 공격 반사, 보스 공략 창 열림, 구조, 저장 v3.
 // 계측은 page.route 응답에만 주입한다. 배포 소스에는 넣지 않는다.
-// 실행(사이트 루트): node hogwarts/tests/hard-mode.cjs [baseline.html]
+// 실행(사이트 루트): node magic/tests/hard-mode.cjs [baseline.html]
 'use strict';
 const assert = require('node:assert/strict');
 const fs = require('node:fs'), path = require('node:path'), http = require('node:http');
@@ -11,10 +11,10 @@ const { execFileSync } = require('node:child_process');
 const { chromium } = require('playwright');
 
 const site = path.resolve(__dirname, '..', '..');
-const current = fs.readFileSync(path.join(site, 'hogwarts', 'index.html'), 'utf8');
+const current = fs.readFileSync(path.join(site, 'magic', 'index.html'), 'utf8');
 const baseline = process.argv[2]
   ? fs.readFileSync(process.argv[2], 'utf8')
-  : execFileSync('git', ['show', 'HEAD~0:hogwarts/index.html'], { cwd: site, encoding: 'utf8', maxBuffer: 1 << 26 });
+  : execFileSync('git', ['show', 'HEAD~0:magic/index.html'], { cwd: site, encoding: 'utf8', maxBuffer: 1 << 26 });
 
 function instrument(html) {
   // 페이지 루프를 멈추고, 결과·학년 선택 장면을 테스트에서 부를 수 있게 한다.
@@ -29,7 +29,7 @@ const pages = { '/current.html': instrument(current), '/baseline.html': instrume
   const server = http.createServer((req, res) => {
     const url = new URL(req.url, 'http://localhost');
     if (pages[url.pathname]) { res.setHeader('Content-Type', 'text/html; charset=utf-8'); res.end(pages[url.pathname]); return; }
-    const file = path.resolve(site, 'hogwarts', '.' + decodeURIComponent(url.pathname));
+    const file = path.resolve(site, 'magic', '.' + decodeURIComponent(url.pathname));
     fs.readFile(file, (err, data) => { if (err) { res.writeHead(404).end(); return; } res.end(data); });
   });
   await new Promise(r => server.listen(0, '127.0.0.1', r));
@@ -212,6 +212,6 @@ const pages = { '/current.html': instrument(current), '/baseline.html': instrume
   console.log('PASS save v3 migration, hard clear isolation, corrupt data');
 
   assert.deepEqual(errors, []);
-  console.log('PASS hogwarts hard-mode: zero page errors');
+  console.log('PASS magic hard-mode: zero page errors');
   await browser.close(); server.close();
 })().catch(e => { console.error(e); process.exit(1); });

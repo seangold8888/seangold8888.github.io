@@ -15,9 +15,9 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="호그와트 마법학교">
+  <meta name="apple-mobile-web-app-title" content="꼬마 마법학교">
   <link rel="apple-touch-icon" href="icon.png">
-  <title>호그와트 마법학교</title>
+  <title>꼬마 마법학교</title>
   <style>
     :root{color-scheme:dark;--gold:#ffd76a;--ink:#17142d;--cream:#fff8df;--violet:#7661c9;--pink:#ff8fb5;--blue:#66c8ff}
     *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#17142d;font-family:"Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;touch-action:none;overscroll-behavior:none;-webkit-text-size-adjust:100%;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;position:fixed;inset:0}
@@ -52,7 +52,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 <script src="../assets/touch-guard.js?v=1"></script>
 </head>
 <body>
-  <canvas id="game" tabindex="0" aria-label="호그와트 마법 액션 어드벤처"></canvas>
+  <canvas id="game" tabindex="0" aria-label="꼬마 마법학교 액션 어드벤처"></canvas>
   <div id="audioTools"><button id="musicPick" type="button">🎵 내 영화 음악</button><button id="mute" type="button" aria-label="소리 끄기">🔊</button><input id="musicFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.ogg,.flac"></div>
   <div id="touch" aria-label="터치 조작">
     <div class="pad"><button class="up" data-action="up">▲</button><button class="left" data-action="left">◀</button><button class="right" data-action="right">▶</button><button class="down" data-action="down">▼</button></div>
@@ -85,6 +85,12 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 (function(){
   'use strict';
   const WQ=window.WQ=window.WQ||{},E=WQ.E={W:960,H:540,time:0,frame:0,fps:60,frozen:false};
+  /* 11-21 비디오게임 그림 배경(드리미나): 장마다 그린 배경 한 장. 있으면 그림, 없으면 예전 코드 그림. scroll 을 주면 좌우 반전 이어 붙여 흐른다 */
+  WQ.BG={img:{},draw(ctx,id,scroll){const im=this.img[id];if(!im||!im.complete||!im.naturalWidth)return false;
+    if(scroll==null){ctx.drawImage(im,0,0,960,540);return true}
+    const off=((scroll%1920)+1920)%1920;for(let k=-1;k<2;k++){const x=k*960-off%960,flip=(Math.floor((off)/960)+k)%2!==0;
+      if(flip){ctx.save();ctx.translate(x+960,0);ctx.scale(-1,1);ctx.drawImage(im,0,0,960,540);ctx.restore()}else ctx.drawImage(im,x,0,960,540)}return true}};
+  ['forest','stairs','potion','quidditch','require','defense'].forEach(id=>{const im=new Image();im.src='art/bg-'+id+'.webp?v=1';WQ.BG.img[id]=im});
   const held=Object.create(null),pressed=Object.create(null);let canvas,ctx,last=0,dpr=1,scale=1,ox=0,oy=0,scene=null;
   const map={ArrowUp:'up',KeyW:'up',ArrowDown:'down',KeyS:'down',ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',Space:'cast',Enter:'ok',Escape:'pause',KeyP:'pause',KeyX:'nova',ShiftLeft:'shield',ShiftRight:'shield',KeyK:'shield'};
   const input=E.input={
@@ -178,7 +184,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     if(fileBgm)fileBgm.setMuted(S.muted);
     return fileBgm;
   }
-  S.music=themeId=>{if(themes[themeId]){if(currentTheme!==themeId)step=0;currentTheme=themeId}stopMusicClock();const file=fileBgmPlayer();if(file&&!customAudio){file.setTrack('hogwarts');return}if(S.muted||!unlocked)return;if(customAudio){customAudio.volume=.34;customAudio.loop=true;customAudio.play().catch(()=>{});return}const theme=themes[currentTheme],play=()=>{const degree=theme.notes[step%theme.notes.length],freq=theme.root*Math.pow(2,degree/12);tone(freq,.38,theme.wave,.025);if(step%2===0)tone(freq/2,.46,'sine',.018,.02);step++};play();musicTimer=setInterval(play,theme.tempo)};
+  S.music=themeId=>{if(themes[themeId]){if(currentTheme!==themeId)step=0;currentTheme=themeId}stopMusicClock();const file=fileBgmPlayer();if(file&&!customAudio){file.setTrack('magic-school');return}if(S.muted||!unlocked)return;if(customAudio){customAudio.volume=.34;customAudio.loop=true;customAudio.play().catch(()=>{});return}const theme=themes[currentTheme],play=()=>{const degree=theme.notes[step%theme.notes.length],freq=theme.root*Math.pow(2,degree/12);tone(freq,.38,theme.wave,.025);if(step%2===0)tone(freq/2,.46,'sine',.018,.02);step++};play();musicTimer=setInterval(play,theme.tempo)};
   S.setCustomMusic=file=>{const valid=file&&(String(file.type).startsWith('audio/')||/\.(mp3|wav|m4a|ogg|flac)$/i.test(file.name||''));if(!valid)return false;stopMusicClock();customAudio?.pause();if(customUrl)URL.revokeObjectURL(customUrl);customUrl=URL.createObjectURL(file);customAudio=new Audio(customUrl);customAudio.loop=true;customAudio.preload='auto';customAudio.volume=.34;if(unlocked&&!S.muted)customAudio.play().catch(()=>{});return true};
   S.toggle=()=>{S.muted=!S.muted;if(fileBgm)fileBgm.setMuted(S.muted);if(master)master.gain.value=S.muted?0:.42;if(S.muted){stopMusicClock();customAudio?.pause()}else S.music(currentTheme);return S.muted};
   document.getElementById('mute').onclick=()=>{const off=S.toggle(),b=document.getElementById('mute');b.textContent=off?'🔇':'🔊';b.setAttribute('aria-label',off?'소리 켜기':'소리 끄기')};
@@ -226,30 +232,29 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   'use strict';
   const WQ=window.WQ;
   const defs=[
-    {id:'harry',name:'해리',full:'해리 포터',line:'빠르게 방향을 바꿔요',speed:1.12,cast:.19,spell:7,hp:5},
-    {id:'hermione',name:'헤르미온느',full:'헤르미온느 그레인저',line:'주문이 더 크게 빛나요',speed:1,cast:.16,spell:10,hp:5},
-    {id:'ron',name:'론',full:'론 위즐리',line:'하트가 하나 더 있어요',speed:1,cast:.2,spell:8,hp:6},
+    /* 11-21 원작 캐릭터 셋은 저작권 때문에 뺐다 → 우리 아이들 넷만 */
     /* 우리 아이들(2026-09-28 입학). 이야기 문장에 "~는/~가"가 붙으므로 윤찬이·윤건이로 부른다. */
     {id:'jaei',name:'재이',full:'재이',line:'빛 주문이 반짝반짝',speed:1.02,cast:.17,spell:9,hp:5,kid:true},
     {id:'taeo',name:'태오',full:'태오',line:'작아도 제일 날쌔요',speed:1.12,cast:.2,spell:7,hp:5,kid:true},
     {id:'yunchan',name:'윤찬이',full:'윤찬',line:'하트가 하나 더 있어요',speed:1,cast:.19,spell:8,hp:6,kid:true},
     {id:'yungeon',name:'윤건이',full:'윤건',line:'축구 선수처럼 날렵해요',speed:1.08,cast:.18,spell:8,hp:5,kid:true}
   ];
-  /* 기숙사: 배정 모자가 정해 주면 목도리 색이 바뀐다 */
+  /* 반: 마법 거울이 정해 주면 목도리 색이 바뀐다 */
   const HOUSES={
-    gryffindor:{id:'gryffindor',name:'그리핀도르',animal:'🦁',a:'#8c2f3f',b:'#e8b23c',word:'용감한'},
-    hufflepuff:{id:'hufflepuff',name:'후플푸프',animal:'🦡',a:'#e0a82e',b:'#3a3228',word:'다정한'},
-    ravenclaw:{id:'ravenclaw',name:'래번클로',animal:'🦅',a:'#2f4f8c',b:'#c9a36a',word:'똑똑한'},
-    slytherin:{id:'slytherin',name:'슬리데린',animal:'🐍',a:'#2f7a4f',b:'#c0c6cc',word:'꿈이 큰'}
+    lion:{id:'lion',name:'사자반',animal:'🦁',a:'#e0682f',b:'#ffd166',word:'용감한'},
+    bear:{id:'bear',name:'곰반',animal:'🐻',a:'#a8693a',b:'#ffe8b8',word:'다정한'},
+    owl:{id:'owl',name:'부엉이반',animal:'🦉',a:'#3b74d6',b:'#c7e6ff',word:'똑똑한'},
+    dragon:{id:'dragon',name:'용반',animal:'🐉',a:'#2fa66e',b:'#d6ffe8',word:'꿈이 큰'}
   };
   let houseId=null;
-  try{const raw=JSON.parse(localStorage.getItem('wq_save')||'{}');if(HOUSES[raw.house])houseId=raw.house}catch(_){}
+  try{const raw=JSON.parse(localStorage.getItem('wq_save')||'{}');const OLD={gryffindor:'lion',hufflepuff:'bear',ravenclaw:'owl',slytherin:'dragon'};if(OLD[raw.house])raw.house=OLD[raw.house];if(HOUSES[raw.house])houseId=raw.house}catch(_){}
   WQ.House={list:HOUSES,id:()=>houseId,get:()=>HOUSES[houseId]||null,set(id){if(HOUSES[id])houseId=id}};
-  const sc=()=>HOUSES[houseId]||HOUSES.gryffindor;
-  let selected='harry';
+  const sc=()=>HOUSES[houseId]||HOUSES.lion;
+  let selected='jaei';
   try{const raw=JSON.parse(localStorage.getItem('wq_save')||'{}');if(defs.some(d=>d.id===raw.character))selected=raw.character}catch(_){}
   function current(){return defs.find(d=>d.id===selected)||defs[0]}
-  function helper(){return selected==='hermione'?defs[0]:defs[1]}
+  const BUDDY={jaei:'taeo',taeo:'jaei',yunchan:'yungeon',yungeon:'yunchan'};
+  function helper(){return defs.find(d=>d.id===BUDDY[selected])||defs[1]}
   function choose(id){if(defs.some(d=>d.id===id))selected=id;return current()}
   function drawCover(ctx,img,x,y,w,h,focusY=.24){
     if(!img||!img.complete||!img.naturalWidth)return false;
@@ -283,7 +288,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   /* a fully drawn, kid-cute chibi face. Draws centred at the origin with
      face radius r; everything (hair, glasses, freckles) scales with r. */
   function drawFaceArt(ctx,d,r=19,t=0){
-    const f=FACE[d.id]||FACE.harry,s=r/19;
+    const f=FACE[d.id]||FACE.jaei,s=r/19;
     ctx.save();
     /* hair behind the face */
     ctx.fillStyle=f.hair;
@@ -385,6 +390,10 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   }
   /* big friendly portrait for the selection cards */
   function drawPortrait(ctx,d,x,y,w,h,t=0){
+    { const im=HERO_ART[d.id]; if(im&&im.complete&&im.naturalWidth){   /* 11-21 3D 캐릭터 그림의 윗몸(머리~가슴) */
+      const g=ctx.createLinearGradient(x,y,x,y+h);g.addColorStop(0,'#8f7bd8');g.addColorStop(1,'#d9c8f4');ctx.fillStyle=g;ctx.fillRect(x,y,w,h);
+      const k=.58,sw=im.naturalWidth,sh=im.naturalHeight*k,sc=Math.min(w/sw*1.05,(h+6)/sh),dw=sw*sc,dh=sh*sc,bob=Math.sin(t*2)*1.5;
+      ctx.save();ctx.translate(x+w/2,y+h-dh+4+bob);ctx.scale(-1,1);ctx.drawImage(im,0,0,sw,sh,-dw/2,0,dw,dh);ctx.restore();return } }
     ctx.save();
     const g=ctx.createLinearGradient(x,y,x,y+h);
     g.addColorStop(0,'#8f7fd0');g.addColorStop(1,'#c9b8ec');ctx.fillStyle=g;ctx.fillRect(x,y,w,h);
@@ -398,7 +407,24 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     ctx.translate(cx,cy);drawFaceArt(ctx,d,r,t);
     ctx.restore();
   }
+  /* 11-21 비디오게임 캐릭터: 드리미나 3D 꼬마 마법사 그림(오른쪽 3/4 보기, 지팡이 든 손). 서 있으면 숨쉬기·걸으면 통통,
+     빗자루(fly)면 윗몸 65%만 그려 앉은 듯. 그림이 없으면 아래 예전 코드 그림. */
+  const HERO_ART={};['jaei','taeo','yunchan','yungeon'].forEach(id=>{const im=new Image();im.src='art/hero-'+id+'.webp?v=1';HERO_ART[id]=im});
+  const HERO_H={taeo:.86,jaei:.94,yungeon:.95,yunchan:1.04};
+  function drawHeroArt(ctx,d,o){
+    const im=HERO_ART[d.id];if(!im||!im.complete||!im.naturalWidth)return false;
+    const t=o.t||0,walk=o.walk||0,moving=!!o.moving,fly=o.pose==='fly';
+    const H=118*(HERO_H[d.id]||1),W=H*im.naturalWidth/im.naturalHeight;
+    const bob=moving?-Math.abs(Math.sin(walk))*4:Math.sin(t*2.1)*1.2,sq=moving?1:1+Math.sin(t*2.1)*.015;
+    ctx.save();ctx.translate(0,34+bob);ctx.scale(-1/sq,sq);   /* 그림은 왼쪽을 봐서 좌우 반전 → 오른쪽을 본다 */
+    if(fly){const k=.66;ctx.drawImage(im,0,0,im.naturalWidth,im.naturalHeight*k,-W/2,-H*k-6,W,H*k)}
+    else ctx.drawImage(im,-W/2,-H,W,H);
+    ctx.restore();
+    if(o.tool==='wand'||o.tool==null){const g=.55+.45*Math.sin(t*7);ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.55*g;ctx.fillStyle='#ffe98a';ctx.beginPath();ctx.arc(W*.4,34+bob-H*(fly?.62:.86),6+3*g,0,TAU);ctx.fill();ctx.restore()}
+    return true;
+  }
   function drawHero(ctx,d,o={}){
+    if(drawHeroArt(ctx,d,o))return;
     const pal=PALETTE[d.id]||PALETTE.harry;
     const t=o.t||0,walk=o.walk||0,moving=!!o.moving,fly=o.pose==='fly';
     const swing=moving?Math.sin(walk):0,idle=Math.sin(t*2.1);
@@ -772,7 +798,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     let t=0,scroll=0,speed=0,spawn=0,starSpawn=0,shots=[],enemies=[],stars=[],clouds=[],boss=null,done=false,rescue=0,checkpoint=0,streak=0,failures=0,assist=1,clearDelay=0,reported=false,active=false;
     const p={x:210,y:280,vx:0,vy:0,r:21,hp:hero.hp,max:hero.hp,inv:2,castCd:0,sq:F.squash(),tilt:0,trail:0,stars:0,hits:0};
     const H=WQ.Hard.make('forest',p),NOVA=H.on?7:5;
-    /* ? 수정 구슬: 별 길(픽시만 나오는 구간과 쉬는 구간)에 4개. GameQuiz 가 없으면 만들지 않는다. */
+    /* ? 수정 구슬: 별 길(요정만 나오는 구간과 쉬는 구간)에 4개. GameQuiz 가 없으면 만들지 않는다. */
     const PW=WQ.Power.kit(p,null,{H,foes:()=>[...enemies.filter(e=>e.kind!=='gate'&&e.kind!=='big'),...clouds],boss:()=>boss&&boss.kind==='big'?boss:null,
       small:()=>{if(charge<NOVA){charge++;paintCharge();return '수호 마법 빛 +1'}return null}});PW.schedule([[3.5,300],[12,190],[18,380],[35.5,270]]);
     let charge=0,novaTime=0,novaX=0,novaY=0;
@@ -791,7 +817,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     function damage(){if(p.inv>0||rescue||done)return;if(PW.guard())return;H.hurt(p);p.hits++;failures++;streak=0;p.inv=H.inv(1.25);F.stop(.065);F.bump(.35);F.blink('#ff7d9d',.16);F.kick(p.sq,1.28,.74);F.spark(p.x,p.y,'#ff8eaa',10);S.hit();if(failures>=3){assist=H.assist(.82);E.announce(helper.name+'가 도움 마법을 걸었어요. 천천히 다시 해봐요!')}if(p.hp<=0){rescue=1.2;p.hp=p.max;p.inv=3;p.vx=p.vy=0;shots.length=0;clouds.length=0;enemies=enemies.filter(e=>e===boss&&!e.dead);spawn=Math.max(spawn,.6);t=Math.max(checkpoint,t-4);E.announce(helper.name+'의 도움 마법! 여기서 다시 출발해요.');F.slow(.35,.25,.55)}}
     function hitEnemy(e,shot){if(e.kind==='gate')return;e.hp--;e.flash=.12;shot.dead=true;F.stop(e.kind==='big'?.055:.032);F.bump(e.kind==='big'?.18:.08);F.spark(shot.x,shot.y,e.kind==='big'?'#ffcf69':'#bba0ff',e.kind==='big'?9:6);S.hit();if(e.hp<=0){e.dead=true;streak++;F.spark(e.x,e.y,'#ffd86b',16);F.pop(e.x,e.y,e.kind==='big'?'멋진 지혜!':`연속 ${streak}`,'#fff09a');if(e===boss){done=true;clearDelay=.9;F.slow(.22,.38,.75);F.confetti(e.x,e.y,70);S.clear()}}}
     function reflectCloud(c){H.reflect(c.x,c.y);const target=[...enemies].filter(e=>!e.dead&&e.kind!=='gate').sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y))[0];for(let i=0;i<3;i++)shots.push({x:p.x+30,y:p.y-18+i*8,vx:610,vy:(i-1)*80,life:1.6,r:hero.spell+3,target})}
-    function reportClear(){if(reported||!active)return;reported=true;const rating=p.hits<=1&&p.stars>=18?3:p.hits<=5&&p.stars>=10?2:1;onClear({stars:H.rating(rating),wisdom:p.stars,hits:p.hits,time:t,card:'콘월 픽시',reward:'빗자루 꼬리 리본'})}
+    function reportClear(){if(reported||!active)return;reported=true;const rating=p.hits<=1&&p.stars>=18?3:p.hits<=5&&p.stars>=10?2:1;onClear({stars:H.rating(rating),wisdom:p.stars,hits:p.hits,time:t,card:'장난꾸러기 요정',reward:'빗자루 꼬리 리본'})}
     function update(dt,raw=dt){
       if(done){clearDelay-=raw||dt;if(clearDelay<=0)reportClear();return}if(rescue){rescue=Math.max(0,rescue-(raw||dt));F.updateSquash(p.sq,dt);if(!rescue){p.x=210;p.y=280;p.vx=p.vy=0;F.ring(p.x,p.y,'#d8caff')}return}
       H.update(dt,phase()===3);t+=dt;novaTime=Math.max(0,novaTime-dt);if(E.input.buffered("nova")){E.input.consume("nova");nova()}p.inv=Math.max(0,p.inv-dt);p.castCd=Math.max(0,p.castCd-dt);const ph=phase();if(t>phases[Math.min(ph+1,phases.length-1)]-.05&&t<phases[Math.min(ph+1,phases.length-1)]+.05){checkpoint=t;H.checkpoint()}
@@ -800,7 +826,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       p.vx=damp(p.vx,ix*245*hero.speed,ix?13:8,dt);p.vy=damp(p.vy,iy*245*hero.speed,iy?13:8,dt);p.x=clamp(p.x+p.vx*dt,95,470);p.y=clamp(p.y+p.vy*dt,95,465);p.tilt=damp(p.tilt,iy*.28,9,dt);F.updateSquash(p.sq,dt);
       if((Math.abs(p.vx)+Math.abs(p.vy)>30)&&!((E.frame+p.trail++)%5))F.dust(p.x-46,p.y+13,'rgba(177,139,255,.3)');if(E.input.held('cast')||E.input.buffered('cast',.16)){E.input.consume('cast');cast()}
       spawn-=dt;starSpawn-=dt;if(starSpawn<=0&&ph!==5){starSpawn=ph===3?.38:1.05;addStar(1010,rnd(110,440))}
-      if(spawn<=0){if(ph===0){spawn=2.4}else if(ph===1){addPixie();spawn=1.65}else if(ph===2){Math.random()<.35?addGate():addPixie();spawn=1.25}else if(ph===3){spawn=2.2}else if(ph===4){Math.random()<.43?addGate():addPixie(Math.random()<.22?'big':'pixie');spawn=1}else if(ph===5&&!boss){boss={};addPixie('big');boss=enemies.at(-1);spawn=99;E.announce('픽시 대장이 나타났어요! 빛 주문으로 장난을 멈춰요.')}}
+      if(spawn<=0){if(ph===0){spawn=2.4}else if(ph===1){addPixie();spawn=1.65}else if(ph===2){Math.random()<.35?addGate():addPixie();spawn=1.25}else if(ph===3){spawn=2.2}else if(ph===4){Math.random()<.43?addGate():addPixie(Math.random()<.22?'big':'pixie');spawn=1}else if(ph===5&&!boss){boss={};addPixie('big');boss=enemies.at(-1);spawn=99;E.announce('요정 대장이 나타났어요! 빛 주문으로 장난을 멈춰요.')}}
       for(const s of stars){s.age+=dt;s.x-=speed*dt;if(!s.got&&Math.hypot(s.x-p.x,s.y-p.y)<p.r+s.r+7){s.got=true;p.stars++;charge=Math.min(NOVA,charge+1);paintCharge();if(charge===NOVA)F.pop(p.x,p.y-50,"수호 마법 준비!","#b9f6ff");F.spark(s.x,s.y,'#ffe270',12);F.kick(p.sq,1.15,.88);S.star()}}
       PW.timeline(t);PW.update(dt,speed);
       for(const b of shots){b.life-=dt;if(b.target&&!b.target.dead){const dx=b.target.x-b.x,dy=b.target.y-b.y,dd=Math.hypot(dx,dy)||1;b.vx=damp(b.vx,dx/dd*610,5,dt);b.vy=damp(b.vy,dy/dd*610,5,dt)}b.x+=b.vx*dt;b.y+=b.vy*dt;for(const e of enemies){if(e.dead||e.kind==='gate'||(b.side&&e.kind==='big'))continue;if(Math.hypot(b.x-e.x,b.y-e.y)<b.r+e.r){hitEnemy(e,b);break}}}
@@ -809,14 +835,14 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       shots=shots.filter(b=>!b.dead&&b.life>0&&b.x<1020);stars=stars.filter(s=>!s.got&&s.x>-40);enemies=enemies.filter(e=>!e.dead&&e.x>-100);clouds=clouds.filter(c=>c.life>0&&c.x>-30);
     }
     function rounded(ctx,x,y,w,h,r){ctx.beginPath();ctx.roundRect?ctx.roundRect(x,y,w,h,r):ctx.rect(x,y,w,h)}
-    function background(ctx){const sky=ctx.createLinearGradient(0,0,0,540);sky.addColorStop(0,'#8b7bd3');sky.addColorStop(.58,'#6bc4d5');sky.addColorStop(1,'#cae4c5');ctx.fillStyle=sky;ctx.fillRect(0,0,960,540);ctx.save();ctx.globalAlpha=.65;ctx.fillStyle='#f7e9ff';for(let i=0;i<6;i++){const x=((i*210-scroll*.08)%1250)-120,y=70+(i%3)*48;ctx.beginPath();ctx.ellipse(x,y,75,24,0,0,TAU);ctx.ellipse(x+55,y+4,55,19,0,0,TAU);ctx.fill()}ctx.restore();ctx.fillStyle='#6d628f';for(let i=0;i<9;i++){const x=((i*145-scroll*.16)%1450)-120,h=110+(i%3)*28;ctx.beginPath();ctx.moveTo(x,390);ctx.lineTo(x+65,390-h);ctx.lineTo(x+130,390);ctx.fill()}ctx.fillStyle='#273d47';for(let i=0;i<15;i++){const x=((i*82-scroll*.42)%1320)-100,h=130+(i%4)*23;ctx.beginPath();ctx.moveTo(x,505);ctx.lineTo(x+33,505-h);ctx.lineTo(x+66,505);ctx.fill()}ctx.fillStyle='#314e50';ctx.fillRect(0,500,960,40)}
+    function background(ctx){if(WQ.BG.draw(ctx,'forest',scroll*.25))return;const sky=ctx.createLinearGradient(0,0,0,540);sky.addColorStop(0,'#8b7bd3');sky.addColorStop(.58,'#6bc4d5');sky.addColorStop(1,'#cae4c5');ctx.fillStyle=sky;ctx.fillRect(0,0,960,540);ctx.save();ctx.globalAlpha=.65;ctx.fillStyle='#f7e9ff';for(let i=0;i<6;i++){const x=((i*210-scroll*.08)%1250)-120,y=70+(i%3)*48;ctx.beginPath();ctx.ellipse(x,y,75,24,0,0,TAU);ctx.ellipse(x+55,y+4,55,19,0,0,TAU);ctx.fill()}ctx.restore();ctx.fillStyle='#6d628f';for(let i=0;i<9;i++){const x=((i*145-scroll*.16)%1450)-120,h=110+(i%3)*28;ctx.beginPath();ctx.moveTo(x,390);ctx.lineTo(x+65,390-h);ctx.lineTo(x+130,390);ctx.fill()}ctx.fillStyle='#273d47';for(let i=0;i<15;i++){const x=((i*82-scroll*.42)%1320)-100,h=130+(i%4)*23;ctx.beginPath();ctx.moveTo(x,505);ctx.lineTo(x+33,505-h);ctx.lineTo(x+66,505);ctx.fill()}ctx.fillStyle='#314e50';ctx.fillRect(0,500,960,40)}
     function drawRider(ctx){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.tilt);ctx.globalAlpha=p.inv>0&&Math.floor(p.inv*12)%2?.42:1;ctx.scale(p.sq.x,p.sq.y);ctx.translate(0,Math.sin(t*7)*2);
       ctx.strokeStyle='#8f552e';ctx.lineWidth=7;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(-52,26);ctx.lineTo(58,26);ctx.stroke();
       ctx.fillStyle='#b87b42';ctx.beginPath();ctx.moveTo(-46,18);ctx.lineTo(-82,13);ctx.lineTo(-73,27);ctx.lineTo(-84,38);ctx.lineTo(-44,33);ctx.closePath();ctx.fill();
       ctx.save();ctx.translate(0,-4);WQ.Characters.drawHero(ctx,hero,{t,pose:'fly',tool:'grip'});ctx.restore();
       ctx.strokeStyle='#463224';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(16,2);ctx.lineTo(37,-17);ctx.stroke();ctx.fillStyle='#fff1a6';ctx.shadowColor='#ffe16e';ctx.shadowBlur=15;ctx.beginPath();ctx.arc(38,-18,4,0,TAU);ctx.fill();WQ.Power.tip(ctx,38,-18);ctx.restore()}
     function drawPixie(ctx,e){ctx.save();ctx.translate(e.x,e.y);const wig=Math.sin(e.age*6+e.wobble)*.12;ctx.rotate(wig);const sc=e.kind==='big'?1.75:1;ctx.scale(sc,sc);ctx.fillStyle=e.flash?'#fff':'#8c6ad0';ctx.beginPath();ctx.ellipse(0,0,15,19,0,0,TAU);ctx.fill();ctx.fillStyle='rgba(238,235,255,.75)';ctx.beginPath();ctx.ellipse(-17,-4,14,7,-.5,0,TAU);ctx.ellipse(17,-4,14,7,.5,0,TAU);ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(-5,-3,3,0,TAU);ctx.arc(5,-3,3,0,TAU);ctx.fill();ctx.fillStyle='#34254d';ctx.beginPath();ctx.arc(-5,-3,1.4,0,TAU);ctx.arc(5,-3,1.4,0,TAU);ctx.fill();ctx.strokeStyle='#594080';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,5,5,.2,Math.PI-.2);ctx.stroke();ctx.restore();if(e.kind==='big'){ctx.fillStyle='rgba(20,16,44,.35)';rounded(ctx,e.x-58,e.y+67,116,8,4);ctx.fill();ctx.fillStyle='#ffcf69';rounded(ctx,e.x-58,e.y+67,116*Math.max(0,e.hp/e.max),8,4);ctx.fill()}}
-    function draw(ctx){background(ctx);if(novaTime>0){const q=1-novaTime/.75;ctx.save();ctx.globalAlpha=(1-q)*.85;ctx.strokeStyle='#b9f6ff';ctx.shadowColor='#9bedff';ctx.shadowBlur=20;ctx.lineWidth=22*(1-q)+3;ctx.beginPath();ctx.arc(novaX,novaY,40+q*1000,0,TAU);ctx.stroke();ctx.restore()}F.drawLayer(ctx,-1);for(const s of stars){const pulse=1+Math.sin(s.age*7)*.12;ctx.save();ctx.translate(s.x,s.y);ctx.scale(pulse,pulse);ctx.fillStyle='#ffe26e';ctx.shadowColor='#fff2a6';ctx.shadowBlur=15;ctx.beginPath();for(let i=0;i<8;i++){const a=-Math.PI/2+i*Math.PI/4,r=i%2?5:12;i?ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r):ctx.moveTo(Math.cos(a)*r,Math.sin(a)*r)}ctx.closePath();ctx.fill();ctx.restore()}PW.drawWorld(ctx);for(const e of enemies){if(e.kind==='gate'){ctx.fillStyle='#33484b';ctx.fillRect(e.x-24,0,48,e.y-e.gap/2);ctx.fillRect(e.x-24,e.y+e.gap/2,48,540-e.y-e.gap/2);ctx.fillStyle='#5b7771';for(let y=18;y<540;y+=38){if(Math.abs(y-e.y)<e.gap/2)continue;ctx.beginPath();ctx.arc(e.x,y,20,0,TAU);ctx.fill()}}else drawPixie(ctx,e)}for(const c of clouds){ctx.save();ctx.translate(c.x,c.y);ctx.rotate(Math.PI/4);ctx.fillStyle=c.gold?'#ffd45c':'#ff739c';ctx.shadowColor=c.gold?'#fff1a0':'#ff9bb8';ctx.shadowBlur=12;ctx.fillRect(-c.r,-c.r,c.r*2,c.r*2);ctx.restore();if(c.gold)H.drawGold(ctx,c.x,c.y,c.r+12,c.age)}if(!WQ.Power.drawShots(ctx,shots))for(const b of shots){ctx.strokeStyle='rgba(255,225,102,.5)';ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(b.x-b.vx*.025,b.y-b.vy*.025);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.fillStyle='#fff5ae';ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,TAU);ctx.fill()}PW.aura(ctx,p.x,p.y);drawRider(ctx);H.drawShield(ctx,p.x,p.y);H.drawDark(ctx);ctx.fillStyle='rgba(24,19,53,.72)';rounded(ctx,18,18,262,58,18);ctx.fill();ctx.font='900 17px Malgun Gothic';ctx.fillStyle='#fff';if(H.on)H.drawBar(ctx,34,26,236);else ctx.fillText('하트  '+('♥'.repeat(p.hp)+'♡'.repeat(p.max-p.hp)),34,43);ctx.fillStyle='#ffe271';ctx.fillText(`지혜의 별  ${p.stars}`,34,67);ctx.fillStyle='rgba(24,19,53,.62)';rounded(ctx,700,20,240,38,15);ctx.fill();ctx.fillStyle='#fff';ctx.font='900 14px Malgun Gothic';ctx.textAlign='center';ctx.fillText(phase()<5?`숲길 ${Math.min(100,Math.round(t/48*100))}%`:'픽시 대장을 멈춰요!',820,45);ctx.textAlign='left';ctx.fillStyle='rgba(24,19,53,.72)';rounded(ctx,325,20,310,54,16);ctx.fill();ctx.fillStyle=charge>=NOVA?'#b9f6ff':'#ffe271';ctx.font='900 16px Malgun Gothic';ctx.textAlign='center';ctx.fillText(charge>=NOVA?'✧ 수호 마법 준비!  X / 옆 버튼':'빛 '+charge+'/'+NOVA+'  ·  '+NOVA+'개 모으면 수호 마법',480,44);ctx.fillStyle='#b9f6ff';ctx.fillRect(345,57,270*charge/NOVA,5);ctx.textAlign='left';if(t<7){ctx.fillStyle='rgba(255,248,223,.92)';rounded(ctx,310,420,340,58,20);ctx.fill();ctx.fillStyle='#382d54';ctx.font='900 20px Malgun Gothic';ctx.textAlign='center';ctx.fillText(t<5?'별길을 따라 날아 봐요!':'주문을 길게 눌러 연속 발사!',480,456);ctx.textAlign='left'}PW.top(ctx,18,82);if(rescue){ctx.fillStyle='rgba(28,23,57,.82)';ctx.fillRect(0,0,960,540);ctx.fillStyle='#fff8df';ctx.font='950 34px Malgun Gothic';ctx.textAlign='center';ctx.fillText('괜찮아! 다시 날아 보자.',480,245);ctx.font='800 20px Malgun Gothic';ctx.fillText(helper.name+'가 도움 마법을 걸었어요.',480,285);ctx.textAlign='left'}}
+    function draw(ctx){background(ctx);if(novaTime>0){const q=1-novaTime/.75;ctx.save();ctx.globalAlpha=(1-q)*.85;ctx.strokeStyle='#b9f6ff';ctx.shadowColor='#9bedff';ctx.shadowBlur=20;ctx.lineWidth=22*(1-q)+3;ctx.beginPath();ctx.arc(novaX,novaY,40+q*1000,0,TAU);ctx.stroke();ctx.restore()}F.drawLayer(ctx,-1);for(const s of stars){const pulse=1+Math.sin(s.age*7)*.12;ctx.save();ctx.translate(s.x,s.y);ctx.scale(pulse,pulse);ctx.fillStyle='#ffe26e';ctx.shadowColor='#fff2a6';ctx.shadowBlur=15;ctx.beginPath();for(let i=0;i<8;i++){const a=-Math.PI/2+i*Math.PI/4,r=i%2?5:12;i?ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r):ctx.moveTo(Math.cos(a)*r,Math.sin(a)*r)}ctx.closePath();ctx.fill();ctx.restore()}PW.drawWorld(ctx);for(const e of enemies){if(e.kind==='gate'){ctx.fillStyle='#33484b';ctx.fillRect(e.x-24,0,48,e.y-e.gap/2);ctx.fillRect(e.x-24,e.y+e.gap/2,48,540-e.y-e.gap/2);ctx.fillStyle='#5b7771';for(let y=18;y<540;y+=38){if(Math.abs(y-e.y)<e.gap/2)continue;ctx.beginPath();ctx.arc(e.x,y,20,0,TAU);ctx.fill()}}else drawPixie(ctx,e)}for(const c of clouds){ctx.save();ctx.translate(c.x,c.y);ctx.rotate(Math.PI/4);ctx.fillStyle=c.gold?'#ffd45c':'#ff739c';ctx.shadowColor=c.gold?'#fff1a0':'#ff9bb8';ctx.shadowBlur=12;ctx.fillRect(-c.r,-c.r,c.r*2,c.r*2);ctx.restore();if(c.gold)H.drawGold(ctx,c.x,c.y,c.r+12,c.age)}if(!WQ.Power.drawShots(ctx,shots))for(const b of shots){ctx.strokeStyle='rgba(255,225,102,.5)';ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(b.x-b.vx*.025,b.y-b.vy*.025);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.fillStyle='#fff5ae';ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,TAU);ctx.fill()}PW.aura(ctx,p.x,p.y);drawRider(ctx);H.drawShield(ctx,p.x,p.y);H.drawDark(ctx);ctx.fillStyle='rgba(24,19,53,.72)';rounded(ctx,18,18,262,58,18);ctx.fill();ctx.font='900 17px Malgun Gothic';ctx.fillStyle='#fff';if(H.on)H.drawBar(ctx,34,26,236);else ctx.fillText('하트  '+('♥'.repeat(p.hp)+'♡'.repeat(p.max-p.hp)),34,43);ctx.fillStyle='#ffe271';ctx.fillText(`지혜의 별  ${p.stars}`,34,67);ctx.fillStyle='rgba(24,19,53,.62)';rounded(ctx,700,20,240,38,15);ctx.fill();ctx.fillStyle='#fff';ctx.font='900 14px Malgun Gothic';ctx.textAlign='center';ctx.fillText(phase()<5?`숲길 ${Math.min(100,Math.round(t/48*100))}%`:'요정 대장을 멈춰요!',820,45);ctx.textAlign='left';ctx.fillStyle='rgba(24,19,53,.72)';rounded(ctx,325,20,310,54,16);ctx.fill();ctx.fillStyle=charge>=NOVA?'#b9f6ff':'#ffe271';ctx.font='900 16px Malgun Gothic';ctx.textAlign='center';ctx.fillText(charge>=NOVA?'✧ 수호 마법 준비!  X / 옆 버튼':'빛 '+charge+'/'+NOVA+'  ·  '+NOVA+'개 모으면 수호 마법',480,44);ctx.fillStyle='#b9f6ff';ctx.fillRect(345,57,270*charge/NOVA,5);ctx.textAlign='left';if(t<7){ctx.fillStyle='rgba(255,248,223,.92)';rounded(ctx,310,420,340,58,20);ctx.fill();ctx.fillStyle='#382d54';ctx.font='900 20px Malgun Gothic';ctx.textAlign='center';ctx.fillText(t<5?'별길을 따라 날아 봐요!':'주문을 길게 눌러 연속 발사!',480,456);ctx.textAlign='left'}PW.top(ctx,18,82);if(rescue){ctx.fillStyle='rgba(28,23,57,.82)';ctx.fillRect(0,0,960,540);ctx.fillStyle='#fff8df';ctx.font='950 34px Malgun Gothic';ctx.textAlign='center';ctx.fillText('괜찮아! 다시 날아 보자.',480,245);ctx.font='800 20px Malgun Gothic';ctx.fillText(helper.name+'가 도움 마법을 걸었어요.',480,285);ctx.textAlign='left'}}
     function pointer(type,x,y){if(type==='down'&&x>560)E.input.press('cast');if(type==='up')E.input.release('cast')}
     return{enter,exit,update,draw,pointer};
   }
@@ -834,8 +860,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   const clamp=F.clamp,damp=F.damp,lerp=F.lerp;
 
   function MovingStairs(onClear){
-    const hero=WQ.Power.wrap(WQ.Characters?.current?.()||{name:'해리',speed:1,cast:.19,spell:8,hp:5});
-    const helper=WQ.Characters?.helper?.()||{name:'헤르미온느'};
+    const hero=WQ.Power.wrap(WQ.Characters?.current?.()||{name:'재이',speed:1,cast:.19,spell:8,hp:5});
+    const helper=WQ.Characters?.helper?.()||{name:'태오'};
     const TOP=184,BOTTOM=356,roomNames=['박자의 계단','두 갈래 계단','비밀 계단','쉬어 가는 방','빛나는 열쇠'];
     const minTimes=[14,26,38,10,0];
     let room=0,roomTime=0,totalTime=0,stairs=[],items=[],books=[],shots=[];
@@ -1012,6 +1038,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     }
 
     function drawBackdrop(ctx){
+      if(WQ.BG.draw(ctx,'stairs'))return;
       const g=ctx.createLinearGradient(0,0,0,540);g.addColorStop(0,'#302957');g.addColorStop(.55,'#5b5485');g.addColorStop(1,'#282541');ctx.fillStyle=g;ctx.fillRect(0,0,960,540);
       ctx.fillStyle='rgba(255,244,202,.1)';for(let i=0;i<34;i++){const x=(i*91+(roomTime*8)%91)%960,y=(i*47)%540;ctx.beginPath();ctx.arc(x,y,1+i%2,0,TAU);ctx.fill()}
       ctx.fillStyle='#625f78';ctx.fillRect(26,24,908,492);ctx.strokeStyle='rgba(255,255,255,.07)';ctx.lineWidth=1;
@@ -1102,8 +1129,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   const clamp=F.clamp,damp=F.damp,lerp=F.lerp;
 
   function PotionClass(onClear){
-    const hero=WQ.Power.wrap(WQ.Characters?.current?.()||{name:'해리',speed:1,cast:.19,spell:8,hp:5});
-    const helper=WQ.Characters?.helper?.()||{name:'헤르미온느'};
+    const hero=WQ.Power.wrap(WQ.Characters?.current?.()||{name:'재이',speed:1,cast:.19,spell:8,hp:5});
+    const helper=WQ.Characters?.helper?.()||{name:'태오'};
     const FLOOR=436,roomNames=['반짝 재료 받기','초록 연기 조심','레시피 순서','쉬어 가는 솥','부글부글 대왕 솥'];
     const minTimes=[12,24,34,9,0];
     const INGR=[{name:'달빛이슬',color:'#8fd8ff',glow:'#c9ecff'},{name:'불꽃가루',color:'#ffb169',glow:'#ffd9ae'},{name:'은방울꽃',color:'#ffa8d4',glow:'#ffd3ea'},{name:'별사탕',color:'#ffe36d',glow:'#fff3ae'}];
@@ -1298,6 +1325,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     }
 
     function drawBackdrop(ctx){
+      if(WQ.BG.draw(ctx,'potion'))return;
       const g=ctx.createLinearGradient(0,0,0,540);g.addColorStop(0,'#241f3f');g.addColorStop(.6,'#3d3358');g.addColorStop(1,'#221d38');ctx.fillStyle=g;ctx.fillRect(0,0,960,540);
       /* stone arches */
       ctx.fillStyle='#332b4e';for(let i=0;i<3;i++){const x=180+i*300;ctx.beginPath();ctx.moveTo(x-95,290);ctx.quadraticCurveTo(x,120,x+95,290);ctx.lineTo(x+70,290);ctx.quadraticCurveTo(x,168,x-70,290);ctx.fill()}
@@ -1428,9 +1456,9 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   const clamp=F.clamp,damp=F.damp,lerp=F.lerp;
 
   function Quidditch(onClear){
-    const hero=WQ.Power.wrap(WQ.Characters?.current?.()||{name:'해리',speed:1,cast:.19,spell:8,hp:5});
-    const helper=WQ.Characters?.helper?.()||{name:'헤르미온느'};
-    const roomNames=['골대 통과 연습','블러저 피하기','반짝 링 이어 날기','쉬는 구름','황금 스니치'];
+    const hero=WQ.Power.wrap(WQ.Characters?.current?.()||{name:'재이',speed:1,cast:.19,spell:8,hp:5});
+    const helper=WQ.Characters?.helper?.()||{name:'태오'};
+    const roomNames=['골대 통과 연습','쿵쿵공 피하기','반짝 링 이어 날기','쉬는 구름','황금 별새'];
     const minTimes=[11,22,32,9,0];
     let room=0,roomTime=0,totalTime=0,rings=[],bludgers=[],items=[],shots=[];
     let bludgerClock=99,bludgerSerial=0,doorGlow=0,rescue=0,failures=0,assist=1,assistShown=false;
@@ -1448,10 +1476,10 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     function announceRoom(){
       const lines=[
         '반짝이는 링을 통과해요.',
-        '블러저가 날아와요. 스페이스 주문으로 튕겨 내요.',
+        '쿵쿵공가 날아와요. 스페이스 주문으로 튕겨 내요.',
         '움직이는 링을 이어서 통과해요.',
         '구름 위에서 별을 모으며 쉬어요.',
-        '스니치가 금빛으로 반짝일 때 주문을 써요.'
+        '별새가 금빛으로 반짝일 때 주문을 써요.'
       ];E.announce(roomNames[room]+'. '+lines[room]);
     }
     function setupRoom(next){
@@ -1478,14 +1506,14 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       return false;
     }
     function noteFailure(){
-      failures++;if(failures>=3&&assist===1){assist=H.assist(.82);if(!assistShown){assistShown=true;E.announce(helper.name+'가 블러저를 느리게 했어요. 천천히 다시 해봐요!')}}
+      failures++;if(failures>=3&&assist===1){assist=H.assist(.82);if(!assistShown){assistShown=true;E.announce(helper.name+'가 쿵쿵공를 느리게 했어요. 천천히 다시 해봐요!')}}
     }
     function hurt(){
       if(p.inv>0||rescue||done)return;if(PW.guard())return;H.hurt(p);p.hits++;p.inv=H.inv(1.4);noteFailure();
       F.stop(.055);F.bump(.26);F.blink('#ffb08a',.13);F.kick(p.sq,1.26,.75);F.spark(p.x,p.y,'#ffc9a3',12);S.hit?.();
       if(p.hp<=0){p.hp=p.max;rescue=1.2;p.inv=2.4;p.vx=p.vy=0;E.announce(helper.name+'의 도움 마법! 관중석 위에서 다시 날아요.');F.slow(.35,.22,.5)}
     }
-    function reflectFoe(b){b.dead=true;H.reflect(b.x,b.y);if(room===4&&boss&&boss.hp>0&&boss.state!=='vulnerable'){boss.state='vulnerable';boss.t=0;boss.dur=[1.55,1.35,1.15][Math.min(2,boss.round)]*H.mul('boss')+.4+(assist<1?.3:0);E.announce('반사 성공! 금빛 스니치에 주문을 써요!')}}
+    function reflectFoe(b){b.dead=true;H.reflect(b.x,b.y);if(room===4&&boss&&boss.hp>0&&boss.state!=='vulnerable'){boss.state='vulnerable';boss.t=0;boss.dur=[1.55,1.35,1.15][Math.min(2,boss.round)]*H.mul('boss')+.4+(assist<1?.3:0);E.announce('반사 성공! 금빛 별새에 주문을 써요!')}}
     function spawnBludger(){
       const lanes=[130,240,340,430],y=lanes[bludgerSerial++%lanes.length];
       const gold=H.gold('bludger',3);bludgers.push({x:1015,y,base:y,age:0,warn:gold?.95:.8,vx:-(room===2?185:room===4?175:150)*assist*(gold?.85:1),wobble:Math.random()*TAU,dead:false,gold});
@@ -1529,7 +1557,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       for(const b of bludgers){if(!b.dead&&!b.gold&&b.age>b.warn&&Math.hypot(b.x-p.x,b.y-p.y)<range){b.dead=true;popped++;p.wisdom++;
         F.spark(b.x,b.y,'#ffd98a',16);F.pop(b.x,b.y,'튕겨 냈다!','#fff0c9')}}
       F.ring(p.x,p.y,popped?'#ffd98a':'#fff1a0');
-      if(!popped&&room>=1&&room<=2)F.pop(p.x,p.y-40,'블러저가 가까이 오면 다시!','#eee4ff');
+      if(!popped&&room>=1&&room<=2)F.pop(p.x,p.y-40,'쿵쿵공가 가까이 오면 다시!','#eee4ff');
     }
     function beginSnitchFlight(){
       if(!boss||boss.hp<=0)return;const perches=[[300,150],[760,140],[520,320],[820,330],[380,400],[640,110]];
@@ -1541,7 +1569,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     function hitBoss(){
       if(!boss||boss.state!=='vulnerable'||boss.inv>0)return;boss.hp--;boss.round++;boss.flash=.2;boss.inv=.25;p.wisdom++;
       F.stop(.075);F.bump(.26);F.blink('#fff2a0',.12);F.spark(boss.x,boss.y,'#ffe06b',22);
-      F.pop(boss.x,boss.y-34,boss.hp?'거의 잡았어!':'스니치를 잡았다!','#fff2a0');S.star?.();
+      F.pop(boss.x,boss.y-34,boss.hp?'거의 잡았어!':'별새를 잡았다!','#fff2a0');S.star?.();
       if(boss.hp<=0){finish();return}boss.state='recover';boss.t=0;boss.dur=1.5;
     }
     function updateBoss(dt){
@@ -1552,7 +1580,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
         const q=ease(boss.t/boss.dur);boss.x=lerp(boss.fromX,boss.toX,q);boss.y=lerp(boss.fromY,boss.toY,q)-Math.sin(q*Math.PI)*60;
         if(boss.t>=boss.dur){boss.x=boss.toX;boss.y=boss.toY;if(boss.hops>0)beginSnitchFlight();else{boss.state='tell';boss.t=0;boss.dur=1.1}}
       }else if(boss.state==='tell'){
-        if(boss.t>=boss.dur){boss.state='vulnerable';boss.t=0;boss.dur=[1.55,1.35,1.15][Math.min(2,boss.round)]*H.mul('boss')+(assist<1?.3:0);E.announce('지금이야! 금빛 스니치에 주문을 써요!')}
+        if(boss.t>=boss.dur){boss.state='vulnerable';boss.t=0;boss.dur=[1.55,1.35,1.15][Math.min(2,boss.round)]*H.mul('boss')+(assist<1?.3:0);E.announce('지금이야! 금빛 별새에 주문을 써요!')}
       }else if(boss.state==='vulnerable'&&boss.t>=boss.dur){
         noteFailure();F.pop(boss.x,boss.y-30,'괜찮아, 다시 쫓자!','#e8dcff');boss.state='recover';boss.t=0;boss.dur=.85;
       }
@@ -1570,12 +1598,12 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     }
     function finish(){
       if(done)return;done=true;clearDelay=1.05;F.stop(.08);F.slow(.24,.38,.75);F.bump(.35);F.confetti(boss.x,boss.y,76);S.clear?.();
-      E.announce('황금 스니치를 잡았어요! 결승전 승리!');
+      E.announce('황금 별새를 잡았어요! 결승전 승리!');
     }
     function beginNext(){if(transition)return;transition={t:0,next:room+1,switched:false};S.clear?.();F.slow(.55,.08,.22)}
 
     function update(dt,raw=dt){
-      if(done){F.updateSquash(p.sq,dt);clearDelay-=dt;if(clearDelay<=0&&!delivered){delivered=true;const rating=p.hits<=1&&p.wisdom>=14?3:p.hits<=4&&p.wisdom>=9?2:1;onClear({stars:H.rating(rating),wisdom:p.wisdom,hits:p.hits,time:Math.round(totalTime*10)/10,card:'황금 스니치',reward:'황금 수색꾼 배지'})}return}
+      if(done){F.updateSquash(p.sq,dt);clearDelay-=dt;if(clearDelay<=0&&!delivered){delivered=true;const rating=p.hits<=1&&p.wisdom>=14?3:p.hits<=4&&p.wisdom>=9?2:1;onClear({stars:H.rating(rating),wisdom:p.wisdom,hits:p.hits,time:Math.round(totalTime*10)/10,card:'황금 별새',reward:'황금 별새 배지'})}return}
       if(transition){transition.t+=dt;if(!transition.switched&&transition.t>=.42){transition.switched=true;setupRoom(transition.next)}if(transition.t>=.84)transition=null;F.updateSquash(p.sq,dt);return}
       totalTime+=dt;roomTime+=dt;p.inv=Math.max(0,p.inv-dt);p.castCd=Math.max(0,p.castCd-dt);castBuffer=Math.max(0,castBuffer-dt);F.updateSquash(p.sq,dt);
       if(rescue>0){rescue=Math.max(0,rescue-(raw||dt));if(rescue===0){p.x=200;p.y=280;p.vx=p.vy=0;castBuffer=0;F.ring(p.x,p.y,'#d8caff');F.kick(p.sq,.82,1.18)}return}
@@ -1593,6 +1621,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     }
 
     function drawBackdrop(ctx){
+      if(WQ.BG.draw(ctx,'quidditch'))return;
       const sky=ctx.createLinearGradient(0,0,0,540);sky.addColorStop(0,'#5a4f9e');sky.addColorStop(.55,'#8b6fc0');sky.addColorStop(1,'#f0b68f');ctx.fillStyle=sky;ctx.fillRect(0,0,960,540);
       ctx.fillStyle='rgba(255,244,202,.5)';for(let i=0;i<26;i++){const x=(i*89+Math.sin(i*5)*30)%960,y=(i*41)%300;ctx.globalAlpha=.3+.3*Math.sin(totalTime*2+i);ctx.beginPath();ctx.arc(x,y,1.2+(i%3)*.7,0,TAU);ctx.fill()}ctx.globalAlpha=1;
       /* stands ringing the pitch */
@@ -1670,14 +1699,14 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       ctx.fillStyle='rgba(25,20,52,.78)';rounded(ctx,18,18,292,62,18);ctx.fill();ctx.fillStyle='#fff';ctx.font='900 17px Malgun Gothic';if(H.on)H.drawBar(ctx,34,28,262);else ctx.fillText('하트  '+('♥'.repeat(p.hp)+'♡'.repeat(p.max-p.hp)),34,44);ctx.fillStyle='#ffe570';ctx.fillText('별  '+p.stars,34,68);
       ctx.fillStyle='rgba(25,20,52,.72)';rounded(ctx,670,19,270,49,17);ctx.fill();ctx.fillStyle='#fff';ctx.font='950 16px Malgun Gothic';ctx.textAlign='center';ctx.fillText((room+1)+'구간  '+roomNames[room],805,49);ctx.textAlign='left';
       if(room<=2){const got=rings.filter(r=>r.got).length;ctx.fillStyle='rgba(25,20,52,.7)';rounded(ctx,720,79,220,37,14);ctx.fill();ctx.fillStyle='#ffe9b0';ctx.font='900 14px Malgun Gothic';ctx.textAlign='center';ctx.fillText('통과한 링  '+got+' / '+rings.length,830,103);ctx.textAlign='left'}
-      if(room===4&&boss){ctx.fillStyle='rgba(25,20,52,.75)';rounded(ctx,350,82,260,42,15);ctx.fill();ctx.fillStyle='#ffe36d';ctx.font='950 19px Malgun Gothic';ctx.textAlign='center';ctx.fillText('스니치 잡기  '+('✦'.repeat(boss.hp)+'·'.repeat(3-boss.hp)),480,110);ctx.textAlign='left'}
+      if(room===4&&boss){ctx.fillStyle='rgba(25,20,52,.75)';rounded(ctx,350,82,260,42,15);ctx.fill();ctx.fillStyle='#ffe36d';ctx.font='950 19px Malgun Gothic';ctx.textAlign='center';ctx.fillText('별새 잡기  '+('✦'.repeat(boss.hp)+'·'.repeat(3-boss.hp)),480,110);ctx.textAlign='left'}
     }
     function drawPrompt(ctx){
       let text='';if(room===0&&roomTime<9)text=roomTime<4.5?'방향키로 하늘을 날아요':'반짝이는 링을 통과해요';
-      else if(room===1&&roomTime<7)text='블러저가 오면 스페이스바!';
+      else if(room===1&&roomTime<7)text='쿵쿵공가 오면 스페이스바!';
       else if(room===2&&roomTime<7)text='링이 위아래로 움직여요';
       else if(room===3&&roomTime<6)text='괜찮아. 구름 위에서 쉬어 가요.';
-      else if(room===4&&boss?.state==='vulnerable')text='지금! 금빛 스니치에 주문!';
+      else if(room===4&&boss?.state==='vulnerable')text='지금! 금빛 별새에 주문!';
       else if(room<4&&objectiveDone()&&roomTime>=minTimes[room])text='금빛 링이 열렸어요! 오른쪽 위로!';
       else if(room<4&&objectiveDone())text='바람을 한 번 더 느껴 봐요';if(!text)return;
       ctx.fillStyle='rgba(255,248,223,.94)';rounded(ctx,270,478,420,50,19);ctx.fill();ctx.fillStyle='#3c3156';ctx.font='950 18px Malgun Gothic';ctx.textAlign='center';ctx.fillText(text,480,509);ctx.textAlign='left';
@@ -1708,13 +1737,13 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   const clamp=F.clamp,damp=F.damp,lerp=F.lerp;
 
   function RequireRoom(onClear){
-    const hero=WQ.Power.wrap(WQ.Characters?.current?.()||{name:'해리',speed:1,cast:.19,spell:8,hp:5});
-    const helper=WQ.Characters?.helper?.()||{name:'헤르미온느'};
+    const hero=WQ.Power.wrap(WQ.Characters?.current?.()||{name:'재이',speed:1,cast:.19,spell:8,hp:5});
+    const helper=WQ.Characters?.helper?.()||{name:'태오'};
     const roomNames=['불빛 익히기','먼지 유령 조심','숨은 보물 찾기','포근한 쉼터','숨바꼭질 장롱'];
     const minTimes=[10,22,32,9,0];
     const TREASURE=[{name:'은빛 왕관',icon:'♛',color:'#cfe4ff'},{name:'노래하는 거울',icon:'◍',color:'#ffc9e8'},
       {name:'날개 달린 책',icon:'❐',color:'#ffe2a8'},{name:'반짝 새장',icon:'◫',color:'#c9f2d8'},
-      {name:'수다쟁이 모자',icon:'♠',color:'#e2c9ff'},{name:'반딧불 램프',icon:'◉',color:'#fff0b0'}];
+      {name:'수다쟁이 거울',icon:'♠',color:'#e2c9ff'},{name:'반딧불 램프',icon:'◉',color:'#fff0b0'}];
     let room=0,roomTime=0,totalTime=0,treasures=[],dusts=[],items=[],piles=[];
     let dustClock=99,doorGlow=0,rescue=0,failures=0,assist=1,assistShown=false,lightR=170;
     let transition=null,boss=null,done=false,clearDelay=0,delivered=false,castBuffer=0,pointerCast=false;
@@ -1893,6 +1922,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     }
 
     function drawBackdrop(ctx){
+      if(WQ.BG.draw(ctx,'require'))return;
       const g=ctx.createLinearGradient(0,0,0,540);g.addColorStop(0,'#201a38');g.addColorStop(.6,'#332a50');g.addColorStop(1,'#1d1834');ctx.fillStyle=g;ctx.fillRect(0,0,960,540);
       /* towering stacks of forgotten things */
       ctx.fillStyle='#2a2344';
@@ -2037,8 +2067,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   const clamp=F.clamp,damp=F.damp,lerp=F.lerp;
 
   function CastleDefense(onClear){
-    const hero=WQ.Power.wrap(WQ.Characters?.current?.()||{name:'해리',speed:1,cast:.19,spell:8,hp:5});
-    const helper=WQ.Characters?.helper?.()||{name:'헤르미온느'};
+    const hero=WQ.Power.wrap(WQ.Characters?.current?.()||{name:'재이',speed:1,cast:.19,spell:8,hp:5});
+    const helper=WQ.Characters?.helper?.()||{name:'태오'};
     const roomNames=['성벽 지키기 연습','첫 번째 구름 파도','두 번째 구름 파도','달빛 쉼터','심술 구름 대왕'];
     const minTimes=[10,20,30,9,0];
     let room=0,roomTime=0,totalTime=0,clouds=[],items=[],shots=[],fireworks=[];
@@ -2173,12 +2203,12 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     }
     function finish(){
       if(done)return;done=true;clearDelay=2.2;F.stop(.08);F.slow(.24,.38,.75);F.bump(.35);F.confetti(boss.x,boss.y,90);S.clear?.();
-      E.announce('심술 구름이 걷히고 호그와트에 빛이 돌아왔어요! 모든 이야기를 지켜 냈어요!');
+      E.announce('심술 구름이 걷히고 마법학교에 빛이 돌아왔어요! 모든 이야기를 지켜 냈어요!');
     }
     function beginNext(){if(transition)return;transition={t:0,next:room+1,switched:false};S.clear?.();F.slow(.55,.08,.22)}
 
     function update(dt,raw=dt){
-      if(done){F.updateSquash(p.sq,dt);updateFireworks(dt);clearDelay-=dt;if(clearDelay<=0&&!delivered){delivered=true;const rating=p.hits<=1&&p.wisdom>=18?3:p.hits<=4&&p.wisdom>=12?2:1;onClear({stars:H.rating(rating),wisdom:p.wisdom,hits:p.hits,time:Math.round(totalTime*10)/10,card:'빛 방패',reward:'호그와트 수호 훈장'})}return}
+      if(done){F.updateSquash(p.sq,dt);updateFireworks(dt);clearDelay-=dt;if(clearDelay<=0&&!delivered){delivered=true;const rating=p.hits<=1&&p.wisdom>=18?3:p.hits<=4&&p.wisdom>=12?2:1;onClear({stars:H.rating(rating),wisdom:p.wisdom,hits:p.hits,time:Math.round(totalTime*10)/10,card:'빛 방패',reward:'마법학교 수호 훈장'})}return}
       if(transition){transition.t+=dt;if(!transition.switched&&transition.t>=.42){transition.switched=true;setupRoom(transition.next)}if(transition.t>=.84)transition=null;F.updateSquash(p.sq,dt);return}
       totalTime+=dt;roomTime+=dt;p.inv=Math.max(0,p.inv-dt);p.castCd=Math.max(0,p.castCd-dt);castBuffer=Math.max(0,castBuffer-dt);F.updateSquash(p.sq,dt);
       if(rescue>0){rescue=Math.max(0,rescue-(raw||dt));if(rescue===0){clouds=clouds.filter(c=>Math.hypot(c.x-p.x,c.y-p.y)>190);p.inv=Math.max(p.inv,1.4);F.ring(p.x,p.y,'#d8caff');F.kick(p.sq,.82,1.18)}return}
@@ -2196,6 +2226,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     }
 
     function drawBackdrop(ctx){
+      if(WQ.BG.draw(ctx,'defense'))return;
       const sky=ctx.createLinearGradient(0,0,0,540);sky.addColorStop(0,'#1d1a3e');sky.addColorStop(.6,'#3b3068');sky.addColorStop(1,'#57457e');ctx.fillStyle=sky;ctx.fillRect(0,0,960,540);
       ctx.fillStyle='rgba(255,244,202,.6)';for(let i=0;i<30;i++){const x=(i*83+Math.sin(i*5)*30)%960,y=(i*37)%260;ctx.globalAlpha=.3+.35*Math.sin(totalTime*2+i);ctx.beginPath();ctx.arc(x,y,1.2+(i%3)*.7,0,TAU);ctx.fill()}ctx.globalAlpha=1;
       /* the castle rises behind the rampart */
@@ -2316,36 +2347,36 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   const WQ=window.WQ,E=WQ.E,F=WQ.Feel,S=WQ.Snd,TAU=Math.PI*2,clamp=F.clamp;
   const SAVE_KEY='wq_save',ribbonColors=['#ff7ca8','#66c8ff','#ffd66f','#8ee0ad'];
   const chapters=[
-    {id:'forest',number:1,year:'1학년 · 입학의 해',title:'금지된 숲의 빛 구조대',short:'픽시에게 빼앗긴 별을 찾아요',theme:'forest',accent:'#8f73d9',icon:'✦',nextId:'stairs',stage:onClear=>WQ.BroomRescue(onClear),story:(hero,helper)=>[
-      ['호그와트에 입학한 첫해예요.','부엉이가 입학 편지를 물어다 준 날부터','매일매일이 신기한 마법이었죠.'],
-      ['그런데 밤하늘 별이 어두워졌어요.','금지된 숲의 픽시들이 별을 숨긴 거예요.',hero.name+'는 첫 빗자루 수업을 막 마쳤어요.'],
+    {id:'forest',number:1,year:'1학년 · 입학의 해',title:'반딧불 숲의 빛 구조대',short:'요정에게 빼앗긴 별을 찾아요',theme:'forest',accent:'#8f73d9',icon:'✦',nextId:'stairs',stage:onClear=>WQ.BroomRescue(onClear),story:(hero,helper)=>[
+      ['마법학교에 입학한 첫해예요.','부엉이가 입학 편지를 물어다 준 날부터','매일매일이 신기한 마법이었죠.'],
+      ['그런데 밤하늘 별이 어두워졌어요.','반딧불 숲의 요정들이 별을 숨긴 거예요.',hero.name+'는 첫 빗자루 수업을 막 마쳤어요.'],
       [helper.name+'가 반짝이는 별길을 켜 주었어요.','“일학년도 용감할 수 있어!”','생애 첫 모험이 시작돼요.']
-    ],epilogue:'일학년의 첫 모험 성공! 숲의 별이 돌아오고 학교 전체가 박수를 쳤어요.',card:{title:'콘월 픽시',lines:['작고 파란 장난꾸러기예요.','침착하게 주문하면 금방 조용해져요.']},reward:'빗자루 꼬리 리본'},
+    ],epilogue:'일학년의 첫 모험 성공! 숲의 별이 돌아오고 학교 전체가 박수를 쳤어요.',card:{title:'장난꾸러기 요정',lines:['작고 파란 장난꾸러기예요.','침착하게 주문하면 금방 조용해져요.']},reward:'빗자루 꼬리 리본'},
     {id:'stairs',number:2,year:'2학년 · 비밀의 해',title:'움직이는 계단과 비밀 열쇠',short:'계단을 맞추고 열쇠를 찾아요',theme:'stairs',accent:'#58b7ca',icon:'◆',nextId:'potion',stage:onClear=>WQ.MovingStairs(onClear),story:(hero,helper)=>[
-      ['이학년이 되어 학교로 돌아왔어요.','올해 호그와트에는 이상한 소문이 돌아요.','성 어딘가에 비밀의 방이 있대요.'],
-      ['비밀의 방으로 가는 계단이 제멋대로 움직여요.','문을 여는 날개 달린 열쇠도 도망쳤대요.',hero.name+'는 높은 탑으로 달려갔어요.'],
+      ['이학년이 되어 학교로 돌아왔어요.','올해 마법학교에는 이상한 소문이 돌아요.','성 어딘가에 숨은 방이 있대요.'],
+      ['숨은 방으로 가는 계단이 제멋대로 움직여요.','문을 여는 날개 달린 열쇠도 도망쳤대요.',hero.name+'는 높은 탑으로 달려갔어요.'],
       [helper.name+'가 계단의 리듬을 알아냈어요.','“빛날 때 움직이면 안전해!”','차분히 관찰하면 비밀이 열려요.']
-    ],epilogue:'비밀의 문이 열렸어요! 계단이 잠잠해지고 성이 다시 조용해졌어요.',card:{title:'움직이는 계단',lines:['호그와트의 계단은 길을 바꾸기도 해요.','잘 관찰하면 안전한 길이 보여요.']},reward:'빛나는 열쇠 장식'},
+    ],epilogue:'비밀의 문이 열렸어요! 계단이 잠잠해지고 성이 다시 조용해졌어요.',card:{title:'움직이는 계단',lines:['마법학교의 계단은 길을 바꾸기도 해요.','잘 관찰하면 안전한 길이 보여요.']},reward:'빛나는 열쇠 장식'},
     {id:'potion',number:3,year:'3학년 · 수업의 해',title:'마법약 교실 소동',short:'재료를 받고 대왕 솥을 달래요',theme:'potion',accent:'#7fbf7a',icon:'⚗',nextId:'quidditch',stage:onClear=>WQ.PotionClass(onClear),story:(hero,helper)=>[
       ['삼학년, 지하 마법약 교실 첫 시간이에요.','까다로운 선생님이 오늘 시험을 낸다고 했어요.','반짝임 물약을 만들어야 해요.'],
       ['그런데 대왕 솥이 화가 나서 부글부글!','반짝 재료가 천장에서 쏟아져요.',hero.name+'는 얼른 국자를 집어 들었어요.'],
       [helper.name+'가 낡은 레시피를 펼쳤어요.','“순서만 지키면 솥이 잠잠해질 거야!”','재료를 잘 보고 천천히 받아요.']
     ],epilogue:'물약이 반짝반짝 완성! 까다로운 선생님도 처음으로 고개를 끄덕였어요.',card:{title:'반짝임 물약',lines:['기운을 되찾아 주는 밝은 물약이에요.','레시피 순서를 지키면 반짝반짝 빛나요.']},reward:'무지개 국자'},
-    {id:'quidditch',number:4,year:'4학년 · 시합의 해',title:'퀴디치 결승전',short:'링을 통과하고 스니치를 잡아요',theme:'quidditch',accent:'#e8a54b',icon:'✪',nextId:'require',stage:onClear=>WQ.Quidditch(onClear),story:(hero,helper)=>[
-      ['사학년, 온 학교가 들썩이는 큰 시합의 해예요.','다른 학교 마법사들도 구경하러 왔어요.','오늘은 퀴디치 경기장의 결승전!'],
-      ['그런데 황금 스니치가 신이 나서 도망쳤어요.','스니치를 잡아야 경기가 끝나요.',hero.name+'는 빗자루를 꽉 잡고 하늘로 솟았어요.'],
-      [helper.name+'가 하늘에 반짝 링을 켜 주었어요.','“링을 따라 날면 스니치를 만날 거야!”','블러저를 조심하며 하늘을 달려요.']
-    ],epilogue:'스니치를 잡았다! 관중석에서 세 학교의 함성이 하늘까지 울려 퍼졌어요.',card:{title:'황금 스니치',lines:['경기장에서 가장 빠른 황금 공이에요.','지친 순간 금빛으로 반짝인답니다.']},reward:'황금 수색꾼 배지'},
-    {id:'require',number:5,year:'5학년 · 비밀 연습의 해',title:'필요의 방 수색',short:'랜턴으로 숨은 보물을 찾아요',theme:'require',accent:'#9a7fd0',icon:'❖',nextId:'defense',stage:onClear=>WQ.RequireRoom(onClear),story:(hero,helper)=>[
+    {id:'quidditch',number:4,year:'4학년 · 시합의 해',title:'빗자루 경주 결승전',short:'링을 통과하고 별새를 잡아요',theme:'quidditch',accent:'#e8a54b',icon:'✪',nextId:'require',stage:onClear=>WQ.Quidditch(onClear),story:(hero,helper)=>[
+      ['사학년, 온 학교가 들썩이는 큰 시합의 해예요.','다른 학교 마법사들도 구경하러 왔어요.','오늘은 빗자루 경기장의 결승전!'],
+      ['그런데 황금 별새가 신이 나서 도망쳤어요.','별새를 잡아야 경기가 끝나요.',hero.name+'는 빗자루를 꽉 잡고 하늘로 솟았어요.'],
+      [helper.name+'가 하늘에 반짝 링을 켜 주었어요.','“링을 따라 날면 별새를 만날 거야!”','쿵쿵공를 조심하며 하늘을 달려요.']
+    ],epilogue:'별새를 잡았다! 관중석에서 세 학교의 함성이 하늘까지 울려 퍼졌어요.',card:{title:'황금 별새',lines:['경기장에서 가장 빠른 황금 공이에요.','지친 순간 금빛으로 반짝인답니다.']},reward:'황금 별새 배지'},
+    {id:'require',number:5,year:'5학년 · 비밀 연습의 해',title:'보물 다락방 수색',short:'랜턴으로 숨은 보물을 찾아요',theme:'require',accent:'#9a7fd0',icon:'❖',nextId:'defense',stage:onClear=>WQ.RequireRoom(onClear),story:(hero,helper)=>[
       ['오학년, 학교가 조금 엄격해졌어요.','친구들은 몰래 모여 마법을 연습하기로 했어요.','연습할 비밀 장소가 필요해요.'],
       ['필요한 사람에게만 나타나는 방이 있대요.','8층 복도를 세 번 지나가니 문이 나타났어요!',hero.name+'는 랜턴을 들고 조용히 들어갔어요.'],
       [helper.name+'가 반딧불 랜턴을 건네주었어요.','“빛이 닿으면 보물이 반짝일 거야!”','먼지 유령을 조심하며 천천히 찾아요.']
-    ],epilogue:'필요의 방을 찾았어요! 이제 친구들은 몰래 모여 마음껏 마법을 연습할 수 있어요.',card:{title:'숨바꼭질 장롱',lines:['보물을 숨기는 장난꾸러기 장롱이에요.','숨는 곳을 잘 기억하면 이길 수 있어요.']},reward:'반딧불 랜턴 고리'},
-    {id:'defense',number:6,year:'마지막 해 · 호그와트 전투',title:'호그와트 방어전',short:'성벽에서 심술 구름을 막아요',theme:'defense',accent:'#5f8fd8',icon:'♜',nextId:null,stage:onClear=>WQ.CastleDefense(onClear),story:(hero,helper)=>[
-      ['드디어 마지막 해예요.','그동안 배운 모든 마법을 써야 할 밤이 왔어요.','심술 구름 떼가 호그와트로 몰려와요.'],
+    ],epilogue:'보물 다락방을 찾았어요! 이제 친구들은 몰래 모여 마음껏 마법을 연습할 수 있어요.',card:{title:'숨바꼭질 장롱',lines:['보물을 숨기는 장난꾸러기 장롱이에요.','숨는 곳을 잘 기억하면 이길 수 있어요.']},reward:'반딧불 랜턴 고리'},
+    {id:'defense',number:6,year:'마지막 해 · 마법학교 전투',title:'마법학교 방어전',short:'성벽에서 심술 구름을 막아요',theme:'defense',accent:'#5f8fd8',icon:'♜',nextId:null,stage:onClear=>WQ.CastleDefense(onClear),story:(hero,helper)=>[
+      ['드디어 마지막 해예요.','그동안 배운 모든 마법을 써야 할 밤이 왔어요.','심술 구름 떼가 마법학교로 몰려와요.'],
       ['빛을 가리려고 성을 뒤덮으려는 거예요.','선생님도, 친구들도, 유령들까지 모두 나섰어요.',hero.name+'는 성벽 위로 힘차게 올라갔어요.'],
-      [helper.name+'가 손을 꼭 잡아 주었어요.','“우리가 함께라면 무섭지 않아!”','빛 주문으로 호그와트를 지켜요.']
-    ],epilogue:'구름이 걷히고 아침 해가 떠올랐어요. 호그와트는 안전해요. 그리고 '+'모두가 서로를 지켜 냈어요.',card:{title:'빛 방패',lines:['친구들의 마음이 모여 만든 방패예요.','함께라면 어떤 구름도 걷어 낼 수 있어요.']},reward:'호그와트 수호 훈장'}
+      [helper.name+'가 손을 꼭 잡아 주었어요.','“우리가 함께라면 무섭지 않아!”','빛 주문으로 마법학교를 지켜요.']
+    ],epilogue:'구름이 걷히고 아침 해가 떠올랐어요. 마법학교는 안전해요. 그리고 '+'모두가 서로를 지켜 냈어요.',card:{title:'빛 방패',lines:['친구들의 마음이 모여 만든 방패예요.','함께라면 어떤 구름도 걷어 낼 수 있어요.']},reward:'마법학교 수호 훈장'}
   ];
   const chapterById=id=>chapters.find(ch=>ch.id===id);
   const cleanNumber=(value,fallback=0)=>Number.isFinite(Number(value))?Math.max(0,Math.floor(Number(value))):fallback;
@@ -2368,9 +2399,9 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     defense.cleared=v2?!!defenseRaw.cleared:false;defense.bestStars=clamp(cleanNumber(defenseRaw.bestStars,0),0,3);defense.unlocked=!!(requireRoom.cleared||(v2&&defenseRaw.unlocked));
     /* v3: 어려운 학년 기록. 일반으로 깬 학년에만 붙는다. v2 저장은 기본값으로 채운다. */
     [[forest,forestRaw],[stairs,stairsRaw],[potion,potionRaw],[quidditch,quidRaw],[requireRoom,requireRaw],[defense,defenseRaw]].forEach(([ch,src])=>{ch.hardCleared=ch.cleared&&src.hardCleared===true;ch.hardBestStars=ch.hardCleared?clamp(cleanNumber(src.hardBestStars,0),0,3):0});
-    const character=WQ.Characters.list.some(c=>c.id===raw.character)?raw.character:'harry',last=chapterById(raw.lastChapter);
+    const character=WQ.Characters.list.some(c=>c.id===raw.character)?raw.character:'jaei',last=chapterById(raw.lastChapter);
     const save={version:3,character,ribbon:clamp(cleanNumber(raw.ribbon,0),0,ribbonColors.length-1),lastChapter:'forest',sawPrologue:raw.sawPrologue===true,chapters:{forest,stairs,potion,quidditch,require:requireRoom,defense},
-      house:WQ.House.list[raw.house]?raw.house:null,housePoints:Math.min(99999,cleanNumber(raw.housePoints,0)),housePlays:Math.min(9999,Math.max(0,Number(raw.housePlays)||0)),
+      house:WQ.House.list[raw.house]?raw.house:(WQ.House.id()||null),housePoints:Math.min(99999,cleanNumber(raw.housePoints,0)),housePlays:Math.min(9999,Math.max(0,Number(raw.housePlays)||0)),
       spells:raw.spells&&typeof raw.spells==='object'?Object.fromEntries(Object.entries(raw.spells).filter(([k,v])=>typeof k==='string'&&Number(v)>=1&&Number(v)<=3).map(([k,v])=>[k,Math.floor(Number(v))])):{}};
     if(last&&save.chapters[last.id].unlocked)save.lastChapter=last.id;return save;
   }
@@ -2437,25 +2468,25 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       else{ctx.fillStyle='#fff3d2';rr(ctx,42,-108,120,86,12);ctx.fill();ctx.strokeStyle='#c9ab72';ctx.lineWidth=3;rr(ctx,42,-108,120,86,12);ctx.stroke();['#8fd8ff','#ffb169','#ffa8d4'].forEach((c,i)=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(70+i*32,-78,9,0,TAU);ctx.fill()});ctx.fillStyle='#a08556';ctx.font='900 15px Malgun Gothic';ctx.textAlign='center';ctx.fillText('순서대로!',102,-40)}
     }ctx.restore()}
 
-  function Title(){let age=0;function start(){S.unlock();S.click();E.setScene(!save.sawPrologue?CharacterSelect():!save.house?SortingHat(()=>E.setScene(ChapterSelect())):ChapterSelect())}return{enter(){S.music('menu');E.announce('호그와트 마법학교. 모험 시작 버튼이 있어요.')},update(dt){age+=dt;if(E.input.buffered('ok')||E.input.buffered('cast')){consumeConfirm();start()}},draw(ctx){bg(ctx,age);crest(ctx,480,104,.82);ctx.textAlign='center';ctx.fillStyle='#fff8df';ctx.font='950 52px Malgun Gothic';ctx.strokeStyle='#251c43';ctx.lineWidth=9;ctx.strokeText('호그와트 마법학교',480,212);ctx.fillText('호그와트 마법학교',480,212);ctx.fillStyle='#e8dcff';ctx.font='800 19px Malgun Gothic';ctx.fillText('힘보다 지혜로 친구들을 도와요',480,247);
-    /* the trio waiting under the title */
-    WQ.Characters.list.slice(0,3).forEach((c,i)=>{const x=336+i*144,bob=Math.sin(age*2+i*1.4)*3;
+  function Title(){let age=0;function start(){S.unlock();S.click();E.setScene(!save.sawPrologue?CharacterSelect():!save.house?SortingHat(()=>E.setScene(ChapterSelect())):ChapterSelect())}return{enter(){S.music('menu');E.announce('꼬마 마법학교. 모험 시작 버튼이 있어요.')},update(dt){age+=dt;if(E.input.buffered('ok')||E.input.buffered('cast')){consumeConfirm();start()}},draw(ctx){bg(ctx,age);crest(ctx,480,104,.82);ctx.textAlign='center';ctx.fillStyle='#fff8df';ctx.font='950 52px Malgun Gothic';ctx.strokeStyle='#251c43';ctx.lineWidth=9;ctx.strokeText('꼬마 마법학교',480,212);ctx.fillText('꼬마 마법학교',480,212);ctx.fillStyle='#e8dcff';ctx.font='800 19px Malgun Gothic';ctx.fillText('힘보다 지혜로 친구들을 도와요',480,247);
+    /* 아이 넷이 제목 아래에서 기다린다 */
+    WQ.Characters.list.slice(0,4).forEach((c,i)=>{const x=264+i*144,bob=Math.sin(age*2+i*1.4)*3;
       ctx.save();ctx.translate(x,330+bob);ctx.fillStyle='rgba(15,11,32,.3)';ctx.beginPath();ctx.ellipse(0,32,24,8,0,0,Math.PI*2);ctx.fill();
-      WQ.Characters.drawHero(ctx,c,{t:age+i*.9,tool:'wand',aimA:[-.9,-.55,-.25][i]});ctx.restore();
+      WQ.Characters.drawHero(ctx,c,{t:age+i*.9,tool:'wand',aimA:[-.9,-.65,-.45,-.25][i]});ctx.restore();
       ctx.fillStyle='rgba(25,20,52,.72)';rr(ctx,x-44,368,88,27,12);ctx.fill();
       ctx.fillStyle='#ffe9b0';ctx.font='900 14px Malgun Gothic';ctx.fillText(c.name,x,387)});
-    if(save.sawPrologue)button(ctx,640,420,170,48,'친구 바꾸기',false);button(ctx,350,412+Math.sin(age*3)*3,260,60,save.sawPrologue?'이어서 모험':'모험 시작');ctx.fillStyle='rgba(255,255,255,.7)';ctx.font='800 14px Malgun Gothic';ctx.fillText(allCleared()?`✦ 모든 이야기 완성! 호그와트 수호 마법사 ✦ · 모은 별 ${totalStars()}개`:`열린 이야기 ${chapters.filter(ch=>save.chapters[ch.id].unlocked).length}개 · 모은 별 ${totalStars()}개 · 방향키로 선택, 스페이스바로 확인`,480,502);ctx.textAlign='left'},pointer(type,x,y){if(type!=='down'||y<400||y>480)return;if(save.sawPrologue&&x>=640&&x<=810){S.click();E.setScene(CharacterSelect())}else if(x>350&&x<610)start()}}}
-  /* 친구 고르기: 위 줄은 해리·헤르미온느·론, 아래 줄은 우리 아이들 */
+    if(save.sawPrologue)button(ctx,640,420,170,48,'친구 바꾸기',false);button(ctx,350,412+Math.sin(age*3)*3,260,60,save.sawPrologue?'이어서 모험':'모험 시작');ctx.fillStyle='rgba(255,255,255,.7)';ctx.font='800 14px Malgun Gothic';ctx.fillText(allCleared()?`✦ 모든 이야기 완성! 마법학교 수호 마법사 ✦ · 모은 별 ${totalStars()}개`:`열린 이야기 ${chapters.filter(ch=>save.chapters[ch.id].unlocked).length}개 · 모은 별 ${totalStars()}개 · 방향키로 선택, 스페이스바로 확인`,480,502);ctx.textAlign='left'},pointer(type,x,y){if(type!=='down'||y<400||y>480)return;if(save.sawPrologue&&x>=640&&x<=810){S.click();E.setScene(CharacterSelect())}else if(x>350&&x<610)start()}}}
+  /* 친구 고르기: 우리 아이들 넷(한 줄) */
   function CharacterSelect(){let age=0;const list=WQ.Characters.list;let index=Math.max(0,list.findIndex(c=>c.id===save.character));
-    const rows=[list.filter(c=>!c.kid),list.filter(c=>c.kid)],W=164,G=14,H=146,tops=[104,292];
+    const rows=[list.filter(c=>!c.kid),list.filter(c=>c.kid)],W=164,G=14,H=146,tops=[104,150];
     function cardAt(i){const c=list[i],row=c.kid?1:0,arr=rows[row],k=arr.indexOf(c),start=480-(arr.length*W+(arr.length-1)*G)/2;return{x:start+k*(W+G),y:tops[row],w:W,h:H}}
     function choose(next){index=(next+list.length)%list.length;S.click()}
     function after(){E.setScene(save.sawPrologue?ChapterSelect():Prologue())}
     function confirm(){const c=WQ.Characters.choose(list[index].id);save.character=c.id;store();S.star();E.setScene(save.house?(save.sawPrologue?ChapterSelect():Prologue()):SortingHat(after))}
-    return{enter(){E.announce('함께 날 친구를 골라요. 해리, 헤르미온느, 론, 그리고 재이, 태오, 윤찬이, 윤건이 중에서 선택해요.')},
+    return{enter(){E.announce('함께 날 친구를 골라요. 재이, 태오, 윤찬이, 윤건이 중에서 선택해요.')},
     update(dt){age+=dt;if(E.input.buffered('left')){E.input.consume('left');choose(index-1)}if(E.input.buffered('right')){E.input.consume('right');choose(index+1)}if(E.input.buffered('ok')||E.input.buffered('cast')){consumeConfirm();confirm()}},
     draw(ctx){bg(ctx,age*.3);ctx.fillStyle='rgba(255,248,223,.96)';rr(ctx,60,40,840,460,34);ctx.fill();ctx.fillStyle='#34254b';ctx.textAlign='center';ctx.font='950 30px Malgun Gothic';ctx.fillText('함께 날 친구를 골라요',480,88);
-      ctx.fillStyle='#c0548a';ctx.font='900 15px Malgun Gothic';ctx.fillText('✦ 우리 아이들도 호그와트에 입학했어요! ✦',480,280);
+      ctx.fillStyle='#c0548a';ctx.font='900 15px Malgun Gothic';ctx.fillText('✦ 우리 아이들이 마법학교에 입학했어요! ✦',480,124);
       list.forEach((c,i)=>{const b=cardAt(i),on=i===index;ctx.save();ctx.globalAlpha=on?1:.72;ctx.fillStyle=on?'#fff':c.kid?'#fbeefa':'#e8ddf7';ctx.shadowColor=on?'#ffd66f':'transparent';ctx.shadowBlur=on?22:0;rr(ctx,b.x,b.y,b.w,b.h,22);ctx.fill();ctx.shadowBlur=0;
         ctx.save();rr(ctx,b.x+10,b.y+10,b.w-20,92,16);ctx.clip();WQ.Characters.drawPortrait(ctx,c,b.x+10,b.y+10,b.w-20,92,age+i);ctx.restore();
         if(on){ctx.strokeStyle='#ffd05e';ctx.lineWidth=5;rr(ctx,b.x,b.y,b.w,b.h,22);ctx.stroke()}
@@ -2484,8 +2515,8 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
   /* the acceptance letter — shown once, when a wizard first enrols */
   function Prologue(){let page=0,age=0;const hero=WQ.Characters.current();
     const pages=[
-      ['어느 날 아침, 부엉이 한 마리가 창가에 앉았어요.','부리에는 초록 잉크로 쓴 편지가 물려 있었어요.','받는 사람 — '+hero.name+' 님.'],
-      ['“호그와트 마법학교 입학을 축하합니다.”','“9와 4분의 3 승강장에서 급행열차를 타세요.”','편지는 반짝이며 그렇게 적혀 있었어요.'],
+      ['어느 날 아침, 부엉이 한 마리가 창가에 앉았어요.','부리에는 반짝이 잉크로 쓴 편지가 물려 있었어요.','받는 사람 — '+hero.name+' 님.'],
+      ['“꼬마 마법학교 입학을 축하합니다.”','“무지개 승강장에서 꿈나라 열차를 타세요.”','편지는 반짝이며 그렇게 적혀 있었어요.'],
       ['성 앞에는 어마어마한 호수와 탑이 기다렸어요.','오늘부터 일곱 해의 마법 이야기가 시작돼요.','친구들과 함께라면 무엇이든 할 수 있어요!']
     ];
     function done(){save.sawPrologue=true;store();S.star();E.setScene(ChapterSelect())}
@@ -2494,7 +2525,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     update(dt){age+=dt;if(E.input.buffered('ok')||E.input.buffered('cast')){consumeConfirm();next()}},
     draw(ctx){bg(ctx,age*.2);ctx.fillStyle='rgba(255,248,223,.96)';rr(ctx,95,52,770,426,34);ctx.fill();
       ctx.textAlign='center';ctx.fillStyle='#a08556';ctx.font='900 13px Malgun Gothic';ctx.fillText('프롤로그',480,80);
-      ctx.fillStyle='#34254b';ctx.font='950 24px Malgun Gothic';ctx.fillText('호그와트에서 온 편지',480,110);
+      ctx.fillStyle='#34254b';ctx.font='950 24px Malgun Gothic';ctx.fillText('마법학교에서 온 편지',480,110);
       /* the letter */
       ctx.save();ctx.translate(480,205);ctx.rotate(-.04);
       ctx.fillStyle='#fff6df';ctx.shadowColor='rgba(60,40,20,.25)';ctx.shadowBlur=18;rr(ctx,-150,-72,300,144,10);ctx.fill();ctx.shadowBlur=0;
@@ -2550,9 +2581,9 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 
   /* ---- grand finale: shown once every chapter is cleared ---- */
 
-  /* ===== 기숙사(2026-09-28) ===== */
-  const HOUSE_ORDER=['gryffindor','hufflepuff','ravenclaw','slytherin'];
-  // 점수를 더하고 다른 기숙사도 조금씩 오른다(plays). 돌려준 값은 이번에 받은 점수.
+  /* ===== 반(2026-09-28) ===== */
+  const HOUSE_ORDER=['lion','bear','owl','dragon'];
+  // 점수를 더하고 다른 반도 조금씩 오른다(plays). 돌려준 값은 이번에 받은 점수.
   function houseAward(points,plays){if(!save.house)return 0;points=Math.max(0,Math.round(points));save.housePoints=Math.min(99999,save.housePoints+points);save.housePlays+=plays;store();return points}
   function housePoints(id){if(id===save.house)return save.housePoints;const k=HOUSE_ORDER.filter(h=>h!==save.house).indexOf(id);return Math.round(save.housePlays*18+[4,17,29][k]*Math.min(1,save.housePlays))}   // 처음엔 모두 0점에서 출발
   function drawHat(ctx,x,y,s,t,talk){ctx.save();ctx.translate(x,y);ctx.scale(s,s);ctx.rotate(Math.sin(t*2)*.05);
@@ -2561,55 +2592,55 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
     ctx.strokeStyle='#5a3c22';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(-30,0);ctx.quadraticCurveTo(-10,-8,10,0);ctx.moveTo(-8,-34);ctx.quadraticCurveTo(10,-40,24,-30);ctx.stroke();
     ctx.fillStyle='#3a2616';const m=talk?6+Math.abs(Math.sin(t*14))*8:4;ctx.beginPath();ctx.ellipse(0,20,26,m,0,0,TAU);ctx.fill();
     ctx.fillStyle='#b08a5a';rr(ctx,-44,-6,20,10,4);ctx.fill();ctx.restore()}
-  function SortingHat(next){let age=0,q=0,choice=0,phase='ask',thinkT=0,result=null;const score={gryffindor:0,hufflepuff:0,ravenclaw:0,slytherin:0},hero=WQ.Characters.current();
+  function SortingHat(next){let age=0,q=0,choice=0,phase='ask',thinkT=0,result=null;const score={lion:0,bear:0,owl:0,dragon:0},hero=WQ.Characters.current();
     const QS=[{q:'어떤 친구가 되고 싶어요?',a:[['🦁','용감한 친구'],['🦡','다정한 친구'],['🦉','똑똑한 친구'],['🏆','꿈이 큰 친구']]},
       {q:'제일 좋아하는 놀이는?',a:[['🧗','모험하기'],['🍪','간식 나눠 먹기'],['🧩','퍼즐 풀기'],['🥇','이기기 대회']]},
       {q:'마법 동물을 키운다면?',a:[['🦁','아기 사자'],['🦡','오소리'],['🦅','독수리'],['🐍','반짝 뱀']]}];
-    function answer(i){if(phase!=='ask')return;score[HOUSE_ORDER[i]]+=q===2?1.5:1;S.click();if(q<QS.length-1){q++;choice=0;E.announce(QS[q].q)}else{phase='think';thinkT=0;E.announce('배정 모자가 생각하고 있어요. 음… 어디 보자…')}}
+    function answer(i){if(phase!=='ask')return;score[HOUSE_ORDER[i]]+=q===2?1.5:1;S.click();if(q<QS.length-1){q++;choice=0;E.announce(QS[q].q)}else{phase='think';thinkT=0;E.announce('마법 거울이 생각하고 있어요. 음… 어디 보자…')}}
     function decide(){let best=HOUSE_ORDER[0];for(const h of HOUSE_ORDER)if(score[h]>score[best])best=h;result=best;save.house=best;WQ.House.set(best);store();phase='done';S.star();
-      for(let i=0;i<60;i++)F.confetti(200+Math.random()*560,60,1);E.announce(WQ.House.list[best].name+'! '+hero.name+'는 '+WQ.House.list[best].name+' 기숙사가 되었어요.')}
+      for(let i=0;i<60;i++)F.confetti(200+Math.random()*560,60,1);E.announce(WQ.House.list[best].name+'! '+hero.name+'는 '+WQ.House.list[best].name+'이 되었어요.')}
     function layout(i){return{x:440+(i%2)*214,y:236+Math.floor(i/2)*92,w:200,h:80}}
-    return{enter(){S.music('menu');E.announce('기숙사 배정식이에요. '+QS[0].q)},
+    return{enter(){S.music('menu');E.announce('반 배정식이에요. '+QS[0].q)},
     update(dt){age+=dt;if(phase==='think'){thinkT+=dt;if(thinkT>2.6)decide()}
       if(phase==='ask'){if(E.input.buffered('left')){E.input.consume('left');choice=(choice+3)%4;S.click()}if(E.input.buffered('right')){E.input.consume('right');choice=(choice+1)%4;S.click()}
         if(E.input.buffered('up')||E.input.buffered('down')){E.input.consume('up');E.input.consume('down');choice=(choice+2)%4;S.click()}
         if(E.input.buffered('ok')||E.input.buffered('cast')){consumeConfirm();answer(choice)}}
       else if(phase==='done'&&(E.input.buffered('ok')||E.input.buffered('cast'))){consumeConfirm();next()}},
     draw(ctx){bg(ctx,age*.3);ctx.fillStyle='rgba(255,248,223,.96)';rr(ctx,60,40,840,460,34);ctx.fill();ctx.textAlign='center';
-      ctx.fillStyle='#34254b';ctx.font='950 28px Malgun Gothic';ctx.fillText('🎩 기숙사 배정식',480,84);
+      ctx.fillStyle='#34254b';ctx.font='950 28px Malgun Gothic';ctx.fillText('🪞 반 배정식',480,84);
       ctx.save();ctx.translate(230,380);ctx.scale(1.9,1.9);WQ.Characters.drawHero(ctx,hero,{t:age});ctx.restore();
       drawHat(ctx,236,232,.72,age,phase==='think'||phase==='done');
       if(phase==='ask'){ctx.fillStyle='#fff';rr(ctx,420,110,440,90,22);ctx.fill();ctx.strokeStyle='#e0cfa8';ctx.lineWidth=3;rr(ctx,420,110,440,90,22);ctx.stroke();
-        ctx.fillStyle='#8a6440';ctx.font='900 15px Malgun Gothic';ctx.fillText('모자가 물어요 ('+(q+1)+'/3)',640,140);ctx.fillStyle='#34254b';ctx.font='950 23px Malgun Gothic';ctx.fillText(QS[q].q,640,178);
+        ctx.fillStyle='#8a6440';ctx.font='900 15px Malgun Gothic';ctx.fillText('거울이 물어요 ('+(q+1)+'/3)',640,140);ctx.fillStyle='#34254b';ctx.font='950 23px Malgun Gothic';ctx.fillText(QS[q].q,640,178);
         QS[q].a.forEach((a,i)=>{const b=layout(i),on=i===choice;ctx.fillStyle=on?'#ffd66f':'#efe4ff';rr(ctx,b.x,b.y,b.w,b.h,20);ctx.fill();if(on){ctx.strokeStyle='#e8a82f';ctx.lineWidth=4;rr(ctx,b.x,b.y,b.w,b.h,20);ctx.stroke()}
           ctx.font='32px serif';ctx.fillText(a[0],b.x+36,b.y+52);ctx.fillStyle='#34254b';ctx.font='950 18px Malgun Gothic';ctx.textAlign='left';ctx.fillText(a[1],b.x+64,b.y+48);ctx.textAlign='center'})}
       else if(phase==='think'){ctx.fillStyle='#34254b';ctx.font='950 30px Malgun Gothic';const dots='.'.repeat(1+Math.floor(thinkT*2.5)%3);ctx.fillText('음'+dots+' 어디 보자'+dots,640,250);ctx.font='800 18px Malgun Gothic';ctx.fillStyle='#76628e';ctx.fillText(thinkT<1.3?'용기도 있고… 마음도 따뜻하고…':'좋아, 정했다!',640,292)}
       else{const h=WQ.House.list[result];const pop=F.ease.out(clamp(age%100,0,1));ctx.fillStyle=h.a;rr(ctx,430,120,420,230,28);ctx.fill();ctx.fillStyle=h.b;rr(ctx,430,316,420,16,6);ctx.fill();
-        ctx.font='70px serif';ctx.fillText(h.animal,640,208);ctx.fillStyle='#fff';ctx.font='950 44px Malgun Gothic';ctx.fillText(h.name+'!',640,268);ctx.font='900 17px Malgun Gothic';ctx.fillText(h.word+' 마법사들의 기숙사예요',640,300);
-        button(ctx,510,388,260,56,'기숙사로!');void pop}
+        ctx.font='70px serif';ctx.fillText(h.animal,640,208);ctx.fillStyle='#fff';ctx.font='950 44px Malgun Gothic';ctx.fillText(h.name+'!',640,268);ctx.font='900 17px Malgun Gothic';ctx.fillText(h.word+' 마법사들의 반이에요',640,300);
+        button(ctx,510,388,260,56,'우리 반으로!');void pop}
       ctx.textAlign='left'},
     pointer(type,x,y){if(type!=='down')return;if(phase==='ask'){for(let i=0;i<4;i++){const b=layout(i);if(x>=b.x&&x<=b.x+b.w&&y>=b.y&&y<=b.y+b.h){choice=i;answer(i);return}}}else if(phase==='done'&&y>=380)next()}}}
 
   function HouseCup(back){let age=0;const mine=save.house;
-    return{enter(){const pts=HOUSE_ORDER.map(h=>housePoints(h)),top=HOUSE_ORDER[pts.indexOf(Math.max(...pts))];E.announce('기숙사 컵 점수판. '+(top===mine?'우리 기숙사가 1등이에요!':'조금만 더 힘내요!'))},
+    return{enter(){const pts=HOUSE_ORDER.map(h=>housePoints(h)),top=HOUSE_ORDER[pts.indexOf(Math.max(...pts))];E.announce('반 대항 컵 점수판. '+(top===mine?'우리 반이 1등이에요!':'조금만 더 힘내요!'))},
     update(dt){age+=dt;if(E.input.buffered('ok')||E.input.buffered('cast')||E.input.buffered('pause')){consumeConfirm();E.input.consume('pause');S.click();back()}},
-    draw(ctx){bg(ctx,age*.3);ctx.fillStyle='rgba(255,248,223,.96)';rr(ctx,70,40,820,460,34);ctx.fill();ctx.textAlign='center';ctx.fillStyle='#34254b';ctx.font='950 30px Malgun Gothic';ctx.fillText('🏆 기숙사 컵',480,88);
+    draw(ctx){bg(ctx,age*.3);ctx.fillStyle='rgba(255,248,223,.96)';rr(ctx,70,40,820,460,34);ctx.fill();ctx.textAlign='center';ctx.fillStyle='#34254b';ctx.font='950 30px Malgun Gothic';ctx.fillText('🏆 반 대항 컵',480,88);
       const pts=HOUSE_ORDER.map(h=>housePoints(h)),max=Math.max(1,...pts),leader=HOUSE_ORDER[pts.indexOf(Math.max(...pts))];
       HOUSE_ORDER.forEach((id,i)=>{const h=WQ.House.list[id],x=170+i*180,base=380,grow=F.ease.out(clamp(age/1.2,0,1)),bh=Math.max(12,220*pts[i]/max*grow);
         ctx.fillStyle=h.a;rr(ctx,x-55,base-bh,110,bh,14);ctx.fill();ctx.fillStyle=h.b;rr(ctx,x-55,base-bh,110,12,6);ctx.fill();
         if(id===mine){ctx.strokeStyle='#ffd05e';ctx.lineWidth=5;rr(ctx,x-58,base-bh-3,116,bh+6,16);ctx.stroke()}
         ctx.font='36px serif';ctx.fillText(h.animal,x,base-bh-14);ctx.fillStyle='#34254b';ctx.font='950 18px Malgun Gothic';ctx.fillText(h.name,x,base+28);ctx.font='950 20px Malgun Gothic';ctx.fillStyle=id===mine?'#c0306a':'#5a426f';ctx.fillText(pts[i]+'점',x,base+54);
         if(id===leader){ctx.font='26px serif';ctx.fillText('👑',x,base-bh-52)}});
-      ctx.fillStyle='#76628e';ctx.font='900 16px Malgun Gothic';ctx.fillText(leader===mine?'우리 기숙사가 1등이에요! 계속 지켜요!':'이야기를 깨고 주문을 연습하면 점수가 올라요',480,470);ctx.textAlign='left'},
+      ctx.fillStyle='#76628e';ctx.font='900 16px Malgun Gothic';ctx.fillText(leader===mine?'우리 반이 1등이에요! 계속 지켜요!':'이야기를 깨고 주문을 연습하면 점수가 올라요',480,470);ctx.textAlign='left'},
     pointer(type){if(type==='down'){S.click();back()}}}}
 
   /* ===== 주문 연습실: 빛나는 모양을 손가락으로 따라 그리면 주문이 나간다 ===== */
   const SPELLS=[
-    {id:'lumos',name:'루모스',desc:'동그라미를 그려 빛을 켜요',shape:'circle'},
-    {id:'leviosa',name:'윙가르디움 레비오사',desc:'휘익 돌리고 톡!',shape:'swish'},
-    {id:'alohomora',name:'알로호모라',desc:'지그재그로 자물쇠를 열어요',shape:'zig'},
-    {id:'expelliarmus',name:'엑스펠리아르무스',desc:'번개 모양으로 지팡이를 날려요',shape:'bolt'},
-    {id:'patronum',name:'익스펙토 패트로눔',desc:'별을 그려 수호령을 불러요',shape:'star'}];
+    {id:'lumos',name:'반짝 빛!',desc:'동그라미를 그려 빛을 켜요',shape:'circle'},
+    {id:'leviosa',name:'둥실 떠라!',desc:'휘익 돌리고 톡!',shape:'swish'},
+    {id:'alohomora',name:'열려라 자물쇠!',desc:'지그재그로 자물쇠를 열어요',shape:'zig'},
+    {id:'expelliarmus',name:'지팡이 날아가!',desc:'번개 모양으로 지팡이를 날려요',shape:'bolt'},
+    {id:'patronum',name:'빛의 친구야 와라!',desc:'별을 그려 빛의 친구를 불러요',shape:'star'}];
   function spellPath(shape){const cx=615,cy=292;let pts=[];
     if(shape==='circle'){for(let i=0;i<=48;i++){const a=-Math.PI/2+i/48*TAU;pts.push([cx+Math.cos(a)*120,cy+Math.sin(a)*120])}}
     else if(shape==='swish'){for(let i=0;i<=30;i++){const t=i/30,u=1-t;pts.push([u*u*u*470+3*u*u*t*560+3*u*t*t*660+t*t*t*760,u*u*u*220+3*u*u*t*400+3*u*t*t*140+t*t*t*300])}pts.push([770,340],[778,390])}
@@ -2660,7 +2691,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
 
   function Finale(){let age=0,sparks=[];const hero=WQ.Characters.current();
     function leave(to){S.click();E.setScene(to)}
-    return{enter(){S.music('clear');E.announce('모든 이야기 완성! '+hero.name+'는 호그와트 수호 마법사가 되었어요. 축하해요!')},
+    return{enter(){S.music('clear');E.announce('모든 이야기 완성! '+hero.name+'는 마법학교 수호 마법사가 되었어요. 축하해요!')},
     update(dt){age+=dt;
       if(Math.random()<dt*4)sparks.push({x:120+Math.random()*720,y:60+Math.random()*180,t:0,hue:Math.floor(Math.random()*4)});
       for(const f of sparks)f.t+=dt;sparks=sparks.filter(f=>f.t<1.2);
@@ -2672,7 +2703,7 @@ document.addEventListener('dblclick',s,{passive:false});})();</script>
       ctx.fillStyle='rgba(255,248,223,.96)';rr(ctx,120,120,720,352,34);ctx.fill();
       crest(ctx,480,168,.72);
       ctx.fillStyle='#34254b';ctx.textAlign='center';ctx.font='950 40px Malgun Gothic';ctx.fillText('모든 이야기 완성!',480,262);
-      ctx.fillStyle='#5a426f';ctx.font='900 20px Malgun Gothic';ctx.fillText(hero.name+'는 이제 호그와트 수호 마법사!',480,300);
+      ctx.fillStyle='#5a426f';ctx.font='900 20px Malgun Gothic';ctx.fillText(hero.name+'는 이제 마법학교 수호 마법사!',480,300);
       ctx.fillStyle='#e8a82f';ctx.font='950 26px serif';ctx.fillText('★ '.repeat(Math.min(9,totalStars())).trim()||'★',480,342);
       ctx.fillStyle='#78678e';ctx.font='800 15px Malgun Gothic';ctx.fillText('모은 지혜의 별 '+totalStars()+'개 · 마법 카드 '+chapters.length+'장',480,374);
       WQ.Characters.list.forEach((c,i)=>{const n=WQ.Characters.list.length,x=480-(n-1)*42+i*84;ctx.save();ctx.translate(x,432);ctx.scale(.5,.5);WQ.Characters.drawHero(ctx,c,{t:age+i,tool:'wand',aimA:-.6});ctx.restore()});

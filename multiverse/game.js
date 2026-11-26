@@ -117,7 +117,13 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
 
   // ---------- 캔버스 ----------
   var canvas = $("stage"), ctx = canvas.getContext("2d");
-  var view = { scale: 1, ox: 0, oy: 0, dpr: 1, cw: 0, ch: 0 };
+  var view = { scale: 1, ox: 0, oy: 0, dpr: 1, cw: 0, ch: 0, phone: false, portrait: false, camX: 0, camGame: null };
+  // 폰(세로 폭 540 이하·가로 키 500 이하, style.css의 폰 규칙과 같은 조건)만 따로 배치한다. 아이패드·PC는 예전 그대로.
+  var phoneMQ = window.matchMedia ? window.matchMedia("(max-width: 540px), (max-height: 500px)") : null;
+  var safeProbe = document.createElement("div");   // 노치·홈 막대 여백(env(safe-area-inset-*))을 숫자로 읽는 빈 상자
+  safeProbe.style.cssText = "position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;" +
+    "padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)";
+  document.body.appendChild(safeProbe);
   function resize() {
     view.dpr = Math.min(window.devicePixelRatio || 1, 2);
     view.cw = window.innerWidth; view.ch = window.innerHeight;
@@ -127,6 +133,32 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     view.ox = (view.cw - W * view.scale) / 2;
     // 배경 그림의 땅이 화면 아래에 붙어 있으니 싸움터도 아래에 맞춘다. 윗부분 글자는 따로 화면 위에 붙인다.
     view.oy = view.ch - H * view.scale;
+    view.phone = !!(phoneMQ && phoneMQ.matches);
+    view.portrait = view.phone && view.ch > view.cw;
+    if (view.phone) phoneLayout();
+    else if ($("controls").style.getPropertyValue("--mv-ctrl-h")) $("controls").style.removeProperty("--mv-ctrl-h");
+  }
+  // 폰 배치. 글자 판(HUD)은 화면 짧은 변에 맞춘 배율 hudU로 노치 안쪽에 그린다.
+  // 세로: 위 글자 판 / 가운데 싸움터 / 아래 조작 띠. 싸움터 전체(1280)는 너무 작아지니 폭 600만 보이게 키우고
+  //       카메라가 주인공을 따라간다(camX). 가로: 싸움터는 예전처럼 화면 전체.
+  function phoneLayout() {
+    var cs = getComputedStyle(safeProbe);
+    var sa = view.safe = { t: parseFloat(cs.paddingTop) || 0, r: parseFloat(cs.paddingRight) || 0, b: parseFloat(cs.paddingBottom) || 0, l: parseFloat(cs.paddingLeft) || 0 };
+    view.hudU = clamp(Math.min(view.cw, view.ch) / 600, 0.6, 0.75);
+    view.pauseL = view.cw - sa.r - 10 - 46;   // 멈춤 버튼 왼쪽 끝(style.css 폰 규칙과 같은 값)
+    if (view.portrait) {
+      view.ctrlH = Math.round(clamp(view.ch * 0.27, 160, 230) + sa.b);
+      var playTop = sa.t + 120 * view.hudU;
+      view.scale = Math.min(view.cw / 600, (view.ch - view.ctrlH - playTop) / 560);
+      view.visW = Math.min(W, view.cw / view.scale);
+      view.oy = view.ch - view.ctrlH - H * view.scale;
+      view.camX = clamp(view.camX, 0, W - view.visW);
+      view.ox = -view.camX * view.scale;
+      $("controls").style.setProperty("--mv-ctrl-h", view.ctrlH + "px");
+    } else {
+      view.ctrlH = 0; view.visW = W;
+      $("controls").style.removeProperty("--mv-ctrl-h");
+    }
   }
   window.addEventListener("resize", resize);
   resize();
@@ -349,6 +381,8 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     if (game.quizMade === 1) game.callout = { text: "❓별을 먹고 맞히면 필살기 가득!", t: 0 };
     return q;
   }
+  // 문제 패널 윗자리: 폰 가로는 키가 낮아 맨 위부터(글자 판은 멈춘 동안 가려도 된다).
+  function quizTop() { return view.phone && !view.portrait ? Math.round(view.safe.t + 6) : 70; }
   function quizInputReset() { resetStick(); keys = {}; input.attack = false; input.special = false; }
   function openQuiz(q) {
     if (!game || game.over || !game.running || game.quizOpen || game.resultShown || !quizReady()) return;
@@ -363,7 +397,7 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
       req = Q.ask({
         kid: kid, voice: !muted, title: full ? "맞히면 다음 필살기 +50%!" : "맞히면 필살기 가득!",
         hint: "한 번에 맞히면 " + (full ? "다음 필살기 +50%" : "필살기 가득") + " · 체력 +40% · 별 배지",
-        theme: { bg: "rgba(27,22,64,.96)", accent: "#ffd84a", button: "#fff6d6", buttonText: "#2a1a5c", top: 70 },
+        theme: { bg: "rgba(27,22,64,.96)", accent: "#ffd84a", button: "#fff6d6", buttonText: "#2a1a5c", top: quizTop() },
         onCorrect: function (r) {
           if (game !== g || !g.quizOpen) return "";
           var lines = giveQuizReward(g, !!r.firstTry);
@@ -1271,6 +1305,7 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
   function drawBackground(g, src) {
     var im = image(src);
     g.setTransform(1, 0, 0, 1, 0, 0);
+    if (view.portrait && game && ready(im)) { drawPortraitBackground(g, im); return; }
     if (ready(im)) {
       var s = Math.max(canvas.width / im.naturalWidth, canvas.height / im.naturalHeight);
       var dw = im.naturalWidth * s, dh = im.naturalHeight * s;
@@ -1281,8 +1316,42 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     }
   }
 
+  // 폰 세로: 배경을 싸움터 좌표에 그대로 맞춰 그린다(그림 속 땅 = 싸움터 땅, 카메라와 함께 움직임).
+  // 싸움터 위로 남는 하늘에는 그림 위쪽을 뒤집어 잇고, 땅 아래 조작 띠에는 바닥을 뒤집어 어둡게 깐다.
+  function drawPortraitBackground(g, im) {
+    var d = view.dpr, s = view.scale, bx = view.ox, bw = W * s, top = view.oy, groundY = view.oy + H * s;
+    g.fillStyle = "#120e2c"; g.fillRect(0, 0, canvas.width, canvas.height);
+    g.drawImage(im, d * bx, d * top, d * bw, d * H * s);
+    if (top > 0) {
+      var th = im.naturalHeight * Math.min(0.5, top / (H * s));
+      g.save(); g.translate(0, d * top); g.scale(1, -1);
+      g.drawImage(im, 0, 0, im.naturalWidth, th, d * bx, 0, d * bw, d * top);
+      g.restore();
+    }
+    // 조작 띠: 그림 아래쪽 20%를 뒤집어 깔고 어둡게
+    var band = view.ch - groundY;
+    if (band > 0) {
+      var sh = im.naturalHeight * 0.2;
+      g.save(); g.translate(0, d * groundY); g.scale(1, -1);
+      g.drawImage(im, 0, im.naturalHeight - sh, im.naturalWidth, sh, d * bx, -d * band, d * bw, d * band);
+      g.restore();
+      var gr = g.createLinearGradient(0, d * groundY, 0, canvas.height);
+      gr.addColorStop(0, "rgba(14,10,36,0.45)"); gr.addColorStop(1, "rgba(14,10,36,0.88)");
+      g.fillStyle = gr; g.fillRect(0, d * groundY, canvas.width, d * band);
+    }
+  }
+  // 폰 세로 카메라: 주인공을 화면 가운데쯤에 두고 부드럽게 따라간다.
+  function updateCamera() {
+    if (!view.portrait || !game) return;
+    var target = clamp(game.player.x - view.visW / 2, 0, W - view.visW);
+    if (view.camGame !== game) { view.camGame = game; view.camX = target; }
+    else view.camX += (target - view.camX) * 0.12;
+    view.ox = -view.camX * view.scale;
+  }
+
   function render() {
     var g = ctx;
+    updateCamera();
     drawBackground(g, game ? game.world.bg : D.WORLDS[0].bg);
     if (!game) return;
     var sx = game.shake ? rand(-game.shake, game.shake) : 0, sy = game.shake ? rand(-game.shake, game.shake) : 0;
@@ -1355,8 +1424,33 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     }
     drawParts(g);
     if (game.flash) { g.fillStyle = game.flash.color; g.globalAlpha = game.flash.t * 1.4; g.fillRect(-200, -900, W + 400, H + 1200); g.globalAlpha = 1; }
-    g.setTransform(view.dpr * view.scale, 0, 0, view.dpr * view.scale, view.dpr * view.ox, view.dpr * Math.min(view.oy, 0));
+    if (view.portrait) drawEdgeMarks(g, t);
+    if (view.phone) g.setTransform(view.dpr * view.hudU, 0, 0, view.dpr * view.hudU, view.dpr * view.safe.l, view.dpr * view.safe.t);
+    else g.setTransform(view.dpr * view.scale, 0, 0, view.dpr * view.scale, view.dpr * view.ox, view.dpr * Math.min(view.oy, 0));
     drawHud(g, t);
+  }
+  // 폰 세로: 화면 밖에 있는 철창·보스·? 별을 화면 가장자리 화살표로 알려 준다.
+  function drawEdgeMarks(g, t) {
+    var marks = [];
+    game.cages.forEach(function (c) { if (!c.freed) marks.push({ x: c.x, y: c.y - 70, icon: c.animal }); });
+    if (game.boss && game.boss.st !== "dead") marks.push({ x: game.boss.x, y: game.boss.y - 120, icon: "👑" });
+    game.quizStars.forEach(function (q) { marks.push({ x: q.x, y: q.y - 40, icon: "❓" }); });
+    if (!marks.length) return;
+    var s = view.scale, d = view.dpr, top = view.safe.t + 130 * view.hudU, bottom = view.ch - view.ctrlH - 30;
+    g.setTransform(d, 0, 0, d, 0, 0);
+    g.font = "26px system-ui"; g.textAlign = "center"; g.textBaseline = "middle";
+    marks.forEach(function (m) {
+      var sx = view.ox + m.x * s;
+      if (sx > 6 && sx < view.cw - 6) return;
+      var left = sx <= 6, y = clamp(view.oy + m.y * s, top, bottom), bob = Math.sin(t * 6) * 3;
+      var ax = left ? view.safe.l + 8 + bob : view.cw - view.safe.r - 8 - bob, dir = left ? -1 : 1;
+      g.globalAlpha = 0.9;
+      g.fillStyle = "rgba(20,14,50,0.72)"; g.beginPath(); g.arc(ax - dir * 30, y, 22, 0, Math.PI * 2); g.fill();
+      g.fillStyle = "#ffe45c"; g.beginPath(); g.moveTo(ax, y); g.lineTo(ax - dir * 12, y - 11); g.lineTo(ax - dir * 12, y + 11); g.closePath(); g.fill();
+      g.fillStyle = "#fff"; g.fillText(m.icon, ax - dir * 30, y + 1);
+      g.globalAlpha = 1;
+    });
+    g.textBaseline = "alphabetic";
   }
   function drawThing(g, o, t) {
     var s = depthScale(o.y);
@@ -1411,7 +1505,10 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
       for (var k2 = 1; k2 < 5; k2++) { g.beginPath(); g.moveTo(o.x - 60 + k2 * 24 + shakeX, o.y - 150); g.lineTo(o.x - 60 + k2 * 24 + shakeX, o.y); g.stroke(); }
       g.fillStyle = cageLook.top || "#5d6479"; g.fillRect(o.x - 70 + shakeX, o.y - 164, 140, 18);
       bar(g, o.x - 55, o.y - 186, 110, 12, o.hp / o.maxHp, "#58d6ff");
-      g.font = "900 22px system-ui"; g.fillStyle = "#fff"; g.fillText("때려서 열어요!", o.x, o.y - 196);
+      // 안내 글은 주인공에게 가장 가까운 철창 하나에만(겹쳐 두 줄로 보이지 않게, 11-21)
+      var pl = game.player, near = null, nd = 1e9;
+      if (pl) for (var ci = 0; ci < game.cages.length; ci++) { var cg = game.cages[ci]; if (cg.freed) continue; var cd = Math.hypot(cg.x - pl.x, cg.y - pl.y); if (cd < nd) { nd = cd; near = cg; } }
+      if (!pl || near === o) { g.font = "900 22px system-ui"; g.fillStyle = "#fff"; g.fillText("때려서 열어요!", o.x, o.y - 196); }
     } else if (o.kind === "spark") {
       var glow = 0.6 + 0.4 * Math.sin(t * 8 + o.x);
       if (o.z < 30) { g.fillStyle = "rgba(255,230,120,0.25)"; g.beginPath(); g.ellipse(o.x, o.y, 26, 8, 0, 0, Math.PI * 2); g.fill(); }
@@ -1502,8 +1599,26 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r);
     g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath();
   }
+  // 글자 판 자리. 아이패드·PC는 예전 숫자 그대로(1280x720 기준), 폰은 화면 폭(hw)에 맞춰 다시 놓는다.
+  function hudLayout() {
+    if (!view.phone) return { hw: W, cx: W / 2, cy: H / 2, tx: W / 2, ty: 62, gx: W / 2, gy: 104, bny: 100, bby: 110, bw: 440, tagX: 440, tagY: 61, callY: 182, fit: false };
+    var u = view.hudU, sa = view.safe, hw = (view.cw - sa.l - sa.r) / u, hh = (view.ch - sa.t - sa.b) / u;
+    if (view.portrait) {
+      var tx = (view.pauseL - sa.l) / u - 48;
+      return { hw: hw, cx: hw / 2, cy: ((view.ch - view.ctrlH) / 2 - sa.t) / u + 30, tx: tx, ty: 62, gx: tx, gy: 118,
+        bny: 146, bby: 156, bw: Math.min(440, hw - 48), tagX: 24, tagY: 120, callY: 236, fit: true };
+    }
+    return { hw: hw, cx: hw / 2, cy: hh / 2, tx: hw / 2, ty: 62, gx: hw / 2, gy: 104, bny: 100, bby: 110, bw: 440, tagX: 24, tagY: 120, callY: 182, fit: true };
+  }
+  // 폰에서 큰 글씨가 화면 폭을 넘으면 줄인다.
+  function fitScale(g, text, L, max) { if (!L.fit) return 1; var w = g.measureText(text).width; return w > max ? max / w : 1; }
   function drawHud(g, t) {
-    var p = game.player, b = game.buddy;
+    var p = game.player, b = game.buddy, L = hudLayout();
+    if (view.portrait) {   // 폰 세로: 글자 판 뒤를 살짝 어둡게 해서 하늘 그림 위에서도 읽히게
+      var u0 = view.hudU, hb = (game.boss ? L.bby + 40 : L.gy + 24), gr = g.createLinearGradient(0, -view.safe.t / u0, 0, hb);
+      gr.addColorStop(0, "rgba(14,10,36,0.55)"); gr.addColorStop(1, "rgba(14,10,36,0)");
+      g.fillStyle = gr; g.fillRect(-view.safe.l / u0, -view.safe.t / u0, L.hw + (view.safe.l + view.safe.r) / u0, hb + view.safe.t / u0);
+    }
     g.font = "900 22px system-ui"; g.textAlign = "left"; g.fillStyle = "#fff";
     g.lineWidth = 5; g.strokeStyle = "rgba(0,0,0,0.55)";
     g.strokeText(D.HEROES[p.kid].name, 24, 40); g.fillText(D.HEROES[p.kid].name, 24, 40);
@@ -1516,14 +1631,14 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
         if (on) { star(g, bx, 54, 14, "#7a3b00"); star(g, bx, 54, 11, "#ffd84a"); }
         else { g.globalAlpha = 0.45; star(g, bx, 54, 11, "#ffffff"); g.globalAlpha = 1; }
       }
-      var tagX = 440;
+      var tagX = L.tagX;
       if (game.quizBadges >= 3) {
         g.font = "900 18px system-ui"; g.textAlign = "left"; g.lineWidth = 5; g.strokeStyle = "rgba(0,0,0,0.6)";
-        g.strokeText("강화!", tagX, 61); g.fillStyle = "#ffd84a"; g.fillText("강화!", tagX, 61); tagX += 54;
+        g.strokeText("강화!", tagX, L.tagY); g.fillStyle = "#ffd84a"; g.fillText("강화!", tagX, L.tagY); tagX += 54;
       }
       if (game.quizCharge) {
         g.font = "900 18px system-ui"; g.textAlign = "left"; g.lineWidth = 5; g.strokeStyle = "rgba(0,0,0,0.6)";
-        g.strokeText("다음 필살기 +50%", tagX, 61); g.fillStyle = "#7dffb0"; g.fillText("다음 필살기 +50%", tagX, 61);
+        g.strokeText("다음 필살기 +50%", tagX, L.tagY); g.fillStyle = "#7dffb0"; g.fillText("다음 필살기 +50%", tagX, L.tagY);
       }
       g.font = "800 17px system-ui"; g.textAlign = "left"; g.fillStyle = "#fff"; g.strokeStyle = "rgba(0,0,0,0.55)";
     }
@@ -1533,43 +1648,48 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     var sec = Math.ceil(game.time), warn = sec <= 10 && !game.over;
     g.textAlign = "center"; g.font = "900 " + (warn ? 58 + Math.sin(t * 12) * 4 : 52) + "px system-ui";
     g.fillStyle = warn ? "#ff6b6b" : "#ffffff"; g.lineWidth = 7;
-    g.strokeText(String(sec), W / 2, 62); g.fillText(String(sec), W / 2, 62);
+    g.strokeText(String(sec), L.tx, L.ty); g.fillText(String(sec), L.tx, L.ty);
     // 목표
     var m = game.mission.id, goal = "";
     if (m === "rescue") goal = "🔓 " + game.freed + " / 3";
     if (m === "treasure") goal = (lavaWorld() ? "💎 " : "⭐ ") + game.collected + " / 50";
-    if (goal) { g.font = "900 30px system-ui"; g.lineWidth = 6; g.strokeText(goal, W / 2, 104); g.fillStyle = "#ffe45c"; g.fillText(goal, W / 2, 104); }
+    if (goal) { g.font = "900 30px system-ui"; g.lineWidth = 6; g.strokeText(goal, L.gx, L.gy); g.fillStyle = "#ffe45c"; g.fillText(goal, L.gx, L.gy); }
     if (game.boss && game.boss.st !== "enter") {
+      var bx0 = L.cx - L.bw / 2;
       g.font = "900 22px system-ui"; g.fillStyle = "#fff"; g.lineWidth = 5;
-      g.strokeText(game.boss.def.name, W / 2, 100); g.fillText(game.boss.def.name, W / 2, 100);
-      bar(g, W / 2 - 220, 110, 440, 20, game.boss.hp / game.boss.maxHp, game.boss.phase > 1 ? "#ff3b1f" : "#ff5a78");
+      g.strokeText(game.boss.def.name, L.cx, L.bny); g.fillText(game.boss.def.name, L.cx, L.bny);
+      bar(g, bx0, L.bby, L.bw, 20, game.boss.hp / game.boss.maxHp, game.boss.phase > 1 ? "#ff3b1f" : "#ff5a78");
       // 단계 보스는 체력 줄에 금을 그어 "여기까지 깎으면 화낸다"를 보여 준다.
       if (game.boss.def.phases) game.boss.def.phases.forEach(function (ph, i) {
         if (!i) return;
-        var nx = W / 2 - 220 + 440 * ph.at;
-        g.fillStyle = "#ffffff"; g.fillRect(nx - 2, 106, 4, 28);
+        var nx = bx0 + L.bw * ph.at;
+        g.fillStyle = "#ffffff"; g.fillRect(nx - 2, L.bby - 4, 4, 28);
       });
     }
     if (game.callout && !game.over) {
       var ck = Math.min(1, game.callout.t * 5), ca = game.callout.t > 1.8 ? Math.max(0, (2.2 - game.callout.t) / 0.4) : 1;
-      g.save(); g.globalAlpha = ca; g.translate(W / 2, 182); g.scale(0.6 + 0.4 * ck, 0.6 + 0.4 * ck);
-      g.font = "900 46px system-ui"; g.textAlign = "center"; g.lineWidth = 9; g.strokeStyle = "#2a1408";
+      g.save(); g.globalAlpha = ca; g.translate(L.cx, L.callY); g.font = "900 46px system-ui";
+      var cf = fitScale(g, game.callout.text, L, L.hw - 30) * (0.6 + 0.4 * ck); g.scale(cf, cf);
+      g.textAlign = "center"; g.lineWidth = 9; g.strokeStyle = "#2a1408";
       g.strokeText(game.callout.text, 0, 0); g.fillStyle = "#ffb347"; g.fillText(game.callout.text, 0, 0);
       g.restore();
     }
     if (game.quizReward && !game.over) {
       var qr = game.quizReward, qk = Math.min(1, qr.t * 6 + (game.paused ? 1 : 0)), qa = qr.t > 1.2 ? Math.max(0, (1.5 - qr.t) / 0.3) : 1;
-      g.save(); g.globalAlpha = qa; g.translate(W / 2, H / 2 - 20); g.scale(0.7 + 0.3 * qk, 0.7 + 0.3 * qk);
-      g.textAlign = "center"; g.lineWidth = 12; g.strokeStyle = "#2a1408";
-      g.font = "900 72px system-ui"; g.strokeText(qr.lines[0], 0, 0); g.fillStyle = qr.first ? "#ffd84a" : "#bff3ff"; g.fillText(qr.lines[0], 0, 0);
+      g.save(); g.globalAlpha = qa; g.translate(L.cx, L.cy - 20);
       var rest = qr.lines.slice(1).join(" · ");
+      g.font = "900 38px system-ui"; var qf = rest ? fitScale(g, rest, L, L.hw - 30) : 1;
+      g.font = "900 72px system-ui"; qf = Math.min(qf, fitScale(g, qr.lines[0], L, L.hw - 30)) * (0.7 + 0.3 * qk); g.scale(qf, qf);
+      g.textAlign = "center"; g.lineWidth = 12; g.strokeStyle = "#2a1408";
+      g.strokeText(qr.lines[0], 0, 0); g.fillStyle = qr.first ? "#ffd84a" : "#bff3ff"; g.fillText(qr.lines[0], 0, 0);
       if (rest) { g.font = "900 38px system-ui"; g.lineWidth = 8; g.strokeText(rest, 0, 56); g.fillStyle = "#ffffff"; g.fillText(rest, 0, 56); }
       g.restore();
     }
     if (game.banner) {
       var k = Math.min(1, game.banner.t * 4);
-      g.save(); g.translate(W / 2, H / 2 - 60); g.scale(0.5 + 0.5 * k, 0.5 + 0.5 * k);
-      g.font = "900 96px system-ui"; g.lineWidth = 12; g.strokeStyle = "#2a2140";
+      g.save(); g.translate(L.cx, L.cy - 60); g.font = "900 96px system-ui";
+      var bf = fitScale(g, game.banner.text, L, L.hw - 30) * (0.5 + 0.5 * k); g.scale(bf, bf);
+      g.lineWidth = 12; g.strokeStyle = "#2a2140";
       g.strokeText(game.banner.text, 0, 0); g.fillStyle = game.stars > 0 ? "#ffd84a" : "#ffffff"; g.fillText(game.banner.text, 0, 0);
       g.restore();
     }
@@ -1775,7 +1895,9 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     tabs.replaceChildren();
     D.SLOTS.forEach(function (s) {
       var b = document.createElement("button"); b.type = "button";
-      b.textContent = s.icon + " " + s.name;
+      var si = document.createElement("span"); si.className = "s-icon"; si.textContent = s.icon;
+      var sn = document.createElement("span"); sn.className = "s-name"; sn.textContent = s.name;
+      b.append(si, " ", sn); b.setAttribute("aria-label", s.name);
       b.classList.toggle("is-on", s.id === wardrobeSlot);
       b.addEventListener("click", function () { wardrobeSlot = s.id; paintWardrobe(); });
       tabs.appendChild(b);
@@ -1867,6 +1989,20 @@ import { createFamilySkillPlayer, familySkillLine } from '../assets/audio/family
     // ? 별 끄고 켜기(자동 검사는 기본으로 꺼짐): __MV.quiz(false) / __MV.quiz(true) / __MV.quiz() -> 지금 켜졌는지
     quiz: function (on) { if (on !== undefined) { quizForce = on === null ? null : !!on; if (!quizReady()) cancelQuiz(); } return quizReady(); },
     quizStar: function (x, y) { if (game) { game.quizMade = Math.min(game.quizMade, 1); spawnQuizStar(x, y); } },
-    step: function (sec) { for (var i = 0; i < sec * 60; i++) { if (game && game.running && !game.paused) update(1 / 60); } }
+    step: function (sec) { for (var i = 0; i < sec * 60; i++) { if (game && game.running && !game.paused) update(1 / 60); } },
+    // 화면 배치 점검: 글자 판 영역(px), 주인공 크기(px), 땅 아래 끝(px) 등
+    layout: function () {
+      var L = hudLayout(), u = view.phone ? view.hudU : view.scale;
+      var hx = view.phone ? view.safe.l : view.ox, hy = view.phone ? view.safe.t : Math.min(view.oy, 0);
+      var box = function (l, t, r, b) { return { l: hx + l * u, t: hy + t * u, r: hx + r * u, b: hy + b * u }; };
+      var left = box(16, 14, quizReady() ? 424 : 336, 94), parts = [left, box(L.tx - 40, 12, L.tx + 40, L.ty + 12)];
+      if (game && game.mission.id !== "boss") parts.push(box(L.gx - 95, L.gy - 30, L.gx + 95, L.gy + 8));
+      if (game && game.boss) parts.push(box(L.cx - L.bw / 2, L.bny - 24, L.cx + L.bw / 2, L.bby + 24));
+      if (quizReady()) parts.push(box(L.tagX, L.tagY - 20, L.tagX + 230, L.tagY + 6));
+      var hud = parts.reduce(function (a, c) { return { l: Math.min(a.l, c.l), t: Math.min(a.t, c.t), r: Math.max(a.r, c.r), b: Math.max(a.b, c.b) }; });
+      return { phone: view.phone, portrait: view.portrait, scale: view.scale, hudU: u, hud: hud, hudLeft: left, hudFont: 22 * u,
+        heroPx: game ? heroHeight(game.player.kid) * view.scale : 0, groundBottom: view.oy + GROUND_BOTTOM * view.scale,
+        camX: view.camX, visW: view.visW || W, parts: parts };
+    }
   };
 })();

@@ -1,5 +1,5 @@
 // 산타모니카 비치: 모래성 지키기. 모래성을 콕콕 쌓고, 밀려오는 파도는 콕 쳐서 막는다.
-import { text, emoji, sprite, Particles, Floaters, clamp, lerp, rng, rr } from "../engine.js";
+import { text, emoji, sprite, Particles, Floaters, clamp, lerp, rng, rr, cover } from "../engine.js";
 import { sky, palm, sandDots, smPier } from "./beachart.js";
 
 const DURATION = 70;
@@ -114,6 +114,9 @@ export function create(env) {
       const g = geo(), { W, H, u: U, horizon, shoreY } = g;
       const sx = shake > 0 ? Math.sin(t * 60) * 6 * shake : 0;
       ctx.save(); ctx.translate(sx, 0);
+      const bgi = env.img && env.img("bg-santamonica");
+      if (bgi) cover(ctx, bgi, 0, 0, W, H, 0.5, 0.5);   // 11-21 드리미나 그림 배경(수평선 35%·물가 52% — 게임 좌표와 같은 자리)
+      else {
       sky(ctx, W, H, horizon, t, 0.12);
       // 먼 바다
       const sea = ctx.createLinearGradient(0, horizon, 0, shoreY);
@@ -138,8 +141,9 @@ export function create(env) {
       ctx.beginPath(); ctx.moveTo(-10, shoreY - 4);
       for (let x = -10; x <= W + 10; x += 20) ctx.lineTo(x, shoreY + 4 + Math.sin(x * 0.04 + t * 2) * 4);
       ctx.lineTo(W + 10, shoreY - 6); ctx.closePath(); ctx.fill();
-      palm(ctx, W * 0.05, shoreY + 10, H * 0.3, 0.12, t);
-      palm(ctx, W * 0.13, shoreY + 6, H * 0.24, -0.1, t + 1);
+      }
+      if (!bgi) palm(ctx, W * 0.05, shoreY + 10, H * 0.3, 0.12, t);
+      if (!bgi) palm(ctx, W * 0.13, shoreY + 6, H * 0.24, -0.1, t + 1);
       // 모래성
       castle(ctx, g.castle.x, g.castle.y, U * (1 + buildPop * 0.4), level, t);
       // 쌓기 진행 칸

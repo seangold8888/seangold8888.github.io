@@ -15,7 +15,7 @@ export const PLACES = [
 ];
 
 export const KIDS = {
-  jaei: { name: "재이", en: "Jaei" },
+  jaei: { name: "재이", en: "Jay" },
   taeo: { name: "태오", en: "Taeo" },
 };
 

@@ -74,7 +74,7 @@ test('GameQuiz: 처음 맞힘에만, 정답 터치 처리 안에서 외친다. v
 });
 
 test('GameQuiz 를 쓰는 모든 페이지가 kid-voices 를 game-quiz?v=4 바로 앞에 불러온다', () => {
-  const pages = ['hogwarts', 'odyssey', 'multiverse', 'kedehun', 'kart3d', 'towers', 'sanguo', 'plane', 'dive'];
+  const pages = ['magic', 'odyssey', 'multiverse', 'kedehun', 'kart3d', 'towers', 'sanguo', 'plane', 'dive'];
   for (const p of pages) {
     const html = fs.readFileSync(path.join(root, p, 'index.html'), 'utf8');
     const gq = 'assets/study/game-quiz.js?v=4';

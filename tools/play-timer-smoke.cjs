@@ -22,7 +22,7 @@ const server = http.createServer((req, res) => {
     res.end(error ? "" : data);
   });
 });
-const GAMES = ["cards", "hogwarts", "bori", "avengers", "kart", "kart3d", "princess", "odyssey", "kedehun", "sanguo"];
+const GAMES = ["cards", "magic", "bori", "avengers", "kart", "kart3d", "princess", "odyssey", "kedehun", "sanguo"];
 
 (async () => {
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
