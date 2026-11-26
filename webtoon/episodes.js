@@ -4873,6 +4873,92 @@
         },
       ],
     },
+    // ───────────────────────── 48화 ─────────────────────────
+    {
+      id: 48,
+      title: "우리 집 머스터 임명식",
+      summary: "‘마스터’에 푹 빠진 태오가 가족 모두에게 칭호를 붙여 주기로 했다. 누나는 비밀번호 머스터, 엄마는 핸드폰 머스터·맥주 머스터. 잔뜩 기대한 아빠가 받은 칭호는… 무려 세 개!",
+      lesson: "멋진 칭호보다 진짜 칭호가 더 웃겨요. 그리고 머스터는… 마스터예요.",
+      talk: "우리 가족에게 칭호를 붙여 준다면 어떤 ‘머스터’가 좋을까요? 나는 무슨 머스터일까요?",
+      cover: 7,
+      motion: true,
+      panels: [
+        {
+          h: 460, bg: "living",
+          bp: [["sofa", 210, 420, { w: 260 }]],
+          chars: [C("taeo", 210, "proud", "up", { y: 360, m: "hop" }), C("jaei", 70, "angry", "point", { s: 0.8, m: "pop" }), C("halmeoni", 350, "happy", "hands", { s: 0.75, m: "bob" })],
+          fp: [["toybox", 70, 440, { s: 0.7 }]],
+          b: [B("다들 모여! 얼음들도 다 앉아!", 220, 60, "b", { k: "shout", w: 190 }), B("아니야! ‘어른’이라니까.", 80, 190, "b", { w: 120 }), B("아무튼 오늘 내가 다 머스터 정해 줄 거야!", 330, 170, "b", { k: "shout", w: 140 })],
+        },
+        {
+          h: 400, bg: "living",
+          chars: [C("taeo", 110, "determined", "point", { m: "stomp" }), C("jaei", 300, "worried", "stand", { m: "pop" })],
+          b: [B("첫 번째! 누나는… 비밀번호 머스터!", 120, 70, "b", { k: "shout", w: 180 }), B("아니야! 왜 갑자기 비밀번호야?", 300, 160, "b", { w: 140 })],
+          sfx: [FX("두구두구", 300, 60, { rot: 8, c: "#7b4fd6", size: 0.8 })],
+        },
+        {
+          h: 400, bg: "memory",
+          chars: [C("jaei", 120, "love", "point", { m: "bob" })],
+          bp: [["safe", 290, 320, { s: 1.1, t: "1234" }]],
+          n: "호텔에 가면 제일 먼저 하는 일.",
+          b: [B("(태오) 금고 비밀번호 누르는 거 제일 좋아하잖아!", 260, 90, "", { w: 200 }), B("아니야… 그냥 잠가 본 거야.", 95, 140, "b", { k: "whisper", w: 130 })],
+          sfx: [FX("띡띡띡!", 300, 360, { rot: -6, c: "#3b8fd6" })],
+        },
+        {
+          h: 420, bg: "living",
+          bp: [["sofa", 120, 400, { w: 220 }]],
+          chars: [C("eomma", 120, "smile", "hold", { m: "bob" }), C("taeo", 310, "proud", "up", { m: "hop" })],
+          fp: [["sofafront", 120, 400, { w: 220 }], ["phone", 145, 300, { s: 0.7 }]],
+          b: [B("엄마 차례야? 엄마는 무슨 머스터야?", 120, 70, "b", { w: 160 }), B("엄마는 두 개야! 핸드폰 머스터! 그리고 맥주 머스터!", 300, 130, "b", { k: "shout", w: 170 })],
+        },
+        {
+          h: 400, bg: "living",
+          chars: [C("eomma", 100, "shock", "cover", { m: "shake" }), C("harabeoji", 250, "laugh", "stand", { s: 0.8, m: "bob" }), C("halmeoni", 345, "laugh", "mouth", { s: 0.75, m: "bob" })],
+          b: [B("잠깐만! 할머니 할아버지 앞에서 그 얘기는 왜 해!", 110, 70, "b", { k: "shout", w: 180 }), B("허허, 태오 눈이 아주 정확하구나.", 300, 150, "b", { w: 140 })],
+          sfx: [FX("뜨끔", 60, 210, { rot: -10, c: "#e2557f" })],
+        },
+        {
+          h: 420, bg: "burst:e9e2ff",
+          chars: [C("appa", 120, "love", "hands", { m: "bob" }), C("taeo", 310, "determined", "stand", { m: "pop" })],
+          b: [B("크하하, 드디어 아빠 차례! 아빠는 멋진 우주 악당 머스터?", 120, 70, "b", { w: 190 }), B("아니! 아빠는 세 개야!", 310, 160, "b", { k: "shout", w: 130 })],
+          sfx: [FX("두근두근", 140, 380, { rot: -6, c: "#e2557f", size: 0.9 })],
+        },
+        {
+          h: 520, bg: "speed:fff4c7",
+          sh: true,
+          chars: [bust("taeo", 95, 420, 1.0, "proud", "point", { m: "stomp" }), bust("appa", 310, 410, 1.0, "shock", "stand", { m: "shake" })],
+          b: [B("첫째, 방구 머스터!", 150, 60, "", { k: "shout", w: 190 }), B("둘째, 똥 머스터!", 210, 140, "", { k: "shout", w: 170 }), B("셋째, 졸음신 머스터!", 270, 220, "", { k: "shout", w: 200 })],
+        },
+        {
+          h: 400, bg: "living",
+          chars: [C("appa", 290, "cry", "stand", { o: "work", rot: -90, x: 290, y: 345, s: 0.8, m: "shake" }), C("halmeoni", 345, "laugh", "hip", { s: 0.75, m: "bob" })],
+          b: [B("아들아… 아빠한테 너무한 거 아니니…?", 130, 230, "b", { k: "whisper", w: 170 }), B("김서방, 소파에 눕기만 하면 코 골고 자더니 딱 걸렸네.", 250, 70, "b", { w: 190 })],
+          sfx: [FX("털썩", 240, 320, { rot: -8, c: "#7a5c3b" })],
+        },
+        {
+          h: 380, bg: "split:ffe8f0:dfeaf5",
+          chars: [bust("jaei", 95, 245, 1.05, "sly", "point", { m: "pop" }), bust("taeo", 305, 245, 1.15, "angry", "fist", { m: "stomp" })],
+          b: [B("잠깐! 애초에 ‘머스터’가 아니라 ‘마스터’거든?", 105, 70, "b", { w: 175 }), B("아니거든! 머스터 맞거든!", 300, 70, "b", { k: "shout", w: 150 })],
+        },
+        {
+          h: 440, bg: "living",
+          chars: [C("harabeoji", 40, "smile", "stand", { s: 0.65, m: "bob" }), C("halmeoni", 105, "smile", "stand", { s: 0.65, m: "bob" }), C("eomma", 170, "smile", "stand", { s: 0.7, m: "bob" }), C("appa", 240, "sly", "stand", { o: "work", s: 0.7, m: "bob" }), C("jaei", 300, "proud", "stand", { s: 0.7, m: "bob" }), C("taeo", 365, "guilty", "scratch", { s: 0.75, m: "wiggle" })],
+          b: [B("마-스-터!", 170, 70, "b", { k: "shout", w: 200 }), B("에헤헤… 아, 배고파. 맛있는 거 죠!", 330, 170, "b", { w: 140 })],
+        },
+        {
+          h: 420, bg: "burst:fff0d6",
+          chars: [C("appa", 80, "sly", "point", { o: "work", s: 0.85, m: "pop" }), C("jaei", 190, "laugh", "point", { s: 0.8, m: "bob" }), C("taeo", 320, "angry", "fist", { m: "stomp" })],
+          b: [B("태오는 ‘우기다 들키면 머리 긁는 머스터’!", 100, 60, "b", { w: 180 }), B("아니야, ‘레몬 핥는 머스터’지!", 200, 170, "b", { w: 130 }), B("아니거든!! 나는 그냥 가윌 머스터거든!!", 320, 110, "b", { k: "shout", w: 150 })],
+        },
+        {
+          h: 440, bg: "bedroom-night",
+          fp: [["sleepers", 200, 400, { ids: ["jaei", "appa", "taeo"], w: 330, z: ["appa"] }], ["notebook", 200, 260, { s: 0.8 }]],
+          n: "그날 밤, 동화책 읽어 주던 아빠가 제일 먼저…",
+          b: [B("…봐. 졸음신 머스터 맞지?", 320, 110, "", { k: "whisper", w: 140 }), B("…이건 인정.", 90, 130, "", { k: "whisper", w: 110 })],
+          sfx: [FX("드르렁~", 200, 190, { rot: -6, c: "#6c8fd6" }), FX("뿡!", 250, 230, { rot: 10, c: "#c98a2b", size: 1.3 })],
+        },
+      ],
+    },
   ];
 
   root.WebtoonData = { CHARACTERS, EPISODES };

@@ -777,6 +777,12 @@
       for (const k of [-10, 0, 10]) g += `<path d="M${x} ${y} Q${x + dx / 2} ${y + dy / 2 + k} ${x + dx} ${y + dy}" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>`;
       return `<g>${g}</g>`;
     },
+    // 호텔 금고 (번호 키패드)
+    safe(x, y, o) {
+      let keys = "";
+      for (let r = 0; r < 4; r++) for (let c = 0; c < 3; c++) keys += `<rect x="${8 + c * 14}" y="${-78 + r * 13}" width="11" height="10" rx="2" fill="${r === 3 && c !== 1 ? "#ffd34d" : "#fff"}" stroke="${INK}" stroke-width="1.1"/>`;
+      return `<g transform="translate(${x} ${y}) scale(${o.s || 1})"><rect x="-60" y="-100" width="120" height="100" rx="8" fill="#9aa3ad" stroke="${INK}" stroke-width="2.6"/><rect x="-50" y="-90" width="100" height="80" rx="5" fill="#b8c0c8" stroke="${INK}" stroke-width="1.6"/><rect x="-42" y="-82" width="40" height="18" rx="3" fill="#24323a" stroke="${INK}" stroke-width="1.4"/><text x="-22" y="-68" text-anchor="middle" font-size="12" font-family="monospace" fill="#7dff9a">${o.t || "****"}</text>${keys}<circle cx="-22" cy="-38" r="12" fill="#dfe3e8" stroke="${INK}" stroke-width="2"/><path d="M-22 -38 L-14 -44" stroke="${INK}" stroke-width="2.4" stroke-linecap="round"/></g>`;
+    },
     // 젤리 봉지. kind: "grape"(포도) | "worm"(지렁이), empty: 빈 봉지(납작), t: 글씨
     jellybag(x, y, o) {
       const worm = o.kind === "worm";
