@@ -159,6 +159,7 @@ node webtoon/tools/preview.cjs 21 preview   # 21화를 캡처해서 preview/ 에
 
 각색 순서:
 1. `node webtoon/tools/episode-script.cjs 1` → 1화 대본과 제미나이 부탁 글이 나온다(친구 이름은 가명, 말한 사람은 가장 가까운 인물로 추정). `… 1-10 폴더`로 여러 화를 파일로 뽑을 수도 있다.
+   제미나이에 바로 보내려면 `python3 webtoon/tools/gemini-ask.py 부탁글.txt 답.txt` (Gemini API 키 필요, 무료 등급은 Flash 모델만 된다).
 2. 제미나이 각색본을 받아 오면, 원래 화와 합쳐 `public/adapted.js`에 그 화를 넣는다(실제 대사는 그대로, 마지막 컷은 웃음).
 3. `node webtoon/tools/make-public-page.cjs` 후 `public.html#ep=1`로 확인한다.
 4. `node webtoon/tools/export-naver.cjs 1` → `webtoon-export/001/001_01.jpg …`(가로 690px, 한 장 세로 1600px 이하, 컷 경계에서 자름). 업로드 규격이 다르면 `--width`, `--max`, `--quality`로 맞춘다. 움직임·소리는 빠지고 멈춘 그림으로 나온다.
