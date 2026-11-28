@@ -983,5 +983,121 @@
         },
       ],
     },
+    // ───── 10화 (원래 10화 + 제미나이 각색본 합본) ─────
+    {
+      id: 10,
+      title: "태오는 다 듣고 있다",
+      summary: "혼자 노는 줄만 알았던 태오. 그런데 어른들이 소곤소곤 한 말까지 다 듣고 있었다. “왜 놀려! 놀리지 마!”",
+      lesson: "아이는 혼자 노는 것 같아도 다 듣고 있어요. 그러니 아이 곁에서는 따뜻한 말을.",
+      talk: "오늘 가족에게 들은 말 중에 제일 기분 좋았던 말은 뭐예요?",
+      cover: 11,
+      motion: true,
+      panels: [
+        {
+          h: 360, bg: "living",
+          chars: [C("taeo", 130, "determined", "kick", { m: "stomp" })],
+          fp: [["figures", 300, 336, { s: 1.1 }]],
+          n: "다섯 살 태오는 혼자서도 잘 논다.",
+          sfx: [FX("슈웅~ 쾅!", 290, 150, { rot: 8, c: "#3b6fd6" })],
+        },
+        {
+          h: 380, bg: "kitchen",
+          chars: [C("appa", 100, "smile", "stand", { m: "bob" }), C("eomma", 290, "smile", "hold", { m: "bob" })],
+          b: [B("태오 요즘 혼자서도 잘 노네.", 110, 70, "b", { w: 160 }), B("응. 우리 말은 하나도 안 듣는 것 같아.", 290, 60, "b", { w: 160 })],
+        },
+        {
+          h: 280, bg: "sparkle:e6e0ff",
+          chars: [bust("taeo", 200, 180, 1.45, "sly", "stand", { m: "pop" })],
+          b: [B("(다 듣고 있지롱.)", 200, 44, "", { k: "think", w: 220 })],
+        },
+        {
+          h: 400, bg: "living",
+          chars: [C("appa", 60, "smile", "stand", { m: "bob" }), C("taeo", 170, "worried", "stand", { m: "bob" }), C("jaei", 280, "smile", "hold", { m: "bob" }), C("eomma", 360, "smile", "stand", { s: 0.9, m: "bob" })],
+          fp: [["boardgame", 200, 380, { s: 0.9 }]],
+          b: [B("카드에 적힌 숫자만큼 가는 거야. 태오 이거 읽을 수 있어?", 250, 60, "b", { w: 220 })],
+        },
+        {
+          h: 360, bg: "living",
+          chars: [C("appa", 150, "sly", "mouth", { m: "pop" }), C("eomma", 300, "smile", "stand", { m: "bob" })],
+          b: [B("(태오는 아직 글씨랑 숫자 잘 모르잖아~)", 170, 70, "b", { k: "whisper", w: 200 })],
+        },
+        {
+          h: 330, bg: "burst:ffd1e1",
+          chars: [bust("taeo", 190, 200, 1.45, "angry", "point", { m: "stomp" })],
+          b: [B("왜 놀려! 놀리지 마!!", 200, 44, "", { k: "shout", w: 260 })],
+          sfx: [FX("삿대질!", 330, 280, { rot: 10, c: "#e0443e", size: 0.7 })],
+        },
+        {
+          h: 360, bg: "living",
+          chars: [C("appa", 110, "shock", "stand", { m: "shake" }), C("jaei", 300, "laugh", "cover", { m: "hop" })],
+          b: [B("어떻게 들었지? 속삭였는데…", 110, 60, "b", { w: 150 }), B("아빠, 태오는 다 들어!", 300, 80, "b", { w: 140 })],
+        },
+        {
+          h: 380, bg: "living",
+          chars: [C("eomma", 110, "happy", "give", { m: "hop" }), C("taeo", 300, "laugh", "cheer", { m: "hop" })],
+          b: [B("그럼 우리 태오가 제일 잘하는 놀이 하자!", 120, 60, "b", { w: 170 }), B("오구마꼬치 피었습니다!", 300, 110, "b", { k: "shout", w: 150 })],
+        },
+        {
+          h: 280, bg: "burst:e6e0ff",
+          chars: [bust("jaei", 200, 180, 1.35, "blank", "stand", { m: "shake" })],
+          b: [B("…오구마꼬치? 무궁화 꽃이 피었습니다겠지.", 200, 44, "", { w: 280 })],
+        },
+        {
+          h: 300, bg: "burst:ffe27a",
+          chars: [bust("taeo", 200, 190, 1.5, "angry", "hip", { m: "stomp" })],
+          b: [B("아니야! 오구마꼬치 맞아!! 선샘민도 그랬어!!", 200, 44, "", { k: "shout", w: 300 })],
+          sfx: [FX("빡빡", 60, 250, { rot: -10, c: "#e0443e", size: 0.8 })],
+        },
+        {
+          h: 360, bg: "living",
+          chars: [C("jaei", 110, "sly", "hold", { m: "pop" }), C("taeo", 300, "worried", "stand", { m: "bob" })],
+          fp: [["notebook", 170, 232, { t: "놀이 책", s: 0.8, c: "#b8e0ff", lines: ["무궁화 꽃이", "피었습니다"] }]],
+          b: [B("여기 책에도 ‘무궁화 꽃이’라고 쓰여 있는데?", 150, 60, "b", { w: 200 })],
+        },
+        {
+          h: 320, bg: "sparkle:fff4c7",
+          chars: [bust("taeo", 200, 200, 1.45, "shy", "scratch", { m: "bob" })],
+          b: [B("…헤헤. 무궁…꼬치?", 200, 44, "", { w: 220 })],
+          sfx: [FX("긁적긁적", 320, 270, { rot: 8, c: "#8a6d52", size: 0.8 })],
+        },
+        {
+          h: 400, bg: "living",
+          chars: [C("taeo", 60, "happy", "eyes", { m: "hop" }), C("appa", 170, "determined", "kick", { m: "stomp" }), C("eomma", 265, "surprised", "up", { m: "shake" }), C("jaei", 350, "laugh", "cheer", { m: "hop" })],
+          b: [B("오구마꼬치~ 피었습니다!", 90, 80, "b", { k: "shout", w: 170 })],
+          sfx: [FX("얼음!", 300, 110, { rot: 8, c: "#3b6fd6" })],
+        },
+        {
+          h: 380, bg: "living",
+          chars: [C("taeo", 110, "laugh", "point", { m: "hop" }), C("appa", 300, "guilty", "kick", { m: "shake" })],
+          b: [B("아빠 움직였다! 아빠 아웃!", 120, 80, "b", { k: "shout", w: 160 })],
+          sfx: [FX("하하하", 210, 300, { rot: 8, c: "#ff9f1c" })],
+        },
+        {
+          h: 440, bg: "living-night",
+          chars: [C("eomma", 110, "worried", "stand", { m: "bob" }), C("appa", 290, "guilty", "scratch", { m: "shake" })],
+          n: "그날 밤, 거실.",
+          b: [B("(태오가 글씨 모른다는 말에 속상했나 봐.)", 120, 90, "b", { k: "whisper", w: 170 }), B("(그러게. 아빠가 너무 쉽게 말했네.)", 300, 120, "b", { k: "whisper", w: 150 })],
+        },
+        {
+          h: 330, bg: "bedroom-night",
+          bp: [["bed", 200, 306, { w: 330 }], ["pillow", 90, 250, {}]],
+          chars: [C("taeo", 195, "sly", "stand", { o: "pajama", rot: -90, y: 262, s: 0.95 })],
+          fp: [["blanket", 215, 296, { w: 190, h: 56, c: "#bfe3ff" }]],
+          b: [B("(…다 들린다.)", 280, 90, "bl", { k: "think" })],
+        },
+        {
+          h: 380, bg: "living-night",
+          chars: [bust("eomma", 100, 260, 1.1, "teary", "stand", { m: "bob" }), bust("appa", 300, 270, 1.1, "happy", "stand", { m: "hop" })],
+          b: [B("그래도 우리 태오는 글씨는 몰라도, 가족 마음 읽는 건 1등이야.", 130, 60, "b", { k: "whisper", w: 230 }), B("오구마꼬치도 세계 1등이고.", 310, 150, "b", { k: "whisper", w: 140 })],
+        },
+        {
+          h: 330, bg: "bedroom-night",
+          bp: [["bed", 200, 306, { w: 330 }], ["pillow", 90, 250, {}]],
+          chars: [C("taeo", 195, "shy", "stand", { o: "pajama", rot: -90, y: 262, s: 0.95 })],
+          fp: [["blanket", 215, 296, { w: 190, h: 56, c: "#bfe3ff" }], ["heart", 300, 100, {}], ["heart", 340, 140, { s: 0.7 }]],
+          b: [B("(다 들린다… 칭찬 들었으니까 내일 아침엔 맛있는 거 죠!)", 200, 60, "", { k: "think", w: 260 })],
+        },
+      ],
+    },
   ];
 })(typeof window !== "undefined" ? window : globalThis);
