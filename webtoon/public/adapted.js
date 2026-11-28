@@ -749,5 +749,127 @@
         },
       ],
     },
+    // ───── 8화 (원래 8화 + 제미나이 각색본 합본) ─────
+    {
+      id: 8,
+      title: "피노키오 아빠",
+      summary: "“아빠 내 말 안 들으면 피노키오야!” “엄마 맛있는 거 안 주면 소리 지른다!” 태오의 협박(?) 작전이 시작됐다.",
+      lesson: "약속은 지키고, 부탁은 예쁘게. 어른도 아이도 똑같아요.",
+      talk: "요즘 우리 가족이 “이따가” 하고 못 지킨 약속이 있나요? 떼쓰는 대신 “주세요”라고 말해 본 적은요?",
+      cover: 2,
+      motion: true,
+      panels: [
+        {
+          h: 380, bg: "living",
+          chars: [C("taeo", 110, "happy", "give", { m: "hop" }), C("appa", 290, "sleepy", "hold", { m: "bob" })],
+          fp: [["dino", 60, 356, { s: 0.9 }], ["phone", 290, 233, { s: 0.8 }]],
+          n: "토요일 오후. 다섯 살 태오의 협박(?) 작전이 시작된다.",
+          b: [B("아빠! 공룡 놀이 해 줘!", 110, 100, "b", { w: 150 }), B("응~ 이따가 해 줄게.", 300, 64, "b", { w: 140 })],
+        },
+        {
+          h: 360, bg: "living",
+          chars: [C("taeo", 110, "worried", "stand", { m: "bob" }), C("appa", 290, "sleepy", "hold", { m: "bob" })],
+          fp: [["phone", 290, 213, { s: 0.8 }], ["clock", 200, 60, {}]],
+          n: "30분 뒤.",
+          b: [B("아빠, 이따가 됐어?", 105, 110, "b", { w: 130 }), B("조금만… 더 이따가~", 300, 60, "b", { w: 130, k: "whisper" })],
+        },
+        {
+          h: 320, bg: "burst:ffd1e1",
+          chars: [bust("taeo", 200, 190, 1.45, "angry", "hip", { m: "stomp" })],
+          b: [B("아빠! 내 말 안 들으면 피노키오야!!", 200, 44, "", { k: "shout", w: 300 })],
+        },
+        {
+          h: 280, bg: "burst:c9dcff",
+          chars: [bust("appa", 200, 170, 1.35, "shock", "stand", { m: "shake" })],
+          b: [B("피… 피노키오?", 200, 40, "", { w: 200 })],
+        },
+        {
+          h: 380, bg: "living",
+          chars: [C("taeo", 110, "determined", "point", { m: "stomp" }), C("appa", 300, "shock", "nose", { m: "shake" })],
+          b: [B("약속 안 지키면 코가 길어지잖아! 아빠 코 벌써 길어졌어!", 140, 70, "b", { w: 230 })],
+          sfx: [FX("쭈우욱", 330, 210, { rot: 10, c: "#e0443e" })],
+        },
+        {
+          h: 340, bg: "living",
+          chars: [C("jaei", 110, "laugh", "cover", { m: "hop" }), C("appa", 290, "guilty", "nose", { m: "shake" })],
+          b: [B("아니야~ 진짜 길어진 것 같아!", 120, 60, "b", { w: 150 }), B("아… 아닌데?", 300, 60, "b")],
+          sfx: [FX("깔깔깔", 150, 240, { rot: -8, c: "#ff9f1c" })],
+        },
+        {
+          h: 400, bg: "kitchen",
+          chars: [C("taeo", 110, "determined", "hip", { m: "stomp" }), C("eomma", 295, "smile", "hip", { m: "bob" })],
+          n: "그 작전, 부엌에서도 계속됐다.",
+          b: [B("엄마! 맛있는 거 죠! 안 주면 소리 지른다!", 140, 110, "b", { k: "shout", w: 230 })],
+        },
+        {
+          h: 300, bg: "sparkle:e6e0ff",
+          chars: [bust("eomma", 200, 185, 1.3, "sly", "stand", { m: "pop" })],
+          b: [B("그래? 소리 지르면 절대 못 주는데?", 200, 44, "", { w: 260 })],
+        },
+        {
+          h: 300, bg: "burst:ffe27a",
+          chars: [bust("taeo", 200, 190, 1.5, "angry", "cheer", { m: "stomp" })],
+          b: [B("맛있는 거 죠오오오!!", 200, 40, "", { k: "shout", w: 280 })],
+          sfx: [FX("쩌렁쩌렁", 80, 250, { rot: -10, c: "#e0443e" }), FX("!!", 350, 230, { rot: 10, c: "#3b6fd6" })],
+        },
+        {
+          h: 360, bg: "kitchen",
+          chars: [C("taeo", 110, "sad", "stand", { m: "bob" }), C("eomma", 295, "blank", "stand", { m: "shake" })],
+          b: [B("…방금 못 준다고 했지?", 295, 56, "b", { w: 150 }), B("힝…", 105, 130, "b", { k: "whisper" })],
+        },
+        {
+          h: 360, bg: "kitchen",
+          chars: [C("jaei", 120, "wink", "mouth", { m: "pop" }), C("taeo", 290, "surprised", "stand", { m: "shake" })],
+          b: [B("태오야, 누나가 마법의 말 알려 줄까? ‘주세요’ 해 봐.", 150, 60, "b", { k: "whisper", w: 230 })],
+        },
+        {
+          h: 300, bg: "sparkle:ffe3ee",
+          chars: [bust("taeo", 200, 190, 1.45, "shy", "give", { m: "bob" })],
+          b: [B("엄마… 맛있는 거 주세요.", 200, 44, "", { w: 240 })],
+        },
+        {
+          h: 380, bg: "kitchen",
+          chars: [C("taeo", 110, "love", "cheer", { m: "hop" }), C("eomma", 295, "happy", "give", { f: -1, m: "hop" })],
+          fp: [["cake", 205, 250, { s: 0.8 }]],
+          b: [B("이렇게 예쁘게 말하면 당연히 주지~!", 280, 60, "b", { w: 170 })],
+          sfx: [FX("짠!", 205, 150, { rot: -8, c: "#ff6b6b" })],
+        },
+        {
+          h: 300, bg: "sparkle:fff4c7",
+          chars: [bust("taeo", 200, 190, 1.45, "eating", "mouth", { m: "wiggle" })],
+          b: [B("(‘주세요’는… 진짜 마법이다!)", 200, 44, "", { k: "think", w: 250 })],
+        },
+        {
+          h: 380, bg: "living",
+          chars: [C("taeo", 110, "shy", "give", { m: "bob" }), C("appa", 290, "surprised", "hold", { m: "shake" })],
+          fp: [["phone", 290, 233, { s: 0.8 }]],
+          b: [B("아빠, 공룡 놀이 해 주세요.", 110, 100, "b", { w: 150 })],
+        },
+        {
+          h: 320, bg: "sparkle:fff0d6",
+          chars: [bust("appa", 200, 185, 1.3, "teary", "stand", { m: "bob" })],
+          b: [B("…아빠가 먼저 약속을 안 지켰네. 미안해, 태오야. 지금 하자!", 200, 44, "", { w: 300 })],
+        },
+        {
+          h: 380, bg: "living",
+          chars: [C("appa", 130, "laugh", "cheer", { m: "hop" }), C("taeo", 300, "laugh", "run", { m: "hop" })],
+          fp: [["dino", 215, 356, { s: 1.2, f: -1 }]],
+          b: [B("크아앙! 피노키오 공룡이 나타났다!", 140, 60, "b", { k: "shout", w: 220 })],
+          sfx: [FX("꺄아아", 330, 120, { rot: 10, c: "#f0609d" })],
+        },
+        {
+          h: 380, bg: "bedroom-night",
+          chars: [C("appa", 110, "sly", "hip", { m: "pop" }), C("taeo", 290, "sleepy", "stand", { o: "pajama", m: "bob" })],
+          n: "그날 밤.",
+          b: [B("태오야, 이제 자야지. 안 자면…", 150, 70, "bl", { w: 220 }), B("피노키오야?", 300, 150, "b")],
+        },
+        {
+          h: 330, bg: "bedroom-night",
+          chars: [bust("appa", 110, 200, 1.1, "laugh", "stand", { m: "hop" }), bust("taeo", 300, 210, 1.2, "laugh", "stand", { o: "pajama", m: "hop" })],
+          b: [B("아니! 아빠가 소리 지른다~! 맛있는 거 죠오오!!", 130, 50, "b", { k: "shout", w: 200 }), B("으아악! 얼음이 소리 지른다!", 320, 95, "b", { w: 120 })],
+          sfx: [FX("하하하", 300, 70, { rot: 8, c: "#ff9f1c" })],
+        },
+      ],
+    },
   ];
 })(typeof window !== "undefined" ? window : globalThis);
