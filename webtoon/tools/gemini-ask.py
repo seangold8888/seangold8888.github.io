@@ -12,7 +12,7 @@
 """
 import json, os, subprocess, sys, time
 
-MODELS = ["gemini-pro-latest", "gemini-3.8-flash", "gemini-3.5-flash", "gemini-flash-latest", "gemini-3.1-flash-lite"]
+MODELS = ["gemini-pro-latest", "gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.5-flash", "gemini-flash-latest", "gemini-3.1-flash-lite"]
 URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
 
 
