@@ -632,9 +632,9 @@
       return `<g transform="translate(${x} ${y}) scale(${o.s || 1})"><rect x="-50" y="-36" width="100" height="68" rx="6" fill="#3b3f47" stroke="${INK}" stroke-width="2.4"/>${screen}<rect x="-20" y="32" width="40" height="8" rx="2" fill="#3b3f47" stroke="${INK}" stroke-width="1.6"/></g>`;
     },
     // 아빠가 끼는 장난감 인피니티 건틀렛(금색 장갑에 색깔 보석 여섯 개).
+    // 보라 괴수 장갑(보석 없는 보라색 장갑)
     glove(x, y, o) {
-      const gems = ["#ff4d4d", "#ffd34d", "#4c7fd0", "#6cc27a", "#ff9f1c", "#b99ad9"].map((c, i) => i < 4 ? `<circle cx="${-11 + i * 7.3}" cy="-24" r="2.8" fill="${c}" stroke="${INK}" stroke-width=".8"/>` : "").join("");
-      return `<g transform="translate(${x} ${y}) rotate(${o.rot || 0}) scale(${o.s || 1})"><path d="M-14 16 L-14 -6 L-16 -22 Q-16 -26 -12 -26 Q-9 -26 -9 -22 L-8 -12 L-7 -28 Q-7 -32 -3 -32 Q1 -32 1 -28 L1 -12 L3 -28 Q3 -32 7 -32 Q11 -32 11 -28 L10 -10 L13 -20 Q14 -24 18 -22 Q20 -20 19 -16 L14 6 L14 16Z" fill="#f2c14e" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><path d="M-12 -4 Q0 -8 12 -4" stroke="#c9962a" stroke-width="1.6" fill="none"/><rect x="-16" y="14" width="32" height="10" rx="3" fill="#e0ad3a" stroke="${INK}" stroke-width="2"/>${gems}<circle cx="-1" cy="4" r="4.5" fill="#6cc27a" stroke="${INK}" stroke-width="1"/><circle cx="-12" cy="-6" r="2.6" fill="#ff9f1c" stroke="${INK}" stroke-width=".8"/></g>`;
+      return `<g transform="translate(${x} ${y}) rotate(${o.rot || 0}) scale(${o.s || 1})"><path d="M-14 16 L-14 -6 L-16 -22 Q-16 -26 -12 -26 Q-9 -26 -9 -22 L-8 -12 L-7 -28 Q-7 -32 -3 -32 Q1 -32 1 -28 L1 -12 L3 -28 Q3 -32 7 -32 Q11 -32 11 -28 L10 -10 L13 -20 Q14 -24 18 -22 Q20 -20 19 -16 L14 6 L14 16Z" fill="#a77be0" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><path d="M-12 -4 Q0 -8 12 -4" stroke="#7d52b8" stroke-width="1.6" fill="none"/><rect x="-16" y="14" width="32" height="10" rx="3" fill="#8a5fc9" stroke="${INK}" stroke-width="2"/></g>`;
     },
     // 수영장 물결(인물 앞에 덮어 물에 잠긴 것처럼). y = 수면 높이.
     water(x, y, o, W, H) {
