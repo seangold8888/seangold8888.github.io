@@ -1208,5 +1208,119 @@
         },
       ],
     },
+    // ───── 12화 (원래 12화 + 제미나이 각색본 합본) ─────
+    {
+      id: 12,
+      title: "히어로즈에 가년~",
+      summary: "“히어로즈에 가년~ 블루베리도 있고!” 태오가 만든 놀이에 온 가족이 모였다. 그런데 태오어를 모르면 바로 땡!",
+      lesson: "우리 가족이 바로, 서로를 지켜 주는 히어로즈예요.",
+      talk: "‘우리 집에 가면~’ 놀이를 해 볼까요? 우리 가족에게 있는 것을 하나씩 이어 말해 봐요.",
+      cover: 6,
+      motion: true,
+      panels: [
+        {
+          h: 360, bg: "living-night",
+          chars: [C("jaei", 36, "smile", "stand", { s: 0.82, m: "bob" }), C("halmeoni", 98, "smile", "stand", { s: 0.72, m: "bob" }), C("eomma", 163, "smile", "stand", { s: 0.72, m: "bob" }), C("appa", 232, "smile", "stand", { s: 0.72, m: "bob" }), C("harabeoji", 300, "smile", "stand", { s: 0.72, m: "bob" }), C("taeo", 362, "laugh", "cheer", { s: 0.82, m: "hop" })],
+          n: "저녁을 먹고, 온 가족이 거실에 모였다. 다섯 살 태오가 만든 놀이 시간.",
+          b: [B("히어로즈에 가년 놀이 하자!", 290, 90, "br", { k: "shout", w: 200 })],
+        },
+        {
+          h: 280, bg: "burst:e6e0ff",
+          chars: [bust("jaei", 200, 180, 1.35, "blank", "stand", { m: "shake" })],
+          b: [B("…가년? ‘시장에 가면’ 놀이 말하는 거지? ‘가면’이야.", 200, 44, "", { w: 280 })],
+        },
+        {
+          h: 300, bg: "burst:ffe27a",
+          chars: [bust("taeo", 200, 190, 1.5, "angry", "hip", { m: "stomp" })],
+          b: [B("가년 맞아!! 히어로즈는 가년이야!!", 200, 44, "", { k: "shout", w: 280 })],
+        },
+        {
+          h: 360, bg: "living-night",
+          chars: [C("jaei", 110, "smile", "shrug", { m: "bob" }), C("taeo", 300, "laugh", "cheer", { m: "hop" })],
+          b: [B("그래, 가년 하자~", 110, 80, "b"), B("히어로즈에 가년~ 블루베리도 있고!", 300, 110, "b", { w: 160 })],
+        },
+        {
+          h: 360, bg: "living-night",
+          chars: [C("jaei", 110, "happy", "point", { m: "hop" }), C("taeo", 300, "love", "stand", { m: "hop" })],
+          b: [B("히어로즈에 가년~ 블루베리도 있고, 쉬터맨도 있고!", 130, 70, "b", { w: 200 })],
+        },
+        {
+          h: 380, bg: "living-night",
+          chars: [C("appa", 110, "proud", "hip", { m: "hop" }), C("taeo", 300, "shock", "stand", { m: "shake" })],
+          b: [B("히어로즈에 가년~ 블루베리도 있고, 쉬터맨도 있고, 방패 대장도 있고!", 140, 70, "b", { w: 230 })],
+        },
+        {
+          h: 320, bg: "burst:ffd1e1",
+          chars: [bust("taeo", 190, 200, 1.45, "angry", "point", { m: "stomp" })],
+          b: [B("땡!! 스테잌로저야!!", 200, 44, "", { k: "shout", w: 260 })],
+        },
+        {
+          h: 360, bg: "living-night",
+          chars: [C("appa", 110, "shy", "scratch", { m: "bob" }), C("jaei", 300, "laugh", "cover", { m: "hop" })],
+          b: [B("아… 스테잌로저…", 110, 70, "b")],
+          sfx: [FX("긁적긁적", 150, 260, { rot: 8, c: "#8a6d52", size: 0.8 }), FX("깔깔깔", 300, 90, { rot: -8, c: "#ff9f1c" })],
+        },
+        {
+          h: 380, bg: "living-night",
+          chars: [C("eomma", 110, "happy", "point", { m: "hop" }), C("taeo", 300, "laugh", "cheer", { m: "hop" })],
+          b: [B("…스테잌로저도 있고, 늘어나는 애도 있고!", 130, 70, "b", { w: 200 }), B("엄마 잘한다!", 300, 150, "b")],
+        },
+        {
+          h: 280, bg: "sparkle:e6e0ff",
+          chars: [bust("taeo", 120, 180, 1.15, "worried", "scratch", { m: "bob" }), bust("eomma", 300, 180, 1.1, "blank", "stand", { m: "shake" })],
+          b: [B("근데 엄마, 늘어나는 애 이름 뭐야?", 130, 44, "b", { w: 200 }), B("…너도 몰라?", 310, 60, "b")],
+        },
+        {
+          h: 400, bg: "living-night",
+          chars: [C("harabeoji", 110, "worried", "think", { m: "bob" }), C("taeo", 300, "surprised", "stand", { m: "shake" })],
+          b: [B("허허, 할아버지 차례구나. 히어로즈에 가면… 우… 우엉?", 130, 80, "b", { w: 200 })],
+        },
+        {
+          h: 300, bg: "burst:c8f5c8",
+          chars: [bust("taeo", 120, 190, 1.2, "laugh", "cheer", { m: "hop" }), bust("harabeoji", 300, 190, 1.15, "proud", "stand", { m: "hop" })],
+          b: [B("맞아!! 우엉 있어! 할아버지 통과!", 130, 44, "b", { k: "shout", w: 200 })],
+          sfx: [FX("얼떨결에 정답", 300, 90, { rot: 8, c: "#2fbf5b", size: 0.5 })],
+        },
+        {
+          h: 400, bg: "living-night",
+          chars: [C("halmeoni", 110, "worried", "think", { m: "bob" }), C("taeo", 300, "smile", "stand", { m: "bob" })],
+          b: [B("히어로즈에 가면… 블루…베리도 있고… 에고, 할머니는 모르겠다.", 140, 80, "b", { w: 220 })],
+        },
+        {
+          h: 330, bg: "sparkle:fff0d6",
+          chars: [bust("halmeoni", 200, 200, 1.3, "happy", "stand", { m: "hop" })],
+          b: [B("히어로즈에 가면… 우리 태오도 있고!", 200, 44, "", { w: 260 })],
+        },
+        {
+          h: 300, bg: "sparkle:ffe3ee",
+          chars: [bust("taeo", 200, 190, 1.45, "love", "cheeks", { m: "hop" })],
+          b: [B("나도 히어로즈야?", 200, 44, "", { w: 220 })],
+        },
+        {
+          h: 360, bg: "living-night",
+          chars: [C("jaei", 110, "sly", "point", { m: "pop" }), C("taeo", 300, "shy", "scratch", { m: "bob" })],
+          b: [B("그럼! 누나 괴롭히는 힘은 우주 최강이지.", 130, 70, "b", { w: 190 })],
+          sfx: [FX("헤헤", 300, 110, { rot: 8, c: "#8a6d52", size: 0.8 })],
+        },
+        {
+          h: 400, bg: "living-night",
+          chars: [C("jaei", 36, "happy", "stand", { s: 0.82, m: "hop" }), C("halmeoni", 98, "happy", "stand", { s: 0.72, m: "hop" }), C("eomma", 163, "happy", "stand", { s: 0.72, m: "hop" }), C("appa", 232, "happy", "stand", { s: 0.72, m: "hop" }), C("harabeoji", 300, "happy", "stand", { s: 0.72, m: "hop" }), C("taeo", 362, "determined", "cheer", { s: 0.82, m: "stomp" })],
+          b: [B("히어로즈에 가년~ 할머니도 있고, 할아버지도 있고, 엄마도, 아빠도, 누나도 있고!", 200, 60, "", { k: "shout", w: 330 })],
+        },
+        {
+          h: 420, bg: "sparkle:ffe3ee",
+          chars: [C("jaei", 36, "laugh", "cheer", { s: 0.82, m: "hop" }), C("halmeoni", 98, "laugh", "cheer", { s: 0.72, m: "hop" }), C("eomma", 163, "laugh", "cheer", { s: 0.72, m: "hop" }), C("appa", 232, "laugh", "cheer", { s: 0.72, m: "hop" }), C("harabeoji", 300, "laugh", "cheer", { s: 0.72, m: "hop" }), C("taeo", 362, "laugh", "cheer", { s: 0.82, m: "hop" })],
+          fp: [["heart", 200, 50, { s: 1.3 }]],
+          b: [B("…그리고 나도 있고!", 290, 130, "br", { k: "shout", w: 180 })],
+        },
+        {
+          h: 420, bg: "living-night",
+          sh: true,
+          chars: [C("halmeoni", 70, "laugh", "cover", { s: 0.85, m: "bob" }), C("appa", 210, "sly", "up", { o: "work", m: "stomp" }), C("taeo", 340, "laugh", "cheer", { s: 0.9, m: "hop" })],
+          fp: [["glove", 262, 180, { s: 0.9, rot: -15, m: "wave" }]],
+          b: [B("히어로즈에 가년~ 보라 괴수도 있고!! 크하하!", 200, 55, "b", { k: "shout", w: 200 }), B("김서방, 애들이랑 놀다 허리 나가겠네!", 85, 350, "tl", { w: 130 }), B("꺄아! 보라 괴수다!", 352, 130, "b", { w: 92 })],
+        },
+      ],
+    },
   ];
 })(typeof window !== "undefined" ? window : globalThis);
