@@ -777,6 +777,16 @@
       for (const k of [-10, 0, 10]) g += `<path d="M${x} ${y} Q${x + dx / 2} ${y + dy / 2 + k} ${x + dx} ${y + dy}" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>`;
       return `<g>${g}</g>`;
     },
+    // 주방 타이머 (숫자 창). t: 표시 글자
+    timer(x, y, o) {
+      return `<g transform="translate(${x} ${y}) rotate(${o.rot || 0}) scale(${o.s || 1})"><rect x="-38" y="-62" width="76" height="62" rx="14" fill="${o.c || "#ffcf5c"}" stroke="${INK}" stroke-width="2.6"/><rect x="-28" y="-52" width="56" height="24" rx="5" fill="#24323a" stroke="${INK}" stroke-width="1.6"/><text x="0" y="-34" text-anchor="middle" font-size="17" font-family="monospace" font-weight="700" fill="#7dff9a">${o.t || "03:00"}</text><circle cx="-14" cy="-14" r="6" fill="#fff" stroke="${INK}" stroke-width="1.6"/><circle cx="0" cy="-14" r="6" fill="#fff" stroke="${INK}" stroke-width="1.6"/><circle cx="14" cy="-14" r="6" fill="#ff6b6b" stroke="${INK}" stroke-width="1.6"/></g>`;
+    },
+    // 스프링 말 (아기 놀이기구). 인물은 따로 그려서 안장(y - 92 쯤)에 앉힌다.
+    springhorse(x, y, o) {
+      let coil = "";
+      for (let i = 0; i < 5; i++) coil += `<ellipse cx="0" cy="${-12 - i * 9}" rx="16" ry="4" fill="none" stroke="#9aa3ad" stroke-width="3.4"/>`;
+      return `<g transform="translate(${x} ${y}) scale(${o.s || 1})"><ellipse cx="0" cy="-4" rx="46" ry="9" fill="#ff8fb8" stroke="${INK}" stroke-width="2.4"/>${coil}<path d="M-46 -76 Q-50 -100 -20 -100 L22 -100 Q40 -100 44 -116 L52 -138 Q58 -150 70 -142 L72 -120 Q70 -106 58 -96 Q52 -70 30 -64 L-30 -64 Q-46 -64 -46 -76Z" fill="${o.c || "#ffd34d"}" stroke="${INK}" stroke-width="2.6" stroke-linejoin="round"/><path d="M44 -132 Q34 -128 30 -112" stroke="#e2557f" stroke-width="7" fill="none" stroke-linecap="round"/><circle cx="58" cy="-128" r="3" fill="${INK}"/><path d="M-46 -84 q-14 4 -18 18" stroke="#e2557f" stroke-width="6" fill="none" stroke-linecap="round"/><rect x="-22" y="-108" width="34" height="10" rx="5" fill="#4c9fe0" stroke="${INK}" stroke-width="1.8"/></g>`;
+    },
     // 호텔 금고 (번호 키패드)
     safe(x, y, o) {
       let keys = "";
