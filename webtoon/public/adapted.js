@@ -531,5 +531,123 @@
         },
       ],
     },
+    // ───── 6화 (원래 6화 + 제미나이 각색본 합본) ─────
+    {
+      id: 6,
+      title: "태오어 사전",
+      summary: "블루베리, 스테잌로저, 우엉은 마법사, 쓰구미… 다섯 살 태오만의 말에 정리왕 누나가 “다 틀렸어!” 소리치자, 태오는 입을 꾹 다물어 버렸다. 그런데 누나에게도 ‘짐방’ 시절이 있었다?",
+      lesson: "틀린 말이 아니라, 지금만 들을 수 있는 보물 같은 말이에요.",
+      talk: "우리 가족만 알아듣는 말이 있나요? 우리 집 사전을 만들어 볼까요?",
+      cover: 6,
+      motion: true,
+      panels: [
+        {
+          h: 340, bg: "halmae",
+          chars: [C("taeo", 140, "determined", "kick", { m: "stomp" })],
+          fp: [["figures", 300, 316, { s: 1.3 }]],
+          n: "다섯 살 막내 태오에게는 태오만의 말이 있다.",
+          b: [B("블루베리! 출동!", 140, 92, "b", { k: "shout" })],
+          sfx: [FX("슈웅", 320, 180, { rot: 8, c: "#3b6fd6" })],
+        },
+        {
+          h: 280, bg: "burst:e6e0ff",
+          chars: [bust("jaei", 200, 175, 1.3, "surprised", "stand", { m: "shake" })],
+          b: [B("…블루베리?", 200, 40, "", { w: 200 })],
+        },
+        {
+          h: 360, bg: "halmae",
+          chars: [C("taeo", 110, "proud", "point", { m: "hop" }), C("jaei", 305, "blank", "stand", { m: "shake" })],
+          fp: [["figures", 215, 336, { s: 0.9 }]],
+          b: [B("블루베리 몰라? 까만 고양이 영웅! 지잔이랑 스테잌로저도 있어!", 130, 60, "b", { w: 230 })],
+        },
+        {
+          h: 300, bg: "burst:ffe27a",
+          chars: [bust("appa", 200, 170, 1.3, "laugh", "stand", { m: "hop" })],
+          b: [B("스테잌…? 아빠 갑자기 배고파지네.", 200, 40, "", { w: 250 })],
+          sfx: [FX("꼬르륵~", 320, 270, { rot: -6, c: "#b0582a" })],
+        },
+        {
+          h: 400, bg: "kitchen",
+          chars: [C("taeo", 90, "smile", "stand", { m: "bob" }), C("halmeoni", 290, "smile", "give", { o: "apron", f: -1, m: "bob" })],
+          fp: [["banchan", 212, 254, { s: 1.1 }]],
+          b: [B("태오야, 할머니가 만든 우엉조림 먹어 보렴.", 260, 50, "b", { w: 240 })],
+        },
+        {
+          h: 290, bg: "burst:c9dcff",
+          chars: [bust("taeo", 200, 170, 1.5, "shock", "cheeks", { m: "shake" })],
+          b: [B("우엉?! 우엉은 마법사잖아!!", 200, 40, "", { k: "shout", w: 280 })],
+        },
+        {
+          h: 380, bg: "kitchen",
+          chars: [C("harabeoji", 110, "laugh", "stand", { m: "hop" }), C("halmeoni", 290, "laugh", "cover", { o: "apron", m: "hop" })],
+          b: [B("허허, 마법사 반찬이면 더 맛있겠구나.", 150, 44, "bl", { w: 230 })],
+          sfx: [FX("깔깔깔", 205, 230, { rot: 8, c: "#ff9f1c" })],
+        },
+        {
+          h: 380, bg: "halmae",
+          chars: [C("taeo", 110, "surprised", "stand", { rot: -8, m: "shake" }), C("halmeoni", 290, "surprised", "stand", { m: "shake" })],
+          b: [B("쓰구미!", 110, 120, "b", { k: "shout" }), B("쓰…구미? 아, ‘실례합니다’구나!", 300, 50, "b", { w: 150 })],
+          sfx: [FX("쿵", 200, 250, { rot: -10, c: "#3b6fd6" })],
+        },
+        {
+          h: 350, bg: "halmae",
+          chars: [C("taeo", 110, "love", "point", { m: "hop" }), C("jaei", 300, "proud", "wave", { m: "hop" })],
+          n: "저녁, 새 원피스를 입고 나온 누나.",
+          b: [B("누나 블레이뽀!!", 120, 100, "b", { k: "shout" })],
+          sfx: [FX("빙그르", 300, 330, { rot: -6, c: "#f0609d", size: 0.8 })],
+        },
+        {
+          h: 370, bg: "halmae",
+          chars: [C("taeo", 90, "worried", "stand", { m: "bob" }), C("jaei", 270, "angry", "hip", { m: "stomp" })],
+          b: [B("블레이뽀가 아니라 뷰티풀! 블루베리 아니고 블랙 표범! 지잔 아니고 로봇 영웅! 다 틀렸어!", 235, 55, "bl", { k: "shout", w: 300 })],
+        },
+        {
+          h: 280, bg: "gloom",
+          chars: [bust("taeo", 200, 170, 1.5, "cry", "eyes", { m: "shake" })],
+          b: [B("…나 이제 말 안 할래.", 200, 40, "", { w: 220 })],
+        },
+        {
+          h: 400, bg: "halmae",
+          chars: [C("eomma", 110, "smile", "hold", { m: "bob" }), C("jaei", 305, "surprised", "stand", { m: "shake" })],
+          fp: [["notebook", 110, 250, { t: "재이 말 모음", s: 0.6, c: "#ffb8d0", lines: ["짐방 = 김서방", "꿍끙이 = 방귀 대장"] }]],
+          b: [B("재이야, 이거 봐. 네가 어렸을 때 엄마가 적어 둔 ‘재이 말 모음’이야.", 150, 46, "bl", { w: 250 })],
+        },
+        {
+          h: 420, bg: "memory",
+          chars: [C("halmeoni", 90, "happy", "wave", { m: "hop" }), C("appa", 215, "surprised", "stand", { m: "shake" }), C("jaei", 330, "happy", "point", { s: 0.62, f: -1, m: "hop" })],
+          n: "재이가 아기였을 때.",
+          b: [B("김서방~ 왔는가!", 105, 96, "b", { w: 140 }), B("짐방!", 335, 232, "b", { k: "shout" })],
+          sfx: [FX("짐…방?!", 280, 92, { rot: 8, c: "#3b6fd6", size: 0.8 })],
+        },
+        {
+          h: 320, bg: "sparkle:ffe3ee",
+          chars: [bust("jaei", 115, 190, 1.2, "shy", "cheeks", { m: "bob" }), bust("appa", 300, 200, 1.15, "laugh", "stand", { m: "hop" })],
+          b: [B("내가… 아빠를 ‘짐방’이라고 불렀어?", 120, 50, "b", { w: 180 }), B("그래서 한동안 아빠 별명이 짐방이었지~", 300, 60, "b", { w: 160 })],
+        },
+        {
+          h: 330, bg: "sparkle:fff0d6",
+          chars: [bust("eomma", 200, 185, 1.25, "teary", "stand", { m: "bob" })],
+          b: [B("이런 말은 지금만 들을 수 있는 보물이야. 조금 크면 다 바르게 말하게 되거든.", 200, 44, "", { w: 300 })],
+        },
+        {
+          h: 360, bg: "halmae",
+          chars: [C("jaei", 130, "teary", "give", { m: "bob" }), C("taeo", 305, "surprised", "stand", { m: "shake" })],
+          fp: [["notebook", 205, 262, { t: "태오어 사전", s: 0.55, lines: ["", ""] }]],
+          b: [B("태오야, 아까 미안해. 누나가 ‘태오어 사전’ 만들어 줄게!", 150, 56, "b", { w: 230 })],
+        },
+        {
+          h: 380, bg: "sparkle:fff4c7",
+          fp: [["notebook", 200, 205, { t: "태오어 사전", s: 2.2, lines: ["쓰구미 = 익스큐즈미", "블루베리 = 블랙 표범", "우엉 = 마법사 아저씨", "포도 = 북극곰 친구"] }], ["heart", 340, 80, {}]],
+          n: "오늘도 태오어 사전은 한 장씩 늘어난다.",
+          n2: "언젠가 이 말들이 그리워질 테니까.",
+        },
+        {
+          h: 380, bg: "halmae",
+          chars: [C("taeo", 110, "laugh", "cheer", { m: "hop" }), C("jaei", 300, "blank", "hold", { m: "shake" })],
+          fp: [["notebook", 330, 290, { t: "태오어 사전", s: 0.5, lines: ["", ""] }]],
+          b: [B("누나! 사전 적었으니까 맛있는 거 죠!", 120, 60, "b", { k: "shout", w: 170 }), B("…그 말은 벌써 1번으로 적어 놨거든?", 300, 150, "b", { w: 140 })],
+        },
+      ],
+    },
   ];
 })(typeof window !== "undefined" ? window : globalThis);
