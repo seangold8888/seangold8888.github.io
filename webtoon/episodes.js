@@ -5049,6 +5049,92 @@
         },
       ],
     },
+    // ───────────────────────── 50화 ─────────────────────────
+    {
+      id: 50,
+      title: "캐나다 가서 해!",
+      summary: "“오늘부터 우리 집은 영어 구역이야!” 영어 교육에 불타는 엄마. 가윌은 프루트가 되고, 칫솔 앞에서 기어 도망가던 태오가 결국 폭발했다. “엄마 왜 계속 영어로 말해? 캐나다 가서 영어 해!”",
+      lesson: "새로운 말은 천천히 배워도 괜찮아요. 엄마의 마음은 어느 나라 말로 해도 똑같으니까요.",
+      talk: "영어로 아는 말이 있어요? 가족에게 하고 싶은 말을 영어로 한번 해 볼까요?",
+      cover: 8,
+      motion: true,
+      panels: [
+        {
+          h: 440, bg: "living",
+          bp: [["sofa", 270, 420, { w: 260 }]],
+          chars: [C("eomma", 80, "determined", "hip", { o: "apron", m: "stomp" }), C("appa", 215, "surprised", "stand", { o: "work", s: 0.75, m: "pop" }), C("halmeoni", 290, "laugh", "hands", { s: 0.72, m: "bob" }), C("harabeoji", 360, "surprised", "stand", { s: 0.72, m: "pop" })],
+          fp: [["sofafront", 270, 420, { w: 260 }]],
+          b: [B("오늘부터 우리 집은 영어 구역이야! 하루 한 시간은 영어로만 말할 거야.", 110, 70, "b", { k: "shout", w: 200 }), B("어, 나도?", 230, 200, "b", { w: 90 }), B("김서방, 긴장 좀 해야겠네.", 330, 120, "b", { w: 120 })],
+        },
+        {
+          h: 400, bg: "living",
+          bp: [["table", 200, 400, { w: 300 }]],
+          chars: [C("jaei", 150, "love", "cheer", { m: "dance" })],
+          fp: [["note", 260, 150, { m: "float" }], ["note", 300, 210, { m: "float" }]],
+          b: [B("에이, 비, 씨, 디~ ♪ 좋아! 엄마, 어서 영어로 말해 봐!", 170, 70, "b", { w: 200 })],
+        },
+        {
+          h: 400, bg: "kitchen",
+          chars: [C("taeo", 120, "happy", "lick", { m: "bob" }), C("eomma", 300, "smile", "give", { o: "apron", m: "pop" })],
+          fp: [["dish", 250, 260, { r: 34 }], ["sourfruits", 250, 250, { s: 0.6 }]],
+          b: [B("엄마, 나 배고파. 맛있는 거 죠! 가윌 죠!", 120, 70, "b", { k: "shout", w: 160 }), B("Here you go! Apple and orange. Eat your fruit!", 300, 140, "b", { w: 160 })],
+        },
+        {
+          h: 380, bg: "split:ffe8f0:dfeaf5",
+          chars: [bust("jaei", 95, 245, 1.05, "sly", "point", { m: "pop" }), bust("taeo", 305, 245, 1.15, "angry", "lick", { m: "shake" })],
+          b: [B("아니야! ‘가윌’이 아니라 ‘프루트’야, 프루트!", 100, 70, "b", { w: 165 }), B("…가윌 맞는데.", 300, 70, "b", { k: "whisper", w: 130 })],
+        },
+        {
+          h: 400, bg: "living",
+          chars: [C("eomma", 110, "happy", "give", { o: "apron", m: "bob" }), C("taeo", 300, "shock", "stand", { m: "shake" })],
+          fp: [["toothbrush", 170, 300, { s: 1.2, m: "wave" }]],
+          n: "간식을 다 먹고 나니…",
+          b: [B("Good job! Now, brush your teeth! Come here!", 120, 100, "b", { w: 180 })],
+          sfx: [FX("헉!", 320, 120, { rot: 10, c: "#e0443e" })],
+        },
+        {
+          h: 400, bg: "living",
+          bp: [["sofa", 230, 330, { w: 280 }]],
+          chars: [C("halmeoni", 330, "laugh", "hug", { s: 0.85, m: "bob" })],
+          fp: [["crawl", 150, 365, { s: 1.1, m: "bob" }]],
+          b: [B("싫어! 안 닦아! 도망가자!", 110, 200, "b", { k: "shout", w: 150 }), B("어이쿠, 우리 태오 엄청 빠르네!", 320, 80, "b", { w: 140 })],
+          sfx: [FX("엉금엉금", 230, 260, { rot: -6, c: "#7a5c3b", size: 0.9 })],
+        },
+        {
+          h: 400, bg: "living",
+          chars: [C("eomma", 110, "worried", "give", { o: "apron", m: "hop" }), C("appa", 310, "laugh", "mouth", { o: "work", m: "bob" })],
+          fp: [["toothbrush", 170, 300, { s: 1.2, m: "wave" }]],
+          b: [B("No, no! Stop! Brush your teeth, please!", 110, 70, "b", { k: "shout", w: 170 }), B("(오, 제법 자연스러운데?)", 310, 110, "b", { k: "whisper", w: 140 })],
+        },
+        {
+          h: 460, bg: "speed:ffe0e0",
+          sh: true,
+          chars: [C("taeo", 200, "angry", "point", { m: "stomp" })],
+          b: [B("흥! 엄마 왜 계속 영어로 말해?", 200, 60, "b", { k: "shout", w: 230 }), B("캐나다 가서 영어 해!", 200, 150, "b", { k: "shout", w: 230 })],
+          sfx: [FX("쾅!", 110, 440, { rot: -12, c: "#e0443e", size: 1.3 })],
+        },
+        {
+          h: 130, bg: "plain:f4f4f4",
+          chars: [bust("eomma", 200, 62, 2.2, "blank", "stand", { m: "pop" })],
+          b: [B("……", 330, 70, "", { k: "think", w: 70 })],
+        },
+        {
+          h: 420, bg: "living",
+          chars: [C("harabeoji", 70, "laugh", "stand", { s: 0.8, m: "bob" }), C("halmeoni", 180, "laugh", "point", { s: 0.8, m: "bob" }), C("jaei", 320, "laugh", "wave", { s: 0.85, m: "hop" })],
+          b: [B("하하하! 캐나다까지 가야 하나!", 80, 70, "b", { w: 130 }), B("김서방, 얼른 비행기 표 알아봐야겠네.", 210, 160, "b", { w: 140 }), B("아니야, 거긴 너무 멀어!", 320, 70, "b", { w: 120 })],
+        },
+        {
+          h: 420, bg: "living",
+          chars: [C("eomma", 100, "sly", "give", { o: "apron", m: "pop" }), C("appa", 300, "shock", "hands", { o: "work", m: "shake" })],
+          b: [B("오… 좋은 생각인데? 그럼 엄마 혼자 캐나다 갔다 올게! 여보, 카드 줘!", 105, 60, "b", { w: 185 }), B("자, 잠깐만! 나도 영어 잘해! 헬로! 굿모닝! 하우 아 유!", 305, 60, "b", { k: "shout", w: 165 })],
+        },
+        {
+          h: 300, bg: "plain:fff4c7",
+          chars: [bust("taeo", 260, 180, 1.4, "blank", "lick", { m: "bob" })],
+          b: [B("…얼음들은 왜 다 저래.", 110, 110, "r", { k: "whisper", w: 150 })],
+        },
+      ],
+    },
   ];
 
   root.WebtoonData = { CHARACTERS, EPISODES };
