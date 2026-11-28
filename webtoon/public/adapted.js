@@ -433,5 +433,103 @@
         },
       ],
     },
+    // ───── 5화 (원래 5화 + 제미나이 각색본 합본) ─────
+    {
+      id: 5,
+      title: "할아버지의 영상통화",
+      summary: "스마트폰 영상통화에 도전한 할아버지. 재이는 친절한 선생님이 되기로 했지만, 콧구멍만 나오고, 빨간 버튼만 누르고… 자꾸만 속이 터지는데!",
+      lesson: "우리가 천천히 배울 때 기다려 준 사람들이 있어요. 이번엔 우리가 기다려 줄 차례예요.",
+      talk: "내가 어렸을 때 가족이 참을성 있게 가르쳐 준 것은 무엇일까요?",
+      cover: 12,
+      motion: true,
+      panels: [
+        {
+          h: 400, bg: "halmae",
+          chars: [C("harabeoji", 120, "worried", "hold", { m: "bob" }), C("jaei", 290, "proud", "hip", { m: "hop" })],
+          fp: [["phone", 120, 262, { s: 0.9 }]],
+          n: "주말, 할머니 할아버지 댁. 할아버지가 영상통화에 도전한다.",
+          b: [B("재이야, 이 영상통화라는 거… 어떻게 하는 거냐?", 200, 80, "bl", { w: 250 }), B("제가 알려 드릴게요!", 330, 150, "b", { w: 130 })],
+        },
+        {
+          h: 360, bg: "halmae",
+          chars: [bust("harabeoji", 280, 190, 1.25, "surprised", "stand", { m: "shake" }), bust("jaei", 110, 210, 1.25, "smile", "point", { m: "bob" })],
+          fp: [["phone", 205, 290, { s: 1.4, screen: "#c9f5c9" }]],
+          b: [B("여기 초록 버튼 누르시고, 얼굴이 화면에 나오게 드시면 돼요!", 140, 50, "b", { w: 250 }), B("오호라.", 340, 90, "b")],
+        },
+        {
+          h: 360, bg: "plain:bfe7ff",
+          chars: [C("harabeoji", 200, "blank", "stand", { s: 3.6, y: 1150, m: "shake" })],
+          fp: [["phoneframe", 0, 0, {}]],
+          b: [B("할아버지! 머리만 보여요!", 200, 110, "", { k: "shout", w: 250 })],
+          sfx: [FX("번쩍!", 300, 215, { rot: 10, c: "#ff9f1c", size: 1.2 })],
+        },
+        {
+          h: 330, bg: "halmae",
+          chars: [C("halmeoni", 80, "laugh", "cover", { m: "hop" }), C("harabeoji", 210, "shy", "scratch", { m: "bob" }), C("taeo", 340, "laugh", "point", { m: "hop" })],
+          b: [B("허허, 요 녀석들.", 195, 40, "b", { w: 120 }), B("할부지, 맛있는 거 죠!", 345, 60, "b", { w: 100 })],
+          sfx: [FX("깔깔깔", 250, 300, { rot: 8, c: "#ff9f1c" })],
+        },
+        {
+          h: 380, bg: "halmae",
+          chars: [C("harabeoji", 110, "worried", "hold", { m: "bob" }), C("jaei", 290, "angry", "hip", { m: "stomp" })],
+          fp: [["phone", 110, 242, { s: 0.9, screen: "#ffb3b3" }]],
+          b: [B("오, 나왔다! …어라? 왜 까매졌냐?", 120, 330, "tl", { w: 140 }), B("할아버지! 아까 말씀드렸잖아요! 빨간 거 말고 초록 거요!", 250, 50, "b", { w: 250, k: "shout" })],
+          sfx: [FX("뚝", 200, 270, { rot: -10, c: "#e0443e", size: 1.2 })],
+        },
+        {
+          h: 280, bg: "plain:e9e6e1",
+          chars: [bust("harabeoji", 200, 150, 1.5, "sad", "stand", { m: "bob" })],
+          b: [B("…할아버지가 자꾸 까먹어서 미안하구나. 손이 마음대로 안 움직이네.", 200, 36, "", { w: 240 })],
+        },
+        {
+          h: 360, bg: "halmae",
+          chars: [C("halmeoni", 120, "smile", "stand", { o: "apron", m: "bob" }), C("jaei", 290, "guilty", "stand", { m: "shake" })],
+          b: [B("재이야, 너 아기 때 숟가락질 누가 가르쳐 줬는지 아니?", 130, 50, "b", { w: 170 }), B("…?", 300, 150, "b")],
+        },
+        {
+          h: 400, bg: "memory",
+          chars: [C("harabeoji", 110, "happy", "give", { s: 0.95, m: "hop" }), C("jaei", 280, "eating", "stand", { s: 0.62, m: "wiggle" })],
+          fp: [["spoonful", 256, 300, { rot: 205 }], ["grains", 300, 316, {}]],
+          b: [B("옳지, 옳지~ 우리 재이 잘한다!", 150, 100, "bl", { w: 230 })],
+          n: "백 번을 흘려도, 할아버지는 백 번 다 웃으셨지.",
+        },
+        {
+          h: 350, bg: "halmae",
+          chars: [bust("halmeoni", 110, 190, 1.2, "smile", "stand", { o: "apron", m: "bob" }), bust("jaei", 300, 210, 1.25, "teary", "stand", { m: "bob" })],
+          b: [B("그때 할아버지는 한 번도 ‘아까 말했잖아’ 안 하셨단다.", 170, 50, "bl", { w: 280 })],
+        },
+        {
+          h: 360, bg: "sparkle:fff0d6",
+          chars: [C("jaei", 150, "teary", "hug", { m: "bob" }), C("harabeoji", 270, "teary", "hug", { m: "bob" })],
+          fp: [["heart", 210, 80, {}]],
+          b: [B("할아버지, 우리 천천히 다시 해 봐요. 백 번 해도 괜찮아요!", 180, 50, "bl", { w: 280 })],
+        },
+        {
+          h: 330, bg: "halmae",
+          chars: [C("taeo", 60, "happy", "cheer", { m: "hop" }), C("harabeoji", 200, "determined", "hold", { m: "stomp" }), C("jaei", 330, "smile", "point", { m: "bob" })],
+          fp: [["phone", 200, 222, { s: 0.9 }]],
+          b: [B("할아버지 파이팅!", 70, 70, "b")],
+          n2: "그리고 정말… 열한 번째에.",
+        },
+        {
+          h: 230, bg: "burst:c8f5c8",
+          fp: [["phone", 200, 120, { s: 2.2, screen: "#c9f5c9", face: "harabeoji" }]],
+          sfx: [FX("띠리리링~", 90, 60, { rot: -10, c: "#2fbf5b" }), FX("연결됐다!!", 300, 190, { rot: 8, c: "#ff6b6b" })],
+        },
+        {
+          h: 420, bg: "plain:bfe7ff",
+          chars: [bust("harabeoji", 180, 220, 1.8, "laugh", "stand", { m: "hop" }), C("halmeoni", 330, "happy", "stand", { s: 2.4, y: 935, m: "hop" })],
+          fp: [["phoneframe", 0, 0, {}]],
+          b: [B("재이야! 할아버지다! 혼자 했다!", 200, 80, "b", { w: 250 }), B("할머니~ 파마만 보여요!", 130, 330, "", { k: "shout", w: 190 })],
+        },
+        {
+          h: 420, bg: "halmae",
+          chars: [C("halmeoni", 90, "surprised", "up", { m: "shake" }), C("appa", 225, "sleepy", "scratch", { o: "work", m: "bob" }), C("jaei", 335, "proud", "fist", { m: "hop" })],
+          fp: [["phone", 160, 205, { s: 0.6, rot: 180 }]],
+          n: "그리고 그날 저녁.",
+          b: [B("어? 이거 어떻게 하는 거야, 김서방?", 95, 115, "b", { w: 140 }), B("…재이야, 2차 수업이다.", 230, 190, "b", { k: "whisper", w: 120 }), B("백 번 해도 괜찮아요!", 335, 90, "b", { k: "shout", w: 120 })],
+        },
+      ],
+    },
   ];
 })(typeof window !== "undefined" ? window : globalThis);
