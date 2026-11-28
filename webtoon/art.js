@@ -980,7 +980,102 @@
     return s;
   }
 
+  // 배경을 풍성하게: 기본 배경 위에 방마다 가구·소품·빛을 한 겹 더 얹는다(인물보다 연하게).
   function background(bg, W, H) {
+    const [kind, arg] = String(bg || "plain").split(":");
+    return baseBackground(bg, W, H) + roomExtras(kind, arg, W, H, H - 60);
+  }
+
+  function books(x, y, n, h) {
+    const cols = ["#e8a0a0", "#9cc3e6", "#f2d48a", "#a8d5b0", "#c9b2e0", "#f0b98a"];
+    let g = "", bx = x;
+    for (let i = 0; i < n; i++) { const w = 7 + (i * 5) % 6, hh = h - (i * 7) % 9; g += `<rect x="${bx}" y="${y - hh}" width="${w}" height="${hh}" rx="1.5" fill="${cols[i % cols.length]}" stroke="#8a7464" stroke-width="1"/>`; bx += w + 1.5; }
+    return g;
+  }
+  function plant(x, y, s) {
+    return `<g transform="translate(${x} ${y}) scale(${s})"><path d="M0 -40 Q-22 -60 -26 -86 Q-6 -70 0 -46 Q4 -78 20 -96 Q16 -66 4 -44 Q20 -58 34 -62 Q22 -44 2 -38Z" fill="#7cbf86" stroke="#4f8a5a" stroke-width="2" stroke-linejoin="round"/><path d="M-16 -40 H16 L12 0 H-12Z" fill="#e7a77a" stroke="#9a6a4a" stroke-width="2"/><path d="M-16 -40 H16" stroke="#9a6a4a" stroke-width="3"/></g>`;
+  }
+  function kidArt(x, y, rot, c) {
+    // 벽에 붙인 아이 그림: 해와 집
+    return `<g transform="translate(${x} ${y}) rotate(${rot})"><rect x="-18" y="-14" width="36" height="28" fill="#fffdf5" stroke="#b8a898" stroke-width="1.2"/><circle cx="9" cy="-6" r="4" fill="#ffd34d"/><path d="M9 -13 v2 M9 1 v2 M2 -6 h2 M14 -6 h2" stroke="#ffb13b" stroke-width="1.2"/><path d="M-13 9 V0 L-6 -7 L1 0 V9Z" fill="none" stroke="${c}" stroke-width="1.6" stroke-linejoin="round"/><rect x="-8" y="3" width="4" height="6" fill="${c}"/><path d="M-18 11 H18" stroke="#7cbf86" stroke-width="2"/><path d="M-4 -14 h8" stroke="#f2c14e" stroke-width="4" opacity=".8"/></g>`;
+  }
+  function wallLight(W, gy, night) {
+    // 벽 위쪽은 밝고 아래로 갈수록 살짝 어두운 빛 + 걸레받이
+    return `<defs><linearGradient id="wl${night ? "n" : "d"}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="${night ? 0 : 0.28}"/><stop offset="1" stop-color="#7a5a40" stop-opacity="${night ? 0.18 : 0.1}"/></linearGradient></defs><rect width="${W}" height="${gy}" fill="url(#wl${night ? "n" : "d"})"/><rect x="0" y="${gy - 14}" width="${W}" height="10" fill="#fff" opacity=".55"/><path d="M0 ${gy - 14} H${W}" stroke="#c9b29a" stroke-width="1.4"/>`;
+  }
+  function roomExtras(kind, arg, W, H, gy) {
+    if (H < 200) return "";
+    switch (kind) {
+      case "living":
+      case "living-night": {
+        const night = kind === "living-night";
+        let s = wallLight(W, gy, night);
+        // 아이 그림들(벽에 테이프), 낮은 책장, 화분, 러그
+        s += kidArt(30, Math.max(gy - 235, 26), -6, "#e2557f") + kidArt(205, Math.max(gy - 250, 20), 5, "#3b6fd6");
+        s += `<g opacity="${night ? 0.8 : 0.95}"><rect x="150" y="${gy - 64}" width="96" height="58" rx="3" fill="#e9d2b4" stroke="#a88a6c" stroke-width="2"/><path d="M150 ${gy - 34} H246" stroke="#a88a6c" stroke-width="2"/>${books(156, gy - 36, 7, 24)}${books(160, gy - 6, 4, 22)}<rect x="210" y="${gy - 30}" width="28" height="22" rx="4" fill="#f7c873" stroke="#a88a6c" stroke-width="1.4"/></g>`;
+        s += plant(W - 18, gy + 2, 0.85);
+        s += `<ellipse cx="${W / 2}" cy="${gy + (H - gy) * 0.55}" rx="${W * 0.36}" ry="${(H - gy) * 0.32}" fill="${night ? "#8f86b8" : "#f4c6c0"}" opacity=".55"/><ellipse cx="${W / 2}" cy="${gy + (H - gy) * 0.55}" rx="${W * 0.3}" ry="${(H - gy) * 0.22}" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="6 6" opacity=".6"/>`;
+        if (night) s += `<radialGradient id="lampG"><stop offset="0" stop-color="#ffe9a8" stop-opacity=".55"/><stop offset="1" stop-color="#ffe9a8" stop-opacity="0"/></radialGradient><circle cx="40" cy="${gy - 120}" r="120" fill="url(#lampG)"/>`;
+        return s;
+      }
+      case "halmae": {
+        let s = wallLight(W, gy, false);
+        s += plant(W - 22, gy + 2, 0.8);
+        s += `<ellipse cx="${W / 2}" cy="${gy + (H - gy) * 0.55}" rx="${W * 0.36}" ry="${(H - gy) * 0.3}" fill="#e6c79a" opacity=".6"/>`;
+        return s;
+      }
+      case "kitchen": {
+        let s = wallLight(W, gy, false);
+        // 냉장고(자석·아이 그림), 걸린 조리도구, 창가 화분, 펜던트 조명
+        const fh = Math.min(200, gy - 20);
+        s += `<g><rect x="-6" y="${gy - fh}" width="62" height="${fh}" rx="8" fill="#f4f7fa" stroke="#9aa7b2" stroke-width="2.4"/><path d="M-6 ${gy - fh * 0.62} H56" stroke="#9aa7b2" stroke-width="2"/><rect x="46" y="${gy - fh + 16}" width="4" height="${fh * 0.25}" rx="2" fill="#9aa7b2"/><rect x="46" y="${gy - fh * 0.55}" width="4" height="${fh * 0.3}" rx="2" fill="#9aa7b2"/>${kidArt(22, gy - fh * 0.45, -4, "#e2557f")}<circle cx="10" cy="${gy - fh + 30}" r="5" fill="#ff8fb8"/><circle cx="30" cy="${gy - fh + 46}" r="5" fill="#7cc8f2"/><circle cx="16" cy="${gy - fh * 0.2}" r="5" fill="#ffd34d"/></g>`;
+        const uy = Math.max(gy - 160, 46);
+        s += `<path d="M110 ${uy} H200" stroke="#a88a6c" stroke-width="3"/>`;
+        [[122, 34, "spoon"], [146, 40, "ladle"], [172, 30, "whisk"]].forEach(([x, l, t]) => {
+          s += `<path d="M${x} ${uy} V${uy + l}" stroke="#b9c2ca" stroke-width="3"/>` + (t === "ladle" ? `<path d="M${x - 7} ${uy + l} a7 6 0 0 0 14 0Z" fill="#b9c2ca"/>` : t === "whisk" ? `<ellipse cx="${x}" cy="${uy + l + 6}" rx="5" ry="9" fill="none" stroke="#b9c2ca" stroke-width="2"/>` : `<ellipse cx="${x}" cy="${uy + l + 4}" rx="4" ry="6" fill="#b9c2ca"/>`);
+        });
+        s += plant(W - 50, Math.max(gy - 86, 140), 0.45);
+        s += `<path d="M${W / 2} 0 V22" stroke="#8a7464" stroke-width="2"/><path d="M${W / 2 - 18} 34 Q${W / 2} 14 ${W / 2 + 18} 34Z" fill="#f2b84b" stroke="#a87a2a" stroke-width="2"/><radialGradient id="pendG"><stop offset="0" stop-color="#fff3c4" stop-opacity=".5"/><stop offset="1" stop-color="#fff3c4" stop-opacity="0"/></radialGradient><ellipse cx="${W / 2}" cy="70" rx="120" ry="70" fill="url(#pendG)"/>`;
+        return s;
+      }
+      case "bedroom":
+      case "bedroom-night": {
+        const night = kind === "bedroom-night";
+        let s = wallLight(W, gy, night);
+        // 별 가랜드, 책장, 러그
+        let garland = `<path d="M150 20 Q${W / 2 + 60} 60 ${W - 10} 22" stroke="#c9a98a" stroke-width="1.6" fill="none"/>`;
+        for (let i = 0; i < 6; i++) { const t = i / 5, x = 150 + (W - 160) * t, y = 20 + Math.sin(t * Math.PI) * 34; garland += `<path transform="translate(${x} ${y + 8}) scale(.55)" d="M0 -14 L4 -4 L14 -4 L6 3 L9 13 L0 7 L-9 13 L-6 3 L-14 -4 L-4 -4Z" fill="${["#ffd34d", "#ff8fb8", "#7cc8f2"][i % 3]}" stroke="#8a7464" stroke-width="1.4"/>`; }
+        s += garland;
+        s += `<g opacity="${night ? 0.75 : 0.95}"><rect x="${W - 92}" y="${gy - 120}" width="80" height="114" rx="3" fill="#e9d2b4" stroke="#a88a6c" stroke-width="2"/><path d="M${W - 92} ${gy - 82} H${W - 12} M${W - 92} ${gy - 44} H${W - 12}" stroke="#a88a6c" stroke-width="2"/>${books(W - 86, gy - 84, 6, 26)}${books(W - 84, gy - 46, 5, 24)}<circle cx="${W - 40}" cy="${gy - 22}" r="12" fill="#f7a8c8" stroke="#a88a6c" stroke-width="1.4"/></g>`;
+        s += `<ellipse cx="${W / 2}" cy="${gy + (H - gy) * 0.55}" rx="${W * 0.34}" ry="${(H - gy) * 0.3}" fill="${night ? "#7b7aa8" : "#cfe3f7"}" opacity=".6"/>`;
+        return s;
+      }
+      case "entrance": {
+        let s = wallLight(W, gy, false);
+        // 옷걸이와 겉옷, 우산꽂이, 현관 매트, 신발
+        s += `<path d="M140 ${Math.max(gy - 200, 30)} H240" stroke="#a88a6c" stroke-width="5" stroke-linecap="round"/>`;
+        [[158, "#7cc8f2"], [192, "#ff8fb8"], [226, "#f2d48a"]].forEach(([x, c]) => { const y = Math.max(gy - 200, 30); s += `<circle cx="${x}" cy="${y + 6}" r="3" fill="#8a7464"/><path d="M${x - 14} ${y + 12} Q${x} ${y + 4} ${x + 14} ${y + 12} L${x + 12} ${y + 70} H${x - 12}Z" fill="${c}" stroke="#8a7464" stroke-width="1.6" opacity=".9"/>`; });
+        s += `<rect x="${W - 118}" y="${gy - 46}" width="22" height="46" rx="3" fill="#c9d3dc" stroke="#7f8a93" stroke-width="1.6"/><path d="M${W - 112} ${gy - 46} L${W - 116} ${gy - 80} M${W - 102} ${gy - 46} L${W - 98} ${gy - 74}" stroke="#4c9fe0" stroke-width="4" stroke-linecap="round"/>`;
+        s += `<rect x="${W / 2 - 70}" y="${gy + 8}" width="140" height="${Math.min(30, H - gy - 12)}" rx="6" fill="#d9a77a" opacity=".7"/>`;
+        return s;
+      }
+      case "street": {
+        const am = arg === "morning";
+        let s = "";
+        // 가로수와 가로등(양 끝), 인도 블록
+        const tree = (x) => `<g><rect x="${x - 5}" y="${gy - 70}" width="10" height="70" fill="#8a6a4a"/><circle cx="${x}" cy="${gy - 96}" r="34" fill="${am ? "#7cbf86" : "#4d6b70"}" stroke="${am ? "#4f8a5a" : "#33484c"}" stroke-width="2"/><circle cx="${x - 20}" cy="${gy - 80}" r="22" fill="${am ? "#8fd09a" : "#57787d"}"/></g>`;
+        s += tree(28) + tree(W - 34);
+        s += `<path d="M${W - 80} ${gy} V${gy - 150} Q${W - 80} ${gy - 166} ${W - 64} ${gy - 166} H${W - 54}" stroke="#5a5f6a" stroke-width="5" fill="none"/><ellipse cx="${W - 52}" cy="${gy - 160}" rx="10" ry="6" fill="${am ? "#eef2f5" : "#ffe27a"}" stroke="#5a5f6a" stroke-width="2"/>`;
+        if (!am) s += `<radialGradient id="slG"><stop offset="0" stop-color="#ffe27a" stop-opacity=".45"/><stop offset="1" stop-color="#ffe27a" stop-opacity="0"/></radialGradient><circle cx="${W - 52}" cy="${gy - 150}" r="70" fill="url(#slG)"/>`;
+        for (let x = 0; x < W; x += 40) s += `<path d="M${x} ${gy} V${H}" stroke="#ffffff" stroke-width="1" opacity=".18"/>`;
+        return s;
+      }
+      default:
+        return "";
+    }
+  }
+
+  function baseBackground(bg, W, H) {
     const [kind, arg, arg2] = String(bg || "plain").split(":");
     const gy = H - 60;
     switch (kind) {
